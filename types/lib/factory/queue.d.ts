@@ -1,4 +1,9 @@
 /// <reference types="mongoose" />
+/**
+ * キューファクトリー
+ *
+ * @namespace QueueFactory
+ */
 import ObjectId from "../model/objectId";
 import Authorization from "../model/authorization";
 import Notification from "../model/notification";
@@ -9,61 +14,53 @@ import PushNotificationQueue from "../model/queue/pushNotification";
 import SettleAuthorizationQueue from "../model/queue/settleAuthorization";
 import QueueGroup from "../model/queueGroup";
 import QueueStatus from "../model/queueStatus";
-/**
- * キューファクトリー
- *
- * @namespace
- */
-declare namespace QueueFactory {
-    function create(args: {
-        _id: ObjectId;
-        group: QueueGroup;
-        status: QueueStatus;
-        run_at: Date;
-        max_count_try: number;
-        last_tried_at: Date | null;
-        count_tried: number;
-        results: string[];
-    }): Queue;
-    function createSettleAuthorization<T extends Authorization>(args: {
-        _id: ObjectId;
-        authorization: T;
-        status: QueueStatus;
-        run_at: Date;
-        max_count_try: number;
-        last_tried_at: Date | null;
-        count_tried: number;
-        results: string[];
-    }): SettleAuthorizationQueue<T>;
-    function createCancelAuthorization<T extends Authorization>(args: {
-        _id: ObjectId;
-        authorization: T;
-        status: QueueStatus;
-        run_at: Date;
-        max_count_try: number;
-        last_tried_at: Date | null;
-        count_tried: number;
-        results: string[];
-    }): CancelAuthorizationQueue<T>;
-    function createPushNotification<T extends Notification>(args: {
-        _id: ObjectId;
-        notification: T;
-        status: QueueStatus;
-        run_at: Date;
-        max_count_try: number;
-        last_tried_at: Date | null;
-        count_tried: number;
-        results: string[];
-    }): PushNotificationQueue<T>;
-    function createDisableTransactionInquiry(args: {
-        _id: ObjectId;
-        transaction_id: ObjectId;
-        status: QueueStatus;
-        run_at: Date;
-        max_count_try: number;
-        last_tried_at: Date | null;
-        count_tried: number;
-        results: string[];
-    }): DisableTransactionInquiryQueue;
-}
-export default QueueFactory;
+export declare function create(args: {
+    _id: ObjectId;
+    group: QueueGroup;
+    status: QueueStatus;
+    run_at: Date;
+    max_count_try: number;
+    last_tried_at: Date | null;
+    count_tried: number;
+    results: string[];
+}): Queue;
+export declare function createSettleAuthorization<T extends Authorization>(args: {
+    _id: ObjectId;
+    authorization: T;
+    status: QueueStatus;
+    run_at: Date;
+    max_count_try: number;
+    last_tried_at: Date | null;
+    count_tried: number;
+    results: string[];
+}): SettleAuthorizationQueue<T>;
+export declare function createCancelAuthorization<T extends Authorization>(args: {
+    _id: ObjectId;
+    authorization: T;
+    status: QueueStatus;
+    run_at: Date;
+    max_count_try: number;
+    last_tried_at: Date | null;
+    count_tried: number;
+    results: string[];
+}): CancelAuthorizationQueue<T>;
+export declare function createPushNotification<T extends Notification>(args: {
+    _id: ObjectId;
+    notification: T;
+    status: QueueStatus;
+    run_at: Date;
+    max_count_try: number;
+    last_tried_at: Date | null;
+    count_tried: number;
+    results: string[];
+}): PushNotificationQueue<T>;
+export declare function createDisableTransactionInquiry(args: {
+    _id: ObjectId;
+    transaction_id: ObjectId;
+    status: QueueStatus;
+    run_at: Date;
+    max_count_try: number;
+    last_tried_at: Date | null;
+    count_tried: number;
+    results: string[];
+}): DisableTransactionInquiryQueue;

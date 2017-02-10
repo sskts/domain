@@ -1,3 +1,9 @@
+/**
+ * キューステータス
+ *
+ * @namespace QueueStatus
+ */
+
 type QueueStatus =
     "UNEXECUTED"
     | "RUNNING"

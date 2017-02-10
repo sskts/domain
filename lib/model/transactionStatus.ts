@@ -1,14 +1,15 @@
+/**
+ * 取引ステータス
+ *
+ * @namespace TransactionStatus
+ */
+
 type TransactionStatus =
     "UNDERWAY"
     | "CLOSED"
     | "EXPIRED"
     ;
 
-/**
- *
- *
- * @namespace
- */
 namespace TransactionStatus {
     /** 進行中 */
     export const UNDERWAY = "UNDERWAY";

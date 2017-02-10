@@ -1,18 +1,15 @@
 /// <reference types="mongoose" />
-import EmailNotification from "../model/notification/email";
-import ObjectId from "../model/objectId";
 /**
  * 通知ファクトリー
  *
- * @namespace
+ * @namespace NotificationFactory
  */
-declare namespace NotificationFactory {
-    function createEmail(args: {
-        _id?: ObjectId;
-        from: string;
-        to: string;
-        subject: string;
-        content: string;
-    }): EmailNotification;
-}
-export default NotificationFactory;
+import EmailNotification from "../model/notification/email";
+import ObjectId from "../model/objectId";
+export declare function createEmail(args: {
+    _id?: ObjectId;
+    from: string;
+    to: string;
+    subject: string;
+    content: string;
+}): EmailNotification;

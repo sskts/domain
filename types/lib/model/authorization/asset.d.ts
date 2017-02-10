@@ -6,7 +6,7 @@ import ObjectId from "../objectId";
  * 資産承認
  * 誰が、誰に対して、何(資産)の所有を、承認するのか
  *
- * @export
+ *
  * @class AssetAuthorization
  * @extends {Authorization}
  */

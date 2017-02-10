@@ -1,9 +1,9 @@
-declare type QueueGroup = "SETTLE_AUTHORIZATION" | "CANCEL_AUTHORIZATION" | "PUSH_NOTIFICATION" | "DISABLE_TRANSACTION_INQUIRY";
 /**
+ * キューグループ
  *
- *
- * @namespace
+ * @namespace QueueGroup
  */
+declare type QueueGroup = "SETTLE_AUTHORIZATION" | "CANCEL_AUTHORIZATION" | "PUSH_NOTIFICATION" | "DISABLE_TRANSACTION_INQUIRY";
 declare namespace QueueGroup {
     /** 資産移動 */
     const SETTLE_AUTHORIZATION = "SETTLE_AUTHORIZATION";

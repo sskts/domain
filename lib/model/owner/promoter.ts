@@ -6,7 +6,7 @@ import OwnerGroup from "../ownerGroup";
 /**
  * 興行所有者
  *
- * @export
+ *
  * @class PromoterOwner
  * @extends {Owner}
  */

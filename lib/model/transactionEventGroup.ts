@@ -1,3 +1,9 @@
+/**
+ * 取引イベントグループ
+ *
+ * @namespace TransactionEventGroup
+ */
+
 type TransactionEventGroup =
     "START"
     | "CLOSE"
@@ -8,11 +14,6 @@ type TransactionEventGroup =
     | "NOTIFICATION_REMOVE"
     ;
 
-/**
- *
- *
- * @namespace
- */
 namespace TransactionEventGroup {
     /** 開始 */
     export const START = "START";

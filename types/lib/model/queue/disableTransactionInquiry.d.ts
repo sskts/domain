@@ -5,7 +5,7 @@ import QueueStatus from "../queueStatus";
 /**
  * 取引照会無効化キュー
  *
- * @export
+ *
  * @class DisableTransactionInquiryQueue
  * @extends {Queue}
  */

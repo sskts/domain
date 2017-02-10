@@ -4,7 +4,7 @@ import Owner from "../owner";
 /**
  * 匿名所有者
  *
- * @export
+ *
  * @class AnonymousOwner
  * @extends {Owner}
  */

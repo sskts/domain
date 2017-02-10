@@ -4,7 +4,7 @@ import ObjectId from "../objectId";
 /**
  * Eメール通知
  *
- * @export
+ *
  * @class EmailNotification
  * @extends {Notification}
  */

@@ -6,7 +6,7 @@ import QueueStatus from "../queueStatus";
 /**
  * オーソリ解除キュー
  *
- * @export
+ *
  * @class CancelAuthorizationQueue
  * @extends {Queue}
  * @template T

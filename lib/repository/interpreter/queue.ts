@@ -16,7 +16,7 @@ import PushNotificationQueue from "../../model/queue/pushNotification";
 import SettleAuthorizationQueue from "../../model/queue/settleAuthorization";
 import QueueGroup from "../../model/queueGroup";
 
-import QueueFactory from "../../factory/queue";
+import * as QueueFactory from "../../factory/queue";
 
 import QueueModel from "./mongoose/model/queue";
 

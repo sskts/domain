@@ -1,6 +1,6 @@
 import mongoose = require("mongoose");
 import monapt = require("monapt");
-import TransactionFactory from "../../factory/transaction";
+import * as TransactionFactory from "../../factory/transaction";
 import ObjectId from "../../model/objectId";
 import Transaction from "../../model/transaction";
 import TransactionRepository from "../transaction";

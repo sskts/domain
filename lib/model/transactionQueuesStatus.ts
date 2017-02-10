@@ -1,14 +1,15 @@
+/**
+ * 取引キューステータス
+ *
+ * @namespace TransactionQueuesStatus
+ */
+
 type TransactionQueuesStatus =
     "UNEXPORTED"
     | "EXPORTING"
     | "EXPORTED"
     ;
 
-/**
- *
- *
- * @namespace
- */
 namespace TransactionQueuesStatus {
     /** 未エクスポート */
     export const UNEXPORTED = "UNEXPORTED";

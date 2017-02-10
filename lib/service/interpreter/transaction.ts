@@ -18,11 +18,11 @@ import OwnerRepository from "../../repository/owner";
 import QueueRepository from "../../repository/queue";
 import TransactionRepository from "../../repository/transaction";
 
-import NotificationFactory from "../../factory/notification";
-import OwnerFactory from "../../factory/owner";
-import QueueFactory from "../../factory/queue";
-import TransactionFactory from "../../factory/transaction";
-import TransactionEventFactory from "../../factory/transactionEvent";
+import * as NotificationFactory from "../../factory/notification";
+import * as OwnerFactory from "../../factory/owner";
+import * as QueueFactory from "../../factory/queue";
+import * as TransactionFactory from "../../factory/transaction";
+import * as TransactionEventFactory from "../../factory/transactionEvent";
 
 export type TransactionAndQueueOperation<T> = (transastionRepository: TransactionRepository, queueRepository: QueueRepository) => Promise<T>;
 export type OwnerAndTransactionOperation<T> = (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<T>;

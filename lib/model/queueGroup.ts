@@ -1,3 +1,9 @@
+/**
+ * キューグループ
+ *
+ * @namespace QueueGroup
+ */
+
 type QueueGroup =
     "SETTLE_AUTHORIZATION"
     | "CANCEL_AUTHORIZATION"
@@ -5,11 +11,6 @@ type QueueGroup =
     | "DISABLE_TRANSACTION_INQUIRY"
     ;
 
-/**
- *
- *
- * @namespace
- */
 namespace QueueGroup {
     /** 資産移動 */
     export const SETTLE_AUTHORIZATION = "SETTLE_AUTHORIZATION";

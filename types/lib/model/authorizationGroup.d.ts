@@ -1,9 +1,9 @@
-declare type AuthorizationGroup = "ASSET" | "COA_SEAT_RESERVATION" | "GMO" | "MVTK";
 /**
+ * 承認グループ
  *
- *
- * @namespace
+ * @namespace AuthorizationGroup
  */
+declare type AuthorizationGroup = "ASSET" | "COA_SEAT_RESERVATION" | "GMO" | "MVTK";
 declare namespace AuthorizationGroup {
     /** 内部資産管理 */
     const ASSET = "ASSET";

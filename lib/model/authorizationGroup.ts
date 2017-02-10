@@ -1,3 +1,9 @@
+/**
+ * 承認グループ
+ *
+ * @namespace AuthorizationGroup
+ */
+
 type AuthorizationGroup =
     "ASSET"
     | "COA_SEAT_RESERVATION"
@@ -5,11 +11,6 @@ type AuthorizationGroup =
     | "MVTK"
     ;
 
-/**
- *
- *
- * @namespace
- */
 namespace AuthorizationGroup {
     /** 内部資産管理 */
     export const ASSET = "ASSET";

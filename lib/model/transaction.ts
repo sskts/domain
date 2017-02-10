@@ -19,26 +19,20 @@ import monapt = require("monapt");
 /**
  * 取引
  *
- * @export
  * @class Transaction
+ *
+ * @param {ObjectId} _id
+ * @param {TransactionStatus} status
+ * @param {Array<TransactionEvent>} events
+ * @param {Array<Owner>} owners
+ * @param {Array<Queue>} queues
+ * @param {Date} expired_at
+ * @param {string} inquiry_theater
+ * @param {string} inquiry_id
+ * @param {string} inquiry_pass
+ * @param {TransactionQueuesStatus} queues_status
  */
 export default class Transaction {
-    /**
-     * Creates an instance of Transaction.
-     *
-     * @param {ObjectId} _id
-     * @param {TransactionStatus} status
-     * @param {Array<TransactionEvent>} events
-     * @param {Array<Owner>} owners
-     * @param {Array<Queue>} queues
-     * @param {Date} expired_at
-     * @param {string} inquiry_theater
-     * @param {string} inquiry_id
-     * @param {string} inquiry_pass
-     * @param {TransactionQueuesStatus} queues_status
-     *
-     * @memberOf Transaction
-     */
     constructor(
         readonly _id: ObjectId,
         readonly status: TransactionStatus,

@@ -9,23 +9,23 @@ import OwnerRepository from "./repository/interpreter/owner";
 import QueueRepository from "./repository/interpreter/queue";
 import TheaterRepository from "./repository/interpreter/theater";
 import TransactionRepository from "./repository/interpreter/transaction";
-import AssetFactory from "./factory/asset";
-import AuthorizationFactory from "./factory/authorization";
-import FilmFactory from "./factory/film";
-import NotificationFactory from "./factory/notification";
-import ObjectIdFactory from "./factory/objectId";
-import OwnershipFactory from "./factory/ownership";
-import PerformanceFactory from "./factory/performance";
-import QueueFactory from "./factory/queue";
-import ScreenFactory from "./factory/screen";
-import TheaterFactory from "./factory/theater";
-import TransactionFactory from "./factory/transaction";
-import TransactionEventFactory from "./factory/transactionEvent";
-import TransactionInquiryKeyFactory from "./factory/transactionInquiryKey";
+import * as AssetFactory from "./factory/asset";
+import * as AuthorizationFactory from "./factory/authorization";
+import * as FilmFactory from "./factory/film";
+import * as NotificationFactory from "./factory/notification";
+import * as ObjectIdFactory from "./factory/objectId";
+import * as OwnershipFactory from "./factory/ownership";
+import * as PerformanceFactory from "./factory/performance";
+import * as QueueFactory from "./factory/queue";
+import * as ScreenFactory from "./factory/screen";
+import * as TheaterFactory from "./factory/theater";
+import * as TransactionFactory from "./factory/transaction";
+import * as TransactionEventFactory from "./factory/transactionEvent";
+import * as TransactionInquiryKeyFactory from "./factory/transactionInquiryKey";
 /**
  *
  *
- * @export
+ *
  * @returns {MasterService}
  */
 export declare function createMasterService(): MasterService;
@@ -36,7 +36,7 @@ export declare function createNotificationService(): NotificationService;
 /**
  *
  *
- * @export
+ *
  * @param {mongoose.Connection} connection
  * @returns {TheaterRepository}
  */

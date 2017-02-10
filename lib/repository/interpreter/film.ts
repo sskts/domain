@@ -1,6 +1,6 @@
 import mongoose = require("mongoose");
 import monapt = require("monapt");
-import FilmFactory from "../../factory/film";
+import * as FilmFactory from "../../factory/film";
 import Film from "../../model/film";
 import FilmRepository from "../film";
 import FilmModel from "./mongoose/model/film";

@@ -6,7 +6,7 @@ import TransactionEventGroup from "../transactionEventGroup";
 /**
  * 通知削除取引イベント
  *
- * @export
+ *
  * @class NotificationRemoveTransactionEvent
  * @extends {TransactionEvent}
  * @template T

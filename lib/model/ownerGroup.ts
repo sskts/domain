@@ -1,14 +1,15 @@
+/**
+ * 所有者グループ
+ *
+ * @namespace OwnerGroup
+ */
+
 type OwnerGroup =
     "ANONYMOUS"
     | "PROMOTER"
     | "MEMBER"
     ;
 
-/**
- *
- *
- * @namespace
- */
 namespace OwnerGroup {
     /** 匿名 */
     export const ANONYMOUS = "ANONYMOUS";

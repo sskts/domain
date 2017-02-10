@@ -7,8 +7,13 @@ import ObjectId from "./objectId";
  * 誰が、誰に対して、何の所有を、承認するのか
  * 何の所有を、というのは承認グループによって異なる
  *
- * @export
  * @class Authorization
+ *
+ * @param {ObjectId} _id
+ * @param {AuthorizationGroup} group 承認グループ
+ * @param {number} price 承認価格
+ * @param {ObjectId} owner_from 資産を差し出す所有者
+ * @param {ObjectId} owner_to 資産を受け取る所有者
  */
 export default class Authorization {
     readonly _id: ObjectId;
@@ -16,14 +21,5 @@ export default class Authorization {
     readonly price: number;
     readonly owner_from: ObjectId;
     readonly owner_to: ObjectId;
-    /**
-     * Creates an instance of Authorization.
-     *
-     * @param {ObjectId} _id
-     * @param {AuthorizationGroup} group 承認グループ
-     * @param {number} price 承認価格
-     * @param {ObjectId} owner_from 資産を差し出す所有者
-     * @param {ObjectId} owner_to 資産を受け取る所有者
-     */
     constructor(_id: ObjectId, group: AuthorizationGroup, price: number, owner_from: ObjectId, owner_to: ObjectId);
 }

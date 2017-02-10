@@ -5,7 +5,7 @@ import ObjectId from "../objectId";
 /**
  * COA座席仮予約
  *
- * @export
+ *
  * @class COASeatReservationAuthorization
  * @extends {Authorization}
  */

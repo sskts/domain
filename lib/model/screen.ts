@@ -4,7 +4,7 @@ import Theater from "./theater";
 /**
  * スクリーン座席
  *
- * @export
+ *
  * @interface Seat
  */
 export interface Seat {
@@ -19,7 +19,7 @@ export interface Seat {
 /**
  * スクリーンセクション
  *
- * @export
+ *
  * @interface Section
  */
 export interface Section {
@@ -49,21 +49,15 @@ export interface Section {
 /**
  * スクリーン
  *
- * @export
  * @class Screen
+ *
+ * @param {string} _id
+ * @param {Theater} theater 劇場
+ * @param {string} coa_screen_code COAスクリーンコード
+ * @param {MultilingualString} name スクリーン名称
+ * @param {Array<Section>} sections スクリーンセクションリスト
  */
 export default class Screen {
-    /**
-     * Creates an instance of Screen.
-     *
-     * @param {string} _id
-     * @param {Theater} theater 劇場
-     * @param {string} coa_screen_code COAスクリーンコード
-     * @param {MultilingualString} name スクリーン名称
-     * @param {Array<Section>} sections スクリーンセクションリスト
-     *
-     * @memberOf Screen
-     */
     constructor(
         readonly _id: string,
         readonly theater: Theater,

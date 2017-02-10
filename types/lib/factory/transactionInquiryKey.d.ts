@@ -1,14 +1,11 @@
-import TransactionInquiryKey from "../model/transactionInquiryKey";
 /**
  * 取引照会キーファクトリー
  *
- * @namespace
+ * @namespace TransactionInquiryKeyFactory
  */
-declare namespace TransactionInquiryKeyFactory {
-    function create(args: {
-        theater_code: string;
-        reserve_num: number;
-        tel: string;
-    }): TransactionInquiryKey;
-}
-export default TransactionInquiryKeyFactory;
+import TransactionInquiryKey from "../model/transactionInquiryKey";
+export declare function create(args: {
+    theater_code: string;
+    reserve_num: number;
+    tel: string;
+}): TransactionInquiryKey;

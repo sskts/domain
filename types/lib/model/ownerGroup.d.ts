@@ -1,9 +1,9 @@
-declare type OwnerGroup = "ANONYMOUS" | "PROMOTER" | "MEMBER";
 /**
+ * 所有者グループ
  *
- *
- * @namespace
+ * @namespace OwnerGroup
  */
+declare type OwnerGroup = "ANONYMOUS" | "PROMOTER" | "MEMBER";
 declare namespace OwnerGroup {
     /** 匿名 */
     const ANONYMOUS = "ANONYMOUS";

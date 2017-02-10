@@ -4,7 +4,7 @@ import Owner from "../owner";
 /**
  * 会員所有者
  *
- * @export
+ *
  * @class MemberOwner
  * @extends {Owner}
  */

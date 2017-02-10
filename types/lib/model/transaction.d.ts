@@ -13,8 +13,18 @@ import monapt = require("monapt");
 /**
  * 取引
  *
- * @export
  * @class Transaction
+ *
+ * @param {ObjectId} _id
+ * @param {TransactionStatus} status
+ * @param {Array<TransactionEvent>} events
+ * @param {Array<Owner>} owners
+ * @param {Array<Queue>} queues
+ * @param {Date} expired_at
+ * @param {string} inquiry_theater
+ * @param {string} inquiry_id
+ * @param {string} inquiry_pass
+ * @param {TransactionQueuesStatus} queues_status
  */
 export default class Transaction {
     readonly _id: ObjectId;
@@ -25,22 +35,6 @@ export default class Transaction {
     readonly expired_at: Date;
     readonly inquiry_key: TransactionInquiryKey | null;
     readonly queues_status: TransactionQueuesStatus;
-    /**
-     * Creates an instance of Transaction.
-     *
-     * @param {ObjectId} _id
-     * @param {TransactionStatus} status
-     * @param {Array<TransactionEvent>} events
-     * @param {Array<Owner>} owners
-     * @param {Array<Queue>} queues
-     * @param {Date} expired_at
-     * @param {string} inquiry_theater
-     * @param {string} inquiry_id
-     * @param {string} inquiry_pass
-     * @param {TransactionQueuesStatus} queues_status
-     *
-     * @memberOf Transaction
-     */
     constructor(_id: ObjectId, status: TransactionStatus, events: TransactionEvent[], owners: Owner[], queues: Queue[], expired_at: Date, inquiry_key: TransactionInquiryKey | null, queues_status: TransactionQueuesStatus);
     /**
      * COA座席仮予約を取得する

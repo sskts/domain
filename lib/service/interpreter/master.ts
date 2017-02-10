@@ -5,10 +5,10 @@ import ScreenRepository from "../../repository/screen";
 import TheaterRepository from "../../repository/theater";
 import MasterService from "../master";
 import COA = require("@motionpicture/coa-service");
-import FilmFactory from "../../factory/film";
-import PerformanceFactory from "../../factory/performance";
-import ScreenFactory from "../../factory/screen";
-import TheaterFactory from "../../factory/theater";
+import * as FilmFactory from "../../factory/film";
+import * as PerformanceFactory from "../../factory/performance";
+import * as ScreenFactory from "../../factory/screen";
+import * as TheaterFactory from "../../factory/theater";
 import Film from "../../model/film";
 import MultilingualString from "../../model/multilingualString";
 import Performance from "../../model/performance";
@@ -51,7 +51,7 @@ export interface SearchPerformancesResult {
 /**
  * マスタサービス
  *
- * @export
+ *
  * @class MasterServiceInterpreter
  * @implements {MasterService}
  */

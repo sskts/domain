@@ -1,19 +1,16 @@
 /// <reference types="mongoose" />
-import ObjectId from "../model/objectId";
 /**
  * オブジェクトIDファクトリー
  *
  * @namespace ObjectIdFactory
  */
-declare namespace ObjectIdFactory {
-    /**
-     * オブジェクトIDを作成する
-     *
-     * @export
-     * @returns {ObjectId}
-     *
-     * @memberof ObjectIdFactory
-     */
-    function create(id: string): ObjectId;
-}
-export default ObjectIdFactory;
+import ObjectId from "../model/objectId";
+/**
+ * オブジェクトIDを作成する
+ *
+ *
+ * @returns {ObjectId}
+ *
+ * @memberof ObjectIdFactory
+ */
+export declare function create(id: string): ObjectId;

@@ -9,7 +9,7 @@ import Ownership from "../ownership";
  *
  * TODO 座席予約資産の属性はこれでよいか
  *
- * @export
+ *
  * @class SeatReservationAsset
  * @extends {Asset}
  */

@@ -6,7 +6,7 @@ import QueueStatus from "../queueStatus";
 /**
  * プッシュ通知キュー
  *
- * @export
+ *
  * @class PushNotificationQueue
  * @extends {Queue}
  * @template T

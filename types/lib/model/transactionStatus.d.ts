@@ -1,9 +1,9 @@
-declare type TransactionStatus = "UNDERWAY" | "CLOSED" | "EXPIRED";
 /**
+ * 取引ステータス
  *
- *
- * @namespace
+ * @namespace TransactionStatus
  */
+declare type TransactionStatus = "UNDERWAY" | "CLOSED" | "EXPIRED";
 declare namespace TransactionStatus {
     /** 進行中 */
     const UNDERWAY = "UNDERWAY";

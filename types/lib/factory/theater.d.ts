@@ -1,18 +1,15 @@
-import MultilingualString from "../model/multilingualString";
-import Theater from "../model/theater";
-import COA = require("@motionpicture/coa-service");
 /**
  * 劇場ファクトリー
  *
- * @namespace
+ * @namespace TheaterFactory
  */
-declare namespace TheaterFactory {
-    function create(args: {
-        _id: string;
-        name: MultilingualString;
-        name_kana: string;
-        address: MultilingualString;
-    }): Theater;
-    function createFromCOA(theaterFromCOA: COA.findTheaterInterface.Result): Theater;
-}
-export default TheaterFactory;
+import MultilingualString from "../model/multilingualString";
+import Theater from "../model/theater";
+import COA = require("@motionpicture/coa-service");
+export declare function create(args: {
+    _id: string;
+    name: MultilingualString;
+    name_kana: string;
+    address: MultilingualString;
+}): Theater;
+export declare function createFromCOA(theaterFromCOA: COA.findTheaterInterface.Result): Theater;

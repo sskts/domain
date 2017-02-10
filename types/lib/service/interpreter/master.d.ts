@@ -42,7 +42,7 @@ export interface SearchPerformancesResult {
 /**
  * マスタサービス
  *
- * @export
+ *
  * @class MasterServiceInterpreter
  * @implements {MasterService}
  */

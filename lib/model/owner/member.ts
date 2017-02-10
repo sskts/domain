@@ -5,7 +5,7 @@ import OwnerGroup from "../ownerGroup";
 /**
  * 会員所有者
  *
- * @export
+ *
  * @class MemberOwner
  * @extends {Owner}
  */

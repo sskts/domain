@@ -6,7 +6,7 @@ import TransactionEventGroup from "../transactionEventGroup";
 /**
  * オーソリ削除取引イベント
  *
- * @export
+ *
  * @class Unauthorize
  * @extends {TransactionEvent}
  */

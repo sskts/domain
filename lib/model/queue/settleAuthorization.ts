@@ -7,7 +7,7 @@ import QueueStatus from "../queueStatus";
 /**
  * 資産移動キュー
  *
- * @export
+ *
  * @class SettleAuthorizationQueue
  * @extends {Queue}
  * @template T

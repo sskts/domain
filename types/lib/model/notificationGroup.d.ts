@@ -1,9 +1,9 @@
-declare type NotificationGroup = "EMAIL";
 /**
+ * 通知グループ
  *
- *
- * @namespace
+ * @namespace NotificationGroup
  */
+declare type NotificationGroup = "EMAIL";
 declare namespace NotificationGroup {
     /** Eメール */
     const EMAIL = "EMAIL";

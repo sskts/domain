@@ -1,9 +1,9 @@
-declare type TransactionQueuesStatus = "UNEXPORTED" | "EXPORTING" | "EXPORTED";
 /**
+ * 取引キューステータス
  *
- *
- * @namespace
+ * @namespace TransactionQueuesStatus
  */
+declare type TransactionQueuesStatus = "UNEXPORTED" | "EXPORTING" | "EXPORTED";
 declare namespace TransactionQueuesStatus {
     /** 未エクスポート */
     const UNEXPORTED = "UNEXPORTED";

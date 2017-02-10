@@ -5,7 +5,7 @@ import OwnerGroup from "../ownerGroup";
 /**
  * 匿名所有者
  *
- * @export
+ *
  * @class AnonymousOwner
  * @extends {Owner}
  */

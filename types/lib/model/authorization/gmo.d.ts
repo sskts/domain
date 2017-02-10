@@ -4,7 +4,7 @@ import ObjectId from "../objectId";
 /**
  * GMOオーソリ
  *
- * @export
+ *
  * @class GMOAuthorization
  * @extends {Authorization}
  */
