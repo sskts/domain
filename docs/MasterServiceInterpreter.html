@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>佐々木興行ドメインライブラリ for node.js Class: MasterServiceInterpreter</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.cosmo.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">佐々木興行ドメインライブラリ for node.js</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="namespaces.list.html" class="dropdown-toggle" data-toggle="dropdown">Namespaces<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="AssetFactory.html">AssetFactory</a></li><li><a href="AssetGroup.html">AssetGroup</a></li><li><a href="AuthorizationFactory.html">AuthorizationFactory</a></li><li><a href="AuthorizationGroup.html">AuthorizationGroup</a></li><li><a href="FilmFactory.html">FilmFactory</a></li><li><a href="NotificationFactory.html">NotificationFactory</a></li><li><a href="NotificationGroup.html">NotificationGroup</a></li><li><a href="ObjectIdFactory.html">ObjectIdFactory</a></li><li><a href="OwnerFactory.html">OwnerFactory</a></li><li><a href="OwnerGroup.html">OwnerGroup</a></li><li><a href="OwnershipFactory.html">OwnershipFactory</a></li><li><a href="PerformanceFactory.html">PerformanceFactory</a></li><li><a href="QueueFactory.html">QueueFactory</a></li><li><a href="QueueGroup.html">QueueGroup</a></li><li><a href="ScreenFactory.html">ScreenFactory</a></li><li><a href="TheaterFactory.html">TheaterFactory</a></li><li><a href="TransactionEventFactory.html">TransactionEventFactory</a></li><li><a href="TransactionEventGroup.html">TransactionEventGroup</a></li><li><a href="TransactionFactory.html">TransactionFactory</a></li><li><a href="TransactionInquiryKeyFactory.html">TransactionInquiryKeyFactory</a></li><li><a href="TransactionQueuesStatus.html">TransactionQueuesStatus</a></li><li><a href="TransactionStatus.html">TransactionStatus</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="AnonymousOwner.html">AnonymousOwner</a></li><li><a href="AnonymousOwner.AnonymousOwner.html">AnonymousOwner.AnonymousOwner</a></li><li><a href="Asset.html">Asset</a></li><li><a href="AssetAuthorization.html">AssetAuthorization</a></li><li><a href="AssetAuthorization.AssetAuthorization.html">AssetAuthorization.AssetAuthorization</a></li><li><a href="Authorization.html">Authorization</a></li><li><a href="AuthorizeTransactionEvent.html">AuthorizeTransactionEvent</a></li><li><a href="AuthorizeTransactionEvent.AuthorizeTransactionEvent.html">AuthorizeTransactionEvent.AuthorizeTransactionEvent</a></li><li><a href="CancelAuthorizationQueue.html">CancelAuthorizationQueue</a></li><li><a href="CancelAuthorizationQueue.CancelAuthorizationQueue.html">CancelAuthorizationQueue.CancelAuthorizationQueue</a></li><li><a href="COASeatReservationAuthorization.html">COASeatReservationAuthorization</a></li><li><a href="COASeatReservationAuthorization.COASeatReservationAuthorization.html">COASeatReservationAuthorization.COASeatReservationAuthorization</a></li><li><a href="DisableTransactionInquiryQueue.html">DisableTransactionInquiryQueue</a></li><li><a href="DisableTransactionInquiryQueue.DisableTransactionInquiryQueue.html">DisableTransactionInquiryQueue.DisableTransactionInquiryQueue</a></li><li><a href="EmailNotification.html">EmailNotification</a></li><li><a href="EmailNotification.EmailNotification.html">EmailNotification.EmailNotification</a></li><li><a href="Film.html">Film</a></li><li><a href="GMOAuthorization.html">GMOAuthorization</a></li><li><a href="GMOAuthorization.GMOAuthorization.html">GMOAuthorization.GMOAuthorization</a></li><li><a href="MasterServiceInterpreter.html">MasterServiceInterpreter</a></li><li><a href="MemberOwner.html">MemberOwner</a></li><li><a href="MemberOwner.MemberOwner.html">MemberOwner.MemberOwner</a></li><li><a href="Notification.html">Notification</a></li><li><a href="NotificationAddTransactionEvent.html">NotificationAddTransactionEvent</a></li><li><a href="NotificationAddTransactionEvent.NotificationAddTransactionEvent.html">NotificationAddTransactionEvent.NotificationAddTransactionEvent</a></li><li><a href="NotificationRemoveTransactionEvent.html">NotificationRemoveTransactionEvent</a></li><li><a href="NotificationRemoveTransactionEvent.NotificationRemoveTransactionEvent.html">NotificationRemoveTransactionEvent.NotificationRemoveTransactionEvent</a></li><li><a href="NotificationServiceInterpreter.html">NotificationServiceInterpreter</a></li><li><a href="Owner.html">Owner</a></li><li><a href="Ownership.html">Ownership</a></li><li><a href="Ownership.Ownership.html">Ownership.Ownership</a></li><li><a href="Performance.html">Performance</a></li><li><a href="Performance.Performance.html">Performance.Performance</a></li><li><a href="PromoterOwner.html">PromoterOwner</a></li><li><a href="PromoterOwner.PromoterOwner.html">PromoterOwner.PromoterOwner</a></li><li><a href="PushNotificationQueue.html">PushNotificationQueue</a></li><li><a href="PushNotificationQueue.PushNotificationQueue.html">PushNotificationQueue.PushNotificationQueue</a></li><li><a href="Queue.html">Queue</a></li><li><a href="SalesServiceInterpreter.html">SalesServiceInterpreter</a></li><li><a href="Screen.html">Screen</a></li><li><a href="Screen.Screen.html">Screen.Screen</a></li><li><a href="SeatReservationAsset.html">SeatReservationAsset</a></li><li><a href="SeatReservationAsset.SeatReservationAsset.html">SeatReservationAsset.SeatReservationAsset</a></li><li><a href="SettleAuthorizationQueue.html">SettleAuthorizationQueue</a></li><li><a href="SettleAuthorizationQueue.SettleAuthorizationQueue.html">SettleAuthorizationQueue.SettleAuthorizationQueue</a></li><li><a href="StockServiceInterpreter.html">StockServiceInterpreter</a></li><li><a href="Theater.html">Theater</a></li><li><a href="Theater.Theater.html">Theater.Theater</a></li><li><a href="Transaction.html">Transaction</a></li><li><a href="Transaction.Transaction.html">Transaction.Transaction</a></li><li><a href="TransactionEvent.html">TransactionEvent</a></li><li><a href="TransactionEvent.TransactionEvent.html">TransactionEvent.TransactionEvent</a></li><li><a href="TransactionServiceInterpreter.html">TransactionServiceInterpreter</a></li><li><a href="Unauthorize.html">Unauthorize</a></li><li><a href="Unauthorize.Unauthorize.html">Unauthorize.Unauthorize</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#createMasterService">createMasterService</a></li><li><a href="global.html#createOwnerRepository">createOwnerRepository</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-8">
+	
+		<div id="main">
+			
+
+	<h1 class="page-title">Class: MasterServiceInterpreter</h1>
+<section>
+
+<header>
+    
+        <h2>
+        MasterServiceInterpreter
+        </h2>
+        
+    
+</header>
+
+
+<article>
+    <div class="container-overview">
+    
+        
+<hr>
+<dt>
+    <h4 class="name" id="MasterServiceInterpreter"><span class="type-signature"></span>new MasterServiceInterpreter()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>マスタサービス</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+    <dt class="implements">Implements:</dt>
+    <dd class="implements"><ul>
+        
+            <li>MasterService</li>
+        
+    </ul></dd>
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="service_interpreter_master.js.html">service/interpreter/master.js</a>,
+				 <a href="service_interpreter_master.js.html#sunlight-1-line-15">line 15</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<hr>
+<dt>
+    <h4 class="name" id="findFilm"><span class="type-signature"></span>findFilm(filmId)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>IDで作品検索</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>filmId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="service_interpreter_master.js.html">service/interpreter/master.js</a>,
+				 <a href="service_interpreter_master.js.html#sunlight-1-line-196">line 196</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">FilmOperation.&lt;monapt.Option.&lt;<a href="Film.html">Film</a>>></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="findPerformance"><span class="type-signature"></span>findPerformance(performanceId)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>IDでパフォーマンス検索</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>performanceId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="service_interpreter_master.js.html">service/interpreter/master.js</a>,
+				 <a href="service_interpreter_master.js.html#sunlight-1-line-222">line 222</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">PerformanceOperation.&lt;monapt.Option.&lt;<a href="Performance.html">Performance</a>>></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="findScreen"><span class="type-signature"></span>findScreen(screenId)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>screenId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="service_interpreter_master.js.html">service/interpreter/master.js</a>,
+				 <a href="service_interpreter_master.js.html#sunlight-1-line-209">line 209</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">ScreenOperation.&lt;monapt.Option.&lt;<a href="Screen.html">Screen</a>>></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="findTheater"><span class="type-signature"></span>findTheater(theaterId)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>IDで劇場検索</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>theaterId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="service_interpreter_master.js.html">service/interpreter/master.js</a>,
+				 <a href="service_interpreter_master.js.html#sunlight-1-line-183">line 183</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">TheaterOperation.&lt;monapt.Option.&lt;<a href="Theater.html">Theater</a>>></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="importFilms"><span class="type-signature"></span>importFilms(theaterCode)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>作品インポート</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>theaterCode</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="service_interpreter_master.js.html">service/interpreter/master.js</a>,
+				 <a href="service_interpreter_master.js.html#sunlight-1-line-50">line 50</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">TheaterAndFilmOperation.&lt;void></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="importPerformances"><span class="type-signature"></span>importPerformances(theaterCode, dayStart, dayEnd)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>パフォーマンスインポート</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>theaterCode</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dayStart</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dayEnd</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="service_interpreter_master.js.html">service/interpreter/master.js</a>,
+				 <a href="service_interpreter_master.js.html#sunlight-1-line-102">line 102</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">FilmAndScreenAndPerformanceOperation.&lt;void></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="importScreens"><span class="type-signature"></span>importScreens(theaterCode)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>スクリーンインポート</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>theaterCode</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="service_interpreter_master.js.html">service/interpreter/master.js</a>,
+				 <a href="service_interpreter_master.js.html#sunlight-1-line-75">line 75</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">TheaterAndScreenOperation.&lt;void></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="importTheater"><span class="type-signature"></span>importTheater(theaterCode)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>劇場インポート</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>theaterCode</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="service_interpreter_master.js.html">service/interpreter/master.js</a>,
+				 <a href="service_interpreter_master.js.html#sunlight-1-line-31">line 31</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">TheaterOperation.&lt;void></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="searchPerformances"><span class="type-signature"></span>searchPerformances(conditions)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>パフォーマンス検索</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>conditions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">SearchPerformancesConditions</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="service_interpreter_master.js.html">service/interpreter/master.js</a>,
+				 <a href="service_interpreter_master.js.html#sunlight-1-line-138">line 138</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">PerformanceOperation.&lt;Array.&lt;SearchPerformancesResult>></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        </dl>
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+		<div class="col-md-3">
+			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
+		</div>
+	
+
+</div>
+</div>
+
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
+
+<footer>
+
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a>
+	
+		on Fri Feb 10th 2017
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
+
+
+</body>
+</html>

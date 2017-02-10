@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>佐々木興行ドメインライブラリ for node.js Class: NotificationRemoveTransactionEvent</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.cosmo.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">佐々木興行ドメインライブラリ for node.js</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="namespaces.list.html" class="dropdown-toggle" data-toggle="dropdown">Namespaces<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="AssetFactory.html">AssetFactory</a></li><li><a href="AssetGroup.html">AssetGroup</a></li><li><a href="AuthorizationFactory.html">AuthorizationFactory</a></li><li><a href="AuthorizationGroup.html">AuthorizationGroup</a></li><li><a href="FilmFactory.html">FilmFactory</a></li><li><a href="NotificationFactory.html">NotificationFactory</a></li><li><a href="NotificationGroup.html">NotificationGroup</a></li><li><a href="ObjectIdFactory.html">ObjectIdFactory</a></li><li><a href="OwnerFactory.html">OwnerFactory</a></li><li><a href="OwnerGroup.html">OwnerGroup</a></li><li><a href="OwnershipFactory.html">OwnershipFactory</a></li><li><a href="PerformanceFactory.html">PerformanceFactory</a></li><li><a href="QueueFactory.html">QueueFactory</a></li><li><a href="QueueGroup.html">QueueGroup</a></li><li><a href="ScreenFactory.html">ScreenFactory</a></li><li><a href="TheaterFactory.html">TheaterFactory</a></li><li><a href="TransactionEventFactory.html">TransactionEventFactory</a></li><li><a href="TransactionEventGroup.html">TransactionEventGroup</a></li><li><a href="TransactionFactory.html">TransactionFactory</a></li><li><a href="TransactionInquiryKeyFactory.html">TransactionInquiryKeyFactory</a></li><li><a href="TransactionQueuesStatus.html">TransactionQueuesStatus</a></li><li><a href="TransactionStatus.html">TransactionStatus</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="AnonymousOwner.html">AnonymousOwner</a></li><li><a href="AnonymousOwner.AnonymousOwner.html">AnonymousOwner.AnonymousOwner</a></li><li><a href="Asset.html">Asset</a></li><li><a href="AssetAuthorization.html">AssetAuthorization</a></li><li><a href="AssetAuthorization.AssetAuthorization.html">AssetAuthorization.AssetAuthorization</a></li><li><a href="Authorization.html">Authorization</a></li><li><a href="AuthorizeTransactionEvent.html">AuthorizeTransactionEvent</a></li><li><a href="AuthorizeTransactionEvent.AuthorizeTransactionEvent.html">AuthorizeTransactionEvent.AuthorizeTransactionEvent</a></li><li><a href="CancelAuthorizationQueue.html">CancelAuthorizationQueue</a></li><li><a href="CancelAuthorizationQueue.CancelAuthorizationQueue.html">CancelAuthorizationQueue.CancelAuthorizationQueue</a></li><li><a href="COASeatReservationAuthorization.html">COASeatReservationAuthorization</a></li><li><a href="COASeatReservationAuthorization.COASeatReservationAuthorization.html">COASeatReservationAuthorization.COASeatReservationAuthorization</a></li><li><a href="DisableTransactionInquiryQueue.html">DisableTransactionInquiryQueue</a></li><li><a href="DisableTransactionInquiryQueue.DisableTransactionInquiryQueue.html">DisableTransactionInquiryQueue.DisableTransactionInquiryQueue</a></li><li><a href="EmailNotification.html">EmailNotification</a></li><li><a href="EmailNotification.EmailNotification.html">EmailNotification.EmailNotification</a></li><li><a href="Film.html">Film</a></li><li><a href="GMOAuthorization.html">GMOAuthorization</a></li><li><a href="GMOAuthorization.GMOAuthorization.html">GMOAuthorization.GMOAuthorization</a></li><li><a href="MasterServiceInterpreter.html">MasterServiceInterpreter</a></li><li><a href="MemberOwner.html">MemberOwner</a></li><li><a href="MemberOwner.MemberOwner.html">MemberOwner.MemberOwner</a></li><li><a href="Notification.html">Notification</a></li><li><a href="NotificationAddTransactionEvent.html">NotificationAddTransactionEvent</a></li><li><a href="NotificationAddTransactionEvent.NotificationAddTransactionEvent.html">NotificationAddTransactionEvent.NotificationAddTransactionEvent</a></li><li><a href="NotificationRemoveTransactionEvent.html">NotificationRemoveTransactionEvent</a></li><li><a href="NotificationRemoveTransactionEvent.NotificationRemoveTransactionEvent.html">NotificationRemoveTransactionEvent.NotificationRemoveTransactionEvent</a></li><li><a href="NotificationServiceInterpreter.html">NotificationServiceInterpreter</a></li><li><a href="Owner.html">Owner</a></li><li><a href="Ownership.html">Ownership</a></li><li><a href="Ownership.Ownership.html">Ownership.Ownership</a></li><li><a href="Performance.html">Performance</a></li><li><a href="Performance.Performance.html">Performance.Performance</a></li><li><a href="PromoterOwner.html">PromoterOwner</a></li><li><a href="PromoterOwner.PromoterOwner.html">PromoterOwner.PromoterOwner</a></li><li><a href="PushNotificationQueue.html">PushNotificationQueue</a></li><li><a href="PushNotificationQueue.PushNotificationQueue.html">PushNotificationQueue.PushNotificationQueue</a></li><li><a href="Queue.html">Queue</a></li><li><a href="SalesServiceInterpreter.html">SalesServiceInterpreter</a></li><li><a href="Screen.html">Screen</a></li><li><a href="Screen.Screen.html">Screen.Screen</a></li><li><a href="SeatReservationAsset.html">SeatReservationAsset</a></li><li><a href="SeatReservationAsset.SeatReservationAsset.html">SeatReservationAsset.SeatReservationAsset</a></li><li><a href="SettleAuthorizationQueue.html">SettleAuthorizationQueue</a></li><li><a href="SettleAuthorizationQueue.SettleAuthorizationQueue.html">SettleAuthorizationQueue.SettleAuthorizationQueue</a></li><li><a href="StockServiceInterpreter.html">StockServiceInterpreter</a></li><li><a href="Theater.html">Theater</a></li><li><a href="Theater.Theater.html">Theater.Theater</a></li><li><a href="Transaction.html">Transaction</a></li><li><a href="Transaction.Transaction.html">Transaction.Transaction</a></li><li><a href="TransactionEvent.html">TransactionEvent</a></li><li><a href="TransactionEvent.TransactionEvent.html">TransactionEvent.TransactionEvent</a></li><li><a href="TransactionServiceInterpreter.html">TransactionServiceInterpreter</a></li><li><a href="Unauthorize.html">Unauthorize</a></li><li><a href="Unauthorize.Unauthorize.html">Unauthorize.Unauthorize</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#createMasterService">createMasterService</a></li><li><a href="global.html#createOwnerRepository">createOwnerRepository</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-8">
+	
+		<div id="main">
+			
+
+	<h1 class="page-title">Class: NotificationRemoveTransactionEvent</h1>
+<section>
+
+<header>
+    
+        <h2>
+        NotificationRemoveTransactionEvent
+        </h2>
+        
+    
+</header>
+
+
+<article>
+    <div class="container-overview">
+    
+        
+<hr>
+<dt>
+    <h4 class="name" id="NotificationRemoveTransactionEvent"><span class="type-signature"></span>new NotificationRemoveTransactionEvent()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>通知削除取引イベント</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="model_transactionEvent_notificationRemove.js.html">model/transactionEvent/notificationRemove.js</a>,
+				 <a href="model_transactionEvent_notificationRemove.js.html#sunlight-1-line-4">line 4</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+    
+    </div>
+
+    
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="TransactionEvent.html">TransactionEvent</a></li>
+    </ul>
+
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="NotificationRemoveTransactionEvent.NotificationRemoveTransactionEvent.html">NotificationRemoveTransactionEvent</a></dt>
+            <dd></dd>
+        </dl>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+		<div class="col-md-3">
+			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
+		</div>
+	
+
+</div>
+</div>
+
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
+
+<footer>
+
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a>
+	
+		on Fri Feb 10th 2017
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
+
+
+</body>
+</html>
