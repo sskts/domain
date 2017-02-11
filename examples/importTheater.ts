@@ -12,7 +12,7 @@ async function main() {
         mongoose.Promise = global.Promise;
         mongoose.connect(process.env.MONGOLAB_URI);
 
-        await SSKTS.createMasterService().importTheater("001")(SSKTS.createTheaterRepository(mongoose.connection));
+        await SSKTS.createMasterService().importTheater("118")(SSKTS.createTheaterRepository(mongoose.connection));
     } catch (error) {
         console.error(error);
     }

@@ -13,9 +13,9 @@ export declare type TheaterOperation<T> = (repository: TheaterRepository) => Pro
 export declare type FilmOperation<T> = (repository: FilmRepository) => Promise<T>;
 export declare type ScreenOperation<T> = (repository: ScreenRepository) => Promise<T>;
 export declare type PerformanceOperation<T> = (repository: PerformanceRepository) => Promise<T>;
-export declare type TheaterAndScreenOperation<T> = (theaterRepository: TheaterRepository, screenRepository: ScreenRepository) => Promise<T>;
-export declare type TheaterAndFilmOperation<T> = (theaterRepository: TheaterRepository, filmRepository: FilmRepository) => Promise<T>;
-export declare type FilmAndScreenAndPerformanceOperation<T> = (filmRepository: FilmRepository, screenRepository: ScreenRepository, performanceRepository: PerformanceRepository) => Promise<T>;
+export declare type TheaterAndScreenOperation<T> = (theaterRepo: TheaterRepository, screenRepo: ScreenRepository) => Promise<T>;
+export declare type TheaterAndFilmOperation<T> = (theaterRepo: TheaterRepository, filmRepo: FilmRepository) => Promise<T>;
+export declare type FilmAndScreenAndPerformanceOperation<T> = (filmRepo: FilmRepository, screenRepo: ScreenRepository, performanceRepo: PerformanceRepository) => Promise<T>;
 export interface SearchPerformancesConditions {
     day?: string;
     theater?: string;

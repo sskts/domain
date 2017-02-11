@@ -19,10 +19,12 @@ export type TheaterOperation<T> = (repository: TheaterRepository) => Promise<T>;
 export type FilmOperation<T> = (repository: FilmRepository) => Promise<T>;
 export type ScreenOperation<T> = (repository: ScreenRepository) => Promise<T>;
 export type PerformanceOperation<T> = (repository: PerformanceRepository) => Promise<T>;
-export type TheaterAndScreenOperation<T> = (theaterRepository: TheaterRepository, screenRepository: ScreenRepository) => Promise<T>;
-export type TheaterAndFilmOperation<T> = (theaterRepository: TheaterRepository, filmRepository: FilmRepository) => Promise<T>;
+export type TheaterAndScreenOperation<T> =
+    (theaterRepo: TheaterRepository, screenRepo: ScreenRepository) => Promise<T>;
+export type TheaterAndFilmOperation<T> =
+    (theaterRepo: TheaterRepository, filmRepo: FilmRepository) => Promise<T>;
 export type FilmAndScreenAndPerformanceOperation<T> =
-    (filmRepository: FilmRepository, screenRepository: ScreenRepository, performanceRepository: PerformanceRepository) => Promise<T>;
+    (filmRepo: FilmRepository, screenRepo: ScreenRepository, performanceRepo: PerformanceRepository) => Promise<T>;
 
 export interface SearchPerformancesConditions {
     day?: string;
@@ -86,7 +88,7 @@ export default class MasterServiceInterpreter implements MasterService {
      * @memberOf MasterServiceInterpreter
      */
     public importFilms(theaterCode: string): TheaterAndFilmOperation<void> {
-        return async (theaterRepository: TheaterRepository, filmRepository: FilmRepository) => {
+        return async (theaterRepository: TheaterRepository, filmRepo: FilmRepository) => {
             // 劇場取得
             const optionTheater = await theaterRepository.findById(theaterCode);
             if (optionTheater.isEmpty) throw new Error("theater not found.");
@@ -99,7 +101,7 @@ export default class MasterServiceInterpreter implements MasterService {
             // 永続化
             await Promise.all(films.map(async (filmFromCOA) => {
                 const film = await FilmFactory.createFromCOA(filmFromCOA)(optionTheater.get());
-                await filmRepository.store(film);
+                await filmRepo.store(film);
             }));
         };
     }
@@ -113,7 +115,7 @@ export default class MasterServiceInterpreter implements MasterService {
      * @memberOf MasterServiceInterpreter
      */
     public importScreens(theaterCode: string): TheaterAndScreenOperation<void> {
-        return async (theaterRepository: TheaterRepository, screenRepository: ScreenRepository) => {
+        return async (theaterRepository: TheaterRepository, screenRepo: ScreenRepository) => {
             // 劇場取得
             const optionTheater = await theaterRepository.findById(theaterCode);
             if (optionTheater.isEmpty) throw new Error("theater not found.");
@@ -126,7 +128,7 @@ export default class MasterServiceInterpreter implements MasterService {
             // 永続化
             await Promise.all(screens.map(async (screenFromCOA) => {
                 const screen = await ScreenFactory.createFromCOA(screenFromCOA)(optionTheater.get());
-                await screenRepository.store(screen);
+                await screenRepo.store(screen);
             }));
         };
     }
@@ -141,10 +143,15 @@ export default class MasterServiceInterpreter implements MasterService {
      *
      * @memberOf MasterServiceInterpreter
      */
-    public importPerformances(theaterCode: string, dayStart: string, dayEnd: string): FilmAndScreenAndPerformanceOperation<void> {
-        return async (filmRepository: FilmRepository, screenRepository: ScreenRepository, performanceRepository: PerformanceRepository) => {
+    public importPerformances(theaterCode: string, dayStart: string, dayEnd: string):
+        FilmAndScreenAndPerformanceOperation<void> {
+        return async (
+            filmRepo: FilmRepository,
+            screenRepo: ScreenRepository,
+            performanceRepo: PerformanceRepository
+        ) => {
             // スクリーン取得
-            const screens = await screenRepository.findByTheater({ theater_id: theaterCode });
+            const screens = await screenRepo.findByTheater({ theater_id: theaterCode });
 
             // COAからパフォーマンス取得
             const performances = await COA.findPerformancesByTheaterCodeInterface.call({
@@ -163,12 +170,12 @@ export default class MasterServiceInterpreter implements MasterService {
                 if (!_screen) throw new Error(("screen not found."));
 
                 // 作品取得
-                const optionFilm = await filmRepository.findById(filmId);
+                const optionFilm = await filmRepo.findById(filmId);
                 if (optionFilm.isEmpty) throw new Error("film not found.");
 
                 // 永続化
                 const performance = PerformanceFactory.createFromCOA(performanceFromCOA)(_screen, optionFilm.get());
-                await performanceRepository.store(performance);
+                await performanceRepo.store(performance);
             }));
         };
     }
@@ -181,8 +188,9 @@ export default class MasterServiceInterpreter implements MasterService {
      *
      * @memberOf MasterServiceInterpreter
      */
-    public searchPerformances(conditions: SearchPerformancesConditions): PerformanceOperation<SearchPerformancesResult[]> {
-        return async (performanceRepository: PerformanceRepository): Promise<SearchPerformancesResult[]> => {
+    public searchPerformances(conditions: SearchPerformancesConditions):
+        PerformanceOperation<SearchPerformancesResult[]> {
+        return async (performanceRepo: PerformanceRepository): Promise<SearchPerformancesResult[]> => {
             // 検索条件を作成
             const andConditions: Object[] = [
                 { _id: { $ne: null } },
@@ -196,7 +204,7 @@ export default class MasterServiceInterpreter implements MasterService {
                 andConditions.push({ theater: conditions.theater });
             }
 
-            const performances = await performanceRepository.find({ $and: andConditions });
+            const performances = await performanceRepo.find({ $and: andConditions });
 
             // TODO 空席状況を追加
 

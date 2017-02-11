@@ -4,6 +4,6 @@
     // ファイルとフォルダーを除外するための glob パターンを構成します。
     "files.exclude": {
         "lib/**/*.js": true,
-        "**/*.d.ts": true
+        // "**/*.d.ts": true
     }
 }

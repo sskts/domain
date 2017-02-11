@@ -14,10 +14,12 @@ export type TheaterOperation<T> = (repository: TheaterRepository) => Promise<T>;
 export type FilmOperation<T> = (repository: FilmRepository) => Promise<T>;
 export type ScreenOperation<T> = (repository: ScreenRepository) => Promise<T>;
 export type PerformanceOperation<T> = (repository: PerformanceRepository) => Promise<T>;
-export type TheaterAndScreenOperation<T> = (theaterRepository: TheaterRepository, screenRepository: ScreenRepository) => Promise<T>;
-export type TheaterAndFilmOperation<T> = (theaterRepository: TheaterRepository, filmRepository: FilmRepository) => Promise<T>;
+export type TheaterAndScreenOperation<T> =
+    (theaterRepo: TheaterRepository, screenRepo: ScreenRepository) => Promise<T>;
+export type TheaterAndFilmOperation<T> =
+    (theaterRepo: TheaterRepository, filmRepo: FilmRepository) => Promise<T>;
 export type FilmAndScreenAndPerformanceOperation<T> =
-    (filmRepository: FilmRepository, screenRepository: ScreenRepository, performanceRepository: PerformanceRepository) => Promise<T>;
+    (filmRepo: FilmRepository, screenRepo: ScreenRepository, performanceRepo: PerformanceRepository) => Promise<T>;
 
 export interface SearchPerformancesConditions {
     day?: string;
@@ -57,9 +59,8 @@ interface MasterService {
     /** スクリーンインポート */
     importScreens(theaterCode: string): TheaterAndScreenOperation<void>;
     /** パフォーマンスインポート */
-    importPerformances(theaterCode: string, dayStart: string, dayEnd: string): FilmAndScreenAndPerformanceOperation<void>;
-    // importSeatAvailability(theaterCode: string, dayStart: string, dayEnd: string): (repository: TheaterRepository) => Promise<void>;
-    // importTickets(theaterCode: string): (repository: TheaterRepository) => Promise<void>;
+    importPerformances(theaterCode: string, dayStart: string, dayEnd: string):
+        FilmAndScreenAndPerformanceOperation<void>;
     /** パフォーマンス検索 */
     searchPerformances(conditions: SearchPerformancesConditions): PerformanceOperation<SearchPerformancesResult[]>;
     /** 劇場詳細 */

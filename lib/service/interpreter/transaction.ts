@@ -24,9 +24,11 @@ import * as QueueFactory from "../../factory/queue";
 import * as TransactionFactory from "../../factory/transaction";
 import * as TransactionEventFactory from "../../factory/transactionEvent";
 
-export type TransactionAndQueueOperation<T> = (transastionRepository: TransactionRepository, queueRepository: QueueRepository) => Promise<T>;
-export type OwnerAndTransactionOperation<T> = (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<T>;
-export type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>;
+export type TransactionAndQueueOperation<T> =
+    (transactionRepo: TransactionRepository, queueRepo: QueueRepository) => Promise<T>;
+export type OwnerAndTransactionOperation<T> =
+    (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => Promise<T>;
+export type TransactionOperation<T> = (transactionRepo: TransactionRepository) => Promise<T>;
 
 /**
  * 取引サービス
@@ -74,9 +76,9 @@ export default class TransactionServiceInterpreter implements TransactionService
          */
         tel?: string,
     }): OwnerAndTransactionOperation<void> {
-        return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => {
+        return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
             // 取引取得
-            const optionTransaction = await transactionRepository.findById(ObjectId(args.transaction_id));
+            const optionTransaction = await transactionRepo.findById(ObjectId(args.transaction_id));
             if (optionTransaction.isEmpty) throw new Error(`transaction[${ObjectId(args.transaction_id)}] not found.`);
             const transaction = optionTransaction.get();
 
@@ -86,7 +88,7 @@ export default class TransactionServiceInterpreter implements TransactionService
             if (!anonymousOwner) throw new Error("anonymous owner not found.");
 
             // 永続化
-            const option = await ownerRepository.findOneAndUpdate({
+            const option = await ownerRepo.findOneAndUpdate({
                 _id: anonymousOwner._id,
             }, {
                     $set: {
@@ -109,8 +111,8 @@ export default class TransactionServiceInterpreter implements TransactionService
      * @memberOf TransactionServiceInterpreter
      */
     public findById(transactionId: string): TransactionOperation<monapt.Option<Transaction>> {
-        return async (transactionRepository: TransactionRepository) => {
-            return await transactionRepository.findById(ObjectId(transactionId));
+        return async (transactionRepo: TransactionRepository) => {
+            return await transactionRepo.findById(ObjectId(transactionId));
         };
     }
 
@@ -123,14 +125,14 @@ export default class TransactionServiceInterpreter implements TransactionService
      * @memberOf TransactionServiceInterpreter
      */
     public start(expiredAt: Date) {
-        return async (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => {
+        return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
             // 一般所有者作成
             const anonymousOwner = OwnerFactory.createAnonymous({
                 _id: ObjectId(),
             });
 
             // 興行主取得
-            const option = await ownerRepository.findPromoter();
+            const option = await ownerRepo.findPromoter();
             if (option.isEmpty) throw new Error("promoter not found.");
             const promoter = option.get();
 
@@ -151,8 +153,8 @@ export default class TransactionServiceInterpreter implements TransactionService
             });
 
             // 永続化
-            await ownerRepository.store(anonymousOwner);
-            await transactionRepository.store(transaction);
+            await ownerRepo.store(anonymousOwner);
+            await transactionRepo.store(transaction);
 
             return transaction;
         };
@@ -168,9 +170,9 @@ export default class TransactionServiceInterpreter implements TransactionService
      * @memberOf TransactionServiceInterpreter
      */
     public addGMOAuthorization(transactionId: string, authorization: GMOAuthorization) {
-        return async (transactionRepository: TransactionRepository) => {
+        return async (transactionRepo: TransactionRepository) => {
             // 取引取得
-            const optionTransaction = await transactionRepository.findById(ObjectId(transactionId));
+            const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
             if (optionTransaction.isEmpty) throw new Error(`transaction[${ObjectId(transactionId)}] not found.`);
             const transaction = optionTransaction.get();
 
@@ -179,17 +181,14 @@ export default class TransactionServiceInterpreter implements TransactionService
                 return owner._id.toString();
             });
             if (ownerIds.indexOf(authorization.owner_from.toString()) < 0) {
-                throw new Error(`transaction[${ObjectId(transactionId)}] does not contain a owner[${authorization.owner_from.toString()}].`);
+                throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_from}].`);
             }
             if (ownerIds.indexOf(authorization.owner_to.toString()) < 0) {
-                throw new Error(`transaction[${ObjectId(transactionId)}] does not contain a owner[${authorization.owner_to.toString()}].`);
+                throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_to}].`);
             }
 
             // 永続化
-            await this.pushAuthorization({
-                transaction_id: transactionId,
-                authorization: authorization,
-            })(transactionRepository);
+            await this.pushAuthorization(transactionId, authorization)(transactionRepo);
 
             // return authorization;
         };
@@ -205,9 +204,9 @@ export default class TransactionServiceInterpreter implements TransactionService
      * @memberOf TransactionServiceInterpreter
      */
     public addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorization) {
-        return async (transactionRepository: TransactionRepository) => {
+        return async (transactionRepo: TransactionRepository) => {
             // 取引取得
-            const optionTransaction = await transactionRepository.findById(ObjectId(transactionId));
+            const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
             if (optionTransaction.isEmpty) throw new Error(`transaction[${ObjectId(transactionId)}] not found.`);
             const transaction = optionTransaction.get();
 
@@ -215,17 +214,14 @@ export default class TransactionServiceInterpreter implements TransactionService
                 return owner._id.toString();
             });
             if (ownerIds.indexOf(authorization.owner_from.toString()) < 0) {
-                throw new Error(`transaction[${ObjectId(transactionId)}] does not contain a owner[${authorization.owner_from.toString()}].`);
+                throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_from}].`);
             }
             if (ownerIds.indexOf(authorization.owner_to.toString()) < 0) {
-                throw new Error(`transaction[${ObjectId(transactionId)}] does not contain a owner[${authorization.owner_to.toString()}].`);
+                throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_to}].`);
             }
 
             // 永続化
-            await this.pushAuthorization({
-                transaction_id: transactionId,
-                authorization: authorization,
-            })(transactionRepository);
+            await this.pushAuthorization(transactionId, authorization)(transactionRepo);
 
             // return authorization;
         };
@@ -241,9 +237,9 @@ export default class TransactionServiceInterpreter implements TransactionService
      * @memberOf TransactionServiceInterpreter
      */
     public removeAuthorization(transactionId: string, authorizationId: string) {
-        return async (transactionRepository: TransactionRepository) => {
+        return async (transactionRepo: TransactionRepository) => {
             // 取引取得
-            const optionTransacton = await transactionRepository.findById(ObjectId(transactionId));
+            const optionTransacton = await transactionRepo.findById(ObjectId(transactionId));
             if (optionTransacton.isEmpty) throw new Error("tranasction not found.");
 
             const transaction = optionTransacton.get();
@@ -252,7 +248,9 @@ export default class TransactionServiceInterpreter implements TransactionService
             const removedAuthorization = authorizations.find((authorization) => {
                 return (authorization._id.toString() === authorizationId);
             });
-            if (!removedAuthorization) throw new Error(`authorization [${authorizationId}] not found in the transaction.`);
+            if (!removedAuthorization) {
+                throw new Error(`authorization [${authorizationId}] not found in the transaction.`);
+            }
 
             // イベント作成
             const event = TransactionEventFactory.createUnauthorize({
@@ -262,7 +260,7 @@ export default class TransactionServiceInterpreter implements TransactionService
             });
 
             // 永続化
-            const option = await transactionRepository.findOneAndUpdate({
+            const option = await transactionRepo.findOneAndUpdate({
                 _id: ObjectId(transactionId),
                 status: TransactionStatus.UNDERWAY,
             }, {
@@ -284,9 +282,9 @@ export default class TransactionServiceInterpreter implements TransactionService
      * @memberOf TransactionServiceInterpreter
      */
     public enableInquiry(transactionId: string, key: TransactionInquiryKey) {
-        return async (transactionRepository: TransactionRepository) => {
+        return async (transactionRepo: TransactionRepository) => {
             // 永続化
-            const option = await transactionRepository.findOneAndUpdate({
+            const option = await transactionRepo.findOneAndUpdate({
                 _id: ObjectId(transactionId),
                 status: TransactionStatus.UNDERWAY,
             }, {
@@ -307,9 +305,9 @@ export default class TransactionServiceInterpreter implements TransactionService
      * @memberOf TransactionServiceInterpreter
      */
     public makeInquiry(key: TransactionInquiryKey): TransactionOperation<monapt.Option<Transaction>> {
-        return async (transactionRepository: TransactionRepository) => {
+        return async (transactionRepo: TransactionRepository) => {
             // 取引取得
-            return await transactionRepository.findOne({
+            return await transactionRepo.findOne({
                 inquiry_key: key,
                 status: TransactionStatus.CLOSED,
             });
@@ -325,9 +323,9 @@ export default class TransactionServiceInterpreter implements TransactionService
      * @memberOf TransactionServiceInterpreter
      */
     public close(transactionId: string) {
-        return async (transactionRepository: TransactionRepository) => {
+        return async (transactionRepo: TransactionRepository) => {
             // 取引取得
-            const optionTransaction = await transactionRepository.findById(ObjectId(transactionId));
+            const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
             if (optionTransaction.isEmpty) throw new Error("transaction not found.");
             const transaction = optionTransaction.get();
 
@@ -372,7 +370,7 @@ export default class TransactionServiceInterpreter implements TransactionService
             });
 
             // 永続化
-            const option = await transactionRepository.findOneAndUpdate({
+            const option = await transactionRepo.findOneAndUpdate({
                 _id: ObjectId(transactionId),
                 status: TransactionStatus.UNDERWAY,
             }, {
@@ -396,7 +394,7 @@ export default class TransactionServiceInterpreter implements TransactionService
      * @memberOf TransactionServiceInterpreter
      */
     public expireOne() {
-        return async (transactionRepository: TransactionRepository) => {
+        return async (transactionRepo: TransactionRepository) => {
             // イベント作成
             const event = TransactionEventFactory.create({
                 _id: ObjectId(),
@@ -405,7 +403,7 @@ export default class TransactionServiceInterpreter implements TransactionService
             });
 
             // 永続化
-            await transactionRepository.findOneAndUpdate({
+            await transactionRepo.findOneAndUpdate({
                 status: TransactionStatus.UNDERWAY,
                 expired_at: { $lt: new Date() },
             }, {
@@ -430,8 +428,8 @@ export default class TransactionServiceInterpreter implements TransactionService
      * @memberOf TransactionServiceInterpreter
      */
     public exportQueues(transactionId: string) {
-        return async (transactionRepository: TransactionRepository, queueRepository: QueueRepository) => {
-            const option = await transactionRepository.findById(ObjectId(transactionId));
+        return async (transactionRepo: TransactionRepository, queueRepo: QueueRepository) => {
+            const option = await transactionRepo.findById(ObjectId(transactionId));
             if (option.isEmpty) throw new Error("transaction not found.");
 
             const transaction = option.get();
@@ -474,7 +472,8 @@ export default class TransactionServiceInterpreter implements TransactionService
                     }
 
                     // TODO おそらく開発時のみ
-                    const eventStart = transaction.events.find((event) => (event.group === TransactionEventGroup.START));
+                    const eventStart =
+                        transaction.events.find((event) => (event.group === TransactionEventGroup.START));
                     queues.push(QueueFactory.createPushNotification({
                         _id: ObjectId(),
                         notification: NotificationFactory.createEmail({
@@ -503,7 +502,7 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             }
 
             const promises = queues.map(async (queue) => {
-                await queueRepository.store(queue);
+                await queueRepo.store(queue);
             });
             await Promise.all(promises);
         };
@@ -519,7 +518,7 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
      * @memberOf TransactionServiceInterpreter
      */
     public addEmail(transactionId: string, notification: EmailNotification) {
-        return async (transactionRepository: TransactionRepository) => {
+        return async (transactionRepo: TransactionRepository) => {
             // イベント作成
             const event = TransactionEventFactory.createNotificationAdd({
                 _id: ObjectId(),
@@ -528,7 +527,7 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             });
 
             // 永続化
-            const option = await transactionRepository.findOneAndUpdate({
+            const option = await transactionRepo.findOneAndUpdate({
                 _id: ObjectId(transactionId),
                 status: TransactionStatus.UNDERWAY,
             }, {
@@ -551,9 +550,9 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
      * @memberOf TransactionServiceInterpreter
      */
     public removeEmail(transactionId: string, notificationId: string) {
-        return async (transactionRepository: TransactionRepository) => {
+        return async (transactionRepo: TransactionRepository) => {
             // 取引取得
-            const optionTransacton = await transactionRepository.findById(ObjectId(transactionId));
+            const optionTransacton = await transactionRepo.findById(ObjectId(transactionId));
             if (optionTransacton.isEmpty) throw new Error("tranasction not found.");
 
             const transaction = optionTransacton.get();
@@ -572,7 +571,7 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             });
 
             // 永続化
-            const option = await transactionRepository.findOneAndUpdate({
+            const option = await transactionRepo.findOneAndUpdate({
                 _id: ObjectId(transactionId),
                 status: TransactionStatus.UNDERWAY,
             }, {
@@ -585,31 +584,18 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
         };
     }
 
-    private pushAuthorization(args: {
-        /**
-         *
-         *
-         * @type {string}
-         */
-        transaction_id: string,
-        /**
-         *
-         *
-         * @type {Authorization}
-         */
-        authorization: Authorization,
-    }) {
-        return async (transactionRepository: TransactionRepository) => {
+    private pushAuthorization(transactionId: string, authorization: Authorization) {
+        return async (transactionRepo: TransactionRepository) => {
             // イベント作成
             const event = TransactionEventFactory.createAuthorize({
                 _id: ObjectId(),
                 occurred_at: new Date(),
-                authorization: args.authorization,
+                authorization: authorization,
             });
 
             // 永続化
-            const option = await transactionRepository.findOneAndUpdate({
-                _id: ObjectId(args.transaction_id),
+            const option = await transactionRepo.findOneAndUpdate({
+                _id: ObjectId(transactionId),
                 status: TransactionStatus.UNDERWAY,
             }, {
                     $push: {

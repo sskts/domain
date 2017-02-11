@@ -94,7 +94,8 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             })
             .lean().exec() as any;
 
-        return (doc) ? monapt.Option(QueueFactory.createSettleAuthorization<COASeatReservationAuthorization>(doc)) : monapt.None;
+        const queue = QueueFactory.createSettleAuthorization<COASeatReservationAuthorization>(doc);
+        return (doc) ? monapt.Option(queue) : monapt.None;
     }
 
     public async findOneCancelGMOAuthorizationAndUpdate(conditions: Object, update: Object):
@@ -126,7 +127,8 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             })
             .lean().exec() as any;
 
-        return (doc) ? monapt.Option(QueueFactory.createCancelAuthorization<COASeatReservationAuthorization>(doc)) : monapt.None;
+        const queue = QueueFactory.createCancelAuthorization<COASeatReservationAuthorization>(doc);
+        return (doc) ? monapt.Option(queue) : monapt.None;
     }
 
     public async findOneDisableTransactionInquiryAndUpdate(conditions: Object, update: Object):

@@ -139,8 +139,12 @@ export default class Transaction {
         } = {};
 
         authorizations.forEach((authorization) => {
-            if (!pricesByOwner[authorization.owner_from.toString()]) pricesByOwner[authorization.owner_from.toString()] = 0;
-            if (!pricesByOwner[authorization.owner_to.toString()]) pricesByOwner[authorization.owner_to.toString()] = 0;
+            if (!pricesByOwner[authorization.owner_from.toString()]) {
+                pricesByOwner[authorization.owner_from.toString()] = 0;
+            }
+            if (!pricesByOwner[authorization.owner_to.toString()]) {
+                pricesByOwner[authorization.owner_to.toString()] = 0;
+            }
 
             pricesByOwner[authorization.owner_from.toString()] -= authorization.price;
             pricesByOwner[authorization.owner_to.toString()] += authorization.price;

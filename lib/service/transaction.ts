@@ -9,8 +9,10 @@ import OwnerRepository from "../repository/owner";
 import QueueRepository from "../repository/queue";
 import TransactionRepository from "../repository/transaction";
 
-export type TransactionAndQueueOperation<T> = (transastionRepository: TransactionRepository, queueRepository: QueueRepository) => Promise<T>;
-export type OwnerAndTransactionOperation<T> = (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<T>;
+export type TransactionAndQueueOperation<T> =
+    (transastionRepository: TransactionRepository, queueRepository: QueueRepository) => Promise<T>;
+export type OwnerAndTransactionOperation<T> =
+    (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<T>;
 export type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>;
 
 /**
@@ -95,7 +97,8 @@ interface TransactionService {
      *
      * @memberOf TransactionService
      */
-    addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorization): TransactionOperation<void>;
+    addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorization):
+        TransactionOperation<void>;
     /**
      * オーソリアイテムを削除する
      *

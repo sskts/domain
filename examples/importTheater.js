@@ -19,7 +19,7 @@ function main() {
         try {
             mongoose.Promise = global.Promise;
             mongoose.connect(process.env.MONGOLAB_URI);
-            yield SSKTS.createMasterService().importTheater("001")(SSKTS.createTheaterRepository(mongoose.connection));
+            yield SSKTS.createMasterService().importTheater("118")(SSKTS.createTheaterRepository(mongoose.connection));
         }
         catch (error) {
             console.error(error);
