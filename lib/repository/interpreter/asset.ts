@@ -11,7 +11,7 @@ export default class AssetRepositoryInterpreter implements AssetRepository {
         const model = this.connection.model(AssetModel.modelName, AssetModel.schema);
         await model.findOneAndUpdate({ _id: asset._id }, asset, {
             new: true,
-            upsert: true,
+            upsert: true
         }).lean().exec();
     }
 }

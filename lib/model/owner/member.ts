@@ -26,7 +26,7 @@ export default class MemberOwner extends Owner {
         readonly name_first: string,
         readonly name_last: string,
         readonly email: string,
-        readonly tel: string,
+        readonly tel: string
     ) {
         super(_id, OwnerGroup.MEMBER);
 

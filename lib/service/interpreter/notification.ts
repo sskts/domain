@@ -26,7 +26,7 @@ export default class NotificationServiceInterpreter implements NotificationServi
                 new sendgrid.mail.Email(email.from),
                 email.subject,
                 new sendgrid.mail.Email(email.to),
-                new sendgrid.mail.Content("text/html", email.content),
+                new sendgrid.mail.Content("text/html", email.content)
             );
 
             const sg = sendgrid(process.env.SENDGRID_API_KEY);
@@ -39,7 +39,7 @@ export default class NotificationServiceInterpreter implements NotificationServi
                 body: mail.toJSON(),
                 queryParams: {},
                 test: false,
-                port: "",
+                port: ""
             });
 
             await sg.API(request);

@@ -58,7 +58,7 @@ interface TransactionService {
          *
          * @type {string}
          */
-        tel?: string,
+        tel?: string
     }): OwnerAndTransactionOperation<void>;
     /**
      * 取引詳細取得

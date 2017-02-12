@@ -5,16 +5,119 @@
    * - the name of an NPM module which has a "main" file that exports a config object
    * - a relative path to a JSON file
    */
-  "extends": "tslint:latest",
-  // "extends": "tslint:recommended",
+  "extends": [
+    "tslint:latest",
+    // "tslint:recommended",
+    "tslint-eslint-rules"
+  ],
   "rules": {
     /*
      * Any rules specified here will override those from the base config we are extending.
      */
+    "trailing-comma": [
+      true,
+      {
+        "singleline": "never",
+        "multiline": "never"
+      }
+    ],
+    "no-constant-condition": true,
+    "no-control-regex": true,
+    "no-duplicate-case": true,
+    "no-empty-character-class": true,
+    "no-ex-assign": true,
+    "no-extra-boolean-cast": true,
+    "no-extra-semi": true,
+    "no-inner-declarations": true,
+    "no-invalid-regexp": true,
+    "no-irregular-whitespace": true,
+    "no-regex-spaces": true,
+    "no-sparse-arrays": true,
+    "no-unexpected-multiline": true,
+    "valid-jsdoc": false,
+    "valid-typeof": true,
+
+
+    "cyclomatic-complexity": [true, 20],
     "curly": false,
+    "switch-default": true,
+    "triple-equals": [true],
+    "forin": true,
+    "ban": false,
+    "no-arg": true,
+    "no-empty": true,
+    "no-eval": true,
+    "no-switch-case-fall-through": true,
+    "label-position": true,
+    "no-magic-numbers": true,
+    "no-multi-spaces": true,
+    "no-unused-new": true,
+    "no-construct": true,
+    "no-duplicate-variable": true,
+    "no-string-throw": true,
+    "no-unused-expression": true,
+    "radix": true,
+    "no-shadowed-variable": true,
+    "no-use-before-declare": true,
+
+    "handle-callback-err": true,
+    "brace-style": [
+      true,
+      "1tbs"
+    ],
+    "ter-indent": [
+      true,
+      4,
+      {
+        "SwitchCase": 1
+      }
+    ],
+    "linebreak-style": [
+      true,
+      "LF"
+    ],
+    "ter-max-len": [true, 120],
+    "max-file-line-count": [
+      false
+    ],
+    "new-parens": true,
+    "no-bitwise": true,
+    "indent": [
+      true,
+      "spaces"
+    ],
+    "no-consecutive-blank-lines": [
+      true
+    ],
+    "no-trailing-whitespace": true,
+    "object-curly-spacing": true,
+    "one-variable-per-declaration": [
+      true
+    ],
+    "object-literal-key-quotes": [
+      false,
+      "as-needed"
+    ],
+    "quotemark": [
+      true,
+      "double"
+    ],
+    "semicolon": [true, "always"],
+    "ordered-imports": [
+      false
+    ],
+    "comment-format": [true, "check-space"],
+
+    "ter-arrow-body-style": [true, "always"],
+    "ter-arrow-parens": [true, "always"],
+    "ter-arrow-spacing": [true],
+    "ter-prefer-arrow-callback": [true],
+    "no-var-keyword": true,
+    "object-literal-shorthand": false,
+    "prefer-const": true,
+
     "eofline": false,
     "no-namespace": false,
-    "object-literal-shorthand": false,
     "object-literal-sort-keys": false,
     "variable-name": false,
     "interface-name": false

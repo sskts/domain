@@ -15,7 +15,7 @@ export default class Theater {
         readonly _id: string,
         readonly name: MultilingualString,
         readonly name_kana: string,
-        readonly address: MultilingualString,
+        readonly address: MultilingualString
     ) {
         // TODO validation
     }

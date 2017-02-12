@@ -13,11 +13,11 @@ import OwnerGroup from "../model/ownerGroup";
 
 export function create(args: {
     _id: ObjectId,
-    group: OwnerGroup,
+    group: OwnerGroup
 }) {
     return new Owner(
         args._id,
-        args.group,
+        args.group
     );
 }
 
@@ -31,23 +31,23 @@ export function createAnonymous(args: {
     name_first?: string,
     name_last?: string,
     email?: string,
-    tel?: string,
+    tel?: string
 }): AnonymousOwner {
     return new AnonymousOwner(
         args._id,
         (args.name_first) ? args.name_first : "",
         (args.name_last) ? args.name_last : "",
         (args.email) ? args.email : "",
-        (args.tel) ? args.tel : "",
+        (args.tel) ? args.tel : ""
     );
 }
 
 export function createAdministrator(args: {
     _id: ObjectId,
-    name?: MultilingualString,
+    name?: MultilingualString
 }): PromoterOwner {
     return new PromoterOwner(
         args._id,
-        (args.name) ? args.name : { ja: "", en: "" },
+        (args.name) ? args.name : { ja: "", en: "" }
     );
 }

@@ -14,16 +14,16 @@ export function create(args: {
     theater: Theater,
     coa_screen_code: string,
     name: MultilingualString,
-    sections: Screen.Section[],
+    sections: Screen.Section[]
 }) {
     return new Screen.default(
         args._id,
         args.theater,
         args.coa_screen_code,
         args.name,
-        args.sections,
+        args.sections
     );
-};
+}
 
 export function createFromCOA(screenFromCOA: COA.findScreensByTheaterCodeInterface.Result) {
     return async (theater: Theater) => {
@@ -31,11 +31,11 @@ export function createFromCOA(screenFromCOA: COA.findScreensByTheaterCodeInterfa
             code: string,
             name: {
                 ja: string,
-                en: string,
+                en: string
             },
             seats: Array<{
-                code: string,
-            }>,
+                code: string
+            }>
         }> = [];
         const sectionCodes: string[] = [];
         screenFromCOA.list_seat.forEach((seat) => {
@@ -45,14 +45,14 @@ export function createFromCOA(screenFromCOA: COA.findScreensByTheaterCodeInterfa
                     code: seat.seat_section,
                     name: {
                         ja: `セクション${seat.seat_section}`,
-                        en: `section${seat.seat_section}`,
+                        en: `section${seat.seat_section}`
                     },
-                    seats: [],
+                    seats: []
                 });
             }
 
             sections[sectionCodes.indexOf(seat.seat_section)].seats.push({
-                code: seat.seat_num,
+                code: seat.seat_num
             });
         });
 
@@ -62,9 +62,9 @@ export function createFromCOA(screenFromCOA: COA.findScreensByTheaterCodeInterfa
             coa_screen_code: screenFromCOA.screen_code,
             name: {
                 ja: screenFromCOA.screen_name,
-                en: screenFromCOA.screen_name_eng,
+                en: screenFromCOA.screen_name_eng
             },
-            sections: sections,
+            sections: sections
         });
     };
 }

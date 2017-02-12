@@ -19,7 +19,7 @@ export default class NotificationAddTransactionEvent<T extends Notification> ext
     constructor(
         readonly _id: ObjectId,
         readonly occurred_at: Date,
-        readonly notification: T,
+        readonly notification: T
     ) {
         super(_id, TransactionEventGroup.NOTIFICATION_ADD, occurred_at);
 

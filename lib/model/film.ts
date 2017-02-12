@@ -38,7 +38,7 @@ export default class Film {
         readonly kbn_eirin: string,
         readonly kbn_eizou: string,
         readonly kbn_joueihousiki: string,
-        readonly kbn_jimakufukikae: string,
+        readonly kbn_jimakufukikae: string
     ) {
         // TODO validation
     }

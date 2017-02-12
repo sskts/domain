@@ -36,7 +36,7 @@ export default class OwnerRepositoryInterpreter implements OwnerRepository {
         const model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
         const owner = await model.findOneAndUpdate(conditions, update, {
             new: true,
-            upsert: false,
+            upsert: false
         }).lean().exec() as Owner;
 
         return (owner) ? monapt.Option(owner) : monapt.None;
@@ -46,7 +46,7 @@ export default class OwnerRepositoryInterpreter implements OwnerRepository {
         const model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
         await model.findOneAndUpdate({ _id: owner._id }, owner, {
             new: true,
-            upsert: true,
+            upsert: true
         }).lean().exec();
     }
 }

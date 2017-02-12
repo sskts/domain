@@ -28,7 +28,7 @@ export default class AssetAuthorization extends Authorization {
         readonly asset: Asset,
         readonly price: number,
         readonly owner_from: ObjectId,
-        readonly owner_to: ObjectId,
+        readonly owner_to: ObjectId
     ) {
         super(_id, AuthorizationGroup.ASSET, price, owner_from, owner_to);
 

@@ -31,7 +31,7 @@ export function createSeatReservation(args: {
     std_price: number,
     add_price: number,
     dis_price: number,
-    sale_price: number,
+    sale_price: number
 }) {
     return new SeatReservationAsset(
         (args._id) ? args._id : ObjectId(),
@@ -47,6 +47,6 @@ export function createSeatReservation(args: {
         args.std_price,
         args.add_price,
         args.dis_price,
-        args.sale_price,
+        args.sale_price
     );
 }

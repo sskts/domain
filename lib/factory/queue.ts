@@ -25,7 +25,7 @@ export function create(args: {
     max_count_try: number,
     last_tried_at: Date | null,
     count_tried: number,
-    results: string[],
+    results: string[]
 }) {
     return new Queue(
         args._id,
@@ -35,7 +35,7 @@ export function create(args: {
         args.max_count_try,
         args.last_tried_at,
         args.count_tried,
-        args.results,
+        args.results
     );
 }
 
@@ -47,7 +47,7 @@ export function createSettleAuthorization<T extends Authorization>(args: {
     max_count_try: number,
     last_tried_at: Date | null,
     count_tried: number,
-    results: string[],
+    results: string[]
 }) {
     return new SettleAuthorizationQueue<T>(
         args._id,
@@ -57,7 +57,7 @@ export function createSettleAuthorization<T extends Authorization>(args: {
         args.last_tried_at,
         args.count_tried,
         args.results,
-        args.authorization,
+        args.authorization
     );
 }
 
@@ -69,7 +69,7 @@ export function createCancelAuthorization<T extends Authorization>(args: {
     max_count_try: number,
     last_tried_at: Date | null,
     count_tried: number,
-    results: string[],
+    results: string[]
 }) {
     return new CancelAuthorizationQueue<T>(
         args._id,
@@ -79,7 +79,7 @@ export function createCancelAuthorization<T extends Authorization>(args: {
         args.last_tried_at,
         args.count_tried,
         args.results,
-        args.authorization,
+        args.authorization
     );
 }
 
@@ -91,7 +91,7 @@ export function createPushNotification<T extends Notification>(args: {
     max_count_try: number,
     last_tried_at: Date | null,
     count_tried: number,
-    results: string[],
+    results: string[]
 }) {
     return new PushNotificationQueue<T>(
         args._id,
@@ -101,7 +101,7 @@ export function createPushNotification<T extends Notification>(args: {
         args.last_tried_at,
         args.count_tried,
         args.results,
-        args.notification,
+        args.notification
     );
 }
 
@@ -113,7 +113,7 @@ export function createDisableTransactionInquiry(args: {
     max_count_try: number,
     last_tried_at: Date | null,
     count_tried: number,
-    results: string[],
+    results: string[]
 }) {
     return new DisableTransactionInquiryQueue(
         args._id,
@@ -123,6 +123,6 @@ export function createDisableTransactionInquiry(args: {
         args.last_tried_at,
         args.count_tried,
         args.results,
-        args.transaction_id,
+        args.transaction_id
     );
 }

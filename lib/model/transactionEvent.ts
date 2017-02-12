@@ -14,7 +14,7 @@ export default class TransactionEvent {
     constructor(
         readonly _id: ObjectId,
         readonly group: TransactionEventGroup,
-        readonly occurred_at: Date,
+        readonly occurred_at: Date
     ) {
         // TODO validation
     }

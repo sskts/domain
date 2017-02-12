@@ -63,7 +63,7 @@ export default class Screen {
         readonly theater: Theater,
         readonly coa_screen_code: string,
         readonly name: MultilingualString,
-        readonly sections: Section[],
+        readonly sections: Section[]
     ) {
         // TODO validation
     }

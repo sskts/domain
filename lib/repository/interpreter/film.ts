@@ -20,7 +20,7 @@ export default class FilmRepositoryInterpreter implements FilmRepository {
         const model = this.connection.model(FilmModel.modelName, FilmModel.schema);
         await model.findOneAndUpdate({ _id: film._id }, film, {
             new: true,
-            upsert: true,
+            upsert: true
         }).lean().exec();
     }
 }

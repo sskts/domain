@@ -41,7 +41,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
         const model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
         const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
-            upsert: false,
+            upsert: false
         }).lean().exec() as any;
 
         return (doc) ? monapt.Option(TransactionFactory.create(doc)) : monapt.None;
@@ -51,7 +51,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
         const model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
         await model.findOneAndUpdate({ _id: transaction._id }, transaction, {
             new: true,
-            upsert: true,
+            upsert: true
         }).lean().exec();
     }
 }

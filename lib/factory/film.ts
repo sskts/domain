@@ -24,7 +24,7 @@ export function create(args: {
     kbn_eirin?: string,
     kbn_eizou?: string,
     kbn_joueihousiki?: string,
-    kbn_jimakufukikae?: string,
+    kbn_jimakufukikae?: string
 }) {
     return new Film(
         args._id,
@@ -41,9 +41,9 @@ export function create(args: {
         (args.kbn_eirin === undefined) ? "" : args.kbn_eirin,
         (args.kbn_eizou === undefined) ? "" : args.kbn_eizou,
         (args.kbn_joueihousiki === undefined) ? "" : args.kbn_joueihousiki,
-        (args.kbn_jimakufukikae === undefined) ? "" : args.kbn_jimakufukikae,
+        (args.kbn_jimakufukikae === undefined) ? "" : args.kbn_jimakufukikae
     );
-};
+}
 
 export function createFromCOA(filmFromCOA: COA.findFilmsByTheaterCodeInterface.Result) {
     return async (theater: Theater) => {
@@ -55,7 +55,7 @@ export function createFromCOA(filmFromCOA: COA.findFilmsByTheaterCodeInterface.R
             theater: theater,
             name: {
                 ja: filmFromCOA.title_name,
-                en: filmFromCOA.title_name_eng,
+                en: filmFromCOA.title_name_eng
             },
             name_kana: filmFromCOA.title_name_kana,
             name_short: filmFromCOA.title_name_short,
@@ -66,7 +66,7 @@ export function createFromCOA(filmFromCOA: COA.findFilmsByTheaterCodeInterface.R
             kbn_eirin: filmFromCOA.kbn_eirin,
             kbn_eizou: filmFromCOA.kbn_eizou,
             kbn_joueihousiki: filmFromCOA.kbn_joueihousiki,
-            kbn_jimakufukikae: filmFromCOA.kbn_jimakufukikae,
+            kbn_jimakufukikae: filmFromCOA.kbn_jimakufukikae
         });
     };
 }

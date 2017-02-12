@@ -29,7 +29,7 @@ export default class StockServiceInterpreter implements StockService {
                 title_code: authorization.coa_title_code,
                 title_branch_num: authorization.coa_title_branch_num,
                 time_begin: authorization.coa_time_begin,
-                tmp_reserve_num: authorization.coa_tmp_reserve_num,
+                tmp_reserve_num: authorization.coa_tmp_reserve_num
             });
         };
     }
@@ -65,21 +65,25 @@ export default class StockServiceInterpreter implements StockService {
      * @memberOf StockServiceInterpreter
      */
     public disableTransactionInquiry(args: {
-        transaction_id: string,
+        transaction_id: string
     }) {
         return async (transactionRepository: TransactionRepository, coaRepository: typeof COA) => {
             // 取引取得
             const option = await transactionRepository.findById(ObjectId(args.transaction_id));
-            if (option.isEmpty) throw new Error("transaction not found.");
+            if (option.isEmpty) {
+                throw new Error("transaction not found.");
+            }
 
             const tranasction = option.get();
-            if (!tranasction.inquiry_key) throw new Error("inquiry_key not created.");
+            if (!tranasction.inquiry_key) {
+                throw new Error("inquiry_key not created.");
+            }
 
             // COAから内容抽出
             const reservation = await coaRepository.stateReserveInterface.call({
                 theater_code: tranasction.inquiry_key.theater_code,
                 reserve_num: tranasction.inquiry_key.reserve_num,
-                tel_num: tranasction.inquiry_key.tel,
+                tel_num: tranasction.inquiry_key.tel
             });
 
             // COA購入チケット取消
@@ -91,19 +95,19 @@ export default class StockServiceInterpreter implements StockService {
                 title_code: reservation.title_code,
                 title_branch_num: reservation.title_branch_num,
                 time_begin: reservation.time_begin,
-                list_seat: reservation.list_ticket,
+                list_seat: reservation.list_ticket
             });
 
             // 永続化
             await transactionRepository.findOneAndUpdate(
                 {
                     _id: ObjectId(args.transaction_id),
-                    status: TransactionStatus.UNDERWAY,
+                    status: TransactionStatus.UNDERWAY
                 },
                 {
                     $set: {
-                        inquiry_key: null,
-                    },
+                        inquiry_key: null
+                    }
                 });
         };
     }

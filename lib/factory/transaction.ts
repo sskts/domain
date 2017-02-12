@@ -21,7 +21,7 @@ export function create(args: {
     events?: TransactionEvent[],
     queues?: Queue[],
     inquiry_key?: TransactionInquiryKey,
-    queues_status?: TransactionQueuesStatus,
+    queues_status?: TransactionQueuesStatus
 }): Transaction {
     return new Transaction(
         (args._id === undefined) ? ObjectId() : (args._id),
@@ -31,6 +31,6 @@ export function create(args: {
         (args.queues === undefined) ? [] : (args.queues),
         args.expired_at,
         (args.inquiry_key === undefined) ? null : (args.inquiry_key),
-        (args.queues_status === undefined) ? TransactionQueuesStatus.UNEXPORTED : (args.queues_status),
+        (args.queues_status === undefined) ? TransactionQueuesStatus.UNEXPORTED : (args.queues_status)
     );
 }

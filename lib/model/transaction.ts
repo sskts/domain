@@ -41,7 +41,7 @@ export default class Transaction {
         readonly queues: Queue[],
         readonly expired_at: Date,
         readonly inquiry_key: TransactionInquiryKey | null,
-        readonly queues_status: TransactionQueuesStatus,
+        readonly queues_status: TransactionQueuesStatus
     ) {
         // TODO validation
     }
@@ -135,7 +135,7 @@ export default class Transaction {
     public canBeClosed() {
         const authorizations = this.authorizations();
         const pricesByOwner: {
-            [ownerId: string]: number,
+            [ownerId: string]: number
         } = {};
 
         authorizations.forEach((authorization) => {

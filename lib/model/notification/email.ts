@@ -27,7 +27,7 @@ export default class EmailNotification extends Notification {
         readonly from: string,
         readonly to: string,
         readonly subject: string,
-        readonly content: string,
+        readonly content: string
     ) {
         super(_id, NotificationGroup.EMAIL);
 

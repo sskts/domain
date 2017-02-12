@@ -42,7 +42,7 @@ export default class COASeatReservationAuthorization extends Authorization {
         readonly price: number,
         readonly owner_from: ObjectId,
         readonly owner_to: ObjectId,
-        readonly assets: SeatReservationAsset[],
+        readonly assets: SeatReservationAsset[]
     ) {
         super(_id, AuthorizationGroup.COA_SEAT_RESERVATION, price, owner_from, owner_to);
 

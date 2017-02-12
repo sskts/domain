@@ -21,7 +21,7 @@ export default class Authorization {
         readonly group: AuthorizationGroup,
         readonly price: number,
         readonly owner_from: ObjectId,
-        readonly owner_to: ObjectId,
+        readonly owner_to: ObjectId
     ) {
         // TODO validation
     }

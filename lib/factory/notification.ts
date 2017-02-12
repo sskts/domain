@@ -12,13 +12,13 @@ export function createEmail(args: {
     from: string,
     to: string,
     subject: string,
-    content: string,
+    content: string
 }) {
     return new EmailNotification(
         (args._id === undefined) ? ObjectId() : (args._id),
         (args.from === undefined) ? "" : (args.from),
         (args.to === undefined) ? "" : (args.to),
         (args.subject === undefined) ? "" : (args.subject),
-        (args.content === undefined) ? "" : (args.content),
+        (args.content === undefined) ? "" : (args.content)
     );
 }

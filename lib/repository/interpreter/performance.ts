@@ -34,7 +34,7 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
         const model = this.connection.model(PerformanceModel.modelName, PerformanceModel.schema);
         await model.findOneAndUpdate({ _id: performance._id }, performance, {
             new: true,
-            upsert: true,
+            upsert: true
         }).lean().exec();
     }
 }

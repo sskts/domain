@@ -21,7 +21,7 @@ export function createGMO(args: {
     gmo_access_id: string,
     gmo_access_pass: string,
     gmo_job_cd: string,
-    gmo_pay_type: string,
+    gmo_pay_type: string
 }) {
     return new GMOAuthorization(
         (args._id) ? args._id : ObjectId(),
@@ -35,9 +35,9 @@ export function createGMO(args: {
         args.gmo_access_id,
         args.gmo_access_pass,
         args.gmo_job_cd,
-        args.gmo_pay_type,
+        args.gmo_pay_type
     );
-};
+}
 
 export function createCOASeatReservation(args: {
     _id?: ObjectId,
@@ -51,7 +51,7 @@ export function createCOASeatReservation(args: {
     price: number,
     owner_from: ObjectId,
     owner_to: ObjectId,
-    assets: SeatReservationAsset[],
+    assets: SeatReservationAsset[]
 }) {
     return new COASeatReservationAuthorization(
         (args._id) ? args._id : ObjectId(),
@@ -65,6 +65,6 @@ export function createCOASeatReservation(args: {
         args.price,
         args.owner_from,
         args.owner_to,
-        args.assets,
+        args.assets
     );
 }

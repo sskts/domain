@@ -14,7 +14,7 @@ export default class Ownership {
     constructor(
         readonly _id: ObjectId,
         readonly owner: ObjectId,
-        readonly authenticated: boolean,
+        readonly authenticated: boolean
     ) {
         // TODO validation
     }

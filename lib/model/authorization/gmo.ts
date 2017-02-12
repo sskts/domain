@@ -40,7 +40,7 @@ export default class GMOAuthorization extends Authorization {
         readonly gmo_access_id: string,
         readonly gmo_access_pass: string,
         readonly gmo_job_cd: string,
-        readonly gmo_pay_type: string,
+        readonly gmo_pay_type: string
     ) {
         super(_id, AuthorizationGroup.GMO, price, owner_from, owner_to);
 

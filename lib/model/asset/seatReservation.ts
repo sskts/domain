@@ -48,7 +48,7 @@ export default class SeatReservationAsset extends Asset {
         readonly std_price: number,
         readonly add_price: number,
         readonly dis_price: number,
-        readonly sale_price: number,
+        readonly sale_price: number
     ) {
         // TODO validation
 
@@ -57,7 +57,7 @@ export default class SeatReservationAsset extends Asset {
             AssetGroup.SEAT_RESERVATION,
             ownership,
             sale_price,
-            authorizations,
+            authorizations
         );
     }
 }

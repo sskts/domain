@@ -44,7 +44,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
-            upsert: false,
+            upsert: false
         }).lean().exec() as any;
 
         return (doc) ? monapt.Option(QueueFactory.create(doc)) : monapt.None;
@@ -55,11 +55,11 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
-            upsert: false,
+            upsert: false
         })
             .where({
                 "group": QueueGroup.PUSH_NOTIFICATION,
-                "notification.group": NotificationGroup.EMAIL,
+                "notification.group": NotificationGroup.EMAIL
             }).lean().exec() as any;
 
         return (doc) ? monapt.Option(QueueFactory.createPushNotification<EmailNotification>(doc)) : monapt.None;
@@ -70,11 +70,11 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
-            upsert: false,
+            upsert: false
         })
             .where({
                 "group": QueueGroup.SETTLE_AUTHORIZATION,
-                "authorization.group": AuthorizationGroup.GMO,
+                "authorization.group": AuthorizationGroup.GMO
             })
             .lean().exec() as any;
 
@@ -86,11 +86,11 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
-            upsert: false,
+            upsert: false
         })
             .where({
                 "group": QueueGroup.SETTLE_AUTHORIZATION,
-                "authorization.group": AuthorizationGroup.COA_SEAT_RESERVATION,
+                "authorization.group": AuthorizationGroup.COA_SEAT_RESERVATION
             })
             .lean().exec() as any;
 
@@ -103,11 +103,11 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
-            upsert: false,
+            upsert: false
         })
             .where({
                 "group": QueueGroup.CANCEL_AUTHORIZATION,
-                "authorization.group": AuthorizationGroup.GMO,
+                "authorization.group": AuthorizationGroup.GMO
             })
             .lean().exec() as any;
 
@@ -119,11 +119,11 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
-            upsert: false,
+            upsert: false
         })
             .where({
                 "group": QueueGroup.CANCEL_AUTHORIZATION,
-                "authorization.group": AuthorizationGroup.COA_SEAT_RESERVATION,
+                "authorization.group": AuthorizationGroup.COA_SEAT_RESERVATION
             })
             .lean().exec() as any;
 
@@ -136,10 +136,10 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
-            upsert: false,
+            upsert: false
         })
             .where({
-                group: QueueGroup.DISABLE_TRANSACTION_INQUIRY,
+                group: QueueGroup.DISABLE_TRANSACTION_INQUIRY
             })
             .lean().exec() as any;
 
@@ -150,7 +150,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         await model.findOneAndUpdate({ _id: queue._id }, queue, {
             new: true,
-            upsert: true,
+            upsert: true
         }).lean().exec();
     }
 }

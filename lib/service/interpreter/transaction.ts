@@ -74,31 +74,40 @@ export default class TransactionServiceInterpreter implements TransactionService
          *
          * @type {string}
          */
-        tel?: string,
+        tel?: string
     }): OwnerAndTransactionOperation<void> {
         return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
             // 取引取得
             const optionTransaction = await transactionRepo.findById(ObjectId(args.transaction_id));
-            if (optionTransaction.isEmpty) throw new Error(`transaction[${ObjectId(args.transaction_id)}] not found.`);
+            if (optionTransaction.isEmpty) {
+                throw new Error(`transaction[${ObjectId(args.transaction_id)}] not found.`);
+            }
+
             const transaction = optionTransaction.get();
 
             const anonymousOwner = transaction.owners.find((owner) => {
                 return (owner.group === OwnerGroup.ANONYMOUS);
             });
-            if (!anonymousOwner) throw new Error("anonymous owner not found.");
+            if (!anonymousOwner) {
+                throw new Error("anonymous owner not found.");
+            }
 
             // 永続化
-            const option = await ownerRepo.findOneAndUpdate({
-                _id: anonymousOwner._id,
-            }, {
+            const option = await ownerRepo.findOneAndUpdate(
+                {
+                    _id: anonymousOwner._id
+                }, {
                     $set: {
                         name_first: args.name_first,
                         name_last: args.name_last,
                         email: args.email,
-                        tel: args.tel,
-                    },
-                });
-            if (option.isEmpty) throw new Error("owner not found.");
+                        tel: args.tel
+                    }
+                }
+            );
+            if (option.isEmpty) {
+                throw new Error("owner not found.");
+            }
         };
     }
 
@@ -128,19 +137,22 @@ export default class TransactionServiceInterpreter implements TransactionService
         return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
             // 一般所有者作成
             const anonymousOwner = OwnerFactory.createAnonymous({
-                _id: ObjectId(),
+                _id: ObjectId()
             });
 
             // 興行主取得
             const option = await ownerRepo.findPromoter();
-            if (option.isEmpty) throw new Error("promoter not found.");
+            if (option.isEmpty) {
+                throw new Error("promoter not found.");
+            }
+
             const promoter = option.get();
 
             // イベント作成
             const event = TransactionEventFactory.create({
                 _id: ObjectId(),
                 group: TransactionEventGroup.START,
-                occurred_at: new Date(),
+                occurred_at: new Date()
             });
 
             // 取引作成
@@ -149,7 +161,7 @@ export default class TransactionServiceInterpreter implements TransactionService
                 status: TransactionStatus.UNDERWAY,
                 events: [event],
                 owners: [promoter, anonymousOwner],
-                expired_at: expiredAt,
+                expired_at: expiredAt
             });
 
             // 永続化
@@ -173,7 +185,10 @@ export default class TransactionServiceInterpreter implements TransactionService
         return async (transactionRepo: TransactionRepository) => {
             // 取引取得
             const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
-            if (optionTransaction.isEmpty) throw new Error(`transaction[${ObjectId(transactionId)}] not found.`);
+            if (optionTransaction.isEmpty) {
+                throw new Error(`transaction[${ObjectId(transactionId)}] not found.`);
+            }
+
             const transaction = optionTransaction.get();
 
             // 所有者が取引に存在するかチェック
@@ -207,7 +222,10 @@ export default class TransactionServiceInterpreter implements TransactionService
         return async (transactionRepo: TransactionRepository) => {
             // 取引取得
             const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
-            if (optionTransaction.isEmpty) throw new Error(`transaction[${ObjectId(transactionId)}] not found.`);
+            if (optionTransaction.isEmpty) {
+                throw new Error(`transaction[${ObjectId(transactionId)}] not found.`);
+            }
+
             const transaction = optionTransaction.get();
 
             const ownerIds = transaction.owners.map((owner) => {
@@ -240,7 +258,9 @@ export default class TransactionServiceInterpreter implements TransactionService
         return async (transactionRepo: TransactionRepository) => {
             // 取引取得
             const optionTransacton = await transactionRepo.findById(ObjectId(transactionId));
-            if (optionTransacton.isEmpty) throw new Error("tranasction not found.");
+            if (optionTransacton.isEmpty) {
+                throw new Error("tranasction not found.");
+            }
 
             const transaction = optionTransacton.get();
             const authorizations = transaction.authorizations();
@@ -256,19 +276,23 @@ export default class TransactionServiceInterpreter implements TransactionService
             const event = TransactionEventFactory.createUnauthorize({
                 _id: ObjectId(),
                 occurred_at: new Date(),
-                authorization: removedAuthorization,
+                authorization: removedAuthorization
             });
 
             // 永続化
-            const option = await transactionRepo.findOneAndUpdate({
-                _id: ObjectId(transactionId),
-                status: TransactionStatus.UNDERWAY,
-            }, {
+            const option = await transactionRepo.findOneAndUpdate(
+                {
+                    _id: ObjectId(transactionId),
+                    status: TransactionStatus.UNDERWAY
+                }, {
                     $push: {
-                        events: event,
-                    },
-                });
-            if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
+                        events: event
+                    }
+                }
+            );
+            if (option.isEmpty) {
+                throw new Error("UNDERWAY transaction not found.");
+            }
         };
     }
 
@@ -284,15 +308,19 @@ export default class TransactionServiceInterpreter implements TransactionService
     public enableInquiry(transactionId: string, key: TransactionInquiryKey) {
         return async (transactionRepo: TransactionRepository) => {
             // 永続化
-            const option = await transactionRepo.findOneAndUpdate({
-                _id: ObjectId(transactionId),
-                status: TransactionStatus.UNDERWAY,
-            }, {
+            const option = await transactionRepo.findOneAndUpdate(
+                {
+                    _id: ObjectId(transactionId),
+                    status: TransactionStatus.UNDERWAY
+                }, {
                     $set: {
-                        inquiry_key: key,
-                    },
-                });
-            if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
+                        inquiry_key: key
+                    }
+                }
+            );
+            if (option.isEmpty) {
+                throw new Error("UNDERWAY transaction not found.");
+            }
         };
     }
 
@@ -309,7 +337,7 @@ export default class TransactionServiceInterpreter implements TransactionService
             // 取引取得
             return await transactionRepo.findOne({
                 inquiry_key: key,
-                status: TransactionStatus.CLOSED,
+                status: TransactionStatus.CLOSED
             });
         };
     }
@@ -326,14 +354,21 @@ export default class TransactionServiceInterpreter implements TransactionService
         return async (transactionRepo: TransactionRepository) => {
             // 取引取得
             const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
-            if (optionTransaction.isEmpty) throw new Error("transaction not found.");
+            if (optionTransaction.isEmpty) {
+                throw new Error("transaction not found.");
+            }
+
             const transaction = optionTransaction.get();
 
             // 照会可能になっているかどうか
-            if (!transaction.isInquiryAvailable()) throw new Error("inquiry is not available.");
+            if (!transaction.isInquiryAvailable()) {
+                throw new Error("inquiry is not available.");
+            }
 
             // 条件が対等かどうかチェック
-            if (!transaction.canBeClosed()) throw new Error("transaction cannot be closed.");
+            if (!transaction.canBeClosed()) {
+                throw new Error("transaction cannot be closed.");
+            }
 
             // キューリストを事前作成
             const queues: Queue[] = [];
@@ -346,7 +381,7 @@ export default class TransactionServiceInterpreter implements TransactionService
                     max_count_try: 10,
                     last_tried_at: null,
                     count_tried: 0,
-                    results: [],
+                    results: []
                 }));
             });
             transaction.notifications().forEach((notification) => {
@@ -358,7 +393,7 @@ export default class TransactionServiceInterpreter implements TransactionService
                     max_count_try: 10,
                     last_tried_at: null,
                     count_tried: 0,
-                    results: [],
+                    results: []
                 }));
             });
 
@@ -366,23 +401,27 @@ export default class TransactionServiceInterpreter implements TransactionService
             const event = TransactionEventFactory.create({
                 _id: ObjectId(),
                 group: TransactionEventGroup.CLOSE,
-                occurred_at: new Date(),
+                occurred_at: new Date()
             });
 
             // 永続化
-            const option = await transactionRepo.findOneAndUpdate({
-                _id: ObjectId(transactionId),
-                status: TransactionStatus.UNDERWAY,
-            }, {
+            const option = await transactionRepo.findOneAndUpdate(
+                {
+                    _id: ObjectId(transactionId),
+                    status: TransactionStatus.UNDERWAY
+                }, {
                     $set: {
                         status: TransactionStatus.CLOSED,
-                        queues: queues,
+                        queues: queues
                     },
                     $push: {
-                        events: event,
-                    },
-                });
-            if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
+                        events: event
+                    }
+                }
+            );
+            if (option.isEmpty) {
+                throw new Error("UNDERWAY transaction not found.");
+            }
         };
     }
 
@@ -399,21 +438,23 @@ export default class TransactionServiceInterpreter implements TransactionService
             const event = TransactionEventFactory.create({
                 _id: ObjectId(),
                 group: TransactionEventGroup.EXPIRE,
-                occurred_at: new Date(),
+                occurred_at: new Date()
             });
 
             // 永続化
-            await transactionRepo.findOneAndUpdate({
-                status: TransactionStatus.UNDERWAY,
-                expired_at: { $lt: new Date() },
-            }, {
+            await transactionRepo.findOneAndUpdate(
+                {
+                    status: TransactionStatus.UNDERWAY,
+                    expired_at: { $lt: new Date() }
+                }, {
                     $set: {
-                        status: TransactionStatus.EXPIRED,
+                        status: TransactionStatus.EXPIRED
                     },
                     $push: {
-                        events: event,
-                    },
-                });
+                        events: event
+                    }
+                }
+            );
 
             // 永続化結果がemptyの場合は、もう取引中ステータスではないということなので、期限切れタスクとしては成功
         };
@@ -430,7 +471,9 @@ export default class TransactionServiceInterpreter implements TransactionService
     public exportQueues(transactionId: string) {
         return async (transactionRepo: TransactionRepository, queueRepo: QueueRepository) => {
             const option = await transactionRepo.findById(ObjectId(transactionId));
-            if (option.isEmpty) throw new Error("transaction not found.");
+            if (option.isEmpty) {
+                throw new Error("transaction not found.");
+            }
 
             const transaction = option.get();
 
@@ -453,7 +496,7 @@ export default class TransactionServiceInterpreter implements TransactionService
                             max_count_try: 10,
                             last_tried_at: null,
                             count_tried: 0,
-                            results: [],
+                            results: []
                         }));
                     });
 
@@ -467,33 +510,35 @@ export default class TransactionServiceInterpreter implements TransactionService
                             max_count_try: 10,
                             last_tried_at: null,
                             count_tried: 0,
-                            results: [],
+                            results: []
                         }));
                     }
 
                     // TODO おそらく開発時のみ
                     const eventStart =
                         transaction.events.find((event) => (event.group === TransactionEventGroup.START));
-                    queues.push(QueueFactory.createPushNotification({
-                        _id: ObjectId(),
-                        notification: NotificationFactory.createEmail({
+                    queues.push(QueueFactory.createPushNotification(
+                        {
                             _id: ObjectId(),
-                            from: "noreply@localhost",
-                            to: "hello@motionpicture.jp",
-                            subject: "transaction expired",
-                            content: `
+                            notification: NotificationFactory.createEmail({
+                                _id: ObjectId(),
+                                from: "noreply@localhost",
+                                to: "hello@motionpicture.jp",
+                                subject: "transaction expired",
+                                content: `
 取引の期限がきれました
 _id: ${transaction._id}
 created_at: ${(eventStart) ? eventStart.occurred_at : ""}
-`,
-                        }),
-                        status: QueueStatus.UNEXECUTED,
-                        run_at: new Date(),
-                        max_count_try: 10,
-                        last_tried_at: null,
-                        count_tried: 0,
-                        results: [],
-                    }));
+`
+                            }),
+                            status: QueueStatus.UNEXECUTED,
+                            run_at: new Date(),
+                            max_count_try: 10,
+                            last_tried_at: null,
+                            count_tried: 0,
+                            results: []
+                        }
+                    ));
 
                     break;
 
@@ -523,20 +568,24 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             const event = TransactionEventFactory.createNotificationAdd({
                 _id: ObjectId(),
                 occurred_at: new Date(),
-                notification: notification,
+                notification: notification
             });
 
             // 永続化
-            const option = await transactionRepo.findOneAndUpdate({
-                _id: ObjectId(transactionId),
-                status: TransactionStatus.UNDERWAY,
-            }, {
+            const option = await transactionRepo.findOneAndUpdate(
+                {
+                    _id: ObjectId(transactionId),
+                    status: TransactionStatus.UNDERWAY
+                }, {
                     $push: {
-                        events: event,
-                    },
-                });
+                        events: event
+                    }
+                }
+            );
 
-            if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
+            if (option.isEmpty) {
+                throw new Error("UNDERWAY transaction not found.");
+            }
         };
     }
 
@@ -553,7 +602,9 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
         return async (transactionRepo: TransactionRepository) => {
             // 取引取得
             const optionTransacton = await transactionRepo.findById(ObjectId(transactionId));
-            if (optionTransacton.isEmpty) throw new Error("tranasction not found.");
+            if (optionTransacton.isEmpty) {
+                throw new Error("tranasction not found.");
+            }
 
             const transaction = optionTransacton.get();
             const notifications = transaction.notifications();
@@ -561,26 +612,32 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             const removedNotification = notifications.find((notification) => {
                 return (notification._id.toString() === notificationId);
             });
-            if (!removedNotification) throw new Error(`notification [${notificationId}] not found in the transaction.`);
+            if (!removedNotification) {
+                throw new Error(`notification [${notificationId}] not found in the transaction.`);
+            }
 
             // イベント作成
             const event = TransactionEventFactory.createNotificationRemove({
                 _id: ObjectId(),
                 occurred_at: new Date(),
-                notification: removedNotification,
+                notification: removedNotification
             });
 
             // 永続化
-            const option = await transactionRepo.findOneAndUpdate({
-                _id: ObjectId(transactionId),
-                status: TransactionStatus.UNDERWAY,
-            }, {
+            const option = await transactionRepo.findOneAndUpdate(
+                {
+                    _id: ObjectId(transactionId),
+                    status: TransactionStatus.UNDERWAY
+                }, {
                     $push: {
-                        events: event,
-                    },
-                });
+                        events: event
+                    }
+                }
+            );
 
-            if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
+            if (option.isEmpty) {
+                throw new Error("UNDERWAY transaction not found.");
+            }
         };
     }
 
@@ -590,19 +647,23 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ""}
             const event = TransactionEventFactory.createAuthorize({
                 _id: ObjectId(),
                 occurred_at: new Date(),
-                authorization: authorization,
+                authorization: authorization
             });
 
             // 永続化
-            const option = await transactionRepo.findOneAndUpdate({
-                _id: ObjectId(transactionId),
-                status: TransactionStatus.UNDERWAY,
-            }, {
+            const option = await transactionRepo.findOneAndUpdate(
+                {
+                    _id: ObjectId(transactionId),
+                    status: TransactionStatus.UNDERWAY
+                }, {
                     $push: {
-                        events: event,
-                    },
-                });
-            if (option.isEmpty) throw new Error("UNDERWAY transaction not found.");
+                        events: event
+                    }
+                }
+            );
+            if (option.isEmpty) {
+                throw new Error("UNDERWAY transaction not found.");
+            }
         };
     }
 }

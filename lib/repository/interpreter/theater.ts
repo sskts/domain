@@ -19,7 +19,7 @@ export default class TheaterRepositoryInterpreter implements TheaterRepository {
         const model = this.connection.model(TheaterModel.modelName, TheaterModel.schema);
         await model.findOneAndUpdate({ _id: theater._id }, theater, {
             new: true,
-            upsert: true,
+            upsert: true
         }).lean().exec();
     }
 }

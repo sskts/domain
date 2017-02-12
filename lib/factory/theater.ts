@@ -12,13 +12,13 @@ export function create(args: {
     _id: string,
     name: MultilingualString,
     name_kana: string,
-    address: MultilingualString,
+    address: MultilingualString
 }): Theater {
     return {
         _id: args._id,
         name: args.name,
         name_kana: args.name_kana,
-        address: args.address,
+        address: args.address
     };
 }
 
@@ -27,12 +27,12 @@ export function createFromCOA(theaterFromCOA: COA.findTheaterInterface.Result): 
         _id: theaterFromCOA.theater_code,
         name: {
             ja: theaterFromCOA.theater_name,
-            en: theaterFromCOA.theater_name_eng,
+            en: theaterFromCOA.theater_name_eng
         },
         name_kana: theaterFromCOA.theater_name_kana,
         address: {
             ja: "",
-            en: "",
-        },
+            en: ""
+        }
     });
 }

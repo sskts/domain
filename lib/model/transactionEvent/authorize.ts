@@ -23,7 +23,7 @@ export default class AuthorizeTransactionEvent extends TransactionEvent {
     constructor(
         readonly _id: ObjectId,
         readonly occurred_at: Date,
-        readonly authorization: Authorization,
+        readonly authorization: Authorization
     ) {
         super(_id, TransactionEventGroup.AUTHORIZE, occurred_at);
 

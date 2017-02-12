@@ -21,7 +21,7 @@ export default class PromoterOwner extends Owner {
      */
     constructor(
         readonly _id: ObjectId,
-        readonly name: MultilingualString,
+        readonly name: MultilingualString
     ) {
         super(_id, OwnerGroup.PROMOTER);
 

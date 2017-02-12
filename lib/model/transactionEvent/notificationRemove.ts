@@ -24,7 +24,7 @@ export default class NotificationRemoveTransactionEvent<T extends Notification> 
     constructor(
         readonly _id: ObjectId,
         readonly occurred_at: Date,
-        readonly notification: T,
+        readonly notification: T
     ) {
         super(_id, TransactionEventGroup.NOTIFICATION_REMOVE, occurred_at);
 

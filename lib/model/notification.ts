@@ -11,7 +11,7 @@ import ObjectId from "./objectId";
 export default class Notification {
     constructor(
         readonly _id: ObjectId,
-        readonly group: string,
+        readonly group: string
     ) {
         // TODO validation
     }

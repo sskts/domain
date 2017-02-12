@@ -25,11 +25,11 @@ export default class Performance {
         readonly day: string,
         readonly time_start: string,
         readonly time_end: string,
-        readonly canceled: boolean,
+        readonly canceled: boolean
         // trailer_time: String, // トレーラー時間(トレーラー含む本編以外の時間（分）)
         // kbn_service: String, // サービス区分(「通常興行」「レイトショー」など)
         // kbn_acoustic: String, // 音響区分
-        // name_service_day: String, // サービスデイ名称(「映画の日」「レディースデイ」など　※割引区分、割引コード、特定日等の組み合わせで登録するため名称で連携の方が容易)
+        // name_service_day: String, // サービスデイ名称(「映画の日」「レディースデイ」など ※割引区分、割引コード、特定日等の組み合わせで登録するため名称で連携の方が容易)
     ) {
         // TODO validation
     }

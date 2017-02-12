@@ -33,7 +33,7 @@ export default class DisableTransactionInquiryQueue extends Queue {
         readonly last_tried_at: Date | null,
         readonly count_tried: number,
         readonly results: string[],
-        readonly transaction_id: ObjectId,
+        readonly transaction_id: ObjectId
     ) {
         super(
             _id,
@@ -43,7 +43,7 @@ export default class DisableTransactionInquiryQueue extends Queue {
             max_count_try,
             last_tried_at,
             count_tried,
-            results,
+            results
         );
 
         // TODO validation

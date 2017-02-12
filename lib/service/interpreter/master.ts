@@ -70,7 +70,7 @@ export default class MasterServiceInterpreter implements MasterService {
         return async (repository: TheaterRepository) => {
             // COAから取得
             const theaterFromCOA = await COA.findTheaterInterface.call({
-                theater_code: theaterCode,
+                theater_code: theaterCode
             });
 
             // 永続化
@@ -91,11 +91,13 @@ export default class MasterServiceInterpreter implements MasterService {
         return async (theaterRepository: TheaterRepository, filmRepo: FilmRepository) => {
             // 劇場取得
             const optionTheater = await theaterRepository.findById(theaterCode);
-            if (optionTheater.isEmpty) throw new Error("theater not found.");
+            if (optionTheater.isEmpty) {
+                throw new Error("theater not found.");
+            }
 
             // COAから作品取得
             const films = await COA.findFilmsByTheaterCodeInterface.call({
-                theater_code: theaterCode,
+                theater_code: theaterCode
             });
 
             // 永続化
@@ -118,11 +120,13 @@ export default class MasterServiceInterpreter implements MasterService {
         return async (theaterRepository: TheaterRepository, screenRepo: ScreenRepository) => {
             // 劇場取得
             const optionTheater = await theaterRepository.findById(theaterCode);
-            if (optionTheater.isEmpty) throw new Error("theater not found.");
+            if (optionTheater.isEmpty) {
+                throw new Error("theater not found.");
+            }
 
             // COAからスクリーン取得
             const screens = await COA.findScreensByTheaterCodeInterface.call({
-                theater_code: theaterCode,
+                theater_code: theaterCode
             });
 
             // 永続化
@@ -157,7 +161,7 @@ export default class MasterServiceInterpreter implements MasterService {
             const performances = await COA.findPerformancesByTheaterCodeInterface.call({
                 theater_code: theaterCode,
                 begin: dayStart,
-                end: dayEnd,
+                end: dayEnd
             });
 
             // パフォーマンスごとに永続化トライ
@@ -167,11 +171,15 @@ export default class MasterServiceInterpreter implements MasterService {
 
                 // スクリーン存在チェック
                 const _screen = screens.find((screen) => (screen._id === screenId));
-                if (!_screen) throw new Error(("screen not found."));
+                if (!_screen) {
+                    throw new Error(("screen not found."));
+                }
 
                 // 作品取得
                 const optionFilm = await filmRepo.findById(filmId);
-                if (optionFilm.isEmpty) throw new Error("film not found.");
+                if (optionFilm.isEmpty) {
+                    throw new Error("film not found.");
+                }
 
                 // 永続化
                 const performance = PerformanceFactory.createFromCOA(performanceFromCOA)(_screen, optionFilm.get());
@@ -193,7 +201,7 @@ export default class MasterServiceInterpreter implements MasterService {
         return async (performanceRepo: PerformanceRepository): Promise<SearchPerformancesResult[]> => {
             // 検索条件を作成
             const andConditions: Object[] = [
-                { _id: { $ne: null } },
+                { _id: { $ne: null } }
             ];
 
             if (conditions.day) {
@@ -213,20 +221,20 @@ export default class MasterServiceInterpreter implements MasterService {
                     _id: performance._id,
                     theater: {
                         _id: performance.theater._id,
-                        name: performance.theater.name,
+                        name: performance.theater.name
                     },
                     screen: {
                         _id: performance.screen._id,
-                        name: performance.screen.name,
+                        name: performance.screen.name
                     },
                     film: {
                         _id: performance.film._id,
-                        name: performance.film.name,
+                        name: performance.film.name
                     },
                     day: performance.day,
                     time_start: performance.time_start,
                     time_end: performance.time_end,
-                    canceled: performance.canceled,
+                    canceled: performance.canceled
                 };
             });
         };

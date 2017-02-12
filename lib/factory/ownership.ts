@@ -10,11 +10,11 @@ import Ownership from "../model/ownership";
 export function create(args: {
     _id?: ObjectId,
     owner: ObjectId,
-    authenticated: boolean,
+    authenticated: boolean
 }) {
     return new Ownership(
         (args._id) ? args._id : ObjectId(),
         args.owner,
-        args.authenticated,
+        args.authenticated
     );
 }

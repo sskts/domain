@@ -35,7 +35,7 @@ export default class PushNotificationQueue<T extends Notification> extends Queue
         readonly last_tried_at: Date | null,
         readonly count_tried: number,
         readonly results: string[],
-        readonly notification: T,
+        readonly notification: T
     ) {
         super(
             _id,
@@ -45,7 +45,7 @@ export default class PushNotificationQueue<T extends Notification> extends Queue
             max_count_try,
             last_tried_at,
             count_tried,
-            results,
+            results
         );
 
         // TODO validation
