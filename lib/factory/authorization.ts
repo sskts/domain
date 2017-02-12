@@ -51,7 +51,7 @@ export function createCOASeatReservation(args: {
     price: number,
     owner_from: ObjectId,
     owner_to: ObjectId,
-    assets: SeatReservationAsset[]
+    assets: Array<SeatReservationAsset>
 }) {
     return new COASeatReservationAuthorization(
         (args._id) ? args._id : ObjectId(),

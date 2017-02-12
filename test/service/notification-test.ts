@@ -1,5 +1,5 @@
-import sendgrid = require("sendgrid");
-import SSKTS = require("../../lib/sskts-domain");
+import * as sendgrid from "sendgrid";
+import * as SSKTS from "../../lib/sskts-domain";
 
 process.env.MONGOLAB_URI = "mongodb://testsasakiticketmongodbuser:aZHGD262LNsBTQgG9UGQpA6QvbFkKbAhBfxf3vvz@ds056379-a0.mlab.com:56379,ds056379-a1.mlab.com:56372/testsasakiticketmongodb?replicaSet=rs-ds056379";
 process.env.SENDGRID_API_KEY = "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";

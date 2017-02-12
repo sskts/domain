@@ -1,69 +1,201 @@
 {
-  /*
-   * Possible values:
-   * - the name of a built-in config
-   * - the name of an NPM module which has a "main" file that exports a config object
-   * - a relative path to a JSON file
-   */
   "extends": [
     "tslint:latest",
-    // "tslint:recommended",
     "tslint-eslint-rules"
   ],
+  "jsRules": {},
   "rules": {
-    /*
-     * Any rules specified here will override those from the base config we are extending.
-     */
-    "trailing-comma": [
+    "adjacent-overload-signatures": true,
+    "align": [
       true,
-      {
-        "singleline": "never",
-        "multiline": "never"
-      }
+      "parameters",
+      "statements",
+      "statements"
     ],
-    "no-constant-condition": true,
-    "no-control-regex": true,
-    "no-duplicate-case": true,
-    "no-empty-character-class": true,
-    "no-ex-assign": true,
-    "no-extra-boolean-cast": true,
-    "no-extra-semi": true,
-    "no-inner-declarations": true,
-    "no-invalid-regexp": true,
-    "no-irregular-whitespace": true,
-    "no-regex-spaces": true,
-    "no-sparse-arrays": true,
-    "no-unexpected-multiline": true,
-    "valid-jsdoc": false,
-    "valid-typeof": true,
-
-
-    "cyclomatic-complexity": [true, 20],
-    "curly": false,
-    "switch-default": true,
-    "triple-equals": [true],
-    "forin": true,
+    "array-type": [
+      true,
+      "generic"
+    ],
+    "arrow-parens": [
+      true,
+      "always"
+    ],
+    "arrow-return-shorthand": [
+      true
+    ],
+    "await-promise": false,
     "ban": false,
-    "no-arg": true,
-    "no-empty": true,
-    "no-eval": true,
-    "no-switch-case-fall-through": true,
-    "label-position": true,
-    "no-magic-numbers": true,
-    "no-multi-spaces": true,
-    "no-unused-new": true,
-    "no-construct": true,
-    "no-duplicate-variable": true,
-    "no-string-throw": true,
-    "no-unused-expression": true,
-    "radix": true,
-    "no-shadowed-variable": true,
-    "no-use-before-declare": true,
-
-    "handle-callback-err": true,
     "brace-style": [
       true,
       "1tbs"
+    ],
+    "callable-types": true,
+    "class-name": true,
+    "comment-format": [
+      true,
+      "check-space"
+    ],
+    "completed-docs": [
+      false
+    ],
+    "curly": false,
+    "cyclomatic-complexity": [
+      true,
+      20
+    ],
+    "eofline": false,
+    "file-header": [
+      false,
+      "Copyright Motionpicture co.,ltd\\."
+    ],
+    "forin": true,
+    "handle-callback-err": true,
+    "import-blacklist": false,
+    "import-spacing": true,
+    "indent": [
+      true,
+      "spaces"
+    ],
+    "interface-name": false,
+    "interface-over-type-literal": true,
+    "jsdoc-format": false,
+    "label-position": true,
+    "linebreak-style": [
+      true,
+      "LF"
+    ],
+    "max-classes-per-file": [
+      false
+    ],
+    "max-file-line-count": [
+      false
+    ],
+    "member-access": true,
+    "member-ordering": [
+      false
+    ],
+    "new-parens": true,
+    "no-angle-bracket-type-assertion": true,
+    "no-any": false,
+    "no-arg": true,
+    "no-bitwise": true,
+    "no-boolean-literal-compare": false,
+    "no-conditional-assignment": true,
+    "no-consecutive-blank-lines": [
+      true
+    ],
+    "no-console": [
+      true,
+      "debug",
+      "info",
+      "log",
+      "time",
+      "timeEnd",
+      "trace"
+    ],
+    "no-constant-condition": true,
+    "no-construct": true,
+    "no-control-regex": true,
+    "no-debugger": true,
+    "no-default-export": false,
+    "no-duplicate-case": true,
+    "no-duplicate-variable": true,
+    "no-empty": true,
+    "no-empty-character-class": true,
+    "no-empty-interface": true,
+    "no-eval": true,
+    "no-ex-assign": true,
+    "no-extra-boolean-cast": true,
+    "no-extra-semi": true,
+    "no-floating-promises": false,
+    "no-for-in-array": false,
+    "no-inferrable-types": true,
+    "no-inferred-empty-object-type": false,
+    "no-inner-declarations": true,
+    "no-internal-module": true,
+    "no-invalid-regexp": true,
+    "no-invalid-this": true,
+    "no-irregular-whitespace": true,
+    "no-magic-numbers": true,
+    "no-mergeable-namespace": false,
+    "no-misused-new": true,
+    "no-multi-spaces": true,
+    "no-namespace": false,
+    "no-null-keyword": false,
+    "no-parameter-properties": false,
+    "no-reference": true,
+    "no-regex-spaces": true,
+    "no-require-imports": true,
+    "no-shadowed-variable": true,
+    "no-sparse-arrays": true,
+    "no-string-literal": true,
+    "no-string-throw": true,
+    "no-switch-case-fall-through": true,
+    "no-trailing-whitespace": true,
+    "no-unbound-method": false,
+    "no-unexpected-multiline": true,
+    "no-unnecessary-initializer": true,
+    "no-unnecessary-qualifier": false,
+    "no-unsafe-any": false,
+    "no-unsafe-finally": true,
+    "no-unused-expression": true,
+    "no-unused-new": true,
+    "no-use-before-declare": true,
+    "no-var-keyword": true,
+    "no-var-requires": true,
+    "no-void-expression": false,
+    "object-curly-spacing": true,
+    "object-literal-key-quotes": [
+      true,
+      "as-needed"
+    ],
+    "object-literal-shorthand": false,
+    "object-literal-sort-keys": false,
+    "one-line": [
+      true,
+      "check-open-brace",
+      "check-finally",
+      "check-catch",
+      "check-else",
+      "check-whitespace"
+    ],
+    "one-variable-per-declaration": [
+      true
+    ],
+    "only-arrow-functions": [
+      false
+    ],
+    "ordered-imports": [
+      false
+    ],
+    "prefer-const": true,
+    "prefer-for-of": true,
+    "prefer-function-over-method": false,
+    "prefer-method-signature": true,
+    "promise-function-async": false,
+    "quotemark": [
+      true,
+      "double"
+    ],
+    "radix": true,
+    "restrict-plus-operands": false,
+    "semicolon": [
+      true,
+      "always"
+    ],
+    "space-before-function-paren": [
+      true,
+      "never"
+    ],
+    "strict-boolean-expressions": false,
+    "strict-type-predicates": false,
+    "switch-default": true,
+    "ter-arrow-body-style": [
+      true,
+      "always"
+    ],
+    "ter-arrow-spacing": [
+      true
     ],
     "ter-indent": [
       true,
@@ -72,65 +204,65 @@
         "SwitchCase": 1
       }
     ],
-    "linebreak-style": [
+    "ter-max-len": [
       true,
-      "LF"
+      120
     ],
-    "ter-max-len": [true, 120],
-    "max-file-line-count": [
-      false
-    ],
-    "new-parens": true,
-    "no-bitwise": true,
-    "indent": [
-      true,
-      "spaces"
-    ],
-    "no-consecutive-blank-lines": [
+    "ter-prefer-arrow-callback": [
       true
     ],
-    "no-trailing-whitespace": true,
-    "object-curly-spacing": true,
-    "one-variable-per-declaration": [
+    "trailing-comma": [
+      true,
+      {
+        "singleline": "never",
+        "multiline": "never"
+      }
+    ],
+    "triple-equals": [
       true
     ],
-    "object-literal-key-quotes": [
-      false,
-      "as-needed"
-    ],
-    "quotemark": [
+    "typedef": [
       true,
-      "double"
+      "parameter",
+      "property-declaration",
+      "member-variable-declaration"
     ],
-    "semicolon": [true, "always"],
-    "ordered-imports": [
-      false
+    "typedef-whitespace": [
+      true,
+      {
+        "call-signature": "nospace",
+        "index-signature": "nospace",
+        "parameter": "nospace",
+        "property-declaration": "nospace",
+        "variable-declaration": "nospace"
+      },
+      {
+        "call-signature": "onespace",
+        "index-signature": "onespace",
+        "parameter": "onespace",
+        "property-declaration": "onespace",
+        "variable-declaration": "onespace"
+      }
     ],
-    "comment-format": [true, "check-space"],
-
-    "ter-arrow-body-style": [true, "always"],
-    "ter-arrow-parens": [true, "always"],
-    "ter-arrow-spacing": [true],
-    "ter-prefer-arrow-callback": [true],
-    "no-var-keyword": true,
-    "object-literal-shorthand": false,
-    "prefer-const": true,
-
-    "eofline": false,
-    "no-namespace": false,
-    "object-literal-sort-keys": false,
-    "variable-name": false,
-    "interface-name": false
+    "typeof-compare": true,
+    "unified-signatures": true,
+    "use-isnan": true,
+    "valid-jsdoc": false,
+    "valid-typeof": true,
+    "variable-name": [
+      true,
+      "ban-keywords"
+    ],
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-separator",
+      "check-type",
+      "check-typecast",
+      "check-preblock"
+    ]
   },
-  "jsRules": {
-    /*
-     * Any rules specified here will override those from the base config we are extending.
-     */
-  },
-  "rulesDirectory": [
-    /*
-     * A list of relative or absolute paths to directories that contain custom rules.
-     * See the Custom Rules documentation below for more details.
-     */
-  ]
+  "rulesDirectory": []
 }

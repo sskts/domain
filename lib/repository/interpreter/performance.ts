@@ -1,5 +1,5 @@
-import mongoose = require("mongoose");
-import monapt = require("monapt");
+import * as mongoose from "mongoose";
+import * as monapt from "monapt";
 import Performance from "../../model/performance";
 import PerformanceRepository from "../performance";
 import PerformanceModel from "./mongoose/model/performance";
@@ -15,7 +15,7 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
             .populate("theater")
             .populate("screen")
             .lean()
-            .exec() as Performance[];
+            .exec() as Array<Performance>;
     }
 
     public async findById(id: string) {

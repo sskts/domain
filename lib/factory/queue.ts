@@ -25,7 +25,7 @@ export function create(args: {
     max_count_try: number,
     last_tried_at: Date | null,
     count_tried: number,
-    results: string[]
+    results: Array<string>
 }) {
     return new Queue(
         args._id,
@@ -47,7 +47,7 @@ export function createSettleAuthorization<T extends Authorization>(args: {
     max_count_try: number,
     last_tried_at: Date | null,
     count_tried: number,
-    results: string[]
+    results: Array<string>
 }) {
     return new SettleAuthorizationQueue<T>(
         args._id,
@@ -69,7 +69,7 @@ export function createCancelAuthorization<T extends Authorization>(args: {
     max_count_try: number,
     last_tried_at: Date | null,
     count_tried: number,
-    results: string[]
+    results: Array<string>
 }) {
     return new CancelAuthorizationQueue<T>(
         args._id,
@@ -91,7 +91,7 @@ export function createPushNotification<T extends Notification>(args: {
     max_count_try: number,
     last_tried_at: Date | null,
     count_tried: number,
-    results: string[]
+    results: Array<string>
 }) {
     return new PushNotificationQueue<T>(
         args._id,
@@ -113,7 +113,7 @@ export function createDisableTransactionInquiry(args: {
     max_count_try: number,
     last_tried_at: Date | null,
     count_tried: number,
-    results: string[]
+    results: Array<string>
 }) {
     return new DisableTransactionInquiryQueue(
         args._id,

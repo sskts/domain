@@ -24,6 +24,6 @@ export default class Queue {
     readonly max_count_try: number;
     readonly last_tried_at: Date | null;
     readonly count_tried: number;
-    readonly results: string[];
-    constructor(_id: ObjectId, group: QueueGroup, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[]);
+    readonly results: Array<string>;
+    constructor(_id: ObjectId, group: QueueGroup, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: Array<string>);
 }

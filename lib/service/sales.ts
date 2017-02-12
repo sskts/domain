@@ -1,5 +1,5 @@
 import GMOAuthorization from "../model/authorization/gmo";
-import GMO = require("@motionpicture/gmo-service");
+import * as GMO from "@motionpicture/gmo-service";
 
 export type GMOOperation<T> = (gmoRepository: typeof GMO) => Promise<T>;
 

@@ -1,5 +1,5 @@
-import mongoose = require("mongoose");
-import monapt = require("monapt");
+import * as mongoose from "mongoose";
+import * as monapt from "monapt";
 import * as FilmFactory from "../../factory/film";
 import Film from "../../model/film";
 import FilmRepository from "../film";

@@ -1,4 +1,4 @@
-import validator = require("validator");
+import * as validator from "validator";
 import SeatReservationAsset from "../asset/seatReservation";
 import Authorization from "../authorization";
 import AuthorizationGroup from "../authorizationGroup";
@@ -42,7 +42,7 @@ export default class COASeatReservationAuthorization extends Authorization {
         readonly price: number,
         readonly owner_from: ObjectId,
         readonly owner_to: ObjectId,
-        readonly assets: SeatReservationAsset[]
+        readonly assets: Array<SeatReservationAsset>
     ) {
         super(_id, AuthorizationGroup.COA_SEAT_RESERVATION, price, owner_from, owner_to);
 

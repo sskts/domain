@@ -1,4 +1,4 @@
-import monapt = require("monapt");
+import * as monapt from "monapt";
 import Film from "../model/film";
 
 /**

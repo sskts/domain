@@ -1,4 +1,4 @@
-import monapt = require("monapt");
+import * as monapt from "monapt";
 import Screen from "../model/screen";
 /**
  * スクリーンリポジトリ
@@ -18,7 +18,7 @@ interface ScreenRepository {
     findByTheater(args: {
         /** 劇場ID */
         theater_id: string;
-    }): Promise<Screen[]>;
+    }): Promise<Array<Screen>>;
     /**
      * 保管する
      *

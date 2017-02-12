@@ -7,7 +7,7 @@
 import Film from "../model/film";
 import MultilingualString from "../model/multilingualString";
 import Theater from "../model/theater";
-import COA = require("@motionpicture/coa-service");
+import * as COA from "@motionpicture/coa-service";
 
 export function create(args: {
     _id: string,
@@ -46,7 +46,7 @@ export function create(args: {
 }
 
 export function createFromCOA(filmFromCOA: COA.findFilmsByTheaterCodeInterface.Result) {
-    return async (theater: Theater) => {
+    return async(theater: Theater) => {
         return create({
             // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
             _id: `${theater._id}${filmFromCOA.title_code}${filmFromCOA.title_branch_num}`,

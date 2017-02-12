@@ -19,7 +19,7 @@ import Ownership from "../model/ownership";
 export declare function createSeatReservation(args: {
     _id?: ObjectId;
     ownership: Ownership;
-    authorizations: Authorization[];
+    authorizations: Array<Authorization>;
     performance: string;
     section: string;
     seat_code: string;

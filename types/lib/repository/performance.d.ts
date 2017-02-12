@@ -1,4 +1,4 @@
-import monapt = require("monapt");
+import * as monapt from "monapt";
 import Performance from "../model/performance";
 /**
  * パフォーマンスリポジトリ
@@ -17,7 +17,7 @@ interface PerformanceRepository {
      *
      * @param {Object} conditions 検索条件
      */
-    find(conditions: Object): Promise<Performance[]>;
+    find(conditions: Object): Promise<Array<Performance>>;
     /**
      * 保管する
      *

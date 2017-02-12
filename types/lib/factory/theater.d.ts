@@ -5,7 +5,7 @@
  */
 import MultilingualString from "../model/multilingualString";
 import Theater from "../model/theater";
-import COA = require("@motionpicture/coa-service");
+import * as COA from "@motionpicture/coa-service";
 export declare function create(args: {
     _id: string;
     name: MultilingualString;

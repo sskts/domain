@@ -4,7 +4,7 @@ import TransactionStatus from "../../model/transactionStatus";
 import AssetRepository from "../../repository/asset";
 import TransactionRepository from "../../repository/transaction";
 import StockService from "../stock";
-import COA = require("@motionpicture/coa-service");
+import * as COA from "@motionpicture/coa-service";
 
 /**
  * 在庫サービス
@@ -22,7 +22,7 @@ export default class StockServiceInterpreter implements StockService {
      * @memberOf StockServiceInterpreter
      */
     public unauthorizeCOASeatReservation(authorization: COASeatReservationAuthorization) {
-        return async (coaRepository: typeof COA) => {
+        return async(coaRepository: typeof COA) => {
             await coaRepository.deleteTmpReserveInterface.call({
                 theater_code: authorization.coa_theater_code,
                 date_jouei: authorization.coa_date_jouei,
@@ -43,13 +43,13 @@ export default class StockServiceInterpreter implements StockService {
      * @memberOf StockServiceInterpreter
      */
     public transferCOASeatReservation(authorization: COASeatReservationAuthorization) {
-        return async (assetRepository: AssetRepository) => {
+        return async(assetRepository: AssetRepository) => {
 
             // ウェブフロントで事前に本予約済みなので不要
             // await COA.updateReserveInterface.call({
             // });
 
-            const promises = authorization.assets.map(async (asset) => {
+            const promises = authorization.assets.map(async(asset) => {
                 // 資産永続化
                 await assetRepository.store(asset);
             });
@@ -67,7 +67,7 @@ export default class StockServiceInterpreter implements StockService {
     public disableTransactionInquiry(args: {
         transaction_id: string
     }) {
-        return async (transactionRepository: TransactionRepository, coaRepository: typeof COA) => {
+        return async(transactionRepository: TransactionRepository, coaRepository: typeof COA) => {
             // 取引取得
             const option = await transactionRepository.findById(ObjectId(args.transaction_id));
             if (option.isEmpty) {

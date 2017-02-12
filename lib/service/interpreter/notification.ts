@@ -1,6 +1,6 @@
 import EmailNotification from "../../model/notification/email";
 import NotificationService from "../notification";
-import SendGrid = require("sendgrid");
+import * as SendGrid from "sendgrid";
 
 export type SendGridOperation<T> = (sendgrid: typeof SendGrid) => Promise<T>;
 
@@ -21,7 +21,7 @@ export default class NotificationServiceInterpreter implements NotificationServi
      * @memberOf NotificationServiceInterpreter
      */
     public sendEmail(email: EmailNotification): SendGridOperation<void> {
-        return async (sendgrid: typeof SendGrid) => {
+        return async(sendgrid: typeof SendGrid) => {
             const mail = new sendgrid.mail.Mail(
                 new sendgrid.mail.Email(email.from),
                 email.subject,

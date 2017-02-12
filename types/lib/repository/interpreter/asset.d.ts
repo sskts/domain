@@ -1,5 +1,5 @@
 /// <reference types="mongoose" />
-import mongoose = require("mongoose");
+import * as mongoose from "mongoose";
 import Asset from "../../model/asset";
 import AssetRepository from "../asset";
 export default class AssetRepositoryInterpreter implements AssetRepository {

@@ -1,4 +1,4 @@
-import monapt = require("monapt");
+import * as monapt from "monapt";
 import ObjectId from "../model/objectId";
 import Transaction from "../model/transaction";
 
@@ -13,7 +13,7 @@ interface TransactionRepository {
      *
      * @param {Object} conditions 検索条件
      */
-    find(conditions: Object): Promise<Transaction[]>;
+    find(conditions: Object): Promise<Array<Transaction>>;
     /**
      * ID検索
      *

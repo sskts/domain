@@ -1,5 +1,5 @@
 /// <reference types="mongoose" />
-import monapt = require("monapt");
+import * as monapt from "monapt";
 import COASeatReservationAuthorization from "../model/authorization/coaSeatReservation";
 import GMOAuthorization from "../model/authorization/gmo";
 import EmailNotification from "../model/notification/email";
@@ -19,7 +19,7 @@ interface QueueRepository {
      *
      * @param {Object} conditions
      */
-    find(conditions: Object): Promise<Queue[]>;
+    find(conditions: Object): Promise<Array<Queue>>;
     /**
      * ID検索
      *

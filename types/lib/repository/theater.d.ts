@@ -1,4 +1,4 @@
-import monapt = require("monapt");
+import * as monapt from "monapt";
 import Theater from "../model/theater";
 /**
  * 劇場リポジトリ

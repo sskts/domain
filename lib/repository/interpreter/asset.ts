@@ -1,4 +1,4 @@
-import mongoose = require("mongoose");
+import * as mongoose from "mongoose";
 import Asset from "../../model/asset";
 import AssetRepository from "../asset";
 import AssetModel from "./mongoose/model/asset";

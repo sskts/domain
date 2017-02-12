@@ -1,4 +1,4 @@
-import validator = require("validator");
+import * as validator from "validator";
 import Notification from "../notification";
 import NotificationGroup from "../notificationGroup";
 import ObjectId from "../objectId";

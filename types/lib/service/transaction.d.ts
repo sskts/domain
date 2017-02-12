@@ -1,4 +1,4 @@
-import monapt = require("monapt");
+import * as monapt from "monapt";
 import COASeatReservationAuthorization from "../model/authorization/coaSeatReservation";
 import GMOAuthorization from "../model/authorization/gmo";
 import EmailNotification from "../model/notification/email";

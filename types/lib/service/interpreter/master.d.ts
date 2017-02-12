@@ -1,4 +1,4 @@
-import monapt = require("monapt");
+import * as monapt from "monapt";
 import FilmRepository from "../../repository/film";
 import PerformanceRepository from "../../repository/performance";
 import ScreenRepository from "../../repository/screen";
@@ -93,7 +93,7 @@ export default class MasterServiceInterpreter implements MasterService {
      *
      * @memberOf MasterServiceInterpreter
      */
-    searchPerformances(conditions: SearchPerformancesConditions): PerformanceOperation<SearchPerformancesResult[]>;
+    searchPerformances(conditions: SearchPerformancesConditions): PerformanceOperation<Array<SearchPerformancesResult>>;
     /**
      * IDで劇場検索
      *

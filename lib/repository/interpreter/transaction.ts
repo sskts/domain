@@ -1,5 +1,5 @@
-import mongoose = require("mongoose");
-import monapt = require("monapt");
+import * as mongoose from "mongoose";
+import * as monapt from "monapt";
 import * as TransactionFactory from "../../factory/transaction";
 import ObjectId from "../../model/objectId";
 import Transaction from "../../model/transaction";
@@ -16,7 +16,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             .where(conditions)
             .populate("owner")
             .lean()
-            .exec() as any[];
+            .exec() as Array<any>;
 
         return docs.map(TransactionFactory.create);
     }

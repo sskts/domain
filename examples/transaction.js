@@ -19,7 +19,6 @@ process.env.COA_ENDPOINT = "http://coacinema.aa0.netvolante.jp";
 process.env.COA_REFRESH_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ";
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        mongoose.Promise = global.Promise;
         mongoose.connect(process.env.MONGOLAB_URI);
         const gmoShopId = "tshop00026096";
         const gmoShopPass = "xbxmkaa6";

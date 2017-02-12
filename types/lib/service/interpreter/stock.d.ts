@@ -2,7 +2,7 @@ import COASeatReservationAuthorization from "../../model/authorization/coaSeatRe
 import AssetRepository from "../../repository/asset";
 import TransactionRepository from "../../repository/transaction";
 import StockService from "../stock";
-import COA = require("@motionpicture/coa-service");
+import * as COA from "@motionpicture/coa-service";
 /**
  * 在庫サービス
  *

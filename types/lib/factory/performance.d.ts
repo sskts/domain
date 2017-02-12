@@ -7,7 +7,7 @@ import Film from "../model/film";
 import Performace from "../model/performance";
 import Screen from "../model/screen";
 import Theater from "../model/theater";
-import COA = require("@motionpicture/coa-service");
+import * as COA from "@motionpicture/coa-service";
 export declare function create(args: {
     _id: string;
     theater: Theater;

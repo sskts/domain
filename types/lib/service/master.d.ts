@@ -1,4 +1,4 @@
-import monapt = require("monapt");
+import * as monapt from "monapt";
 import FilmRepository from "../repository/film";
 import PerformanceRepository from "../repository/performance";
 import ScreenRepository from "../repository/screen";
@@ -54,7 +54,7 @@ interface MasterService {
     /** パフォーマンスインポート */
     importPerformances(theaterCode: string, dayStart: string, dayEnd: string): FilmAndScreenAndPerformanceOperation<void>;
     /** パフォーマンス検索 */
-    searchPerformances(conditions: SearchPerformancesConditions): PerformanceOperation<SearchPerformancesResult[]>;
+    searchPerformances(conditions: SearchPerformancesConditions): PerformanceOperation<Array<SearchPerformancesResult>>;
     /** 劇場詳細 */
     findTheater(theaterId: string): TheaterOperation<monapt.Option<Theater>>;
     /** 作品詳細 */

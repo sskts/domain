@@ -18,7 +18,7 @@ export default class CancelAuthorizationQueue<T extends Authorization> extends Q
     readonly max_count_try: number;
     readonly last_tried_at: Date | null;
     readonly count_tried: number;
-    readonly results: string[];
+    readonly results: Array<string>;
     readonly authorization: T;
     /**
      * Creates an instance of CancelAuthorizationQueue.
@@ -34,5 +34,5 @@ export default class CancelAuthorizationQueue<T extends Authorization> extends Q
      *
      * @memberOf CancelAuthorizationQueue
      */
-    constructor(_id: ObjectId, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], authorization: T);
+    constructor(_id: ObjectId, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: Array<string>, authorization: T);
 }

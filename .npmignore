@@ -13,3 +13,5 @@ test/
 !**/*.d.ts
 
 examples/**/*.d.ts
+
+.tscache/

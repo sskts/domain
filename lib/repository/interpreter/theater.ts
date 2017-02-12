@@ -1,5 +1,5 @@
-import mongoose = require("mongoose");
-import monapt = require("monapt");
+import * as mongoose from "mongoose";
+import * as monapt from "monapt";
 import Theater from "../../model/theater";
 import TheaterRepository from "../theater";
 import TheaterModel from "./mongoose/model/theater";

@@ -1,10 +1,10 @@
-import monapt = require("monapt");
+import * as monapt from "monapt";
 import FilmRepository from "../../repository/film";
 import PerformanceRepository from "../../repository/performance";
 import ScreenRepository from "../../repository/screen";
 import TheaterRepository from "../../repository/theater";
 import MasterService from "../master";
-import COA = require("@motionpicture/coa-service");
+import * as COA from "@motionpicture/coa-service";
 import * as FilmFactory from "../../factory/film";
 import * as PerformanceFactory from "../../factory/performance";
 import * as ScreenFactory from "../../factory/screen";
@@ -67,7 +67,7 @@ export default class MasterServiceInterpreter implements MasterService {
      * @memberOf MasterServiceInterpreter
      */
     public importTheater(theaterCode: string): TheaterOperation<void> {
-        return async (repository: TheaterRepository) => {
+        return async(repository: TheaterRepository) => {
             // COAから取得
             const theaterFromCOA = await COA.findTheaterInterface.call({
                 theater_code: theaterCode
@@ -88,7 +88,7 @@ export default class MasterServiceInterpreter implements MasterService {
      * @memberOf MasterServiceInterpreter
      */
     public importFilms(theaterCode: string): TheaterAndFilmOperation<void> {
-        return async (theaterRepository: TheaterRepository, filmRepo: FilmRepository) => {
+        return async(theaterRepository: TheaterRepository, filmRepo: FilmRepository) => {
             // 劇場取得
             const optionTheater = await theaterRepository.findById(theaterCode);
             if (optionTheater.isEmpty) {
@@ -101,7 +101,7 @@ export default class MasterServiceInterpreter implements MasterService {
             });
 
             // 永続化
-            await Promise.all(films.map(async (filmFromCOA) => {
+            await Promise.all(films.map(async(filmFromCOA) => {
                 const film = await FilmFactory.createFromCOA(filmFromCOA)(optionTheater.get());
                 await filmRepo.store(film);
             }));
@@ -117,7 +117,7 @@ export default class MasterServiceInterpreter implements MasterService {
      * @memberOf MasterServiceInterpreter
      */
     public importScreens(theaterCode: string): TheaterAndScreenOperation<void> {
-        return async (theaterRepository: TheaterRepository, screenRepo: ScreenRepository) => {
+        return async(theaterRepository: TheaterRepository, screenRepo: ScreenRepository) => {
             // 劇場取得
             const optionTheater = await theaterRepository.findById(theaterCode);
             if (optionTheater.isEmpty) {
@@ -130,7 +130,7 @@ export default class MasterServiceInterpreter implements MasterService {
             });
 
             // 永続化
-            await Promise.all(screens.map(async (screenFromCOA) => {
+            await Promise.all(screens.map(async(screenFromCOA) => {
                 const screen = await ScreenFactory.createFromCOA(screenFromCOA)(optionTheater.get());
                 await screenRepo.store(screen);
             }));
@@ -149,7 +149,7 @@ export default class MasterServiceInterpreter implements MasterService {
      */
     public importPerformances(theaterCode: string, dayStart: string, dayEnd: string):
         FilmAndScreenAndPerformanceOperation<void> {
-        return async (
+        return async(
             filmRepo: FilmRepository,
             screenRepo: ScreenRepository,
             performanceRepo: PerformanceRepository
@@ -165,7 +165,7 @@ export default class MasterServiceInterpreter implements MasterService {
             });
 
             // パフォーマンスごとに永続化トライ
-            await Promise.all(performances.map(async (performanceFromCOA) => {
+            await Promise.all(performances.map(async(performanceFromCOA) => {
                 const screenId = `${theaterCode}${performanceFromCOA.screen_code}`;
                 const filmId = `${theaterCode}${performanceFromCOA.title_code}${performanceFromCOA.title_branch_num}`;
 
@@ -197,10 +197,10 @@ export default class MasterServiceInterpreter implements MasterService {
      * @memberOf MasterServiceInterpreter
      */
     public searchPerformances(conditions: SearchPerformancesConditions):
-        PerformanceOperation<SearchPerformancesResult[]> {
-        return async (performanceRepo: PerformanceRepository): Promise<SearchPerformancesResult[]> => {
+        PerformanceOperation<Array<SearchPerformancesResult>> {
+        return async(performanceRepo: PerformanceRepository): Promise<Array<SearchPerformancesResult>> => {
             // 検索条件を作成
-            const andConditions: Object[] = [
+            const andConditions: Array<Object> = [
                 { _id: { $ne: null } }
             ];
 
@@ -249,7 +249,7 @@ export default class MasterServiceInterpreter implements MasterService {
      * @memberOf MasterServiceInterpreter
      */
     public findTheater(theaterId: string): TheaterOperation<monapt.Option<Theater>> {
-        return async (repository: TheaterRepository) => {
+        return async(repository: TheaterRepository) => {
             return await repository.findById(theaterId);
         };
     }
@@ -263,7 +263,7 @@ export default class MasterServiceInterpreter implements MasterService {
      * @memberOf MasterServiceInterpreter
      */
     public findFilm(filmId: string): FilmOperation<monapt.Option<Film>> {
-        return async (repository: FilmRepository) => {
+        return async(repository: FilmRepository) => {
             return await repository.findById(filmId);
         };
     }
@@ -277,7 +277,7 @@ export default class MasterServiceInterpreter implements MasterService {
      * @memberOf MasterServiceInterpreter
      */
     public findScreen(screenId: string): ScreenOperation<monapt.Option<Screen>> {
-        return async (repository: ScreenRepository) => {
+        return async(repository: ScreenRepository) => {
             return await repository.findById(screenId);
         };
     }
@@ -291,7 +291,7 @@ export default class MasterServiceInterpreter implements MasterService {
      * @memberOf MasterServiceInterpreter
      */
     public findPerformance(performanceId: string): PerformanceOperation<monapt.Option<Performance>> {
-        return async (repository: PerformanceRepository) => {
+        return async(repository: PerformanceRepository) => {
             return await repository.findById(performanceId);
         };
     }

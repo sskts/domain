@@ -34,7 +34,7 @@ export default class PushNotificationQueue<T extends Notification> extends Queue
         readonly max_count_try: number,
         readonly last_tried_at: Date | null,
         readonly count_tried: number,
-        readonly results: string[],
+        readonly results: Array<string>,
         readonly notification: T
     ) {
         super(

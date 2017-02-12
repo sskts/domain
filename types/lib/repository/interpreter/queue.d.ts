@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
-import mongoose = require("mongoose");
-import monapt = require("monapt");
+import * as mongoose from "mongoose";
+import * as monapt from "monapt";
 import QueueRepository from "../queue";
 import COASeatReservationAuthorization from "../../model/authorization/coaSeatReservation";
 import GMOAuthorization from "../../model/authorization/gmo";

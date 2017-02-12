@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
-import mongoose = require("mongoose");
-import monapt = require("monapt");
+import * as mongoose from "mongoose";
+import * as monapt from "monapt";
 import Performance from "../../model/performance";
 import PerformanceRepository from "../performance";
 export default class PerformanceRepositoryInterpreter implements PerformanceRepository {

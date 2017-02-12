@@ -1,5 +1,5 @@
 /// <reference types="mongoose" />
-import monapt = require("monapt");
+import * as monapt from "monapt";
 import ObjectId from "../model/objectId";
 import Owner from "../model/owner";
 import PromoterOwner from "../model/owner/promoter";
@@ -14,7 +14,7 @@ interface OwnerRepository {
      *
      * @param {Object} conditions 検索条件
      */
-    find(conditions: Object): Promise<Owner[]>;
+    find(conditions: Object): Promise<Array<Owner>>;
     /**
      * ID検索
      *

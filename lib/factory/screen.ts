@@ -7,14 +7,14 @@
 import MultilingualString from "../model/multilingualString";
 import * as Screen from "../model/screen";
 import Theater from "../model/theater";
-import COA = require("@motionpicture/coa-service");
+import * as COA from "@motionpicture/coa-service";
 
 export function create(args: {
     _id: string,
     theater: Theater,
     coa_screen_code: string,
     name: MultilingualString,
-    sections: Screen.Section[]
+    sections: Array<Screen.Section>
 }) {
     return new Screen.default(
         args._id,
@@ -26,7 +26,7 @@ export function create(args: {
 }
 
 export function createFromCOA(screenFromCOA: COA.findScreensByTheaterCodeInterface.Result) {
-    return async (theater: Theater) => {
+    return async(theater: Theater) => {
         const sections: Array<{
             code: string,
             name: {
@@ -37,7 +37,7 @@ export function createFromCOA(screenFromCOA: COA.findScreensByTheaterCodeInterfa
                 code: string
             }>
         }> = [];
-        const sectionCodes: string[] = [];
+        const sectionCodes: Array<string> = [];
         screenFromCOA.list_seat.forEach((seat) => {
             if (sectionCodes.indexOf(seat.seat_section) < 0) {
                 sectionCodes.push(seat.seat_section);

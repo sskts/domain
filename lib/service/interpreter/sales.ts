@@ -1,5 +1,5 @@
 import SalesService from "../sales";
-import GMO = require("@motionpicture/gmo-service");
+import * as GMO from "@motionpicture/gmo-service";
 import GMOAuthorization from "../../model/authorization/gmo";
 
 /**
@@ -13,7 +13,7 @@ export default class SalesServiceInterpreter implements SalesService {
      * GMOオーソリ取消
      */
     public cancelGMOAuth(authorization: GMOAuthorization) {
-        return async (gmoRepository: typeof GMO) => {
+        return async(gmoRepository: typeof GMO) => {
             await gmoRepository.CreditService.alterTranInterface.call({
                 shop_id: authorization.gmo_shop_id,
                 shop_pass: authorization.gmo_shop_pass,
@@ -31,7 +31,7 @@ export default class SalesServiceInterpreter implements SalesService {
      * GMO売上確定
      */
     public settleGMOAuth(authorization: GMOAuthorization) {
-        return async (gmoRepository: typeof GMO) => {
+        return async(gmoRepository: typeof GMO) => {
             await gmoRepository.CreditService.alterTranInterface.call({
                 shop_id: authorization.gmo_shop_id,
                 shop_pass: authorization.gmo_shop_pass,

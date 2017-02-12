@@ -47,7 +47,7 @@
 			<li class="dropdown">
 				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="global.html#createAnonymous">createAnonymous</a></li><li><a href="global.html#createMasterService">createMasterService</a></li><li><a href="global.html#createOwnerRepository">createOwnerRepository</a></li>
+					<li><a href="global.html#createAnonymous">createAnonymous</a></li><li><a href="global.html#createMasterService">createMasterService</a></li><li><a href="global.html#createNotificationService">createNotificationService</a></li><li><a href="global.html#createOwnerRepository">createOwnerRepository</a></li><li><a href="global.html#createSalesService">createSalesService</a></li><li><a href="global.html#createStockService">createStockService</a></li><li><a href="global.html#createTransactionService">createTransactionService</a></li>
 				</ul>
 			</li>
 			
@@ -121,8 +121,7 @@ exports.TransactionEventFactory = TransactionEventFactory;
 const TransactionInquiryKeyFactory = require("./factory/transactionInquiryKey");
 exports.TransactionInquiryKeyFactory = TransactionInquiryKeyFactory;
 /**
- *
- *
+ * マスターサービスを利用する
  *
  * @returns {MasterService}
  */
@@ -130,18 +129,38 @@ function createMasterService() {
     return new master_1.default();
 }
 exports.createMasterService = createMasterService;
+/**
+ * 取引サービスを利用する
+ *
+ * @returns {TransactionService}
+ */
 function createTransactionService() {
     return new transaction_1.default();
 }
 exports.createTransactionService = createTransactionService;
+/**
+ * 在庫サービスを利用する
+ *
+ * @returns {StockService}
+ */
 function createStockService() {
     return new stock_1.default();
 }
 exports.createStockService = createStockService;
+/**
+ * 売上サービスを利用する
+ *
+ * @returns {SalesService}
+ */
 function createSalesService() {
     return new sales_1.default();
 }
 exports.createSalesService = createSalesService;
+/**
+ * 通知サービスを利用する
+ *
+ * @returns {NotificationService}
+ */
 function createNotificationService() {
     return new notification_1.default();
 }

@@ -14,7 +14,7 @@ import TransactionEventGroup from "./transactionEventGroup";
 import TransactionInquiryKey from "./transactionInquiryKey";
 import TransactionQueuesStatus from "./transactionQueuesStatus";
 import TransactionStatus from "./transactionStatus";
-import monapt = require("monapt");
+import * as monapt from "monapt";
 
 /**
  * 取引
@@ -36,9 +36,9 @@ export default class Transaction {
     constructor(
         readonly _id: ObjectId,
         readonly status: TransactionStatus,
-        readonly events: TransactionEvent[],
-        readonly owners: Owner[],
-        readonly queues: Queue[],
+        readonly events: Array<TransactionEvent>,
+        readonly owners: Array<Owner>,
+        readonly queues: Array<Queue>,
         readonly expired_at: Date,
         readonly inquiry_key: TransactionInquiryKey | null,
         readonly queues_status: TransactionQueuesStatus
@@ -68,7 +68,7 @@ export default class Transaction {
      *
      * @memberOf Transaction
      */
-    public authorizations(): Authorization[] {
+    public authorizations(): Array<Authorization> {
         // 承認イベント
         const authorizations = this.events.filter((event) => {
             return event.group === TransactionEventGroup.AUTHORIZE;

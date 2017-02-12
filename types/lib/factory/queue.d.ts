@@ -22,7 +22,7 @@ export declare function create(args: {
     max_count_try: number;
     last_tried_at: Date | null;
     count_tried: number;
-    results: string[];
+    results: Array<string>;
 }): Queue;
 export declare function createSettleAuthorization<T extends Authorization>(args: {
     _id: ObjectId;
@@ -32,7 +32,7 @@ export declare function createSettleAuthorization<T extends Authorization>(args:
     max_count_try: number;
     last_tried_at: Date | null;
     count_tried: number;
-    results: string[];
+    results: Array<string>;
 }): SettleAuthorizationQueue<T>;
 export declare function createCancelAuthorization<T extends Authorization>(args: {
     _id: ObjectId;
@@ -42,7 +42,7 @@ export declare function createCancelAuthorization<T extends Authorization>(args:
     max_count_try: number;
     last_tried_at: Date | null;
     count_tried: number;
-    results: string[];
+    results: Array<string>;
 }): CancelAuthorizationQueue<T>;
 export declare function createPushNotification<T extends Notification>(args: {
     _id: ObjectId;
@@ -52,7 +52,7 @@ export declare function createPushNotification<T extends Notification>(args: {
     max_count_try: number;
     last_tried_at: Date | null;
     count_tried: number;
-    results: string[];
+    results: Array<string>;
 }): PushNotificationQueue<T>;
 export declare function createDisableTransactionInquiry(args: {
     _id: ObjectId;
@@ -62,5 +62,5 @@ export declare function createDisableTransactionInquiry(args: {
     max_count_try: number;
     last_tried_at: Date | null;
     count_tried: number;
-    results: string[];
+    results: Array<string>;
 }): DisableTransactionInquiryQueue;

@@ -1,4 +1,4 @@
-import mongoose = require("mongoose");
+import * as mongoose from "mongoose";
 
 import MasterService from "./service/interpreter/master";
 import NotificationService from "./service/interpreter/notification";
@@ -26,23 +26,42 @@ import * as TransactionEventFactory from "./factory/transactionEvent";
 import * as TransactionInquiryKeyFactory from "./factory/transactionInquiryKey";
 
 /**
- *
- *
+ * マスターサービスを利用する
  *
  * @returns {MasterService}
  */
 export function createMasterService(): MasterService {
     return new MasterService();
 }
+/**
+ * 取引サービスを利用する
+ *
+ * @returns {TransactionService}
+ */
 export function createTransactionService(): TransactionService {
     return new TransactionService();
 }
+/**
+ * 在庫サービスを利用する
+ *
+ * @returns {StockService}
+ */
 export function createStockService(): StockService {
     return new StockService();
 }
+/**
+ * 売上サービスを利用する
+ *
+ * @returns {SalesService}
+ */
 export function createSalesService(): SalesService {
     return new SalesService();
 }
+/**
+ * 通知サービスを利用する
+ *
+ * @returns {NotificationService}
+ */
 export function createNotificationService(): NotificationService {
     return new NotificationService();
 }

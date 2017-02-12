@@ -1,4 +1,3 @@
-// read http://json.schemastore.org/tsconfig
 {
     "compilerOptions": {
         "allowUnreachableCode": false,
@@ -27,8 +26,6 @@
         "noResolve": false,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        // "outDir": "",
-        // "outFile": "",
         "preserveConstEnums": false,
         "pretty": false,
         "removeComments": false,
@@ -41,6 +38,7 @@
         "watch": false
     },
     "exclude": [
+        "docs",
         "node_modules",
         "types"
     ]

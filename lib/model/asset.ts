@@ -20,7 +20,7 @@ export default class Asset {
         readonly group: AssetGroup,
         readonly ownership: Ownership,
         readonly price: number,
-        readonly authorizations: Authorization[]
+        readonly authorizations: Array<Authorization>
     ) {
         // TODO validation
     }

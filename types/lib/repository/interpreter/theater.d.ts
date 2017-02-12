@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
-import mongoose = require("mongoose");
-import monapt = require("monapt");
+import * as mongoose from "mongoose";
+import * as monapt from "monapt";
 import Theater from "../../model/theater";
 import TheaterRepository from "../theater";
 export default class TheaterRepositoryInterpreter implements TheaterRepository {

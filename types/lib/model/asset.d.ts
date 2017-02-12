@@ -19,6 +19,6 @@ export default class Asset {
     readonly group: AssetGroup;
     readonly ownership: Ownership;
     readonly price: number;
-    readonly authorizations: Authorization[];
-    constructor(_id: ObjectId, group: AssetGroup, ownership: Ownership, price: number, authorizations: Authorization[]);
+    readonly authorizations: Array<Authorization>;
+    constructor(_id: ObjectId, group: AssetGroup, ownership: Ownership, price: number, authorizations: Array<Authorization>);
 }

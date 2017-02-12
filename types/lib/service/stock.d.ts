@@ -1,6 +1,6 @@
 import COASeatReservationAuthorization from "../model/authorization/coaSeatReservation";
 import AssetRepository from "../repository/asset";
-import COA = require("@motionpicture/coa-service");
+import * as COA from "@motionpicture/coa-service";
 export declare type AssetOperation<T> = (assetRepository: AssetRepository) => Promise<T>;
 export declare type COAOperation<T> = (coaRepository: typeof COA) => Promise<T>;
 /**

@@ -1,5 +1,5 @@
 import EmailNotification from "../model/notification/email";
-import SendGrid = require("sendgrid");
+import * as SendGrid from "sendgrid";
 
 export type SendGridOperation<T> = (sendgrid: typeof SendGrid) => Promise<T>;
 

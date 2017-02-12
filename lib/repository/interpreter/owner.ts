@@ -1,5 +1,5 @@
-import mongoose = require("mongoose");
-import monapt = require("monapt");
+import * as mongoose from "mongoose";
+import * as monapt from "monapt";
 
 import ObjectId from "../../model/objectId";
 import Owner from "../../model/owner";
@@ -15,7 +15,7 @@ export default class OwnerRepositoryInterpreter implements OwnerRepository {
 
     public async find(conditions: Object) {
         const model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
-        return await model.find({ $and: [conditions] }).lean().exec() as Owner[];
+        return await model.find({ $and: [conditions] }).lean().exec() as Array<Owner>;
     }
 
     public async findById(id: ObjectId) {

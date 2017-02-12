@@ -1,5 +1,5 @@
-import mongoose = require("mongoose");
-import monapt = require("monapt");
+import * as mongoose from "mongoose";
+import * as monapt from "monapt";
 
 import QueueRepository from "../queue";
 
@@ -26,7 +26,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
 
     public async find(conditions: Object) {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
-        const docs = await model.find().where(conditions).exec() as any[];
+        const docs = await model.find().where(conditions).exec() as Array<any>;
         return docs.map((doc) => {
             return QueueFactory.create(doc);
         });
@@ -58,7 +58,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             upsert: false
         })
             .where({
-                "group": QueueGroup.PUSH_NOTIFICATION,
+                group: QueueGroup.PUSH_NOTIFICATION,
                 "notification.group": NotificationGroup.EMAIL
             }).lean().exec() as any;
 
@@ -73,7 +73,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             upsert: false
         })
             .where({
-                "group": QueueGroup.SETTLE_AUTHORIZATION,
+                group: QueueGroup.SETTLE_AUTHORIZATION,
                 "authorization.group": AuthorizationGroup.GMO
             })
             .lean().exec() as any;
@@ -89,7 +89,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             upsert: false
         })
             .where({
-                "group": QueueGroup.SETTLE_AUTHORIZATION,
+                group: QueueGroup.SETTLE_AUTHORIZATION,
                 "authorization.group": AuthorizationGroup.COA_SEAT_RESERVATION
             })
             .lean().exec() as any;
@@ -106,7 +106,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             upsert: false
         })
             .where({
-                "group": QueueGroup.CANCEL_AUTHORIZATION,
+                group: QueueGroup.CANCEL_AUTHORIZATION,
                 "authorization.group": AuthorizationGroup.GMO
             })
             .lean().exec() as any;
@@ -122,7 +122,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             upsert: false
         })
             .where({
-                "group": QueueGroup.CANCEL_AUTHORIZATION,
+                group: QueueGroup.CANCEL_AUTHORIZATION,
                 "authorization.group": AuthorizationGroup.COA_SEAT_RESERVATION
             })
             .lean().exec() as any;

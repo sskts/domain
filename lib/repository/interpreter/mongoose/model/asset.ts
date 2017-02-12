@@ -1,4 +1,4 @@
-import mongoose = require("mongoose");
+import * as mongoose from "mongoose";
 import OwnerModel from "./owner";
 import PerformanceModel from "./performance";
 

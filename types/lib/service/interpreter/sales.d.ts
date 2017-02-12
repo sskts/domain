@@ -1,5 +1,5 @@
 import SalesService from "../sales";
-import GMO = require("@motionpicture/gmo-service");
+import * as GMO from "@motionpicture/gmo-service";
 import GMOAuthorization from "../../model/authorization/gmo";
 /**
  * 売上サービス

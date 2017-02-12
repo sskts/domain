@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
-import mongoose = require("mongoose");
-import monapt = require("monapt");
+import * as mongoose from "mongoose";
+import * as monapt from "monapt";
 import ObjectId from "../../model/objectId";
 import Transaction from "../../model/transaction";
 import TransactionRepository from "../transaction";

@@ -1,5 +1,5 @@
-import mongoose = require("mongoose");
-import monapt = require("monapt");
+import * as mongoose from "mongoose";
+import * as monapt from "monapt";
 import Screen from "../../model/screen";
 import ScreenRepository from "../screen";
 import ScreenModel from "./mongoose/model/screen";
@@ -26,7 +26,7 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
         return await model.find({ theater: args.theater_id })
             .populate("theater")
             .lean()
-            .exec() as Screen[];
+            .exec() as Array<Screen>;
     }
 
     public async store(screen: Screen) {

@@ -37,7 +37,7 @@ export default class SeatReservationAsset extends Asset {
     constructor(
         readonly _id: ObjectId,
         readonly ownership: Ownership,
-        readonly authorizations: Authorization[],
+        readonly authorizations: Array<Authorization>,
         readonly performance: string,
         readonly section: string,
         readonly seat_code: string,
