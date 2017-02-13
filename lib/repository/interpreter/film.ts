@@ -1,9 +1,15 @@
-import * as mongoose from "mongoose";
-import * as monapt from "monapt";
-import * as FilmFactory from "../../factory/film";
-import Film from "../../model/film";
-import FilmRepository from "../film";
-import FilmModel from "./mongoose/model/film";
+/**
+ * 作品リポジトリ
+ *
+ * @class FilmRepositoryInterpreter
+ */
+
+import * as monapt from 'monapt';
+import * as mongoose from 'mongoose';
+import * as FilmFactory from '../../factory/film';
+import Film from '../../model/film';
+import FilmRepository from '../film';
+import FilmModel from './mongoose/model/film';
 
 export default class FilmRepositoryInterpreter implements FilmRepository {
     constructor(readonly connection: mongoose.Connection) {
@@ -11,7 +17,7 @@ export default class FilmRepositoryInterpreter implements FilmRepository {
 
     public async findById(id: string) {
         const model = this.connection.model(FilmModel.modelName, FilmModel.schema);
-        const doc = <any> await model.findOne({ _id: id }).lean().exec();
+        const doc = <any>await model.findOne({ _id: id }).lean().exec();
 
         return (doc) ? monapt.Option(FilmFactory.create(doc)) : monapt.None;
     }

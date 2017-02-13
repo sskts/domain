@@ -1,23 +1,15 @@
-import GMOAuthorization from "../model/authorization/gmo";
-import * as GMO from "@motionpicture/gmo-service";
-export declare type GMOOperation<T> = (gmoRepository: typeof GMO) => Promise<T>;
 /**
  * 売上サービス
  *
- * @interface SalesService
+ * @namespace SalesService
  */
-interface SalesService {
-    /**
-     * GMOオーソリ取消
-     *
-     * @param {GMOAuthorization} authorization GMOオーソリ
-     */
-    cancelGMOAuth(authorization: GMOAuthorization): GMOOperation<void>;
-    /**
-     * GMO売上確定
-     *
-     * @param {GMOAuthorization} authorization GMOオーソリ
-     */
-    settleGMOAuth(authorization: GMOAuthorization): GMOOperation<void>;
-}
-export default SalesService;
+import * as GMO from '@motionpicture/gmo-service';
+import GMOAuthorization from '../model/authorization/gmo';
+/**
+ * GMOオーソリ取消
+ */
+export declare function cancelGMOAuth(authorization: GMOAuthorization): (gmoRepository: typeof GMO) => Promise<void>;
+/**
+ * GMO売上確定
+ */
+export declare function settleGMOAuth(authorization: GMOAuthorization): (gmoRepository: typeof GMO) => Promise<void>;

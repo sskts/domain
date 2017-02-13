@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
-import Authorization from "../authorization";
-import ObjectId from "../objectId";
+import Authorization from '../authorization';
+import ObjectId from '../objectId';
 /**
  * GMOオーソリ
  *

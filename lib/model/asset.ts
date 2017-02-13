@@ -1,7 +1,7 @@
-import AssetGroup from "./assetGroup";
-import Authorization from "./authorization";
-import ObjectId from "./objectId";
-import Ownership from "./ownership";
+import AssetGroup from './assetGroup';
+import Authorization from './authorization';
+import ObjectId from './objectId';
+import Ownership from './ownership';
 
 /**
  * 資産

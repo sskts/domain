@@ -3,7 +3,7 @@
  *
  * @namespace AuthorizationGroup
  */
-declare type AuthorizationGroup = "ASSET" | "COA_SEAT_RESERVATION" | "GMO" | "MVTK";
+declare type AuthorizationGroup = 'ASSET' | 'COA_SEAT_RESERVATION' | 'GMO' | 'MVTK';
 declare namespace AuthorizationGroup {
     /**
      * 内部資産管理

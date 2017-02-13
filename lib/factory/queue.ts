@@ -4,18 +4,18 @@
  * @namespace QueueFactory
  */
 
-import ObjectId from "../model/objectId";
+import ObjectId from '../model/objectId';
 
-import Authorization from "../model/authorization";
-import Notification from "../model/notification";
+import Authorization from '../model/authorization';
+import Notification from '../model/notification';
 
-import Queue from "../model/queue";
-import CancelAuthorizationQueue from "../model/queue/cancelAuthorization";
-import DisableTransactionInquiryQueue from "../model/queue/disableTransactionInquiry";
-import PushNotificationQueue from "../model/queue/pushNotification";
-import SettleAuthorizationQueue from "../model/queue/settleAuthorization";
-import QueueGroup from "../model/queueGroup";
-import QueueStatus from "../model/queueStatus";
+import Queue from '../model/queue';
+import CancelAuthorizationQueue from '../model/queue/cancelAuthorization';
+import DisableTransactionInquiryQueue from '../model/queue/disableTransactionInquiry';
+import PushNotificationQueue from '../model/queue/pushNotification';
+import SettleAuthorizationQueue from '../model/queue/settleAuthorization';
+import QueueGroup from '../model/queueGroup';
+import QueueStatus from '../model/queueStatus';
 
 export function create(args: {
     _id: ObjectId,

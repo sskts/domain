@@ -1,7 +1,13 @@
-import * as mongoose from "mongoose";
-import Asset from "../../model/asset";
-import AssetRepository from "../asset";
-import AssetModel from "./mongoose/model/asset";
+/**
+ * 資産リポジトリ
+ *
+ * @class AssetRepositoryInterpreter
+ */
+
+import * as mongoose from 'mongoose';
+import Asset from '../../model/asset';
+import AssetRepository from '../asset';
+import AssetModel from './mongoose/model/asset';
 
 export default class AssetRepositoryInterpreter implements AssetRepository {
     constructor(readonly connection: mongoose.Connection) {

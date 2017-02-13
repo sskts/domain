@@ -4,12 +4,12 @@
  * @namespace OwnerFactory
  */
 
-import MultilingualString from "../model/multilingualString";
-import ObjectId from "../model/objectId";
-import Owner from "../model/owner";
-import AnonymousOwner from "../model/owner/anonymous";
-import PromoterOwner from "../model/owner/promoter";
-import OwnerGroup from "../model/ownerGroup";
+import MultilingualString from '../model/multilingualString';
+import ObjectId from '../model/objectId';
+import Owner from '../model/owner';
+import AnonymousOwner from '../model/owner/anonymous';
+import PromoterOwner from '../model/owner/promoter';
+import OwnerGroup from '../model/ownerGroup';
 
 export function create(args: {
     _id: ObjectId,
@@ -35,10 +35,10 @@ export function createAnonymous(args: {
 }): AnonymousOwner {
     return new AnonymousOwner(
         args._id,
-        (args.name_first) ? args.name_first : "",
-        (args.name_last) ? args.name_last : "",
-        (args.email) ? args.email : "",
-        (args.tel) ? args.tel : ""
+        (args.name_first) ? args.name_first : '',
+        (args.name_last) ? args.name_last : '',
+        (args.email) ? args.email : '',
+        (args.tel) ? args.tel : ''
     );
 }
 
@@ -48,6 +48,6 @@ export function createAdministrator(args: {
 }): PromoterOwner {
     return new PromoterOwner(
         args._id,
-        (args.name) ? args.name : { ja: "", en: "" }
+        (args.name) ? args.name : { ja: '', en: '' }
     );
 }

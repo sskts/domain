@@ -1,8 +1,14 @@
-import * as mongoose from "mongoose";
-import * as monapt from "monapt";
-import Screen from "../../model/screen";
-import ScreenRepository from "../screen";
-import ScreenModel from "./mongoose/model/screen";
+/**
+ * スクリーンリポジトリ
+ *
+ * @class ScreenRepositoryInterpreter
+ */
+
+import * as monapt from 'monapt';
+import * as mongoose from 'mongoose';
+import Screen from '../../model/screen';
+import ScreenRepository from '../screen';
+import ScreenModel from './mongoose/model/screen';
 
 export default class ScreenRepositoryInterpreter implements ScreenRepository {
     constructor(readonly connection: mongoose.Connection) {
@@ -10,8 +16,8 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
 
     public async findById(id: string) {
         const model = this.connection.model(ScreenModel.modelName, ScreenModel.schema);
-        const screen = <Screen> await model.findOne({ _id: id })
-            .populate("theater")
+        const screen = <Screen>await model.findOne({ _id: id })
+            .populate('theater')
             .lean()
             .exec();
 
@@ -25,8 +31,8 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
         theater_id: string
     }) {
         const model = this.connection.model(ScreenModel.modelName, ScreenModel.schema);
-        return <Screen[]> await model.find({ theater: args.theater_id })
-            .populate("theater")
+        return <Screen[]>await model.find({ theater: args.theater_id })
+            .populate('theater')
             .lean()
             .exec();
     }

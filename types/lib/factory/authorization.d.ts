@@ -4,10 +4,10 @@
  *
  * @namespace AuthorizationFactory
  */
-import SeatReservationAsset from "../model/asset/seatReservation";
-import COASeatReservationAuthorization from "../model/authorization/coaSeatReservation";
-import GMOAuthorization from "../model/authorization/gmo";
-import ObjectId from "../model/objectId";
+import SeatReservationAsset from '../model/asset/seatReservation';
+import COASeatReservationAuthorization from '../model/authorization/coaSeatReservation';
+import GMOAuthorization from '../model/authorization/gmo';
+import ObjectId from '../model/objectId';
 export declare function createGMO(args: {
     _id?: ObjectId;
     price: number;

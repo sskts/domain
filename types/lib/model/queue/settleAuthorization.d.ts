@@ -1,8 +1,8 @@
 /// <reference types="mongoose" />
-import Authorization from "../authorization";
-import ObjectId from "../objectId";
-import Queue from "../queue";
-import QueueStatus from "../queueStatus";
+import Authorization from '../authorization';
+import ObjectId from '../objectId';
+import Queue from '../queue';
+import QueueStatus from '../queueStatus';
 /**
  * 資産移動キュー
  *

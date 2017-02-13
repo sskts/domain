@@ -3,7 +3,7 @@
  *
  * @namespace NotificationGroup
  */
-declare type NotificationGroup = "EMAIL";
+declare type NotificationGroup = 'EMAIL';
 declare namespace NotificationGroup {
     /**
      * Eメール

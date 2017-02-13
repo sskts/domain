@@ -1,6 +1,6 @@
-import Film from "./film";
-import Screen from "./screen";
-import Theater from "./theater";
+import Film from './film';
+import Screen from './screen';
+import Theater from './theater';
 /**
  * パフォーマンス
  *

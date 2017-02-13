@@ -1,6 +1,6 @@
-import Authorization from "../authorization";
-import AuthorizationGroup from "../authorizationGroup";
-import ObjectId from "../objectId";
+import Authorization from '../authorization';
+import AuthorizationGroup from '../authorizationGroup';
+import ObjectId from '../objectId';
 
 /**
  * GMOオーソリ

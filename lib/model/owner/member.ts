@@ -1,6 +1,6 @@
-import ObjectId from "../objectId";
-import Owner from "../owner";
-import OwnerGroup from "../ownerGroup";
+import ObjectId from '../objectId';
+import Owner from '../owner';
+import OwnerGroup from '../ownerGroup';
 
 /**
  * 会員所有者

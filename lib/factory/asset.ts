@@ -4,10 +4,10 @@
  * @namespace AssetFactory
  */
 
-import SeatReservationAsset from "../model/asset/seatReservation";
-import Authorization from "../model/authorization";
-import ObjectId from "../model/objectId";
-import Ownership from "../model/ownership";
+import SeatReservationAsset from '../model/asset/seatReservation';
+import Authorization from '../model/authorization';
+import ObjectId from '../model/objectId';
+import Ownership from '../model/ownership';
 
 /**
  * 座席予約資産を作成する

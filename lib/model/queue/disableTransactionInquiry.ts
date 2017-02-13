@@ -1,7 +1,7 @@
-import ObjectId from "../objectId";
-import Queue from "../queue";
-import QueueGroup from "../queueGroup";
-import QueueStatus from "../queueStatus";
+import ObjectId from '../objectId';
+import Queue from '../queue';
+import QueueGroup from '../queueGroup';
+import QueueStatus from '../queueStatus';
 
 /**
  * 取引照会無効化キュー

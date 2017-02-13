@@ -1,26 +1,44 @@
-import GMOAuthorization from "../model/authorization/gmo";
-import * as GMO from "@motionpicture/gmo-service";
-
-export type GMOOperation<T> = (gmoRepository: typeof GMO) => Promise<T>;
-
 /**
  * 売上サービス
  *
- * @interface SalesService
+ * @namespace SalesService
  */
-interface SalesService {
-    /**
-     * GMOオーソリ取消
-     *
-     * @param {GMOAuthorization} authorization GMOオーソリ
-     */
-    cancelGMOAuth(authorization: GMOAuthorization): GMOOperation<void>;
-    /**
-     * GMO売上確定
-     *
-     * @param {GMOAuthorization} authorization GMOオーソリ
-     */
-    settleGMOAuth(authorization: GMOAuthorization): GMOOperation<void>;
+
+import * as GMO from '@motionpicture/gmo-service';
+import GMOAuthorization from '../model/authorization/gmo';
+
+/**
+ * GMOオーソリ取消
+ */
+export function cancelGMOAuth(authorization: GMOAuthorization) {
+    return async (gmoRepository: typeof GMO) => {
+        await gmoRepository.CreditService.alterTranInterface.call({
+            shop_id: authorization.gmo_shop_id,
+            shop_pass: authorization.gmo_shop_pass,
+            access_id: authorization.gmo_access_id,
+            access_pass: authorization.gmo_access_pass,
+            job_cd: GMO.Util.JOB_CD_VOID,
+            amount: authorization.gmo_amount
+        });
+
+        // todo 失敗したら取引状態確認する?
+    };
 }
 
-export default SalesService;
+/**
+ * GMO売上確定
+ */
+export function settleGMOAuth(authorization: GMOAuthorization) {
+    return async (gmoRepository: typeof GMO) => {
+        await gmoRepository.CreditService.alterTranInterface.call({
+            shop_id: authorization.gmo_shop_id,
+            shop_pass: authorization.gmo_shop_pass,
+            access_id: authorization.gmo_access_id,
+            access_pass: authorization.gmo_access_pass,
+            job_cd: GMO.Util.JOB_CD_SALES,
+            amount: authorization.gmo_amount
+        });
+
+        // todo 失敗したら取引状態確認する?
+    };
+}

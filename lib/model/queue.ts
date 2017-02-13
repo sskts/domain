@@ -1,6 +1,6 @@
-import ObjectId from "./objectId";
-import QueueGroup from "./queueGroup";
-import QueueStatus from "./queueStatus";
+import ObjectId from './objectId';
+import QueueGroup from './queueGroup';
+import QueueStatus from './queueStatus';
 
 /**
  * キュー(実行日時つきのタスク)

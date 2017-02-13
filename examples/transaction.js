@@ -7,50 +7,52 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+/* tslint:disable */
 const COA = require("@motionpicture/coa-service");
 const GMO = require("@motionpicture/gmo-service");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const SSKTS = require("../lib/sskts-domain");
-process.env.MONGOLAB_URI = "mongodb://testsasakiticketmongodbuser:aZHGD262LNsBTQgG9UGQpA6QvbFkKbAhBfxf3vvz@ds056379-a0.mlab.com:56379,ds056379-a1.mlab.com:56372/testsasakiticketmongodb?replicaSet=rs-ds056379";
-process.env.SENDGRID_API_KEY = "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";
-process.env.GMO_ENDPOINT = "https://pt01.mul-pay.jp";
-process.env.COA_ENDPOINT = "http://coacinema.aa0.netvolante.jp";
-process.env.COA_REFRESH_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ";
+process.env.MONGOLAB_URI = 'mongodb://testsasakiticketmongodbuser:aZHGD262LNsBTQgG9UGQpA6QvbFkKbAhBfxf3vvz@ds056379-a0.mlab.com:56379,ds056379-a1.mlab.com:56372/testsasakiticketmongodb?replicaSet=rs-ds056379';
+process.env.SENDGRID_API_KEY = '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';
+process.env.GMO_ENDPOINT = 'https://pt01.mul-pay.jp';
+process.env.COA_ENDPOINT = 'http://coacinema.aa0.netvolante.jp';
+process.env.COA_REFRESH_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ';
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         mongoose.connect(process.env.MONGOLAB_URI);
-        const gmoShopId = "tshop00026096";
-        const gmoShopPass = "xbxmkaa6";
-        const transactionService = SSKTS.createTransactionService();
+        const gmoShopId = 'tshop00026096';
+        const gmoShopPass = 'xbxmkaa6';
+        const transactionService = SSKTS.TransactionService;
         const ownerRepository = SSKTS.createOwnerRepository(mongoose.connection);
         const transactionRepository = SSKTS.createTransactionRepository(mongoose.connection);
         // 取引開始
         // 30分後のunix timestampを送信する場合
         // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
-        console.log("starting transaction...");
-        const transaction = yield transactionService.start(moment().add(30, "minutes").toDate())(ownerRepository, transactionRepository);
-        console.log("transaction started.");
+        // tslint:disable-next-line:no-console
+        console.log('starting transaction...');
+        const transaction = yield transactionService.start(moment().add(30, 'minutes').toDate())(ownerRepository, transactionRepository);
+        console.log('transaction started.');
         const transactionId = transaction._id;
         const promoterOwner = transaction.owners.find((owner) => {
-            return (owner.group === "PROMOTER");
+            return (owner.group === 'PROMOTER');
         });
         if (!promoterOwner)
-            throw new Error("promoterOwner not found.");
+            throw new Error('promoterOwner not found.');
         const promoterOwnerId = promoterOwner._id;
         const anonymousOwner = transaction.owners.find((owner) => {
-            return (owner.group === "ANONYMOUS");
+            return (owner.group === 'ANONYMOUS');
         });
         if (!anonymousOwner)
-            throw new Error("anonymousOwner not found.");
+            throw new Error('anonymousOwner not found.');
         const anonymousOwnerId = anonymousOwner._id;
         // 空席なくなったら変更する
-        const theaterCode = "001";
-        const dateJouei = "20170210";
-        const titleCode = "8513";
-        const titleBranchNum = "0";
-        const timeBegin = "1010";
-        const screenCode = "2";
+        const theaterCode = '001';
+        const dateJouei = '20170210';
+        const titleCode = '8513';
+        const titleBranchNum = '0';
+        const timeBegin = '1010';
+        const screenCode = '2';
         // 販売可能チケット検索
         const salesTicketResult = yield COA.salesTicketInterface.call({
             theater_code: theaterCode,
@@ -72,9 +74,9 @@ function main() {
         const freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
             return freeSeat.seat_num;
         });
-        console.log("freeSeatCodes count", freeSeatCodes.length);
+        console.log('freeSeatCodes count', freeSeatCodes.length);
         if (getStateReserveSeatResult.cnt_reserve_free === 0)
-            throw new Error("no available seats.");
+            throw new Error('no available seats.');
         // COA仮予約
         const reserveSeatsTemporarilyResult = yield COA.reserveSeatsTemporarilyInterface.call({
             theater_code: theaterCode,
@@ -88,12 +90,12 @@ function main() {
                     seat_num: freeSeatCodes[0],
                 }, {
                     seat_section: sectionCode,
-                    seat_num: freeSeatCodes[1],
+                    seat_num: freeSeatCodes[1]
                 }],
         });
         console.log(reserveSeatsTemporarilyResult);
         // COAオーソリ追加
-        console.log("adding authorizations coaSeatReservation...");
+        console.log('adding authorizations coaSeatReservation...');
         const totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
         const coaAuthorization = SSKTS.AuthorizationFactory.createCOASeatReservation({
             owner_from: promoterOwnerId,
@@ -112,7 +114,7 @@ function main() {
                         authenticated: false,
                     }),
                     authorizations: [],
-                    performance: "001201701208513021010",
+                    performance: '001201701208513021010',
                     section: tmpReserve.seat_section,
                     seat_code: tmpReserve.seat_num,
                     ticket_code: salesTicketResult.list_ticket[0].ticket_code,
@@ -125,10 +127,10 @@ function main() {
                     sale_price: salesTicketResult.list_ticket[0].sale_price,
                 });
             }),
-            price: totalPrice,
+            price: totalPrice
         });
         yield transactionService.addCOASeatReservationAuthorization(transactionId.toString(), coaAuthorization)(transactionRepository);
-        console.log("coaAuthorization added.");
+        console.log('coaAuthorization added.');
         // GMOオーソリ取得
         const orderId = Date.now().toString();
         const entryTranResult = yield GMO.CreditService.entryTranInterface.call({
@@ -142,14 +144,14 @@ function main() {
             access_id: entryTranResult.access_id,
             access_pass: entryTranResult.access_pass,
             order_id: orderId,
-            method: "1",
-            card_no: "4111111111111111",
-            expire: "2012",
-            security_code: "123",
+            method: '1',
+            card_no: '4111111111111111',
+            expire: '2012',
+            security_code: '123',
         });
         console.log(execTranResult);
         // GMOオーソリ追加
-        console.log("adding authorizations gmo...");
+        console.log('adding authorizations gmo...');
         const gmoAuthorization = SSKTS.AuthorizationFactory.createGMO({
             owner_from: anonymousOwnerId,
             owner_to: promoterOwnerId,
@@ -164,19 +166,19 @@ function main() {
             price: totalPrice,
         });
         yield transactionService.addGMOAuthorization(transactionId.toString(), gmoAuthorization)(transactionRepository);
-        console.log("GMOAuthorization added.");
+        console.log('GMOAuthorization added.');
         // 購入者情報登録
-        console.log("updating anonymous...");
+        console.log('updating anonymous...');
         yield transactionService.updateAnonymousOwner({
             transaction_id: transactionId.toString(),
-            name_first: "Tetsu",
-            name_last: "Yamazaki",
-            tel: "09012345678",
-            email: "hello@motionpicture.jp",
+            name_first: 'Tetsu',
+            name_last: 'Yamazaki',
+            tel: '09012345678',
+            email: 'hello@motionpicture.jp',
         })(ownerRepository, transactionRepository);
-        console.log("anonymousOwner updated.");
+        console.log('anonymousOwner updated.');
         // COA本予約
-        const tel = "09012345678";
+        const tel = '09012345678';
         const updateReserveResult = yield COA.updateReserveInterface.call({
             theater_code: theaterCode,
             date_jouei: dateJouei,
@@ -185,10 +187,10 @@ function main() {
             time_begin: timeBegin,
             // screen_code: screenCode,
             tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
-            reserve_name: "山崎 哲",
-            reserve_name_jkana: "ヤマザキ テツ",
-            tel_num: "09012345678",
-            mail_addr: "yamazaki@motionpicture.jp",
+            reserve_name: '山崎 哲',
+            reserve_name_jkana: 'ヤマザキ テツ',
+            tel_num: '09012345678',
+            mail_addr: 'yamazaki@motionpicture.jp',
             reserve_amount: totalPrice,
             list_ticket: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
                 return {
@@ -202,16 +204,16 @@ function main() {
                 };
             }),
         });
-        console.log("updateReserveResult:", updateReserveResult);
+        console.log('updateReserveResult:', updateReserveResult);
         // 照会情報登録(購入番号と電話番号で照会する場合)
-        console.log("enabling inquiry...");
+        console.log('enabling inquiry...');
         const key = SSKTS.TransactionInquiryKeyFactory.create({
             theater_code: theaterCode,
             reserve_num: updateReserveResult.reserve_num,
             tel: tel,
         });
         yield transactionService.enableInquiry(transactionId.toString(), key)(transactionRepository);
-        console.log("inquiry enabled.");
+        console.log('inquiry enabled.');
         // メール追加
         const content = `
 <!DOCTYPE html>
@@ -227,27 +229,27 @@ function main() {
 </body>
 </html>
 `;
-        console.log("adding email...");
+        console.log('adding email...');
         const notification = SSKTS.NotificationFactory.createEmail({
-            from: "noreply@localhost",
-            to: "hello@motionpicture.jp",
-            subject: "購入完了",
+            from: 'noreply@localhost',
+            to: 'hello@motionpicture.jp',
+            subject: '購入完了',
             content: content,
         });
         yield transactionService.addEmail(transactionId.toString(), notification)(transactionRepository);
-        console.log("email added.");
+        console.log('email added.');
         // let notificationId = notification._id;
         // 取引成立
-        console.log("closing transaction...");
+        console.log('closing transaction...');
         yield transactionService.close(transactionId.toString())(transactionRepository);
-        console.log("closed.");
+        console.log('closed.');
         // 照会してみる
         const inquiryResult = yield transactionService.makeInquiry(key)(transactionRepository);
-        console.log("makeInquiry result:", inquiryResult);
+        console.log('makeInquiry result:', inquiryResult);
     });
 }
 main().then(() => {
-    console.log("main processed.");
+    console.log('main processed.');
 }).catch((err) => {
     console.error(err.message);
 });

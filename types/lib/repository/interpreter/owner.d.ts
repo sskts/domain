@@ -1,10 +1,15 @@
 /// <reference types="mongoose" />
-import * as mongoose from "mongoose";
-import * as monapt from "monapt";
-import ObjectId from "../../model/objectId";
-import Owner from "../../model/owner";
-import PromoterOwner from "../../model/owner/promoter";
-import OwnerRepository from "../owner";
+/**
+ * 所有者リポジトリ
+ *
+ * @class OwnerRepositoryInterpreter
+ */
+import * as monapt from 'monapt';
+import * as mongoose from 'mongoose';
+import ObjectId from '../../model/objectId';
+import Owner from '../../model/owner';
+import PromoterOwner from '../../model/owner/promoter';
+import OwnerRepository from '../owner';
 export default class OwnerRepositoryInterpreter implements OwnerRepository {
     readonly connection: mongoose.Connection;
     constructor(connection: mongoose.Connection);

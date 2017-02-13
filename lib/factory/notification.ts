@@ -4,8 +4,8 @@
  * @namespace NotificationFactory
  */
 
-import EmailNotification from "../model/notification/email";
-import ObjectId from "../model/objectId";
+import EmailNotification from '../model/notification/email';
+import ObjectId from '../model/objectId';
 
 export function createEmail(args: {
     _id?: ObjectId,
@@ -17,9 +17,9 @@ export function createEmail(args: {
 }) {
     return new EmailNotification(
         (args._id === undefined) ? ObjectId() : (args._id),
-        (args.from === undefined) ? "" : (args.from),
-        (args.to === undefined) ? "" : (args.to),
-        (args.subject === undefined) ? "" : (args.subject),
-        (args.content === undefined) ? "" : (args.content)
+        args.from,
+        args.to,
+        args.subject,
+        args.content
     );
 }

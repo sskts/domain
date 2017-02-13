@@ -1,8 +1,13 @@
 /// <reference types="mongoose" />
-import * as mongoose from "mongoose";
-import * as monapt from "monapt";
-import Theater from "../../model/theater";
-import TheaterRepository from "../theater";
+/**
+ * 劇場リポジトリ
+ *
+ * @class TheaterRepositoryInterpreter
+ */
+import * as monapt from 'monapt';
+import * as mongoose from 'mongoose';
+import Theater from '../../model/theater';
+import TheaterRepository from '../theater';
 export default class TheaterRepositoryInterpreter implements TheaterRepository {
     readonly connection: mongoose.Connection;
     constructor(connection: mongoose.Connection);

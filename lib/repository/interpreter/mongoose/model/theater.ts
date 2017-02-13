@@ -1,4 +1,4 @@
-import * as mongoose from "mongoose";
+import * as mongoose from 'mongoose';
 
 /**
  * 劇場スキーマ
@@ -17,13 +17,14 @@ const schema = new mongoose.Schema(
             ja: String,
             en: String
         }
-    }, {
-        collection: "theaters",
+    },
+    {
+        collection: 'theaters',
         timestamps: {
-            createdAt: "created_at",
-            updatedAt: "updated_at"
+            createdAt: 'created_at',
+            updatedAt: 'updated_at'
         }
     }
 );
 
-export default mongoose.model("Theater", schema);
+export default mongoose.model('Theater', schema);

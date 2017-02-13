@@ -1,6 +1,6 @@
-import * as mongoose from "mongoose";
-import OwnerModel from "./owner";
-import PerformanceModel from "./performance";
+import * as mongoose from 'mongoose';
+import OwnerModel from './owner';
+import PerformanceModel from './performance';
 
 /**
  * 資産スキーマ
@@ -35,13 +35,14 @@ const schema = new mongoose.Schema(
         add_price: Number,
         dis_price: Number,
         sale_price: Number
-    }, {
-        collection: "assets",
+    },
+    {
+        collection: 'assets',
         timestamps: {
-            createdAt: "created_at",
-            updatedAt: "updated_at"
+            createdAt: 'created_at',
+            updatedAt: 'updated_at'
         }
     }
 );
 
-export default mongoose.model("Asset", schema);
+export default mongoose.model('Asset', schema);

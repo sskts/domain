@@ -1,4 +1,4 @@
-import * as mongoose from "mongoose";
+import * as mongoose from 'mongoose';
 
 /**
  * キュースキーマ
@@ -18,13 +18,14 @@ const schema = new mongoose.Schema(
         authorization: mongoose.Schema.Types.Mixed, // オーソリタスク
         notification: mongoose.Schema.Types.Mixed, // 通知タスク
         transaction_id: mongoose.Schema.Types.ObjectId // 取引タスク
-    }, {
-        collection: "queues",
+    },
+    {
+        collection: 'queues',
         timestamps: {
-            createdAt: "created_at",
-            updatedAt: "updated_at"
+            createdAt: 'created_at',
+            updatedAt: 'updated_at'
         }
     }
 );
 
-export default mongoose.model("Queue", schema);
+export default mongoose.model('Queue', schema);

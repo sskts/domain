@@ -1,8 +1,8 @@
-import * as validator from "validator";
-import SeatReservationAsset from "../asset/seatReservation";
-import Authorization from "../authorization";
-import AuthorizationGroup from "../authorizationGroup";
-import ObjectId from "../objectId";
+import * as validator from 'validator';
+import SeatReservationAsset from '../asset/seatReservation';
+import Authorization from '../authorization';
+import AuthorizationGroup from '../authorizationGroup';
+import ObjectId from '../objectId';
 
 /**
  * COA座席仮予約
@@ -47,15 +47,15 @@ export default class COASeatReservationAuthorization extends Authorization {
         super(_id, AuthorizationGroup.COA_SEAT_RESERVATION, price, owner_from, owner_to);
 
         // todo validation
-        if (validator.isEmpty(coa_tmp_reserve_num.toString())) throw new Error("coa_tmp_reserve_num required.");
-        if (validator.isEmpty(coa_theater_code)) throw new Error("coa_theater_code required.");
-        if (validator.isEmpty(coa_date_jouei)) throw new Error("coa_date_jouei required.");
-        if (validator.isEmpty(coa_title_code)) throw new Error("coa_title_code required.");
-        if (validator.isEmpty(coa_title_branch_num)) throw new Error("coa_title_branch_num required.");
-        if (validator.isEmpty(coa_time_begin)) throw new Error("coa_time_begin required.");
-        if (validator.isEmpty(coa_screen_code)) throw new Error("coa_screen_code required.");
-        if (validator.isEmpty(price.toString())) throw new Error("price required.");
-        if (validator.isEmpty(owner_from.toString())) throw new Error("owner_from required.");
-        if (validator.isEmpty(owner_to.toString())) throw new Error("owner_to required.");
+        if (validator.isEmpty(coa_tmp_reserve_num.toString())) throw new Error('coa_tmp_reserve_num required.');
+        if (validator.isEmpty(coa_theater_code)) throw new Error('coa_theater_code required.');
+        if (validator.isEmpty(coa_date_jouei)) throw new Error('coa_date_jouei required.');
+        if (validator.isEmpty(coa_title_code)) throw new Error('coa_title_code required.');
+        if (validator.isEmpty(coa_title_branch_num)) throw new Error('coa_title_branch_num required.');
+        if (validator.isEmpty(coa_time_begin)) throw new Error('coa_time_begin required.');
+        if (validator.isEmpty(coa_screen_code)) throw new Error('coa_screen_code required.');
+        if (validator.isEmpty(price.toString())) throw new Error('price required.');
+        if (validator.isEmpty(owner_from.toString())) throw new Error('owner_from required.');
+        if (validator.isEmpty(owner_to.toString())) throw new Error('owner_to required.');
     }
 }

@@ -1,18 +1,18 @@
-import EmailNotification from "../model/notification/email";
-import * as SendGrid from "sendgrid";
-export declare type SendGridOperation<T> = (sendgrid: typeof SendGrid) => Promise<T>;
 /**
  * 通知サービス
- * 購入完了を何かしらの方法で通知したり、その他諸々誰かに何かを知らせる場合に必要なファンクション群
  *
- * @interface NotificationService
+ * @namespace NotificationService
  */
-interface NotificationService {
-    /**
-     * メール送信
-     *
-     * @param {EmailNotification} email メール通知
-     */
-    sendEmail(email: EmailNotification): SendGridOperation<void>;
-}
-export default NotificationService;
+import * as SendGrid from 'sendgrid';
+import EmailNotification from '../model/notification/email';
+export declare type SendGridOperation<T> = (sendgrid: typeof SendGrid) => Promise<T>;
+/**
+ * メール送信
+ * https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
+ *
+ * @param {EmailNotification} email
+ * @returns {SendGridOperation<void>}
+ *
+ * @memberOf NotificationService
+ */
+export declare function sendEmail(email: EmailNotification): SendGridOperation<void>;

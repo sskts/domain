@@ -1,16 +1,21 @@
 /// <reference types="mongoose" />
-import * as mongoose from "mongoose";
-import * as monapt from "monapt";
-import QueueRepository from "../queue";
-import COASeatReservationAuthorization from "../../model/authorization/coaSeatReservation";
-import GMOAuthorization from "../../model/authorization/gmo";
-import EmailNotification from "../../model/notification/email";
-import ObjectId from "../../model/objectId";
-import Queue from "../../model/queue";
-import CancelAuthorizationQueue from "../../model/queue/cancelAuthorization";
-import DisableTransactionInquiryQueue from "../../model/queue/disableTransactionInquiry";
-import PushNotificationQueue from "../../model/queue/pushNotification";
-import SettleAuthorizationQueue from "../../model/queue/settleAuthorization";
+/**
+ * キューリポジトリ
+ *
+ * @class QueueRepositoryInterpreter
+ */
+import * as monapt from 'monapt';
+import * as mongoose from 'mongoose';
+import QueueRepository from '../queue';
+import COASeatReservationAuthorization from '../../model/authorization/coaSeatReservation';
+import GMOAuthorization from '../../model/authorization/gmo';
+import EmailNotification from '../../model/notification/email';
+import ObjectId from '../../model/objectId';
+import Queue from '../../model/queue';
+import CancelAuthorizationQueue from '../../model/queue/cancelAuthorization';
+import DisableTransactionInquiryQueue from '../../model/queue/disableTransactionInquiry';
+import PushNotificationQueue from '../../model/queue/pushNotification';
+import SettleAuthorizationQueue from '../../model/queue/settleAuthorization';
 export default class QueueRepositoryInterpreter implements QueueRepository {
     readonly connection: mongoose.Connection;
     constructor(connection: mongoose.Connection);

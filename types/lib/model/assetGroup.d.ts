@@ -3,7 +3,7 @@
  *
  * @namespace AssetGroup
  */
-declare type AssetGroup = "SEAT_RESERVATION";
+declare type AssetGroup = 'SEAT_RESERVATION';
 declare namespace AssetGroup {
     /**
      * 座席予約グループ

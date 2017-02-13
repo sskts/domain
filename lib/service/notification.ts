@@ -1,21 +1,47 @@
-import EmailNotification from "../model/notification/email";
-import * as SendGrid from "sendgrid";
+/**
+ * 通知サービス
+ *
+ * @namespace NotificationService
+ */
+
+import * as SendGrid from 'sendgrid';
+import EmailNotification from '../model/notification/email';
 
 export type SendGridOperation<T> = (sendgrid: typeof SendGrid) => Promise<T>;
 
 /**
- * 通知サービス
- * 購入完了を何かしらの方法で通知したり、その他諸々誰かに何かを知らせる場合に必要なファンクション群
+ * メール送信
+ * https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
  *
- * @interface NotificationService
+ * @param {EmailNotification} email
+ * @returns {SendGridOperation<void>}
+ *
+ * @memberOf NotificationService
  */
-interface NotificationService {
-    /**
-     * メール送信
-     *
-     * @param {EmailNotification} email メール通知
-     */
-    sendEmail(email: EmailNotification): SendGridOperation<void>;
-}
+export function sendEmail(email: EmailNotification): SendGridOperation<void> {
+    return async (sendgrid: typeof SendGrid) => {
+        const mail = new sendgrid.mail.Mail(
+            new sendgrid.mail.Email(email.from),
+            email.subject,
+            new sendgrid.mail.Email(email.to),
+            new sendgrid.mail.Content('text/html', email.content)
+        );
 
-export default NotificationService;
+        const sg = sendgrid(process.env.SENDGRID_API_KEY);
+
+        const request = sg.emptyRequest({
+            host: 'api.sendgrid.com',
+            method: 'POST',
+            path: '/v3/mail/send',
+            headers: {},
+            body: mail.toJSON(),
+            queryParams: {},
+            test: false,
+            port: ''
+        });
+
+        await sg.API(request);
+        // todo check the response.
+        // const response = await sg.API(request);
+    };
+}

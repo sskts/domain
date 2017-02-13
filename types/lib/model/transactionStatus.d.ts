@@ -3,7 +3,7 @@
  *
  * @namespace TransactionStatus
  */
-declare type TransactionStatus = "UNDERWAY" | "CLOSED" | "EXPIRED";
+declare type TransactionStatus = 'UNDERWAY' | 'CLOSED' | 'EXPIRED';
 declare namespace TransactionStatus {
     /**
      * 進行中

@@ -1,166 +1,683 @@
-import * as monapt from "monapt";
-import COASeatReservationAuthorization from "../model/authorization/coaSeatReservation";
-import GMOAuthorization from "../model/authorization/gmo";
-import EmailNotification from "../model/notification/email";
-import Transaction from "../model/transaction";
-import TransactionInquiryKey from "../model/transactionInquiryKey";
-
-import OwnerRepository from "../repository/owner";
-import QueueRepository from "../repository/queue";
-import TransactionRepository from "../repository/transaction";
-
-export type TransactionAndQueueOperation<T> =
-    (transastionRepository: TransactionRepository, queueRepository: QueueRepository) => Promise<T>;
-export type OwnerAndTransactionOperation<T> =
-    (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<T>;
-export type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>;
-
 /**
  * 取引サービス
- * 主に、取引中(購入プロセス中)に使用されるファンクション群
  *
- * @interface TransactionService
+ * @namespace TransactionService
  */
-interface TransactionService {
+
+import * as monapt from 'monapt';
+
+import COASeatReservationAuthorization from '../model/authorization/coaSeatReservation';
+import GMOAuthorization from '../model/authorization/gmo';
+import EmailNotification from '../model/notification/email';
+import ObjectId from '../model/objectId';
+import OwnerGroup from '../model/ownerGroup';
+import Queue from '../model/queue';
+import QueueStatus from '../model/queueStatus';
+import Transaction from '../model/transaction';
+import TransactionEventGroup from '../model/transactionEventGroup';
+import TransactionInquiryKey from '../model/transactionInquiryKey';
+import TransactionStatus from '../model/transactionStatus';
+
+import OwnerRepository from '../repository/owner';
+import QueueRepository from '../repository/queue';
+import TransactionRepository from '../repository/transaction';
+
+import * as NotificationFactory from '../factory/notification';
+import * as OwnerFactory from '../factory/owner';
+import * as QueueFactory from '../factory/queue';
+import * as TransactionFactory from '../factory/transaction';
+import * as TransactionEventFactory from '../factory/transactionEvent';
+
+export type TransactionAndQueueOperation<T> =
+    (transactionRepo: TransactionRepository, queueRepo: QueueRepository) => Promise<T>;
+export type OwnerAndTransactionOperation<T> =
+    (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => Promise<T>;
+export type TransactionOperation<T> = (transactionRepo: TransactionRepository) => Promise<T>;
+
+/**
+ * 匿名所有者更新
+ *
+ * @returns {OwnerAndTransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export function updateAnonymousOwner(args: {
     /**
-     * 匿名所有者の情報を更新する
+     *
+     *
+     * @type {string}
      */
-    updateAnonymousOwner(args: {
-        /**
-         * 取引ID
-         */
-        transaction_id: string,
-        /**
-         * 名
-         */
-        name_first?: string,
-        /**
-         * 姓
-         */
-        name_last?: string,
-        /**
-         * メールアドレス
-         */
-        email?: string,
-        /**
-         * 電話番号
-         */
-        tel?: string
-    }): OwnerAndTransactionOperation<void>;
+    transaction_id: string,
     /**
-     * 取引詳細取得
      *
-     * @param {string} transactionId
-     * @returns {TransactionOperation<monapt.Option<Transaction>>}
      *
-     * @memberOf TransactionService
+     * @type {string}
      */
-    findById(transactionId: string): TransactionOperation<monapt.Option<Transaction>>;
+    name_first?: string,
     /**
-     * 取引開始
      *
-     * @param {Date} expiredAt
-     * @returns {OwnerAndTransactionOperation<Transaction>}
      *
-     * @memberOf TransactionService
+     * @type {string}
      */
-    start(expiredAt: Date): OwnerAndTransactionOperation<Transaction>;
+    name_last?: string,
     /**
-     * GMOオーソリを追加する
      *
-     * @param {string} transactionId
-     * @param {GMOAuthorization} authorization
-     * @returns {TransactionOperation<void>}
      *
-     * @memberOf TransactionService
+     * @type {string}
      */
-    addGMOAuthorization(transactionId: string, authorization: GMOAuthorization): TransactionOperation<void>;
+    email?: string,
     /**
-     * COA仮予約を追加する
      *
-     * @param {string} transactionId
-     * @param {COASeatReservationAuthorization} authorization
-     * @returns {OwnerAndTransactionOperation<void>}
      *
-     * @memberOf TransactionService
+     * @type {string}
      */
-    addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorization):
-        TransactionOperation<void>;
-    /**
-     * オーソリアイテムを削除する
-     *
-     * @param {string} transactionId
-     * @param {string} authorizationId
-     * @returns {TransactionOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    removeAuthorization(transactionId: string, authorizationId: string): TransactionOperation<void>;
-    /**
-     * 照会を可能にする
-     *
-     * @param {string} transactionId
-     * @param {TransactionInquiryKey} key
-     * @returns {TransactionOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    enableInquiry(transactionId: string, key: TransactionInquiryKey): TransactionOperation<void>;
-    /**
-     * 照会する
-     *
-     * @param {TransactionInquiryKey} key
-     * @returns {TransactionOperation<monapt.Option<Transaction>>}
-     *
-     * @memberOf TransactionService
-     */
-    makeInquiry(key: TransactionInquiryKey): TransactionOperation<monapt.Option<Transaction>>;
-    /**
-     * 取引成立後に送信されるメールを追加する
-     *
-     * @param {string} transactionId
-     * @param {EmailNotification} notification
-     * @returns {TransactionOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    addEmail(transactionId: string, notification: EmailNotification): TransactionOperation<void>;
-    /**
-     * 取引成立後に送信されるメールを削除する
-     *
-     * @param {string} transactionId
-     * @param {string} notificationId
-     * @returns {TransactionOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    removeEmail(transactionId: string, notificationId: string): TransactionOperation<void>;
-    /**
-     * 取引成立
-     *
-     * @param {string} transactionId
-     * @returns {TransactionOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    close(transactionId: string): TransactionOperation<void>;
-    /**
-     * 取引期限切れ
-     *
-     * @returns {TransactionOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    expireOne(): TransactionOperation<void>;
-    /**
-     * 取引に関するキュー(非同期で実行されるべき処理)を出力する
-     *
-     * @param {string} transactionId
-     * @returns {TransactionAndQueueOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    exportQueues(transactionId: string): TransactionAndQueueOperation<void>;
+    tel?: string
+}): OwnerAndTransactionOperation<void> {
+    return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
+        // 取引取得
+        const optionTransaction = await transactionRepo.findById(ObjectId(args.transaction_id));
+        if (optionTransaction.isEmpty) {
+            throw new Error(`transaction[${ObjectId(args.transaction_id)}] not found.`);
+        }
+
+        const transaction = optionTransaction.get();
+
+        const anonymousOwner = transaction.owners.find((owner) => {
+            return (owner.group === OwnerGroup.ANONYMOUS);
+        });
+        if (!anonymousOwner) {
+            throw new Error('anonymous owner not found.');
+        }
+
+        // 永続化
+        const option = await ownerRepo.findOneAndUpdate(
+            {
+                _id: anonymousOwner._id
+            },
+            {
+                $set: {
+                    name_first: args.name_first,
+                    name_last: args.name_last,
+                    email: args.email,
+                    tel: args.tel
+                }
+            }
+        );
+        if (option.isEmpty) {
+            throw new Error('owner not found.');
+        }
+    };
 }
 
-export default TransactionService;
+/**
+ * IDから取得する
+ *
+ * @param {string} transactionId
+ * @returns {TransactionOperation<monapt.Option<Transaction>>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export function findById(transactionId: string): TransactionOperation<monapt.Option<Transaction>> {
+    return async (transactionRepo: TransactionRepository) => await transactionRepo.findById(ObjectId(transactionId));
+}
+
+/**
+ * 取引開始
+ *
+ * @param {Date} expiredAt
+ * @returns {OwnerAndTransactionOperation<Transaction>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export function start(expiredAt: Date) {
+    return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
+        // 一般所有者作成
+        const anonymousOwner = OwnerFactory.createAnonymous({
+            _id: ObjectId()
+        });
+
+        // 興行主取得
+        const option = await ownerRepo.findPromoter();
+        if (option.isEmpty) {
+            throw new Error('promoter not found.');
+        }
+
+        const promoter = option.get();
+
+        // イベント作成
+        const event = TransactionEventFactory.create({
+            _id: ObjectId(),
+            group: TransactionEventGroup.START,
+            occurred_at: new Date()
+        });
+
+        // 取引作成
+        const transaction = TransactionFactory.create({
+            _id: ObjectId(),
+            status: TransactionStatus.UNDERWAY,
+            events: [event],
+            owners: [promoter, anonymousOwner],
+            expired_at: expiredAt
+        });
+
+        // 永続化
+        await ownerRepo.store(anonymousOwner);
+        await transactionRepo.store(transaction);
+
+        return transaction;
+    };
+}
+
+/**
+ * GMO資産承認
+ *
+ * @param {string} transactionId
+ * @param {GMOAuthorization} authorization
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export function addGMOAuthorization(transactionId: string, authorization: GMOAuthorization) {
+    return async (transactionRepo: TransactionRepository) => {
+        // 取引取得
+        const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
+        if (optionTransaction.isEmpty) {
+            throw new Error(`transaction[${ObjectId(transactionId)}] not found.`);
+        }
+
+        const transaction = optionTransaction.get();
+
+        // 所有者が取引に存在するかチェック
+        const ownerIds = transaction.owners.map((owner) => {
+            return owner._id.toString();
+        });
+        if (ownerIds.indexOf(authorization.owner_from.toString()) < 0) {
+            throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_from}].`);
+        }
+        if (ownerIds.indexOf(authorization.owner_to.toString()) < 0) {
+            throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_to}].`);
+        }
+
+        // 永続化
+        // イベント作成
+        const event = TransactionEventFactory.createAuthorize({
+            _id: ObjectId(),
+            occurred_at: new Date(),
+            authorization: authorization
+        });
+
+        // 永続化
+        const option = await transactionRepo.findOneAndUpdate(
+            {
+                _id: ObjectId(transactionId),
+                status: TransactionStatus.UNDERWAY
+            },
+            {
+                $push: {
+                    events: event
+                }
+            }
+        );
+        if (option.isEmpty) {
+            throw new Error('UNDERWAY transaction not found.');
+        }
+
+        // return authorization;
+    };
+}
+
+/**
+ * COA資産承認
+ *
+ * @param {string} transactionId
+ * @param {COASeatReservationAuthorization} authorization
+ * @returns {OwnerAndTransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export function addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorization) {
+    return async (transactionRepo: TransactionRepository) => {
+        // 取引取得
+        const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
+        if (optionTransaction.isEmpty) {
+            throw new Error(`transaction[${ObjectId(transactionId)}] not found.`);
+        }
+
+        const transaction = optionTransaction.get();
+
+        const ownerIds = transaction.owners.map((owner) => {
+            return owner._id.toString();
+        });
+        if (ownerIds.indexOf(authorization.owner_from.toString()) < 0) {
+            throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_from}].`);
+        }
+        if (ownerIds.indexOf(authorization.owner_to.toString()) < 0) {
+            throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_to}].`);
+        }
+
+        // 永続化
+        // イベント作成
+        const event = TransactionEventFactory.createAuthorize({
+            _id: ObjectId(),
+            occurred_at: new Date(),
+            authorization: authorization
+        });
+
+        // 永続化
+        const option = await transactionRepo.findOneAndUpdate(
+            {
+                _id: ObjectId(transactionId),
+                status: TransactionStatus.UNDERWAY
+            },
+            {
+                $push: {
+                    events: event
+                }
+            }
+        );
+        if (option.isEmpty) {
+            throw new Error('UNDERWAY transaction not found.');
+        }
+
+        // return authorization;
+    };
+}
+
+/**
+ * 資産承認解除
+ *
+ * @param {string} transactionId
+ * @param {string} authorizationId
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export function removeAuthorization(transactionId: string, authorizationId: string) {
+    return async (transactionRepo: TransactionRepository) => {
+        // 取引取得
+        const optionTransacton = await transactionRepo.findById(ObjectId(transactionId));
+        if (optionTransacton.isEmpty) {
+            throw new Error('tranasction not found.');
+        }
+
+        const transaction = optionTransacton.get();
+        const authorizations = transaction.authorizations();
+
+        const removedAuthorization = authorizations.find((authorization) => {
+            return (authorization._id.toString() === authorizationId);
+        });
+        if (!removedAuthorization) {
+            throw new Error(`authorization [${authorizationId}] not found in the transaction.`);
+        }
+
+        // イベント作成
+        const event = TransactionEventFactory.createUnauthorize({
+            _id: ObjectId(),
+            occurred_at: new Date(),
+            authorization: removedAuthorization
+        });
+
+        // 永続化
+        const option = await transactionRepo.findOneAndUpdate(
+            {
+                _id: ObjectId(transactionId),
+                status: TransactionStatus.UNDERWAY
+            },
+            {
+                $push: {
+                    events: event
+                }
+            }
+        );
+        if (option.isEmpty) {
+            throw new Error('UNDERWAY transaction not found.');
+        }
+    };
+}
+
+/**
+ * 照合を可能にする
+ *
+ * @param {string} transactionId
+ * @param {TransactionInquiryKey} key
+ * @returns {TransactionOperation<monapt.Option<Transaction>>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export function enableInquiry(transactionId: string, key: TransactionInquiryKey) {
+    return async (transactionRepo: TransactionRepository) => {
+        // 永続化
+        const option = await transactionRepo.findOneAndUpdate(
+            {
+                _id: ObjectId(transactionId),
+                status: TransactionStatus.UNDERWAY
+            },
+            {
+                $set: {
+                    inquiry_key: key
+                }
+            }
+        );
+        if (option.isEmpty) {
+            throw new Error('UNDERWAY transaction not found.');
+        }
+    };
+}
+
+/**
+ * 照会する
+ *
+ * @param {TransactionInquiryKey} key
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export function makeInquiry(key: TransactionInquiryKey): TransactionOperation<monapt.Option<Transaction>> {
+    return async (transactionRepo: TransactionRepository) => await transactionRepo.findOne({
+        inquiry_key: key,
+        status: TransactionStatus.CLOSED
+    });
+}
+
+/**
+ * 取引成立
+ *
+ * @param {string} transactionId
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export function close(transactionId: string) {
+    return async (transactionRepo: TransactionRepository) => {
+        // 取引取得
+        const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
+        if (optionTransaction.isEmpty) {
+            throw new Error('transaction not found.');
+        }
+
+        const transaction = optionTransaction.get();
+
+        // 照会可能になっているかどうか
+        if (!transaction.isInquiryAvailable()) {
+            throw new Error('inquiry is not available.');
+        }
+
+        // 条件が対等かどうかチェック
+        if (!transaction.canBeClosed()) {
+            throw new Error('transaction cannot be closed.');
+        }
+
+        // キューリストを事前作成
+        const queues: Queue[] = [];
+        transaction.authorizations().forEach((authorization) => {
+            queues.push(QueueFactory.createSettleAuthorization({
+                _id: ObjectId(),
+                authorization: authorization,
+                status: QueueStatus.UNEXECUTED,
+                run_at: new Date(), // なるはやで実行
+                max_count_try: 10,
+                last_tried_at: null,
+                count_tried: 0,
+                results: []
+            }));
+        });
+        transaction.notifications().forEach((notification) => {
+            queues.push(QueueFactory.createPushNotification({
+                _id: ObjectId(),
+                notification: notification,
+                status: QueueStatus.UNEXECUTED,
+                run_at: new Date(), // todo emailのsent_atを指定
+                max_count_try: 10,
+                last_tried_at: null,
+                count_tried: 0,
+                results: []
+            }));
+        });
+
+        // イベント作成
+        const event = TransactionEventFactory.create({
+            _id: ObjectId(),
+            group: TransactionEventGroup.CLOSE,
+            occurred_at: new Date()
+        });
+
+        // 永続化
+        const option = await transactionRepo.findOneAndUpdate(
+            {
+                _id: ObjectId(transactionId),
+                status: TransactionStatus.UNDERWAY
+            },
+            {
+                $set: {
+                    status: TransactionStatus.CLOSED,
+                    queues: queues
+                },
+                $push: {
+                    events: event
+                }
+            }
+        );
+        if (option.isEmpty) {
+            throw new Error('UNDERWAY transaction not found.');
+        }
+    };
+}
+
+/**
+ * 取引期限切れ
+ *
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export function expireOne() {
+    return async (transactionRepo: TransactionRepository) => {
+        // イベント作成
+        const event = TransactionEventFactory.create({
+            _id: ObjectId(),
+            group: TransactionEventGroup.EXPIRE,
+            occurred_at: new Date()
+        });
+
+        // 永続化
+        await transactionRepo.findOneAndUpdate(
+            {
+                status: TransactionStatus.UNDERWAY,
+                expired_at: { $lt: new Date() }
+            },
+            {
+                $set: {
+                    status: TransactionStatus.EXPIRED
+                },
+                $push: {
+                    events: event
+                }
+            }
+        );
+
+        // 永続化結果がemptyの場合は、もう取引中ステータスではないということなので、期限切れタスクとしては成功
+    };
+}
+
+/**
+ * キュー出力
+ *
+ * @param {string} transactionId
+ * @returns {TransactionAndQueueOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export function exportQueues(transactionId: string) {
+    return async (transactionRepo: TransactionRepository, queueRepo: QueueRepository) => {
+        const option = await transactionRepo.findById(ObjectId(transactionId));
+        if (option.isEmpty) {
+            throw new Error('transaction not found.');
+        }
+
+        const transaction = option.get();
+
+        let queues: Queue[];
+        switch (transaction.status) {
+            // 成立の場合は、あらかじめキューリストが作成されている
+            case TransactionStatus.CLOSED:
+                queues = transaction.queues;
+                break;
+
+            // 期限切れの場合は、キューリストを作成する
+            case TransactionStatus.EXPIRED:
+                queues = [];
+                transaction.authorizations().forEach((authorization) => {
+                    queues.push(QueueFactory.createCancelAuthorization({
+                        _id: ObjectId(),
+                        authorization: authorization,
+                        status: QueueStatus.UNEXECUTED,
+                        run_at: new Date(),
+                        max_count_try: 10,
+                        last_tried_at: null,
+                        count_tried: 0,
+                        results: []
+                    }));
+                });
+
+                // COA本予約があれば取消
+                if (transaction.isInquiryAvailable()) {
+                    queues.push(QueueFactory.createDisableTransactionInquiry({
+                        _id: ObjectId(),
+                        transaction_id: transaction._id,
+                        status: QueueStatus.UNEXECUTED,
+                        run_at: new Date(),
+                        max_count_try: 10,
+                        last_tried_at: null,
+                        count_tried: 0,
+                        results: []
+                    }));
+                }
+
+                // todo おそらく開発時のみ
+                const eventStart =
+                    transaction.events.find((event) => (event.group === TransactionEventGroup.START));
+                queues.push(QueueFactory.createPushNotification(
+                    {
+                        _id: ObjectId(),
+                        notification: NotificationFactory.createEmail({
+                            _id: ObjectId(),
+                            from: 'noreply@localhost',
+                            to: 'hello@motionpicture.jp',
+                            subject: 'transaction expired',
+                            content: `
+取引の期限がきれました
+_id: ${transaction._id}
+created_at: ${(eventStart) ? eventStart.occurred_at : ''}
+`
+                        }),
+                        status: QueueStatus.UNEXECUTED,
+                        run_at: new Date(),
+                        max_count_try: 10,
+                        last_tried_at: null,
+                        count_tried: 0,
+                        results: []
+                    }
+                ));
+
+                break;
+
+            default:
+                throw new Error('transaction group not implemented.');
+        }
+
+        const promises = queues.map(async (queue) => {
+            await queueRepo.store(queue);
+        });
+        await Promise.all(promises);
+    };
+}
+
+/**
+ * メール追加
+ *
+ * @param {string} transactionId
+ * @param {EmailNotification} notification
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export function addEmail(transactionId: string, notification: EmailNotification) {
+    return async (transactionRepo: TransactionRepository) => {
+        // イベント作成
+        const event = TransactionEventFactory.createNotificationAdd({
+            _id: ObjectId(),
+            occurred_at: new Date(),
+            notification: notification
+        });
+
+        // 永続化
+        const option = await transactionRepo.findOneAndUpdate(
+            {
+                _id: ObjectId(transactionId),
+                status: TransactionStatus.UNDERWAY
+            },
+            {
+                $push: {
+                    events: event
+                }
+            }
+        );
+
+        if (option.isEmpty) {
+            throw new Error('UNDERWAY transaction not found.');
+        }
+    };
+}
+
+/**
+ * メール削除
+ *
+ * @param {string} transactionId
+ * @param {string} notificationId
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export function removeEmail(transactionId: string, notificationId: string) {
+    return async (transactionRepo: TransactionRepository) => {
+        // 取引取得
+        const optionTransacton = await transactionRepo.findById(ObjectId(transactionId));
+        if (optionTransacton.isEmpty) {
+            throw new Error('tranasction not found.');
+        }
+
+        const transaction = optionTransacton.get();
+        const notifications = transaction.notifications();
+
+        const removedNotification = notifications.find((notification) => {
+            return (notification._id.toString() === notificationId);
+        });
+        if (!removedNotification) {
+            throw new Error(`notification [${notificationId}] not found in the transaction.`);
+        }
+
+        // イベント作成
+        const event = TransactionEventFactory.createNotificationRemove({
+            _id: ObjectId(),
+            occurred_at: new Date(),
+            notification: removedNotification
+        });
+
+        // 永続化
+        const option = await transactionRepo.findOneAndUpdate(
+            {
+                _id: ObjectId(transactionId),
+                status: TransactionStatus.UNDERWAY
+            },
+            {
+                $push: {
+                    events: event
+                }
+            }
+        );
+
+        if (option.isEmpty) {
+            throw new Error('UNDERWAY transaction not found.');
+        }
+    };
+}

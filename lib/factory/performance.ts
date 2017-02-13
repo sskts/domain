@@ -4,11 +4,11 @@
  * @namespace PerformanceFactory
  */
 
-import Film from "../model/film";
-import Performace from "../model/performance";
-import Screen from "../model/screen";
-import Theater from "../model/theater";
-import * as COA from "@motionpicture/coa-service";
+import * as COA from '@motionpicture/coa-service';
+import Film from '../model/film';
+import Performace from '../model/performance';
+import Screen from '../model/screen';
+import Theater from '../model/theater';
 
 export function create(args: {
     _id: string,

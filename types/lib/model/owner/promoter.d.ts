@@ -1,7 +1,7 @@
 /// <reference types="mongoose" />
-import MultilingualString from "../multilingualString";
-import ObjectId from "../objectId";
-import Owner from "../owner";
+import MultilingualString from '../multilingualString';
+import ObjectId from '../objectId';
+import Owner from '../owner';
 /**
  * 興行所有者
  *

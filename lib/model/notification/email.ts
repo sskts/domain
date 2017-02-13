@@ -1,7 +1,7 @@
-import * as validator from "validator";
-import Notification from "../notification";
-import NotificationGroup from "../notificationGroup";
-import ObjectId from "../objectId";
+import * as validator from 'validator';
+import Notification from '../notification';
+import NotificationGroup from '../notificationGroup';
+import ObjectId from '../objectId';
 
 /**
  * Eメール通知
@@ -33,9 +33,9 @@ export default class EmailNotification extends Notification {
         super(_id, NotificationGroup.EMAIL);
 
         // todo validation
-        if (validator.isEmpty(from)) throw new Error("from required.");
-        if (validator.isEmpty(to)) throw new Error("to required.");
-        if (validator.isEmpty(subject)) throw new Error("subject required.");
-        if (validator.isEmpty(content)) throw new Error("content required.");
+        if (validator.isEmpty(from)) throw new Error('from required.');
+        if (validator.isEmpty(to)) throw new Error('to required.');
+        if (validator.isEmpty(subject)) throw new Error('subject required.');
+        if (validator.isEmpty(content)) throw new Error('content required.');
     }
 }

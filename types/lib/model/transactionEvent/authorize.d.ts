@@ -1,7 +1,7 @@
 /// <reference types="mongoose" />
-import Authorization from "../authorization";
-import ObjectId from "../objectId";
-import TransactionEvent from "../transactionEvent";
+import Authorization from '../authorization';
+import ObjectId from '../objectId';
+import TransactionEvent from '../transactionEvent';
 /**
  * オーソリ追加取引イベント
  *

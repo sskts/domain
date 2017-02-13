@@ -1,7 +1,7 @@
-import MultilingualString from "../multilingualString";
-import ObjectId from "../objectId";
-import Owner from "../owner";
-import OwnerGroup from "../ownerGroup";
+import MultilingualString from '../multilingualString';
+import ObjectId from '../objectId';
+import Owner from '../owner';
+import OwnerGroup from '../ownerGroup';
 
 /**
  * 興行所有者

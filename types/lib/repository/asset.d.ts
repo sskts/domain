@@ -1,4 +1,4 @@
-import Asset from "../model/asset";
+import Asset from '../model/asset';
 /**
  * 資産リポジトリ
  *

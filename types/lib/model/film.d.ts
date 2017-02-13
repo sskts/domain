@@ -1,5 +1,5 @@
-import MultilingualString from "./multilingualString";
-import Theater from "./theater";
+import MultilingualString from './multilingualString';
+import Theater from './theater';
 /**
  * 作品
  *

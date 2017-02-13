@@ -4,10 +4,10 @@
  * @namespace FilmFactory
  */
 
-import Film from "../model/film";
-import MultilingualString from "../model/multilingualString";
-import Theater from "../model/theater";
-import * as COA from "@motionpicture/coa-service";
+import * as COA from '@motionpicture/coa-service';
+import Film from '../model/film';
+import MultilingualString from '../model/multilingualString';
+import Theater from '../model/theater';
 
 export function create(args: {
     _id: string,
@@ -38,15 +38,15 @@ export function create(args: {
         args.minutes, // 上映時間
         args.date_start, // 公演開始予定日※日付は西暦8桁 "YYYYMMDD"
         args.date_end, // 公演終了予定日※日付は西暦8桁 "YYYYMMDD"
-        (args.kbn_eirin === undefined) ? "" : args.kbn_eirin,
-        (args.kbn_eizou === undefined) ? "" : args.kbn_eizou,
-        (args.kbn_joueihousiki === undefined) ? "" : args.kbn_joueihousiki,
-        (args.kbn_jimakufukikae === undefined) ? "" : args.kbn_jimakufukikae
+        (args.kbn_eirin === undefined) ? '' : args.kbn_eirin,
+        (args.kbn_eizou === undefined) ? '' : args.kbn_eizou,
+        (args.kbn_joueihousiki === undefined) ? '' : args.kbn_joueihousiki,
+        (args.kbn_jimakufukikae === undefined) ? '' : args.kbn_jimakufukikae
     );
 }
 
 export function createFromCOA(filmFromCOA: COA.findFilmsByTheaterCodeInterface.Result) {
-    return async(theater: Theater) => create({
+    return async (theater: Theater) => create({
         // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
         _id: `${theater._id}${filmFromCOA.title_code}${filmFromCOA.title_branch_num}`,
         coa_title_code: filmFromCOA.title_code,

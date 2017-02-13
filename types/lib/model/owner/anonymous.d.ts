@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
-import ObjectId from "../objectId";
-import Owner from "../owner";
+import ObjectId from '../objectId';
+import Owner from '../owner';
 /**
  * 匿名所有者
  *

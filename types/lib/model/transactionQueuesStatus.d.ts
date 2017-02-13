@@ -3,7 +3,7 @@
  *
  * @namespace TransactionQueuesStatus
  */
-declare type TransactionQueuesStatus = "UNEXPORTED" | "EXPORTING" | "EXPORTED";
+declare type TransactionQueuesStatus = 'UNEXPORTED' | 'EXPORTING' | 'EXPORTED';
 declare namespace TransactionQueuesStatus {
     /**
      * 未エクスポート

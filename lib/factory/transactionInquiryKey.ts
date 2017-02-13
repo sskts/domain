@@ -4,7 +4,7 @@
  * @namespace TransactionInquiryKeyFactory
  */
 
-import TransactionInquiryKey from "../model/transactionInquiryKey";
+import TransactionInquiryKey from '../model/transactionInquiryKey';
 
 export function create(args: {
     theater_code: string,

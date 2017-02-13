@@ -4,12 +4,12 @@
  *
  * @namespace OwnerFactory
  */
-import MultilingualString from "../model/multilingualString";
-import ObjectId from "../model/objectId";
-import Owner from "../model/owner";
-import AnonymousOwner from "../model/owner/anonymous";
-import PromoterOwner from "../model/owner/promoter";
-import OwnerGroup from "../model/ownerGroup";
+import MultilingualString from '../model/multilingualString';
+import ObjectId from '../model/objectId';
+import Owner from '../model/owner';
+import AnonymousOwner from '../model/owner/anonymous';
+import PromoterOwner from '../model/owner/promoter';
+import OwnerGroup from '../model/ownerGroup';
 export declare function create(args: {
     _id: ObjectId;
     group: OwnerGroup;

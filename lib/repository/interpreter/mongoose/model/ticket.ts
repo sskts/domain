@@ -1,5 +1,5 @@
-import * as mongoose from "mongoose";
-import TheaterModel from "./theater";
+import * as mongoose from 'mongoose';
+import TheaterModel from './theater';
 
 /**
  * 券種スキーマ
@@ -25,13 +25,14 @@ const schema = new mongoose.Schema(
             }
         },
         name_kana: String // チケット名(カナ)
-    }, {
-        collection: "tickets",
+    },
+    {
+        collection: 'tickets',
         timestamps: {
-            createdAt: "created_at",
-            updatedAt: "updated_at"
+            createdAt: 'created_at',
+            updatedAt: 'updated_at'
         }
     }
 );
 
-export default mongoose.model("Ticket", schema);
+export default mongoose.model('Ticket', schema);

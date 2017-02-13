@@ -3,10 +3,10 @@
  *
  * @namespace ScreenFactory
  */
-import MultilingualString from "../model/multilingualString";
-import * as Screen from "../model/screen";
-import Theater from "../model/theater";
-import * as COA from "@motionpicture/coa-service";
+import * as COA from '@motionpicture/coa-service';
+import MultilingualString from '../model/multilingualString';
+import * as Screen from '../model/screen';
+import Theater from '../model/theater';
 export declare function create(args: {
     _id: string;
     theater: Theater;

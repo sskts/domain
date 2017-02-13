@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
-import Notification from "../notification";
-import ObjectId from "../objectId";
+import Notification from '../notification';
+import ObjectId from '../objectId';
 /**
  * Eメール通知
  *

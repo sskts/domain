@@ -1,9 +1,14 @@
 /// <reference types="mongoose" />
-import * as mongoose from "mongoose";
-import * as monapt from "monapt";
-import ObjectId from "../../model/objectId";
-import Transaction from "../../model/transaction";
-import TransactionRepository from "../transaction";
+/**
+ * 取引リポジトリ
+ *
+ * @class TransactionRepositoryInterpreter
+ */
+import * as monapt from 'monapt';
+import * as mongoose from 'mongoose';
+import ObjectId from '../../model/objectId';
+import Transaction from '../../model/transaction';
+import TransactionRepository from '../transaction';
 export default class TransactionRepositoryInterpreter implements TransactionRepository {
     readonly connection: mongoose.Connection;
     constructor(connection: mongoose.Connection);

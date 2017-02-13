@@ -1,5 +1,5 @@
-import * as monapt from "monapt";
-import Performance from "../model/performance";
+import * as monapt from 'monapt';
+import Performance from '../model/performance';
 
 /**
  * パフォーマンスリポジトリ

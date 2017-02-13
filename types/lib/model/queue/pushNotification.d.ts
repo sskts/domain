@@ -1,8 +1,8 @@
 /// <reference types="mongoose" />
-import Notification from "../notification";
-import ObjectId from "../objectId";
-import Queue from "../queue";
-import QueueStatus from "../queueStatus";
+import Notification from '../notification';
+import ObjectId from '../objectId';
+import Queue from '../queue';
+import QueueStatus from '../queueStatus';
 /**
  * プッシュ通知キュー
  *

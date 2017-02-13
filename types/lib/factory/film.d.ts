@@ -3,10 +3,10 @@
  *
  * @namespace FilmFactory
  */
-import Film from "../model/film";
-import MultilingualString from "../model/multilingualString";
-import Theater from "../model/theater";
-import * as COA from "@motionpicture/coa-service";
+import * as COA from '@motionpicture/coa-service';
+import Film from '../model/film';
+import MultilingualString from '../model/multilingualString';
+import Theater from '../model/theater';
 export declare function create(args: {
     _id: string;
     coa_title_code: string;

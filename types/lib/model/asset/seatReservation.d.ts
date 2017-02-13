@@ -1,8 +1,8 @@
 /// <reference types="mongoose" />
-import Asset from "../asset";
-import Authorization from "../authorization";
-import ObjectId from "../objectId";
-import Ownership from "../ownership";
+import Asset from '../asset';
+import Authorization from '../authorization';
+import ObjectId from '../objectId';
+import Ownership from '../ownership';
 /**
  * 座席予約資産
  *

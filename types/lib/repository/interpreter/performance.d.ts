@@ -1,8 +1,13 @@
 /// <reference types="mongoose" />
-import * as mongoose from "mongoose";
-import * as monapt from "monapt";
-import Performance from "../../model/performance";
-import PerformanceRepository from "../performance";
+/**
+ * パフォーマンスリポジトリ
+ *
+ * @class PerformanceRepositoryInterpreter
+ */
+import * as monapt from 'monapt';
+import * as mongoose from 'mongoose';
+import Performance from '../../model/performance';
+import PerformanceRepository from '../performance';
 export default class PerformanceRepositoryInterpreter implements PerformanceRepository {
     readonly connection: mongoose.Connection;
     constructor(connection: mongoose.Connection);

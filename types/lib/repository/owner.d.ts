@@ -1,8 +1,8 @@
 /// <reference types="mongoose" />
-import * as monapt from "monapt";
-import ObjectId from "../model/objectId";
-import Owner from "../model/owner";
-import PromoterOwner from "../model/owner/promoter";
+import * as monapt from 'monapt';
+import ObjectId from '../model/objectId';
+import Owner from '../model/owner';
+import PromoterOwner from '../model/owner/promoter';
 /**
  * 所有者リポジトリ
  *

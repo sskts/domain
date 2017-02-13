@@ -1,8 +1,14 @@
-import * as mongoose from "mongoose";
-import * as monapt from "monapt";
-import Theater from "../../model/theater";
-import TheaterRepository from "../theater";
-import TheaterModel from "./mongoose/model/theater";
+/**
+ * 劇場リポジトリ
+ *
+ * @class TheaterRepositoryInterpreter
+ */
+
+import * as monapt from 'monapt';
+import * as mongoose from 'mongoose';
+import Theater from '../../model/theater';
+import TheaterRepository from '../theater';
+import TheaterModel from './mongoose/model/theater';
 
 export default class TheaterRepositoryInterpreter implements TheaterRepository {
     constructor(readonly connection: mongoose.Connection) {
@@ -10,7 +16,7 @@ export default class TheaterRepositoryInterpreter implements TheaterRepository {
 
     public async findById(id: string) {
         const model = this.connection.model(TheaterModel.modelName, TheaterModel.schema);
-        const theater = <Theater> await model.findOne({ _id: id }).lean().exec();
+        const theater = <Theater>await model.findOne({ _id: id }).lean().exec();
 
         return (theater) ? monapt.Option(theater) : monapt.None;
     }

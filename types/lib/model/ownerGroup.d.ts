@@ -3,7 +3,7 @@
  *
  * @namespace OwnerGroup
  */
-declare type OwnerGroup = "ANONYMOUS" | "PROMOTER" | "MEMBER";
+declare type OwnerGroup = 'ANONYMOUS' | 'PROMOTER' | 'MEMBER';
 declare namespace OwnerGroup {
     /**
      * 匿名

@@ -1,5 +1,5 @@
-import * as mongoose from "mongoose";
-import TheaterModel from "./theater";
+import * as mongoose from 'mongoose';
+import TheaterModel from './theater';
 
 /**
  * スクリーンスキーマ
@@ -48,13 +48,14 @@ const schema = new mongoose.Schema(
                 ]
             }
         ]
-    }, {
-        collection: "screens",
+    },
+    {
+        collection: 'screens',
         timestamps: {
-            createdAt: "created_at",
-            updatedAt: "updated_at"
+            createdAt: 'created_at',
+            updatedAt: 'updated_at'
         }
     }
 );
 
-export default mongoose.model("Screen", schema);
+export default mongoose.model('Screen', schema);

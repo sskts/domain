@@ -1,5 +1,5 @@
-import * as monapt from "monapt";
-import Film from "../model/film";
+import * as monapt from 'monapt';
+import Film from '../model/film';
 /**
  * 作品リポジトリ
  *

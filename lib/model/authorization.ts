@@ -1,5 +1,5 @@
-import AuthorizationGroup from "./authorizationGroup";
-import ObjectId from "./objectId";
+import AuthorizationGroup from './authorizationGroup';
+import ObjectId from './objectId';
 
 /**
  * 承認

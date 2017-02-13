@@ -1,5 +1,5 @@
 /// <reference types="mongoose" />
-import ObjectId from "./objectId";
+import ObjectId from './objectId';
 /**
  * 所有権
  * 誰が、何を、所有するのか

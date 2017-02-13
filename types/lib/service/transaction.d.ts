@@ -1,159 +1,169 @@
-import * as monapt from "monapt";
-import COASeatReservationAuthorization from "../model/authorization/coaSeatReservation";
-import GMOAuthorization from "../model/authorization/gmo";
-import EmailNotification from "../model/notification/email";
-import Transaction from "../model/transaction";
-import TransactionInquiryKey from "../model/transactionInquiryKey";
-import OwnerRepository from "../repository/owner";
-import QueueRepository from "../repository/queue";
-import TransactionRepository from "../repository/transaction";
-export declare type TransactionAndQueueOperation<T> = (transastionRepository: TransactionRepository, queueRepository: QueueRepository) => Promise<T>;
-export declare type OwnerAndTransactionOperation<T> = (ownerRepository: OwnerRepository, transactionRepository: TransactionRepository) => Promise<T>;
-export declare type TransactionOperation<T> = (repository: TransactionRepository) => Promise<T>;
 /**
  * 取引サービス
- * 主に、取引中(購入プロセス中)に使用されるファンクション群
  *
- * @interface TransactionService
+ * @namespace TransactionService
  */
-interface TransactionService {
+import * as monapt from 'monapt';
+import COASeatReservationAuthorization from '../model/authorization/coaSeatReservation';
+import GMOAuthorization from '../model/authorization/gmo';
+import EmailNotification from '../model/notification/email';
+import Transaction from '../model/transaction';
+import TransactionInquiryKey from '../model/transactionInquiryKey';
+import OwnerRepository from '../repository/owner';
+import QueueRepository from '../repository/queue';
+import TransactionRepository from '../repository/transaction';
+export declare type TransactionAndQueueOperation<T> = (transactionRepo: TransactionRepository, queueRepo: QueueRepository) => Promise<T>;
+export declare type OwnerAndTransactionOperation<T> = (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => Promise<T>;
+export declare type TransactionOperation<T> = (transactionRepo: TransactionRepository) => Promise<T>;
+/**
+ * 匿名所有者更新
+ *
+ * @returns {OwnerAndTransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export declare function updateAnonymousOwner(args: {
     /**
-     * 匿名所有者の情報を更新する
+     *
+     *
+     * @type {string}
      */
-    updateAnonymousOwner(args: {
-        /**
-         * 取引ID
-         */
-        transaction_id: string;
-        /**
-         * 名
-         */
-        name_first?: string;
-        /**
-         * 姓
-         */
-        name_last?: string;
-        /**
-         * メールアドレス
-         */
-        email?: string;
-        /**
-         * 電話番号
-         */
-        tel?: string;
-    }): OwnerAndTransactionOperation<void>;
+    transaction_id: string;
     /**
-     * 取引詳細取得
      *
-     * @param {string} transactionId
-     * @returns {TransactionOperation<monapt.Option<Transaction>>}
      *
-     * @memberOf TransactionService
+     * @type {string}
      */
-    findById(transactionId: string): TransactionOperation<monapt.Option<Transaction>>;
+    name_first?: string;
     /**
-     * 取引開始
      *
-     * @param {Date} expiredAt
-     * @returns {OwnerAndTransactionOperation<Transaction>}
      *
-     * @memberOf TransactionService
+     * @type {string}
      */
-    start(expiredAt: Date): OwnerAndTransactionOperation<Transaction>;
+    name_last?: string;
     /**
-     * GMOオーソリを追加する
      *
-     * @param {string} transactionId
-     * @param {GMOAuthorization} authorization
-     * @returns {TransactionOperation<void>}
      *
-     * @memberOf TransactionService
+     * @type {string}
      */
-    addGMOAuthorization(transactionId: string, authorization: GMOAuthorization): TransactionOperation<void>;
+    email?: string;
     /**
-     * COA仮予約を追加する
      *
-     * @param {string} transactionId
-     * @param {COASeatReservationAuthorization} authorization
-     * @returns {OwnerAndTransactionOperation<void>}
      *
-     * @memberOf TransactionService
+     * @type {string}
      */
-    addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorization): TransactionOperation<void>;
-    /**
-     * オーソリアイテムを削除する
-     *
-     * @param {string} transactionId
-     * @param {string} authorizationId
-     * @returns {TransactionOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    removeAuthorization(transactionId: string, authorizationId: string): TransactionOperation<void>;
-    /**
-     * 照会を可能にする
-     *
-     * @param {string} transactionId
-     * @param {TransactionInquiryKey} key
-     * @returns {TransactionOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    enableInquiry(transactionId: string, key: TransactionInquiryKey): TransactionOperation<void>;
-    /**
-     * 照会する
-     *
-     * @param {TransactionInquiryKey} key
-     * @returns {TransactionOperation<monapt.Option<Transaction>>}
-     *
-     * @memberOf TransactionService
-     */
-    makeInquiry(key: TransactionInquiryKey): TransactionOperation<monapt.Option<Transaction>>;
-    /**
-     * 取引成立後に送信されるメールを追加する
-     *
-     * @param {string} transactionId
-     * @param {EmailNotification} notification
-     * @returns {TransactionOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    addEmail(transactionId: string, notification: EmailNotification): TransactionOperation<void>;
-    /**
-     * 取引成立後に送信されるメールを削除する
-     *
-     * @param {string} transactionId
-     * @param {string} notificationId
-     * @returns {TransactionOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    removeEmail(transactionId: string, notificationId: string): TransactionOperation<void>;
-    /**
-     * 取引成立
-     *
-     * @param {string} transactionId
-     * @returns {TransactionOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    close(transactionId: string): TransactionOperation<void>;
-    /**
-     * 取引期限切れ
-     *
-     * @returns {TransactionOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    expireOne(): TransactionOperation<void>;
-    /**
-     * 取引に関するキュー(非同期で実行されるべき処理)を出力する
-     *
-     * @param {string} transactionId
-     * @returns {TransactionAndQueueOperation<void>}
-     *
-     * @memberOf TransactionService
-     */
-    exportQueues(transactionId: string): TransactionAndQueueOperation<void>;
-}
-export default TransactionService;
+    tel?: string;
+}): OwnerAndTransactionOperation<void>;
+/**
+ * IDから取得する
+ *
+ * @param {string} transactionId
+ * @returns {TransactionOperation<monapt.Option<Transaction>>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export declare function findById(transactionId: string): TransactionOperation<monapt.Option<Transaction>>;
+/**
+ * 取引開始
+ *
+ * @param {Date} expiredAt
+ * @returns {OwnerAndTransactionOperation<Transaction>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export declare function start(expiredAt: Date): (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => Promise<Transaction>;
+/**
+ * GMO資産承認
+ *
+ * @param {string} transactionId
+ * @param {GMOAuthorization} authorization
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export declare function addGMOAuthorization(transactionId: string, authorization: GMOAuthorization): (transactionRepo: TransactionRepository) => Promise<void>;
+/**
+ * COA資産承認
+ *
+ * @param {string} transactionId
+ * @param {COASeatReservationAuthorization} authorization
+ * @returns {OwnerAndTransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorization): (transactionRepo: TransactionRepository) => Promise<void>;
+/**
+ * 資産承認解除
+ *
+ * @param {string} transactionId
+ * @param {string} authorizationId
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export declare function removeAuthorization(transactionId: string, authorizationId: string): (transactionRepo: TransactionRepository) => Promise<void>;
+/**
+ * 照合を可能にする
+ *
+ * @param {string} transactionId
+ * @param {TransactionInquiryKey} key
+ * @returns {TransactionOperation<monapt.Option<Transaction>>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export declare function enableInquiry(transactionId: string, key: TransactionInquiryKey): (transactionRepo: TransactionRepository) => Promise<void>;
+/**
+ * 照会する
+ *
+ * @param {TransactionInquiryKey} key
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export declare function makeInquiry(key: TransactionInquiryKey): TransactionOperation<monapt.Option<Transaction>>;
+/**
+ * 取引成立
+ *
+ * @param {string} transactionId
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export declare function close(transactionId: string): (transactionRepo: TransactionRepository) => Promise<void>;
+/**
+ * 取引期限切れ
+ *
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export declare function expireOne(): (transactionRepo: TransactionRepository) => Promise<void>;
+/**
+ * キュー出力
+ *
+ * @param {string} transactionId
+ * @returns {TransactionAndQueueOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export declare function exportQueues(transactionId: string): (transactionRepo: TransactionRepository, queueRepo: QueueRepository) => Promise<void>;
+/**
+ * メール追加
+ *
+ * @param {string} transactionId
+ * @param {EmailNotification} notification
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export declare function addEmail(transactionId: string, notification: EmailNotification): (transactionRepo: TransactionRepository) => Promise<void>;
+/**
+ * メール削除
+ *
+ * @param {string} transactionId
+ * @param {string} notificationId
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionServiceInterpreter
+ */
+export declare function removeEmail(transactionId: string, notificationId: string): (transactionRepo: TransactionRepository) => Promise<void>;

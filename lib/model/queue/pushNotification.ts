@@ -1,8 +1,8 @@
-import Notification from "../notification";
-import ObjectId from "../objectId";
-import Queue from "../queue";
-import QueueGroup from "../queueGroup";
-import QueueStatus from "../queueStatus";
+import Notification from '../notification';
+import ObjectId from '../objectId';
+import Queue from '../queue';
+import QueueGroup from '../queueGroup';
+import QueueStatus from '../queueStatus';
 
 /**
  * プッシュ通知キュー

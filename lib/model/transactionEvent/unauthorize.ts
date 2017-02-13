@@ -1,7 +1,7 @@
-import Authorization from "../authorization";
-import ObjectId from "../objectId";
-import TransactionEvent from "../transactionEvent";
-import TransactionEventGroup from "../transactionEventGroup";
+import Authorization from '../authorization';
+import ObjectId from '../objectId';
+import TransactionEvent from '../transactionEvent';
+import TransactionEventGroup from '../transactionEventGroup';
 
 /**
  * オーソリ削除取引イベント

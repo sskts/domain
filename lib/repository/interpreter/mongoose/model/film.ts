@@ -1,5 +1,5 @@
-import * as mongoose from "mongoose";
-import theaterModel from "./theater";
+import * as mongoose from 'mongoose';
+import theaterModel from './theater';
 
 /**
  * 作品スキーマ
@@ -30,13 +30,14 @@ const schema = new mongoose.Schema(
         copyright: String, // コピーライト
         coa_title_code: String,
         coa_title_branch_num: String
-    }, {
-        collection: "films",
+    },
+    {
+        collection: 'films',
         timestamps: {
-            createdAt: "created_at",
-            updatedAt: "updated_at"
+            createdAt: 'created_at',
+            updatedAt: 'updated_at'
         }
     }
 );
 
-export default mongoose.model("Film", schema);
+export default mongoose.model('Film', schema);

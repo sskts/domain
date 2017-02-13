@@ -4,10 +4,10 @@
  * @namespace ScreenFactory
  */
 
-import MultilingualString from "../model/multilingualString";
-import * as Screen from "../model/screen";
-import Theater from "../model/theater";
-import * as COA from "@motionpicture/coa-service";
+import * as COA from '@motionpicture/coa-service';
+import MultilingualString from '../model/multilingualString';
+import * as Screen from '../model/screen';
+import Theater from '../model/theater';
 
 export function create(args: {
     _id: string,
@@ -26,17 +26,19 @@ export function create(args: {
 }
 
 export function createFromCOA(screenFromCOA: COA.findScreensByTheaterCodeInterface.Result) {
-    return async(theater: Theater) => {
-        const sections: {
-            code: string,
+    return async (theater: Theater) => {
+        interface Seat {
+            code: string;
+        }
+        interface Section {
+            code: string;
             name: {
-                ja: string,
-                en: string
-            },
-            seats: {
-                code: string
-            }[]
-        }[] = [];
+                ja: string;
+                en: string;
+            };
+            seats: Seat[];
+        }
+        const sections: Section[] = [];
         const sectionCodes: string[] = [];
         screenFromCOA.list_seat.forEach((seat) => {
             if (sectionCodes.indexOf(seat.seat_section) < 0) {

@@ -1,5 +1,5 @@
-import * as monapt from "monapt";
-import Theater from "../model/theater";
+import * as monapt from 'monapt';
+import Theater from '../model/theater';
 /**
  * 劇場リポジトリ
  *

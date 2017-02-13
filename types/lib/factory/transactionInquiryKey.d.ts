@@ -3,7 +3,7 @@
  *
  * @namespace TransactionInquiryKeyFactory
  */
-import TransactionInquiryKey from "../model/transactionInquiryKey";
+import TransactionInquiryKey from '../model/transactionInquiryKey';
 export declare function create(args: {
     theater_code: string;
     reserve_num: number;

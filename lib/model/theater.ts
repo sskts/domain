@@ -1,4 +1,4 @@
-import MultilingualString from "./multilingualString";
+import MultilingualString from './multilingualString';
 
 /**
  * 劇場

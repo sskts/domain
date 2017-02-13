@@ -1,7 +1,7 @@
 /// <reference types="mongoose" />
-import SeatReservationAsset from "../asset/seatReservation";
-import Authorization from "../authorization";
-import ObjectId from "../objectId";
+import SeatReservationAsset from '../asset/seatReservation';
+import Authorization from '../authorization';
+import ObjectId from '../objectId';
 /**
  * COA座席仮予約
  *

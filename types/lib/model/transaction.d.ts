@@ -1,15 +1,15 @@
 /// <reference types="mongoose" />
-import Authorization from "./authorization";
-import COASeatReservationAuthorization from "./authorization/coaSeatReservation";
-import Notification from "./notification";
-import ObjectId from "./objectId";
-import Owner from "./owner";
-import Queue from "./queue";
-import TransactionEvent from "./transactionEvent";
-import TransactionInquiryKey from "./transactionInquiryKey";
-import TransactionQueuesStatus from "./transactionQueuesStatus";
-import TransactionStatus from "./transactionStatus";
-import * as monapt from "monapt";
+import * as monapt from 'monapt';
+import Authorization from './authorization';
+import COASeatReservationAuthorization from './authorization/coaSeatReservation';
+import Notification from './notification';
+import ObjectId from './objectId';
+import Owner from './owner';
+import Queue from './queue';
+import TransactionEvent from './transactionEvent';
+import TransactionInquiryKey from './transactionInquiryKey';
+import TransactionQueuesStatus from './transactionQueuesStatus';
+import TransactionStatus from './transactionStatus';
 /**
  * 取引
  *

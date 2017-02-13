@@ -1,12 +1,12 @@
-import * as monapt from "monapt";
-import COASeatReservationAuthorization from "../model/authorization/coaSeatReservation";
-import GMOAuthorization from "../model/authorization/gmo";
-import EmailNotification from "../model/notification/email";
-import ObjectId from "../model/objectId";
-import Queue from "../model/queue";
-import CancelAuthorizationQueue from "../model/queue/cancelAuthorization";
-import PushNotificationQueue from "../model/queue/pushNotification";
-import SettleAuthorizationQueue from "../model/queue/settleAuthorization";
+import * as monapt from 'monapt';
+import COASeatReservationAuthorization from '../model/authorization/coaSeatReservation';
+import GMOAuthorization from '../model/authorization/gmo';
+import EmailNotification from '../model/notification/email';
+import ObjectId from '../model/objectId';
+import Queue from '../model/queue';
+import CancelAuthorizationQueue from '../model/queue/cancelAuthorization';
+import PushNotificationQueue from '../model/queue/pushNotification';
+import SettleAuthorizationQueue from '../model/queue/settleAuthorization';
 
 /**
  * キューリポジトリ

@@ -5,14 +5,14 @@
  */
 
 type NotificationGroup =
-    "EMAIL"
+    'EMAIL'
     ;
 
 namespace NotificationGroup {
     /**
      * Eメール
      */
-    export const EMAIL = "EMAIL";
+    export const EMAIL = 'EMAIL';
 }
 
 export default NotificationGroup;

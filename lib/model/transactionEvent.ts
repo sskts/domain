@@ -1,5 +1,5 @@
-import ObjectId from "./objectId";
-import TransactionEventGroup from "./transactionEventGroup";
+import ObjectId from './objectId';
+import TransactionEventGroup from './transactionEventGroup';
 
 /**
  * 取引イベント

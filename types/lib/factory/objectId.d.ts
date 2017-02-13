@@ -4,7 +4,7 @@
  *
  * @namespace ObjectIdFactory
  */
-import ObjectId from "../model/objectId";
+import ObjectId from '../model/objectId';
 /**
  * オブジェクトIDを作成する
  *

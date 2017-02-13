@@ -3,7 +3,7 @@
  *
  * @namespace QueueStatus
  */
-declare type QueueStatus = "UNEXECUTED" | "RUNNING" | "EXECUTED" | "ABORTED";
+declare type QueueStatus = 'UNEXECUTED' | 'RUNNING' | 'EXECUTED' | 'ABORTED';
 declare namespace QueueStatus {
     /**
      * 未実行

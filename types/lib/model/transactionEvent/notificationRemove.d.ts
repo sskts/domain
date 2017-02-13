@@ -1,7 +1,7 @@
 /// <reference types="mongoose" />
-import Notification from "../notification";
-import ObjectId from "../objectId";
-import TransactionEvent from "../transactionEvent";
+import Notification from '../notification';
+import ObjectId from '../objectId';
+import TransactionEvent from '../transactionEvent';
 /**
  * 通知削除取引イベント
  *

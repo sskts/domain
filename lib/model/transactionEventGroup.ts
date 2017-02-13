@@ -5,44 +5,44 @@
  */
 
 type TransactionEventGroup =
-    "START"
-    | "CLOSE"
-    | "EXPIRE"
-    | "AUTHORIZE"
-    | "UNAUTHORIZE"
-    | "NOTIFICATION_ADD"
-    | "NOTIFICATION_REMOVE"
+    'START'
+    | 'CLOSE'
+    | 'EXPIRE'
+    | 'AUTHORIZE'
+    | 'UNAUTHORIZE'
+    | 'NOTIFICATION_ADD'
+    | 'NOTIFICATION_REMOVE'
     ;
 
 namespace TransactionEventGroup {
     /**
      * 開始
      */
-    export const START = "START";
+    export const START = 'START';
     /**
      * 成立
      */
-    export const CLOSE = "CLOSE";
+    export const CLOSE = 'CLOSE';
     /**
      * 期限切れ
      */
-    export const EXPIRE = "EXPIRE";
+    export const EXPIRE = 'EXPIRE';
     /**
      * オーソリアイテム追加
      */
-    export const AUTHORIZE = "AUTHORIZE";
+    export const AUTHORIZE = 'AUTHORIZE';
     /**
      * オーソリアイテム削除
      */
-    export const UNAUTHORIZE = "UNAUTHORIZE";
+    export const UNAUTHORIZE = 'UNAUTHORIZE';
     /**
      * 通知アイテム追加
      */
-    export const NOTIFICATION_ADD = "NOTIFICATION_ADD";
+    export const NOTIFICATION_ADD = 'NOTIFICATION_ADD';
     /**
      * 通知アイテム削除
      */
-    export const NOTIFICATION_REMOVE = "NOTIFICATION_REMOVE";
+    export const NOTIFICATION_REMOVE = 'NOTIFICATION_REMOVE';
 }
 
 export default TransactionEventGroup;

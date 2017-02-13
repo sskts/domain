@@ -1,5 +1,5 @@
-import * as mongoose from "mongoose";
-import OwnerModel from "./owner";
+import * as mongoose from 'mongoose';
+import OwnerModel from './owner';
 
 /**
  * 取引スキーマ
@@ -22,13 +22,14 @@ const schema = new mongoose.Schema(
             tel: String // 照会PASS
         },
         queues_status: String
-    }, {
-        collection: "transactions",
+    },
+    {
+        collection: 'transactions',
         timestamps: {
-            createdAt: "created_at",
-            updatedAt: "updated_at"
+            createdAt: 'created_at',
+            updatedAt: 'updated_at'
         }
     }
 );
 
-export default mongoose.model("Transaction", schema);
+export default mongoose.model('Transaction', schema);

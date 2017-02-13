@@ -1,8 +1,8 @@
-import Asset from "../asset";
-import AssetGroup from "../assetGroup";
-import Authorization from "../authorization";
-import ObjectId from "../objectId";
-import Ownership from "../ownership";
+import Asset from '../asset';
+import AssetGroup from '../assetGroup';
+import Authorization from '../authorization';
+import ObjectId from '../objectId';
+import Ownership from '../ownership';
 
 /**
  * 座席予約資産

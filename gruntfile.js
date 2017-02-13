@@ -20,35 +20,7 @@ module.exports = function (grunt) {
       }
     },
 
-    tslint: {
-      options: {
-        configuration: "tslint.json",
-        force: false,
-        fix: true
-      },
-      files: {
-        src: [
-          "lib/**/*.ts"
-        ]
-      }
-    },
-
-    ts: {
-      default: {
-        // specifying tsconfig as a boolean will use the "tsconfig.json" in same folder as Gruntfile.js
-        tsconfig: true
-      }
-    },
-
     watch: {
-      ts: {
-        files: [
-          "lib/**/*.ts",
-          "examples/**/*.ts",
-          "test/**/*.ts"
-        ], // 監視するファイル
-        tasks: ["tslint", "ts"] // 実行するタスク
-      }
     }
 
     // // devserver config
@@ -61,8 +33,6 @@ module.exports = function (grunt) {
   });
 
   grunt.loadNpmTasks("grunt-jsdoc");
-  grunt.loadNpmTasks("grunt-tslint");
-  grunt.loadNpmTasks("grunt-ts");
   grunt.loadNpmTasks("grunt-contrib-watch");
   // grunt.loadNpmTasks("grunt-nsp");
 

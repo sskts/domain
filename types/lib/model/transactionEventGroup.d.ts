@@ -3,7 +3,7 @@
  *
  * @namespace TransactionEventGroup
  */
-declare type TransactionEventGroup = "START" | "CLOSE" | "EXPIRE" | "AUTHORIZE" | "UNAUTHORIZE" | "NOTIFICATION_ADD" | "NOTIFICATION_REMOVE";
+declare type TransactionEventGroup = 'START' | 'CLOSE' | 'EXPIRE' | 'AUTHORIZE' | 'UNAUTHORIZE' | 'NOTIFICATION_ADD' | 'NOTIFICATION_REMOVE';
 declare namespace TransactionEventGroup {
     /**
      * 開始

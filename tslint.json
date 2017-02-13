@@ -5,17 +5,6 @@
   ],
   "jsRules": {},
   "rules": {
-    "adjacent-overload-signatures": true,
-    "align": [
-      true,
-      "parameters",
-      "statements",
-      "statements"
-    ],
-    "array-type": [
-      true,
-      "array"
-    ],
     "arrow-parens": [
       true
     ],
@@ -23,218 +12,35 @@
       true
     ],
     "await-promise": false,
-    "ban": false,
-    "callable-types": true,
     "class-name": true,
-    "comment-format": [
-      true,
-      "check-space"
-    ],
-    "completed-docs": [
-      false
-    ],
     "curly": false,
-    "cyclomatic-complexity": [
-      true,
-      20
-    ],
-    "eofline": false,
-    "file-header": [
-      false,
-      "Copyright Motionpicture co.,ltd\\."
-    ],
-    "forin": true,
-    "import-blacklist": false,
-    "import-spacing": true,
-    "indent": [
-      true,
-      "spaces"
-    ],
+    "export-name": false,
+    "import-name": false,
     "interface-name": [
       false
     ],
     "interface-over-type-literal": true,
-    "jsdoc-format": false,
-    "label-position": true,
     "linebreak-style": [
-      true,
-      "LF"
+      "LF",
+      true
     ],
-    "max-classes-per-file": [
-      false
-    ],
-    "max-file-line-count": [
-      false
-    ],
-    "member-access": true,
-    "member-ordering": [
-      false
-    ],
-    "new-parens": true,
-    "no-angle-bracket-type-assertion": false,
     "no-any": false,
-    "no-arg": true,
-    "no-bitwise": true,
-    "no-boolean-literal-compare": false,
-    "no-conditional-assignment": true,
-    "no-consecutive-blank-lines": [
-      true
-    ],
-    "no-console": [
-      true,
-      "debug",
-      "info",
-      "log",
-      "time",
-      "timeEnd",
-      "trace"
-    ],
-    "no-constant-condition": true,
-    "no-construct": true,
-    "no-control-regex": true,
-    "no-debugger": true,
+    "no-boolean-literal-compare": true,
     "no-default-export": false,
-    "no-duplicate-case": true,
-    "no-duplicate-variable": true,
-    "no-empty": true,
-    "no-empty-interface": true,
-    "no-eval": true,
-    "no-floating-promises": false,
-    "no-for-in-array": false,
-    "no-inferrable-types": [
-      true
-    ],
-    "no-inferred-empty-object-type": false,
+    "no-floating-promises": true,
+    "no-for-in-array": true,
     "no-internal-module": true,
-    "no-invalid-regexp": true,
-    "no-invalid-this": true,
     "no-magic-numbers": true,
-    "no-mergeable-namespace": false,
     "no-misused-new": true,
-    "no-namespace": false,
-    "no-null-keyword": false,
-    "no-parameter-properties": false,
-    "no-reference": true,
-    "no-regex-spaces": true,
-    "no-require-imports": true,
-    "no-shadowed-variable": true,
-    "no-sparse-arrays": true,
-    "no-string-literal": true,
-    "no-string-throw": true,
-    "no-switch-case-fall-through": true,
-    "no-trailing-whitespace": true,
-    "no-unbound-method": false,
+    "no-relative-imports": false,
+    "no-unbound-method": true,
     "no-unnecessary-initializer": true,
-    "no-unnecessary-qualifier": false,
-    "no-unsafe-any": false,
-    "no-unsafe-finally": true,
-    "no-unused-expression": true,
-    "no-unused-new": true,
-    "no-unused-variable": false,
-    "no-use-before-declare": true,
-    "no-var-keyword": true,
-    "no-var-requires": true,
-    "no-void-expression": false,
-    "object-literal-key-quotes": [
-      true,
-      "as-needed"
-    ],
+    "no-unnecessary-qualifier": true,
     "object-literal-shorthand": false,
-    "object-literal-sort-keys": false,
-    "one-line": [
-      true,
-      "check-open-brace",
-      "check-finally",
-      "check-catch",
-      "check-else",
-      "check-whitespace"
-    ],
-    "one-variable-per-declaration": [
-      true
-    ],
-    "only-arrow-functions": [
-      false
-    ],
-    "ordered-imports": [
-      false
-    ],
-    "prefer-const": true,
-    "prefer-for-of": true,
     "prefer-function-over-method": false,
     "prefer-method-signature": true,
-    "promise-function-async": false,
-    "quotemark": [
-      true,
-      "double"
-    ],
-    "radix": true,
-    "restrict-plus-operands": false,
-    "semicolon": [
-      true,
-      "always"
-    ],
-    "space-before-function-paren": [
-      true,
-      "never"
-    ],
-    "strict-boolean-expressions": false,
-    "strict-type-predicates": false,
-    "switch-default": true,
-    "trailing-comma": [
-      true,
-      {
-        "singleline": "never",
-        "multiline": "never"
-      }
-    ],
-    "triple-equals": [
-      true
-    ],
-    "typedef": [
-      true,
-      "parameter",
-      "property-declaration",
-      "member-variable-declaration"
-    ],
-    "typedef-whitespace": [
-      true,
-      {
-        "call-signature": "nospace",
-        "index-signature": "nospace",
-        "parameter": "nospace",
-        "property-declaration": "nospace",
-        "variable-declaration": "nospace"
-      },
-      {
-        "call-signature": "onespace",
-        "index-signature": "onespace",
-        "parameter": "onespace",
-        "property-declaration": "onespace",
-        "variable-declaration": "onespace"
-      }
-    ],
-    "typeof-compare": true,
-    "unified-signatures": true,
-    "use-isnan": true,
-    "valid-typeof": true,
-    "variable-name": [
-      true,
-      "ban-keywords"
-    ],
-    "whitespace": [
-      true,
-      "check-branch",
-      "check-decl",
-      "check-operator",
-      "check-separator",
-      "check-type",
-      "check-typecast"
-    ],
-    // ms config
-    "export-name": false,
-    "import-name": false,
-    "no-relative-imports": false,
-    "missing-jsdoc": false
+    "strict-type-predicates": true,
+    "variable-name": false
   },
   "rulesDirectory": [
     "node_modules/tslint-microsoft-contrib"

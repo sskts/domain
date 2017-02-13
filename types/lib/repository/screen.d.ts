@@ -1,5 +1,5 @@
-import * as monapt from "monapt";
-import Screen from "../model/screen";
+import * as monapt from 'monapt';
+import Screen from '../model/screen';
 /**
  * スクリーンリポジトリ
  *
