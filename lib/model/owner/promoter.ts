@@ -25,6 +25,6 @@ export default class PromoterOwner extends Owner {
     ) {
         super(_id, OwnerGroup.PROMOTER);
 
-        // TODO validation
+        // todo validation
     }
 }

@@ -42,11 +42,11 @@ export default class COASeatReservationAuthorization extends Authorization {
         readonly price: number,
         readonly owner_from: ObjectId,
         readonly owner_to: ObjectId,
-        readonly assets: Array<SeatReservationAsset>
+        readonly assets: SeatReservationAsset[]
     ) {
         super(_id, AuthorizationGroup.COA_SEAT_RESERVATION, price, owner_from, owner_to);
 
-        // TODO validation
+        // todo validation
         if (validator.isEmpty(coa_tmp_reserve_num.toString())) throw new Error("coa_tmp_reserve_num required.");
         if (validator.isEmpty(coa_theater_code)) throw new Error("coa_theater_code required.");
         if (validator.isEmpty(coa_date_jouei)) throw new Error("coa_date_jouei required.");

@@ -18,7 +18,7 @@ export default class PushNotificationQueue<T extends Notification> extends Queue
     readonly max_count_try: number;
     readonly last_tried_at: Date | null;
     readonly count_tried: number;
-    readonly results: Array<string>;
+    readonly results: string[];
     readonly notification: T;
     /**
      * Creates an instance of PushNotificationQueue.
@@ -34,5 +34,5 @@ export default class PushNotificationQueue<T extends Notification> extends Queue
      *
      * @memberOf PushNotificationQueue
      */
-    constructor(_id: ObjectId, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: Array<string>, notification: T);
+    constructor(_id: ObjectId, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], notification: T);
 }

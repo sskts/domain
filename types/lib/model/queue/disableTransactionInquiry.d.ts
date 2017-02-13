@@ -16,7 +16,7 @@ export default class DisableTransactionInquiryQueue extends Queue {
     readonly max_count_try: number;
     readonly last_tried_at: Date | null;
     readonly count_tried: number;
-    readonly results: Array<string>;
+    readonly results: string[];
     readonly transaction_id: ObjectId;
     /**
      * Creates an instance of DisableTransactionInquiryQueue.
@@ -32,5 +32,5 @@ export default class DisableTransactionInquiryQueue extends Queue {
      *
      * @memberOf DisableTransactionInquiryQueue
      */
-    constructor(_id: ObjectId, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: Array<string>, transaction_id: ObjectId);
+    constructor(_id: ObjectId, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], transaction_id: ObjectId);
 }

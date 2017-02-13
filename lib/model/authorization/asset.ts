@@ -32,6 +32,6 @@ export default class AssetAuthorization extends Authorization {
     ) {
         super(_id, AuthorizationGroup.ASSET, price, owner_from, owner_to);
 
-        // TODO validation
+        // todo validation
     }
 }

@@ -23,6 +23,6 @@ export default class NotificationAddTransactionEvent<T extends Notification> ext
     ) {
         super(_id, TransactionEventGroup.NOTIFICATION_ADD, occurred_at);
 
-        // TODO validation
+        // todo validation
     }
 }

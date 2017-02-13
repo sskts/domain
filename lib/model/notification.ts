@@ -13,6 +13,6 @@ export default class Notification {
         readonly _id: ObjectId,
         readonly group: string
     ) {
-        // TODO validation
+        // todo validation
     }
 }

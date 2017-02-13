@@ -11,7 +11,7 @@ export default class FilmRepositoryInterpreter implements FilmRepository {
 
     public async findById(id: string) {
         const model = this.connection.model(FilmModel.modelName, FilmModel.schema);
-        const doc = await model.findOne({ _id: id }).lean().exec() as any;
+        const doc = <any> await model.findOne({ _id: id }).lean().exec();
 
         return (doc) ? monapt.Option(FilmFactory.create(doc)) : monapt.None;
     }

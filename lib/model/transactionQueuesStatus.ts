@@ -11,11 +11,17 @@ type TransactionQueuesStatus =
     ;
 
 namespace TransactionQueuesStatus {
-    /** 未エクスポート */
+    /**
+     * 未エクスポート
+     */
     export const UNEXPORTED = "UNEXPORTED";
-    /** エクスポート中 */
+    /**
+     * エクスポート中
+     */
     export const EXPORTING = "EXPORTING";
-    /** エクスポート済 */
+    /**
+     * エクスポート済
+     */
     export const EXPORTED = "EXPORTED";
 }
 

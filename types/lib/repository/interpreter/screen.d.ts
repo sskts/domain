@@ -8,7 +8,9 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
     constructor(connection: mongoose.Connection);
     findById(id: string): Promise<monapt.Option<Screen>>;
     findByTheater(args: {
-        /** 劇場ID */
+        /**
+         * 劇場ID
+         */
         theater_id: string;
     }): Promise<Screen[]>;
     store(screen: Screen): Promise<void>;

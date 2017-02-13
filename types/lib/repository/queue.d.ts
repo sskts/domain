@@ -19,7 +19,7 @@ interface QueueRepository {
      *
      * @param {Object} conditions
      */
-    find(conditions: Object): Promise<Array<Queue>>;
+    find(conditions: Object): Promise<Queue[]>;
     /**
      * ID検索
      *

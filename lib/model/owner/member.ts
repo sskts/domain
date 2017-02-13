@@ -30,6 +30,6 @@ export default class MemberOwner extends Owner {
     ) {
         super(_id, OwnerGroup.MEMBER);
 
-        // TODO validation
+        // todo validation
     }
 }

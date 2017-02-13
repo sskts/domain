@@ -12,37 +12,37 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
 
     public async find(conditions: Object) {
         const model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
-        const docs = await model.find()
+        const docs = <any[]> await model.find()
             .where(conditions)
             .populate("owner")
             .lean()
-            .exec() as Array<any>;
+            .exec();
 
         return docs.map(TransactionFactory.create);
     }
 
     public async findById(id: ObjectId) {
         const model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
-        const doc = await model.findOne()
+        const doc = <any> await model.findOne()
             .where("_id").equals(id)
-            .populate("owners").lean().exec() as any;
+            .populate("owners").lean().exec();
 
         return (doc) ? monapt.Option(TransactionFactory.create(doc)) : monapt.None;
     }
 
     public async findOne(conditions: Object) {
         const model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
-        const doc = await model.findOne(conditions).lean().exec() as any;
+        const doc = <any> await model.findOne(conditions).lean().exec();
 
         return (doc) ? monapt.Option(TransactionFactory.create(doc)) : monapt.None;
     }
 
     public async findOneAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
-        const doc = await model.findOneAndUpdate(conditions, update, {
+        const doc = <any> await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
-        }).lean().exec() as any;
+        }).lean().exec();
 
         return (doc) ? monapt.Option(TransactionFactory.create(doc)) : monapt.None;
     }

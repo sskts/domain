@@ -22,41 +22,28 @@ export type TransactionOperation<T> = (repository: TransactionRepository) => Pro
  * @interface TransactionService
  */
 interface TransactionService {
-    /** 匿名所有者の情報を更新する */
+    /**
+     * 匿名所有者の情報を更新する
+     */
     updateAnonymousOwner(args: {
-        /** 取引ID */
         /**
-         *
-         *
-         * @type {string}
+         * 取引ID
          */
         transaction_id: string,
-        /** 名 */
         /**
-         *
-         *
-         * @type {string}
+         * 名
          */
         name_first?: string,
-        /** 姓 */
         /**
-         *
-         *
-         * @type {string}
+         * 姓
          */
         name_last?: string,
-        /** メールアドレス */
         /**
-         *
-         *
-         * @type {string}
+         * メールアドレス
          */
         email?: string,
-        /** 電話番号 */
         /**
-         *
-         *
-         * @type {string}
+         * 電話番号
          */
         tel?: string
     }): OwnerAndTransactionOperation<void>;

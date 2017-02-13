@@ -120,9 +120,7 @@ export default class TransactionServiceInterpreter implements TransactionService
      * @memberOf TransactionServiceInterpreter
      */
     public findById(transactionId: string): TransactionOperation<monapt.Option<Transaction>> {
-        return async(transactionRepo: TransactionRepository) => {
-            return await transactionRepo.findById(ObjectId(transactionId));
-        };
+        return async(transactionRepo: TransactionRepository) => await transactionRepo.findById(ObjectId(transactionId));
     }
 
     /**
@@ -333,13 +331,10 @@ export default class TransactionServiceInterpreter implements TransactionService
      * @memberOf TransactionServiceInterpreter
      */
     public makeInquiry(key: TransactionInquiryKey): TransactionOperation<monapt.Option<Transaction>> {
-        return async(transactionRepo: TransactionRepository) => {
-            // 取引取得
-            return await transactionRepo.findOne({
-                inquiry_key: key,
-                status: TransactionStatus.CLOSED
-            });
-        };
+        return async(transactionRepo: TransactionRepository) => await transactionRepo.findOne({
+            inquiry_key: key,
+            status: TransactionStatus.CLOSED
+        });
     }
 
     /**
@@ -371,7 +366,7 @@ export default class TransactionServiceInterpreter implements TransactionService
             }
 
             // キューリストを事前作成
-            const queues: Array<Queue> = [];
+            const queues: Queue[] = [];
             transaction.authorizations().forEach((authorization) => {
                 queues.push(QueueFactory.createSettleAuthorization({
                     _id: ObjectId(),
@@ -389,7 +384,7 @@ export default class TransactionServiceInterpreter implements TransactionService
                     _id: ObjectId(),
                     notification: notification,
                     status: QueueStatus.UNEXECUTED,
-                    run_at: new Date(), // TODO emailのsent_atを指定
+                    run_at: new Date(), // todo emailのsent_atを指定
                     max_count_try: 10,
                     last_tried_at: null,
                     count_tried: 0,
@@ -477,7 +472,7 @@ export default class TransactionServiceInterpreter implements TransactionService
 
             const transaction = option.get();
 
-            let queues: Array<Queue>;
+            let queues: Queue[];
             switch (transaction.status) {
                 // 成立の場合は、あらかじめキューリストが作成されている
                 case TransactionStatus.CLOSED:
@@ -514,7 +509,7 @@ export default class TransactionServiceInterpreter implements TransactionService
                         }));
                     }
 
-                    // TODO おそらく開発時のみ
+                    // todo おそらく開発時のみ
                     const eventStart =
                         transaction.events.find((event) => (event.group === TransactionEventGroup.START));
                     queues.push(QueueFactory.createPushNotification(

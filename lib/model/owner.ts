@@ -14,6 +14,6 @@ export default class Owner {
         readonly _id: ObjectId,
         readonly group: OwnerGroup
     ) {
-        // TODO validation
+        // todo validation
     }
 }

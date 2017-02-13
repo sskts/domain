@@ -9,7 +9,9 @@ type AssetGroup =
     ;
 
 namespace AssetGroup {
-    /** 座席予約グループ */
+    /**
+     * 座席予約グループ
+     */
     export const SEAT_RESERVATION = "SEAT_RESERVATION";
 }
 

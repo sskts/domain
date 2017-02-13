@@ -43,7 +43,7 @@ export interface Section {
      * @type {Array<Seat>}
      * @memberOf Section
      */
-    seats: Array<Seat>;
+    seats: Seat[];
 }
 
 /**
@@ -63,8 +63,8 @@ export default class Screen {
         readonly theater: Theater,
         readonly coa_screen_code: string,
         readonly name: MultilingualString,
-        readonly sections: Array<Section>
+        readonly sections: Section[]
     ) {
-        // TODO validation
+        // todo validation
     }
 }

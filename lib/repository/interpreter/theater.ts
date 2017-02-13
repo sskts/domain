@@ -10,7 +10,7 @@ export default class TheaterRepositoryInterpreter implements TheaterRepository {
 
     public async findById(id: string) {
         const model = this.connection.model(TheaterModel.modelName, TheaterModel.schema);
-        const theater = await model.findOne({ _id: id }).lean().exec() as Theater;
+        const theater = <Theater> await model.findOne({ _id: id }).lean().exec();
 
         return (theater) ? monapt.Option(theater) : monapt.None;
     }

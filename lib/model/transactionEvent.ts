@@ -16,6 +16,6 @@ export default class TransactionEvent {
         readonly group: TransactionEventGroup,
         readonly occurred_at: Date
     ) {
-        // TODO validation
+        // todo validation
     }
 }

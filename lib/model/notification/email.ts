@@ -24,6 +24,7 @@ export default class EmailNotification extends Notification {
      */
     constructor(
         readonly _id: ObjectId,
+        // tslint:disable-next-line:no-reserved-keywords
         readonly from: string,
         readonly to: string,
         readonly subject: string,
@@ -31,7 +32,7 @@ export default class EmailNotification extends Notification {
     ) {
         super(_id, NotificationGroup.EMAIL);
 
-        // TODO validation
+        // todo validation
         if (validator.isEmpty(from)) throw new Error("from required.");
         if (validator.isEmpty(to)) throw new Error("to required.");
         if (validator.isEmpty(subject)) throw new Error("subject required.");

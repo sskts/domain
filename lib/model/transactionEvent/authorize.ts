@@ -27,6 +27,6 @@ export default class AuthorizeTransactionEvent extends TransactionEvent {
     ) {
         super(_id, TransactionEventGroup.AUTHORIZE, occurred_at);
 
-        // TODO validation
+        // todo validation
     }
 }

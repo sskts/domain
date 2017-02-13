@@ -44,6 +44,6 @@ export default class GMOAuthorization extends Authorization {
     ) {
         super(_id, AuthorizationGroup.GMO, price, owner_from, owner_to);
 
-        // TODO validation
+        // todo validation
     }
 }

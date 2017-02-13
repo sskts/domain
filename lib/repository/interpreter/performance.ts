@@ -10,22 +10,22 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
 
     public async find(conditions: Object) {
         const model = this.connection.model(PerformanceModel.modelName, PerformanceModel.schema);
-        return await model.find(conditions)
+        return <Performance[]> await model.find(conditions)
             .populate("film")
             .populate("theater")
             .populate("screen")
             .lean()
-            .exec() as Array<Performance>;
+            .exec();
     }
 
     public async findById(id: string) {
         const model = this.connection.model(PerformanceModel.modelName, PerformanceModel.schema);
-        const performance = await model.findOne({ _id: id })
+        const performance = <Performance> await model.findOne({ _id: id })
             .populate("film")
             .populate("theater")
             .populate("screen")
             .lean()
-            .exec() as Performance;
+            .exec();
 
         return (performance) ? monapt.Option(performance) : monapt.None;
     }

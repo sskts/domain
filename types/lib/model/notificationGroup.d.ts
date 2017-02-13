@@ -5,7 +5,9 @@
  */
 declare type NotificationGroup = "EMAIL";
 declare namespace NotificationGroup {
-    /** Eメール */
+    /**
+     * Eメール
+     */
     const EMAIL = "EMAIL";
 }
 export default NotificationGroup;

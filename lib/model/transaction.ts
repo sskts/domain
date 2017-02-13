@@ -36,14 +36,14 @@ export default class Transaction {
     constructor(
         readonly _id: ObjectId,
         readonly status: TransactionStatus,
-        readonly events: Array<TransactionEvent>,
-        readonly owners: Array<Owner>,
-        readonly queues: Array<Queue>,
+        readonly events: TransactionEvent[],
+        readonly owners: Owner[],
+        readonly queues: Queue[],
         readonly expired_at: Date,
         readonly inquiry_key: TransactionInquiryKey | null,
         readonly queues_status: TransactionQueuesStatus
     ) {
-        // TODO validation
+        // todo validation
     }
 
     /**
@@ -54,11 +54,11 @@ export default class Transaction {
      * @memberOf Transaction
      */
     public getCoaSeatReservationAuthorization() {
-        const coaAuthorization = this.authorizations().find((authorization) => {
-            return (authorization.group === AuthorizationGroup.COA_SEAT_RESERVATION);
-        });
+        const coaAuthorization = this.authorizations().find(
+            (authorization) => (authorization.group === AuthorizationGroup.COA_SEAT_RESERVATION)
+        );
 
-        return (coaAuthorization) ? monapt.Option(coaAuthorization as COASeatReservationAuthorization) : monapt.None;
+        return (coaAuthorization) ? monapt.Option(<COASeatReservationAuthorization> coaAuthorization) : monapt.None;
     }
 
     /**
@@ -68,24 +68,20 @@ export default class Transaction {
      *
      * @memberOf Transaction
      */
-    public authorizations(): Array<Authorization> {
+    public authorizations(): Authorization[] {
         // 承認イベント
-        const authorizations = this.events.filter((event) => {
-            return event.group === TransactionEventGroup.AUTHORIZE;
-        }).map((event: AuthorizeTransactionEvent) => {
-            return event.authorization;
-        });
+        const authorizations = this.events
+            .filter((event) => (event.group === TransactionEventGroup.AUTHORIZE))
+            .map((event: AuthorizeTransactionEvent) => event.authorization);
 
         // 承認解除イベント
-        const removedAuthorizationIds = this.events.filter((event) => {
-            return event.group === TransactionEventGroup.UNAUTHORIZE;
-        }).map((event: UnauthorizeTransactionEvent) => {
-            return event.authorization._id.toString();
-        });
+        const removedAuthorizationIds = this.events
+            .filter((event) => (event.group === TransactionEventGroup.UNAUTHORIZE))
+            .map((event: UnauthorizeTransactionEvent) => event.authorization._id.toString());
 
-        return authorizations.filter((authorization) => {
-            return removedAuthorizationIds.indexOf(authorization._id.toString()) < 0;
-        });
+        return authorizations.filter(
+            (authorization) => (removedAuthorizationIds.indexOf(authorization._id.toString()) < 0)
+        );
     }
 
     /**
@@ -96,22 +92,18 @@ export default class Transaction {
      * @memberOf Transaction
      */
     public notifications() {
-        const notifications = this.events.filter((event) => {
-            return event.group === TransactionEventGroup.NOTIFICATION_ADD;
-        }).map((event: NotificationAddTransactionEvent<Notification>) => {
-            return event.notification;
-        });
+        const notifications = this.events
+            .filter((event) => (event.group === TransactionEventGroup.NOTIFICATION_ADD))
+            .map((event: NotificationAddTransactionEvent<Notification>) => event.notification);
 
         // メール削除イベント
-        const removedNotificationIds = this.events.filter((event) => {
-            return event.group === TransactionEventGroup.NOTIFICATION_REMOVE;
-        }).map((event: NotificationRemoveTransactionEvent<Notification>) => {
-            return event.notification._id.toString();
-        });
+        const removedNotificationIds = this.events
+            .filter((event) => (event.group === TransactionEventGroup.NOTIFICATION_REMOVE))
+            .map((event: NotificationRemoveTransactionEvent<Notification>) => event.notification._id.toString());
 
-        return notifications.filter((notification) => {
-            return removedNotificationIds.indexOf(notification._id.toString()) < 0;
-        });
+        return notifications.filter(
+            (notification) => (removedNotificationIds.indexOf(notification._id.toString()) < 0)
+        );
     }
 
     /**
@@ -150,8 +142,6 @@ export default class Transaction {
             pricesByOwner[authorization.owner_to.toString()] += authorization.price;
         });
 
-        return Object.keys(pricesByOwner).every((ownerId) => {
-            return pricesByOwner[ownerId] === 0;
-        });
+        return Object.keys(pricesByOwner).every((ownerId) => (pricesByOwner[ownerId] === 0));
     }
 }

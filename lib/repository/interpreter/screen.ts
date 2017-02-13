@@ -10,23 +10,25 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
 
     public async findById(id: string) {
         const model = this.connection.model(ScreenModel.modelName, ScreenModel.schema);
-        const screen = await model.findOne({ _id: id })
+        const screen = <Screen> await model.findOne({ _id: id })
             .populate("theater")
             .lean()
-            .exec() as Screen;
+            .exec();
 
         return (screen) ? monapt.Option(screen) : monapt.None;
     }
 
     public async findByTheater(args: {
-        /** 劇場ID */
+        /**
+         * 劇場ID
+         */
         theater_id: string
     }) {
         const model = this.connection.model(ScreenModel.modelName, ScreenModel.schema);
-        return await model.find({ theater: args.theater_id })
+        return <Screen[]> await model.find({ theater: args.theater_id })
             .populate("theater")
             .lean()
-            .exec() as Array<Screen>;
+            .exec();
     }
 
     public async store(screen: Screen) {

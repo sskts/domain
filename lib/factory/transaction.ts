@@ -16,10 +16,10 @@ import TransactionStatus from "../model/transactionStatus";
 export function create(args: {
     _id?: ObjectId,
     status: TransactionStatus,
-    owners: Array<Owner>,
+    owners: Owner[],
     expired_at: Date,
-    events?: Array<TransactionEvent>,
-    queues?: Array<Queue>,
+    events?: TransactionEvent[],
+    queues?: Queue[],
     inquiry_key?: TransactionInquiryKey,
     queues_status?: TransactionQueuesStatus
 }): Transaction {

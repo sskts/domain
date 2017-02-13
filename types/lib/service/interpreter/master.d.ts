@@ -93,7 +93,7 @@ export default class MasterServiceInterpreter implements MasterService {
      *
      * @memberOf MasterServiceInterpreter
      */
-    searchPerformances(conditions: SearchPerformancesConditions): PerformanceOperation<Array<SearchPerformancesResult>>;
+    searchPerformances(conditions: SearchPerformancesConditions): PerformanceOperation<SearchPerformancesResult[]>;
     /**
      * IDで劇場検索
      *

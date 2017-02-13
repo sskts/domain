@@ -34,7 +34,7 @@ export default class CancelAuthorizationQueue<T extends Authorization> extends Q
         readonly max_count_try: number,
         readonly last_tried_at: Date | null,
         readonly count_tried: number,
-        readonly results: Array<string>,
+        readonly results: string[],
         readonly authorization: T
     ) {
         super(
@@ -48,6 +48,6 @@ export default class CancelAuthorizationQueue<T extends Authorization> extends Q
             results
         );
 
-        // TODO validation
+        // todo validation
     }
 }

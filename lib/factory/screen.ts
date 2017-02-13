@@ -14,7 +14,7 @@ export function create(args: {
     theater: Theater,
     coa_screen_code: string,
     name: MultilingualString,
-    sections: Array<Screen.Section>
+    sections: Screen.Section[]
 }) {
     return new Screen.default(
         args._id,
@@ -27,17 +27,17 @@ export function create(args: {
 
 export function createFromCOA(screenFromCOA: COA.findScreensByTheaterCodeInterface.Result) {
     return async(theater: Theater) => {
-        const sections: Array<{
+        const sections: {
             code: string,
             name: {
                 ja: string,
                 en: string
             },
-            seats: Array<{
+            seats: {
                 code: string
-            }>
-        }> = [];
-        const sectionCodes: Array<string> = [];
+            }[]
+        }[] = [];
+        const sectionCodes: string[] = [];
         screenFromCOA.list_seat.forEach((seat) => {
             if (sectionCodes.indexOf(seat.seat_section) < 0) {
                 sectionCodes.push(seat.seat_section);

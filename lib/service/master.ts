@@ -52,24 +52,15 @@ export interface SearchPerformancesResult {
  * @interface MasterService
  */
 interface MasterService {
-    /** 劇場インポート */
     importTheater(theaterCode: string): TheaterOperation<void>;
-    /** 作品インポート */
     importFilms(theaterCode: string): TheaterAndFilmOperation<void>;
-    /** スクリーンインポート */
     importScreens(theaterCode: string): TheaterAndScreenOperation<void>;
-    /** パフォーマンスインポート */
     importPerformances(theaterCode: string, dayStart: string, dayEnd: string):
         FilmAndScreenAndPerformanceOperation<void>;
-    /** パフォーマンス検索 */
-    searchPerformances(conditions: SearchPerformancesConditions): PerformanceOperation<Array<SearchPerformancesResult>>;
-    /** 劇場詳細 */
+    searchPerformances(conditions: SearchPerformancesConditions): PerformanceOperation<SearchPerformancesResult[]>;
     findTheater(theaterId: string): TheaterOperation<monapt.Option<Theater>>;
-    /** 作品詳細 */
     findFilm(filmId: string): FilmOperation<monapt.Option<Film>>;
-    /** スクリーン詳細 */
     findScreen(screenId: string): ScreenOperation<monapt.Option<Screen>>;
-    /** パフォーマンス詳細 */
     findPerformance(performanceId: string): PerformanceOperation<monapt.Option<Performance>>;
 }
 

@@ -13,7 +13,7 @@ interface TransactionRepository {
      *
      * @param {Object} conditions 検索条件
      */
-    find(conditions: Object): Promise<Array<Transaction>>;
+    find(conditions: Object): Promise<Transaction[]>;
     /**
      * ID検索
      *

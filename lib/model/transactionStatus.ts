@@ -11,11 +11,17 @@ type TransactionStatus =
     ;
 
 namespace TransactionStatus {
-    /** 進行中 */
+    /**
+     * 進行中
+     */
     export const UNDERWAY = "UNDERWAY";
-    /** 成立済み */
+    /**
+     * 成立済み
+     */
     export const CLOSED = "CLOSED";
-    /** 期限切れ */
+    /**
+     * 期限切れ
+     */
     export const EXPIRED = "EXPIRED";
 }
 

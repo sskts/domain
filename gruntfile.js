@@ -24,7 +24,7 @@ module.exports = function (grunt) {
       options: {
         configuration: "tslint.json",
         force: false,
-        fix: false
+        fix: true
       },
       files: {
         src: [

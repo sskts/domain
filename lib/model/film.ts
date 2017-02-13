@@ -40,6 +40,6 @@ export default class Film {
         readonly kbn_joueihousiki: string,
         readonly kbn_jimakufukikae: string
     ) {
-        // TODO validation
+        // todo validation
     }
 }

@@ -17,9 +17,11 @@ interface ScreenRepository {
      * 劇場で検索
      */
     findByTheater(args: {
-        /** 劇場ID */
+        /**
+         * 劇場ID
+         */
         theater_id: string
-    }): Promise<Array<Screen>>;
+    }): Promise<Screen[]>;
     /**
      * 保管する
      *

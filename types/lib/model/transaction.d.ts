@@ -29,13 +29,13 @@ import * as monapt from "monapt";
 export default class Transaction {
     readonly _id: ObjectId;
     readonly status: TransactionStatus;
-    readonly events: Array<TransactionEvent>;
-    readonly owners: Array<Owner>;
-    readonly queues: Array<Queue>;
+    readonly events: TransactionEvent[];
+    readonly owners: Owner[];
+    readonly queues: Queue[];
     readonly expired_at: Date;
     readonly inquiry_key: TransactionInquiryKey | null;
     readonly queues_status: TransactionQueuesStatus;
-    constructor(_id: ObjectId, status: TransactionStatus, events: Array<TransactionEvent>, owners: Array<Owner>, queues: Array<Queue>, expired_at: Date, inquiry_key: TransactionInquiryKey | null, queues_status: TransactionQueuesStatus);
+    constructor(_id: ObjectId, status: TransactionStatus, events: TransactionEvent[], owners: Owner[], queues: Queue[], expired_at: Date, inquiry_key: TransactionInquiryKey | null, queues_status: TransactionQueuesStatus);
     /**
      * COA座席仮予約を取得する
      *
@@ -51,7 +51,7 @@ export default class Transaction {
      *
      * @memberOf Transaction
      */
-    authorizations(): Array<Authorization>;
+    authorizations(): Authorization[];
     /**
      * イベントから通知リストを取得する
      *

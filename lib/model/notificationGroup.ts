@@ -9,7 +9,9 @@ type NotificationGroup =
     ;
 
 namespace NotificationGroup {
-    /** Eメール */
+    /**
+     * Eメール
+     */
     export const EMAIL = "EMAIL";
 }
 

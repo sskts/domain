@@ -9,6 +9,7 @@ import ObjectId from "../model/objectId";
 
 export function createEmail(args: {
     _id?: ObjectId,
+    // tslint:disable-next-line:no-reserved-keywords
     from: string,
     to: string,
     subject: string,

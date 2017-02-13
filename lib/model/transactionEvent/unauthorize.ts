@@ -27,6 +27,6 @@ export default class Unauthorize extends TransactionEvent {
     ) {
         super(_id, TransactionEventGroup.UNAUTHORIZE, occurred_at);
 
-        // TODO validation
+        // todo validation
     }
 }

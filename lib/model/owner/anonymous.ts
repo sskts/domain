@@ -30,6 +30,6 @@ export default class AnonymousOwner extends Owner {
     ) {
         super(_id, OwnerGroup.ANONYMOUS);
 
-        // TODO validation
+        // todo validation
     }
 }

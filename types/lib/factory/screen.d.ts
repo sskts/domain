@@ -12,6 +12,6 @@ export declare function create(args: {
     theater: Theater;
     coa_screen_code: string;
     name: MultilingualString;
-    sections: Array<Screen.Section>;
+    sections: Screen.Section[];
 }): Screen.Screen;
 export declare function createFromCOA(screenFromCOA: COA.findScreensByTheaterCodeInterface.Result): (theater: Theater) => Promise<Screen.Screen>;

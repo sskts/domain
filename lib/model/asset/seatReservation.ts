@@ -7,7 +7,7 @@ import Ownership from "../ownership";
 /**
  * 座席予約資産
  *
- * TODO 座席予約資産の属性はこれでよいか
+ * todo 座席予約資産の属性はこれでよいか
  *
  *
  * @class SeatReservationAsset
@@ -37,7 +37,7 @@ export default class SeatReservationAsset extends Asset {
     constructor(
         readonly _id: ObjectId,
         readonly ownership: Ownership,
-        readonly authorizations: Array<Authorization>,
+        readonly authorizations: Authorization[],
         readonly performance: string,
         readonly section: string,
         readonly seat_code: string,
@@ -50,7 +50,7 @@ export default class SeatReservationAsset extends Asset {
         readonly dis_price: number,
         readonly sale_price: number
     ) {
-        // TODO validation
+        // todo validation
 
         super(
             _id,

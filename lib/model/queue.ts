@@ -25,8 +25,8 @@ export default class Queue {
         readonly max_count_try: number,
         readonly last_tried_at: Date | null,
         readonly count_tried: number,
-        readonly results: Array<string>
+        readonly results: string[]
     ) {
-        // TODO validation
+        // todo validation
     }
 }

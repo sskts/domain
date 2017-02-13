@@ -31,6 +31,6 @@ export default class Performance {
         // kbn_acoustic: String, // 音響区分
         // name_service_day: String, // サービスデイ名称(「映画の日」「レディースデイ」など ※割引区分、割引コード、特定日等の組み合わせで登録するため名称で連携の方が容易)
     ) {
-        // TODO validation
+        // todo validation
     }
 }

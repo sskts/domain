@@ -21,7 +21,7 @@ export default class COASeatReservationAuthorization extends Authorization {
     readonly price: number;
     readonly owner_from: ObjectId;
     readonly owner_to: ObjectId;
-    readonly assets: Array<SeatReservationAsset>;
+    readonly assets: SeatReservationAsset[];
     /**
      * Creates an instance of COASeatReservationAuthorization.
      *
@@ -40,5 +40,5 @@ export default class COASeatReservationAuthorization extends Authorization {
      *
      * @memberOf COASeatReservationAuthorization
      */
-    constructor(_id: ObjectId, coa_tmp_reserve_num: number, coa_theater_code: string, coa_date_jouei: string, coa_title_code: string, coa_title_branch_num: string, coa_time_begin: string, coa_screen_code: string, price: number, owner_from: ObjectId, owner_to: ObjectId, assets: Array<SeatReservationAsset>);
+    constructor(_id: ObjectId, coa_tmp_reserve_num: number, coa_theater_code: string, coa_date_jouei: string, coa_title_code: string, coa_title_branch_num: string, coa_time_begin: string, coa_screen_code: string, price: number, owner_from: ObjectId, owner_to: ObjectId, assets: SeatReservationAsset[]);
 }

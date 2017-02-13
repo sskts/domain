@@ -28,6 +28,6 @@ export default class NotificationRemoveTransactionEvent<T extends Notification> 
     ) {
         super(_id, TransactionEventGroup.NOTIFICATION_REMOVE, occurred_at);
 
-        // TODO validation
+        // todo validation
     }
 }

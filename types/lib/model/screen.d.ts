@@ -42,7 +42,7 @@ export interface Section {
      * @type {Array<Seat>}
      * @memberOf Section
      */
-    seats: Array<Seat>;
+    seats: Seat[];
 }
 /**
  * スクリーン
@@ -60,6 +60,6 @@ export default class Screen {
     readonly theater: Theater;
     readonly coa_screen_code: string;
     readonly name: MultilingualString;
-    readonly sections: Array<Section>;
-    constructor(_id: string, theater: Theater, coa_screen_code: string, name: MultilingualString, sections: Array<Section>);
+    readonly sections: Section[];
+    constructor(_id: string, theater: Theater, coa_screen_code: string, name: MultilingualString, sections: Section[]);
 }

@@ -14,7 +14,7 @@ interface OwnerRepository {
      *
      * @param {Object} conditions 検索条件
      */
-    find(conditions: Object): Promise<Array<Owner>>;
+    find(conditions: Object): Promise<Owner[]>;
     /**
      * ID検索
      *

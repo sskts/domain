@@ -6,7 +6,7 @@ import Ownership from "../ownership";
 /**
  * 座席予約資産
  *
- * TODO 座席予約資産の属性はこれでよいか
+ * todo 座席予約資産の属性はこれでよいか
  *
  *
  * @class SeatReservationAsset
@@ -15,7 +15,7 @@ import Ownership from "../ownership";
 export default class SeatReservationAsset extends Asset {
     readonly _id: ObjectId;
     readonly ownership: Ownership;
-    readonly authorizations: Array<Authorization>;
+    readonly authorizations: Authorization[];
     readonly performance: string;
     readonly section: string;
     readonly seat_code: string;
@@ -47,5 +47,5 @@ export default class SeatReservationAsset extends Asset {
      *
      * @memberOf SeatReservationAsset
      */
-    constructor(_id: ObjectId, ownership: Ownership, authorizations: Array<Authorization>, performance: string, section: string, seat_code: string, ticket_code: string, ticket_name_ja: string, ticket_name_en: string, ticket_name_kana: string, std_price: number, add_price: number, dis_price: number, sale_price: number);
+    constructor(_id: ObjectId, ownership: Ownership, authorizations: Authorization[], performance: string, section: string, seat_code: string, ticket_code: string, ticket_name_ja: string, ticket_name_en: string, ticket_name_kana: string, std_price: number, add_price: number, dis_price: number, sale_price: number);
 }

@@ -23,6 +23,6 @@ export default class Authorization {
         readonly owner_from: ObjectId,
         readonly owner_to: ObjectId
     ) {
-        // TODO validation
+        // todo validation
     }
 }

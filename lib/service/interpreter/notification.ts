@@ -43,7 +43,7 @@ export default class NotificationServiceInterpreter implements NotificationServi
             });
 
             await sg.API(request);
-            // TODO check the response.
+            // todo check the response.
             // const response = await sg.API(request);
         };
     }

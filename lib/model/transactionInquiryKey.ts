@@ -13,6 +13,6 @@ export default class TransactionInquiryKey {
         readonly reserve_num: number,
         readonly tel: string
     ) {
-        // TODO validation
+        // todo validation
     }
 }

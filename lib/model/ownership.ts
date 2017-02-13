@@ -16,6 +16,6 @@ export default class Ownership {
         readonly owner: ObjectId,
         readonly authenticated: boolean
     ) {
-        // TODO validation
+        // todo validation
     }
 }

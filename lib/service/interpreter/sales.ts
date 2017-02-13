@@ -23,7 +23,7 @@ export default class SalesServiceInterpreter implements SalesService {
                 amount: authorization.gmo_amount
             });
 
-            // TODO 失敗したら取引状態確認する?
+            // todo 失敗したら取引状態確認する?
         };
     }
 
@@ -41,7 +41,7 @@ export default class SalesServiceInterpreter implements SalesService {
                 amount: authorization.gmo_amount
             });
 
-            // TODO 失敗したら取引状態確認する?
+            // todo 失敗したら取引状態確認する?
         };
     }
 }

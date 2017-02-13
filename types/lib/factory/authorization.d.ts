@@ -34,5 +34,5 @@ export declare function createCOASeatReservation(args: {
     price: number;
     owner_from: ObjectId;
     owner_to: ObjectId;
-    assets: Array<SeatReservationAsset>;
+    assets: SeatReservationAsset[];
 }): COASeatReservationAuthorization;

@@ -18,7 +18,7 @@ interface PerformanceRepository {
      *
      * @param {Object} conditions 検索条件
      */
-    find(conditions: Object): Promise<Array<Performance>>;
+    find(conditions: Object): Promise<Performance[]>;
     /**
      * 保管する
      *

@@ -1,7 +1,7 @@
 {
   "extends": [
     "tslint:latest",
-    "tslint-eslint-rules"
+    "tslint-microsoft-contrib/recommended_ruleset"
   ],
   "jsRules": {},
   "rules": {
@@ -14,21 +14,16 @@
     ],
     "array-type": [
       true,
-      "generic"
+      "array"
     ],
     "arrow-parens": [
-      true,
-      "always"
+      true
     ],
     "arrow-return-shorthand": [
       true
     ],
     "await-promise": false,
     "ban": false,
-    "brace-style": [
-      true,
-      "1tbs"
-    ],
     "callable-types": true,
     "class-name": true,
     "comment-format": [
@@ -49,14 +44,15 @@
       "Copyright Motionpicture co.,ltd\\."
     ],
     "forin": true,
-    "handle-callback-err": true,
     "import-blacklist": false,
     "import-spacing": true,
     "indent": [
       true,
       "spaces"
     ],
-    "interface-name": false,
+    "interface-name": [
+      false
+    ],
     "interface-over-type-literal": true,
     "jsdoc-format": false,
     "label-position": true,
@@ -75,7 +71,7 @@
       false
     ],
     "new-parens": true,
-    "no-angle-bracket-type-assertion": true,
+    "no-angle-bracket-type-assertion": false,
     "no-any": false,
     "no-arg": true,
     "no-bitwise": true,
@@ -101,25 +97,20 @@
     "no-duplicate-case": true,
     "no-duplicate-variable": true,
     "no-empty": true,
-    "no-empty-character-class": true,
     "no-empty-interface": true,
     "no-eval": true,
-    "no-ex-assign": true,
-    "no-extra-boolean-cast": true,
-    "no-extra-semi": true,
     "no-floating-promises": false,
     "no-for-in-array": false,
-    "no-inferrable-types": true,
+    "no-inferrable-types": [
+      true
+    ],
     "no-inferred-empty-object-type": false,
-    "no-inner-declarations": true,
     "no-internal-module": true,
     "no-invalid-regexp": true,
     "no-invalid-this": true,
-    "no-irregular-whitespace": true,
     "no-magic-numbers": true,
     "no-mergeable-namespace": false,
     "no-misused-new": true,
-    "no-multi-spaces": true,
     "no-namespace": false,
     "no-null-keyword": false,
     "no-parameter-properties": false,
@@ -133,18 +124,17 @@
     "no-switch-case-fall-through": true,
     "no-trailing-whitespace": true,
     "no-unbound-method": false,
-    "no-unexpected-multiline": true,
     "no-unnecessary-initializer": true,
     "no-unnecessary-qualifier": false,
     "no-unsafe-any": false,
     "no-unsafe-finally": true,
     "no-unused-expression": true,
     "no-unused-new": true,
+    "no-unused-variable": false,
     "no-use-before-declare": true,
     "no-var-keyword": true,
     "no-var-requires": true,
     "no-void-expression": false,
-    "object-curly-spacing": true,
     "object-literal-key-quotes": [
       true,
       "as-needed"
@@ -190,27 +180,6 @@
     "strict-boolean-expressions": false,
     "strict-type-predicates": false,
     "switch-default": true,
-    "ter-arrow-body-style": [
-      true,
-      "always"
-    ],
-    "ter-arrow-spacing": [
-      true
-    ],
-    "ter-indent": [
-      true,
-      4,
-      {
-        "SwitchCase": 1
-      }
-    ],
-    "ter-max-len": [
-      true,
-      120
-    ],
-    "ter-prefer-arrow-callback": [
-      true
-    ],
     "trailing-comma": [
       true,
       {
@@ -247,7 +216,6 @@
     "typeof-compare": true,
     "unified-signatures": true,
     "use-isnan": true,
-    "valid-jsdoc": false,
     "valid-typeof": true,
     "variable-name": [
       true,
@@ -260,9 +228,15 @@
       "check-operator",
       "check-separator",
       "check-type",
-      "check-typecast",
-      "check-preblock"
-    ]
+      "check-typecast"
+    ],
+    // ms config
+    "export-name": false,
+    "import-name": false,
+    "no-relative-imports": false,
+    "missing-jsdoc": false
   },
-  "rulesDirectory": []
+  "rulesDirectory": [
+    "node_modules/tslint-microsoft-contrib"
+  ]
 }

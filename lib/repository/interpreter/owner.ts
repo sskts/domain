@@ -15,29 +15,29 @@ export default class OwnerRepositoryInterpreter implements OwnerRepository {
 
     public async find(conditions: Object) {
         const model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
-        return await model.find({ $and: [conditions] }).lean().exec() as Array<Owner>;
+        return <Owner[]> await model.find({ $and: [conditions] }).lean().exec();
     }
 
     public async findById(id: ObjectId) {
         const model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
-        const owner = await model.findOne({ _id: id }).lean().exec() as Owner;
+        const owner = <Owner> await model.findOne({ _id: id }).lean().exec();
 
         return (owner) ? monapt.Option(owner) : monapt.None;
     }
 
     public async findPromoter() {
         const model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
-        const owner = await model.findOne({ group: OwnerGroup.PROMOTER }).lean().exec() as PromoterOwner;
+        const owner = <PromoterOwner> await model.findOne({ group: OwnerGroup.PROMOTER }).lean().exec();
 
         return (owner) ? monapt.Option(owner) : monapt.None;
     }
 
     public async findOneAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
-        const owner = await model.findOneAndUpdate(conditions, update, {
+        const owner = <Owner> await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
-        }).lean().exec() as Owner;
+        }).lean().exec();
 
         return (owner) ? monapt.Option(owner) : monapt.None;
     }
