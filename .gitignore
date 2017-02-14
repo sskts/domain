@@ -6,10 +6,8 @@ npm-debug.log
 node_modules
 examples/**/*.d.ts
 
-# Editor configuration
 .vscode/*
-
-.tscache/*
+docs/
 
 !.gitignore
 !.gitkeep

@@ -1,3 +1,4 @@
+// tslint:disable:variable-name
 import Film from './film';
 import Screen from './screen';
 import Theater from './theater';

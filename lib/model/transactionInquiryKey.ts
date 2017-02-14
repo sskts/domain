@@ -1,3 +1,4 @@
+// tslint:disable:variable-name
 /**
  * 取引照会キー
  *

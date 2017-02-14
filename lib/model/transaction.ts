@@ -1,3 +1,4 @@
+// tslint:disable:variable-name
 import * as monapt from 'monapt';
 import Authorization from './authorization';
 import COASeatReservationAuthorization from './authorization/coaSeatReservation';

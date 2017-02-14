@@ -1,3 +1,4 @@
+// tslint:disable:variable-name
 import ObjectId from './objectId';
 import QueueGroup from './queueGroup';
 import QueueStatus from './queueStatus';

@@ -8,6 +8,21 @@
 
 ## Install
 
+```shell
+npm install @motionpicture/sskts-domain
+```
+
 ## Usage
 
+```Javascript
+var SSKTS = require('@motionpicture/sskts-domain');
+```
+
+
 ## Code Samples
+
+コードサンプルは./examplesにあります。
+
+# JsDoc
+
+`grunt jsdoc`でjsdocを作成できます。./docsに出力されます。
