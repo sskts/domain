@@ -6,62 +6,56 @@ import * as SalesService from './service/sales';
 import * as StockService from './service/stock';
 import * as TransactionService from './service/transaction';
 
+import FilmRepository from './repository/interpreter/film';
 import OwnerRepository from './repository/interpreter/owner';
+import PerformanceRepository from './repository/interpreter/performance';
 import QueueRepository from './repository/interpreter/queue';
+import ScreenRepository from './repository/interpreter/screen';
 import TheaterRepository from './repository/interpreter/theater';
 import TransactionRepository from './repository/interpreter/transaction';
 
-import * as AssetFactory from './factory/asset';
-import * as AuthorizationFactory from './factory/authorization';
-import * as FilmFactory from './factory/film';
-import * as NotificationFactory from './factory/notification';
-import * as ObjectIdFactory from './factory/objectId';
-import * as OwnershipFactory from './factory/ownership';
-import * as PerformanceFactory from './factory/performance';
-import * as QueueFactory from './factory/queue';
-import * as ScreenFactory from './factory/screen';
-import * as TheaterFactory from './factory/theater';
-import * as TransactionFactory from './factory/transaction';
-import * as TransactionEventFactory from './factory/transactionEvent';
-import * as TransactionInquiryKeyFactory from './factory/transactionInquiryKey';
+import Asset from './model/asset';
+import Authorization from './model/authorization';
+import Notification from './model/notification';
+import Ownership from './model/ownership';
+import TransactionInquiryKey from './model/transactionInquiryKey';
 
+export function createFilmRepository(connection: mongoose.Connection) {
+    return new FilmRepository(connection);
+}
 /**
- *
- *
  *
  * @param {mongoose.Connection} connection
  * @returns {TheaterRepository}
  */
-export function createOwnerRepository(connection: mongoose.Connection): OwnerRepository {
+export function createOwnerRepository(connection: mongoose.Connection) {
     return new OwnerRepository(connection);
 }
-export function createQueueRepository(connection: mongoose.Connection): QueueRepository {
+export function createPerformanceRepository(connection: mongoose.Connection) {
+    return new PerformanceRepository(connection);
+}
+export function createQueueRepository(connection: mongoose.Connection) {
     return new QueueRepository(connection);
 }
-export function createTransactionRepository(connection: mongoose.Connection): TransactionRepository {
+export function createScreenRepository(connection: mongoose.Connection) {
+    return new ScreenRepository(connection);
+}
+export function createTransactionRepository(connection: mongoose.Connection) {
     return new TransactionRepository(connection);
 }
-export function createTheaterRepository(connection: mongoose.Connection): TheaterRepository {
+export function createTheaterRepository(connection: mongoose.Connection) {
     return new TheaterRepository(connection);
 }
 
 export {
+    Asset,
+    Authorization,
     MasterService,
+    Notification,
     NotificationService,
+    Ownership,
     SalesService,
     StockService,
-    TransactionService,
-    AssetFactory,
-    AuthorizationFactory,
-    FilmFactory,
-    NotificationFactory,
-    ObjectIdFactory,
-    OwnershipFactory,
-    PerformanceFactory,
-    QueueFactory,
-    ScreenFactory,
-    TheaterFactory,
-    TransactionFactory,
-    TransactionEventFactory,
-    TransactionInquiryKeyFactory
+    TransactionInquiryKey,
+    TransactionService
 }

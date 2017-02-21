@@ -5,32 +5,28 @@ import * as NotificationService from './service/notification';
 import * as SalesService from './service/sales';
 import * as StockService from './service/stock';
 import * as TransactionService from './service/transaction';
+import FilmRepository from './repository/interpreter/film';
 import OwnerRepository from './repository/interpreter/owner';
+import PerformanceRepository from './repository/interpreter/performance';
 import QueueRepository from './repository/interpreter/queue';
+import ScreenRepository from './repository/interpreter/screen';
 import TheaterRepository from './repository/interpreter/theater';
 import TransactionRepository from './repository/interpreter/transaction';
-import * as AssetFactory from './factory/asset';
-import * as AuthorizationFactory from './factory/authorization';
-import * as FilmFactory from './factory/film';
-import * as NotificationFactory from './factory/notification';
-import * as ObjectIdFactory from './factory/objectId';
-import * as OwnershipFactory from './factory/ownership';
-import * as PerformanceFactory from './factory/performance';
-import * as QueueFactory from './factory/queue';
-import * as ScreenFactory from './factory/screen';
-import * as TheaterFactory from './factory/theater';
-import * as TransactionFactory from './factory/transaction';
-import * as TransactionEventFactory from './factory/transactionEvent';
-import * as TransactionInquiryKeyFactory from './factory/transactionInquiryKey';
+import Asset from './model/asset';
+import Authorization from './model/authorization';
+import Notification from './model/notification';
+import Ownership from './model/ownership';
+import TransactionInquiryKey from './model/transactionInquiryKey';
+export declare function createFilmRepository(connection: mongoose.Connection): FilmRepository;
 /**
- *
- *
  *
  * @param {mongoose.Connection} connection
  * @returns {TheaterRepository}
  */
 export declare function createOwnerRepository(connection: mongoose.Connection): OwnerRepository;
+export declare function createPerformanceRepository(connection: mongoose.Connection): PerformanceRepository;
 export declare function createQueueRepository(connection: mongoose.Connection): QueueRepository;
+export declare function createScreenRepository(connection: mongoose.Connection): ScreenRepository;
 export declare function createTransactionRepository(connection: mongoose.Connection): TransactionRepository;
 export declare function createTheaterRepository(connection: mongoose.Connection): TheaterRepository;
-export { MasterService, NotificationService, SalesService, StockService, TransactionService, AssetFactory, AuthorizationFactory, FilmFactory, NotificationFactory, ObjectIdFactory, OwnershipFactory, PerformanceFactory, QueueFactory, ScreenFactory, TheaterFactory, TransactionFactory, TransactionEventFactory, TransactionInquiryKeyFactory };
+export { Asset, Authorization, MasterService, Notification, NotificationService, Ownership, SalesService, StockService, TransactionInquiryKey, TransactionService };

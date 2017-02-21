@@ -6,7 +6,6 @@
 
 import * as monapt from 'monapt';
 import * as mongoose from 'mongoose';
-import * as FilmFactory from '../../factory/film';
 import Film from '../../model/film';
 import FilmRepository from '../film';
 import FilmModel from './mongoose/model/film';
@@ -19,7 +18,7 @@ export default class FilmRepositoryInterpreter implements FilmRepository {
         const model = this.connection.model(FilmModel.modelName, FilmModel.schema);
         const doc = <any>await model.findOne({ _id: id }).lean().exec();
 
-        return (doc) ? monapt.Option(FilmFactory.create(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Film.create(doc)) : monapt.None;
     }
 
     public async store(film: Film) {

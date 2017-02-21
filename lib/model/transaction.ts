@@ -19,7 +19,7 @@ import TransactionStatus from './transactionStatus';
  * @param {string} inquiry_pass
  * @param {TransactionQueuesStatus} queues_status
  */
-export default class Transaction {
+class Transaction {
     constructor(
         readonly _id: ObjectId,
         readonly status: TransactionStatus,
@@ -42,3 +42,27 @@ export default class Transaction {
         return (this.inquiry_key);
     }
 }
+
+namespace Transaction {
+    export interface ITransaction {
+        _id?: ObjectId;
+        status: TransactionStatus;
+        owners: Owner[];
+        expired_at: Date;
+        inquiry_key?: TransactionInquiryKey;
+        queues_status?: TransactionQueuesStatus;
+    }
+
+    export function create(args: ITransaction): Transaction {
+        return new Transaction(
+            (args._id === undefined) ? ObjectId() : (args._id),
+            args.status,
+            args.owners,
+            args.expired_at,
+            (args.inquiry_key === undefined) ? null : (args.inquiry_key),
+            (args.queues_status === undefined) ? TransactionQueuesStatus.UNEXPORTED : (args.queues_status)
+        );
+    }
+}
+
+export default Transaction;

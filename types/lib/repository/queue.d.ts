@@ -1,73 +1,42 @@
-/// <reference types="mongoose" />
 import * as monapt from 'monapt';
-import COASeatReservationAuthorization from '../model/authorization/coaSeatReservation';
-import GMOAuthorization from '../model/authorization/gmo';
-import EmailNotification from '../model/notification/email';
-import ObjectId from '../model/objectId';
+import Authorization from '../model/authorization';
+import Notification from '../model/notification';
 import Queue from '../model/queue';
-import CancelAuthorizationQueue from '../model/queue/cancelAuthorization';
-import PushNotificationQueue from '../model/queue/pushNotification';
-import SettleAuthorizationQueue from '../model/queue/settleAuthorization';
 /**
  * キューリポジトリ
  *
  * @interface QueueRepository
  */
 interface QueueRepository {
-    /**
-     * 検索
-     *
-     * @param {Object} conditions
-     */
-    find(conditions: Object): Promise<Queue[]>;
-    /**
-     * ID検索
-     *
-     * @param {ObjectId} id
-     */
-    findById(id: ObjectId): Promise<monapt.Option<Queue>>;
-    /**
-     * ひとつ検索&更新
-     *
-     * @param {Object} conditions 検索条件
-     * @param {Object} update 更新内容
-     */
-    findOneAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue>>;
-    /**
-     * メール送信キューをひとつ検索&更新
-     *
-     * @param {Object} conditions 検索条件
-     * @param {Object} update 更新内容
-     */
-    findOneSendEmailAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<PushNotificationQueue<EmailNotification>>>;
+    findOneSendEmailAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue.PushNotificationQueue<Notification.EmailNotification>>>;
     /**
      * GMOオーソリ実売上キューをひとつ検索
      *
      * @param {Object} conditions 検索条件
      * @param {Object} update 更新内容
      */
-    findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<SettleAuthorizationQueue<GMOAuthorization>>>;
+    findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue.SettleAuthorizationQueue<Authorization.GMOAuthorization>>>;
     /**
      * GMOオーソリ取消キューをひとつ検索
      *
      * @param {Object} conditions 検索条件
      * @param {Object} update 更新内容
      */
-    findOneCancelGMOAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<CancelAuthorizationQueue<GMOAuthorization>>>;
+    findOneCancelGMOAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue.CancelAuthorizationQueue<Authorization.GMOAuthorization>>>;
     /**
      * COA座席本予約キューをひとつ検索
      *
      * @param {Object} conditions 検索条件
      * @param {Object} update 更新内容
      */
-    findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<SettleAuthorizationQueue<COASeatReservationAuthorization>>>;
+    findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue.SettleAuthorizationQueue<Authorization.COASeatReservationAuthorization>>>;
     /**
      * COA座席仮予約削除キューをひとつ検索
      *
      * @param {Object} conditions 検索条件
      * @param {Object} update 更新内容
      */
-    findOneCancelCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<CancelAuthorizationQueue<COASeatReservationAuthorization>>>;
+    findOneCancelCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue.CancelAuthorizationQueue<Authorization.COASeatReservationAuthorization>>>;
     /**
      * 保管する
      *

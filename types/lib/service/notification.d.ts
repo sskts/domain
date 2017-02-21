@@ -4,7 +4,7 @@
  * @namespace NotificationService
  */
 import * as SendGrid from 'sendgrid';
-import EmailNotification from '../model/notification/email';
+import Notification from '../model/notification';
 export declare type SendGridOperation<T> = (sendgrid: typeof SendGrid) => Promise<T>;
 /**
  * メール送信
@@ -15,4 +15,4 @@ export declare type SendGridOperation<T> = (sendgrid: typeof SendGrid) => Promis
  *
  * @memberOf NotificationService
  */
-export declare function sendEmail(email: EmailNotification): SendGridOperation<void>;
+export declare function sendEmail(email: Notification.EmailNotification): SendGridOperation<void>;

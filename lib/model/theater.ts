@@ -1,4 +1,5 @@
 // tslint:disable:variable-name
+import * as COA from '@motionpicture/coa-service';
 import MultilingualString from './multilingualString';
 
 /**
@@ -11,7 +12,7 @@ import MultilingualString from './multilingualString';
  * @param {string} name_kana 劇場名称(カナ)
  * @param {MultilingualString} address 劇場住所
  */
-export default class Theater {
+class Theater {
     constructor(
         readonly _id: string,
         readonly name: MultilingualString,
@@ -21,3 +22,43 @@ export default class Theater {
         // todo validation
     }
 }
+
+/**
+ * 劇場
+ *
+ * @namespace model/theater
+ */
+namespace Theater {
+    export interface ITheater {
+        _id: string;
+        name: MultilingualString;
+        name_kana: string;
+        address: MultilingualString;
+    }
+
+    export function create(args: ITheater) {
+        return new Theater(
+            args._id,
+            args.name,
+            args.name_kana,
+            args.address
+        );
+    }
+
+    export function createFromCOA(theaterFromCOA: COA.findTheaterInterface.Result) {
+        return create({
+            _id: theaterFromCOA.theater_code,
+            name: {
+                ja: theaterFromCOA.theater_name,
+                en: theaterFromCOA.theater_name_eng
+            },
+            name_kana: theaterFromCOA.theater_name_kana,
+            address: {
+                ja: '',
+                en: ''
+            }
+        });
+    }
+}
+
+export default Theater;

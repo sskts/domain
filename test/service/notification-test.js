@@ -12,7 +12,7 @@ const sendgrid = require("sendgrid");
 const SSKTS = require("../../lib/sskts-domain");
 describe('notification service', () => {
     it('send an email', () => __awaiter(this, void 0, void 0, function* () {
-        const notification = SSKTS.NotificationFactory.createEmail({
+        const notification = SSKTS.Notification.createEmail({
             from: 'noreply@localhost',
             to: 'hello@motionpicture.jp',
             subject: 'test subject',

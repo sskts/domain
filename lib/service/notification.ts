@@ -5,7 +5,7 @@
  */
 
 import * as SendGrid from 'sendgrid';
-import EmailNotification from '../model/notification/email';
+import Notification from '../model/notification';
 
 export type SendGridOperation<T> = (sendgrid: typeof SendGrid) => Promise<T>;
 
@@ -18,7 +18,7 @@ export type SendGridOperation<T> = (sendgrid: typeof SendGrid) => Promise<T>;
  *
  * @memberOf NotificationService
  */
-export function sendEmail(email: EmailNotification): SendGridOperation<void> {
+export function sendEmail(email: Notification.EmailNotification): SendGridOperation<void> {
     return async (sendgrid: typeof SendGrid) => {
         const mail = new sendgrid.mail.Mail(
             new sendgrid.mail.Email(email.from),

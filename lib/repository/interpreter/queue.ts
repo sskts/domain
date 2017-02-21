@@ -9,20 +9,12 @@ import * as mongoose from 'mongoose';
 
 import QueueRepository from '../queue';
 
-import COASeatReservationAuthorization from '../../model/authorization/coaSeatReservation';
-import GMOAuthorization from '../../model/authorization/gmo';
+import Authorization from '../../model/authorization';
 import AuthorizationGroup from '../../model/authorizationGroup';
-import EmailNotification from '../../model/notification/email';
+import Notification from '../../model/notification';
 import NotificationGroup from '../../model/notificationGroup';
-import ObjectId from '../../model/objectId';
 import Queue from '../../model/queue';
-import CancelAuthorizationQueue from '../../model/queue/cancelAuthorization';
-import DisableTransactionInquiryQueue from '../../model/queue/disableTransactionInquiry';
-import PushNotificationQueue from '../../model/queue/pushNotification';
-import SettleAuthorizationQueue from '../../model/queue/settleAuthorization';
 import QueueGroup from '../../model/queueGroup';
-
-import * as QueueFactory from '../../factory/queue';
 
 import QueueModel from './mongoose/model/queue';
 
@@ -30,32 +22,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
     constructor(readonly connection: mongoose.Connection) {
     }
 
-    public async find(conditions: Object) {
-        const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
-        const docs = <any[]>await model.find().where(conditions).exec();
-        return docs.map((doc) => QueueFactory.create(doc));
-    }
-
-    public async findById(id: ObjectId) {
-        const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
-        const doc = <any>await model.findOne()
-            .where('_id').equals(id).lean().exec();
-
-        return (doc) ? monapt.Option(QueueFactory.create(doc)) : monapt.None;
-    }
-
-    public async findOneAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
-        const doc = <any>await model.findOneAndUpdate(conditions, update, {
-            new: true,
-            upsert: false
-        }).lean().exec();
-
-        return (doc) ? monapt.Option(QueueFactory.create(doc)) : monapt.None;
-    }
-
-    public async findOneSendEmailAndUpdate(conditions: Object, update: Object):
-        Promise<monapt.Option<PushNotificationQueue<EmailNotification>>> {
+    public async findOneSendEmailAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
@@ -66,11 +33,10 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
                 'notification.group': NotificationGroup.EMAIL
             }).lean().exec();
 
-        return (doc) ? monapt.Option(QueueFactory.createPushNotification<EmailNotification>(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Queue.createPushNotification<Notification.EmailNotification>(doc)) : monapt.None;
     }
 
-    public async findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object):
-        Promise<monapt.Option<SettleAuthorizationQueue<GMOAuthorization>>> {
+    public async findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
@@ -82,11 +48,10 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             })
             .lean().exec();
 
-        return (doc) ? monapt.Option(QueueFactory.createSettleAuthorization<GMOAuthorization>(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Queue.createSettleAuthorization<Authorization.GMOAuthorization>(doc)) : monapt.None;
     }
 
-    public async findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object):
-        Promise<monapt.Option<SettleAuthorizationQueue<COASeatReservationAuthorization>>> {
+    public async findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
@@ -98,12 +63,11 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             })
             .lean().exec();
 
-        const queue = QueueFactory.createSettleAuthorization<COASeatReservationAuthorization>(doc);
+        const queue = Queue.createSettleAuthorization<Authorization.COASeatReservationAuthorization>(doc);
         return (doc) ? monapt.Option(queue) : monapt.None;
     }
 
-    public async findOneCancelGMOAuthorizationAndUpdate(conditions: Object, update: Object):
-        Promise<monapt.Option<CancelAuthorizationQueue<GMOAuthorization>>> {
+    public async findOneCancelGMOAuthorizationAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
@@ -115,11 +79,10 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             })
             .lean().exec();
 
-        return (doc) ? monapt.Option(QueueFactory.createCancelAuthorization<GMOAuthorization>(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Queue.createCancelAuthorization<Authorization.GMOAuthorization>(doc)) : monapt.None;
     }
 
-    public async findOneCancelCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object):
-        Promise<monapt.Option<CancelAuthorizationQueue<COASeatReservationAuthorization>>> {
+    public async findOneCancelCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
@@ -131,12 +94,11 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             })
             .lean().exec();
 
-        const queue = QueueFactory.createCancelAuthorization<COASeatReservationAuthorization>(doc);
+        const queue = Queue.createCancelAuthorization<Authorization.COASeatReservationAuthorization>(doc);
         return (doc) ? monapt.Option(queue) : monapt.None;
     }
 
-    public async findOneDisableTransactionInquiryAndUpdate(conditions: Object, update: Object):
-        Promise<monapt.Option<DisableTransactionInquiryQueue>> {
+    public async findOneDisableTransactionInquiryAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
@@ -147,7 +109,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             })
             .lean().exec();
 
-        return (doc) ? monapt.Option(QueueFactory.createDisableTransactionInquiry(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Queue.createDisableTransactionInquiry(doc)) : monapt.None;
     }
 
     public async store(queue: Queue) {

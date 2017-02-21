@@ -1,7 +1,6 @@
 import * as monapt from 'monapt';
 import ObjectId from '../model/objectId';
 import Owner from '../model/owner';
-import PromoterOwner from '../model/owner/promoter';
 
 /**
  * 所有者リポジトリ
@@ -24,7 +23,7 @@ interface OwnerRepository {
     /**
      * 興行所有者を検索
      */
-    findPromoter(): Promise<monapt.Option<PromoterOwner>>;
+    findPromoter(): Promise<monapt.Option<Owner.PromoterOwner>>;
     /**
      * ひとつ検索&更新
      *

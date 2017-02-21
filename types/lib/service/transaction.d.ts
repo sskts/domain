@@ -1,7 +1,6 @@
 import * as monapt from 'monapt';
-import COASeatReservationAuthorization from '../model/authorization/coaSeatReservation';
-import GMOAuthorization from '../model/authorization/gmo';
-import EmailNotification from '../model/notification/email';
+import Authorization from '../model/authorization';
+import Notification from '../model/notification';
 import Transaction from '../model/transaction';
 import TransactionInquiryKey from '../model/transactionInquiryKey';
 import OwnerRepository from '../repository/owner';
@@ -76,7 +75,7 @@ export declare function start(expiredAt: Date): (ownerRepo: OwnerRepository, tra
  *
  * @memberOf TransactionService
  */
-export declare function addGMOAuthorization(transactionId: string, authorization: GMOAuthorization): (transactionRepo: TransactionRepository) => Promise<void>;
+export declare function addGMOAuthorization(transactionId: string, authorization: Authorization.GMOAuthorization): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
  * COA資産承認
  *
@@ -86,7 +85,7 @@ export declare function addGMOAuthorization(transactionId: string, authorization
  *
  * @memberOf TransactionService
  */
-export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorization): (transactionRepo: TransactionRepository) => Promise<void>;
+export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: Authorization.COASeatReservationAuthorization): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
  * 資産承認解除
  *
@@ -151,7 +150,7 @@ export declare function exportQueues(transactionId: string): (transactionRepo: T
  *
  * @memberOf TransactionService
  */
-export declare function addEmail(transactionId: string, notification: EmailNotification): (transactionRepo: TransactionRepository) => Promise<void>;
+export declare function addEmail(transactionId: string, notification: Notification.EmailNotification): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
  * メール削除
  *

@@ -5,11 +5,8 @@
  */
 
 import * as COA from '@motionpicture/coa-service';
+import * as createDebug from 'debug';
 import * as monapt from 'monapt';
-import * as FilmFactory from '../factory/film';
-import * as PerformanceFactory from '../factory/performance';
-import * as ScreenFactory from '../factory/screen';
-import * as TheaterFactory from '../factory/theater';
 import Film from '../model/film';
 import MultilingualString from '../model/multilingualString';
 import Performance from '../model/performance';
@@ -55,6 +52,8 @@ export interface SearchPerformancesResult {
     canceled: boolean;
 }
 
+const debug = createDebug('sskts-domain:service:master');
+
 /**
  * 劇場インポート
  *
@@ -71,7 +70,7 @@ export function importTheater(theaterCode: string): TheaterOperation<void> {
         });
 
         // 永続化
-        const theater = TheaterFactory.createFromCOA(theaterFromCOA);
+        const theater = Theater.createFromCOA(theaterFromCOA);
         await repository.store(theater);
     };
 }
@@ -99,7 +98,7 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
 
         // 永続化
         await Promise.all(films.map(async (filmFromCOA) => {
-            const film = await FilmFactory.createFromCOA(filmFromCOA)(optionTheater.get());
+            const film = await Film.createFromCOA(filmFromCOA)(optionTheater.get());
             await filmRepo.store(film);
         }));
     };
@@ -125,10 +124,11 @@ export function importScreens(theaterCode: string): TheaterAndScreenOperation<vo
         const screens = await COA.findScreensByTheaterCodeInterface.call({
             theater_code: theaterCode
         });
+        debug('screens.length:', screens.length);
 
         // 永続化
         await Promise.all(screens.map(async (screenFromCOA) => {
-            const screen = await ScreenFactory.createFromCOA(screenFromCOA)(optionTheater.get());
+            const screen = await Screen.createFromCOA(screenFromCOA)(optionTheater.get());
             await screenRepo.store(screen);
         }));
     };
@@ -153,6 +153,7 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
     ) => {
         // スクリーン取得
         const screens = await screenRepo.findByTheater({ theater_id: theaterCode });
+        debug('screens:', screens);
 
         // COAからパフォーマンス取得
         const performances = await COA.findPerformancesByTheaterCodeInterface.call({
@@ -165,21 +166,25 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
         await Promise.all(performances.map(async (performanceFromCOA) => {
             const screenId = `${theaterCode}${performanceFromCOA.screen_code}`;
             const filmId = `${theaterCode}${performanceFromCOA.title_code}${performanceFromCOA.title_branch_num}`;
+            debug('screenId:', screenId);
+            debug('filmId:', filmId);
 
             // スクリーン存在チェック
             const screenOfPerformance = screens.find((screen) => (screen._id === screenId));
             if (!screenOfPerformance) {
-                throw new Error(('screen not found.'));
+                console.error('screen not found.', screenId);
+                return;
             }
 
             // 作品取得
             const optionFilm = await filmRepo.findById(filmId);
             if (optionFilm.isEmpty) {
-                throw new Error('film not found.');
+                console.error('film not found.', filmId);
+                return;
             }
 
             // 永続化
-            const performance = PerformanceFactory.createFromCOA(performanceFromCOA)(screenOfPerformance, optionFilm.get());
+            const performance = Performance.createFromCOA(performanceFromCOA)(screenOfPerformance, optionFilm.get());
             await performanceRepo.store(performance);
         }));
     };

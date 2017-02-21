@@ -9,7 +9,6 @@ import * as mongoose from 'mongoose';
 
 import ObjectId from '../../model/objectId';
 import Owner from '../../model/owner';
-import PromoterOwner from '../../model/owner/promoter';
 import OwnerGroup from '../../model/ownerGroup';
 
 import OwnerRepository from '../owner';
@@ -33,7 +32,7 @@ export default class OwnerRepositoryInterpreter implements OwnerRepository {
 
     public async findPromoter() {
         const model = this.connection.model(OwnerModel.modelName, OwnerModel.schema);
-        const owner = <PromoterOwner>await model.findOne({ group: OwnerGroup.PROMOTER }).lean().exec();
+        const owner = <Owner.PromoterOwner>await model.findOne({ group: OwnerGroup.PROMOTER }).lean().exec();
 
         return (owner) ? monapt.Option(owner) : monapt.None;
     }

@@ -10,9 +10,18 @@ import ObjectId from './objectId';
  * @param {ObjectId} owner 所有者
  * @param {boolean} authenticated 認証済みかどうか
  */
-export default class Ownership {
+declare class Ownership {
     readonly _id: ObjectId;
     readonly owner: ObjectId;
     readonly authenticated: boolean;
     constructor(_id: ObjectId, owner: ObjectId, authenticated: boolean);
 }
+declare namespace Ownership {
+    interface IOwnership {
+        _id?: ObjectId;
+        owner: ObjectId;
+        authenticated: boolean;
+    }
+    function create(args: IOwnership): Ownership;
+}
+export default Ownership;

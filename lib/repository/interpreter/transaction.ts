@@ -6,7 +6,6 @@
 
 import * as monapt from 'monapt';
 import * as mongoose from 'mongoose';
-import * as TransactionFactory from '../../factory/transaction';
 
 import Authorization from '../../model/authorization';
 import Notification from '../../model/notification';
@@ -30,7 +29,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             .lean()
             .exec();
 
-        return docs.map(TransactionFactory.create);
+        return docs.map(Transaction.create);
     }
 
     public async findById(id: ObjectId) {
@@ -39,14 +38,14 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             .where('_id').equals(id)
             .populate('owners').lean().exec();
 
-        return (doc) ? monapt.Option(TransactionFactory.create(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Transaction.create(doc)) : monapt.None;
     }
 
     public async findOne(conditions: Object) {
         const model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
         const doc = <any>await model.findOne(conditions).lean().exec();
 
-        return (doc) ? monapt.Option(TransactionFactory.create(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Transaction.create(doc)) : monapt.None;
     }
 
     public async findOneAndUpdate(conditions: Object, update: Object) {
@@ -56,7 +55,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             upsert: false
         }).lean().exec();
 
-        return (doc) ? monapt.Option(TransactionFactory.create(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Transaction.create(doc)) : monapt.None;
     }
 
     public async store(transaction: Transaction) {

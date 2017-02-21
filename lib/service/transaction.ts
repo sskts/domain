@@ -7,26 +7,21 @@
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 
-import COASeatReservationAuthorization from '../model/authorization/coaSeatReservation';
-import GMOAuthorization from '../model/authorization/gmo';
-import EmailNotification from '../model/notification/email';
+import Authorization from '../model/authorization';
+import Notification from '../model/notification';
 import ObjectId from '../model/objectId';
+import Owner from '../model/owner';
 import OwnerGroup from '../model/ownerGroup';
 import Queue from '../model/queue';
 import QueueStatus from '../model/queueStatus';
 import Transaction from '../model/transaction';
+import TransactionEvent from '../model/transactionEvent';
 import TransactionInquiryKey from '../model/transactionInquiryKey';
 import TransactionStatus from '../model/transactionStatus';
 
 import OwnerRepository from '../repository/owner';
 import QueueRepository from '../repository/queue';
 import TransactionRepository from '../repository/transaction';
-
-import * as NotificationFactory from '../factory/notification';
-import * as OwnerFactory from '../factory/owner';
-import * as QueueFactory from '../factory/queue';
-import * as TransactionFactory from '../factory/transaction';
-import * as TransactionEventFactory from '../factory/transactionEvent';
 
 export type TransactionAndQueueOperation<T> =
     (transactionRepo: TransactionRepository, queueRepo: QueueRepository) => Promise<T>;
@@ -134,7 +129,7 @@ export function findById(transactionId: string): TransactionOperation<monapt.Opt
 export function start(expiredAt: Date) {
     return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
         // 一般所有者作成
-        const anonymousOwner = OwnerFactory.createAnonymous({
+        const anonymousOwner = Owner.createAnonymous({
             _id: ObjectId()
         });
 
@@ -147,7 +142,7 @@ export function start(expiredAt: Date) {
         const promoter = option.get();
 
         // 取引作成
-        const transaction = TransactionFactory.create({
+        const transaction = Transaction.create({
             _id: ObjectId(),
             status: TransactionStatus.UNDERWAY,
             owners: [promoter, anonymousOwner],
@@ -171,7 +166,7 @@ export function start(expiredAt: Date) {
  *
  * @memberOf TransactionService
  */
-export function addGMOAuthorization(transactionId: string, authorization: GMOAuthorization) {
+export function addGMOAuthorization(transactionId: string, authorization: Authorization.GMOAuthorization) {
     return async (transactionRepo: TransactionRepository) => {
         // 取引取得
         const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
@@ -193,7 +188,7 @@ export function addGMOAuthorization(transactionId: string, authorization: GMOAut
         }
 
         // イベント作成
-        const event = TransactionEventFactory.createAuthorize({
+        const event = TransactionEvent.createAuthorize({
             _id: ObjectId(),
             transaction: transaction._id,
             occurred_at: new Date(),
@@ -214,7 +209,7 @@ export function addGMOAuthorization(transactionId: string, authorization: GMOAut
  *
  * @memberOf TransactionService
  */
-export function addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorization) {
+export function addCOASeatReservationAuthorization(transactionId: string, authorization: Authorization.COASeatReservationAuthorization) {
     return async (transactionRepo: TransactionRepository) => {
         // 取引取得
         const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
@@ -235,7 +230,7 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
         }
 
         // イベント作成
-        const event = TransactionEventFactory.createAuthorize({
+        const event = TransactionEvent.createAuthorize({
             _id: ObjectId(),
             transaction: transaction._id,
             occurred_at: new Date(),
@@ -273,7 +268,7 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
         }
 
         // イベント作成
-        const event = TransactionEventFactory.createUnauthorize({
+        const event = TransactionEvent.createUnauthorize({
             _id: ObjectId(),
             transaction: transaction._id,
             occurred_at: new Date(),
@@ -424,7 +419,7 @@ export function exportQueues(transactionId: string) {
             case TransactionStatus.CLOSED:
                 // 取引イベントからキューリストを作成
                 (await transactionRepo.findAuthorizationsById(transaction._id)).forEach((authorization) => {
-                    queues.push(QueueFactory.createSettleAuthorization({
+                    queues.push(Queue.createSettleAuthorization({
                         _id: ObjectId(),
                         authorization: authorization,
                         status: QueueStatus.UNEXECUTED,
@@ -437,7 +432,7 @@ export function exportQueues(transactionId: string) {
                 });
 
                 (await transactionRepo.findNotificationsById(transaction._id)).forEach((notification) => {
-                    queues.push(QueueFactory.createPushNotification({
+                    queues.push(Queue.createPushNotification({
                         _id: ObjectId(),
                         notification: notification,
                         status: QueueStatus.UNEXECUTED,
@@ -454,7 +449,7 @@ export function exportQueues(transactionId: string) {
             // 期限切れの場合は、キューリストを作成する
             case TransactionStatus.EXPIRED:
                 (await transactionRepo.findAuthorizationsById(transaction._id)).forEach((authorization) => {
-                    queues.push(QueueFactory.createCancelAuthorization({
+                    queues.push(Queue.createCancelAuthorization({
                         _id: ObjectId(),
                         authorization: authorization,
                         status: QueueStatus.UNEXECUTED,
@@ -468,7 +463,7 @@ export function exportQueues(transactionId: string) {
 
                 // COA本予約があれば取消
                 if (transaction.isInquiryAvailable()) {
-                    queues.push(QueueFactory.createDisableTransactionInquiry({
+                    queues.push(Queue.createDisableTransactionInquiry({
                         _id: ObjectId(),
                         transaction_id: transaction._id,
                         status: QueueStatus.UNEXECUTED,
@@ -481,10 +476,10 @@ export function exportQueues(transactionId: string) {
                 }
 
                 // todo おそらく開発時のみ
-                queues.push(QueueFactory.createPushNotification(
+                queues.push(Queue.createPushNotification(
                     {
                         _id: ObjectId(),
-                        notification: NotificationFactory.createEmail({
+                        notification: Notification.createEmail({
                             _id: ObjectId(),
                             from: 'noreply@localhost',
                             to: 'hello@motionpicture.jp',
@@ -527,10 +522,10 @@ expired_at: ${transaction.expired_at}
  *
  * @memberOf TransactionService
  */
-export function addEmail(transactionId: string, notification: EmailNotification) {
+export function addEmail(transactionId: string, notification: Notification.EmailNotification) {
     return async (transactionRepo: TransactionRepository) => {
         // イベント作成
-        const event = TransactionEventFactory.createNotificationAdd({
+        const event = TransactionEvent.createNotificationAdd({
             _id: ObjectId(),
             transaction: ObjectId(transactionId),
             occurred_at: new Date(),
@@ -568,7 +563,7 @@ export function removeEmail(transactionId: string, notificationId: string) {
         }
 
         // イベント作成
-        const event = TransactionEventFactory.createNotificationRemove({
+        const event = TransactionEvent.createNotificationRemove({
             _id: ObjectId(),
             transaction: ObjectId(transactionId),
             occurred_at: new Date(),

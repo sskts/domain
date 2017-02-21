@@ -97,7 +97,7 @@ function main() {
         // COAオーソリ追加
         console.log('adding authorizations coaSeatReservation...');
         const totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
-        const coaAuthorization = SSKTS.AuthorizationFactory.createCOASeatReservation({
+        const coaAuthorization = SSKTS.Authorization.createCOASeatReservation({
             owner_from: promoterOwnerId,
             owner_to: anonymousOwnerId,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
@@ -108,8 +108,8 @@ function main() {
             coa_time_begin: timeBegin,
             coa_screen_code: screenCode,
             assets: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
-                return SSKTS.AssetFactory.createSeatReservation({
-                    ownership: SSKTS.OwnershipFactory.create({
+                return SSKTS.Asset.createSeatReservation({
+                    ownership: SSKTS.Ownership.create({
                         owner: anonymousOwnerId,
                         authenticated: false,
                     }),
@@ -152,7 +152,7 @@ function main() {
         console.log(execTranResult);
         // GMOオーソリ追加
         console.log('adding authorizations gmo...');
-        const gmoAuthorization = SSKTS.AuthorizationFactory.createGMO({
+        const gmoAuthorization = SSKTS.Authorization.createGMO({
             owner_from: anonymousOwnerId,
             owner_to: promoterOwnerId,
             gmo_shop_id: gmoShopId,
@@ -207,7 +207,7 @@ function main() {
         console.log('updateReserveResult:', updateReserveResult);
         // 照会情報登録(購入番号と電話番号で照会する場合)
         console.log('enabling inquiry...');
-        const key = SSKTS.TransactionInquiryKeyFactory.create({
+        const key = SSKTS.TransactionInquiryKey.create({
             theater_code: theaterCode,
             reserve_num: updateReserveResult.reserve_num,
             tel: tel,
@@ -230,7 +230,7 @@ function main() {
 </html>
 `;
         console.log('adding email...');
-        const notification = SSKTS.NotificationFactory.createEmail({
+        const notification = SSKTS.Notification.createEmail({
             from: 'noreply@localhost',
             to: 'hello@motionpicture.jp',
             subject: '購入完了',

@@ -1,3 +1,4 @@
+import * as COA from '@motionpicture/coa-service';
 import Film from './film';
 import Screen from './screen';
 import Theater from './theater';
@@ -15,7 +16,7 @@ import Theater from './theater';
  * @param {string} time_end 上映終了時刻
  * @param {boolean} canceled 上映中止フラグ
  */
-export default class Performance {
+declare class Performance {
     readonly _id: string;
     readonly theater: Theater;
     readonly screen: Screen;
@@ -26,3 +27,18 @@ export default class Performance {
     readonly canceled: boolean;
     constructor(_id: string, theater: Theater, screen: Screen, film: Film, day: string, time_start: string, time_end: string, canceled: boolean);
 }
+declare namespace Performance {
+    interface IPerformance {
+        _id: string;
+        theater: Theater;
+        screen: Screen;
+        film: Film;
+        day: string;
+        time_start: string;
+        time_end: string;
+        canceled: boolean;
+    }
+    function create(args: IPerformance): Performance;
+    function createFromCOA(performanceFromCOA: COA.findPerformancesByTheaterCodeInterface.Result): (screen: Screen, film: Film) => Performance;
+}
+export default Performance;

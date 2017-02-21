@@ -5,7 +5,7 @@
  */
 
 import * as COA from '@motionpicture/coa-service';
-import COASeatReservationAuthorization from '../model/authorization/coaSeatReservation';
+import Authorization from '../model/authorization';
 import ObjectId from '../model/objectId';
 import TransactionStatus from '../model/transactionStatus';
 import AssetRepository from '../repository/asset';
@@ -19,7 +19,7 @@ import TransactionRepository from '../repository/transaction';
  *
  * @memberOf StockServiceInterpreter
  */
-export function unauthorizeCOASeatReservation(authorization: COASeatReservationAuthorization) {
+export function unauthorizeCOASeatReservation(authorization: Authorization.COASeatReservationAuthorization) {
     return async (coaRepository: typeof COA) => {
         await coaRepository.deleteTmpReserveInterface.call({
             theater_code: authorization.coa_theater_code,
@@ -40,7 +40,7 @@ export function unauthorizeCOASeatReservation(authorization: COASeatReservationA
  *
  * @memberOf StockServiceInterpreter
  */
-export function transferCOASeatReservation(authorization: COASeatReservationAuthorization) {
+export function transferCOASeatReservation(authorization: Authorization.COASeatReservationAuthorization) {
     return async (assetRepository: AssetRepository) => {
 
         // ウェブフロントで事前に本予約済みなので不要

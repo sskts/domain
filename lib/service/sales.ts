@@ -5,12 +5,12 @@
  */
 
 import * as GMO from '@motionpicture/gmo-service';
-import GMOAuthorization from '../model/authorization/gmo';
+import Authorization from '../model/authorization';
 
 /**
  * GMOオーソリ取消
  */
-export function cancelGMOAuth(authorization: GMOAuthorization) {
+export function cancelGMOAuth(authorization: Authorization.GMOAuthorization) {
     return async (gmoRepository: typeof GMO) => {
         await gmoRepository.CreditService.alterTran({
             shopId: authorization.gmo_shop_id,
@@ -28,7 +28,7 @@ export function cancelGMOAuth(authorization: GMOAuthorization) {
 /**
  * GMO売上確定
  */
-export function settleGMOAuth(authorization: GMOAuthorization) {
+export function settleGMOAuth(authorization: Authorization.GMOAuthorization) {
     return async (gmoRepository: typeof GMO) => {
         await gmoRepository.CreditService.alterTran({
             shopId: authorization.gmo_shop_id,

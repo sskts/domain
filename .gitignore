@@ -1,11 +1,9 @@
-# Logs
 *.log
 logs
 npm-debug.log
 .env
 
 node_modules
-
 .vscode/
 docs/
 

@@ -26,4 +26,58 @@ describe('master service', () => {
             done(err);
         });
     });
+    it('importScreens fail', (done) => {
+        SSKTS.MasterService.importScreens('000')(SSKTS.createTheaterRepository(mongoose.connection), SSKTS.createScreenRepository(mongoose.connection))
+            .then(() => {
+            done(new Error('thenable.'));
+        })
+            .catch(() => {
+            done();
+        });
+    });
+    it('importScreens ok', (done) => {
+        SSKTS.MasterService.importScreens('118')(SSKTS.createTheaterRepository(mongoose.connection), SSKTS.createScreenRepository(mongoose.connection))
+            .then(() => {
+            done();
+        })
+            .catch((err) => {
+            done(err);
+        });
+    });
+    it('importFilms fail', (done) => {
+        SSKTS.MasterService.importFilms('000')(SSKTS.createTheaterRepository(mongoose.connection), SSKTS.createFilmRepository(mongoose.connection))
+            .then(() => {
+            done(new Error('thenable.'));
+        })
+            .catch(() => {
+            done();
+        });
+    });
+    it('importFilms ok', (done) => {
+        SSKTS.MasterService.importFilms('118')(SSKTS.createTheaterRepository(mongoose.connection), SSKTS.createFilmRepository(mongoose.connection))
+            .then(() => {
+            done();
+        })
+            .catch((err) => {
+            done(err);
+        });
+    });
+    it('importPerformances fail', (done) => {
+        SSKTS.MasterService.importPerformances('000', '20170101', '20170331')(SSKTS.createFilmRepository(mongoose.connection), SSKTS.createScreenRepository(mongoose.connection), SSKTS.createPerformanceRepository(mongoose.connection))
+            .then(() => {
+            done(new Error('thenable.'));
+        })
+            .catch(() => {
+            done();
+        });
+    });
+    it('importPerformances ok', (done) => {
+        SSKTS.MasterService.importPerformances('118', '20170101', '20170331')(SSKTS.createFilmRepository(mongoose.connection), SSKTS.createScreenRepository(mongoose.connection), SSKTS.createPerformanceRepository(mongoose.connection))
+            .then(() => {
+            done();
+        })
+            .catch((err) => {
+            done(err);
+        });
+    });
 });

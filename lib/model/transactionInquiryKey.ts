@@ -8,7 +8,7 @@
  * @param {number} reserve_num
  * @param {string} tel
  */
-export default class TransactionInquiryKey {
+class TransactionInquiryKey {
     constructor(
         readonly theater_code: string,
         readonly reserve_num: number,
@@ -17,3 +17,21 @@ export default class TransactionInquiryKey {
         // todo validation
     }
 }
+
+namespace TransactionInquiryKey {
+    export interface ITransactionInquiryKey {
+        theater_code: string;
+        reserve_num: number;
+        tel: string;
+    }
+
+    export function create(args: ITransactionInquiryKey) {
+        return new TransactionInquiryKey(
+            args.theater_code,
+            args.reserve_num,
+            args.tel
+        );
+    }
+}
+
+export default TransactionInquiryKey;
