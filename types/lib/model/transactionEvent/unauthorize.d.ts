@@ -8,19 +8,15 @@ import TransactionEvent from '../transactionEvent';
  *
  * @class Unauthorize
  * @extends {TransactionEvent}
+ * @param {ObjectId} _id
+ * @param {ObjectId} transaction 取引ID
+ * @param {Date} occurred_at
+ * @param {Authorization} authorization
  */
 export default class Unauthorize extends TransactionEvent {
     readonly _id: ObjectId;
+    readonly transaction: ObjectId;
     readonly occurred_at: Date;
     readonly authorization: Authorization;
-    /**
-     * Creates an instance of Unauthorize.
-     *
-     * @param {ObjectId} _id
-     * @param {Date} occurred_at
-     * @param {Authorization} authorization
-     *
-     * @memberOf Unauthorize
-     */
-    constructor(_id: ObjectId, occurred_at: Date, authorization: Authorization);
+    constructor(_id: ObjectId, transaction: ObjectId, occurred_at: Date, authorization: Authorization);
 }

@@ -1,3 +1,4 @@
+// tslint:disable:variable-name
 import * as validator from 'validator';
 import SeatReservationAsset from '../asset/seatReservation';
 import Authorization from '../authorization';

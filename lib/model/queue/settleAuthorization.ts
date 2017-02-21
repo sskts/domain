@@ -1,3 +1,4 @@
+// tslint:disable:variable-name
 import Authorization from '../authorization';
 import ObjectId from '../objectId';
 import Queue from '../queue';

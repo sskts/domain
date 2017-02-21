@@ -12,12 +12,12 @@ import GMOAuthorization from '../model/authorization/gmo';
  */
 export function cancelGMOAuth(authorization: GMOAuthorization) {
     return async (gmoRepository: typeof GMO) => {
-        await gmoRepository.CreditService.alterTranInterface.call({
-            shop_id: authorization.gmo_shop_id,
-            shop_pass: authorization.gmo_shop_pass,
-            access_id: authorization.gmo_access_id,
-            access_pass: authorization.gmo_access_pass,
-            job_cd: GMO.Util.JOB_CD_VOID,
+        await gmoRepository.CreditService.alterTran({
+            shopId: authorization.gmo_shop_id,
+            shopPass: authorization.gmo_shop_pass,
+            accessId: authorization.gmo_access_id,
+            accessPass: authorization.gmo_access_pass,
+            jobCd: GMO.Util.JOB_CD_VOID,
             amount: authorization.gmo_amount
         });
 
@@ -30,12 +30,12 @@ export function cancelGMOAuth(authorization: GMOAuthorization) {
  */
 export function settleGMOAuth(authorization: GMOAuthorization) {
     return async (gmoRepository: typeof GMO) => {
-        await gmoRepository.CreditService.alterTranInterface.call({
-            shop_id: authorization.gmo_shop_id,
-            shop_pass: authorization.gmo_shop_pass,
-            access_id: authorization.gmo_access_id,
-            access_pass: authorization.gmo_access_pass,
-            job_cd: GMO.Util.JOB_CD_SALES,
+        await gmoRepository.CreditService.alterTran({
+            shopId: authorization.gmo_shop_id,
+            shopPass: authorization.gmo_shop_pass,
+            accessId: authorization.gmo_access_id,
+            accessPass: authorization.gmo_access_pass,
+            jobCd: GMO.Util.JOB_CD_SALES,
             amount: authorization.gmo_amount
         });
 

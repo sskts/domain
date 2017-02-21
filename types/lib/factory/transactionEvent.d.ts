@@ -15,26 +15,31 @@ import UnauthorizeTransactionEvent from '../model/transactionEvent/unauthorize';
 import TransactionEventGroup from '../model/transactionEventGroup';
 export declare function create(args: {
     _id: ObjectId;
+    transaction: ObjectId;
     group: TransactionEventGroup;
     occurred_at: Date;
 }): TransactionEvent;
 export declare function createAuthorize(args: {
     _id: ObjectId;
+    transaction: ObjectId;
     occurred_at: Date;
     authorization: Authorization;
 }): AuthorizeTransactionEvent;
 export declare function createUnauthorize(args: {
     _id: ObjectId;
+    transaction: ObjectId;
     occurred_at: Date;
     authorization: Authorization;
 }): UnauthorizeTransactionEvent;
 export declare function createNotificationAdd<T extends Notification>(args: {
     _id: ObjectId;
+    transaction: ObjectId;
     occurred_at: Date;
     notification: T;
 }): NotificationAddTransactionEvent<T>;
 export declare function createNotificationRemove<T extends Notification>(args: {
     _id: ObjectId;
+    transaction: ObjectId;
     occurred_at: Date;
     notification: T;
 }): NotificationRemoveTransactionEvent<T>;

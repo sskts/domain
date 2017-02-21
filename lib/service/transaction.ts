@@ -4,6 +4,7 @@
  * @namespace TransactionService
  */
 
+import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 
 import COASeatReservationAuthorization from '../model/authorization/coaSeatReservation';
@@ -14,7 +15,6 @@ import OwnerGroup from '../model/ownerGroup';
 import Queue from '../model/queue';
 import QueueStatus from '../model/queueStatus';
 import Transaction from '../model/transaction';
-import TransactionEventGroup from '../model/transactionEventGroup';
 import TransactionInquiryKey from '../model/transactionInquiryKey';
 import TransactionStatus from '../model/transactionStatus';
 
@@ -34,12 +34,14 @@ export type OwnerAndTransactionOperation<T> =
     (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => Promise<T>;
 export type TransactionOperation<T> = (transactionRepo: TransactionRepository) => Promise<T>;
 
+const debug = createDebug('sskts-domain:service:transaction');
+
 /**
  * 匿名所有者更新
  *
  * @returns {OwnerAndTransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export function updateAnonymousOwner(args: {
     /**
@@ -115,7 +117,7 @@ export function updateAnonymousOwner(args: {
  * @param {string} transactionId
  * @returns {TransactionOperation<monapt.Option<Transaction>>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export function findById(transactionId: string): TransactionOperation<monapt.Option<Transaction>> {
     return async (transactionRepo: TransactionRepository) => await transactionRepo.findById(ObjectId(transactionId));
@@ -127,7 +129,7 @@ export function findById(transactionId: string): TransactionOperation<monapt.Opt
  * @param {Date} expiredAt
  * @returns {OwnerAndTransactionOperation<Transaction>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export function start(expiredAt: Date) {
     return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
@@ -144,18 +146,10 @@ export function start(expiredAt: Date) {
 
         const promoter = option.get();
 
-        // イベント作成
-        const event = TransactionEventFactory.create({
-            _id: ObjectId(),
-            group: TransactionEventGroup.START,
-            occurred_at: new Date()
-        });
-
         // 取引作成
         const transaction = TransactionFactory.create({
             _id: ObjectId(),
             status: TransactionStatus.UNDERWAY,
-            events: [event],
             owners: [promoter, anonymousOwner],
             expired_at: expiredAt
         });
@@ -175,7 +169,7 @@ export function start(expiredAt: Date) {
  * @param {GMOAuthorization} authorization
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export function addGMOAuthorization(transactionId: string, authorization: GMOAuthorization) {
     return async (transactionRepo: TransactionRepository) => {
@@ -198,31 +192,16 @@ export function addGMOAuthorization(transactionId: string, authorization: GMOAut
             throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_to}].`);
         }
 
-        // 永続化
         // イベント作成
         const event = TransactionEventFactory.createAuthorize({
             _id: ObjectId(),
+            transaction: transaction._id,
             occurred_at: new Date(),
             authorization: authorization
         });
 
         // 永続化
-        const option = await transactionRepo.findOneAndUpdate(
-            {
-                _id: ObjectId(transactionId),
-                status: TransactionStatus.UNDERWAY
-            },
-            {
-                $push: {
-                    events: event
-                }
-            }
-        );
-        if (option.isEmpty) {
-            throw new Error('UNDERWAY transaction not found.');
-        }
-
-        // return authorization;
+        await transactionRepo.addEvent(event);
     };
 }
 
@@ -233,7 +212,7 @@ export function addGMOAuthorization(transactionId: string, authorization: GMOAut
  * @param {COASeatReservationAuthorization} authorization
  * @returns {OwnerAndTransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export function addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorization) {
     return async (transactionRepo: TransactionRepository) => {
@@ -255,31 +234,16 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
             throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_to}].`);
         }
 
-        // 永続化
         // イベント作成
         const event = TransactionEventFactory.createAuthorize({
             _id: ObjectId(),
+            transaction: transaction._id,
             occurred_at: new Date(),
             authorization: authorization
         });
 
         // 永続化
-        const option = await transactionRepo.findOneAndUpdate(
-            {
-                _id: ObjectId(transactionId),
-                status: TransactionStatus.UNDERWAY
-            },
-            {
-                $push: {
-                    events: event
-                }
-            }
-        );
-        if (option.isEmpty) {
-            throw new Error('UNDERWAY transaction not found.');
-        }
-
-        // return authorization;
+        await transactionRepo.addEvent(event);
     };
 }
 
@@ -290,7 +254,7 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
  * @param {string} authorizationId
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export function removeAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionRepo: TransactionRepository) => {
@@ -301,11 +265,9 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
         }
 
         const transaction = optionTransacton.get();
-        const authorizations = transaction.authorizations();
+        const authorizations = await transactionRepo.findAuthorizationsById(transaction._id);
 
-        const removedAuthorization = authorizations.find((authorization) => {
-            return (authorization._id.toString() === authorizationId);
-        });
+        const removedAuthorization = authorizations.find((authorization) => authorization._id.toString() === authorizationId);
         if (!removedAuthorization) {
             throw new Error(`authorization [${authorizationId}] not found in the transaction.`);
         }
@@ -313,25 +275,13 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
         // イベント作成
         const event = TransactionEventFactory.createUnauthorize({
             _id: ObjectId(),
+            transaction: transaction._id,
             occurred_at: new Date(),
             authorization: removedAuthorization
         });
 
         // 永続化
-        const option = await transactionRepo.findOneAndUpdate(
-            {
-                _id: ObjectId(transactionId),
-                status: TransactionStatus.UNDERWAY
-            },
-            {
-                $push: {
-                    events: event
-                }
-            }
-        );
-        if (option.isEmpty) {
-            throw new Error('UNDERWAY transaction not found.');
-        }
+        await transactionRepo.addEvent(event);
     };
 }
 
@@ -342,7 +292,7 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
  * @param {TransactionInquiryKey} key
  * @returns {TransactionOperation<monapt.Option<Transaction>>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export function enableInquiry(transactionId: string, key: TransactionInquiryKey) {
     return async (transactionRepo: TransactionRepository) => {
@@ -370,7 +320,7 @@ export function enableInquiry(transactionId: string, key: TransactionInquiryKey)
  * @param {TransactionInquiryKey} key
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export function makeInquiry(key: TransactionInquiryKey): TransactionOperation<monapt.Option<Transaction>> {
     return async (transactionRepo: TransactionRepository) => await transactionRepo.findOne({
@@ -385,7 +335,7 @@ export function makeInquiry(key: TransactionInquiryKey): TransactionOperation<mo
  * @param {string} transactionId
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export function close(transactionId: string) {
     return async (transactionRepo: TransactionRepository) => {
@@ -403,43 +353,9 @@ export function close(transactionId: string) {
         }
 
         // 条件が対等かどうかチェック
-        if (!transaction.canBeClosed()) {
+        if (!await transactionRepo.canBeClosed(transaction._id)) {
             throw new Error('transaction cannot be closed.');
         }
-
-        // キューリストを事前作成
-        const queues: Queue[] = [];
-        transaction.authorizations().forEach((authorization) => {
-            queues.push(QueueFactory.createSettleAuthorization({
-                _id: ObjectId(),
-                authorization: authorization,
-                status: QueueStatus.UNEXECUTED,
-                run_at: new Date(), // なるはやで実行
-                max_count_try: 10,
-                last_tried_at: null,
-                count_tried: 0,
-                results: []
-            }));
-        });
-        transaction.notifications().forEach((notification) => {
-            queues.push(QueueFactory.createPushNotification({
-                _id: ObjectId(),
-                notification: notification,
-                status: QueueStatus.UNEXECUTED,
-                run_at: new Date(), // todo emailのsent_atを指定
-                max_count_try: 10,
-                last_tried_at: null,
-                count_tried: 0,
-                results: []
-            }));
-        });
-
-        // イベント作成
-        const event = TransactionEventFactory.create({
-            _id: ObjectId(),
-            group: TransactionEventGroup.CLOSE,
-            occurred_at: new Date()
-        });
 
         // 永続化
         const option = await transactionRepo.findOneAndUpdate(
@@ -449,11 +365,7 @@ export function close(transactionId: string) {
             },
             {
                 $set: {
-                    status: TransactionStatus.CLOSED,
-                    queues: queues
-                },
-                $push: {
-                    events: event
+                    status: TransactionStatus.CLOSED
                 }
             }
         );
@@ -468,17 +380,10 @@ export function close(transactionId: string) {
  *
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export function expireOne() {
     return async (transactionRepo: TransactionRepository) => {
-        // イベント作成
-        const event = TransactionEventFactory.create({
-            _id: ObjectId(),
-            group: TransactionEventGroup.EXPIRE,
-            occurred_at: new Date()
-        });
-
         // 永続化
         await transactionRepo.findOneAndUpdate(
             {
@@ -488,9 +393,6 @@ export function expireOne() {
             {
                 $set: {
                     status: TransactionStatus.EXPIRED
-                },
-                $push: {
-                    events: event
                 }
             }
         );
@@ -505,9 +407,10 @@ export function expireOne() {
  * @param {string} transactionId
  * @returns {TransactionAndQueueOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export function exportQueues(transactionId: string) {
+    // tslint:disable-next-line:max-func-body-length
     return async (transactionRepo: TransactionRepository, queueRepo: QueueRepository) => {
         const option = await transactionRepo.findById(ObjectId(transactionId));
         if (option.isEmpty) {
@@ -516,17 +419,41 @@ export function exportQueues(transactionId: string) {
 
         const transaction = option.get();
 
-        let queues: Queue[];
+        const queues: Queue[] = [];
         switch (transaction.status) {
-            // 成立の場合は、あらかじめキューリストが作成されている
             case TransactionStatus.CLOSED:
-                queues = transaction.queues;
+                // 取引イベントからキューリストを作成
+                (await transactionRepo.findAuthorizationsById(transaction._id)).forEach((authorization) => {
+                    queues.push(QueueFactory.createSettleAuthorization({
+                        _id: ObjectId(),
+                        authorization: authorization,
+                        status: QueueStatus.UNEXECUTED,
+                        run_at: new Date(), // なるはやで実行
+                        max_count_try: 10,
+                        last_tried_at: null,
+                        count_tried: 0,
+                        results: []
+                    }));
+                });
+
+                (await transactionRepo.findNotificationsById(transaction._id)).forEach((notification) => {
+                    queues.push(QueueFactory.createPushNotification({
+                        _id: ObjectId(),
+                        notification: notification,
+                        status: QueueStatus.UNEXECUTED,
+                        run_at: new Date(), // todo emailのsent_atを指定
+                        max_count_try: 10,
+                        last_tried_at: null,
+                        count_tried: 0,
+                        results: []
+                    }));
+                });
+
                 break;
 
             // 期限切れの場合は、キューリストを作成する
             case TransactionStatus.EXPIRED:
-                queues = [];
-                transaction.authorizations().forEach((authorization) => {
+                (await transactionRepo.findAuthorizationsById(transaction._id)).forEach((authorization) => {
                     queues.push(QueueFactory.createCancelAuthorization({
                         _id: ObjectId(),
                         authorization: authorization,
@@ -554,8 +481,6 @@ export function exportQueues(transactionId: string) {
                 }
 
                 // todo おそらく開発時のみ
-                const eventStart =
-                    transaction.events.find((event) => (event.group === TransactionEventGroup.START));
                 queues.push(QueueFactory.createPushNotification(
                     {
                         _id: ObjectId(),
@@ -567,7 +492,7 @@ export function exportQueues(transactionId: string) {
                             content: `
 取引の期限がきれました
 _id: ${transaction._id}
-created_at: ${(eventStart) ? eventStart.occurred_at : ''}
+expired_at: ${transaction.expired_at}
 `
                         }),
                         status: QueueStatus.UNEXECUTED,
@@ -584,6 +509,7 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ''}
             default:
                 throw new Error('transaction group not implemented.');
         }
+        debug('queues:', queues);
 
         const promises = queues.map(async (queue) => {
             await queueRepo.store(queue);
@@ -599,33 +525,20 @@ created_at: ${(eventStart) ? eventStart.occurred_at : ''}
  * @param {EmailNotification} notification
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export function addEmail(transactionId: string, notification: EmailNotification) {
     return async (transactionRepo: TransactionRepository) => {
         // イベント作成
         const event = TransactionEventFactory.createNotificationAdd({
             _id: ObjectId(),
+            transaction: ObjectId(transactionId),
             occurred_at: new Date(),
             notification: notification
         });
 
         // 永続化
-        const option = await transactionRepo.findOneAndUpdate(
-            {
-                _id: ObjectId(transactionId),
-                status: TransactionStatus.UNDERWAY
-            },
-            {
-                $push: {
-                    events: event
-                }
-            }
-        );
-
-        if (option.isEmpty) {
-            throw new Error('UNDERWAY transaction not found.');
-        }
+        await transactionRepo.addEvent(event);
     };
 }
 
@@ -636,7 +549,7 @@ export function addEmail(transactionId: string, notification: EmailNotification)
  * @param {string} notificationId
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export function removeEmail(transactionId: string, notificationId: string) {
     return async (transactionRepo: TransactionRepository) => {
@@ -647,11 +560,9 @@ export function removeEmail(transactionId: string, notificationId: string) {
         }
 
         const transaction = optionTransacton.get();
-        const notifications = transaction.notifications();
+        const notifications = await transactionRepo.findNotificationsById(transaction._id);
 
-        const removedNotification = notifications.find((notification) => {
-            return (notification._id.toString() === notificationId);
-        });
+        const removedNotification = notifications.find((notification) => notification._id.toString() === notificationId);
         if (!removedNotification) {
             throw new Error(`notification [${notificationId}] not found in the transaction.`);
         }
@@ -659,25 +570,12 @@ export function removeEmail(transactionId: string, notificationId: string) {
         // イベント作成
         const event = TransactionEventFactory.createNotificationRemove({
             _id: ObjectId(),
+            transaction: ObjectId(transactionId),
             occurred_at: new Date(),
             notification: removedNotification
         });
 
         // 永続化
-        const option = await transactionRepo.findOneAndUpdate(
-            {
-                _id: ObjectId(transactionId),
-                status: TransactionStatus.UNDERWAY
-            },
-            {
-                $push: {
-                    events: event
-                }
-            }
-        );
-
-        if (option.isEmpty) {
-            throw new Error('UNDERWAY transaction not found.');
-        }
+        await transactionRepo.addEvent(event);
     };
 }

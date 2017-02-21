@@ -1,3 +1,4 @@
+// tslint:disable:variable-name
 import Asset from '../asset';
 import Authorization from '../authorization';
 import AuthorizationGroup from '../authorizationGroup';

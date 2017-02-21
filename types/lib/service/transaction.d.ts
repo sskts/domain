@@ -1,8 +1,3 @@
-/**
- * 取引サービス
- *
- * @namespace TransactionService
- */
 import * as monapt from 'monapt';
 import COASeatReservationAuthorization from '../model/authorization/coaSeatReservation';
 import GMOAuthorization from '../model/authorization/gmo';
@@ -20,7 +15,7 @@ export declare type TransactionOperation<T> = (transactionRepo: TransactionRepos
  *
  * @returns {OwnerAndTransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export declare function updateAnonymousOwner(args: {
     /**
@@ -60,7 +55,7 @@ export declare function updateAnonymousOwner(args: {
  * @param {string} transactionId
  * @returns {TransactionOperation<monapt.Option<Transaction>>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export declare function findById(transactionId: string): TransactionOperation<monapt.Option<Transaction>>;
 /**
@@ -69,7 +64,7 @@ export declare function findById(transactionId: string): TransactionOperation<mo
  * @param {Date} expiredAt
  * @returns {OwnerAndTransactionOperation<Transaction>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export declare function start(expiredAt: Date): (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => Promise<Transaction>;
 /**
@@ -79,7 +74,7 @@ export declare function start(expiredAt: Date): (ownerRepo: OwnerRepository, tra
  * @param {GMOAuthorization} authorization
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export declare function addGMOAuthorization(transactionId: string, authorization: GMOAuthorization): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
@@ -89,7 +84,7 @@ export declare function addGMOAuthorization(transactionId: string, authorization
  * @param {COASeatReservationAuthorization} authorization
  * @returns {OwnerAndTransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorization): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
@@ -99,7 +94,7 @@ export declare function addCOASeatReservationAuthorization(transactionId: string
  * @param {string} authorizationId
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export declare function removeAuthorization(transactionId: string, authorizationId: string): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
@@ -109,7 +104,7 @@ export declare function removeAuthorization(transactionId: string, authorization
  * @param {TransactionInquiryKey} key
  * @returns {TransactionOperation<monapt.Option<Transaction>>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export declare function enableInquiry(transactionId: string, key: TransactionInquiryKey): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
@@ -118,7 +113,7 @@ export declare function enableInquiry(transactionId: string, key: TransactionInq
  * @param {TransactionInquiryKey} key
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export declare function makeInquiry(key: TransactionInquiryKey): TransactionOperation<monapt.Option<Transaction>>;
 /**
@@ -127,7 +122,7 @@ export declare function makeInquiry(key: TransactionInquiryKey): TransactionOper
  * @param {string} transactionId
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export declare function close(transactionId: string): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
@@ -135,7 +130,7 @@ export declare function close(transactionId: string): (transactionRepo: Transact
  *
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export declare function expireOne(): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
@@ -144,7 +139,7 @@ export declare function expireOne(): (transactionRepo: TransactionRepository) =>
  * @param {string} transactionId
  * @returns {TransactionAndQueueOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export declare function exportQueues(transactionId: string): (transactionRepo: TransactionRepository, queueRepo: QueueRepository) => Promise<void>;
 /**
@@ -154,7 +149,7 @@ export declare function exportQueues(transactionId: string): (transactionRepo: T
  * @param {EmailNotification} notification
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export declare function addEmail(transactionId: string, notification: EmailNotification): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
@@ -164,6 +159,6 @@ export declare function addEmail(transactionId: string, notification: EmailNotif
  * @param {string} notificationId
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionServiceInterpreter
+ * @memberOf TransactionService
  */
 export declare function removeEmail(transactionId: string, notificationId: string): (transactionRepo: TransactionRepository) => Promise<void>;

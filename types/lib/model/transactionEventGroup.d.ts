@@ -3,20 +3,8 @@
  *
  * @namespace TransactionEventGroup
  */
-declare type TransactionEventGroup = 'START' | 'CLOSE' | 'EXPIRE' | 'AUTHORIZE' | 'UNAUTHORIZE' | 'NOTIFICATION_ADD' | 'NOTIFICATION_REMOVE';
+declare type TransactionEventGroup = 'AUTHORIZE' | 'UNAUTHORIZE' | 'NOTIFICATION_ADD' | 'NOTIFICATION_REMOVE';
 declare namespace TransactionEventGroup {
-    /**
-     * 開始
-     */
-    const START = "START";
-    /**
-     * 成立
-     */
-    const CLOSE = "CLOSE";
-    /**
-     * 期限切れ
-     */
-    const EXPIRE = "EXPIRE";
     /**
      * オーソリアイテム追加
      */

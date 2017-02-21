@@ -1,15 +1,15 @@
 /* tslint:disable */
-import * as COA from '@motionpicture/coa-service';
-import * as GMO from '@motionpicture/gmo-service';
-import * as moment from 'moment';
-import * as mongoose from 'mongoose';
-import * as SSKTS from '../lib/sskts-domain';
-
 process.env.MONGOLAB_URI = 'mongodb://testsasakiticketmongodbuser:aZHGD262LNsBTQgG9UGQpA6QvbFkKbAhBfxf3vvz@ds056379-a0.mlab.com:56379,ds056379-a1.mlab.com:56372/testsasakiticketmongodb?replicaSet=rs-ds056379';
 process.env.SENDGRID_API_KEY = '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';
 process.env.GMO_ENDPOINT = 'https://pt01.mul-pay.jp';
 process.env.COA_ENDPOINT = 'http://coacinema.aa0.netvolante.jp';
 process.env.COA_REFRESH_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5MjYwODQ4LCJhdXRoX2lkIjoiMzMxNSJ9.jx-w7D3YLP7UbY4mzJYC9xr368FiKWcpR2_L9mZfehQ';
+
+import * as COA from '@motionpicture/coa-service';
+import * as GMO from '@motionpicture/gmo-service';
+import * as moment from 'moment';
+import * as mongoose from 'mongoose';
+import * as SSKTS from '../lib/sskts-domain';
 
 async function main() {
     mongoose.connect(process.env.MONGOLAB_URI);
@@ -175,22 +175,22 @@ async function main() {
 
     // GMOオーソリ取得
     const orderId = Date.now().toString();
-    const entryTranResult = await GMO.CreditService.entryTranInterface.call({
-        shop_id: gmoShopId,
-        shop_pass: gmoShopPass,
-        order_id: orderId,
-        job_cd: GMO.Util.JOB_CD_AUTH,
+    const entryTranResult = await GMO.CreditService.entryTran({
+        shopId: gmoShopId,
+        shopPass: gmoShopPass,
+        orderId: orderId,
+        jobCd: GMO.Util.JOB_CD_AUTH,
         amount: totalPrice,
     });
 
-    const execTranResult = await GMO.CreditService.execTranInterface.call({
-        access_id: entryTranResult.access_id,
-        access_pass: entryTranResult.access_pass,
-        order_id: orderId,
+    const execTranResult = await GMO.CreditService.execTran({
+        accessId: entryTranResult.accessId,
+        accessPass: entryTranResult.accessPass,
+        orderId: orderId,
         method: '1',
-        card_no: '4111111111111111',
+        cardNo: '4111111111111111',
         expire: '2012',
-        security_code: '123',
+        securityCode: '123',
     });
     console.log(execTranResult);
 
@@ -203,8 +203,8 @@ async function main() {
         gmo_shop_pass: gmoShopPass,
         gmo_order_id: orderId,
         gmo_amount: totalPrice,
-        gmo_access_id: entryTranResult.access_id,
-        gmo_access_pass: entryTranResult.access_pass,
+        gmo_access_id: entryTranResult.accessId,
+        gmo_access_pass: entryTranResult.accessPass,
         gmo_job_cd: GMO.Util.JOB_CD_AUTH,
         gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
         price: totalPrice,

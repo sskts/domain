@@ -2,11 +2,11 @@
 *.log
 logs
 npm-debug.log
+.env
 
 node_modules
-examples/**/*.d.ts
 
-.vscode/*
+.vscode/
 docs/
 
 !.gitignore

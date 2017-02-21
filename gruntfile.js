@@ -22,14 +22,6 @@ module.exports = function (grunt) {
 
     watch: {
     }
-
-    // // devserver config
-    // devserver: {
-    //   server: {},
-    //   options: {
-    //     "base": "docs"
-    //   }
-    // },
   });
 
   grunt.loadNpmTasks("grunt-jsdoc");

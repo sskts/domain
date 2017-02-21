@@ -167,8 +167,8 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
             const filmId = `${theaterCode}${performanceFromCOA.title_code}${performanceFromCOA.title_branch_num}`;
 
             // スクリーン存在チェック
-            const _screen = screens.find((screen) => (screen._id === screenId));
-            if (!_screen) {
+            const screenOfPerformance = screens.find((screen) => (screen._id === screenId));
+            if (!screenOfPerformance) {
                 throw new Error(('screen not found.'));
             }
 
@@ -179,7 +179,7 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
             }
 
             // 永続化
-            const performance = PerformanceFactory.createFromCOA(performanceFromCOA)(_screen, optionFilm.get());
+            const performance = PerformanceFactory.createFromCOA(performanceFromCOA)(screenOfPerformance, optionFilm.get());
             await performanceRepo.store(performance);
         }));
     };

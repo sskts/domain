@@ -1,3 +1,4 @@
+// tslint:disable:variable-name
 import Notification from '../notification';
 import ObjectId from '../objectId';
 import Queue from '../queue';

@@ -8,16 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 // tslint:disable-next-line:missing-jsdoc
-const sendgrid = require("sendgrid");
+const mongoose = require("mongoose");
 const SSKTS = require("../../lib/sskts-domain");
-describe('notification service', () => {
-    it('send an email', () => __awaiter(this, void 0, void 0, function* () {
-        const notification = SSKTS.NotificationFactory.createEmail({
-            from: 'noreply@localhost',
-            to: 'hello@motionpicture.jp',
-            subject: 'test subject',
-            content: 'test content'
-        });
-        yield SSKTS.NotificationService.sendEmail(notification)(sendgrid);
+mongoose.connect(process.env.MONGOLAB_URI).then(() => {
+    console.error('connected.');
+}, (err) => {
+    console.error(err);
+});
+describe('transaction service', () => {
+    it('export queues', () => __awaiter(this, void 0, void 0, function* () {
+        yield SSKTS.TransactionService.exportQueues('58ab949eedc005093c5fe3c6')(SSKTS.createTransactionRepository(mongoose.connection), SSKTS.createQueueRepository(mongoose.connection));
     }));
 });

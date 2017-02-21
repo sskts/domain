@@ -1,3 +1,4 @@
+// tslint:disable:variable-name
 import MultilingualString from '../multilingualString';
 import ObjectId from '../objectId';
 import Owner from '../owner';

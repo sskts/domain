@@ -1,3 +1,4 @@
+// tslint:disable:variable-name
 import Authorization from '../authorization';
 import ObjectId from '../objectId';
 import TransactionEvent from '../transactionEvent';
@@ -9,23 +10,19 @@ import TransactionEventGroup from '../transactionEventGroup';
  *
  * @class Unauthorize
  * @extends {TransactionEvent}
+ * @param {ObjectId} _id
+ * @param {ObjectId} transaction 取引ID
+ * @param {Date} occurred_at
+ * @param {Authorization} authorization
  */
 export default class Unauthorize extends TransactionEvent {
-    /**
-     * Creates an instance of Unauthorize.
-     *
-     * @param {ObjectId} _id
-     * @param {Date} occurred_at
-     * @param {Authorization} authorization
-     *
-     * @memberOf Unauthorize
-     */
     constructor(
         readonly _id: ObjectId,
+        readonly transaction: ObjectId,
         readonly occurred_at: Date,
         readonly authorization: Authorization
     ) {
-        super(_id, TransactionEventGroup.UNAUTHORIZE, occurred_at);
+        super(_id, transaction, TransactionEventGroup.UNAUTHORIZE, occurred_at);
 
         // todo validation
     }

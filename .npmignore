@@ -1,17 +1,10 @@
-# git #
 .git*
-
-# Node #
-node_modules/
-
-# Test #
-test/
-
-# typescript #
 **/*.ts
+.npmrc
+.env
+
+docs/**/*.*
+test/**/*.*
+.vscode/**/*.*
 
 !**/*.d.ts
-
-examples/**/*.d.ts
-
-.tscache/

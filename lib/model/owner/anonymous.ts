@@ -1,3 +1,4 @@
+// tslint:disable:variable-name
 import ObjectId from '../objectId';
 import Owner from '../owner';
 import OwnerGroup from '../ownerGroup';

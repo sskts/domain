@@ -16,11 +16,13 @@ import TransactionEventGroup from '../model/transactionEventGroup';
 
 export function create(args: {
     _id: ObjectId,
+    transaction: ObjectId,
     group: TransactionEventGroup,
     occurred_at: Date
 }) {
     return new TransactionEvent(
         args._id,
+        args.transaction,
         args.group,
         args.occurred_at
     );
@@ -28,11 +30,13 @@ export function create(args: {
 
 export function createAuthorize(args: {
     _id: ObjectId,
+    transaction: ObjectId,
     occurred_at: Date,
     authorization: Authorization
 }) {
     return new AuthorizeTransactionEvent(
         args._id,
+        args.transaction,
         args.occurred_at,
         args.authorization
     );
@@ -40,11 +44,13 @@ export function createAuthorize(args: {
 
 export function createUnauthorize(args: {
     _id: ObjectId,
+    transaction: ObjectId,
     occurred_at: Date,
     authorization: Authorization
 }) {
     return new UnauthorizeTransactionEvent(
         args._id,
+        args.transaction,
         args.occurred_at,
         args.authorization
     );
@@ -52,11 +58,13 @@ export function createUnauthorize(args: {
 
 export function createNotificationAdd<T extends Notification>(args: {
     _id: ObjectId,
+    transaction: ObjectId,
     occurred_at: Date,
     notification: T
 }) {
     return new NotificationAddTransactionEvent<T>(
         args._id,
+        args.transaction,
         args.occurred_at,
         args.notification
     );
@@ -64,11 +72,13 @@ export function createNotificationAdd<T extends Notification>(args: {
 
 export function createNotificationRemove<T extends Notification>(args: {
     _id: ObjectId,
+    transaction: ObjectId,
     occurred_at: Date,
     notification: T
 }) {
     return new NotificationRemoveTransactionEvent<T>(
         args._id,
+        args.transaction,
         args.occurred_at,
         args.notification
     );

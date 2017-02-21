@@ -1,3 +1,4 @@
+// tslint:disable:variable-name
 import * as validator from 'validator';
 import Notification from '../notification';
 import NotificationGroup from '../notificationGroup';

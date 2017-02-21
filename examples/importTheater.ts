@@ -10,6 +10,7 @@ process.env.COA_REFRESH_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkX2F0IjoxNDc5Mj
 
 async function main() {
     try {
+        (<any>mongoose).Promise = global.Promise;
         mongoose.connect(process.env.MONGOLAB_URI);
 
         await SSKTS.MasterService.importTheater('118')(SSKTS.createTheaterRepository(mongoose.connection));

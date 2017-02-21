@@ -12,7 +12,6 @@
       true
     ],
     "await-promise": false,
-    "class-name": true,
     "curly": false,
     "export-name": false,
     "import-name": false,
@@ -25,6 +24,7 @@
       true
     ],
     "no-any": false,
+    "no-backbone-get-set-outside-model": false,
     "no-boolean-literal-compare": false,
     "no-default-export": false,
     "no-floating-promises": false,
@@ -37,7 +37,7 @@
     "no-unnecessary-initializer": true,
     "no-unnecessary-qualifier": false,
     "object-literal-shorthand": false,
-    "prefer-function-over-method": false,
+    "prefer-function-over-method": true,
     "prefer-method-signature": true,
     "restrict-plus-operands": false,
     "strict-type-predicates": false
