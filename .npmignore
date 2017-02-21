@@ -1,7 +1,7 @@
 .git*
 **/*.ts
 .npmrc
-.env
+.env*
 npm-debug.log*
 
 docs/**/*.*

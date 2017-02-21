@@ -13,6 +13,7 @@ import Queue from '../../model/queue';
 export default class QueueRepositoryInterpreter implements QueueRepository {
     readonly connection: mongoose.Connection;
     constructor(connection: mongoose.Connection);
+    findOneAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue>>;
     findOneSendEmailAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue.PushNotificationQueue<Notification.EmailNotification>>>;
     findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue.SettleAuthorizationQueue<Authorization.GMOAuthorization>>>;
     findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue.SettleAuthorizationQueue<Authorization.COASeatReservationAuthorization>>>;

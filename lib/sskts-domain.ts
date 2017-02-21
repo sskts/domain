@@ -6,6 +6,7 @@ import * as SalesService from './service/sales';
 import * as StockService from './service/stock';
 import * as TransactionService from './service/transaction';
 
+import AssetRepository from './repository/interpreter/asset';
 import FilmRepository from './repository/interpreter/film';
 import OwnerRepository from './repository/interpreter/owner';
 import PerformanceRepository from './repository/interpreter/performance';
@@ -18,8 +19,14 @@ import Asset from './model/asset';
 import Authorization from './model/authorization';
 import Notification from './model/notification';
 import Ownership from './model/ownership';
+import QueueStatus from './model/queueStatus';
 import TransactionInquiryKey from './model/transactionInquiryKey';
+import TransactionQueuesStatus from './model/transactionQueuesStatus';
+import TransactionStatus from './model/transactionStatus';
 
+export function createAssetRepository(connection: mongoose.Connection) {
+    return new AssetRepository(connection);
+}
 export function createFilmRepository(connection: mongoose.Connection) {
     return new FilmRepository(connection);
 }
@@ -54,8 +61,11 @@ export {
     Notification,
     NotificationService,
     Ownership,
+    QueueStatus,
     SalesService,
     StockService,
     TransactionInquiryKey,
+    TransactionQueuesStatus,
+    TransactionStatus,
     TransactionService
 }

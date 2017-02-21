@@ -22,6 +22,16 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
     constructor(readonly connection: mongoose.Connection) {
     }
 
+    public async findOneAndUpdate(conditions: Object, update: Object) {
+        const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        const doc = <any>await model.findOneAndUpdate(conditions, update, {
+            new: true,
+            upsert: false
+        }).lean().exec();
+
+        return (doc) ? monapt.Option(Queue.create(doc)) : monapt.None;
+    }
+
     public async findOneSendEmailAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {

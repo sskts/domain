@@ -160,6 +160,17 @@ declare namespace Queue {
          */
         constructor(_id: ObjectId, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], authorization: T);
     }
+    interface IQueue {
+        _id: ObjectId;
+        group: QueueGroup;
+        status: QueueStatus;
+        run_at: Date;
+        max_count_try: number;
+        last_tried_at: Date | null;
+        count_tried: number;
+        results: string[];
+    }
+    function create(args: IQueue): Queue;
     function createSettleAuthorization<T extends Authorization>(args: {
         _id: ObjectId;
         authorization: T;

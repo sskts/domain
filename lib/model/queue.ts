@@ -230,6 +230,30 @@ namespace Queue {
         }
     }
 
+    export interface IQueue {
+        _id: ObjectId;
+        group: QueueGroup;
+        status: QueueStatus;
+        run_at: Date;
+        max_count_try: number;
+        last_tried_at: Date | null;
+        count_tried: number;
+        results: string[];
+    }
+
+    export function create(args: IQueue) {
+        return new Queue(
+            args._id,
+            args.group,
+            args.status,
+            args.run_at,
+            args.max_count_try,
+            args.last_tried_at,
+            args.count_tried,
+            args.results
+        );
+    }
+
     export function createSettleAuthorization<T extends Authorization>(args: {
         _id: ObjectId,
         authorization: T,
