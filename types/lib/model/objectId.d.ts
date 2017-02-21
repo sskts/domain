@@ -5,5 +5,6 @@
  * @interface ObjectId
  */
 import * as mongoose from 'mongoose';
-declare var _default: mongoose.Types.ObjectIdConstructor;
-export default _default;
+declare type ObjectId = mongoose.Types.ObjectId;
+declare const ObjectId: mongoose.Types.ObjectIdConstructor;
+export default ObjectId;

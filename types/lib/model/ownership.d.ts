@@ -1,4 +1,3 @@
-/// <reference types="mongoose" />
 import ObjectId from './objectId';
 /**
  * 所有権

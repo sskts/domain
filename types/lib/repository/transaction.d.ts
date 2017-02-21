@@ -1,4 +1,3 @@
-/// <reference types="mongoose" />
 import * as monapt from 'monapt';
 import Authorization from '../model/authorization';
 import Notification from '../model/notification';

@@ -1,4 +1,3 @@
-/// <reference types="mongoose" />
 import ObjectId from './objectId';
 import Owner from './owner';
 import TransactionInquiryKey from './transactionInquiryKey';

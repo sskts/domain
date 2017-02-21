@@ -1,4 +1,3 @@
-/// <reference types="mongoose" />
 import * as monapt from 'monapt';
 import ObjectId from '../model/objectId';
 import Owner from '../model/owner';

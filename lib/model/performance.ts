@@ -75,7 +75,7 @@ namespace Performance {
                 performanceFromCOA.title_branch_num,
                 performanceFromCOA.screen_code,
                 performanceFromCOA.time_begin
-            ].join();
+            ].join('');
 
             return create({
                 _id: id,

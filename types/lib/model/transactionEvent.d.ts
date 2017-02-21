@@ -1,4 +1,3 @@
-/// <reference types="mongoose" />
 import Authorization from './authorization';
 import Notification from './notification';
 import ObjectId from './objectId';

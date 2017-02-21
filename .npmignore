@@ -2,6 +2,7 @@
 **/*.ts
 .npmrc
 .env
+npm-debug.log*
 
 docs/**/*.*
 test/**/*.*

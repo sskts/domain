@@ -1,4 +1,3 @@
-/// <reference types="mongoose" />
 import Asset from './asset';
 import AuthorizationGroup from './authorizationGroup';
 import ObjectId from './objectId';

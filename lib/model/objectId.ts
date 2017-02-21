@@ -6,4 +6,8 @@
 
 import * as mongoose from 'mongoose';
 
-export default mongoose.Types.ObjectId;
+type ObjectId = mongoose.Types.ObjectId;
+
+const ObjectId = mongoose.Types.ObjectId;
+
+export default ObjectId;

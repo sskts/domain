@@ -1,4 +1,3 @@
-/// <reference types="mongoose" />
 import MultilingualString from '../model/multilingualString';
 import ObjectId from './objectId';
 import OwnerGroup from './ownerGroup';
