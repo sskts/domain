@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
-import OwnerModel from './owner';
-import PerformanceModel from './performance';
+import ownerModel from './owner';
+import performanceModel from './performance';
 
 /**
  * 資産スキーマ
@@ -13,7 +13,7 @@ const schema = new mongoose.Schema(
         ownership: { // 所有権
             owner: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: OwnerModel.modelName
+                ref: ownerModel.modelName
             },
             authenticated: Boolean
         },
@@ -23,7 +23,7 @@ const schema = new mongoose.Schema(
 
         performance: {
             type: String,
-            ref: PerformanceModel.modelName
+            ref: performanceModel.modelName
         },
         section: String,
         seat_code: String,

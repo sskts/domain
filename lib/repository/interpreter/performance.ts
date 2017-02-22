@@ -5,17 +5,17 @@
  */
 
 import * as monapt from 'monapt';
-import * as mongoose from 'mongoose';
+import { Connection } from 'mongoose';
 import Performance from '../../model/performance';
 import PerformanceRepository from '../performance';
-import PerformanceModel from './mongoose/model/performance';
+import performanceModel from './mongoose/model/performance';
 
 export default class PerformanceRepositoryInterpreter implements PerformanceRepository {
-    constructor(readonly connection: mongoose.Connection) {
+    constructor(readonly connection: Connection) {
     }
 
     public async find(conditions: Object) {
-        const model = this.connection.model(PerformanceModel.modelName, PerformanceModel.schema);
+        const model = this.connection.model(performanceModel.modelName);
         return <Performance[]>await model.find(conditions)
             .populate('film')
             .populate('theater')
@@ -25,7 +25,7 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
     }
 
     public async findById(id: string) {
-        const model = this.connection.model(PerformanceModel.modelName, PerformanceModel.schema);
+        const model = this.connection.model(performanceModel.modelName);
         const performance = <Performance>await model.findOne({ _id: id })
             .populate('film')
             .populate('theater')
@@ -37,7 +37,7 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
     }
 
     public async store(performance: Performance) {
-        const model = this.connection.model(PerformanceModel.modelName, PerformanceModel.schema);
+        const model = this.connection.model(performanceModel.modelName);
         await model.findOneAndUpdate({ _id: performance._id }, performance, {
             new: true,
             upsert: true

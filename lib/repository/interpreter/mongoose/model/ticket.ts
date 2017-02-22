@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import TheaterModel from './theater';
+import theaterModel from './theater';
 
 /**
  * 券種スキーマ
@@ -14,7 +14,7 @@ const schema = new mongoose.Schema(
         },
         theater: {
             type: String,
-            ref: TheaterModel.modelName,
+            ref: theaterModel.modelName,
             required: true
         },
         code: String, // チケットコード

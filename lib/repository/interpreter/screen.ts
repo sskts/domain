@@ -5,17 +5,17 @@
  */
 
 import * as monapt from 'monapt';
-import * as mongoose from 'mongoose';
+import { Connection } from 'mongoose';
 import Screen from '../../model/screen';
 import ScreenRepository from '../screen';
-import ScreenModel from './mongoose/model/screen';
+import screenModel from './mongoose/model/screen';
 
 export default class ScreenRepositoryInterpreter implements ScreenRepository {
-    constructor(readonly connection: mongoose.Connection) {
+    constructor(readonly connection: Connection) {
     }
 
     public async findById(id: string) {
-        const model = this.connection.model(ScreenModel.modelName, ScreenModel.schema);
+        const model = this.connection.model(screenModel.modelName);
         const screen = <Screen>await model.findOne({ _id: id })
             .populate('theater')
             .lean()
@@ -30,7 +30,7 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
          */
         theater_id: string
     }) {
-        const model = this.connection.model(ScreenModel.modelName, ScreenModel.schema);
+        const model = this.connection.model(screenModel.modelName);
         return <Screen[]>await model.find({ theater: args.theater_id })
             .populate('theater')
             .lean()
@@ -38,7 +38,7 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
     }
 
     public async store(screen: Screen) {
-        const model = this.connection.model(ScreenModel.modelName, ScreenModel.schema);
+        const model = this.connection.model(screenModel.modelName);
         await model.findOneAndUpdate({ _id: screen._id }, screen, {
             new: true,
             upsert: true

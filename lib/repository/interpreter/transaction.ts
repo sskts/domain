@@ -5,7 +5,7 @@
  */
 
 import * as monapt from 'monapt';
-import * as mongoose from 'mongoose';
+import { Connection } from 'mongoose';
 
 import Authorization from '../../model/authorization';
 import Notification from '../../model/notification';
@@ -14,15 +14,15 @@ import Transaction from '../../model/transaction';
 import TransactionEvent from '../../model/transactionEvent';
 import TransactionEventGroup from '../../model/transactionEventGroup';
 import TransactionRepository from '../transaction';
-import TransactionModel from './mongoose/model/transaction';
-import TransactionEventModel from './mongoose/model/transactionEvent';
+import transactionModel from './mongoose/model/transaction';
+import transactionEventModel from './mongoose/model/transactionEvent';
 
 export default class TransactionRepositoryInterpreter implements TransactionRepository {
-    constructor(readonly connection: mongoose.Connection) {
+    constructor(readonly connection: Connection) {
     }
 
     public async find(conditions: Object) {
-        const model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
+        const model = this.connection.model(transactionModel.modelName);
         const docs = <any[]>await model.find()
             .where(conditions)
             .populate('owner')
@@ -33,7 +33,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
     }
 
     public async findById(id: ObjectId) {
-        const model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
+        const model = this.connection.model(transactionModel.modelName);
         const doc = <any>await model.findOne()
             .where('_id').equals(id)
             .populate('owners').lean().exec();
@@ -42,14 +42,14 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
     }
 
     public async findOne(conditions: Object) {
-        const model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
+        const model = this.connection.model(transactionModel.modelName);
         const doc = <any>await model.findOne(conditions).lean().exec();
 
         return (doc) ? monapt.Option(Transaction.create(doc)) : monapt.None;
     }
 
     public async findOneAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
+        const model = this.connection.model(transactionModel.modelName);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
@@ -59,7 +59,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
     }
 
     public async store(transaction: Transaction) {
-        const model = this.connection.model(TransactionModel.modelName, TransactionModel.schema);
+        const model = this.connection.model(transactionModel.modelName);
         await model.findOneAndUpdate({ _id: transaction._id }, transaction, {
             new: true,
             upsert: true
@@ -67,12 +67,12 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
     }
 
     public async addEvent(transactionEvent: TransactionEvent) {
-        const model = this.connection.model(TransactionEventModel.modelName, TransactionEventModel.schema);
+        const model = this.connection.model(transactionEventModel.modelName);
         await model.create([transactionEvent]);
     }
 
     public async findAuthorizationsById(id: ObjectId): Promise<Authorization[]> {
-        const model = this.connection.model(TransactionEventModel.modelName, TransactionEventModel.schema);
+        const model = this.connection.model(transactionEventModel.modelName);
 
         const authorizations = (<any[]>await model.find(
             {
@@ -100,7 +100,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
     }
 
     public async findNotificationsById(id: ObjectId): Promise<Notification[]> {
-        const model = this.connection.model(TransactionEventModel.modelName, TransactionEventModel.schema);
+        const model = this.connection.model(transactionEventModel.modelName);
 
         const notifications = (<any[]>await model.find(
             {

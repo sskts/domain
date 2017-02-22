@@ -1,15 +1,15 @@
 "use strict";
 // tslint:disable-next-line:missing-jsdoc
+const assert = require("assert");
 const mongoose = require("mongoose");
 const SSKTS = require("../../lib/sskts-domain");
-mongoose.connect(process.env.MONGOLAB_URI).then(() => {
-    console.error('connected.');
-}, (err) => {
-    console.error(err);
+let connection;
+before(() => {
+    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 });
 describe('master service', () => {
     it('importTheater fail', (done) => {
-        SSKTS.MasterService.importTheater('000')(SSKTS.createTheaterRepository(mongoose.connection))
+        SSKTS.MasterService.importTheater('000')(SSKTS.createTheaterRepository(connection))
             .then(() => {
             done(new Error('thenable.'));
         })
@@ -18,7 +18,7 @@ describe('master service', () => {
         });
     });
     it('importTheater ok', (done) => {
-        SSKTS.MasterService.importTheater('118')(SSKTS.createTheaterRepository(mongoose.connection))
+        SSKTS.MasterService.importTheater('118')(SSKTS.createTheaterRepository(connection))
             .then(() => {
             done();
         })
@@ -27,7 +27,7 @@ describe('master service', () => {
         });
     });
     it('importScreens fail', (done) => {
-        SSKTS.MasterService.importScreens('000')(SSKTS.createTheaterRepository(mongoose.connection), SSKTS.createScreenRepository(mongoose.connection))
+        SSKTS.MasterService.importScreens('000')(SSKTS.createTheaterRepository(connection), SSKTS.createScreenRepository(connection))
             .then(() => {
             done(new Error('thenable.'));
         })
@@ -36,7 +36,7 @@ describe('master service', () => {
         });
     });
     it('importScreens ok', (done) => {
-        SSKTS.MasterService.importScreens('118')(SSKTS.createTheaterRepository(mongoose.connection), SSKTS.createScreenRepository(mongoose.connection))
+        SSKTS.MasterService.importScreens('118')(SSKTS.createTheaterRepository(connection), SSKTS.createScreenRepository(connection))
             .then(() => {
             done();
         })
@@ -45,7 +45,7 @@ describe('master service', () => {
         });
     });
     it('importFilms fail', (done) => {
-        SSKTS.MasterService.importFilms('000')(SSKTS.createTheaterRepository(mongoose.connection), SSKTS.createFilmRepository(mongoose.connection))
+        SSKTS.MasterService.importFilms('000')(SSKTS.createTheaterRepository(connection), SSKTS.createFilmRepository(connection))
             .then(() => {
             done(new Error('thenable.'));
         })
@@ -54,7 +54,7 @@ describe('master service', () => {
         });
     });
     it('importFilms ok', (done) => {
-        SSKTS.MasterService.importFilms('118')(SSKTS.createTheaterRepository(mongoose.connection), SSKTS.createFilmRepository(mongoose.connection))
+        SSKTS.MasterService.importFilms('118')(SSKTS.createTheaterRepository(connection), SSKTS.createFilmRepository(connection))
             .then(() => {
             done();
         })
@@ -63,7 +63,7 @@ describe('master service', () => {
         });
     });
     it('importPerformances fail', (done) => {
-        SSKTS.MasterService.importPerformances('000', '20170101', '20170331')(SSKTS.createFilmRepository(mongoose.connection), SSKTS.createScreenRepository(mongoose.connection), SSKTS.createPerformanceRepository(mongoose.connection))
+        SSKTS.MasterService.importPerformances('000', '20170101', '20170331')(SSKTS.createFilmRepository(connection), SSKTS.createScreenRepository(connection), SSKTS.createPerformanceRepository(connection))
             .then(() => {
             done(new Error('thenable.'));
         })
@@ -72,8 +72,18 @@ describe('master service', () => {
         });
     });
     it('importPerformances ok', (done) => {
-        SSKTS.MasterService.importPerformances('118', '20170101', '20170331')(SSKTS.createFilmRepository(mongoose.connection), SSKTS.createScreenRepository(mongoose.connection), SSKTS.createPerformanceRepository(mongoose.connection))
+        SSKTS.MasterService.importPerformances('118', '20170101', '20170331')(SSKTS.createFilmRepository(connection), SSKTS.createScreenRepository(connection), SSKTS.createPerformanceRepository(connection))
             .then(() => {
+            done();
+        })
+            .catch((err) => {
+            done(err);
+        });
+    });
+    it('findTheater ok', (done) => {
+        SSKTS.MasterService.findTheater('118')(SSKTS.createTheaterRepository(connection))
+            .then((theaterOption) => {
+            assert(theaterOption.isDefined);
             done();
         })
             .catch((err) => {

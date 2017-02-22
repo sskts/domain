@@ -5,14 +5,14 @@
  * @class QueueRepositoryInterpreter
  */
 import * as monapt from 'monapt';
-import * as mongoose from 'mongoose';
+import { Connection } from 'mongoose';
 import QueueRepository from '../queue';
 import Authorization from '../../model/authorization';
 import Notification from '../../model/notification';
 import Queue from '../../model/queue';
 export default class QueueRepositoryInterpreter implements QueueRepository {
-    readonly connection: mongoose.Connection;
-    constructor(connection: mongoose.Connection);
+    readonly connection: Connection;
+    constructor(connection: Connection);
     findOneAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue>>;
     findOneSendEmailAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue.PushNotificationQueue<Notification.EmailNotification>>>;
     findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Queue.SettleAuthorizationQueue<Authorization.GMOAuthorization>>>;

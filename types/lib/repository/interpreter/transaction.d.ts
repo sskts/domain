@@ -5,7 +5,7 @@
  * @class TransactionRepositoryInterpreter
  */
 import * as monapt from 'monapt';
-import * as mongoose from 'mongoose';
+import { Connection } from 'mongoose';
 import Authorization from '../../model/authorization';
 import Notification from '../../model/notification';
 import ObjectId from '../../model/objectId';
@@ -13,8 +13,8 @@ import Transaction from '../../model/transaction';
 import TransactionEvent from '../../model/transactionEvent';
 import TransactionRepository from '../transaction';
 export default class TransactionRepositoryInterpreter implements TransactionRepository {
-    readonly connection: mongoose.Connection;
-    constructor(connection: mongoose.Connection);
+    readonly connection: Connection;
+    constructor(connection: Connection);
     find(conditions: Object): Promise<Transaction[]>;
     findById(id: ObjectId): Promise<monapt.Option<Transaction>>;
     findOne(conditions: Object): Promise<monapt.Option<Transaction>>;

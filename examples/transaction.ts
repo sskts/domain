@@ -12,16 +12,15 @@ import * as mongoose from 'mongoose';
 import * as SSKTS from '../lib/sskts-domain';
 
 async function main() {
-    mongoose.connect(process.env.MONGOLAB_URI);
-
+    const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 
     const gmoShopId = 'tshop00026096';
     const gmoShopPass = 'xbxmkaa6';
 
 
     const transactionService = SSKTS.TransactionService;
-    const ownerRepository = SSKTS.createOwnerRepository(mongoose.connection);
-    const transactionRepository = SSKTS.createTransactionRepository(mongoose.connection);
+    const ownerRepository = SSKTS.createOwnerRepository(connection);
+    const transactionRepository = SSKTS.createTransactionRepository(connection);
 
 
     // 取引開始
@@ -260,8 +259,9 @@ async function main() {
                 add_price: salesTicketResult.list_ticket[0].add_price,
                 dis_price: 0,
                 sale_price: salesTicketResult.list_ticket[0].sale_price,
+                mvtk_app_price: 0,
                 ticket_count: 1,
-                seat_num: tmpReserve.seat_num,
+                seat_num: tmpReserve.seat_num
             };
         }),
     });
@@ -324,9 +324,6 @@ async function main() {
     console.log('closing transaction...');
     await transactionService.close(transactionId.toString())(transactionRepository);
     console.log('closed.');
-
-
-
 
 
 

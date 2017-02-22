@@ -14,8 +14,8 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             mongoose.Promise = global.Promise;
-            mongoose.connect(process.env.MONGOLAB_URI);
-            yield SSKTS.MasterService.importTheater('118')(SSKTS.createTheaterRepository(mongoose.connection));
+            const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+            yield SSKTS.MasterService.importTheater('118')(SSKTS.createTheaterRepository(connection));
         }
         catch (error) {
             console.error(error);

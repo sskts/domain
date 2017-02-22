@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import TheaterModel from './theater';
+import theaterModel from './theater';
 
 /**
  * スクリーンスキーマ
@@ -11,7 +11,7 @@ const schema = new mongoose.Schema(
         _id: String,
         theater: {
             type: String,
-            ref: TheaterModel.modelName
+            ref: theaterModel.modelName
         },
         coa_screen_code: String,
         name: {

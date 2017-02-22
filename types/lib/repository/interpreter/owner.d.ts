@@ -5,13 +5,13 @@
  * @class OwnerRepositoryInterpreter
  */
 import * as monapt from 'monapt';
-import * as mongoose from 'mongoose';
+import { Connection } from 'mongoose';
 import ObjectId from '../../model/objectId';
 import Owner from '../../model/owner';
 import OwnerRepository from '../owner';
 export default class OwnerRepositoryInterpreter implements OwnerRepository {
-    readonly connection: mongoose.Connection;
-    constructor(connection: mongoose.Connection);
+    readonly connection: Connection;
+    constructor(connection: Connection);
     find(conditions: Object): Promise<Owner[]>;
     findById(id: ObjectId): Promise<monapt.Option<Owner>>;
     findPromoter(): Promise<monapt.Option<Owner.PromoterOwner>>;

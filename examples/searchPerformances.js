@@ -7,15 +7,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// tslint:disable-next-line:missing-jsdoc
+/* tslint:disable */
 const mongoose = require("mongoose");
-const SSKTS = require("../../lib/sskts-domain");
-let connection;
-before(() => {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-});
-describe('transaction service', () => {
-    it('export queues', () => __awaiter(this, void 0, void 0, function* () {
-        yield SSKTS.TransactionService.exportQueues('58ab949eedc005093c5fe3c6')(SSKTS.createTransactionRepository(connection), SSKTS.createQueueRepository(connection));
-    }));
-});
+const SSKTS = require("../lib/sskts-domain");
+function main() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            mongoose.Promise = global.Promise;
+            const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+            const performances = yield SSKTS.MasterService.searchPerformances({
+                day: '20170228'
+            })(SSKTS.createPerformanceRepository(connection));
+            console.log(performances);
+        }
+        catch (error) {
+            console.error(error);
+        }
+        process.exit(0);
+    });
+}
+main();

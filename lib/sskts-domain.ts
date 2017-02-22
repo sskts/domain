@@ -1,4 +1,9 @@
-import * as mongoose from 'mongoose';
+/**
+ * sskts-domainモジュール
+ *
+ * @module
+ */
+import { Connection } from 'mongoose';
 
 import * as MasterService from './service/master';
 import * as NotificationService from './service/notification';
@@ -24,33 +29,28 @@ import TransactionInquiryKey from './model/transactionInquiryKey';
 import TransactionQueuesStatus from './model/transactionQueuesStatus';
 import TransactionStatus from './model/transactionStatus';
 
-export function createAssetRepository(connection: mongoose.Connection) {
+export function createAssetRepository(connection: Connection) {
     return new AssetRepository(connection);
 }
-export function createFilmRepository(connection: mongoose.Connection) {
+export function createFilmRepository(connection: Connection) {
     return new FilmRepository(connection);
 }
-/**
- *
- * @param {mongoose.Connection} connection
- * @returns {TheaterRepository}
- */
-export function createOwnerRepository(connection: mongoose.Connection) {
+export function createOwnerRepository(connection: Connection) {
     return new OwnerRepository(connection);
 }
-export function createPerformanceRepository(connection: mongoose.Connection) {
+export function createPerformanceRepository(connection: Connection) {
     return new PerformanceRepository(connection);
 }
-export function createQueueRepository(connection: mongoose.Connection) {
+export function createQueueRepository(connection: Connection) {
     return new QueueRepository(connection);
 }
-export function createScreenRepository(connection: mongoose.Connection) {
+export function createScreenRepository(connection: Connection) {
     return new ScreenRepository(connection);
 }
-export function createTransactionRepository(connection: mongoose.Connection) {
+export function createTransactionRepository(connection: Connection) {
     return new TransactionRepository(connection);
 }
-export function createTheaterRepository(connection: mongoose.Connection) {
+export function createTheaterRepository(connection: Connection) {
     return new TheaterRepository(connection);
 }
 

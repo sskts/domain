@@ -5,7 +5,7 @@
  */
 
 import * as monapt from 'monapt';
-import * as mongoose from 'mongoose';
+import { Connection } from 'mongoose';
 
 import QueueRepository from '../queue';
 
@@ -15,15 +15,14 @@ import Notification from '../../model/notification';
 import NotificationGroup from '../../model/notificationGroup';
 import Queue from '../../model/queue';
 import QueueGroup from '../../model/queueGroup';
-
-import QueueModel from './mongoose/model/queue';
+import queueModel from './mongoose/model/queue';
 
 export default class QueueRepositoryInterpreter implements QueueRepository {
-    constructor(readonly connection: mongoose.Connection) {
+    constructor(readonly connection: Connection) {
     }
 
     public async findOneAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        const model = this.connection.model(queueModel.modelName);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
@@ -33,7 +32,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
     }
 
     public async findOneSendEmailAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        const model = this.connection.model(queueModel.modelName);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
@@ -47,7 +46,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
     }
 
     public async findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        const model = this.connection.model(queueModel.modelName);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
@@ -62,7 +61,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
     }
 
     public async findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        const model = this.connection.model(queueModel.modelName);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
@@ -78,7 +77,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
     }
 
     public async findOneCancelGMOAuthorizationAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        const model = this.connection.model(queueModel.modelName);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
@@ -93,7 +92,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
     }
 
     public async findOneCancelCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        const model = this.connection.model(queueModel.modelName);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
@@ -109,7 +108,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
     }
 
     public async findOneDisableTransactionInquiryAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        const model = this.connection.model(queueModel.modelName);
         const doc = <any>await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
@@ -123,7 +122,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
     }
 
     public async store(queue: Queue) {
-        const model = this.connection.model(QueueModel.modelName, QueueModel.schema);
+        const model = this.connection.model(queueModel.modelName);
         await model.findOneAndUpdate({ _id: queue._id }, queue, {
             new: true,
             upsert: true

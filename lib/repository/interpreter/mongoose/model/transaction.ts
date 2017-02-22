@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import OwnerModel from './owner';
+import ownerModel from './owner';
 
 /**
  * 取引スキーマ
@@ -12,7 +12,7 @@ const schema = new mongoose.Schema(
         status: String,
         owners: [{ // 取引の対象所有者リスト
             type: mongoose.Schema.Types.ObjectId,
-            ref: OwnerModel.modelName
+            ref: ownerModel.modelName
         }],
         inquiry_key: {
             theater_code: String, // 照会劇場コード

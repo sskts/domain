@@ -6,12 +6,14 @@ async function main() {
     try {
         (<any>mongoose).Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        await SSKTS.MasterService.importTheater('118')(SSKTS.createTheaterRepository(connection));
+        const performances = await SSKTS.MasterService.searchPerformances({
+            day: '20170228'
+        })(SSKTS.createPerformanceRepository(connection));
+        console.log(performances);
     } catch (error) {
         console.error(error);
     }
 
-    mongoose.disconnect();
     process.exit(0);
 }
 

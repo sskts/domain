@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
-import FilmModel from './film';
-import ScreenModel from './screen';
-import TheaterModel from './theater';
+import filmModel from './film';
+import screenModel from './screen';
+import theaterModel from './theater';
 
 /**
  * パフォーマンススキーマ
@@ -13,7 +13,7 @@ const schema = new mongoose.Schema(
         _id: String,
         theater: {
             type: String,
-            ref: TheaterModel.modelName
+            ref: theaterModel.modelName
         },
         theater_name: {
             ja: String,
@@ -21,7 +21,7 @@ const schema = new mongoose.Schema(
         },
         screen: {
             type: String,
-            ref: ScreenModel.modelName
+            ref: screenModel.modelName
         },
         screen_name: {
             ja: String,
@@ -29,7 +29,7 @@ const schema = new mongoose.Schema(
         },
         film: {
             type: String,
-            ref: FilmModel.modelName
+            ref: filmModel.modelName
         },
         film_name: {
             ja: String,

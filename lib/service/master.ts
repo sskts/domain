@@ -71,7 +71,9 @@ export function importTheater(theaterCode: string): TheaterOperation<void> {
 
         // 永続化
         const theater = Theater.createFromCOA(theaterFromCOA);
+        debug('storing theater...', theater);
         await repository.store(theater);
+        debug('theater stored.');
     };
 }
 
@@ -99,7 +101,9 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
         // 永続化
         await Promise.all(films.map(async (filmFromCOA) => {
             const film = await Film.createFromCOA(filmFromCOA)(optionTheater.get());
+            debug('storing film...', film);
             await filmRepo.store(film);
+            debug('film stored.');
         }));
     };
 }
@@ -124,12 +128,13 @@ export function importScreens(theaterCode: string): TheaterAndScreenOperation<vo
         const screens = await COA.findScreensByTheaterCodeInterface.call({
             theater_code: theaterCode
         });
-        debug('screens.length:', screens.length);
 
         // 永続化
         await Promise.all(screens.map(async (screenFromCOA) => {
             const screen = await Screen.createFromCOA(screenFromCOA)(optionTheater.get());
+            debug('storing screen...');
             await screenRepo.store(screen);
+            debug('screen stored.');
         }));
     };
 }
@@ -166,8 +171,6 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
         await Promise.all(performances.map(async (performanceFromCOA) => {
             const screenId = `${theaterCode}${performanceFromCOA.screen_code}`;
             const filmId = `${theaterCode}${performanceFromCOA.title_code}${performanceFromCOA.title_branch_num}`;
-            debug('screenId:', screenId);
-            debug('filmId:', filmId);
 
             // スクリーン存在チェック
             const screenOfPerformance = screens.find((screen) => (screen._id === screenId));
@@ -185,7 +188,9 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
 
             // 永続化
             const performance = Performance.createFromCOA(performanceFromCOA)(screenOfPerformance, optionFilm.get());
+            debug('storing performance', performance);
             await performanceRepo.store(performance);
+            debug('performance stored.');
         }));
     };
 }

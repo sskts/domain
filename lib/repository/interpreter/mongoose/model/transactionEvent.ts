@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import TransactionModel from './transaction';
+import transactionModel from './transaction';
 
 /**
  * 取引イベントスキーマ
@@ -10,7 +10,7 @@ const schema = new mongoose.Schema(
     {
         transaction: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: TransactionModel.modelName
+            ref: transactionModel.modelName
         },
         group: String,
         occurred_at: Date,

@@ -20,12 +20,12 @@ const mongoose = require("mongoose");
 const SSKTS = require("../lib/sskts-domain");
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        mongoose.connect(process.env.MONGOLAB_URI);
+        const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
         const gmoShopId = 'tshop00026096';
         const gmoShopPass = 'xbxmkaa6';
         const transactionService = SSKTS.TransactionService;
-        const ownerRepository = SSKTS.createOwnerRepository(mongoose.connection);
-        const transactionRepository = SSKTS.createTransactionRepository(mongoose.connection);
+        const ownerRepository = SSKTS.createOwnerRepository(connection);
+        const transactionRepository = SSKTS.createTransactionRepository(connection);
         // 取引開始
         // 30分後のunix timestampを送信する場合
         // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
@@ -199,8 +199,9 @@ function main() {
                     add_price: salesTicketResult.list_ticket[0].add_price,
                     dis_price: 0,
                     sale_price: salesTicketResult.list_ticket[0].sale_price,
+                    mvtk_app_price: 0,
                     ticket_count: 1,
-                    seat_num: tmpReserve.seat_num,
+                    seat_num: tmpReserve.seat_num
                 };
             }),
         });
