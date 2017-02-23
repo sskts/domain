@@ -219,6 +219,7 @@ export function searchPerformances(conditions: SearchPerformancesConditions):
             andConditions.push({ theater: conditions.theater });
         }
 
+        debug('finding performances...', andConditions);
         const performances = await performanceRepo.find({ $and: andConditions });
 
         // todo 空席状況を追加
@@ -256,6 +257,7 @@ export function searchPerformances(conditions: SearchPerformancesConditions):
  * @memberOf MasterService
  */
 export function findTheater(theaterId: string): TheaterOperation<monapt.Option<Theater>> {
+    debug('finding a theater...', theaterId);
     return async (repository: TheaterRepository) => await repository.findById(theaterId);
 }
 
@@ -268,6 +270,7 @@ export function findTheater(theaterId: string): TheaterOperation<monapt.Option<T
  * @memberOf MasterService
  */
 export function findFilm(filmId: string): FilmOperation<monapt.Option<Film>> {
+    debug('finding a film...', filmId);
     return async (repository: FilmRepository) => await repository.findById(filmId);
 }
 
@@ -280,6 +283,7 @@ export function findFilm(filmId: string): FilmOperation<monapt.Option<Film>> {
  * @memberOf MasterService
  */
 export function findScreen(screenId: string): ScreenOperation<monapt.Option<Screen>> {
+    debug('finding a screen...', screenId);
     return async (repository: ScreenRepository) => await repository.findById(screenId);
 }
 
@@ -292,5 +296,6 @@ export function findScreen(screenId: string): ScreenOperation<monapt.Option<Scre
  * @memberOf MasterService
  */
 export function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<Performance>> {
+    debug('finding a performance...', performanceId);
     return async (repository: PerformanceRepository) => await repository.findById(performanceId);
 }

@@ -5,11 +5,14 @@
  */
 
 import * as COA from '@motionpicture/coa-service';
+import * as createDebug from 'debug';
 import Authorization from '../model/authorization';
 import ObjectId from '../model/objectId';
 import TransactionStatus from '../model/transactionStatus';
 import AssetRepository from '../repository/asset';
 import TransactionRepository from '../repository/transaction';
+
+const debug = createDebug('sskts-domain:service:stock');
 
 /**
  * 資産承認解除(COA座席予約)
@@ -21,6 +24,7 @@ import TransactionRepository from '../repository/transaction';
  */
 export function unauthorizeCOASeatReservation(authorization: Authorization.COASeatReservationAuthorization) {
     return async (coaRepository: typeof COA) => {
+        debug('calling deleteTmpReserve...');
         await coaRepository.deleteTmpReserveInterface.call({
             theater_code: authorization.coa_theater_code,
             date_jouei: authorization.coa_date_jouei,
@@ -49,7 +53,9 @@ export function transferCOASeatReservation(authorization: Authorization.COASeatR
 
         const promises = authorization.assets.map(async (asset) => {
             // 資産永続化
+            debug('storing asset...', asset);
             await assetRepository.store(asset);
+            debug('asset stored.');
         });
 
         await Promise.all(promises);
@@ -85,6 +91,7 @@ export function disableTransactionInquiry(args: {
         });
 
         // COA購入チケット取消
+        debug('calling deleteReserve...');
         await coaRepository.deleteReserveInterface.call({
             theater_code: tranasction.inquiry_key.theater_code,
             reserve_num: tranasction.inquiry_key.reserve_num,
@@ -97,15 +104,18 @@ export function disableTransactionInquiry(args: {
         });
 
         // 永続化
+        const update = {
+            $set: {
+                inquiry_key: null
+            }
+        };
+        debug('updating transaction...', update);
         await transactionRepository.findOneAndUpdate(
             {
                 _id: ObjectId(args.transaction_id),
                 status: TransactionStatus.UNDERWAY
             },
-            {
-                $set: {
-                    inquiry_key: null
-                }
-            });
+            update
+        );
     };
 }

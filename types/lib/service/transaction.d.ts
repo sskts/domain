@@ -17,35 +17,10 @@ export declare type TransactionOperation<T> = (transactionRepo: TransactionRepos
  * @memberOf TransactionService
  */
 export declare function updateAnonymousOwner(args: {
-    /**
-     *
-     *
-     * @type {string}
-     */
     transaction_id: string;
-    /**
-     *
-     *
-     * @type {string}
-     */
     name_first?: string;
-    /**
-     *
-     *
-     * @type {string}
-     */
     name_last?: string;
-    /**
-     *
-     *
-     * @type {string}
-     */
     email?: string;
-    /**
-     *
-     *
-     * @type {string}
-     */
     tel?: string;
 }): OwnerAndTransactionOperation<void>;
 /**

@@ -39,35 +39,10 @@ const debug = createDebug('sskts-domain:service:transaction');
  * @memberOf TransactionService
  */
 export function updateAnonymousOwner(args: {
-    /**
-     *
-     *
-     * @type {string}
-     */
     transaction_id: string,
-    /**
-     *
-     *
-     * @type {string}
-     */
     name_first?: string,
-    /**
-     *
-     *
-     * @type {string}
-     */
     name_last?: string,
-    /**
-     *
-     *
-     * @type {string}
-     */
     email?: string,
-    /**
-     *
-     *
-     * @type {string}
-     */
     tel?: string
 }): OwnerAndTransactionOperation<void> {
     return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
@@ -87,6 +62,7 @@ export function updateAnonymousOwner(args: {
         }
 
         // 永続化
+        debug('updating anonymous owner...');
         const option = await ownerRepo.findOneAndUpdate(
             {
                 _id: anonymousOwner._id
@@ -150,7 +126,9 @@ export function start(expiredAt: Date) {
         });
 
         // 永続化
+        debug('storing anonymous owner...', anonymousOwner);
         await ownerRepo.store(anonymousOwner);
+        debug('storing transaction...', transaction);
         await transactionRepo.store(transaction);
 
         return transaction;
@@ -196,6 +174,7 @@ export function addGMOAuthorization(transactionId: string, authorization: Author
         });
 
         // 永続化
+        debug('adding an event...', event);
         await transactionRepo.addEvent(event);
     };
 }
@@ -238,6 +217,7 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
         });
 
         // 永続化
+        debug('adding an event...', event);
         await transactionRepo.addEvent(event);
     };
 }
@@ -276,6 +256,7 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
         });
 
         // 永続化
+        debug('adding an event...', event);
         await transactionRepo.addEvent(event);
     };
 }
@@ -292,16 +273,18 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
 export function enableInquiry(transactionId: string, key: TransactionInquiryKey) {
     return async (transactionRepo: TransactionRepository) => {
         // 永続化
+        const update = {
+            $set: {
+                inquiry_key: key
+            }
+        };
+        debug('updating transaction...', update);
         const option = await transactionRepo.findOneAndUpdate(
             {
                 _id: ObjectId(transactionId),
                 status: TransactionStatus.UNDERWAY
             },
-            {
-                $set: {
-                    inquiry_key: key
-                }
-            }
+            update
         );
         if (option.isEmpty) {
             throw new Error('UNDERWAY transaction not found.');
@@ -318,6 +301,7 @@ export function enableInquiry(transactionId: string, key: TransactionInquiryKey)
  * @memberOf TransactionService
  */
 export function makeInquiry(key: TransactionInquiryKey): TransactionOperation<monapt.Option<Transaction>> {
+    debug('finding a transaction...', key);
     return async (transactionRepo: TransactionRepository) => await transactionRepo.findOne({
         inquiry_key: key,
         status: TransactionStatus.CLOSED
@@ -353,16 +337,18 @@ export function close(transactionId: string) {
         }
 
         // 永続化
+        const update = {
+            $set: {
+                status: TransactionStatus.CLOSED
+            }
+        };
+        debug('updating transaction...', update);
         const option = await transactionRepo.findOneAndUpdate(
             {
                 _id: ObjectId(transactionId),
                 status: TransactionStatus.UNDERWAY
             },
-            {
-                $set: {
-                    status: TransactionStatus.CLOSED
-                }
-            }
+            update
         );
         if (option.isEmpty) {
             throw new Error('UNDERWAY transaction not found.');
@@ -380,16 +366,18 @@ export function close(transactionId: string) {
 export function expireOne() {
     return async (transactionRepo: TransactionRepository) => {
         // 永続化
+        const update = {
+            $set: {
+                status: TransactionStatus.EXPIRED
+            }
+        };
+        debug('updating transaction...', update);
         await transactionRepo.findOneAndUpdate(
             {
                 status: TransactionStatus.UNDERWAY,
                 expired_at: { $lt: new Date() }
             },
-            {
-                $set: {
-                    status: TransactionStatus.EXPIRED
-                }
-            }
+            update
         );
 
         // 永続化結果がemptyの場合は、もう取引中ステータスではないということなので、期限切れタスクとしては成功
@@ -507,6 +495,7 @@ expired_at: ${transaction.expired_at}
         debug('queues:', queues);
 
         const promises = queues.map(async (queue) => {
+            debug('storing queue...', queue);
             await queueRepo.store(queue);
         });
         await Promise.all(promises);
@@ -533,6 +522,7 @@ export function addEmail(transactionId: string, notification: Notification.Email
         });
 
         // 永続化
+        debug('adding an event...', event);
         await transactionRepo.addEvent(event);
     };
 }

@@ -4,10 +4,13 @@
  * @namespace NotificationService
  */
 
+import * as createDebug from 'debug';
 import * as SendGrid from 'sendgrid';
 import Notification from '../model/notification';
 
 export type SendGridOperation<T> = (sendgrid: typeof SendGrid) => Promise<T>;
+
+const debug = createDebug('sskts-domain:service:notification');
 
 /**
  * メール送信
@@ -40,6 +43,7 @@ export function sendEmail(email: Notification.EmailNotification): SendGridOperat
             port: ''
         });
 
+        debug('requesting sendgrid api...', request);
         await sg.API(request);
         // todo check the response.
         // const response = await sg.API(request);

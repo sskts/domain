@@ -5,13 +5,17 @@
  */
 
 import * as GMO from '@motionpicture/gmo-service';
+import * as createDebug from 'debug';
 import Authorization from '../model/authorization';
+
+const debug = createDebug('sskts-domain:service:sales');
 
 /**
  * GMOオーソリ取消
  */
 export function cancelGMOAuth(authorization: Authorization.GMOAuthorization) {
     return async (gmoRepository: typeof GMO) => {
+        debug('calling alterTran...');
         await gmoRepository.CreditService.alterTran({
             shopId: authorization.gmo_shop_id,
             shopPass: authorization.gmo_shop_pass,
@@ -30,6 +34,7 @@ export function cancelGMOAuth(authorization: Authorization.GMOAuthorization) {
  */
 export function settleGMOAuth(authorization: Authorization.GMOAuthorization) {
     return async (gmoRepository: typeof GMO) => {
+        debug('calling alterTran...');
         await gmoRepository.CreditService.alterTran({
             shopId: authorization.gmo_shop_id,
             shopPass: authorization.gmo_shop_pass,

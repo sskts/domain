@@ -38,6 +38,8 @@ const schema = new mongoose.Schema(
     },
     {
         collection: 'assets',
+        read: 'primaryPreferred',
+        safe: <any>{ j: 1, w: 'majority', wtimeout: 5000 },
         timestamps: {
             createdAt: 'created_at',
             updatedAt: 'updated_at'

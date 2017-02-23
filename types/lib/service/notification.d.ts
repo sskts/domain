@@ -1,8 +1,3 @@
-/**
- * 通知サービス
- *
- * @namespace NotificationService
- */
 import * as SendGrid from 'sendgrid';
 import Notification from '../model/notification';
 export declare type SendGridOperation<T> = (sendgrid: typeof SendGrid) => Promise<T>;
