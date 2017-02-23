@@ -70,7 +70,7 @@ async function main() {
 
 
     // 販売可能チケット検索
-    const salesTicketResult = await COA.salesTicketInterface.call({
+    const salesTicketResult = await COA.ReserveService.salesTicket({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -86,7 +86,7 @@ async function main() {
 
 
     // COA空席確認
-    const getStateReserveSeatResult = await COA.getStateReserveSeatInterface.call({
+    const getStateReserveSeatResult = await COA.ReserveService.getStateReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -104,7 +104,7 @@ async function main() {
 
 
     // COA仮予約
-    const reserveSeatsTemporarilyResult = await COA.reserveSeatsTemporarilyInterface.call({
+    const reserveSeatsTemporarilyResult = await COA.ReserveService.reserveSeatsTemporarily({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -123,7 +123,7 @@ async function main() {
 
     // COAオーソリ追加
     console.log('adding authorizations coaSeatReservation...');
-    const totalPrice = salesTicketResult.list_ticket[0].sale_price + salesTicketResult.list_ticket[0].sale_price;
+    const totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
     const coaAuthorization = SSKTS.Authorization.createCOASeatReservation({
         owner_from: promoterOwnerId,
         owner_to: anonymousOwnerId,
@@ -144,14 +144,14 @@ async function main() {
                 performance: '001201701208513021010',
                 section: tmpReserve.seat_section,
                 seat_code: tmpReserve.seat_num,
-                ticket_code: salesTicketResult.list_ticket[0].ticket_code,
-                ticket_name_ja: salesTicketResult.list_ticket[0].ticket_name,
-                ticket_name_en: salesTicketResult.list_ticket[0].ticket_name_eng,
-                ticket_name_kana: salesTicketResult.list_ticket[0].ticket_name_kana,
-                std_price: salesTicketResult.list_ticket[0].std_price,
-                add_price: salesTicketResult.list_ticket[0].add_price,
+                ticket_code: salesTicketResult[0].ticket_code,
+                ticket_name_ja: salesTicketResult[0].ticket_name,
+                ticket_name_en: salesTicketResult[0].ticket_name_eng,
+                ticket_name_kana: salesTicketResult[0].ticket_name_kana,
+                std_price: salesTicketResult[0].std_price,
+                add_price: salesTicketResult[0].add_price,
                 dis_price: 0,
-                sale_price: salesTicketResult.list_ticket[0].sale_price,
+                sale_price: salesTicketResult[0].sale_price,
             });
         }),
         price: totalPrice
@@ -239,7 +239,7 @@ async function main() {
 
     // COA本予約
     const tel = '09012345678';
-    const updateReserveResult = await COA.updateReserveInterface.call({
+    const updateReserveResult = await COA.ReserveService.updateReserve({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -254,11 +254,11 @@ async function main() {
         reserve_amount: totalPrice,
         list_ticket: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
             return {
-                ticket_code: salesTicketResult.list_ticket[0].ticket_code,
-                std_price: salesTicketResult.list_ticket[0].std_price,
-                add_price: salesTicketResult.list_ticket[0].add_price,
+                ticket_code: salesTicketResult[0].ticket_code,
+                std_price: salesTicketResult[0].std_price,
+                add_price: salesTicketResult[0].add_price,
                 dis_price: 0,
-                sale_price: salesTicketResult.list_ticket[0].sale_price,
+                sale_price: salesTicketResult[0].sale_price,
                 mvtk_app_price: 0,
                 ticket_count: 1,
                 seat_num: tmpReserve.seat_num

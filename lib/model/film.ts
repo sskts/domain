@@ -105,7 +105,7 @@ namespace Film {
         );
     }
 
-    export function createFromCOA(filmFromCOA: COA.findFilmsByTheaterCodeInterface.Result) {
+    export function createFromCOA(filmFromCOA: COA.MasterService.FindFilmsByTheaterCodeResult) {
         return async (theater: Theater) => create({
             // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
             id: `${theater.id}${filmFromCOA.title_code}${filmFromCOA.title_branch_num}`,

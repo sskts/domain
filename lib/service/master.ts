@@ -65,7 +65,7 @@ const debug = createDebug('sskts-domain:service:master');
 export function importTheater(theaterCode: string): TheaterOperation<void> {
     return async (repository: TheaterRepository) => {
         // COAから取得
-        const theaterFromCOA = await COA.findTheaterInterface.call({
+        const theaterFromCOA = await COA.MasterService.findTheater({
             theater_code: theaterCode
         });
 
@@ -94,7 +94,7 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
         }
 
         // COAから作品取得
-        const films = await COA.findFilmsByTheaterCodeInterface.call({
+        const films = await COA.MasterService.findFilmsByTheaterCode({
             theater_code: theaterCode
         });
 
@@ -125,7 +125,7 @@ export function importScreens(theaterCode: string): TheaterAndScreenOperation<vo
         }
 
         // COAからスクリーン取得
-        const screens = await COA.findScreensByTheaterCodeInterface.call({
+        const screens = await COA.MasterService.findScreensByTheaterCode({
             theater_code: theaterCode
         });
 
@@ -161,7 +161,7 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
         debug('screens:', screens);
 
         // COAからパフォーマンス取得
-        const performances = await COA.findPerformancesByTheaterCodeInterface.call({
+        const performances = await COA.MasterService.findPerformancesByTheaterCode({
             theater_code: theaterCode,
             begin: dayStart,
             end: dayEnd

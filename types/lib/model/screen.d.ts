@@ -74,6 +74,6 @@ declare namespace Screen {
         sections: ISection[];
     }
     function create(args: IScreen): Screen;
-    function createFromCOA(screenFromCOA: COA.findScreensByTheaterCodeInterface.Result): (theater: Theater) => Promise<Screen>;
+    function createFromCOA(screenFromCOA: COA.MasterService.FindScreensByTheaterCodeResult): (theater: Theater) => Promise<Screen>;
 }
 export default Screen;

@@ -40,6 +40,6 @@ declare namespace Performance {
         canceled: boolean;
     }
     function create(args: IPerformance): Performance;
-    function createFromCOA(performanceFromCOA: COA.findPerformancesByTheaterCodeInterface.Result): (screen: Screen, film: Film) => Performance;
+    function createFromCOA(performanceFromCOA: COA.MasterService.FindPerformancesByTheaterCodeResult): (screen: Screen, film: Film) => Performance;
 }
 export default Performance;
