@@ -6,19 +6,20 @@ import Theater from './theater';
  *
  * @class Screen
  *
- * @param {string} _id
+ * @param {string} id
  * @param {Theater} theater 劇場
  * @param {string} coa_screen_code COAスクリーンコード
  * @param {MultilingualString} name スクリーン名称
  * @param {Screen.ISection[]} sections スクリーンセクションリスト
  */
 declare class Screen {
-    readonly _id: string;
+    readonly id: string;
     readonly theater: Theater;
     readonly coa_screen_code: string;
     readonly name: MultilingualString;
     readonly sections: Screen.ISection[];
-    constructor(_id: string, theater: Theater, coa_screen_code: string, name: MultilingualString, sections: Screen.ISection[]);
+    constructor(id: string, theater: Theater, coa_screen_code: string, name: MultilingualString, sections: Screen.ISection[]);
+    toDocument(): Object;
 }
 declare namespace Screen {
     /**
@@ -66,7 +67,7 @@ declare namespace Screen {
         seats: ISeat[];
     }
     interface IScreen {
-        _id: string;
+        id: string;
         theater: Theater;
         coa_screen_code: string;
         name: MultilingualString;

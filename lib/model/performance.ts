@@ -9,7 +9,7 @@ import Theater from './theater';
  *
  * @class Performance
  *
- * @param {string} _id
+ * @param {string} id
  * @param {Theater} theater 劇場
  * @param {Screen} screen スクリーン
  * @param {Film} film 作品
@@ -20,7 +20,7 @@ import Theater from './theater';
  */
 class Performance {
     constructor(
-        readonly _id: string,
+        readonly id: string,
         readonly theater: Theater,
         readonly screen: Screen,
         readonly film: Film,
@@ -35,11 +35,28 @@ class Performance {
     ) {
         // todo validation
     }
+
+    public toDocument(): Object {
+        return {
+            id: this.id,
+            theater: this.theater.id,
+            screen: this.screen.id,
+            film: this.film.id,
+            day: this.day,
+            time_start: this.time_start,
+            time_end: this.time_end,
+            canceled: this.canceled
+            // trailer_time: this.id,
+            // kbn_service: this.id,
+            // kbn_acoustic: this.id,
+            // name_service_day: this.id,
+        };
+    }
 }
 
 namespace Performance {
     export interface IPerformance {
-        _id: string;
+        id: string;
         theater: Theater;
         screen: Screen;
         film: Film;
@@ -55,7 +72,7 @@ namespace Performance {
 
     export function create(args: IPerformance) {
         return new Performance(
-            args._id,
+            args.id,
             args.theater,
             args.screen,
             args.film,
@@ -69,7 +86,7 @@ namespace Performance {
     export function createFromCOA(performanceFromCOA: COA.findPerformancesByTheaterCodeInterface.Result) {
         return (screen: Screen, film: Film) => {
             const id = [
-                screen.theater._id,
+                screen.theater.id,
                 performanceFromCOA.date_jouei,
                 performanceFromCOA.title_code,
                 performanceFromCOA.title_branch_num,
@@ -78,7 +95,7 @@ namespace Performance {
             ].join('');
 
             return create({
-                _id: id,
+                id: id,
                 theater: screen.theater,
                 screen: screen,
                 film: film,

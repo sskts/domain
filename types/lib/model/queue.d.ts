@@ -1,6 +1,5 @@
 import Authorization from '../model/authorization';
 import Notification from '../model/notification';
-import ObjectId from './objectId';
 import QueueGroup from './queueGroup';
 import QueueStatus from './queueStatus';
 /**
@@ -8,7 +7,7 @@ import QueueStatus from './queueStatus';
  *
  * @class Queue
  *
- * @param {ObjectId} _id
+ * @param {string} id
  * @param {QueueGroup} group キューグループ
  * @param {QueueStatus} status キューステータス
  * @param {Date} run_at 実行予定日時
@@ -18,7 +17,7 @@ import QueueStatus from './queueStatus';
  * @param {Array<string>} results 実行結果リスト
  */
 declare class Queue {
-    readonly _id: ObjectId;
+    readonly id: string;
     readonly group: QueueGroup;
     readonly status: QueueStatus;
     readonly run_at: Date;
@@ -26,7 +25,7 @@ declare class Queue {
     readonly last_tried_at: Date | null;
     readonly count_tried: number;
     readonly results: string[];
-    constructor(_id: ObjectId, group: QueueGroup, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[]);
+    constructor(id: string, group: QueueGroup, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[]);
 }
 declare namespace Queue {
     /**
@@ -38,7 +37,7 @@ declare namespace Queue {
      * @template T
      */
     class CancelAuthorizationQueue<T extends Authorization> extends Queue {
-        readonly _id: ObjectId;
+        readonly id: string;
         readonly status: QueueStatus;
         readonly run_at: Date;
         readonly max_count_try: number;
@@ -49,7 +48,7 @@ declare namespace Queue {
         /**
          * Creates an instance of CancelAuthorizationQueue.
          *
-         * @param {ObjectId} _id
+         * @param {string} id
          * @param {QueueStatus} status
          * @param {Date} run_at
          * @param {number} max_count_try
@@ -60,7 +59,7 @@ declare namespace Queue {
          *
          * @memberOf CancelAuthorizationQueue
          */
-        constructor(_id: ObjectId, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], authorization: T);
+        constructor(id: string, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], authorization: T);
     }
     /**
      * 取引照会無効化キュー
@@ -70,29 +69,29 @@ declare namespace Queue {
      * @extends {Queue}
      */
     class DisableTransactionInquiryQueue extends Queue {
-        readonly _id: ObjectId;
+        readonly id: string;
         readonly status: QueueStatus;
         readonly run_at: Date;
         readonly max_count_try: number;
         readonly last_tried_at: Date | null;
         readonly count_tried: number;
         readonly results: string[];
-        readonly transaction_id: ObjectId;
+        readonly transaction_id: string;
         /**
          * Creates an instance of DisableTransactionInquiryQueue.
          *
-         * @param {ObjectId} _id
+         * @param {string} id
          * @param {QueueStatus} status
          * @param {Date} run_at
          * @param {number} max_count_try
          * @param {(Date | null)} last_tried_at
          * @param {number} count_tried
          * @param {Array<string>} results
-         * @param {ObjectId} transaction_id
+         * @param {string} transaction_id
          *
          * @memberOf DisableTransactionInquiryQueue
          */
-        constructor(_id: ObjectId, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], transaction_id: ObjectId);
+        constructor(id: string, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], transaction_id: string);
     }
     /**
      * プッシュ通知キュー
@@ -103,7 +102,7 @@ declare namespace Queue {
      * @template T
      */
     class PushNotificationQueue<T extends Notification> extends Queue {
-        readonly _id: ObjectId;
+        readonly id: string;
         readonly status: QueueStatus;
         readonly run_at: Date;
         readonly max_count_try: number;
@@ -114,7 +113,7 @@ declare namespace Queue {
         /**
          * Creates an instance of PushNotificationQueue.
          *
-         * @param {ObjectId} _id
+         * @param {string} id
          * @param {QueueStatus} status
          * @param {Date} run_at
          * @param {number} max_count_try
@@ -125,7 +124,7 @@ declare namespace Queue {
          *
          * @memberOf PushNotificationQueue
          */
-        constructor(_id: ObjectId, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], notification: T);
+        constructor(id: string, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], notification: T);
     }
     /**
      * 資産移動キュー
@@ -136,7 +135,7 @@ declare namespace Queue {
      * @template T
      */
     class SettleAuthorizationQueue<T extends Authorization> extends Queue {
-        readonly _id: ObjectId;
+        readonly id: string;
         readonly status: QueueStatus;
         readonly run_at: Date;
         readonly max_count_try: number;
@@ -147,7 +146,7 @@ declare namespace Queue {
         /**
          * Creates an instance of SettleAuthorizationQueue.
          *
-         * @param {ObjectId} _id
+         * @param {string} id
          * @param {QueueStatus} status
          * @param {Date} run_at
          * @param {number} max_count_try
@@ -158,10 +157,10 @@ declare namespace Queue {
          *
          * @memberOf SettleAuthorizationQueue
          */
-        constructor(_id: ObjectId, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], authorization: T);
+        constructor(id: string, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], authorization: T);
     }
     interface IQueue {
-        _id: ObjectId;
+        id: string;
         group: QueueGroup;
         status: QueueStatus;
         run_at: Date;
@@ -172,7 +171,7 @@ declare namespace Queue {
     }
     function create(args: IQueue): Queue;
     function createSettleAuthorization<T extends Authorization>(args: {
-        _id: ObjectId;
+        id: string;
         authorization: T;
         status: QueueStatus;
         run_at: Date;
@@ -182,7 +181,7 @@ declare namespace Queue {
         results: string[];
     }): SettleAuthorizationQueue<T>;
     function createCancelAuthorization<T extends Authorization>(args: {
-        _id: ObjectId;
+        id: string;
         authorization: T;
         status: QueueStatus;
         run_at: Date;
@@ -192,7 +191,7 @@ declare namespace Queue {
         results: string[];
     }): CancelAuthorizationQueue<T>;
     function createPushNotification<T extends Notification>(args: {
-        _id: ObjectId;
+        id: string;
         notification: T;
         status: QueueStatus;
         run_at: Date;
@@ -202,8 +201,8 @@ declare namespace Queue {
         results: string[];
     }): PushNotificationQueue<T>;
     function createDisableTransactionInquiry(args: {
-        _id: ObjectId;
-        transaction_id: ObjectId;
+        id: string;
+        transaction_id: string;
         status: QueueStatus;
         run_at: Date;
         max_count_try: number;

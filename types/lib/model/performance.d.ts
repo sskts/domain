@@ -7,7 +7,7 @@ import Theater from './theater';
  *
  * @class Performance
  *
- * @param {string} _id
+ * @param {string} id
  * @param {Theater} theater 劇場
  * @param {Screen} screen スクリーン
  * @param {Film} film 作品
@@ -17,7 +17,7 @@ import Theater from './theater';
  * @param {boolean} canceled 上映中止フラグ
  */
 declare class Performance {
-    readonly _id: string;
+    readonly id: string;
     readonly theater: Theater;
     readonly screen: Screen;
     readonly film: Film;
@@ -25,11 +25,12 @@ declare class Performance {
     readonly time_start: string;
     readonly time_end: string;
     readonly canceled: boolean;
-    constructor(_id: string, theater: Theater, screen: Screen, film: Film, day: string, time_start: string, time_end: string, canceled: boolean);
+    constructor(id: string, theater: Theater, screen: Screen, film: Film, day: string, time_start: string, time_end: string, canceled: boolean);
+    toDocument(): Object;
 }
 declare namespace Performance {
     interface IPerformance {
-        _id: string;
+        id: string;
         theater: Theater;
         screen: Screen;
         film: Film;

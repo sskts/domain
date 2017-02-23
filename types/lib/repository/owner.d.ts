@@ -1,5 +1,4 @@
 import * as monapt from 'monapt';
-import ObjectId from '../model/objectId';
 import Owner from '../model/owner';
 /**
  * 所有者リポジトリ
@@ -16,9 +15,9 @@ interface OwnerRepository {
     /**
      * ID検索
      *
-     * @param {ObjectId} id
+     * @param {string} id
      */
-    findById(id: ObjectId): Promise<monapt.Option<Owner>>;
+    findById(id: string): Promise<monapt.Option<Owner>>;
     /**
      * 興行所有者を検索
      */

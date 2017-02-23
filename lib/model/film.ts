@@ -8,7 +8,7 @@ import Theater from './theater';
  *
  * @class Film
  *
- * @param {string} _id
+ * @param {string} id
  * @param {string} coa_title_code COA作品コード
  * @param {string} coa_title_branch_num COA作品枝番
  * @param {Theater} theater 劇場
@@ -26,7 +26,7 @@ import Theater from './theater';
  */
 class Film {
     constructor(
-        readonly _id: string,
+        readonly id: string,
         readonly coa_title_code: string,
         readonly coa_title_branch_num: string,
         readonly theater: Theater,
@@ -44,11 +44,31 @@ class Film {
     ) {
         // todo validation
     }
+
+    public toDocument(): Object {
+        return {
+            id: this.id,
+            coa_title_code: this.coa_title_code,
+            coa_title_branch_num: this.coa_title_branch_num,
+            theater: this.theater.id,
+            name: this.name,
+            name_kana: this.name_kana,
+            name_short: this.name_short,
+            name_original: this.name_original,
+            minutes: this.minutes,
+            date_start: this.date_start,
+            date_end: this.date_end,
+            kbn_eirin: this.kbn_eirin,
+            kbn_eizou: this.kbn_eizou,
+            kbn_joueihousiki: this.kbn_joueihousiki,
+            kbn_jimakufukikae: this.kbn_jimakufukikae
+        };
+    }
 }
 
 namespace Film {
     export interface IFilm {
-        _id: string;
+        id: string;
         coa_title_code: string;
         coa_title_branch_num: string;
         theater: Theater;
@@ -67,7 +87,7 @@ namespace Film {
 
     export function create(args: IFilm) {
         return new Film(
-            args._id,
+            args.id,
             args.coa_title_code,
             args.coa_title_branch_num,
             args.theater,
@@ -88,7 +108,7 @@ namespace Film {
     export function createFromCOA(filmFromCOA: COA.findFilmsByTheaterCodeInterface.Result) {
         return async (theater: Theater) => create({
             // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
-            _id: `${theater._id}${filmFromCOA.title_code}${filmFromCOA.title_branch_num}`,
+            id: `${theater.id}${filmFromCOA.title_code}${filmFromCOA.title_branch_num}`,
             coa_title_code: filmFromCOA.title_code,
             coa_title_branch_num: filmFromCOA.title_branch_num,
             theater: theater,

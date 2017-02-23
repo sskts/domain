@@ -21,12 +21,15 @@ const schema = new mongoose.Schema(
     },
     {
         collection: 'owners',
+        id: true,
         read: 'primaryPreferred',
         safe: <any>{ j: 1, w: 'majority', wtimeout: 5000 },
         timestamps: {
             createdAt: 'created_at',
             updatedAt: 'updated_at'
-        }
+        },
+        toJSON: { getters: true },
+        toObject: { getters: true }
     }
 );
 

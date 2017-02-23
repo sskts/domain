@@ -5,17 +5,17 @@ import MultilingualString from './multilingualString';
  *
  * @class Theater
  *
- * @param {string} _id
+ * @param {string} id
  * @param {MultilingualString} name 劇場名称
  * @param {string} name_kana 劇場名称(カナ)
  * @param {MultilingualString} address 劇場住所
  */
 declare class Theater {
-    readonly _id: string;
+    readonly id: string;
     readonly name: MultilingualString;
     readonly name_kana: string;
     readonly address: MultilingualString;
-    constructor(_id: string, name: MultilingualString, name_kana: string, address: MultilingualString);
+    constructor(id: string, name: MultilingualString, name_kana: string, address: MultilingualString);
 }
 /**
  * 劇場
@@ -24,7 +24,7 @@ declare class Theater {
  */
 declare namespace Theater {
     interface ITheater {
-        _id: string;
+        id: string;
         name: MultilingualString;
         name_kana: string;
         address: MultilingualString;

@@ -9,7 +9,7 @@ import Ownership from './ownership';
  *
  * @class Asset
  *
- * @param {ObjectId} _id ID
+ * @param {string} id ID
  * @param {AssetGroup} group 資産グループ
  * @param {Ownership} ownership 所有権
  * @param {number} price 価格
@@ -17,7 +17,7 @@ import Ownership from './ownership';
  */
 class Asset {
     constructor(
-        readonly _id: ObjectId,
+        readonly id: string,
         readonly group: AssetGroup,
         readonly ownership: Ownership,
         readonly price: number,
@@ -36,7 +36,7 @@ namespace Asset {
      * @class SeatReservationAsset
      * @extends {Asset}
      *
-     * @param {ObjectId} _id
+     * @param {string} id
      * @param {Ownership} ownership 所有権
      * @param {Array<Authorization>} authorizations 承認リスト
      * @param {string} performance パフォーマンス
@@ -54,7 +54,7 @@ namespace Asset {
     // tslint:disable-next-line:max-classes-per-file
     export class SeatReservationAsset extends Asset {
         constructor(
-            readonly _id: ObjectId,
+            readonly id: string,
             readonly ownership: Ownership,
             readonly authorizations: Authorization[],
             readonly performance: string,
@@ -72,7 +72,7 @@ namespace Asset {
             // todo validation
 
             super(
-                _id,
+                id,
                 AssetGroup.SEAT_RESERVATION,
                 ownership,
                 sale_price,
@@ -82,7 +82,7 @@ namespace Asset {
     }
 
     export interface ISeatReservationAsset {
-        _id?: ObjectId;
+        id?: string;
         ownership: Ownership;
         authorizations: Authorization[];
         performance: string;
@@ -106,7 +106,7 @@ namespace Asset {
      */
     export function createSeatReservation(args: ISeatReservationAsset) {
         return new SeatReservationAsset(
-            (args._id) ? args._id : ObjectId(),
+            (args.id) ? args.id : ObjectId().toString(),
             args.ownership,
             args.authorizations,
             args.performance,

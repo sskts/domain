@@ -1,9 +1,4 @@
 /// <reference types="mongoose" />
-/**
- * パフォーマンスリポジトリ
- *
- * @class PerformanceRepositoryInterpreter
- */
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
 import Performance from '../../model/performance';

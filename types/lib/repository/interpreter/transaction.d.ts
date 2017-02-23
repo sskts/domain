@@ -1,32 +1,28 @@
 /// <reference types="mongoose" />
-/**
- * 取引リポジトリ
- *
- * @class TransactionRepositoryInterpreter
- */
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
 import Authorization from '../../model/authorization';
 import Notification from '../../model/notification';
-import ObjectId from '../../model/objectId';
 import Transaction from '../../model/transaction';
 import TransactionEvent from '../../model/transactionEvent';
 import TransactionRepository from '../transaction';
+export declare type IAuthorization = Authorization.AssetAuthorization | Authorization.COASeatReservationAuthorization | Authorization.GMOAuthorization;
+export declare type INotification = Notification.EmailNotification;
 export default class TransactionRepositoryInterpreter implements TransactionRepository {
     readonly connection: Connection;
     constructor(connection: Connection);
     find(conditions: Object): Promise<Transaction[]>;
-    findById(id: ObjectId): Promise<monapt.Option<Transaction>>;
+    findById(id: string): Promise<monapt.Option<Transaction>>;
     findOne(conditions: Object): Promise<monapt.Option<Transaction>>;
     findOneAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Transaction>>;
     store(transaction: Transaction): Promise<void>;
     addEvent(transactionEvent: TransactionEvent): Promise<void>;
-    findAuthorizationsById(id: ObjectId): Promise<Authorization[]>;
-    findNotificationsById(id: ObjectId): Promise<Notification[]>;
+    findAuthorizationsById(id: string): Promise<IAuthorization[]>;
+    findNotificationsById(id: string): Promise<INotification[]>;
     /**
      * 成立可能かどうか
      *
      * @returns {Promies<boolean>}
      */
-    canBeClosed(id: ObjectId): Promise<boolean>;
+    canBeClosed(id: string): Promise<boolean>;
 }

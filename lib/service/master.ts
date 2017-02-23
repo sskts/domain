@@ -33,17 +33,17 @@ export interface SearchPerformancesConditions {
     theater?: string;
 }
 export interface SearchPerformancesResult {
-    _id: string;
+    id: string;
     theater: {
-        _id: string;
+        id: string;
         name: MultilingualString;
     };
     screen: {
-        _id: string;
+        id: string;
         name: MultilingualString;
     };
     film: {
-        _id: string;
+        id: string;
         name: MultilingualString;
     };
     day: string;
@@ -157,7 +157,7 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
         performanceRepo: PerformanceRepository
     ) => {
         // スクリーン取得
-        const screens = await screenRepo.findByTheater({ theater_id: theaterCode });
+        const screens = await screenRepo.findByTheater(theaterCode);
         debug('screens:', screens);
 
         // COAからパフォーマンス取得
@@ -173,7 +173,7 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
             const filmId = `${theaterCode}${performanceFromCOA.title_code}${performanceFromCOA.title_branch_num}`;
 
             // スクリーン存在チェック
-            const screenOfPerformance = screens.find((screen) => (screen._id === screenId));
+            const screenOfPerformance = screens.find((screen) => (screen.id === screenId));
             if (!screenOfPerformance) {
                 console.error('screen not found.', screenId);
                 return;
@@ -226,17 +226,17 @@ export function searchPerformances(conditions: SearchPerformancesConditions):
 
         return performances.map((performance) => {
             return {
-                _id: performance._id,
+                id: performance.id,
                 theater: {
-                    _id: performance.theater._id,
+                    id: performance.theater.id,
                     name: performance.theater.name
                 },
                 screen: {
-                    _id: performance.screen._id,
+                    id: performance.screen.id,
                     name: performance.screen.name
                 },
                 film: {
-                    _id: performance.film._id,
+                    id: performance.film.id,
                     name: performance.film.name
                 },
                 day: performance.day,

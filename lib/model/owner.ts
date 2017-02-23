@@ -1,6 +1,5 @@
 // tslint:disable:variable-name
 import MultilingualString from '../model/multilingualString';
-import ObjectId from './objectId';
 import OwnerGroup from './ownerGroup';
 
 /**
@@ -8,12 +7,12 @@ import OwnerGroup from './ownerGroup';
  *
  * @class Owner
  *
- * @param {ObjectId} _id
+ * @param {string} id
  * @param {OwnerGroup} group 所有者グループ
  */
 class Owner {
     constructor(
-        readonly _id: ObjectId,
+        readonly id: string,
         readonly group: OwnerGroup
     ) {
         // todo validation
@@ -33,7 +32,7 @@ namespace Owner {
         /**
          * Creates an instance of AnonymousOwner.
          *
-         * @param {ObjectId} _id
+         * @param {string} id
          * @param {string} name_first
          * @param {string} name_last
          * @param {string} email
@@ -42,13 +41,13 @@ namespace Owner {
          * @memberOf AnonymousOwner
          */
         constructor(
-            readonly _id: ObjectId,
+            readonly id: string,
             readonly name_first: string,
             readonly name_last: string,
             readonly email: string,
             readonly tel: string
         ) {
-            super(_id, OwnerGroup.ANONYMOUS);
+            super(id, OwnerGroup.ANONYMOUS);
 
             // todo validation
         }
@@ -66,23 +65,23 @@ namespace Owner {
         /**
          * Creates an instance of PromoterOwner.
          *
-         * @param {ObjectId} _id
+         * @param {string} id
          * @param {MultilingualString} name
          *
          * @memberOf PromoterOwner
          */
         constructor(
-            readonly _id: ObjectId,
+            readonly id: string,
             readonly name: MultilingualString
         ) {
-            super(_id, OwnerGroup.PROMOTER);
+            super(id, OwnerGroup.PROMOTER);
 
             // todo validation
         }
     }
 
     export interface IAnonymousOwner {
-        _id: ObjectId;
+        id: string;
         name_first?: string;
         name_last?: string;
         email?: string;
@@ -96,7 +95,7 @@ namespace Owner {
      */
     export function createAnonymous(args: IAnonymousOwner) {
         return new AnonymousOwner(
-            args._id,
+            args.id,
             (args.name_first) ? args.name_first : '',
             (args.name_last) ? args.name_last : '',
             (args.email) ? args.email : '',
@@ -105,13 +104,13 @@ namespace Owner {
     }
 
     export interface IPromoterOwner {
-        _id: ObjectId;
+        id: string;
         name?: MultilingualString;
     }
 
     export function createPromoter(args: IPromoterOwner): PromoterOwner {
         return new PromoterOwner(
-            args._id,
+            args.id,
             (args.name) ? args.name : { ja: '', en: '' }
         );
     }

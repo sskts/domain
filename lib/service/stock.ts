@@ -73,7 +73,7 @@ export function disableTransactionInquiry(args: {
 }) {
     return async (transactionRepository: TransactionRepository, coaRepository: typeof COA) => {
         // 取引取得
-        const option = await transactionRepository.findById(ObjectId(args.transaction_id));
+        const option = await transactionRepository.findById(args.transaction_id);
         if (option.isEmpty) {
             throw new Error('transaction not found.');
         }

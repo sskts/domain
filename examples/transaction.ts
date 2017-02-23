@@ -30,7 +30,7 @@ async function main() {
     console.log('starting transaction...');
     const transaction = await transactionService.start(moment().add(30, 'minutes').toDate())(ownerRepository, transactionRepository);
     console.log('transaction started.');
-    const transactionId = transaction._id;
+    const transactionId = transaction.id;
 
 
 
@@ -41,12 +41,12 @@ async function main() {
         return (owner.group === 'PROMOTER');
     });
     if (!promoterOwner) throw new Error('promoterOwner not found.');
-    const promoterOwnerId = promoterOwner._id;
+    const promoterOwnerId = promoterOwner.id;
     const anonymousOwner = transaction.owners.find((owner) => {
         return (owner.group === 'ANONYMOUS');
     });
     if (!anonymousOwner) throw new Error('anonymousOwner not found.');
-    const anonymousOwnerId = anonymousOwner._id;
+    const anonymousOwnerId = anonymousOwner.id;
 
 
 

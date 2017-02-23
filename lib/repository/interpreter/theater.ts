@@ -20,16 +20,16 @@ export default class TheaterRepositoryInterpreter implements TheaterRepository {
     public async findById(id: string) {
         const model = this.connection.model(theaterModel.modelName);
         debug('finding theater...', id);
-        const theater = <Theater>await model.findOne({ _id: id }).lean().exec();
-        debug('theater found.', theater);
+        const doc = await model.findOne({ _id: id }).exec();
+        debug('theater found.', doc);
 
-        return (theater) ? monapt.Option(theater) : monapt.None;
+        return (doc) ? monapt.Option(Theater.create(<any>doc.toObject())) : monapt.None;
     }
 
     public async store(theater: Theater) {
         const model = this.connection.model(theaterModel.modelName);
         debug('waiting findOneAndUpdate...', theater);
-        await model.findOneAndUpdate({ _id: theater._id }, theater, {
+        await model.findOneAndUpdate({ _id: theater.id }, theater, {
             new: true,
             upsert: true
         }).lean().exec();

@@ -23,31 +23,31 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
 
     public async findOneAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(queueModel.modelName);
-        const doc = <any>await model.findOneAndUpdate(conditions, update, {
+        const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
-        }).lean().exec();
+        }).exec();
 
-        return (doc) ? monapt.Option(Queue.create(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Queue.create(<any>doc.toObject())) : monapt.None;
     }
 
     public async findOneSendEmailAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(queueModel.modelName);
-        const doc = <any>await model.findOneAndUpdate(conditions, update, {
+        const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         })
             .where({
                 group: QueueGroup.PUSH_NOTIFICATION,
                 'notification.group': NotificationGroup.EMAIL
-            }).lean().exec();
+            }).exec();
 
-        return (doc) ? monapt.Option(Queue.createPushNotification<Notification.EmailNotification>(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Queue.createPushNotification<Notification.EmailNotification>(<any>doc.toObject())) : monapt.None;
     }
 
     public async findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(queueModel.modelName);
-        const doc = <any>await model.findOneAndUpdate(conditions, update, {
+        const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         })
@@ -55,14 +55,14 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
                 group: QueueGroup.SETTLE_AUTHORIZATION,
                 'authorization.group': AuthorizationGroup.GMO
             })
-            .lean().exec();
+            .exec();
 
-        return (doc) ? monapt.Option(Queue.createSettleAuthorization<Authorization.GMOAuthorization>(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Queue.createSettleAuthorization<Authorization.GMOAuthorization>(<any>doc.toObject())) : monapt.None;
     }
 
     public async findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(queueModel.modelName);
-        const doc = <any>await model.findOneAndUpdate(conditions, update, {
+        const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         })
@@ -70,15 +70,15 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
                 group: QueueGroup.SETTLE_AUTHORIZATION,
                 'authorization.group': AuthorizationGroup.COA_SEAT_RESERVATION
             })
-            .lean().exec();
+            .exec();
 
-        const queue = Queue.createSettleAuthorization<Authorization.COASeatReservationAuthorization>(doc);
+        const queue = Queue.createSettleAuthorization<Authorization.COASeatReservationAuthorization>(<any>doc.toObject());
         return (doc) ? monapt.Option(queue) : monapt.None;
     }
 
     public async findOneCancelGMOAuthorizationAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(queueModel.modelName);
-        const doc = <any>await model.findOneAndUpdate(conditions, update, {
+        const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         })
@@ -86,14 +86,14 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
                 group: QueueGroup.CANCEL_AUTHORIZATION,
                 'authorization.group': AuthorizationGroup.GMO
             })
-            .lean().exec();
+            .exec();
 
-        return (doc) ? monapt.Option(Queue.createCancelAuthorization<Authorization.GMOAuthorization>(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Queue.createCancelAuthorization<Authorization.GMOAuthorization>(<any>doc.toObject())) : monapt.None;
     }
 
     public async findOneCancelCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(queueModel.modelName);
-        const doc = <any>await model.findOneAndUpdate(conditions, update, {
+        const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         })
@@ -101,29 +101,29 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
                 group: QueueGroup.CANCEL_AUTHORIZATION,
                 'authorization.group': AuthorizationGroup.COA_SEAT_RESERVATION
             })
-            .lean().exec();
+            .exec();
 
-        const queue = Queue.createCancelAuthorization<Authorization.COASeatReservationAuthorization>(doc);
+        const queue = Queue.createCancelAuthorization<Authorization.COASeatReservationAuthorization>(<any>doc.toObject());
         return (doc) ? monapt.Option(queue) : monapt.None;
     }
 
     public async findOneDisableTransactionInquiryAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(queueModel.modelName);
-        const doc = <any>await model.findOneAndUpdate(conditions, update, {
+        const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         })
             .where({
                 group: QueueGroup.DISABLE_TRANSACTION_INQUIRY
             })
-            .lean().exec();
+            .exec();
 
-        return (doc) ? monapt.Option(Queue.createDisableTransactionInquiry(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Queue.createDisableTransactionInquiry(<any>doc.toObject())) : monapt.None;
     }
 
     public async store(queue: Queue) {
         const model = this.connection.model(queueModel.modelName);
-        await model.findOneAndUpdate({ _id: queue._id }, queue, {
+        await model.findOneAndUpdate({ _id: queue.id }, queue, {
             new: true,
             upsert: true
         }).lean().exec();

@@ -7,14 +7,14 @@ import MultilingualString from './multilingualString';
  *
  * @class Theater
  *
- * @param {string} _id
+ * @param {string} id
  * @param {MultilingualString} name 劇場名称
  * @param {string} name_kana 劇場名称(カナ)
  * @param {MultilingualString} address 劇場住所
  */
 class Theater {
     constructor(
-        readonly _id: string,
+        readonly id: string,
         readonly name: MultilingualString,
         readonly name_kana: string,
         readonly address: MultilingualString
@@ -30,7 +30,7 @@ class Theater {
  */
 namespace Theater {
     export interface ITheater {
-        _id: string;
+        id: string;
         name: MultilingualString;
         name_kana: string;
         address: MultilingualString;
@@ -38,7 +38,7 @@ namespace Theater {
 
     export function create(args: ITheater) {
         return new Theater(
-            args._id,
+            args.id,
             args.name,
             args.name_kana,
             args.address
@@ -47,7 +47,7 @@ namespace Theater {
 
     export function createFromCOA(theaterFromCOA: COA.findTheaterInterface.Result) {
         return create({
-            _id: theaterFromCOA.theater_code,
+            id: theaterFromCOA.theater_code,
             name: {
                 ja: theaterFromCOA.theater_name,
                 en: theaterFromCOA.theater_name_eng

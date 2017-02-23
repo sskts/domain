@@ -4,11 +4,14 @@
  * @class PerformanceRepositoryInterpreter
  */
 
+import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
 import Performance from '../../model/performance';
 import PerformanceRepository from '../performance';
 import performanceModel from './mongoose/model/performance';
+
+const debug = createDebug('sskts-domain:repository:performance');
 
 export default class PerformanceRepositoryInterpreter implements PerformanceRepository {
     constructor(readonly connection: Connection) {
@@ -16,29 +19,30 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
 
     public async find(conditions: Object) {
         const model = this.connection.model(performanceModel.modelName);
-        return <Performance[]>await model.find(conditions)
+        const docs = await model.find(conditions)
             .populate('film')
             .populate('theater')
             .populate('screen')
-            .lean()
             .exec();
+
+        return docs.map((doc) => Performance.create(<any>doc.toObject()));
     }
 
     public async findById(id: string) {
         const model = this.connection.model(performanceModel.modelName);
-        const performance = <Performance>await model.findOne({ _id: id })
+        const doc = await model.findOne({ _id: id })
             .populate('film')
             .populate('theater')
             .populate('screen')
-            .lean()
             .exec();
 
-        return (performance) ? monapt.Option(performance) : monapt.None;
+        return (doc) ? monapt.Option(Performance.create(<any>doc.toObject())) : monapt.None;
     }
 
     public async store(performance: Performance) {
         const model = this.connection.model(performanceModel.modelName);
-        await model.findOneAndUpdate({ _id: performance._id }, performance, {
+        debug('updating a performance...', performance);
+        await model.findOneAndUpdate({ _id: performance.id }, performance.toDocument(), {
             new: true,
             upsert: true
         }).lean().exec();

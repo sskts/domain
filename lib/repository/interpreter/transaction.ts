@@ -4,12 +4,12 @@
  * @class TransactionRepositoryInterpreter
  */
 
+import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
 
 import Authorization from '../../model/authorization';
 import Notification from '../../model/notification';
-import ObjectId from '../../model/objectId';
 import Transaction from '../../model/transaction';
 import TransactionEvent from '../../model/transactionEvent';
 import TransactionEventGroup from '../../model/transactionEventGroup';
@@ -17,50 +17,56 @@ import TransactionRepository from '../transaction';
 import transactionModel from './mongoose/model/transaction';
 import transactionEventModel from './mongoose/model/transactionEvent';
 
+export type IAuthorization =
+    Authorization.AssetAuthorization | Authorization.COASeatReservationAuthorization | Authorization.GMOAuthorization;
+export type INotification = Notification.EmailNotification;
+
+const debug = createDebug('sskts-domain:repository:transaction');
+
 export default class TransactionRepositoryInterpreter implements TransactionRepository {
     constructor(readonly connection: Connection) {
     }
 
     public async find(conditions: Object) {
         const model = this.connection.model(transactionModel.modelName);
-        const docs = <any[]>await model.find()
+        const docs = await model.find()
             .where(conditions)
             .populate('owner')
-            .lean()
             .exec();
 
-        return docs.map(Transaction.create);
+        return docs.map((doc) => Transaction.create(<any>doc.toObject()));
     }
 
-    public async findById(id: ObjectId) {
+    public async findById(id: string) {
         const model = this.connection.model(transactionModel.modelName);
-        const doc = <any>await model.findOne()
+        const doc = await model.findOne()
             .where('_id').equals(id)
-            .populate('owners').lean().exec();
+            .populate('owners').exec();
 
-        return (doc) ? monapt.Option(Transaction.create(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Transaction.create(<any>doc.toObject())) : monapt.None;
     }
 
     public async findOne(conditions: Object) {
         const model = this.connection.model(transactionModel.modelName);
-        const doc = <any>await model.findOne(conditions).lean().exec();
+        const doc = await model.findOne(conditions).exec();
 
-        return (doc) ? monapt.Option(Transaction.create(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Transaction.create(<any>doc.toObject())) : monapt.None;
     }
 
     public async findOneAndUpdate(conditions: Object, update: Object) {
         const model = this.connection.model(transactionModel.modelName);
-        const doc = <any>await model.findOneAndUpdate(conditions, update, {
+        const doc = await model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
-        }).lean().exec();
+        }).exec();
 
-        return (doc) ? monapt.Option(Transaction.create(doc)) : monapt.None;
+        return (doc) ? monapt.Option(Transaction.create(<any>doc.toObject())) : monapt.None;
     }
 
     public async store(transaction: Transaction) {
         const model = this.connection.model(transactionModel.modelName);
-        await model.findOneAndUpdate({ _id: transaction._id }, transaction, {
+        debug('updating a transaction...', transaction);
+        await model.findOneAndUpdate({ _id: transaction.id }, transaction.toDocument(), {
             new: true,
             upsert: true
         }).lean().exec();
@@ -71,59 +77,59 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
         await model.create([transactionEvent]);
     }
 
-    public async findAuthorizationsById(id: ObjectId): Promise<Authorization[]> {
+    public async findAuthorizationsById(id: string): Promise<IAuthorization[]> {
         const model = this.connection.model(transactionEventModel.modelName);
 
-        const authorizations = (<any[]>await model.find(
+        const authorizations = (await model.find(
             {
                 transaction: id,
                 group: TransactionEventGroup.AUTHORIZE
             },
             'authorization'
         )
-            .lean().exec())
-            .map((doc) => doc.authorization);
+            .exec())
+            .map((doc) => <IAuthorization>doc.get('authorization'));
 
-        const removedAuthorizationIds = (<any[]>await model.find(
+        const removedAuthorizationIds = (await model.find(
             {
                 transaction: id,
                 group: TransactionEventGroup.UNAUTHORIZE
             },
             'authorization._id'
         )
-            .lean().exec())
-            .map((doc) => doc.authorization._id.toString());
+            .exec())
+            .map((doc) => doc.get('id'));
 
         return authorizations.filter(
-            (authorization) => (removedAuthorizationIds.indexOf(authorization._id.toString()) < 0)
+            (authorization) => removedAuthorizationIds.indexOf(authorization.id) < 0
         );
     }
 
-    public async findNotificationsById(id: ObjectId): Promise<Notification[]> {
+    public async findNotificationsById(id: string): Promise<INotification[]> {
         const model = this.connection.model(transactionEventModel.modelName);
 
-        const notifications = (<any[]>await model.find(
+        const notifications = (await model.find(
             {
                 transaction: id,
                 group: TransactionEventGroup.NOTIFICATION_ADD
             },
             'notification'
         )
-            .lean().exec())
-            .map((doc) => doc.notification);
+            .exec())
+            .map((doc) => <INotification>doc.get('notification'));
 
-        const removedNotificationIds = (<any[]>await model.find(
+        const removedNotificationIds = (await model.find(
             {
                 transaction: id,
                 group: TransactionEventGroup.NOTIFICATION_REMOVE
             },
             'notification._id'
         )
-            .lean().exec())
-            .map((doc) => doc.notification._id.toString());
+            .exec())
+            .map((doc) => doc.get('id'));
 
         return notifications.filter(
-            (notification) => (removedNotificationIds.indexOf(notification._id.toString()) < 0)
+            (notification) => (removedNotificationIds.indexOf(notification.id) < 0)
         );
     }
 
@@ -132,7 +138,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
      *
      * @returns {Promies<boolean>}
      */
-    public async canBeClosed(id: ObjectId) {
+    public async canBeClosed(id: string) {
         const authorizations = await this.findAuthorizationsById(id);
         const pricesByOwner: {
             [ownerId: string]: number

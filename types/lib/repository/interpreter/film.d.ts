@@ -1,9 +1,4 @@
 /// <reference types="mongoose" />
-/**
- * 作品リポジトリ
- *
- * @class FilmRepositoryInterpreter
- */
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
 import Film from '../../model/film';

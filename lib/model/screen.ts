@@ -8,7 +8,7 @@ import Theater from './theater';
  *
  * @class Screen
  *
- * @param {string} _id
+ * @param {string} id
  * @param {Theater} theater 劇場
  * @param {string} coa_screen_code COAスクリーンコード
  * @param {MultilingualString} name スクリーン名称
@@ -16,13 +16,23 @@ import Theater from './theater';
  */
 class Screen {
     constructor(
-        readonly _id: string,
+        readonly id: string,
         readonly theater: Theater,
         readonly coa_screen_code: string,
         readonly name: MultilingualString,
         readonly sections: Screen.ISection[]
     ) {
         // todo validation
+    }
+
+    public toDocument(): Object {
+        return {
+            id: this.id,
+            theater: this.theater.id,
+            coa_screen_code: this.coa_screen_code,
+            name: this.name,
+            sections: this.sections
+        };
     }
 }
 
@@ -73,7 +83,7 @@ namespace Screen {
     }
 
     export interface IScreen {
-        _id: string;
+        id: string;
         theater: Theater;
         coa_screen_code: string;
         name: MultilingualString;
@@ -82,7 +92,7 @@ namespace Screen {
 
     export function create(args: IScreen) {
         return new Screen(
-            args._id,
+            args.id,
             args.theater,
             args.coa_screen_code,
             args.name,
@@ -113,7 +123,7 @@ namespace Screen {
             });
 
             return create({
-                _id: `${theater._id}${screenFromCOA.screen_code}`,
+                id: `${theater.id}${screenFromCOA.screen_code}`,
                 theater: theater,
                 coa_screen_code: screenFromCOA.screen_code,
                 name: {

@@ -7,14 +7,14 @@ import ObjectId from './objectId';
  *
  * @class Ownership
  *
- * @param {ObjectId} _id
- * @param {ObjectId} owner 所有者
+ * @param {string} id
+ * @param {string} owner 所有者
  * @param {boolean} authenticated 認証済みかどうか
  */
 class Ownership {
     constructor(
-        readonly _id: ObjectId,
-        readonly owner: ObjectId,
+        readonly id: string,
+        readonly owner: string,
         readonly authenticated: boolean
     ) {
         // todo validation
@@ -23,14 +23,14 @@ class Ownership {
 
 namespace Ownership {
     export interface IOwnership {
-        _id?: ObjectId;
-        owner: ObjectId;
+        id?: string;
+        owner: string;
         authenticated: boolean;
     }
 
     export function create(args: IOwnership) {
         return new Ownership(
-            (args._id) ? args._id : ObjectId(),
+            (args.id) ? args.id : ObjectId().toString(),
             args.owner,
             args.authenticated
         );

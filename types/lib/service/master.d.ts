@@ -20,17 +20,17 @@ export interface SearchPerformancesConditions {
     theater?: string;
 }
 export interface SearchPerformancesResult {
-    _id: string;
+    id: string;
     theater: {
-        _id: string;
+        id: string;
         name: MultilingualString;
     };
     screen: {
-        _id: string;
+        id: string;
         name: MultilingualString;
     };
     film: {
-        _id: string;
+        id: string;
         name: MultilingualString;
     };
     day: string;

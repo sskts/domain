@@ -47,7 +47,7 @@ export function updateAnonymousOwner(args: {
 }): OwnerAndTransactionOperation<void> {
     return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
         // 取引取得
-        const optionTransaction = await transactionRepo.findById(ObjectId(args.transaction_id));
+        const optionTransaction = await transactionRepo.findById(args.transaction_id);
         if (optionTransaction.isEmpty) {
             throw new Error(`transaction[${ObjectId(args.transaction_id)}] not found.`);
         }
@@ -65,7 +65,7 @@ export function updateAnonymousOwner(args: {
         debug('updating anonymous owner...');
         const option = await ownerRepo.findOneAndUpdate(
             {
-                _id: anonymousOwner._id
+                _id: anonymousOwner.id
             },
             {
                 $set: {
@@ -91,7 +91,7 @@ export function updateAnonymousOwner(args: {
  * @memberOf TransactionService
  */
 export function findById(transactionId: string): TransactionOperation<monapt.Option<Transaction>> {
-    return async (transactionRepo: TransactionRepository) => await transactionRepo.findById(ObjectId(transactionId));
+    return async (transactionRepo: TransactionRepository) => await transactionRepo.findById(transactionId);
 }
 
 /**
@@ -106,7 +106,7 @@ export function start(expiredAt: Date) {
     return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
         // 一般所有者作成
         const anonymousOwner = Owner.createAnonymous({
-            _id: ObjectId()
+            id: ObjectId().toString()
         });
 
         // 興行主取得
@@ -119,7 +119,7 @@ export function start(expiredAt: Date) {
 
         // 取引作成
         const transaction = Transaction.create({
-            _id: ObjectId(),
+            id: ObjectId().toString(),
             status: TransactionStatus.UNDERWAY,
             owners: [promoter, anonymousOwner],
             expired_at: expiredAt
@@ -147,16 +147,16 @@ export function start(expiredAt: Date) {
 export function addGMOAuthorization(transactionId: string, authorization: Authorization.GMOAuthorization) {
     return async (transactionRepo: TransactionRepository) => {
         // 取引取得
-        const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
+        const optionTransaction = await transactionRepo.findById(transactionId);
         if (optionTransaction.isEmpty) {
-            throw new Error(`transaction[${ObjectId(transactionId)}] not found.`);
+            throw new Error(`transaction[${transactionId}] not found.`);
         }
 
         const transaction = optionTransaction.get();
 
         // 所有者が取引に存在するかチェック
         const ownerIds = transaction.owners.map((owner) => {
-            return owner._id.toString();
+            return owner.id.toString();
         });
         if (ownerIds.indexOf(authorization.owner_from.toString()) < 0) {
             throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_from}].`);
@@ -167,8 +167,8 @@ export function addGMOAuthorization(transactionId: string, authorization: Author
 
         // イベント作成
         const event = TransactionEvent.createAuthorize({
-            _id: ObjectId(),
-            transaction: transaction._id,
+            id: ObjectId().toString(),
+            transaction: transaction.id,
             occurred_at: new Date(),
             authorization: authorization
         });
@@ -191,7 +191,7 @@ export function addGMOAuthorization(transactionId: string, authorization: Author
 export function addCOASeatReservationAuthorization(transactionId: string, authorization: Authorization.COASeatReservationAuthorization) {
     return async (transactionRepo: TransactionRepository) => {
         // 取引取得
-        const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
+        const optionTransaction = await transactionRepo.findById(transactionId);
         if (optionTransaction.isEmpty) {
             throw new Error(`transaction[${ObjectId(transactionId)}] not found.`);
         }
@@ -199,7 +199,7 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
         const transaction = optionTransaction.get();
 
         const ownerIds = transaction.owners.map((owner) => {
-            return owner._id.toString();
+            return owner.id.toString();
         });
         if (ownerIds.indexOf(authorization.owner_from.toString()) < 0) {
             throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_from}].`);
@@ -210,8 +210,8 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
 
         // イベント作成
         const event = TransactionEvent.createAuthorize({
-            _id: ObjectId(),
-            transaction: transaction._id,
+            id: ObjectId().toString(),
+            transaction: transaction.id,
             occurred_at: new Date(),
             authorization: authorization
         });
@@ -234,23 +234,23 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
 export function removeAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionRepo: TransactionRepository) => {
         // 取引取得
-        const optionTransacton = await transactionRepo.findById(ObjectId(transactionId));
+        const optionTransacton = await transactionRepo.findById(transactionId);
         if (optionTransacton.isEmpty) {
             throw new Error('tranasction not found.');
         }
 
         const transaction = optionTransacton.get();
-        const authorizations = await transactionRepo.findAuthorizationsById(transaction._id);
+        const authorizations = await transactionRepo.findAuthorizationsById(transaction.id);
 
-        const removedAuthorization = authorizations.find((authorization) => authorization._id.toString() === authorizationId);
+        const removedAuthorization = authorizations.find((authorization) => authorization.id.toString() === authorizationId);
         if (!removedAuthorization) {
             throw new Error(`authorization [${authorizationId}] not found in the transaction.`);
         }
 
         // イベント作成
         const event = TransactionEvent.createUnauthorize({
-            _id: ObjectId(),
-            transaction: transaction._id,
+            id: ObjectId().toString(),
+            transaction: transaction.id,
             occurred_at: new Date(),
             authorization: removedAuthorization
         });
@@ -319,7 +319,7 @@ export function makeInquiry(key: TransactionInquiryKey): TransactionOperation<mo
 export function close(transactionId: string) {
     return async (transactionRepo: TransactionRepository) => {
         // 取引取得
-        const optionTransaction = await transactionRepo.findById(ObjectId(transactionId));
+        const optionTransaction = await transactionRepo.findById(transactionId);
         if (optionTransaction.isEmpty) {
             throw new Error('transaction not found.');
         }
@@ -332,7 +332,7 @@ export function close(transactionId: string) {
         }
 
         // 条件が対等かどうかチェック
-        if (!await transactionRepo.canBeClosed(transaction._id)) {
+        if (!await transactionRepo.canBeClosed(transaction.id)) {
             throw new Error('transaction cannot be closed.');
         }
 
@@ -395,7 +395,7 @@ export function expireOne() {
 export function exportQueues(transactionId: string) {
     // tslint:disable-next-line:max-func-body-length
     return async (transactionRepo: TransactionRepository, queueRepo: QueueRepository) => {
-        const option = await transactionRepo.findById(ObjectId(transactionId));
+        const option = await transactionRepo.findById(transactionId);
         if (option.isEmpty) {
             throw new Error('transaction not found.');
         }
@@ -406,9 +406,9 @@ export function exportQueues(transactionId: string) {
         switch (transaction.status) {
             case TransactionStatus.CLOSED:
                 // 取引イベントからキューリストを作成
-                (await transactionRepo.findAuthorizationsById(transaction._id)).forEach((authorization) => {
+                (await transactionRepo.findAuthorizationsById(transaction.id)).forEach((authorization) => {
                     queues.push(Queue.createSettleAuthorization({
-                        _id: ObjectId(),
+                        id: ObjectId().toString(),
                         authorization: authorization,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(), // なるはやで実行
@@ -419,9 +419,9 @@ export function exportQueues(transactionId: string) {
                     }));
                 });
 
-                (await transactionRepo.findNotificationsById(transaction._id)).forEach((notification) => {
+                (await transactionRepo.findNotificationsById(transaction.id)).forEach((notification) => {
                     queues.push(Queue.createPushNotification({
-                        _id: ObjectId(),
+                        id: ObjectId().toString(),
                         notification: notification,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(), // todo emailのsent_atを指定
@@ -436,9 +436,9 @@ export function exportQueues(transactionId: string) {
 
             // 期限切れの場合は、キューリストを作成する
             case TransactionStatus.EXPIRED:
-                (await transactionRepo.findAuthorizationsById(transaction._id)).forEach((authorization) => {
+                (await transactionRepo.findAuthorizationsById(transaction.id)).forEach((authorization) => {
                     queues.push(Queue.createCancelAuthorization({
-                        _id: ObjectId(),
+                        id: ObjectId().toString(),
                         authorization: authorization,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(),
@@ -452,8 +452,8 @@ export function exportQueues(transactionId: string) {
                 // COA本予約があれば取消
                 if (transaction.isInquiryAvailable()) {
                     queues.push(Queue.createDisableTransactionInquiry({
-                        _id: ObjectId(),
-                        transaction_id: transaction._id,
+                        id: ObjectId().toString(),
+                        transaction_id: transaction.id,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(),
                         max_count_try: 10,
@@ -466,15 +466,15 @@ export function exportQueues(transactionId: string) {
                 // todo おそらく開発時のみ
                 queues.push(Queue.createPushNotification(
                     {
-                        _id: ObjectId(),
+                        id: ObjectId().toString(),
                         notification: Notification.createEmail({
-                            _id: ObjectId(),
+                            id: ObjectId().toString(),
                             from: 'noreply@localhost',
                             to: 'hello@motionpicture.jp',
                             subject: 'transaction expired',
                             content: `
 取引の期限がきれました
-_id: ${transaction._id}
+_id: ${transaction.id}
 expired_at: ${transaction.expired_at}
 `
                         }),
@@ -515,8 +515,8 @@ export function addEmail(transactionId: string, notification: Notification.Email
     return async (transactionRepo: TransactionRepository) => {
         // イベント作成
         const event = TransactionEvent.createNotificationAdd({
-            _id: ObjectId(),
-            transaction: ObjectId(transactionId),
+            id: ObjectId().toString(),
+            transaction: transactionId,
             occurred_at: new Date(),
             notification: notification
         });
@@ -539,23 +539,23 @@ export function addEmail(transactionId: string, notification: Notification.Email
 export function removeEmail(transactionId: string, notificationId: string) {
     return async (transactionRepo: TransactionRepository) => {
         // 取引取得
-        const optionTransacton = await transactionRepo.findById(ObjectId(transactionId));
+        const optionTransacton = await transactionRepo.findById(transactionId);
         if (optionTransacton.isEmpty) {
             throw new Error('tranasction not found.');
         }
 
         const transaction = optionTransacton.get();
-        const notifications = await transactionRepo.findNotificationsById(transaction._id);
+        const notifications = await transactionRepo.findNotificationsById(transaction.id);
 
-        const removedNotification = notifications.find((notification) => notification._id.toString() === notificationId);
+        const removedNotification = notifications.find((notification) => notification.id.toString() === notificationId);
         if (!removedNotification) {
             throw new Error(`notification [${notificationId}] not found in the transaction.`);
         }
 
         // イベント作成
         const event = TransactionEvent.createNotificationRemove({
-            _id: ObjectId(),
-            transaction: ObjectId(transactionId),
+            id: ObjectId().toString(),
+            transaction: transactionId,
             occurred_at: new Date(),
             notification: removedNotification
         });

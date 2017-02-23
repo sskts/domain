@@ -1,25 +1,24 @@
 import AssetGroup from './assetGroup';
 import Authorization from './authorization';
-import ObjectId from './objectId';
 import Ownership from './ownership';
 /**
  * 資産
  *
  * @class Asset
  *
- * @param {ObjectId} _id ID
+ * @param {string} id ID
  * @param {AssetGroup} group 資産グループ
  * @param {Ownership} ownership 所有権
  * @param {number} price 価格
  * @param {Array<Authorization>} authorizations 承認リスト
  */
 declare class Asset {
-    readonly _id: ObjectId;
+    readonly id: string;
     readonly group: AssetGroup;
     readonly ownership: Ownership;
     readonly price: number;
     readonly authorizations: Authorization[];
-    constructor(_id: ObjectId, group: AssetGroup, ownership: Ownership, price: number, authorizations: Authorization[]);
+    constructor(id: string, group: AssetGroup, ownership: Ownership, price: number, authorizations: Authorization[]);
 }
 declare namespace Asset {
     /**
@@ -30,7 +29,7 @@ declare namespace Asset {
      * @class SeatReservationAsset
      * @extends {Asset}
      *
-     * @param {ObjectId} _id
+     * @param {string} id
      * @param {Ownership} ownership 所有権
      * @param {Array<Authorization>} authorizations 承認リスト
      * @param {string} performance パフォーマンス
@@ -46,7 +45,7 @@ declare namespace Asset {
      * @param {number} sale_price
      */
     class SeatReservationAsset extends Asset {
-        readonly _id: ObjectId;
+        readonly id: string;
         readonly ownership: Ownership;
         readonly authorizations: Authorization[];
         readonly performance: string;
@@ -60,10 +59,10 @@ declare namespace Asset {
         readonly add_price: number;
         readonly dis_price: number;
         readonly sale_price: number;
-        constructor(_id: ObjectId, ownership: Ownership, authorizations: Authorization[], performance: string, section: string, seat_code: string, ticket_code: string, ticket_name_ja: string, ticket_name_en: string, ticket_name_kana: string, std_price: number, add_price: number, dis_price: number, sale_price: number);
+        constructor(id: string, ownership: Ownership, authorizations: Authorization[], performance: string, section: string, seat_code: string, ticket_code: string, ticket_name_ja: string, ticket_name_en: string, ticket_name_kana: string, std_price: number, add_price: number, dis_price: number, sale_price: number);
     }
     interface ISeatReservationAsset {
-        _id?: ObjectId;
+        id?: string;
         ownership: Ownership;
         authorizations: Authorization[];
         performance: string;

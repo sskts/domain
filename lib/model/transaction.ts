@@ -10,7 +10,7 @@ import TransactionStatus from './transactionStatus';
  *
  * @class Transaction
  *
- * @param {ObjectId} _id
+ * @param {string} id
  * @param {TransactionStatus} status
  * @param {Owner[]} owners
  * @param {Date} expired_at
@@ -21,7 +21,7 @@ import TransactionStatus from './transactionStatus';
  */
 class Transaction {
     constructor(
-        readonly _id: ObjectId,
+        readonly id: string,
         readonly status: TransactionStatus,
         readonly owners: Owner[],
         readonly expired_at: Date,
@@ -29,6 +29,17 @@ class Transaction {
         readonly queues_status: TransactionQueuesStatus
     ) {
         // todo validation
+    }
+
+    public toDocument(): Object {
+        return {
+            id: this.id,
+            status: this.status,
+            owners: this.owners.map((owner) => owner.id),
+            expired_at: this.expired_at,
+            inquiry_key: this.inquiry_key,
+            queues_status: this.queues_status
+        };
     }
 
     /**
@@ -45,7 +56,7 @@ class Transaction {
 
 namespace Transaction {
     export interface ITransaction {
-        _id?: ObjectId;
+        id?: string;
         status: TransactionStatus;
         owners: Owner[];
         expired_at: Date;
@@ -55,7 +66,7 @@ namespace Transaction {
 
     export function create(args: ITransaction): Transaction {
         return new Transaction(
-            (args._id === undefined) ? ObjectId() : (args._id),
+            (args.id === undefined) ? ObjectId().toString() : (args.id),
             args.status,
             args.owners,
             args.expired_at,

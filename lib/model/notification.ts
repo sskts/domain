@@ -8,12 +8,12 @@ import ObjectId from './objectId';
  *
  * @class Notification
  *
- * @param {ObjectId} _id
+ * @param {string} id
  * @param {string} group 通知グループ
  */
 class Notification {
     constructor(
-        readonly _id: ObjectId,
+        readonly id: string,
         readonly group: string
     ) {
         // todo validation
@@ -26,7 +26,7 @@ namespace Notification {
      *
      * @class EmailNotification
      * @extends {Notification}
-     * @param {ObjectId} _id
+     * @param {string} id
      * @param {string} from
      * @param {string} to
      * @param {string} subject
@@ -35,14 +35,14 @@ namespace Notification {
     // tslint:disable-next-line:max-classes-per-file
     export class EmailNotification extends Notification {
         constructor(
-            readonly _id: ObjectId,
+            readonly id: string,
             // tslint:disable-next-line:no-reserved-keywords
             readonly from: string,
             readonly to: string,
             readonly subject: string,
             readonly content: string
         ) {
-            super(_id, NotificationGroup.EMAIL);
+            super(id, NotificationGroup.EMAIL);
 
             // todo validation
             if (validator.isEmpty(from)) throw new Error('from required.');
@@ -53,7 +53,7 @@ namespace Notification {
     }
 
     export interface IEmailNotification {
-        _id?: ObjectId;
+        id?: string;
         // tslint:disable-next-line:no-reserved-keywords
         from: string;
         to: string;
@@ -63,7 +63,7 @@ namespace Notification {
 
     export function createEmail(args: IEmailNotification) {
         return new EmailNotification(
-            (args._id === undefined) ? ObjectId() : (args._id),
+            (args.id === undefined) ? ObjectId().toString() : (args.id),
             args.from,
             args.to,
             args.subject,

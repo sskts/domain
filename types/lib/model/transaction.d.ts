@@ -1,4 +1,3 @@
-import ObjectId from './objectId';
 import Owner from './owner';
 import TransactionInquiryKey from './transactionInquiryKey';
 import TransactionQueuesStatus from './transactionQueuesStatus';
@@ -8,7 +7,7 @@ import TransactionStatus from './transactionStatus';
  *
  * @class Transaction
  *
- * @param {ObjectId} _id
+ * @param {string} id
  * @param {TransactionStatus} status
  * @param {Owner[]} owners
  * @param {Date} expired_at
@@ -18,13 +17,14 @@ import TransactionStatus from './transactionStatus';
  * @param {TransactionQueuesStatus} queues_status
  */
 declare class Transaction {
-    readonly _id: ObjectId;
+    readonly id: string;
     readonly status: TransactionStatus;
     readonly owners: Owner[];
     readonly expired_at: Date;
     readonly inquiry_key: TransactionInquiryKey | null;
     readonly queues_status: TransactionQueuesStatus;
-    constructor(_id: ObjectId, status: TransactionStatus, owners: Owner[], expired_at: Date, inquiry_key: TransactionInquiryKey | null, queues_status: TransactionQueuesStatus);
+    constructor(id: string, status: TransactionStatus, owners: Owner[], expired_at: Date, inquiry_key: TransactionInquiryKey | null, queues_status: TransactionQueuesStatus);
+    toDocument(): Object;
     /**
      * 照会可能かどうか
      *
@@ -36,7 +36,7 @@ declare class Transaction {
 }
 declare namespace Transaction {
     interface ITransaction {
-        _id?: ObjectId;
+        id?: string;
         status: TransactionStatus;
         owners: Owner[];
         expired_at: Date;

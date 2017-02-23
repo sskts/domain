@@ -6,7 +6,7 @@ import Theater from './theater';
  *
  * @class Film
  *
- * @param {string} _id
+ * @param {string} id
  * @param {string} coa_title_code COA作品コード
  * @param {string} coa_title_branch_num COA作品枝番
  * @param {Theater} theater 劇場
@@ -23,7 +23,7 @@ import Theater from './theater';
  * @param {string} kbn_jimakufukikae 字幕吹替区分
  */
 declare class Film {
-    readonly _id: string;
+    readonly id: string;
     readonly coa_title_code: string;
     readonly coa_title_branch_num: string;
     readonly theater: Theater;
@@ -38,11 +38,12 @@ declare class Film {
     readonly kbn_eizou: string;
     readonly kbn_joueihousiki: string;
     readonly kbn_jimakufukikae: string;
-    constructor(_id: string, coa_title_code: string, coa_title_branch_num: string, theater: Theater, name: MultilingualString, name_kana: string, name_short: string, name_original: string, minutes: number, date_start: string, date_end: string, kbn_eirin: string, kbn_eizou: string, kbn_joueihousiki: string, kbn_jimakufukikae: string);
+    constructor(id: string, coa_title_code: string, coa_title_branch_num: string, theater: Theater, name: MultilingualString, name_kana: string, name_short: string, name_original: string, minutes: number, date_start: string, date_end: string, kbn_eirin: string, kbn_eizou: string, kbn_joueihousiki: string, kbn_jimakufukikae: string);
+    toDocument(): Object;
 }
 declare namespace Film {
     interface IFilm {
-        _id: string;
+        id: string;
         coa_title_code: string;
         coa_title_branch_num: string;
         theater: Theater;
