@@ -7,6 +7,7 @@
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import Authorization from '../model/authorization';
+import Transaction from '../model/transaction';
 import TransactionStatus from '../model/transactionStatus';
 import AssetRepository from '../repository/asset';
 import TransactionRepository from '../repository/transaction';
@@ -67,32 +68,25 @@ export function transferCOASeatReservation(authorization: Authorization.COASeatR
  *
  * @memberOf StockServiceInterpreter
  */
-export function disableTransactionInquiry(transactionId: string) {
+export function disableTransactionInquiry(transaction: Transaction) {
     return async (transactionRepository: TransactionRepository, coaRepository: typeof COA) => {
-        // 取引取得
-        const option = await transactionRepository.findById(transactionId);
-        if (option.isEmpty) {
-            throw new Error('transaction not found.');
-        }
-
-        const tranasction = option.get();
-        if (!tranasction.inquiry_key) {
+        if (!transaction.inquiry_key) {
             throw new Error('inquiry_key not created.');
         }
 
         // COAから内容抽出
         const reservation = await coaRepository.stateReserveInterface.call({
-            theater_code: tranasction.inquiry_key.theater_code,
-            reserve_num: tranasction.inquiry_key.reserve_num,
-            tel_num: tranasction.inquiry_key.tel
+            theater_code: transaction.inquiry_key.theater_code,
+            reserve_num: transaction.inquiry_key.reserve_num,
+            tel_num: transaction.inquiry_key.tel
         });
 
         // COA購入チケット取消
         debug('calling deleteReserve...');
         await coaRepository.deleteReserveInterface.call({
-            theater_code: tranasction.inquiry_key.theater_code,
-            reserve_num: tranasction.inquiry_key.reserve_num,
-            tel_num: tranasction.inquiry_key.tel,
+            theater_code: transaction.inquiry_key.theater_code,
+            reserve_num: transaction.inquiry_key.reserve_num,
+            tel_num: transaction.inquiry_key.tel,
             date_jouei: reservation.date_jouei,
             title_code: reservation.title_code,
             title_branch_num: reservation.title_branch_num,
@@ -109,7 +103,7 @@ export function disableTransactionInquiry(transactionId: string) {
         debug('updating transaction...', update);
         await transactionRepository.findOneAndUpdate(
             {
-                _id: transactionId,
+                _id: transaction.id,
                 status: TransactionStatus.UNDERWAY
             },
             update

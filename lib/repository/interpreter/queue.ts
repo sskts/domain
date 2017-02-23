@@ -15,6 +15,7 @@ import Notification from '../../model/notification';
 import NotificationGroup from '../../model/notificationGroup';
 import Queue from '../../model/queue';
 import QueueGroup from '../../model/queueGroup';
+import Transaction from '../../model/transaction';
 import queueModel from './mongoose/model/queue';
 
 export default class QueueRepositoryInterpreter implements QueueRepository {
@@ -118,7 +119,10 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             })
             .exec();
 
-        return (doc) ? monapt.Option(Queue.createDisableTransactionInquiry(<any>doc.toObject())) : monapt.None;
+        const object = <any>doc.toObject();
+        object.transaction = Transaction.create(doc.get('transaction'));
+
+        return (doc) ? monapt.Option(Queue.createDisableTransactionInquiry(object)) : monapt.None;
     }
 
     public async store(queue: Queue) {

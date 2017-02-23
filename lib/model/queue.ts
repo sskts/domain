@@ -1,6 +1,7 @@
 // tslint:disable:variable-name
 import Authorization from '../model/authorization';
 import Notification from '../model/notification';
+import Transaction from '../model/transaction';
 import QueueGroup from './queueGroup';
 import QueueStatus from './queueStatus';
 
@@ -114,7 +115,7 @@ namespace Queue {
             readonly last_tried_at: Date | null,
             readonly count_tried: number,
             readonly results: string[],
-            readonly transaction_id: string
+            readonly transaction: Transaction
         ) {
             super(
                 id,
@@ -321,7 +322,7 @@ namespace Queue {
 
     export function createDisableTransactionInquiry(args: {
         id: string,
-        transaction_id: string,
+        transaction: Transaction,
         status: QueueStatus,
         run_at: Date,
         max_count_try: number,
@@ -337,7 +338,7 @@ namespace Queue {
             args.last_tried_at,
             args.count_tried,
             args.results,
-            args.transaction_id
+            args.transaction
         );
     }
 }

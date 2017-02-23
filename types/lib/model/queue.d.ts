@@ -1,5 +1,6 @@
 import Authorization from '../model/authorization';
 import Notification from '../model/notification';
+import Transaction from '../model/transaction';
 import QueueGroup from './queueGroup';
 import QueueStatus from './queueStatus';
 /**
@@ -76,7 +77,7 @@ declare namespace Queue {
         readonly last_tried_at: Date | null;
         readonly count_tried: number;
         readonly results: string[];
-        readonly transaction_id: string;
+        readonly transaction: Transaction;
         /**
          * Creates an instance of DisableTransactionInquiryQueue.
          *
@@ -91,7 +92,7 @@ declare namespace Queue {
          *
          * @memberOf DisableTransactionInquiryQueue
          */
-        constructor(id: string, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], transaction_id: string);
+        constructor(id: string, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], transaction: Transaction);
     }
     /**
      * プッシュ通知キュー
@@ -202,7 +203,7 @@ declare namespace Queue {
     }): PushNotificationQueue<T>;
     function createDisableTransactionInquiry(args: {
         id: string;
-        transaction_id: string;
+        transaction: Transaction;
         status: QueueStatus;
         run_at: Date;
         max_count_try: number;

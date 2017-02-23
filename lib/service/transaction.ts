@@ -453,7 +453,7 @@ export function exportQueues(transactionId: string) {
                 if (transaction.isInquiryAvailable()) {
                     queues.push(Queue.createDisableTransactionInquiry({
                         id: ObjectId().toString(),
-                        transaction_id: transaction.id,
+                        transaction: transaction,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(),
                         max_count_try: 10,

@@ -5,6 +5,7 @@
  */
 import * as COA from '@motionpicture/coa-service';
 import Authorization from '../model/authorization';
+import Transaction from '../model/transaction';
 import AssetRepository from '../repository/asset';
 import TransactionRepository from '../repository/transaction';
 /**
@@ -31,4 +32,4 @@ export declare function transferCOASeatReservation(authorization: Authorization.
  *
  * @memberOf StockServiceInterpreter
  */
-export declare function disableTransactionInquiry(transactionId: string): (transactionRepository: TransactionRepository, coaRepository: typeof COA) => Promise<void>;
+export declare function disableTransactionInquiry(transaction: Transaction): (transactionRepository: TransactionRepository, coaRepository: typeof COA) => Promise<void>;
