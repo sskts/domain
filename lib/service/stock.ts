@@ -7,7 +7,6 @@
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import Authorization from '../model/authorization';
-import ObjectId from '../model/objectId';
 import TransactionStatus from '../model/transactionStatus';
 import AssetRepository from '../repository/asset';
 import TransactionRepository from '../repository/transaction';
@@ -68,12 +67,10 @@ export function transferCOASeatReservation(authorization: Authorization.COASeatR
  *
  * @memberOf StockServiceInterpreter
  */
-export function disableTransactionInquiry(args: {
-    transaction_id: string
-}) {
+export function disableTransactionInquiry(transactionId: string) {
     return async (transactionRepository: TransactionRepository, coaRepository: typeof COA) => {
         // 取引取得
-        const option = await transactionRepository.findById(args.transaction_id);
+        const option = await transactionRepository.findById(transactionId);
         if (option.isEmpty) {
             throw new Error('transaction not found.');
         }
@@ -112,7 +109,7 @@ export function disableTransactionInquiry(args: {
         debug('updating transaction...', update);
         await transactionRepository.findOneAndUpdate(
             {
-                _id: ObjectId(args.transaction_id),
+                _id: transactionId,
                 status: TransactionStatus.UNDERWAY
             },
             update

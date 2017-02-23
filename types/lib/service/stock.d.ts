@@ -31,6 +31,4 @@ export declare function transferCOASeatReservation(authorization: Authorization.
  *
  * @memberOf StockServiceInterpreter
  */
-export declare function disableTransactionInquiry(args: {
-    transaction_id: string;
-}): (transactionRepository: TransactionRepository, coaRepository: typeof COA) => Promise<void>;
+export declare function disableTransactionInquiry(transactionId: string): (transactionRepository: TransactionRepository, coaRepository: typeof COA) => Promise<void>;

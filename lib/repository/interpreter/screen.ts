@@ -19,7 +19,7 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
 
     public async findById(id: string) {
         const model = this.connection.model(screenModel.modelName);
-        const doc = await model.findOne({ _id: id })
+        const doc = await model.findById(id)
             .populate('theater')
             .exec();
 
@@ -38,7 +38,7 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
     public async store(screen: Screen) {
         const model = this.connection.model(screenModel.modelName);
         debug('updating a screen...', screen);
-        await model.findOneAndUpdate({ _id: screen.id }, screen.toDocument(), {
+        await model.findByIdAndUpdate(screen.id, screen.toDocument(), {
             new: true,
             upsert: true
         }).lean().exec();

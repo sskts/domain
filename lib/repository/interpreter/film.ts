@@ -19,7 +19,7 @@ export default class FilmRepositoryInterpreter implements FilmRepository {
 
     public async findById(id: string) {
         const model = this.connection.model(filmModel.modelName);
-        const doc = await model.findOne({ _id: id }).exec();
+        const doc = await model.findById(id).exec();
 
         return (doc) ? monapt.Option(Film.create(<any>doc.toObject())) : monapt.None;
     }
@@ -27,7 +27,7 @@ export default class FilmRepositoryInterpreter implements FilmRepository {
     public async store(film: Film) {
         const model = this.connection.model(filmModel.modelName);
         debug('updating a film...', film);
-        await model.findOneAndUpdate({ _id: film.id }, film.toDocument(), {
+        await model.findByIdAndUpdate(film.id, film.toDocument(), {
             new: true,
             upsert: true
         }).lean().exec();

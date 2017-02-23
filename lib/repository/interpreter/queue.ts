@@ -123,7 +123,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
 
     public async store(queue: Queue) {
         const model = this.connection.model(queueModel.modelName);
-        await model.findOneAndUpdate({ _id: queue.id }, queue, {
+        await model.findByIdAndUpdate(queue.id, queue, {
             new: true,
             upsert: true
         }).lean().exec();

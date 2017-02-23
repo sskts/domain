@@ -39,8 +39,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
 
     public async findById(id: string) {
         const model = this.connection.model(transactionModel.modelName);
-        const doc = await model.findOne()
-            .where('_id').equals(id)
+        const doc = await model.findById(id)
             .populate('owners').exec();
 
         return (doc) ? monapt.Option(Transaction.create(<any>doc.toObject())) : monapt.None;
@@ -66,7 +65,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
     public async store(transaction: Transaction) {
         const model = this.connection.model(transactionModel.modelName);
         debug('updating a transaction...', transaction);
-        await model.findOneAndUpdate({ _id: transaction.id }, transaction.toDocument(), {
+        await model.findByIdAndUpdate(transaction.id, transaction.toDocument(), {
             new: true,
             upsert: true
         }).lean().exec();

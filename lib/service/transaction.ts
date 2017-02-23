@@ -49,7 +49,7 @@ export function updateAnonymousOwner(args: {
         // 取引取得
         const optionTransaction = await transactionRepo.findById(args.transaction_id);
         if (optionTransaction.isEmpty) {
-            throw new Error(`transaction[${ObjectId(args.transaction_id)}] not found.`);
+            throw new Error(`transaction[${args.transaction_id}] not found.`);
         }
 
         const transaction = optionTransaction.get();
@@ -193,7 +193,7 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
         // 取引取得
         const optionTransaction = await transactionRepo.findById(transactionId);
         if (optionTransaction.isEmpty) {
-            throw new Error(`transaction[${ObjectId(transactionId)}] not found.`);
+            throw new Error(`transaction[${transactionId}] not found.`);
         }
 
         const transaction = optionTransaction.get();
@@ -281,7 +281,7 @@ export function enableInquiry(transactionId: string, key: TransactionInquiryKey)
         debug('updating transaction...', update);
         const option = await transactionRepo.findOneAndUpdate(
             {
-                _id: ObjectId(transactionId),
+                _id: transactionId,
                 status: TransactionStatus.UNDERWAY
             },
             update
@@ -345,7 +345,7 @@ export function close(transactionId: string) {
         debug('updating transaction...', update);
         const option = await transactionRepo.findOneAndUpdate(
             {
-                _id: ObjectId(transactionId),
+                _id: transactionId,
                 status: TransactionStatus.UNDERWAY
             },
             update

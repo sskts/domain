@@ -24,7 +24,7 @@ export default class OwnerRepositoryInterpreter implements OwnerRepository {
 
     public async findById(id: string) {
         const model = this.connection.model(ownerModel.modelName);
-        const doc = await model.findOne({ _id: id }).exec();
+        const doc = await model.findById(id).exec();
 
         return (doc) ? monapt.Option(<Owner>doc.toObject()) : monapt.None;
     }
@@ -48,7 +48,7 @@ export default class OwnerRepositoryInterpreter implements OwnerRepository {
 
     public async store(owner: Owner) {
         const model = this.connection.model(ownerModel.modelName);
-        await model.findOneAndUpdate({ _id: owner.id }, owner, {
+        await model.findByIdAndUpdate(owner.id, owner, {
             new: true,
             upsert: true
         }).lean().exec();

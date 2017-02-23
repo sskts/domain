@@ -1,13 +1,19 @@
 /**
  * パフォーマンスリポジトリ
  *
+ * todo パフォーマンス取得時にpopulateする必要がないようにスキーマを見直す
+ *
  * @class PerformanceRepositoryInterpreter
  */
 
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
+
+import Film from '../../model/film';
 import Performance from '../../model/performance';
+import Screen from '../../model/screen';
+import Theater from '../../model/theater';
 import PerformanceRepository from '../performance';
 import performanceModel from './mongoose/model/performance';
 
@@ -25,24 +31,36 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
             .populate('screen')
             .exec();
 
-        return docs.map((doc) => Performance.create(<any>doc.toObject()));
+        return docs.map((doc) => {
+            const object = <any>doc.toObject();
+            object.theater = Theater.create(doc.get('theater'));
+            object.screen = Screen.create(doc.get('screen'));
+            object.film = Film.create(doc.get('film'));
+
+            return Performance.create(object);
+        });
     }
 
     public async findById(id: string) {
         const model = this.connection.model(performanceModel.modelName);
-        const doc = await model.findOne({ _id: id })
+        const doc = await model.findById(id)
             .populate('film')
             .populate('theater')
             .populate('screen')
             .exec();
 
-        return (doc) ? monapt.Option(Performance.create(<any>doc.toObject())) : monapt.None;
+        const object = <any>doc.toObject();
+        object.theater = Theater.create(doc.get('theater'));
+        object.screen = Screen.create(doc.get('screen'));
+        object.film = Film.create(doc.get('film'));
+
+        return (doc) ? monapt.Option(Performance.create(object)) : monapt.None;
     }
 
     public async store(performance: Performance) {
         const model = this.connection.model(performanceModel.modelName);
         debug('updating a performance...', performance);
-        await model.findOneAndUpdate({ _id: performance.id }, performance.toDocument(), {
+        await model.findByIdAndUpdate(performance.id, performance.toDocument(), {
             new: true,
             upsert: true
         }).lean().exec();
