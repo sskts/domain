@@ -156,12 +156,12 @@ export function addGMOAuthorization(transactionId: string, authorization: Author
 
         // 所有者が取引に存在するかチェック
         const ownerIds = transaction.owners.map((owner) => {
-            return owner.id.toString();
+            return owner.id;
         });
-        if (ownerIds.indexOf(authorization.owner_from.toString()) < 0) {
+        if (ownerIds.indexOf(authorization.owner_from) < 0) {
             throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_from}].`);
         }
-        if (ownerIds.indexOf(authorization.owner_to.toString()) < 0) {
+        if (ownerIds.indexOf(authorization.owner_to) < 0) {
             throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_to}].`);
         }
 
@@ -199,12 +199,12 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
         const transaction = optionTransaction.get();
 
         const ownerIds = transaction.owners.map((owner) => {
-            return owner.id.toString();
+            return owner.id;
         });
-        if (ownerIds.indexOf(authorization.owner_from.toString()) < 0) {
+        if (ownerIds.indexOf(authorization.owner_from) < 0) {
             throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_from}].`);
         }
-        if (ownerIds.indexOf(authorization.owner_to.toString()) < 0) {
+        if (ownerIds.indexOf(authorization.owner_to) < 0) {
             throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_to}].`);
         }
 
@@ -242,7 +242,7 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
         const transaction = optionTransacton.get();
         const authorizations = await transactionRepo.findAuthorizationsById(transaction.id);
 
-        const removedAuthorization = authorizations.find((authorization) => authorization.id.toString() === authorizationId);
+        const removedAuthorization = authorizations.find((authorization) => authorization.id === authorizationId);
         if (!removedAuthorization) {
             throw new Error(`authorization [${authorizationId}] not found in the transaction.`);
         }
@@ -547,7 +547,7 @@ export function removeEmail(transactionId: string, notificationId: string) {
         const transaction = optionTransacton.get();
         const notifications = await transactionRepo.findNotificationsById(transaction.id);
 
-        const removedNotification = notifications.find((notification) => notification.id.toString() === notificationId);
+        const removedNotification = notifications.find((notification) => notification.id === notificationId);
         if (!removedNotification) {
             throw new Error(`notification [${notificationId}] not found in the transaction.`);
         }

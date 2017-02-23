@@ -8,7 +8,6 @@ import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import Authorization from '../model/authorization';
 import Transaction from '../model/transaction';
-import TransactionStatus from '../model/transactionStatus';
 import AssetRepository from '../repository/asset';
 import TransactionRepository from '../repository/transaction';
 
@@ -103,8 +102,7 @@ export function disableTransactionInquiry(transaction: Transaction) {
         debug('updating transaction...', update);
         await transactionRepository.findOneAndUpdate(
             {
-                _id: transaction.id,
-                status: TransactionStatus.UNDERWAY
+                _id: transaction.id
             },
             update
         );

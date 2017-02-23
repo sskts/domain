@@ -57,12 +57,12 @@ async function main() {
 
 
     // 空席なくなったら変更する
-    const theaterCode = '001';
-    const dateJouei = '20170210';
-    const titleCode = '8513';
+    const theaterCode = '118';
+    const dateJouei = '20170228';
+    const titleCode = '16404';
     const titleBranchNum = '0';
-    const timeBegin = '1010';
-    const screenCode = '2';
+    const timeBegin = '0920';
+    const screenCode = '8';
 
 
 
@@ -156,7 +156,7 @@ async function main() {
         }),
         price: totalPrice
     });
-    await transactionService.addCOASeatReservationAuthorization(transactionId.toString(), coaAuthorization)(transactionRepository);
+    await transactionService.addCOASeatReservationAuthorization(transactionId, coaAuthorization)(transactionRepository);
     console.log('coaAuthorization added.');
 
 
@@ -208,7 +208,7 @@ async function main() {
         gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
         price: totalPrice,
     });
-    await transactionService.addGMOAuthorization(transactionId.toString(), gmoAuthorization)(transactionRepository);
+    await transactionService.addGMOAuthorization(transactionId, gmoAuthorization)(transactionRepository);
     console.log('GMOAuthorization added.');
 
 
@@ -223,7 +223,7 @@ async function main() {
     // 購入者情報登録
     console.log('updating anonymous...');
     await transactionService.updateAnonymousOwner({
-        transaction_id: transactionId.toString(),
+        transaction_id: transactionId,
         name_first: 'Tetsu',
         name_last: 'Yamazaki',
         tel: '09012345678',
@@ -280,7 +280,7 @@ async function main() {
         reserve_num: updateReserveResult.reserve_num,
         tel: tel,
     });
-    await transactionService.enableInquiry(transactionId.toString(), key)(transactionRepository);
+    await transactionService.enableInquiry(transactionId, key)(transactionRepository);
     console.log('inquiry enabled.');
 
 
@@ -311,7 +311,7 @@ async function main() {
         subject: '購入完了',
         content: content,
     });
-    await transactionService.addEmail(transactionId.toString(), notification)(transactionRepository);
+    await transactionService.addEmail(transactionId, notification)(transactionRepository);
     console.log('email added.');
     // let notificationId = notification._id;
 
@@ -322,7 +322,7 @@ async function main() {
 
     // 取引成立
     console.log('closing transaction...');
-    await transactionService.close(transactionId.toString())(transactionRepository);
+    await transactionService.close(transactionId)(transactionRepository);
     console.log('closed.');
 
 

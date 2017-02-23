@@ -144,15 +144,15 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
         } = {};
 
         authorizations.forEach((authorization) => {
-            if (!pricesByOwner[authorization.owner_from.toString()]) {
-                pricesByOwner[authorization.owner_from.toString()] = 0;
+            if (!pricesByOwner[authorization.owner_from]) {
+                pricesByOwner[authorization.owner_from] = 0;
             }
-            if (!pricesByOwner[authorization.owner_to.toString()]) {
-                pricesByOwner[authorization.owner_to.toString()] = 0;
+            if (!pricesByOwner[authorization.owner_to]) {
+                pricesByOwner[authorization.owner_to] = 0;
             }
 
-            pricesByOwner[authorization.owner_from.toString()] -= authorization.price;
-            pricesByOwner[authorization.owner_to.toString()] += authorization.price;
+            pricesByOwner[authorization.owner_from] -= authorization.price;
+            pricesByOwner[authorization.owner_to] += authorization.price;
         });
 
         return Object.keys(pricesByOwner).every((ownerId) => (pricesByOwner[ownerId] === 0));

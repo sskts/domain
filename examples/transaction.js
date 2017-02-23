@@ -47,12 +47,12 @@ function main() {
             throw new Error('anonymousOwner not found.');
         const anonymousOwnerId = anonymousOwner.id;
         // 空席なくなったら変更する
-        const theaterCode = '001';
-        const dateJouei = '20170210';
-        const titleCode = '8513';
+        const theaterCode = '118';
+        const dateJouei = '20170228';
+        const titleCode = '16404';
         const titleBranchNum = '0';
-        const timeBegin = '1010';
-        const screenCode = '2';
+        const timeBegin = '0920';
+        const screenCode = '8';
         // 販売可能チケット検索
         const salesTicketResult = yield COA.salesTicketInterface.call({
             theater_code: theaterCode,
@@ -129,7 +129,7 @@ function main() {
             }),
             price: totalPrice
         });
-        yield transactionService.addCOASeatReservationAuthorization(transactionId.toString(), coaAuthorization)(transactionRepository);
+        yield transactionService.addCOASeatReservationAuthorization(transactionId, coaAuthorization)(transactionRepository);
         console.log('coaAuthorization added.');
         // GMOオーソリ取得
         const orderId = Date.now().toString();
@@ -165,12 +165,12 @@ function main() {
             gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
             price: totalPrice,
         });
-        yield transactionService.addGMOAuthorization(transactionId.toString(), gmoAuthorization)(transactionRepository);
+        yield transactionService.addGMOAuthorization(transactionId, gmoAuthorization)(transactionRepository);
         console.log('GMOAuthorization added.');
         // 購入者情報登録
         console.log('updating anonymous...');
         yield transactionService.updateAnonymousOwner({
-            transaction_id: transactionId.toString(),
+            transaction_id: transactionId,
             name_first: 'Tetsu',
             name_last: 'Yamazaki',
             tel: '09012345678',
@@ -213,7 +213,7 @@ function main() {
             reserve_num: updateReserveResult.reserve_num,
             tel: tel,
         });
-        yield transactionService.enableInquiry(transactionId.toString(), key)(transactionRepository);
+        yield transactionService.enableInquiry(transactionId, key)(transactionRepository);
         console.log('inquiry enabled.');
         // メール追加
         const content = `
@@ -237,12 +237,12 @@ function main() {
             subject: '購入完了',
             content: content,
         });
-        yield transactionService.addEmail(transactionId.toString(), notification)(transactionRepository);
+        yield transactionService.addEmail(transactionId, notification)(transactionRepository);
         console.log('email added.');
         // let notificationId = notification._id;
         // 取引成立
         console.log('closing transaction...');
-        yield transactionService.close(transactionId.toString())(transactionRepository);
+        yield transactionService.close(transactionId)(transactionRepository);
         console.log('closed.');
         // 照会してみる
         const inquiryResult = yield transactionService.makeInquiry(key)(transactionRepository);
