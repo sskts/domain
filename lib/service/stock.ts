@@ -71,7 +71,7 @@ export function transferCOASeatReservation(authorization: Authorization.COASeatR
 export function disableTransactionInquiry(transaction: Transaction) {
     return async (transactionRepository: TransactionRepository, coaRepository: typeof COA) => {
         if (!transaction.inquiry_key) {
-            throw new Error('inquiry_key not created.');
+            throw new RangeError('inquiry_key not created.');
         }
 
         // COAから内容抽出

@@ -49,12 +49,16 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
             .populate('screen')
             .exec();
 
-        const object = <any>doc.toObject();
-        object.theater = Theater.create(doc.get('theater'));
-        object.screen = Screen.create(doc.get('screen'));
-        object.film = Film.create(doc.get('film'));
+        if (doc) {
+            const object = <any>doc.toObject();
+            object.theater = Theater.create(doc.get('theater'));
+            object.screen = Screen.create(doc.get('screen'));
+            object.film = Film.create(doc.get('film'));
 
-        return (doc) ? monapt.Option(Performance.create(object)) : monapt.None;
+            return monapt.Option(Performance.create(object));
+        } else {
+            return monapt.None;
+        }
     }
 
     public async store(performance: Performance) {

@@ -119,4 +119,26 @@ describe('master service', () => {
                 done(err);
             });
     });
+
+    it('findTheater not found', (done) => {
+        SSKTS.MasterService.findTheater('000')(SSKTS.createTheaterRepository(connection))
+            .then((theaterOption) => {
+                assert(theaterOption.isEmpty);
+                done();
+            })
+            .catch((err) => {
+                done(err);
+            });
+    });
+
+    it('findPerformance not found', (done) => {
+        SSKTS.MasterService.findPerformance('000')(SSKTS.createPerformanceRepository(connection))
+            .then((performanceOption) => {
+                assert(performanceOption.isEmpty);
+                done();
+            })
+            .catch((err) => {
+                done(err);
+            });
+    });
 });

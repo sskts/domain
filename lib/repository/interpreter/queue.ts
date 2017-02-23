@@ -119,10 +119,14 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
             })
             .exec();
 
-        const object = <any>doc.toObject();
-        object.transaction = Transaction.create(doc.get('transaction'));
+        if (doc) {
+            const object = <any>doc.toObject();
+            object.transaction = Transaction.create(doc.get('transaction'));
 
-        return (doc) ? monapt.Option(Queue.createDisableTransactionInquiry(object)) : monapt.None;
+            return monapt.Option(Queue.createDisableTransactionInquiry(object));
+        } else {
+            return monapt.None;
+        }
     }
 
     public async store(queue: Queue) {
