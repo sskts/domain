@@ -8,7 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 // tslint:disable-next-line:missing-jsdoc
-const sendgrid = require("sendgrid");
 const SSKTS = require("../../lib/sskts-domain");
 describe('notification service', () => {
     it('send an email', () => __awaiter(this, void 0, void 0, function* () {
@@ -18,6 +17,6 @@ describe('notification service', () => {
             subject: 'test subject',
             content: 'test content'
         });
-        yield SSKTS.NotificationService.sendEmail(notification)(sendgrid);
+        yield SSKTS.NotificationService.sendEmail(notification)();
     }));
 });

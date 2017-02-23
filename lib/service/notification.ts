@@ -5,10 +5,10 @@
  */
 
 import * as createDebug from 'debug';
-import * as SendGrid from 'sendgrid';
+import * as sendgrid from 'sendgrid';
 import Notification from '../model/notification';
 
-export type SendGridOperation<T> = (sendgrid: typeof SendGrid) => Promise<T>;
+export type Operation<T> = () => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:notification');
 
@@ -17,12 +17,12 @@ const debug = createDebug('sskts-domain:service:notification');
  * https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
  *
  * @param {EmailNotification} email
- * @returns {SendGridOperation<void>}
+ * @returns {Operation<void>}
  *
  * @memberOf NotificationService
  */
-export function sendEmail(email: Notification.EmailNotification): SendGridOperation<void> {
-    return async (sendgrid: typeof SendGrid) => {
+export function sendEmail(email: Notification.EmailNotification): Operation<void> {
+    return async () => {
         const mail = new sendgrid.mail.Mail(
             new sendgrid.mail.Email(email.from),
             email.subject,

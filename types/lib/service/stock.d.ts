@@ -1,9 +1,3 @@
-/**
- * 在庫サービス
- *
- * @namespace StockService
- */
-import * as COA from '@motionpicture/coa-service';
 import Authorization from '../model/authorization';
 import Transaction from '../model/transaction';
 import AssetRepository from '../repository/asset';
@@ -16,7 +10,7 @@ import TransactionRepository from '../repository/transaction';
  *
  * @memberOf StockServiceInterpreter
  */
-export declare function unauthorizeCOASeatReservation(authorization: Authorization.COASeatReservationAuthorization): (coaRepository: typeof COA) => Promise<void>;
+export declare function unauthorizeCOASeatReservation(authorization: Authorization.COASeatReservationAuthorization): () => Promise<void>;
 /**
  * 資産移動(COA座席予約)
  *
@@ -32,4 +26,4 @@ export declare function transferCOASeatReservation(authorization: Authorization.
  *
  * @memberOf StockServiceInterpreter
  */
-export declare function disableTransactionInquiry(transaction: Transaction): (transactionRepository: TransactionRepository, coaRepository: typeof COA) => Promise<void>;
+export declare function disableTransactionInquiry(transaction: Transaction): (transactionRepository: TransactionRepository) => Promise<void>;

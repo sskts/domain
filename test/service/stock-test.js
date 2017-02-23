@@ -1,7 +1,6 @@
 "use strict";
 // tslint:disable-next-line:missing-jsdoc
 const assert = require("assert");
-const COA = require("@motionpicture/coa-service");
 const mongoose = require("mongoose");
 const transaction_1 = require("../../lib/model/transaction");
 const SSKTS = require("../../lib/sskts-domain");
@@ -16,7 +15,7 @@ describe('stock service', () => {
             owners: [],
             expired_at: new Date()
         });
-        SSKTS.StockService.disableTransactionInquiry(transaction)(SSKTS.createTransactionRepository(connection), COA).then(() => {
+        SSKTS.StockService.disableTransactionInquiry(transaction)(SSKTS.createTransactionRepository(connection)).then(() => {
             done(new Error('unexpected.'));
         }).catch((err) => {
             assert(err instanceof RangeError);

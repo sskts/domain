@@ -22,9 +22,9 @@ const debug = createDebug('sskts-domain:service:stock');
  * @memberOf StockServiceInterpreter
  */
 export function unauthorizeCOASeatReservation(authorization: Authorization.COASeatReservationAuthorization) {
-    return async (coaRepository: typeof COA) => {
+    return async () => {
         debug('calling deleteTmpReserve...');
-        await coaRepository.deleteTmpReserveInterface.call({
+        await COA.deleteTmpReserveInterface.call({
             theater_code: authorization.coa_theater_code,
             date_jouei: authorization.coa_date_jouei,
             title_code: authorization.coa_title_code,
@@ -68,13 +68,13 @@ export function transferCOASeatReservation(authorization: Authorization.COASeatR
  * @memberOf StockServiceInterpreter
  */
 export function disableTransactionInquiry(transaction: Transaction) {
-    return async (transactionRepository: TransactionRepository, coaRepository: typeof COA) => {
+    return async (transactionRepository: TransactionRepository) => {
         if (!transaction.inquiry_key) {
             throw new RangeError('inquiry_key not created.');
         }
 
         // COAから内容抽出
-        const reservation = await coaRepository.stateReserveInterface.call({
+        const reservation = await COA.stateReserveInterface.call({
             theater_code: transaction.inquiry_key.theater_code,
             reserve_num: transaction.inquiry_key.reserve_num,
             tel_num: transaction.inquiry_key.tel
@@ -82,7 +82,7 @@ export function disableTransactionInquiry(transaction: Transaction) {
 
         // COA購入チケット取消
         debug('calling deleteReserve...');
-        await coaRepository.deleteReserveInterface.call({
+        await COA.deleteReserveInterface.call({
             theater_code: transaction.inquiry_key.theater_code,
             reserve_num: transaction.inquiry_key.reserve_num,
             tel_num: transaction.inquiry_key.tel,

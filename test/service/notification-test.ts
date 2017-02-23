@@ -1,5 +1,4 @@
 // tslint:disable-next-line:missing-jsdoc
-import * as sendgrid from 'sendgrid';
 import * as SSKTS from '../../lib/sskts-domain';
 
 describe('notification service', () => {
@@ -11,6 +10,6 @@ describe('notification service', () => {
             content: 'test content'
         });
 
-        await SSKTS.NotificationService.sendEmail(notification)(sendgrid);
+        await SSKTS.NotificationService.sendEmail(notification)();
     });
 });

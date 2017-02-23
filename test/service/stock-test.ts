@@ -1,6 +1,5 @@
 // tslint:disable-next-line:missing-jsdoc
 import * as assert from 'assert';
-import * as COA from '@motionpicture/coa-service';
 import * as mongoose from 'mongoose';
 
 import Transaction from '../../lib/model/transaction';
@@ -20,8 +19,7 @@ describe('stock service', () => {
         });
 
         SSKTS.StockService.disableTransactionInquiry(transaction)(
-            SSKTS.createTransactionRepository(connection),
-            COA
+            SSKTS.createTransactionRepository(connection)
         ).then(() => {
             done(new Error('unexpected.'));
         }).catch((err) => {

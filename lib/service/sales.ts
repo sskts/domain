@@ -14,9 +14,9 @@ const debug = createDebug('sskts-domain:service:sales');
  * GMOオーソリ取消
  */
 export function cancelGMOAuth(authorization: Authorization.GMOAuthorization) {
-    return async (gmoRepository: typeof GMO) => {
+    return async () => {
         debug('calling alterTran...');
-        await gmoRepository.CreditService.alterTran({
+        await GMO.CreditService.alterTran({
             shopId: authorization.gmo_shop_id,
             shopPass: authorization.gmo_shop_pass,
             accessId: authorization.gmo_access_id,
@@ -33,9 +33,9 @@ export function cancelGMOAuth(authorization: Authorization.GMOAuthorization) {
  * GMO売上確定
  */
 export function settleGMOAuth(authorization: Authorization.GMOAuthorization) {
-    return async (gmoRepository: typeof GMO) => {
+    return async () => {
         debug('calling alterTran...');
-        await gmoRepository.CreditService.alterTran({
+        await GMO.CreditService.alterTran({
             shopId: authorization.gmo_shop_id,
             shopPass: authorization.gmo_shop_pass,
             accessId: authorization.gmo_access_id,
