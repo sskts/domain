@@ -62,7 +62,7 @@ function main() {
             time_begin: timeBegin,
         });
         // COA空席確認
-        const getStateReserveSeatResult = yield COA.ReserveService.getStateReserveSeat({
+        const getStateReserveSeatResult = yield COA.ReserveService.stateReserveSeat({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -78,7 +78,7 @@ function main() {
         if (getStateReserveSeatResult.cnt_reserve_free === 0)
             throw new Error('no available seats.');
         // COA仮予約
-        const reserveSeatsTemporarilyResult = yield COA.ReserveService.reserveSeatsTemporarily({
+        const reserveSeatsTemporarilyResult = yield COA.ReserveService.updTmpReserveSeat({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -179,7 +179,7 @@ function main() {
         console.log('anonymousOwner updated.');
         // COA本予約
         const tel = '09012345678';
-        const updateReserveResult = yield COA.ReserveService.updateReserve({
+        const updateReserveResult = yield COA.ReserveService.updReserve({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,

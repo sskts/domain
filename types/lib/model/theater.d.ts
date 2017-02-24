@@ -30,6 +30,6 @@ declare namespace Theater {
         address: MultilingualString;
     }
     function create(args: ITheater): Theater;
-    function createFromCOA(theaterFromCOA: COA.MasterService.FindTheaterResult): Theater;
+    function createFromCOA(theaterFromCOA: COA.MasterService.TheaterResult): Theater;
 }
 export default Theater;

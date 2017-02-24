@@ -100,7 +100,7 @@ namespace Screen {
         );
     }
 
-    export function createFromCOA(screenFromCOA: COA.MasterService.FindScreensByTheaterCodeResult) {
+    export function createFromCOA(screenFromCOA: COA.MasterService.ScreenResult) {
         return async (theater: Theater) => {
             const sections: ISection[] = [];
             const sectionCodes: string[] = [];

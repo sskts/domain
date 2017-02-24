@@ -45,7 +45,7 @@ namespace Theater {
         );
     }
 
-    export function createFromCOA(theaterFromCOA: COA.MasterService.FindTheaterResult) {
+    export function createFromCOA(theaterFromCOA: COA.MasterService.TheaterResult) {
         return create({
             id: theaterFromCOA.theater_code,
             name: {

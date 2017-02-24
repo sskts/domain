@@ -83,7 +83,7 @@ namespace Performance {
         );
     }
 
-    export function createFromCOA(performanceFromCOA: COA.MasterService.FindPerformancesByTheaterCodeResult) {
+    export function createFromCOA(performanceFromCOA: COA.MasterService.ScheduleResult) {
         return (screen: Screen, film: Film) => {
             const id = [
                 screen.theater.id,

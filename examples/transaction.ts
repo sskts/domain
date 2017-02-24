@@ -86,7 +86,7 @@ async function main() {
 
 
     // COA空席確認
-    const getStateReserveSeatResult = await COA.ReserveService.getStateReserveSeat({
+    const getStateReserveSeatResult = await COA.ReserveService.stateReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -104,7 +104,7 @@ async function main() {
 
 
     // COA仮予約
-    const reserveSeatsTemporarilyResult = await COA.ReserveService.reserveSeatsTemporarily({
+    const reserveSeatsTemporarilyResult = await COA.ReserveService.updTmpReserveSeat({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,
@@ -239,7 +239,7 @@ async function main() {
 
     // COA本予約
     const tel = '09012345678';
-    const updateReserveResult = await COA.ReserveService.updateReserve({
+    const updateReserveResult = await COA.ReserveService.updReserve({
         theater_code: theaterCode,
         date_jouei: dateJouei,
         title_code: titleCode,

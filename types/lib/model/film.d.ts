@@ -60,6 +60,6 @@ declare namespace Film {
         kbn_jimakufukikae?: string;
     }
     function create(args: IFilm): Film;
-    function createFromCOA(filmFromCOA: COA.MasterService.FindFilmsByTheaterCodeResult): (theater: Theater) => Promise<Film>;
+    function createFromCOA(filmFromCOA: COA.MasterService.TitleResult): (theater: Theater) => Promise<Film>;
 }
 export default Film;

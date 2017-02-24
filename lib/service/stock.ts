@@ -24,7 +24,7 @@ const debug = createDebug('sskts-domain:service:stock');
 export function unauthorizeCOASeatReservation(authorization: Authorization.COASeatReservationAuthorization) {
     return async () => {
         debug('calling deleteTmpReserve...');
-        await COA.ReserveService.deleteTmpReserve({
+        await COA.ReserveService.delTmpReserve({
             theater_code: authorization.coa_theater_code,
             date_jouei: authorization.coa_date_jouei,
             title_code: authorization.coa_title_code,
@@ -82,7 +82,7 @@ export function disableTransactionInquiry(transaction: Transaction) {
 
         // COA購入チケット取消
         debug('calling deleteReserve...');
-        await COA.ReserveService.deleteReserve({
+        await COA.ReserveService.delReserve({
             theater_code: transaction.inquiry_key.theater_code,
             reserve_num: transaction.inquiry_key.reserve_num,
             tel_num: transaction.inquiry_key.tel,
