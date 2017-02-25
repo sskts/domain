@@ -17,7 +17,7 @@ const COA = require("@motionpicture/coa-service");
 const GMO = require("@motionpicture/gmo-service");
 const moment = require("moment");
 const mongoose = require("mongoose");
-const SSKTS = require("../lib/sskts-domain");
+const SSKTS = require("../lib/index");
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);

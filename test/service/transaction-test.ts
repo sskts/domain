@@ -1,6 +1,6 @@
 // tslint:disable-next-line:missing-jsdoc
 import * as mongoose from 'mongoose';
-import * as SSKTS from '../../lib/sskts-domain';
+import * as SSKTS from '../../lib/index';
 
 let connection: mongoose.Connection;
 before(() => {

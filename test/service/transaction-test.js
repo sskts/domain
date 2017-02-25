@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 // tslint:disable-next-line:missing-jsdoc
 const mongoose = require("mongoose");
-const SSKTS = require("../../lib/sskts-domain");
+const SSKTS = require("../../lib/index");
 let connection;
 before(() => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);

@@ -3,7 +3,7 @@
 const assert = require("assert");
 const mongoose = require("mongoose");
 const transaction_1 = require("../../lib/model/transaction");
-const SSKTS = require("../../lib/sskts-domain");
+const SSKTS = require("../../lib/index");
 let connection;
 before(() => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);

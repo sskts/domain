@@ -1,10 +1,16 @@
-// tslint:disable-next-line:missing-jsdoc
-import * as SSKTS from '../../lib/index';
-
-describe('notification service', () => {
-    it('send an email', async () => {
-        // tslint:disable-next-line:no-multiline-string
-        const content = `
+"use strict";
+/**
+ * メールを送信する
+ *
+ * @ignore
+ */
+const SSKTS = require("../lib/index");
+const notification = SSKTS.Notification.createEmail({
+    from: 'noreply@localhost',
+    to: 'ilovegadd@gmail.com',
+    subject: 'test subject',
+    // tslint:disable-next-line:no-multiline-string
+    content: `
 テスト 購入 様\n
 \n
 -------------------------------------------------------------------\n
@@ -22,14 +28,13 @@ describe('notification service', () => {
 シネマサンシャイン\n
 http://www.cinemasunshine.co.jp/\n
 -------------------------------------------------------------------\n
-`;
-        const notification = SSKTS.Notification.createEmail({
-            from: 'noreply@localhost',
-            to: 'hello@motionpicture.jp',
-            subject: 'test subject',
-            content: content
-        });
-
-        await SSKTS.NotificationService.sendEmail(notification)();
-    });
+`
+});
+SSKTS.NotificationService.sendEmail(notification)()
+    .then(() => {
+    // tslint:disable-next-line:no-console
+    console.log('sent');
+})
+    .catch((err) => {
+    console.error(err);
 });

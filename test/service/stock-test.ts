@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import * as mongoose from 'mongoose';
 
 import Transaction from '../../lib/model/transaction';
-import * as SSKTS from '../../lib/sskts-domain';
+import * as SSKTS from '../../lib/index';
 
 let connection: mongoose.Connection;
 before(() => {

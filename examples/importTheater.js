@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 /* tslint:disable */
 const mongoose = require("mongoose");
-const SSKTS = require("../lib/sskts-domain");
+const SSKTS = require("../lib/index");
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {

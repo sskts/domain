@@ -27,7 +27,7 @@ export function sendEmail(email: Notification.EmailNotification): Operation<void
             new sendgrid.mail.Email(email.from),
             email.subject,
             new sendgrid.mail.Email(email.to),
-            new sendgrid.mail.Content('text/html', email.content)
+            new sendgrid.mail.Content('text/plain', email.content)
         );
 
         const sg = sendgrid(process.env.SENDGRID_API_KEY);

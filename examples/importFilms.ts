@@ -1,6 +1,6 @@
 /* tslint:disable */
 import * as mongoose from 'mongoose';
-import * as SSKTS from '../lib/sskts-domain';
+import * as SSKTS from '../lib/index';
 
 async function main() {
     try {

@@ -9,7 +9,7 @@ import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
-import * as SSKTS from '../lib/sskts-domain';
+import * as SSKTS from '../lib/index';
 
 async function main() {
     const connection = mongoose.createConnection(process.env.MONGOLAB_URI);

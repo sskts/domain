@@ -2,7 +2,7 @@
 // tslint:disable-next-line:missing-jsdoc
 const assert = require("assert");
 const mongoose = require("mongoose");
-const SSKTS = require("../../lib/sskts-domain");
+const SSKTS = require("../../lib/index");
 let connection;
 before(() => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
