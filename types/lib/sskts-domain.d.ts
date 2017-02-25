@@ -7,7 +7,6 @@
 import { Connection } from 'mongoose';
 import * as MasterService from './service/master';
 import * as NotificationService from './service/notification';
-import * as OAuthService from './service/oauth';
 import * as SalesService from './service/sales';
 import * as StockService from './service/stock';
 import * as TransactionService from './service/transaction';
@@ -35,4 +34,4 @@ export declare function createQueueRepository(connection: Connection): QueueRepo
 export declare function createScreenRepository(connection: Connection): ScreenRepository;
 export declare function createTransactionRepository(connection: Connection): TransactionRepository;
 export declare function createTheaterRepository(connection: Connection): TheaterRepository;
-export { Asset, Authorization, MasterService, Notification, NotificationService, OAuthService, Ownership, QueueStatus, SalesService, StockService, TransactionInquiryKey, TransactionQueuesStatus, TransactionStatus, TransactionService };
+export { Asset, Authorization, MasterService, Notification, NotificationService, Ownership, QueueStatus, SalesService, StockService, TransactionInquiryKey, TransactionQueuesStatus, TransactionStatus, TransactionService };

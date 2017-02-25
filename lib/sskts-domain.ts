@@ -7,7 +7,6 @@ import { Connection } from 'mongoose';
 
 import * as MasterService from './service/master';
 import * as NotificationService from './service/notification';
-import * as OAuthService from './service/oauth';
 import * as SalesService from './service/sales';
 import * as StockService from './service/stock';
 import * as TransactionService from './service/transaction';
@@ -61,7 +60,6 @@ export {
     MasterService,
     Notification,
     NotificationService,
-    OAuthService,
     Ownership,
     QueueStatus,
     SalesService,
