@@ -12,7 +12,7 @@ interface OwnerRepository {
      *
      * @param {Object} conditions 検索条件
      */
-    find(conditions: Object): Promise<Owner[]>;
+    find(conditions: any): Promise<Owner[]>;
     /**
      * ID検索
      *
@@ -29,7 +29,7 @@ interface OwnerRepository {
      * @param {Object} conditions 検索条件
      * @param {Object} update 更新内容
      */
-    findOneAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Owner>>;
+    findOneAndUpdate(conditions: any, update: any): Promise<monapt.Option<Owner>>;
     /**
      * 保管する
      *

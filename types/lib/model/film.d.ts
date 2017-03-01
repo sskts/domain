@@ -39,7 +39,23 @@ declare class Film {
     readonly kbn_joueihousiki: string;
     readonly kbn_jimakufukikae: string;
     constructor(id: string, coa_title_code: string, coa_title_branch_num: string, theater: Theater, name: MultilingualString, name_kana: string, name_short: string, name_original: string, minutes: number, date_start: string, date_end: string, kbn_eirin: string, kbn_eizou: string, kbn_joueihousiki: string, kbn_jimakufukikae: string);
-    toDocument(): Object;
+    toDocument(): {
+        id: string;
+        coa_title_code: string;
+        coa_title_branch_num: string;
+        theater: string;
+        name: MultilingualString;
+        name_kana: string;
+        name_short: string;
+        name_original: string;
+        minutes: number;
+        date_start: string;
+        date_end: string;
+        kbn_eirin: string;
+        kbn_eizou: string;
+        kbn_joueihousiki: string;
+        kbn_jimakufukikae: string;
+    };
 }
 declare namespace Film {
     interface IFilm {

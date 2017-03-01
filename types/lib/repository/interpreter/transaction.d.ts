@@ -10,11 +10,13 @@ export declare type IAuthorization = Authorization.AssetAuthorization | Authoriz
 export declare type INotification = Notification.EmailNotification;
 export default class TransactionRepositoryInterpreter implements TransactionRepository {
     readonly connection: Connection;
+    private transactionModel;
+    private transactionEventModel;
     constructor(connection: Connection);
-    find(conditions: Object): Promise<Transaction[]>;
+    find(conditions: any): Promise<Transaction[]>;
     findById(id: string): Promise<monapt.Option<Transaction>>;
-    findOne(conditions: Object): Promise<monapt.Option<Transaction>>;
-    findOneAndUpdate(conditions: Object, update: Object): Promise<monapt.Option<Transaction>>;
+    findOne(conditions: any): Promise<monapt.Option<Transaction>>;
+    findOneAndUpdate(conditions: any, update: any): Promise<monapt.Option<Transaction>>;
     store(transaction: Transaction): Promise<void>;
     addEvent(transactionEvent: TransactionEvent): Promise<void>;
     findAuthorizationsById(id: string): Promise<IAuthorization[]>;

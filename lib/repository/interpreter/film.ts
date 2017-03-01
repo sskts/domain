@@ -14,20 +14,21 @@ import filmModel from './mongoose/model/film';
 const debug = createDebug('sskts-domain:repository:film');
 
 export default class FilmRepositoryInterpreter implements FilmRepository {
+    private model: typeof filmModel;
+
     constructor(readonly connection: Connection) {
+        this.model = this.connection.model(filmModel.modelName);
     }
 
     public async findById(id: string) {
-        const model = this.connection.model(filmModel.modelName);
-        const doc = await model.findById(id).exec();
+        const doc = await this.model.findById(id).exec();
 
         return (doc) ? monapt.Option(Film.create(<any>doc.toObject())) : monapt.None;
     }
 
     public async store(film: Film) {
-        const model = this.connection.model(filmModel.modelName);
         debug('updating a film...', film);
-        await model.findByIdAndUpdate(film.id, film.toDocument(), {
+        await this.model.findByIdAndUpdate(film.id, film.toDocument(), {
             new: true,
             upsert: true
         }).lean().exec();

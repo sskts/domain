@@ -4,6 +4,59 @@ import MultilingualString from './multilingualString';
 import Theater from './theater';
 
 /**
+ * スクリーン座席
+ *
+ *
+ * @interface Seat
+ */
+export interface ISeat {
+    /**
+     * 座席コード
+     *
+     * @type {string}
+     * @memberOf Seat
+     */
+    code: string;
+}
+/**
+ * スクリーンセクション
+ *
+ *
+ * @interface Section
+ */
+export interface ISection {
+    /**
+     * セクションコード
+     *
+     * @type {string}
+     * @memberOf Section
+     */
+    code: string;
+    /**
+     * セクション名称
+     *
+     * @type {MultilingualString}
+     * @memberOf Section
+     */
+    name: MultilingualString;
+    /**
+     * 座席リスト
+     *
+     * @type {Array<Seat>}
+     * @memberOf Section
+     */
+    seats: ISeat[];
+}
+
+export interface IScreen {
+    id: string;
+    theater: Theater;
+    coa_screen_code: string;
+    name: MultilingualString;
+    sections: ISection[];
+}
+
+/**
  * スクリーン
  *
  * @class Screen
@@ -20,12 +73,12 @@ class Screen {
         readonly theater: Theater,
         readonly coa_screen_code: string,
         readonly name: MultilingualString,
-        readonly sections: Screen.ISection[]
+        readonly sections: ISection[]
     ) {
         // todo validation
     }
 
-    public toDocument(): Object {
+    public toDocument() {
         return {
             id: this.id,
             theater: this.theater.id,
@@ -37,59 +90,6 @@ class Screen {
 }
 
 namespace Screen {
-    /**
-     * スクリーン座席
-     *
-     *
-     * @interface Seat
-     */
-    export interface ISeat {
-        /**
-         * 座席コード
-         *
-         * @type {string}
-         * @memberOf Seat
-         */
-        code: string;
-    }
-    /**
-     * スクリーンセクション
-     *
-     *
-     * @interface Section
-     */
-    export interface ISection {
-        /**
-         * セクションコード
-         *
-         * @type {string}
-         * @memberOf Section
-         */
-        code: string;
-        /**
-         * セクション名称
-         *
-         * @type {MultilingualString}
-         * @memberOf Section
-         */
-        name: MultilingualString;
-        /**
-         * 座席リスト
-         *
-         * @type {Array<Seat>}
-         * @memberOf Section
-         */
-        seats: ISeat[];
-    }
-
-    export interface IScreen {
-        id: string;
-        theater: Theater;
-        coa_screen_code: string;
-        name: MultilingualString;
-        sections: ISection[];
-    }
-
     export function create(args: IScreen) {
         return new Screen(
             args.id,

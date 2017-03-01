@@ -14,12 +14,14 @@ import screenModel from './mongoose/model/screen';
 const debug = createDebug('sskts-domain:repository:screen');
 
 export default class ScreenRepositoryInterpreter implements ScreenRepository {
+    private model: typeof screenModel;
+
     constructor(readonly connection: Connection) {
+        this.model = this.connection.model(screenModel.modelName);
     }
 
     public async findById(id: string) {
-        const model = this.connection.model(screenModel.modelName);
-        const doc = await model.findById(id)
+        const doc = await this.model.findById(id)
             .populate('theater')
             .exec();
 
@@ -27,8 +29,7 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
     }
 
     public async findByTheater(theaterId: string) {
-        const model = this.connection.model(screenModel.modelName);
-        const docs = await model.find({ theater: theaterId })
+        const docs = await this.model.find({ theater: theaterId })
             .populate('theater')
             .exec();
 
@@ -36,9 +37,8 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
     }
 
     public async store(screen: Screen) {
-        const model = this.connection.model(screenModel.modelName);
         debug('updating a screen...', screen);
-        await model.findByIdAndUpdate(screen.id, screen.toDocument(), {
+        await this.model.findByIdAndUpdate(screen.id, screen.toDocument(), {
             new: true,
             upsert: true
         }).lean().exec();

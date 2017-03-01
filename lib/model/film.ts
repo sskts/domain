@@ -45,7 +45,7 @@ class Film {
         // todo validation
     }
 
-    public toDocument(): Object {
+    public toDocument() {
         return {
             id: this.id,
             coa_title_code: this.coa_title_code,

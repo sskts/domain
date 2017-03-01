@@ -88,7 +88,7 @@ namespace Authorization {
          * @param {number} price
          * @param {string} owner_from
          * @param {string} owner_to
-         * @param {Array<SeatReservationAsset>} assets 資産リスト(COA側では複数座席に対してひとつの仮予約番号が割り当てられるため)
+         * @param {Asset.SeatReservation[]} assets 資産リスト(COA側では複数座席に対してひとつの仮予約番号が割り当てられるため)
          *
          * @memberOf COASeatReservationAuthorization
          */

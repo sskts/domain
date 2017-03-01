@@ -36,7 +36,7 @@ class Performance {
         // todo validation
     }
 
-    public toDocument(): Object {
+    public toDocument() {
         return {
             id: this.id,
             theater: this.theater.id,

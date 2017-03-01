@@ -207,7 +207,7 @@ export function searchPerformances(conditions: SearchPerformancesConditions):
     PerformanceOperation<SearchPerformancesResult[]> {
     return async (performanceRepo: PerformanceRepository): Promise<SearchPerformancesResult[]> => {
         // 検索条件を作成
-        const andConditions: Object[] = [
+        const andConditions: any[] = [
             { _id: { $ne: null } }
         ];
 

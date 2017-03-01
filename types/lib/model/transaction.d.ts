@@ -24,7 +24,14 @@ declare class Transaction {
     readonly inquiry_key: TransactionInquiryKey | null;
     readonly queues_status: TransactionQueuesStatus;
     constructor(id: string, status: TransactionStatus, owners: Owner[], expired_at: Date, inquiry_key: TransactionInquiryKey | null, queues_status: TransactionQueuesStatus);
-    toDocument(): Object;
+    toDocument(): {
+        id: string;
+        status: TransactionStatus;
+        owners: string[];
+        expired_at: Date;
+        inquiry_key: TransactionInquiryKey | null;
+        queues_status: TransactionQueuesStatus;
+    };
     /**
      * 照会可能かどうか
      *

@@ -10,12 +10,14 @@ import AssetRepository from '../asset';
 import assetModel from './mongoose/model/asset';
 
 export default class AssetRepositoryInterpreter implements AssetRepository {
+    private model: typeof assetModel;
+
     constructor(readonly connection: Connection) {
+        this.model = this.connection.model(assetModel.modelName);
     }
 
     public async store(asset: Asset) {
-        const model = this.connection.model(assetModel.modelName);
-        await model.findByIdAndUpdate(asset.id, asset, {
+        await this.model.findByIdAndUpdate(asset.id, asset, {
             new: true,
             upsert: true
         }).lean().exec();

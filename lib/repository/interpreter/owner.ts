@@ -14,31 +14,30 @@ import OwnerRepository from '../owner';
 import ownerModel from './mongoose/model/owner';
 
 export default class OwnerRepositoryInterpreter implements OwnerRepository {
+    private model: typeof ownerModel;
+
     constructor(readonly connection: Connection) {
+        this.model = this.connection.model(ownerModel.modelName);
     }
 
-    public async find(conditions: Object) {
-        const model = this.connection.model(ownerModel.modelName);
-        return <Owner[]>await model.find({ $and: [conditions] }).lean().exec();
+    public async find(conditions: any) {
+        return <Owner[]>await this.model.find({ $and: [conditions] }).lean().exec();
     }
 
     public async findById(id: string) {
-        const model = this.connection.model(ownerModel.modelName);
-        const doc = await model.findById(id).exec();
+        const doc = await this.model.findById(id).exec();
 
         return (doc) ? monapt.Option(<Owner>doc.toObject()) : monapt.None;
     }
 
     public async findPromoter() {
-        const model = this.connection.model(ownerModel.modelName);
-        const doc = await model.findOne({ group: OwnerGroup.PROMOTER }).exec();
+        const doc = await this.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
 
         return (doc) ? monapt.Option(Owner.createPromoter(<any>doc.toObject())) : monapt.None;
     }
 
-    public async findOneAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(ownerModel.modelName);
-        const doc = await model.findOneAndUpdate(conditions, update, {
+    public async findOneAndUpdate(conditions: any, update: any) {
+        const doc = await this.model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         }).exec();
@@ -47,8 +46,7 @@ export default class OwnerRepositoryInterpreter implements OwnerRepository {
     }
 
     public async store(owner: Owner) {
-        const model = this.connection.model(ownerModel.modelName);
-        await model.findByIdAndUpdate(owner.id, owner, {
+        await this.model.findByIdAndUpdate(owner.id, owner, {
             new: true,
             upsert: true
         }).lean().exec();

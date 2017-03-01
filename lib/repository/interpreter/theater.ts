@@ -14,22 +14,23 @@ import theaterModel from './mongoose/model/theater';
 const debug = createDebug('sskts-domain:repository:theater');
 
 export default class TheaterRepositoryInterpreter implements TheaterRepository {
+    private model: typeof theaterModel;
+
     constructor(readonly connection: Connection) {
+        this.model = this.connection.model(theaterModel.modelName);
     }
 
     public async findById(id: string) {
-        const model = this.connection.model(theaterModel.modelName);
         debug('finding theater...', id);
-        const doc = await model.findById(id).exec();
+        const doc = await this.model.findById(id).exec();
         debug('theater found.', doc);
 
         return (doc) ? monapt.Option(Theater.create(<any>doc.toObject())) : monapt.None;
     }
 
     public async store(theater: Theater) {
-        const model = this.connection.model(theaterModel.modelName);
         debug('updating a theater...', theater);
-        await model.findByIdAndUpdate(theater.id, theater, {
+        await this.model.findByIdAndUpdate(theater.id, theater, {
             new: true,
             upsert: true
         }).lean().exec();

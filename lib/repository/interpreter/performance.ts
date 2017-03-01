@@ -20,12 +20,14 @@ import performanceModel from './mongoose/model/performance';
 const debug = createDebug('sskts-domain:repository:performance');
 
 export default class PerformanceRepositoryInterpreter implements PerformanceRepository {
+    private model: typeof performanceModel;
+
     constructor(readonly connection: Connection) {
+        this.model = this.connection.model(performanceModel.modelName);
     }
 
-    public async find(conditions: Object) {
-        const model = this.connection.model(performanceModel.modelName);
-        const docs = await model.find(conditions)
+    public async find(conditions: any) {
+        const docs = await this.model.find(conditions)
             .populate('film')
             .populate('theater')
             .populate('screen')
@@ -42,8 +44,7 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
     }
 
     public async findById(id: string) {
-        const model = this.connection.model(performanceModel.modelName);
-        const doc = await model.findById(id)
+        const doc = await this.model.findById(id)
             .populate('film')
             .populate('theater')
             .populate('screen')
@@ -62,9 +63,8 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
     }
 
     public async store(performance: Performance) {
-        const model = this.connection.model(performanceModel.modelName);
         debug('updating a performance...', performance);
-        await model.findByIdAndUpdate(performance.id, performance.toDocument(), {
+        await this.model.findByIdAndUpdate(performance.id, performance.toDocument(), {
             new: true,
             upsert: true
         }).lean().exec();

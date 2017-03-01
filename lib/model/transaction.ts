@@ -31,7 +31,7 @@ class Transaction {
         // todo validation
     }
 
-    public toDocument(): Object {
+    public toDocument() {
         return {
             id: this.id,
             status: this.status,

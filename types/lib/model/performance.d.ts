@@ -26,7 +26,16 @@ declare class Performance {
     readonly time_end: string;
     readonly canceled: boolean;
     constructor(id: string, theater: Theater, screen: Screen, film: Film, day: string, time_start: string, time_end: string, canceled: boolean);
-    toDocument(): Object;
+    toDocument(): {
+        id: string;
+        theater: string;
+        screen: string;
+        film: string;
+        day: string;
+        time_start: string;
+        time_end: string;
+        canceled: boolean;
+    };
 }
 declare namespace Performance {
     interface IPerformance {

@@ -19,12 +19,14 @@ import Transaction from '../../model/transaction';
 import queueModel from './mongoose/model/queue';
 
 export default class QueueRepositoryInterpreter implements QueueRepository {
+    private model: typeof queueModel;
+
     constructor(readonly connection: Connection) {
+        this.model = this.connection.model(queueModel.modelName);
     }
 
-    public async findOneAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(queueModel.modelName);
-        const doc = await model.findOneAndUpdate(conditions, update, {
+    public async findOneAndUpdate(conditions: any, update: any) {
+        const doc = await this.model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         }).exec();
@@ -32,9 +34,8 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         return (doc) ? monapt.Option(Queue.create(<any>doc.toObject())) : monapt.None;
     }
 
-    public async findOneSendEmailAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(queueModel.modelName);
-        const doc = await model.findOneAndUpdate(conditions, update, {
+    public async findOneSendEmailAndUpdate(conditions: any, update: any) {
+        const doc = await this.model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         })
@@ -46,9 +47,8 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         return (doc) ? monapt.Option(Queue.createPushNotification<Notification.EmailNotification>(<any>doc.toObject())) : monapt.None;
     }
 
-    public async findOneSettleGMOAuthorizationAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(queueModel.modelName);
-        const doc = await model.findOneAndUpdate(conditions, update, {
+    public async findOneSettleGMOAuthorizationAndUpdate(conditions: any, update: any) {
+        const doc = await this.model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         })
@@ -61,9 +61,8 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         return (doc) ? monapt.Option(Queue.createSettleAuthorization<Authorization.GMOAuthorization>(<any>doc.toObject())) : monapt.None;
     }
 
-    public async findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(queueModel.modelName);
-        const doc = await model.findOneAndUpdate(conditions, update, {
+    public async findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions: any, update: any) {
+        const doc = await this.model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         })
@@ -77,9 +76,8 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         return (doc) ? monapt.Option(queue) : monapt.None;
     }
 
-    public async findOneCancelGMOAuthorizationAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(queueModel.modelName);
-        const doc = await model.findOneAndUpdate(conditions, update, {
+    public async findOneCancelGMOAuthorizationAndUpdate(conditions: any, update: any) {
+        const doc = await this.model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         })
@@ -92,9 +90,8 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         return (doc) ? monapt.Option(Queue.createCancelAuthorization<Authorization.GMOAuthorization>(<any>doc.toObject())) : monapt.None;
     }
 
-    public async findOneCancelCOASeatReservationAuthorizationAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(queueModel.modelName);
-        const doc = await model.findOneAndUpdate(conditions, update, {
+    public async findOneCancelCOASeatReservationAuthorizationAndUpdate(conditions: any, update: any) {
+        const doc = await this.model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         })
@@ -108,9 +105,8 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
         return (doc) ? monapt.Option(queue) : monapt.None;
     }
 
-    public async findOneDisableTransactionInquiryAndUpdate(conditions: Object, update: Object) {
-        const model = this.connection.model(queueModel.modelName);
-        const doc = await model.findOneAndUpdate(conditions, update, {
+    public async findOneDisableTransactionInquiryAndUpdate(conditions: any, update: any) {
+        const doc = await this.model.findOneAndUpdate(conditions, update, {
             new: true,
             upsert: false
         })
@@ -130,8 +126,7 @@ export default class QueueRepositoryInterpreter implements QueueRepository {
     }
 
     public async store(queue: Queue) {
-        const model = this.connection.model(queueModel.modelName);
-        await model.findByIdAndUpdate(queue.id, queue, {
+        await this.model.findByIdAndUpdate(queue.id, queue, {
             new: true,
             upsert: true
         }).lean().exec();
