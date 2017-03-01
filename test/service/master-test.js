@@ -3,14 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:missing-jsdoc
 const assert = require("assert");
 const mongoose = require("mongoose");
-const SSKTS = require("../../lib/index");
+const sskts = require("../../lib/index");
 let connection;
 before(() => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 });
 describe('master service', () => {
     it('importTheater fail', (done) => {
-        SSKTS.MasterService.importTheater('000')(SSKTS.createTheaterRepository(connection))
+        sskts.service.master.importTheater('000')(sskts.createTheaterRepository(connection))
             .then(() => {
             done(new Error('thenable.'));
         })
@@ -19,7 +19,7 @@ describe('master service', () => {
         });
     });
     it('importTheater ok', (done) => {
-        SSKTS.MasterService.importTheater('118')(SSKTS.createTheaterRepository(connection))
+        sskts.service.master.importTheater('118')(sskts.createTheaterRepository(connection))
             .then(() => {
             done();
         })
@@ -28,7 +28,7 @@ describe('master service', () => {
         });
     });
     it('importScreens fail', (done) => {
-        SSKTS.MasterService.importScreens('000')(SSKTS.createTheaterRepository(connection), SSKTS.createScreenRepository(connection))
+        sskts.service.master.importScreens('000')(sskts.createTheaterRepository(connection), sskts.createScreenRepository(connection))
             .then(() => {
             done(new Error('thenable.'));
         })
@@ -37,7 +37,7 @@ describe('master service', () => {
         });
     });
     it('importScreens ok', (done) => {
-        SSKTS.MasterService.importScreens('118')(SSKTS.createTheaterRepository(connection), SSKTS.createScreenRepository(connection))
+        sskts.service.master.importScreens('118')(sskts.createTheaterRepository(connection), sskts.createScreenRepository(connection))
             .then(() => {
             done();
         })
@@ -46,7 +46,7 @@ describe('master service', () => {
         });
     });
     it('importFilms fail', (done) => {
-        SSKTS.MasterService.importFilms('000')(SSKTS.createTheaterRepository(connection), SSKTS.createFilmRepository(connection))
+        sskts.service.master.importFilms('000')(sskts.createTheaterRepository(connection), sskts.createFilmRepository(connection))
             .then(() => {
             done(new Error('thenable.'));
         })
@@ -55,7 +55,7 @@ describe('master service', () => {
         });
     });
     it('importFilms ok', (done) => {
-        SSKTS.MasterService.importFilms('118')(SSKTS.createTheaterRepository(connection), SSKTS.createFilmRepository(connection))
+        sskts.service.master.importFilms('118')(sskts.createTheaterRepository(connection), sskts.createFilmRepository(connection))
             .then(() => {
             done();
         })
@@ -64,7 +64,7 @@ describe('master service', () => {
         });
     });
     it('importPerformances fail', (done) => {
-        SSKTS.MasterService.importPerformances('000', '20170101', '20170331')(SSKTS.createFilmRepository(connection), SSKTS.createScreenRepository(connection), SSKTS.createPerformanceRepository(connection))
+        sskts.service.master.importPerformances('000', '20170101', '20170331')(sskts.createFilmRepository(connection), sskts.createScreenRepository(connection), sskts.createPerformanceRepository(connection))
             .then(() => {
             done(new Error('thenable.'));
         })
@@ -73,7 +73,7 @@ describe('master service', () => {
         });
     });
     it('importPerformances ok', (done) => {
-        SSKTS.MasterService.importPerformances('118', '20170101', '20170331')(SSKTS.createFilmRepository(connection), SSKTS.createScreenRepository(connection), SSKTS.createPerformanceRepository(connection))
+        sskts.service.master.importPerformances('118', '20170101', '20170331')(sskts.createFilmRepository(connection), sskts.createScreenRepository(connection), sskts.createPerformanceRepository(connection))
             .then(() => {
             done();
         })
@@ -82,7 +82,7 @@ describe('master service', () => {
         });
     });
     it('findTheater ok', (done) => {
-        SSKTS.MasterService.findTheater('118')(SSKTS.createTheaterRepository(connection))
+        sskts.service.master.findTheater('118')(sskts.createTheaterRepository(connection))
             .then((theaterOption) => {
             assert(theaterOption.isDefined);
             done();
@@ -92,7 +92,7 @@ describe('master service', () => {
         });
     });
     it('findTheater not found', (done) => {
-        SSKTS.MasterService.findTheater('000')(SSKTS.createTheaterRepository(connection))
+        sskts.service.master.findTheater('000')(sskts.createTheaterRepository(connection))
             .then((theaterOption) => {
             assert(theaterOption.isEmpty);
             done();
@@ -102,7 +102,7 @@ describe('master service', () => {
         });
     });
     it('findPerformance not found', (done) => {
-        SSKTS.MasterService.findPerformance('000')(SSKTS.createPerformanceRepository(connection))
+        sskts.service.master.findPerformance('000')(sskts.createPerformanceRepository(connection))
             .then((performanceOption) => {
             assert(performanceOption.isEmpty);
             done();

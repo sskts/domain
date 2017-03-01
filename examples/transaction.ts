@@ -9,7 +9,7 @@ import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
-import * as SSKTS from '../lib/index';
+import * as sskts from '../lib/index';
 
 async function main() {
     const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
@@ -18,9 +18,9 @@ async function main() {
     const gmoShopPass = 'xbxmkaa6';
 
 
-    const transactionService = SSKTS.TransactionService;
-    const ownerRepository = SSKTS.createOwnerRepository(connection);
-    const transactionRepository = SSKTS.createTransactionRepository(connection);
+    const transactionService = sskts.service.transaction;
+    const ownerRepository = sskts.createOwnerRepository(connection);
+    const transactionRepository = sskts.createTransactionRepository(connection);
 
 
     // 取引開始
@@ -124,7 +124,7 @@ async function main() {
     // COAオーソリ追加
     console.log('adding authorizations coaSeatReservation...');
     const totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
-    const coaAuthorization = SSKTS.Authorization.createCOASeatReservation({
+    const coaAuthorization = sskts.model.Authorization.createCOASeatReservation({
         owner_from: promoterOwnerId,
         owner_to: anonymousOwnerId,
         coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
@@ -135,8 +135,8 @@ async function main() {
         coa_time_begin: timeBegin,
         coa_screen_code: screenCode,
         assets: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
-            return SSKTS.Asset.createSeatReservation({
-                ownership: SSKTS.Ownership.create({
+            return sskts.model.Asset.createSeatReservation({
+                ownership: sskts.model.Ownership.create({
                     owner: anonymousOwnerId,
                     authenticated: false,
                 }),
@@ -195,7 +195,7 @@ async function main() {
 
     // GMOオーソリ追加
     console.log('adding authorizations gmo...');
-    const gmoAuthorization = SSKTS.Authorization.createGMO({
+    const gmoAuthorization = sskts.model.Authorization.createGMO({
         owner_from: anonymousOwnerId,
         owner_to: promoterOwnerId,
         gmo_shop_id: gmoShopId,
@@ -275,7 +275,7 @@ async function main() {
 
     // 照会情報登録(購入番号と電話番号で照会する場合)
     console.log('enabling inquiry...');
-    const key = SSKTS.TransactionInquiryKey.create({
+    const key = sskts.model.TransactionInquiryKey.create({
         theater_code: theaterCode,
         reserve_num: updateReserveResult.reserve_num,
         tel: tel,
@@ -291,21 +291,26 @@ async function main() {
 
     // メール追加
     const content = `
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>購入完了</title>
-</head>
-<body>
-<h1>この度はご購入いただき誠にありがとうございます。</h1>
-<h3>購入番号 (Transaction number) :</h3>
-<strong>${updateReserveResult.reserve_num}</strong>
-</body>
-</html>
+テスト 購入 様\n
+\n
+-------------------------------------------------------------------\n
+この度はご購入いただき誠にありがとうございます。\n
+\n
+※チケット発券時は、自動発券機に下記チケットQRコードをかざしていただくか、購入番号と電話番号を入力していただく必要があります。\n
+-------------------------------------------------------------------\n
+\n
+◆購入番号 ：${updateReserveResult.reserve_num}\n
+◆電話番号 ：09012345678\n
+◆合計金額 ：${totalPrice}円\n
+\n
+※このアドレスは送信専用です。返信はできませんのであらかじめご了承下さい。\n
+-------------------------------------------------------------------\n
+シネマサンシャイン\n
+http://www.cinemasunshine.co.jp/\n
+-------------------------------------------------------------------\n
 `;
     console.log('adding email...');
-    const notification = SSKTS.Notification.createEmail({
+    const notification = sskts.model.Notification.createEmail({
         from: 'noreply@localhost',
         to: 'hello@motionpicture.jp',
         subject: '購入完了',

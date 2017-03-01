@@ -1,5 +1,5 @@
 // tslint:disable-next-line:missing-jsdoc
-import * as SSKTS from '../../lib/index';
+import * as sskts from '../../lib/index';
 
 describe('notification service', () => {
     it('send an email', async () => {
@@ -23,13 +23,13 @@ describe('notification service', () => {
 http://www.cinemasunshine.co.jp/\n
 -------------------------------------------------------------------\n
 `;
-        const notification = SSKTS.Notification.createEmail({
+        const notification = sskts.model.Notification.createEmail({
             from: 'noreply@localhost',
             to: 'hello@motionpicture.jp',
             subject: 'test subject',
             content: content
         });
 
-        await SSKTS.NotificationService.sendEmail(notification)();
+        await sskts.service.notification.sendEmail(notification)();
     });
 });

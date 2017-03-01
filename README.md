@@ -15,7 +15,7 @@ npm install @motionpicture/sskts-domain
 ## Usage
 
 ```Javascript
-var SSKTS = require('@motionpicture/sskts-domain');
+var sskts = require('@motionpicture/sskts-domain');
 ```
 
 

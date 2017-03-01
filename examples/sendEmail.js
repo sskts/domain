@@ -5,8 +5,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  * @ignore
  */
-const SSKTS = require("../lib/index");
-const notification = SSKTS.Notification.createEmail({
+const sskts = require("../lib/index");
+const notification = sskts.model.Notification.createEmail({
     from: 'noreply@localhost',
     to: 'ilovegadd@gmail.com',
     subject: 'test subject',
@@ -31,7 +31,7 @@ http://www.cinemasunshine.co.jp/\n
 -------------------------------------------------------------------\n
 `
 });
-SSKTS.NotificationService.sendEmail(notification)()
+sskts.service.notification.sendEmail(notification)()
     .then(() => {
     // tslint:disable-next-line:no-console
     console.log('sent');

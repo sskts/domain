@@ -10,13 +10,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 /* tslint:disable */
 const mongoose = require("mongoose");
-const SSKTS = require("../lib/index");
+const sskts = require("../lib/index");
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             mongoose.Promise = global.Promise;
             const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-            const theater = yield SSKTS.MasterService.findTheater('118')(SSKTS.createTheaterRepository(connection));
+            const theater = yield sskts.service.master.findTheater('118')(sskts.createTheaterRepository(connection));
             console.log(theater);
         }
         catch (error) {

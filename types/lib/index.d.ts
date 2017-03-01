@@ -5,11 +5,11 @@
  * @module
  */
 import { Connection } from 'mongoose';
-import * as MasterService from './service/master';
-import * as NotificationService from './service/notification';
-import * as SalesService from './service/sales';
-import * as StockService from './service/stock';
-import * as TransactionService from './service/transaction';
+import * as masterService from './service/master';
+import * as notificationService from './service/notification';
+import * as salesService from './service/sales';
+import * as stockService from './service/stock';
+import * as transactionService from './service/transaction';
 import AssetRepository from './repository/interpreter/asset';
 import FilmRepository from './repository/interpreter/film';
 import OwnerRepository from './repository/interpreter/owner';
@@ -34,4 +34,20 @@ export declare function createQueueRepository(connection: Connection): QueueRepo
 export declare function createScreenRepository(connection: Connection): ScreenRepository;
 export declare function createTransactionRepository(connection: Connection): TransactionRepository;
 export declare function createTheaterRepository(connection: Connection): TheaterRepository;
-export { Asset, Authorization, MasterService, Notification, NotificationService, Ownership, QueueStatus, SalesService, StockService, TransactionInquiryKey, TransactionQueuesStatus, TransactionStatus, TransactionService };
+export declare const service: {
+    master: typeof masterService;
+    notification: typeof notificationService;
+    sales: typeof salesService;
+    stock: typeof stockService;
+    transaction: typeof transactionService;
+};
+export declare const model: {
+    Asset: typeof Asset;
+    Authorization: typeof Authorization;
+    Notification: typeof Notification;
+    Ownership: typeof Ownership;
+    QueueStatus: typeof QueueStatus;
+    TransactionInquiryKey: typeof TransactionInquiryKey;
+    TransactionQueuesStatus: typeof TransactionQueuesStatus;
+    TransactionStatus: typeof TransactionStatus;
+};

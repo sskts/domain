@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
 const mongoose = require("mongoose");
 const transaction_1 = require("../../lib/model/transaction");
-const SSKTS = require("../../lib/index");
+const sskts = require("../../lib/index");
 let connection;
 before(() => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
@@ -16,7 +16,7 @@ describe('stock service', () => {
             owners: [],
             expired_at: new Date()
         });
-        SSKTS.StockService.disableTransactionInquiry(transaction)(SSKTS.createTransactionRepository(connection)).then(() => {
+        sskts.service.stock.disableTransactionInquiry(transaction)(sskts.createTransactionRepository(connection)).then(() => {
             done(new Error('unexpected.'));
         }).catch((err) => {
             assert(err instanceof RangeError);

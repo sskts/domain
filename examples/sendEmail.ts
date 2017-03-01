@@ -3,9 +3,9 @@
  *
  * @ignore
  */
-import * as SSKTS from '../lib/index';
+import * as sskts from '../lib/index';
 
-const notification = SSKTS.Notification.createEmail({
+const notification = sskts.model.Notification.createEmail({
     from: 'noreply@localhost',
     to: 'ilovegadd@gmail.com',
     subject: 'test subject',
@@ -31,7 +31,7 @@ http://www.cinemasunshine.co.jp/\n
 `
 });
 
-SSKTS.NotificationService.sendEmail(notification)()
+sskts.service.notification.sendEmail(notification)()
     .then(() => {
         // tslint:disable-next-line:no-console
         console.log('sent');

@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import * as mongoose from 'mongoose';
 
 import Transaction from '../../lib/model/transaction';
-import * as SSKTS from '../../lib/index';
+import * as sskts from '../../lib/index';
 
 let connection: mongoose.Connection;
 before(() => {
@@ -18,8 +18,8 @@ describe('stock service', () => {
             expired_at: new Date()
         });
 
-        SSKTS.StockService.disableTransactionInquiry(transaction)(
-            SSKTS.createTransactionRepository(connection)
+        sskts.service.stock.disableTransactionInquiry(transaction)(
+            sskts.createTransactionRepository(connection)
         ).then(() => {
             done(new Error('unexpected.'));
         }).catch((err) => {

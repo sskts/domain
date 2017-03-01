@@ -5,11 +5,11 @@
  */
 import { Connection } from 'mongoose';
 
-import * as MasterService from './service/master';
-import * as NotificationService from './service/notification';
-import * as SalesService from './service/sales';
-import * as StockService from './service/stock';
-import * as TransactionService from './service/transaction';
+import * as masterService from './service/master';
+import * as notificationService from './service/notification';
+import * as salesService from './service/sales';
+import * as stockService from './service/stock';
+import * as transactionService from './service/transaction';
 
 import AssetRepository from './repository/interpreter/asset';
 import FilmRepository from './repository/interpreter/film';
@@ -54,18 +54,21 @@ export function createTheaterRepository(connection: Connection) {
     return new TheaterRepository(connection);
 }
 
-export {
+export const service = {
+    master: masterService,
+    notification: notificationService,
+    sales: salesService,
+    stock: stockService,
+    transaction: transactionService
+};
+
+export const model = {
     Asset,
     Authorization,
-    MasterService,
     Notification,
-    NotificationService,
     Ownership,
     QueueStatus,
-    SalesService,
-    StockService,
     TransactionInquiryKey,
     TransactionQueuesStatus,
-    TransactionStatus,
-    TransactionService
-}
+    TransactionStatus
+};

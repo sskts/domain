@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:missing-jsdoc
-const SSKTS = require("../../lib/index");
+const sskts = require("../../lib/index");
 describe('notification service', () => {
     it('send an email', () => __awaiter(this, void 0, void 0, function* () {
         // tslint:disable-next-line:no-multiline-string
@@ -32,12 +32,12 @@ describe('notification service', () => {
 http://www.cinemasunshine.co.jp/\n
 -------------------------------------------------------------------\n
 `;
-        const notification = SSKTS.Notification.createEmail({
+        const notification = sskts.model.Notification.createEmail({
             from: 'noreply@localhost',
             to: 'hello@motionpicture.jp',
             subject: 'test subject',
             content: content
         });
-        yield SSKTS.NotificationService.sendEmail(notification)();
+        yield sskts.service.notification.sendEmail(notification)();
     }));
 });

@@ -10,13 +10,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:missing-jsdoc
 const mongoose = require("mongoose");
-const SSKTS = require("../../lib/index");
+const sskts = require("../../lib/index");
 let connection;
 before(() => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 });
 describe('transaction service', () => {
     it('export queues', () => __awaiter(this, void 0, void 0, function* () {
-        yield SSKTS.TransactionService.exportQueues('58ab949eedc005093c5fe3c6')(SSKTS.createTransactionRepository(connection), SSKTS.createQueueRepository(connection));
+        yield sskts.service.transaction.exportQueues('58ab949eedc005093c5fe3c6')(sskts.createTransactionRepository(connection), sskts.createQueueRepository(connection));
     }));
 });
