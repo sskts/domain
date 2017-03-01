@@ -37,6 +37,7 @@
     "ink-docstrap": "^1.3.0",
     "jsdoc": "3.4.3",
     "mocha": "^3.2.0",
+    "nsp": "^2.6.2",
     "rimraf": "^2.6.1",
     "tslint": "^4.5.1",
     "tslint-microsoft-contrib": "^4.0.0",
@@ -53,11 +54,11 @@
   "repository": {},
   "scripts": {
     "build": "tsc",
+    "check": "tslint -c tslint.json lib/**/*.ts && nsp check",
     "clean": "rimraf examples/**/*.js lib/**/*.js test/**/*.js types/**/*.d.ts",
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
-    "prepublishOnly": "npm run clean && npm run tslint && npm run build",
-    "test": "mocha --no-timeouts --recursive",
-    "tslint": "tslint -c tslint.json lib/**/*.ts"
+    "prepublishOnly": "npm run clean && npm run check && npm run build",
+    "test": "tslint -c tslint.json lib/**/*.ts && nsp check && mocha --no-timeouts --recursive"
   },
   "types": "./types/lib/index.d.ts",
   "version": "2.0.0"
