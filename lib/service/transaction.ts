@@ -6,6 +6,7 @@
 
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
+import * as util from 'util';
 
 import Authorization from '../model/authorization';
 import Notification from '../model/notification';
@@ -463,29 +464,30 @@ export function exportQueues(transactionId: string) {
                     }));
                 }
 
-                // todo おそらく開発時のみ
-                queues.push(Queue.createPushNotification(
-                    {
-                        id: ObjectId().toString(),
-                        notification: Notification.createEmail({
+                // 開発時のみ通知
+                if (process.env.NODE_ENV !== 'production') {
+                    queues.push(Queue.createPushNotification(
+                        {
                             id: ObjectId().toString(),
-                            from: 'noreply@localhost',
-                            to: 'hello@motionpicture.jp',
-                            subject: 'transaction expired',
-                            content: `
-取引の期限がきれました
-_id: ${transaction.id}
-expired_at: ${transaction.expired_at}
+                            notification: Notification.createEmail({
+                                id: ObjectId().toString(),
+                                from: 'noreply@localhost',
+                                to: 'hello@motionpicture.jp',
+                                subject: 'transaction expired',
+                                content: `
+expired transaction:\n
+${util.inspect(transaction, { showHidden: true, depth: 10 })}\n
 `
-                        }),
-                        status: QueueStatus.UNEXECUTED,
-                        run_at: new Date(),
-                        max_count_try: 10,
-                        last_tried_at: null,
-                        count_tried: 0,
-                        results: []
-                    }
-                ));
+                            }),
+                            status: QueueStatus.UNEXECUTED,
+                            run_at: new Date(),
+                            max_count_try: 10,
+                            last_tried_at: null,
+                            count_tried: 0,
+                            results: []
+                        }
+                    ));
+                }
 
                 break;
 
