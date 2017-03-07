@@ -22,17 +22,13 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
     }
 
     public async findById(id: string) {
-        const doc = await this.model.findById(id)
-            .populate('theater')
-            .exec();
+        const doc = await this.model.findById(id).exec();
 
         return (doc) ? monapt.Option(<Screen.IScreen>doc.toObject()) : monapt.None;
     }
 
     public async findByTheater(theaterId: string) {
-        const docs = await this.model.find({ theater: theaterId })
-            .populate('theater')
-            .exec();
+        const docs = await this.model.find({ theater: theaterId }).exec();
 
         return docs.map((doc) => <Screen.IScreen>doc.toObject());
     }
