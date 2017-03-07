@@ -64,7 +64,7 @@ describe('master service', () => {
         });
     });
     it('importPerformances fail', (done) => {
-        sskts.service.master.importPerformances('000', '20170101', '20170331')(sskts.createFilmRepository(connection), sskts.createScreenRepository(connection), sskts.createPerformanceRepository(connection))
+        sskts.service.master.importPerformances('000', '20170301', '20170303')(sskts.createFilmRepository(connection), sskts.createScreenRepository(connection), sskts.createPerformanceRepository(connection))
             .then(() => {
             done(new Error('thenable.'));
         })
@@ -73,7 +73,7 @@ describe('master service', () => {
         });
     });
     it('importPerformances ok', (done) => {
-        sskts.service.master.importPerformances('118', '20170101', '20170331')(sskts.createFilmRepository(connection), sskts.createScreenRepository(connection), sskts.createPerformanceRepository(connection))
+        sskts.service.master.importPerformances('118', '20170301', '20170303')(sskts.createFilmRepository(connection), sskts.createScreenRepository(connection), sskts.createPerformanceRepository(connection))
             .then(() => {
             done();
         })
