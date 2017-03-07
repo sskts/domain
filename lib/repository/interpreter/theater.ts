@@ -4,10 +4,11 @@
  * @class TheaterRepositoryInterpreter
  */
 
+import * as clone from 'clone';
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
-import Theater from '../../model/theater';
+import * as Theater from '../../model/theater';
 import TheaterRepository from '../theater';
 import theaterModel from './mongoose/model/theater';
 
@@ -25,12 +26,13 @@ export default class TheaterRepositoryInterpreter implements TheaterRepository {
         const doc = await this.model.findById(id).exec();
         debug('theater found.', doc);
 
-        return (doc) ? monapt.Option(Theater.create(<any>doc.toObject())) : monapt.None;
+        return (doc) ? monapt.Option(<Theater.ITheater>doc.toObject()) : monapt.None;
     }
 
-    public async store(theater: Theater) {
+    public async store(theater: Theater.ITheater) {
         debug('updating a theater...', theater);
-        await this.model.findByIdAndUpdate(theater.id, theater, {
+        const update = clone(theater);
+        await this.model.findByIdAndUpdate(update.id, update, {
             new: true,
             upsert: true
         }).lean().exec();

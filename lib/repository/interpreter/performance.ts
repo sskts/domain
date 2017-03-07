@@ -6,14 +6,12 @@
  * @class PerformanceRepositoryInterpreter
  */
 
+import * as clone from 'clone';
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
 
-import Film from '../../model/film';
-import Performance from '../../model/performance';
-import Screen from '../../model/screen';
-import Theater from '../../model/theater';
+import * as Performance from '../../model/performance';
 import PerformanceRepository from '../performance';
 import performanceModel from './mongoose/model/performance';
 
@@ -26,7 +24,7 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
         this.model = this.connection.model(performanceModel.modelName);
     }
 
-    public async find(conditions: any) {
+    public async find(conditions: any): Promise<Performance.IPerformanceWithFilmAndScreen[]> {
         const docs = await this.model.find(conditions)
             .populate('film')
             .populate('theater')
@@ -34,16 +32,33 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
             .exec();
 
         return docs.map((doc) => {
-            const object = <any>doc.toObject();
-            object.theater = Theater.create(doc.get('theater'));
-            object.screen = Screen.create(doc.get('screen'));
-            object.film = Film.create(doc.get('film'));
-
-            return Performance.create(object);
+            return {
+                id: doc.get('id'),
+                theater: {
+                    id: doc.get('theater').id,
+                    name: doc.get('theater').name
+                },
+                screen: {
+                    id: doc.get('screen').id,
+                    name: doc.get('screen').name
+                },
+                film: {
+                    id: doc.get('film').id,
+                    name: doc.get('film').name,
+                    name_kana: doc.get('film').name_kana,
+                    name_short: doc.get('film').name_short,
+                    name_original: doc.get('film').name_original,
+                    minutes: doc.get('film').minutes
+                },
+                day: doc.get('day'),
+                time_start: doc.get('time_start'),
+                time_end: doc.get('time_end'),
+                canceled: doc.get('canceled')
+            };
         });
     }
 
-    public async findById(id: string) {
+    public async findById(id: string): Promise<monapt.Option<Performance.IPerformanceWithFilmAndScreen>> {
         const doc = await this.model.findById(id)
             .populate('film')
             .populate('theater')
@@ -51,20 +66,40 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
             .exec();
 
         if (doc) {
-            const object = <any>doc.toObject();
-            object.theater = Theater.create(doc.get('theater'));
-            object.screen = Screen.create(doc.get('screen'));
-            object.film = Film.create(doc.get('film'));
-
-            return monapt.Option(Performance.create(object));
+            return monapt.Option(
+                {
+                    id: doc.get('id'),
+                    theater: {
+                        id: doc.get('theater').id,
+                        name: doc.get('theater').name
+                    },
+                    screen: {
+                        id: doc.get('screen').id,
+                        name: doc.get('screen').name
+                    },
+                    film: {
+                        id: doc.get('film').id,
+                        name: doc.get('film').name,
+                        name_kana: doc.get('film').name_kana,
+                        name_short: doc.get('film').name_short,
+                        name_original: doc.get('film').name_original,
+                        minutes: doc.get('film').minutes
+                    },
+                    day: doc.get('day'),
+                    time_start: doc.get('time_start'),
+                    time_end: doc.get('time_end'),
+                    canceled: doc.get('canceled')
+                }
+            );
         } else {
             return monapt.None;
         }
     }
 
-    public async store(performance: Performance) {
+    public async store(performance: Performance.IPerformance) {
         debug('updating a performance...', performance);
-        await this.model.findByIdAndUpdate(performance.id, performance.toDocument(), {
+        const update = clone(performance);
+        await this.model.findByIdAndUpdate(update.id, update, {
             new: true,
             upsert: true
         }).lean().exec();

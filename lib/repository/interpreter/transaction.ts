@@ -4,22 +4,19 @@
  * @class TransactionRepositoryInterpreter
  */
 
+import * as clone from 'clone';
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
 
-import Authorization from '../../model/authorization';
-import Notification from '../../model/notification';
-import Transaction from '../../model/transaction';
-import TransactionEvent from '../../model/transactionEvent';
+import * as Authorization from '../../model/authorization';
+import * as Notification from '../../model/notification';
+import * as Transaction from '../../model/transaction';
+import * as TransactionEvent from '../../model/transactionEvent';
 import TransactionEventGroup from '../../model/transactionEventGroup';
 import TransactionRepository from '../transaction';
 import TransactionModel from './mongoose/model/transaction';
 import TransactionEventModel from './mongoose/model/transactionEvent';
-
-export type IAuthorization =
-    Authorization.AssetAuthorization | Authorization.COASeatReservationAuthorization | Authorization.GMOAuthorization;
-export type INotification = Notification.EmailNotification;
 
 const debug = createDebug('sskts-domain:repository:transaction');
 
@@ -38,20 +35,20 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             .populate('owner')
             .exec();
 
-        return docs.map((doc) => Transaction.create(<any>doc.toObject()));
+        return docs.map((doc) => <Transaction.ITransaction>doc.toObject());
     }
 
     public async findById(id: string) {
         const doc = await this.transactionModel.findById(id)
             .populate('owners').exec();
 
-        return (doc) ? monapt.Option(Transaction.create(<any>doc.toObject())) : monapt.None;
+        return (doc) ? monapt.Option(<Transaction.ITransaction>doc.toObject()) : monapt.None;
     }
 
     public async findOne(conditions: any) {
         const doc = await this.transactionModel.findOne(conditions).exec();
 
-        return (doc) ? monapt.Option(Transaction.create(<any>doc.toObject())) : monapt.None;
+        return (doc) ? monapt.Option(<Transaction.ITransaction>doc.toObject()) : monapt.None;
     }
 
     public async findOneAndUpdate(conditions: any, update: any) {
@@ -60,22 +57,26 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             upsert: false
         }).exec();
 
-        return (doc) ? monapt.Option(Transaction.create(<any>doc.toObject())) : monapt.None;
+        return (doc) ? monapt.Option(<Transaction.ITransaction>doc.toObject()) : monapt.None;
     }
 
-    public async store(transaction: Transaction) {
-        debug('updating a transaction...', transaction);
-        await this.transactionModel.findByIdAndUpdate(transaction.id, transaction.toDocument(), {
+    public async store(transaction: Transaction.ITransaction) {
+        debug('findByIdAndUpdate...', transaction);
+
+        const update = clone(transaction, false);
+        update.owners = <any[]>update.owners.map((owner) => owner.id);
+        await this.transactionModel.findByIdAndUpdate(update.id, update, {
             new: true,
             upsert: true
         }).lean().exec();
     }
 
-    public async addEvent(transactionEvent: TransactionEvent) {
-        await this.transactionEventModel.create([transactionEvent]);
+    public async addEvent(transactionEvent: TransactionEvent.ITransactionEvent) {
+        const update = clone(transactionEvent, false);
+        await this.transactionEventModel.create([update]);
     }
 
-    public async findAuthorizationsById(id: string): Promise<IAuthorization[]> {
+    public async findAuthorizationsById(id: string): Promise<Authorization.IAuthorization[]> {
         const model = this.connection.model(TransactionEventModel.modelName);
 
         const authorizations = (await this.transactionEventModel.find(
@@ -86,7 +87,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             'authorization'
         )
             .exec())
-            .map((doc) => <IAuthorization>doc.get('authorization'));
+            .map((doc) => <Authorization.IAuthorization>doc.get('authorization'));
 
         const removedAuthorizationIds = (await model.find(
             {
@@ -103,7 +104,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
         );
     }
 
-    public async findNotificationsById(id: string): Promise<INotification[]> {
+    public async findNotificationsById(id: string): Promise<Notification.INotification[]> {
         const model = this.connection.model(TransactionEventModel.modelName);
 
         const notifications = (await this.transactionEventModel.find(
@@ -114,7 +115,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             'notification'
         )
             .exec())
-            .map((doc) => <INotification>doc.get('notification'));
+            .map((doc) => <Notification.INotification>doc.get('notification'));
 
         const removedNotificationIds = (await model.find(
             {

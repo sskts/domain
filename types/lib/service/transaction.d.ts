@@ -1,8 +1,8 @@
 import * as monapt from 'monapt';
-import Authorization from '../model/authorization';
-import Notification from '../model/notification';
-import Transaction from '../model/transaction';
-import TransactionInquiryKey from '../model/transactionInquiryKey';
+import * as Authorization from '../model/authorization';
+import * as Notification from '../model/notification';
+import * as Transaction from '../model/transaction';
+import * as TransactionInquiryKey from '../model/transactionInquiryKey';
 import OwnerRepository from '../repository/owner';
 import QueueRepository from '../repository/queue';
 import TransactionRepository from '../repository/transaction';
@@ -31,7 +31,7 @@ export declare function updateAnonymousOwner(args: {
  *
  * @memberOf TransactionService
  */
-export declare function findById(transactionId: string): TransactionOperation<monapt.Option<Transaction>>;
+export declare function findById(transactionId: string): TransactionOperation<monapt.Option<Transaction.ITransaction>>;
 /**
  * 取引開始
  *
@@ -40,7 +40,7 @@ export declare function findById(transactionId: string): TransactionOperation<mo
  *
  * @memberOf TransactionService
  */
-export declare function start(expiredAt: Date): (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => Promise<Transaction>;
+export declare function start(expiredAt: Date): (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => Promise<Transaction.ITransaction>;
 /**
  * GMO資産承認
  *
@@ -50,7 +50,7 @@ export declare function start(expiredAt: Date): (ownerRepo: OwnerRepository, tra
  *
  * @memberOf TransactionService
  */
-export declare function addGMOAuthorization(transactionId: string, authorization: Authorization.GMOAuthorization): (transactionRepo: TransactionRepository) => Promise<void>;
+export declare function addGMOAuthorization(transactionId: string, authorization: Authorization.IGMOAuthorization): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
  * COA資産承認
  *
@@ -60,7 +60,7 @@ export declare function addGMOAuthorization(transactionId: string, authorization
  *
  * @memberOf TransactionService
  */
-export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: Authorization.COASeatReservationAuthorization): (transactionRepo: TransactionRepository) => Promise<void>;
+export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: Authorization.ICOASeatReservationAuthorization): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
  * 資産承認解除
  *
@@ -80,7 +80,7 @@ export declare function removeAuthorization(transactionId: string, authorization
  *
  * @memberOf TransactionService
  */
-export declare function enableInquiry(transactionId: string, key: TransactionInquiryKey): (transactionRepo: TransactionRepository) => Promise<void>;
+export declare function enableInquiry(transactionId: string, key: TransactionInquiryKey.ITransactionInquiryKey): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
  * 照会する
  *
@@ -89,7 +89,7 @@ export declare function enableInquiry(transactionId: string, key: TransactionInq
  *
  * @memberOf TransactionService
  */
-export declare function makeInquiry(key: TransactionInquiryKey): TransactionOperation<monapt.Option<Transaction>>;
+export declare function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey): (transactionRepo: TransactionRepository) => Promise<monapt.Option<Transaction.ITransaction>>;
 /**
  * 取引成立
  *
@@ -125,7 +125,7 @@ export declare function exportQueues(transactionId: string): (transactionRepo: T
  *
  * @memberOf TransactionService
  */
-export declare function addEmail(transactionId: string, notification: Notification.EmailNotification): (transactionRepo: TransactionRepository) => Promise<void>;
+export declare function addEmail(transactionId: string, notification: Notification.IEmailNotification): (transactionRepo: TransactionRepository) => Promise<void>;
 /**
  * メール削除
  *

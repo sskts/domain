@@ -1,14 +1,7 @@
-// tslint:disable:variable-name
-import ObjectId from './objectId';
-import Owner from './owner';
-import TransactionInquiryKey from './transactionInquiryKey';
-import TransactionQueuesStatus from './transactionQueuesStatus';
-import TransactionStatus from './transactionStatus';
-
 /**
- * 取引
+ * 取引ファクトリー
  *
- * @class Transaction
+ * @namespace TransactionFacroty
  *
  * @param {string} id
  * @param {TransactionStatus} status
@@ -19,61 +12,35 @@ import TransactionStatus from './transactionStatus';
  * @param {string} inquiry_pass
  * @param {TransactionQueuesStatus} queues_status
  */
-class Transaction {
-    constructor(
-        readonly id: string,
-        readonly status: TransactionStatus,
-        readonly owners: Owner[],
-        readonly expired_at: Date,
-        readonly inquiry_key: TransactionInquiryKey | null,
-        readonly queues_status: TransactionQueuesStatus
-    ) {
-        // todo validation
-    }
+import ObjectId from './objectId';
+import * as Owner from './owner';
+import * as TransactionInquiryKey from './transactionInquiryKey';
+import TransactionQueuesStatus from './transactionQueuesStatus';
+import TransactionStatus from './transactionStatus';
 
-    public toDocument() {
-        return {
-            id: this.id,
-            status: this.status,
-            owners: this.owners.map((owner) => owner.id),
-            expired_at: this.expired_at,
-            inquiry_key: this.inquiry_key,
-            queues_status: this.queues_status
-        };
-    }
-
-    /**
-     * 照会可能かどうか
-     *
-     * @returns {boolean}
-     *
-     * @memberOf Transaction
-     */
-    public isInquiryAvailable() {
-        return (this.inquiry_key);
-    }
+export interface ITransaction {
+    id: string;
+    status: TransactionStatus;
+    owners: Owner.IOwner[];
+    expired_at: Date;
+    inquiry_key: TransactionInquiryKey.ITransactionInquiryKey | null;
+    queues_status: TransactionQueuesStatus;
 }
 
-namespace Transaction {
-    export interface ITransaction {
-        id?: string;
-        status: TransactionStatus;
-        owners: Owner[];
-        expired_at: Date;
-        inquiry_key?: TransactionInquiryKey;
-        queues_status?: TransactionQueuesStatus;
-    }
-
-    export function create(args: ITransaction): Transaction {
-        return new Transaction(
-            (args.id === undefined) ? ObjectId().toString() : (args.id),
-            args.status,
-            args.owners,
-            args.expired_at,
-            (args.inquiry_key === undefined) ? null : (args.inquiry_key),
-            (args.queues_status === undefined) ? TransactionQueuesStatus.UNEXPORTED : (args.queues_status)
-        );
-    }
+export function create(args: {
+    id?: string;
+    status: TransactionStatus;
+    owners: Owner.IOwner[];
+    expired_at: Date;
+    inquiry_key?: TransactionInquiryKey.ITransactionInquiryKey;
+    queues_status?: TransactionQueuesStatus;
+}): ITransaction {
+    return {
+        id: (args.id === undefined) ? ObjectId().toString() : (args.id),
+        status: args.status,
+        owners: args.owners,
+        expired_at: args.expired_at,
+        inquiry_key: (args.inquiry_key === undefined) ? null : (args.inquiry_key),
+        queues_status: (args.queues_status === undefined) ? TransactionQueuesStatus.UNEXPORTED : (args.queues_status)
+    };
 }
-
-export default Transaction;

@@ -1,75 +1,62 @@
-// tslint:disable:variable-name
+/**
+ * 通知ファクトリー
+ *
+ * @namespace NotificationFacroty
+ */
 import * as validator from 'validator';
 import NotificationGroup from './notificationGroup';
 import ObjectId from './objectId';
 
 /**
- * 通知
+ * 通知インターフェース
  *
- * @class Notification
- *
+ * @export
+ * @interface INotification
  * @param {string} id
  * @param {string} group 通知グループ
  */
-class Notification {
-    constructor(
-        readonly id: string,
-        readonly group: string
-    ) {
-        // todo validation
-    }
+export interface INotification {
+    id: string;
+    group: string;
 }
 
-namespace Notification {
-    /**
-     * Eメール通知
-     *
-     * @class EmailNotification
-     * @extends {Notification}
-     * @param {string} id
-     * @param {string} from
-     * @param {string} to
-     * @param {string} subject
-     * @param {string} content
-     */
-    // tslint:disable-next-line:max-classes-per-file
-    export class EmailNotification extends Notification {
-        constructor(
-            readonly id: string,
-            // tslint:disable-next-line:no-reserved-keywords
-            readonly from: string,
-            readonly to: string,
-            readonly subject: string,
-            readonly content: string
-        ) {
-            super(id, NotificationGroup.EMAIL);
-
-            // todo validation
-            if (validator.isEmpty(from)) throw new Error('from required.');
-            if (validator.isEmpty(to)) throw new Error('to required.');
-            if (validator.isEmpty(subject)) throw new Error('subject required.');
-            if (validator.isEmpty(content)) throw new Error('content required.');
-        }
-    }
-
-    export interface IEmailNotification {
-        id?: string;
-        // tslint:disable-next-line:no-reserved-keywords
-        from: string;
-        to: string;
-        subject: string;
-        content: string;
-    }
-
-    export function createEmail(args: IEmailNotification) {
-        return new EmailNotification(
-            (args.id === undefined) ? ObjectId().toString() : (args.id),
-            args.from,
-            args.to,
-            args.subject,
-            args.content
-        );
-    }
+/**
+ * Eメール通知インターフェース
+ *
+ * @param {string} id
+ * @param {string} from
+ * @param {string} to
+ * @param {string} subject
+ * @param {string} content
+ */
+export interface IEmailNotification extends INotification {
+    // tslint:disable-next-line:no-reserved-keywords
+    from: string;
+    to: string;
+    subject: string;
+    content: string;
 }
 
-export default Notification;
+export function createEmail(args: {
+    id?: string,
+    // tslint:disable-next-line:no-reserved-keywords
+    from: string;
+    to: string;
+    subject: string;
+    content: string;
+}): IEmailNotification {
+    // todo validation
+    if (validator.isEmpty(args.from)) throw new Error('from required.');
+    if (validator.isEmpty(args.to)) throw new Error('to required.');
+    if (validator.isEmpty(args.subject)) throw new Error('subject required.');
+    if (validator.isEmpty(args.content)) throw new Error('content required.');
+
+    return {
+        id: (args.id === undefined) ? ObjectId().toString() : (args.id),
+        group: NotificationGroup.EMAIL,
+        from: args.from,
+        to: args.to,
+        subject: args.subject,
+        content: args.content
+    };
+}

@@ -1,12 +1,12 @@
 /**
  * 多言語文字列
  *
- * @interface MultilingualString
+ * @interface IMultilingualString
  */
 
-interface MultilingualString {
+interface IMultilingualString {
     ja: string;
     en: string;
 }
 
-export default MultilingualString;
+export default IMultilingualString;

@@ -4,10 +4,11 @@
  * @class ScreenRepositoryInterpreter
  */
 
+import * as clone from 'clone';
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
-import Screen from '../../model/screen';
+import * as Screen from '../../model/screen';
 import ScreenRepository from '../screen';
 import screenModel from './mongoose/model/screen';
 
@@ -25,7 +26,7 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
             .populate('theater')
             .exec();
 
-        return (doc) ? monapt.Option(Screen.create(<any>doc.toObject())) : monapt.None;
+        return (doc) ? monapt.Option(<Screen.IScreen>doc.toObject()) : monapt.None;
     }
 
     public async findByTheater(theaterId: string) {
@@ -33,12 +34,13 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
             .populate('theater')
             .exec();
 
-        return docs.map((doc) => Screen.create(<any>doc.toObject()));
+        return docs.map((doc) => <Screen.IScreen>doc.toObject());
     }
 
-    public async store(screen: Screen) {
+    public async store(screen: Screen.IScreen) {
         debug('updating a screen...', screen);
-        await this.model.findByIdAndUpdate(screen.id, screen.toDocument(), {
+        const update = clone(screen, false);
+        await this.model.findByIdAndUpdate(update.id, update, {
             new: true,
             upsert: true
         }).lean().exec();

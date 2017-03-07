@@ -6,8 +6,8 @@
 
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
-import Authorization from '../model/authorization';
-import Transaction from '../model/transaction';
+import * as Authorization from '../model/authorization';
+import * as Transaction from '../model/transaction';
 import AssetRepository from '../repository/asset';
 import TransactionRepository from '../repository/transaction';
 
@@ -21,7 +21,7 @@ const debug = createDebug('sskts-domain:service:stock');
  *
  * @memberOf StockServiceInterpreter
  */
-export function unauthorizeCOASeatReservation(authorization: Authorization.COASeatReservationAuthorization) {
+export function unauthorizeCOASeatReservation(authorization: Authorization.ICOASeatReservationAuthorization) {
     return async () => {
         debug('calling deleteTmpReserve...');
         await COA.ReserveService.delTmpReserve({
@@ -43,7 +43,7 @@ export function unauthorizeCOASeatReservation(authorization: Authorization.COASe
  *
  * @memberOf StockServiceInterpreter
  */
-export function transferCOASeatReservation(authorization: Authorization.COASeatReservationAuthorization) {
+export function transferCOASeatReservation(authorization: Authorization.ICOASeatReservationAuthorization) {
     return async (assetRepository: AssetRepository) => {
 
         // ウェブフロントで事前に本予約済みなので不要
@@ -67,7 +67,7 @@ export function transferCOASeatReservation(authorization: Authorization.COASeatR
  *
  * @memberOf StockServiceInterpreter
  */
-export function disableTransactionInquiry(transaction: Transaction) {
+export function disableTransactionInquiry(transaction: Transaction.ITransaction) {
     return async (transactionRepository: TransactionRepository) => {
         if (!transaction.inquiry_key) {
             throw new RangeError('inquiry_key not created.');

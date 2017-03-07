@@ -85,6 +85,7 @@ describe('master service', () => {
         sskts.service.master.findTheater('118')(sskts.createTheaterRepository(connection))
             .then((theaterOption) => {
             assert(theaterOption.isDefined);
+            assert.equal(theaterOption.get().id, '118');
             done();
         })
             .catch((err) => {
@@ -101,10 +102,42 @@ describe('master service', () => {
             done(err);
         });
     });
+    it('findPerformance ok', (done) => {
+        sskts.service.master.findPerformance('1182017030917149061500')(sskts.createPerformanceRepository(connection))
+            .then((performanceOption) => {
+            assert(performanceOption.isDefined);
+            assert.equal(performanceOption.get().id, '1182017030917149061500');
+            done();
+        })
+            .catch((err) => {
+            done(err);
+        });
+    });
     it('findPerformance not found', (done) => {
         sskts.service.master.findPerformance('000')(sskts.createPerformanceRepository(connection))
             .then((performanceOption) => {
             assert(performanceOption.isEmpty);
+            done();
+        })
+            .catch((err) => {
+            done(err);
+        });
+    });
+    it('findFilm ok', (done) => {
+        sskts.service.master.findFilm('118170620')(sskts.createFilmRepository(connection))
+            .then((filmOption) => {
+            assert(filmOption.isDefined);
+            assert.equal(filmOption.get().id, '118170620');
+            done();
+        })
+            .catch((err) => {
+            done(err);
+        });
+    });
+    it('findFilm not found', (done) => {
+        sskts.service.master.findFilm('000000000')(sskts.createFilmRepository(connection))
+            .then((filmOption) => {
+            assert(filmOption.isEmpty);
             done();
         })
             .catch((err) => {

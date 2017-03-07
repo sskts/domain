@@ -1,14 +1,21 @@
-// tslint:disable:variable-name
-import Authorization from '../model/authorization';
-import Notification from '../model/notification';
-import Transaction from '../model/transaction';
+/**
+ * キューファクトリー
+ * キュー(実行日時つきのタスク)
+ *
+ * @namespace QueueFacroty
+ */
+import * as Authorization from '../model/authorization';
+import * as Notification from '../model/notification';
+import * as Transaction from '../model/transaction';
+import ObjectId from './objectId';
 import QueueGroup from './queueGroup';
 import QueueStatus from './queueStatus';
 
 /**
- * キュー(実行日時つきのタスク)
+ * キューインターフェース
  *
- * @class Queue
+ * @export
+ * @interface IQueue
  *
  * @param {string} id
  * @param {QueueGroup} group キューグループ
@@ -19,328 +26,161 @@ import QueueStatus from './queueStatus';
  * @param {number} count_tried 試行回数
  * @param {Array<string>} results 実行結果リスト
  */
-class Queue {
-    constructor(
-        readonly id: string,
-        readonly group: QueueGroup,
-        readonly status: QueueStatus,
-        readonly run_at: Date,
-        readonly max_count_try: number,
-        readonly last_tried_at: Date | null,
-        readonly count_tried: number,
-        readonly results: string[]
-    ) {
-        // todo validation
-    }
+export interface IQueue {
+    id: string;
+    group: QueueGroup;
+    status: QueueStatus;
+    run_at: Date;
+    max_count_try: number;
+    last_tried_at: Date | null;
+    count_tried: number;
+    results: string[];
 }
 
-namespace Queue {
-    /**
-     * オーソリ解除キュー
-     *
-     *
-     * @class CancelAuthorizationQueue
-     * @extends {Queue}
-     * @template T
-     */
-    // tslint:disable-next-line:max-classes-per-file
-    export class CancelAuthorizationQueue<T extends Authorization> extends Queue {
-        /**
-         * Creates an instance of CancelAuthorizationQueue.
-         *
-         * @param {string} id
-         * @param {QueueStatus} status
-         * @param {Date} run_at
-         * @param {number} max_count_try
-         * @param {(Date | null)} last_tried_at
-         * @param {number} count_tried
-         * @param {Array<string>} results
-         * @param {T} authorization
-         *
-         * @memberOf CancelAuthorizationQueue
-         */
-        constructor(
-            readonly id: string,
-            readonly status: QueueStatus,
-            readonly run_at: Date,
-            readonly max_count_try: number,
-            readonly last_tried_at: Date | null,
-            readonly count_tried: number,
-            readonly results: string[],
-            readonly authorization: T
-        ) {
-            super(
-                id,
-                QueueGroup.CANCEL_AUTHORIZATION,
-                status,
-                run_at,
-                max_count_try,
-                last_tried_at,
-                count_tried,
-                results
-            );
-
-            // todo validation
-        }
-    }
-
-    /**
-     * 取引照会無効化キュー
-     *
-     *
-     * @class DisableTransactionInquiryQueue
-     * @extends {Queue}
-     */
-    // tslint:disable-next-line:max-classes-per-file
-    export class DisableTransactionInquiryQueue extends Queue {
-        /**
-         * Creates an instance of DisableTransactionInquiryQueue.
-         *
-         * @param {string} id
-         * @param {QueueStatus} status
-         * @param {Date} run_at
-         * @param {number} max_count_try
-         * @param {(Date | null)} last_tried_at
-         * @param {number} count_tried
-         * @param {Array<string>} results
-         * @param {string} transaction_id
-         *
-         * @memberOf DisableTransactionInquiryQueue
-         */
-        constructor(
-            readonly id: string,
-            readonly status: QueueStatus,
-            readonly run_at: Date,
-            readonly max_count_try: number,
-            readonly last_tried_at: Date | null,
-            readonly count_tried: number,
-            readonly results: string[],
-            readonly transaction: Transaction
-        ) {
-            super(
-                id,
-                QueueGroup.DISABLE_TRANSACTION_INQUIRY,
-                status,
-                run_at,
-                max_count_try,
-                last_tried_at,
-                count_tried,
-                results
-            );
-
-            // todo validation
-        }
-    }
-
-    /**
-     * プッシュ通知キュー
-     *
-     *
-     * @class PushNotificationQueue
-     * @extends {Queue}
-     * @template T
-     */
-    // tslint:disable-next-line:max-classes-per-file
-    export class PushNotificationQueue<T extends Notification> extends Queue {
-        /**
-         * Creates an instance of PushNotificationQueue.
-         *
-         * @param {string} id
-         * @param {QueueStatus} status
-         * @param {Date} run_at
-         * @param {number} max_count_try
-         * @param {(Date | null)} last_tried_at
-         * @param {number} count_tried
-         * @param {Array<string>} results
-         * @param {T} notification
-         *
-         * @memberOf PushNotificationQueue
-         */
-        constructor(
-            readonly id: string,
-            readonly status: QueueStatus,
-            readonly run_at: Date,
-            readonly max_count_try: number,
-            readonly last_tried_at: Date | null,
-            readonly count_tried: number,
-            readonly results: string[],
-            readonly notification: T
-        ) {
-            super(
-                id,
-                QueueGroup.PUSH_NOTIFICATION,
-                status,
-                run_at,
-                max_count_try,
-                last_tried_at,
-                count_tried,
-                results
-            );
-
-            // todo validation
-        }
-    }
-
-    /**
-     * 資産移動キュー
-     *
-     *
-     * @class SettleAuthorizationQueue
-     * @extends {Queue}
-     * @template T
-     */
-    // tslint:disable-next-line:max-classes-per-file
-    export class SettleAuthorizationQueue<T extends Authorization> extends Queue {
-        /**
-         * Creates an instance of SettleAuthorizationQueue.
-         *
-         * @param {string} id
-         * @param {QueueStatus} status
-         * @param {Date} run_at
-         * @param {number} max_count_try
-         * @param {(Date | null)} last_tried_at
-         * @param {number} count_tried
-         * @param {Array<string>} results
-         * @param {T} authorization
-         *
-         * @memberOf SettleAuthorizationQueue
-         */
-        constructor(
-            readonly id: string,
-            readonly status: QueueStatus,
-            readonly run_at: Date,
-            readonly max_count_try: number,
-            readonly last_tried_at: Date | null,
-            readonly count_tried: number,
-            readonly results: string[],
-            readonly authorization: T
-        ) {
-            super(
-                id,
-                QueueGroup.SETTLE_AUTHORIZATION,
-                status,
-                run_at,
-                max_count_try,
-                last_tried_at,
-                count_tried,
-                results
-            );
-
-            // todo validation
-        }
-    }
-
-    export interface IQueue {
-        id: string;
-        group: QueueGroup;
-        status: QueueStatus;
-        run_at: Date;
-        max_count_try: number;
-        last_tried_at: Date | null;
-        count_tried: number;
-        results: string[];
-    }
-
-    export function create(args: IQueue) {
-        return new Queue(
-            args.id,
-            args.group,
-            args.status,
-            args.run_at,
-            args.max_count_try,
-            args.last_tried_at,
-            args.count_tried,
-            args.results
-        );
-    }
-
-    export function createSettleAuthorization<T extends Authorization>(args: {
-        id: string,
-        authorization: T,
-        status: QueueStatus,
-        run_at: Date,
-        max_count_try: number,
-        last_tried_at: Date | null,
-        count_tried: number,
-        results: string[]
-    }) {
-        return new SettleAuthorizationQueue<T>(
-            args.id,
-            args.status,
-            args.run_at,
-            args.max_count_try,
-            args.last_tried_at,
-            args.count_tried,
-            args.results,
-            args.authorization
-        );
-    }
-
-    export function createCancelAuthorization<T extends Authorization>(args: {
-        id: string,
-        authorization: T,
-        status: QueueStatus,
-        run_at: Date,
-        max_count_try: number,
-        last_tried_at: Date | null,
-        count_tried: number,
-        results: string[]
-    }) {
-        return new CancelAuthorizationQueue<T>(
-            args.id,
-            args.status,
-            args.run_at,
-            args.max_count_try,
-            args.last_tried_at,
-            args.count_tried,
-            args.results,
-            args.authorization
-        );
-    }
-
-    export function createPushNotification<T extends Notification>(args: {
-        id: string,
-        notification: T,
-        status: QueueStatus,
-        run_at: Date,
-        max_count_try: number,
-        last_tried_at: Date | null,
-        count_tried: number,
-        results: string[]
-    }) {
-        return new PushNotificationQueue<T>(
-            args.id,
-            args.status,
-            args.run_at,
-            args.max_count_try,
-            args.last_tried_at,
-            args.count_tried,
-            args.results,
-            args.notification
-        );
-    }
-
-    export function createDisableTransactionInquiry(args: {
-        id: string,
-        transaction: Transaction,
-        status: QueueStatus,
-        run_at: Date,
-        max_count_try: number,
-        last_tried_at: Date | null,
-        count_tried: number,
-        results: string[]
-    }) {
-        return new DisableTransactionInquiryQueue(
-            args.id,
-            args.status,
-            args.run_at,
-            args.max_count_try,
-            args.last_tried_at,
-            args.count_tried,
-            args.results,
-            args.transaction
-        );
-    }
+/**
+ * オーソリ解除キュー
+ *
+ * @param {T} authorization
+ */
+export interface ICancelAuthorizationQueue<T extends Authorization.IAuthorization> extends IQueue {
+    authorization: T;
 }
 
-export default Queue;
+/**
+ * 取引照会無効化キュー
+ */
+export interface IDisableTransactionInquiryQueue extends IQueue {
+    transaction: Transaction.ITransaction;
+}
+
+/**
+ * プッシュ通知キュー
+ *
+ * @param {T} notification
+ */
+export interface IPushNotificationQueue<T extends Notification.INotification> extends IQueue {
+    notification: T;
+}
+
+/**
+ * 資産移動キュー
+ *
+ * @param {T} authorization
+ */
+export interface ISettleAuthorizationQueue<T extends Authorization.IAuthorization> extends IQueue {
+    authorization: T;
+}
+
+export function create(args: {
+    id?: string;
+    group: QueueGroup;
+    status: QueueStatus;
+    run_at: Date;
+    max_count_try: number;
+    last_tried_at: Date | null;
+    count_tried: number;
+    results: string[];
+}): IQueue {
+    return {
+        id: (args.id) ? args.id : ObjectId().toString(),
+        group: args.group,
+        status: args.status,
+        run_at: args.run_at,
+        max_count_try: args.max_count_try,
+        last_tried_at: args.last_tried_at,
+        count_tried: args.count_tried,
+        results: args.results
+    };
+}
+
+export function createSettleAuthorization<T extends Authorization.IAuthorization>(args: {
+    id?: string,
+    authorization: T,
+    status: QueueStatus,
+    run_at: Date,
+    max_count_try: number,
+    last_tried_at: Date | null,
+    count_tried: number,
+    results: string[]
+}): ISettleAuthorizationQueue<T> {
+    return {
+        id: (args.id) ? args.id : ObjectId().toString(),
+        group: QueueGroup.SETTLE_AUTHORIZATION,
+        status: args.status,
+        run_at: args.run_at,
+        max_count_try: args.max_count_try,
+        last_tried_at: args.last_tried_at,
+        count_tried: args.count_tried,
+        results: args.results,
+        authorization: args.authorization
+    };
+}
+
+export function createCancelAuthorization<T extends Authorization.IAuthorization>(args: {
+    id?: string,
+    authorization: T,
+    status: QueueStatus,
+    run_at: Date,
+    max_count_try: number,
+    last_tried_at: Date | null,
+    count_tried: number,
+    results: string[]
+}): ICancelAuthorizationQueue<T> {
+    return {
+        id: (args.id) ? args.id : ObjectId().toString(),
+        group: QueueGroup.CANCEL_AUTHORIZATION,
+        status: args.status,
+        run_at: args.run_at,
+        max_count_try: args.max_count_try,
+        last_tried_at: args.last_tried_at,
+        count_tried: args.count_tried,
+        results: args.results,
+        authorization: args.authorization
+    };
+}
+
+export function createPushNotification<T extends Notification.INotification>(args: {
+    id?: string,
+    notification: T,
+    status: QueueStatus,
+    run_at: Date,
+    max_count_try: number,
+    last_tried_at: Date | null,
+    count_tried: number,
+    results: string[]
+}): IPushNotificationQueue<T> {
+    return {
+        id: (args.id) ? args.id : ObjectId().toString(),
+        group: QueueGroup.PUSH_NOTIFICATION,
+        status: args.status,
+        run_at: args.run_at,
+        max_count_try: args.max_count_try,
+        last_tried_at: args.last_tried_at,
+        count_tried: args.count_tried,
+        results: args.results,
+        notification: args.notification
+    };
+}
+
+export function createDisableTransactionInquiry(args: {
+    id?: string,
+    transaction: Transaction.ITransaction,
+    status: QueueStatus,
+    run_at: Date,
+    max_count_try: number,
+    last_tried_at: Date | null,
+    count_tried: number,
+    results: string[]
+}): IDisableTransactionInquiryQueue {
+    return {
+        id: (args.id) ? args.id : ObjectId().toString(),
+        group: QueueGroup.DISABLE_TRANSACTION_INQUIRY,
+        status: args.status,
+        run_at: args.run_at,
+        max_count_try: args.max_count_try,
+        last_tried_at: args.last_tried_at,
+        count_tried: args.count_tried,
+        results: args.results,
+        transaction: args.transaction
+    };
+}

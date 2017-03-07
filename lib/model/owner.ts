@@ -1,119 +1,76 @@
-// tslint:disable:variable-name
+/**
+ * 所有者ファクトリー
+ *
+ * @namespace OwnerFacroty
+ *
+ */
 import MultilingualString from '../model/multilingualString';
+import ObjectId from './objectId';
 import OwnerGroup from './ownerGroup';
 
 /**
- * 所有者
+ * 所有者インターフェース
  *
- * @class Owner
- *
+ * @export
+ * @interface IOwner
  * @param {string} id
  * @param {OwnerGroup} group 所有者グループ
  */
-class Owner {
-    constructor(
-        readonly id: string,
-        readonly group: OwnerGroup
-    ) {
-        // todo validation
-    }
+export interface IOwner {
+    id: string;
+    group: OwnerGroup;
 }
 
-namespace Owner {
-    /**
-     * 匿名所有者
-     *
-     *
-     * @class AnonymousOwner
-     * @extends {Owner}
-     */
-    // tslint:disable-next-line:max-classes-per-file
-    export class AnonymousOwner extends Owner {
-        /**
-         * Creates an instance of AnonymousOwner.
-         *
-         * @param {string} id
-         * @param {string} name_first
-         * @param {string} name_last
-         * @param {string} email
-         * @param {string} tel
-         *
-         * @memberOf AnonymousOwner
-         */
-        constructor(
-            readonly id: string,
-            readonly name_first: string,
-            readonly name_last: string,
-            readonly email: string,
-            readonly tel: string
-        ) {
-            super(id, OwnerGroup.ANONYMOUS);
-
-            // todo validation
-        }
-    }
-
-    /**
-     * 興行所有者
-     *
-     *
-     * @class PromoterOwner
-     * @extends {Owner}
-     */
-    // tslint:disable-next-line:max-classes-per-file
-    export class PromoterOwner extends Owner {
-        /**
-         * Creates an instance of PromoterOwner.
-         *
-         * @param {string} id
-         * @param {MultilingualString} name
-         *
-         * @memberOf PromoterOwner
-         */
-        constructor(
-            readonly id: string,
-            readonly name: MultilingualString
-        ) {
-            super(id, OwnerGroup.PROMOTER);
-
-            // todo validation
-        }
-    }
-
-    export interface IAnonymousOwner {
-        id: string;
-        name_first?: string;
-        name_last?: string;
-        email?: string;
-        tel?: string;
-    }
-
-    /**
-     * 一般所有者を作成する
-     * IDは、メソッドを使用する側で事前に作成する想定
-     * 確実にAnonymousOwnerモデルを作成する責任を持つ
-     */
-    export function createAnonymous(args: IAnonymousOwner) {
-        return new AnonymousOwner(
-            args.id,
-            (args.name_first) ? args.name_first : '',
-            (args.name_last) ? args.name_last : '',
-            (args.email) ? args.email : '',
-            (args.tel) ? args.tel : ''
-        );
-    }
-
-    export interface IPromoterOwner {
-        id: string;
-        name?: MultilingualString;
-    }
-
-    export function createPromoter(args: IPromoterOwner): PromoterOwner {
-        return new PromoterOwner(
-            args.id,
-            (args.name) ? args.name : { ja: '', en: '' }
-        );
-    }
+export interface IAnonymousOwner extends IOwner {
+    id: string;
+    name_first: string;
+    name_last: string;
+    email: string;
+    tel: string;
 }
 
-export default Owner;
+export interface IPromoterOwner extends IOwner {
+    id: string;
+    name: MultilingualString;
+}
+
+/**
+ * 一般所有者を作成する
+ */
+export function createAnonymous(args: {
+    id?: string;
+    name_first?: string;
+    name_last?: string;
+    email?: string;
+    tel?: string;
+}): IAnonymousOwner {
+    return {
+        id: (args.id) ? args.id : ObjectId().toString(),
+        group: OwnerGroup.ANONYMOUS,
+        name_first: (args.name_first) ? args.name_first : '',
+        name_last: (args.name_last) ? args.name_last : '',
+        email: (args.email) ? args.email : '',
+        tel: (args.tel) ? args.tel : ''
+    };
+}
+
+/**
+ * 興行所有者オブジェクトを作成する
+ *
+ * @export
+ * @param {{
+ *     id?: string;
+ *     name?: MultilingualString;
+ * }} args
+ * @returns {IPromoterOwner}
+ */
+export function createPromoter(args: {
+    id?: string;
+    name?: MultilingualString;
+}): IPromoterOwner {
+    return {
+        id: (args.id) ? args.id : ObjectId().toString(),
+        group: OwnerGroup.PROMOTER,
+        name: (args.name) ? args.name : { ja: '', en: '' }
+    };
+}

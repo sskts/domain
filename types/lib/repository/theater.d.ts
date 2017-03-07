@@ -1,22 +1,22 @@
 import * as monapt from 'monapt';
-import Theater from '../model/theater';
+import * as Theater from '../model/theater';
 /**
  * 劇場リポジトリ
  *
  * @interface TheaterRepository
  */
-interface TheaterRepository {
+interface ITheaterRepository {
     /**
      * ID検索
      *
      * @param {string} id
      */
-    findById(id: string): Promise<monapt.Option<Theater>>;
+    findById(id: string): Promise<monapt.Option<Theater.ITheater>>;
     /**
      * 保管する
      *
      * @param {Theater} theater 劇場
      */
-    store(theater: Theater): Promise<void>;
+    store(theater: Theater.ITheater): Promise<void>;
 }
-export default TheaterRepository;
+export default ITheaterRepository;

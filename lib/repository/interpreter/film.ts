@@ -4,10 +4,11 @@
  * @class FilmRepositoryInterpreter
  */
 
+import * as clone from 'clone';
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
-import Film from '../../model/film';
+import * as Film from '../../model/film';
 import FilmRepository from '../film';
 import filmModel from './mongoose/model/film';
 
@@ -23,12 +24,13 @@ export default class FilmRepositoryInterpreter implements FilmRepository {
     public async findById(id: string) {
         const doc = await this.model.findById(id).exec();
 
-        return (doc) ? monapt.Option(Film.create(<any>doc.toObject())) : monapt.None;
+        return (doc) ? monapt.Option(<Film.IFilm>doc.toObject()) : monapt.None;
     }
 
-    public async store(film: Film) {
+    public async store(film: Film.IFilm) {
         debug('updating a film...', film);
-        await this.model.findByIdAndUpdate(film.id, film.toDocument(), {
+        const update = clone(film, false);
+        await this.model.findByIdAndUpdate(update.id, update, {
             new: true,
             upsert: true
         }).lean().exec();

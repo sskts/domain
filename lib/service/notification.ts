@@ -6,7 +6,7 @@
 
 import * as createDebug from 'debug';
 import * as sendgrid from 'sendgrid';
-import Notification from '../model/notification';
+import * as Notification from '../model/notification';
 
 export type Operation<T> = () => Promise<T>;
 
@@ -21,7 +21,7 @@ const debug = createDebug('sskts-domain:service:notification');
  *
  * @memberOf NotificationService
  */
-export function sendEmail(email: Notification.EmailNotification): Operation<void> {
+export function sendEmail(email: Notification.IEmailNotification): Operation<void> {
     return async () => {
         const mail = new sendgrid.mail.Mail(
             new sendgrid.mail.Email(email.from),

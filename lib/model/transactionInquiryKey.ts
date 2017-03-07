@@ -1,37 +1,23 @@
-// tslint:disable:variable-name
 /**
- * 取引照会キー
+ * 取引照会キーファクトリー
  *
- * @class TransactionInquiryKey
- *
- * @param {string} theater_code
- * @param {number} reserve_num
- * @param {string} tel
+ * @namespace TransactionInquiryKeyFacroty
  */
-class TransactionInquiryKey {
-    constructor(
-        readonly theater_code: string,
-        readonly reserve_num: number,
-        readonly tel: string
-    ) {
-        // todo validation
-    }
+
+export interface ITransactionInquiryKey {
+    theater_code: string;
+    reserve_num: number;
+    tel: string;
 }
 
-namespace TransactionInquiryKey {
-    export interface ITransactionInquiryKey {
-        theater_code: string;
-        reserve_num: number;
-        tel: string;
-    }
-
-    export function create(args: ITransactionInquiryKey) {
-        return new TransactionInquiryKey(
-            args.theater_code,
-            args.reserve_num,
-            args.tel
-        );
-    }
+export function create(args: {
+    theater_code: string;
+    reserve_num: number;
+    tel: string;
+}): ITransactionInquiryKey {
+    return {
+        theater_code: args.theater_code,
+        reserve_num: args.reserve_num,
+        tel: args.tel
+    };
 }
-
-export default TransactionInquiryKey;

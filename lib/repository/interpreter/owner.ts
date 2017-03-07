@@ -4,10 +4,11 @@
  * @class OwnerRepositoryInterpreter
  */
 
+import * as clone from 'clone';
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
 
-import Owner from '../../model/owner';
+import * as Owner from '../../model/owner';
 import OwnerGroup from '../../model/ownerGroup';
 
 import OwnerRepository from '../owner';
@@ -20,20 +21,16 @@ export default class OwnerRepositoryInterpreter implements OwnerRepository {
         this.model = this.connection.model(ownerModel.modelName);
     }
 
-    public async find(conditions: any) {
-        return <Owner[]>await this.model.find({ $and: [conditions] }).lean().exec();
-    }
-
     public async findById(id: string) {
         const doc = await this.model.findById(id).exec();
 
-        return (doc) ? monapt.Option(<Owner>doc.toObject()) : monapt.None;
+        return (doc) ? monapt.Option(<Owner.IOwner>doc.toObject()) : monapt.None;
     }
 
     public async findPromoter() {
         const doc = await this.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
 
-        return (doc) ? monapt.Option(Owner.createPromoter(<any>doc.toObject())) : monapt.None;
+        return (doc) ? monapt.Option(<Owner.IPromoterOwner>doc.toObject()) : monapt.None;
     }
 
     public async findOneAndUpdate(conditions: any, update: any) {
@@ -42,11 +39,12 @@ export default class OwnerRepositoryInterpreter implements OwnerRepository {
             upsert: false
         }).exec();
 
-        return (doc) ? monapt.Option(<Owner>doc.toObject()) : monapt.None;
+        return (doc) ? monapt.Option(<Owner.IOwner>doc.toObject()) : monapt.None;
     }
 
-    public async store(owner: Owner) {
-        await this.model.findByIdAndUpdate(owner.id, owner, {
+    public async store(owner: Owner.IOwner) {
+        const update = clone(owner, false);
+        await this.model.findByIdAndUpdate(update.id, update, {
             new: true,
             upsert: true
         }).lean().exec();

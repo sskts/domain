@@ -7,11 +7,11 @@
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
-import Film from '../model/film';
+import * as Film from '../model/film';
 import MultilingualString from '../model/multilingualString';
-import Performance from '../model/performance';
-import Screen from '../model/screen';
-import Theater from '../model/theater';
+import * as Performance from '../model/performance';
+import * as Screen from '../model/screen';
+import * as Theater from '../model/theater';
 import FilmRepository from '../repository/film';
 import PerformanceRepository from '../repository/performance';
 import ScreenRepository from '../repository/screen';
@@ -28,11 +28,11 @@ export type TheaterAndFilmOperation<T> =
 export type FilmAndScreenAndPerformanceOperation<T> =
     (filmRepo: FilmRepository, screenRepo: ScreenRepository, performanceRepo: PerformanceRepository) => Promise<T>;
 
-export interface SearchPerformancesConditions {
+export interface ISearchPerformancesConditions {
     day?: string;
     theater?: string;
 }
-export interface SearchPerformancesResult {
+export interface ISearchPerformancesResult {
     id: string;
     theater: {
         id: string;
@@ -131,7 +131,7 @@ export function importScreens(theaterCode: string): TheaterAndScreenOperation<vo
 
         // 永続化
         await Promise.all(screens.map(async (screenFromCOA) => {
-            const screen = await Screen.createFromCOA(screenFromCOA)(optionTheater.get());
+            const screen = Screen.createFromCOA(screenFromCOA)(optionTheater.get());
             debug('storing screen...');
             await screenRepo.store(screen);
             debug('screen stored.');
@@ -203,9 +203,9 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
  *
  * @memberOf MasterService
  */
-export function searchPerformances(conditions: SearchPerformancesConditions):
-    PerformanceOperation<SearchPerformancesResult[]> {
-    return async (performanceRepo: PerformanceRepository): Promise<SearchPerformancesResult[]> => {
+export function searchPerformances(conditions: ISearchPerformancesConditions):
+    PerformanceOperation<ISearchPerformancesResult[]> {
+    return async (performanceRepo: PerformanceRepository): Promise<ISearchPerformancesResult[]> => {
         // 検索条件を作成
         const andConditions: any[] = [
             { _id: { $ne: null } }
@@ -256,7 +256,7 @@ export function searchPerformances(conditions: SearchPerformancesConditions):
  *
  * @memberOf MasterService
  */
-export function findTheater(theaterId: string): TheaterOperation<monapt.Option<Theater>> {
+export function findTheater(theaterId: string): TheaterOperation<monapt.Option<Theater.ITheater>> {
     debug('finding a theater...', theaterId);
     return async (repository: TheaterRepository) => await repository.findById(theaterId);
 }
@@ -269,7 +269,7 @@ export function findTheater(theaterId: string): TheaterOperation<monapt.Option<T
  *
  * @memberOf MasterService
  */
-export function findFilm(filmId: string): FilmOperation<monapt.Option<Film>> {
+export function findFilm(filmId: string): FilmOperation<monapt.Option<Film.IFilm>> {
     debug('finding a film...', filmId);
     return async (repository: FilmRepository) => await repository.findById(filmId);
 }
@@ -282,7 +282,7 @@ export function findFilm(filmId: string): FilmOperation<monapt.Option<Film>> {
  *
  * @memberOf MasterService
  */
-export function findScreen(screenId: string): ScreenOperation<monapt.Option<Screen>> {
+export function findScreen(screenId: string): ScreenOperation<monapt.Option<Screen.IScreen>> {
     debug('finding a screen...', screenId);
     return async (repository: ScreenRepository) => await repository.findById(screenId);
 }
@@ -295,7 +295,7 @@ export function findScreen(screenId: string): ScreenOperation<monapt.Option<Scre
  *
  * @memberOf MasterService
  */
-export function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<Performance>> {
+export function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<Performance.IPerformanceWithFilmAndScreen>> {
     debug('finding a performance...', performanceId);
     return async (repository: PerformanceRepository) => await repository.findById(performanceId);
 }

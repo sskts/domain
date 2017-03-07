@@ -16,11 +16,7 @@ function main() {
         try {
             mongoose.Promise = global.Promise;
             const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-            const performances = yield sskts.service.master.searchPerformances({
-                day: '20170311',
-                theater: '118'
-            })(sskts.createPerformanceRepository(connection));
-            console.log(performances);
+            yield sskts.service.master.importPerformances('118', '20170201', '20170401')(sskts.createFilmRepository(connection), sskts.createScreenRepository(connection), sskts.createPerformanceRepository(connection));
         }
         catch (error) {
             console.error(error);

@@ -1,9 +1,9 @@
 import * as monapt from 'monapt';
-import Film from '../model/film';
+import * as Film from '../model/film';
 import MultilingualString from '../model/multilingualString';
-import Performance from '../model/performance';
-import Screen from '../model/screen';
-import Theater from '../model/theater';
+import * as Performance from '../model/performance';
+import * as Screen from '../model/screen';
+import * as Theater from '../model/theater';
 import FilmRepository from '../repository/film';
 import PerformanceRepository from '../repository/performance';
 import ScreenRepository from '../repository/screen';
@@ -15,11 +15,11 @@ export declare type PerformanceOperation<T> = (repository: PerformanceRepository
 export declare type TheaterAndScreenOperation<T> = (theaterRepo: TheaterRepository, screenRepo: ScreenRepository) => Promise<T>;
 export declare type TheaterAndFilmOperation<T> = (theaterRepo: TheaterRepository, filmRepo: FilmRepository) => Promise<T>;
 export declare type FilmAndScreenAndPerformanceOperation<T> = (filmRepo: FilmRepository, screenRepo: ScreenRepository, performanceRepo: PerformanceRepository) => Promise<T>;
-export interface SearchPerformancesConditions {
+export interface ISearchPerformancesConditions {
     day?: string;
     theater?: string;
 }
-export interface SearchPerformancesResult {
+export interface ISearchPerformancesResult {
     id: string;
     theater: {
         id: string;
@@ -84,7 +84,7 @@ export declare function importPerformances(theaterCode: string, dayStart: string
  *
  * @memberOf MasterService
  */
-export declare function searchPerformances(conditions: SearchPerformancesConditions): PerformanceOperation<SearchPerformancesResult[]>;
+export declare function searchPerformances(conditions: ISearchPerformancesConditions): PerformanceOperation<ISearchPerformancesResult[]>;
 /**
  * IDで劇場検索
  *
@@ -93,7 +93,7 @@ export declare function searchPerformances(conditions: SearchPerformancesConditi
  *
  * @memberOf MasterService
  */
-export declare function findTheater(theaterId: string): TheaterOperation<monapt.Option<Theater>>;
+export declare function findTheater(theaterId: string): TheaterOperation<monapt.Option<Theater.ITheater>>;
 /**
  * IDで作品検索
  *
@@ -102,7 +102,7 @@ export declare function findTheater(theaterId: string): TheaterOperation<monapt.
  *
  * @memberOf MasterService
  */
-export declare function findFilm(filmId: string): FilmOperation<monapt.Option<Film>>;
+export declare function findFilm(filmId: string): FilmOperation<monapt.Option<Film.IFilm>>;
 /**
  *
  *
@@ -111,7 +111,7 @@ export declare function findFilm(filmId: string): FilmOperation<monapt.Option<Fi
  *
  * @memberOf MasterService
  */
-export declare function findScreen(screenId: string): ScreenOperation<monapt.Option<Screen>>;
+export declare function findScreen(screenId: string): ScreenOperation<monapt.Option<Screen.IScreen>>;
 /**
  * IDでパフォーマンス検索
  *
@@ -120,4 +120,4 @@ export declare function findScreen(screenId: string): ScreenOperation<monapt.Opt
  *
  * @memberOf MasterService
  */
-export declare function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<Performance>>;
+export declare function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<Performance.IPerformanceWithFilmAndScreen>>;

@@ -12,6 +12,7 @@
     "@motionpicture/coa-service": "^1.4.1",
     "@motionpicture/gmo-service": "^2.0.10",
     "@types/mongoose": "^4.7.6",
+    "clone": "^2.1.0",
     "debug": "2.6.1",
     "i18n": "^0.8.3",
     "jsonwebtoken": "^7.3.0",
@@ -26,6 +27,7 @@
   },
   "description": "SSKTS Domain Library for Node.js",
   "devDependencies": {
+    "@types/clone": "^0.1.30",
     "@types/debug": "0.0.29",
     "@types/i18n": "0.5.20",
     "@types/jsonwebtoken": "^7.2.0",
@@ -55,13 +57,13 @@
   "scripts": {
     "build": "tsc",
     "check": "tslint -c tslint.json lib/**/*.ts && nsp check",
-    "clean": "rimraf examples/**/*.js lib/**/*.js test/**/*.js types/**/*.d.ts",
+    "clean": "rimraf examples/**/*.js lib/**/*.js test/**/*.js types/**/*.d.ts npm-debug.log* docs/*",
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
     "prepublishOnly": "npm run clean && npm run build && npm test",
     "test": "tslint -c tslint.json lib/**/*.ts && nsp check && mocha --no-timeouts --recursive",
     "preversion": "npm run clean && npm run build && npm test",
     "version": "git add -A",
-    "postversion": "git push"
+    "postversion": "git push origin --tags"
   },
   "types": "./types/lib/index.d.ts",
   "version": "2.0.1"

@@ -1,5 +1,5 @@
-import Authorization from '../model/authorization';
-import Transaction from '../model/transaction';
+import * as Authorization from '../model/authorization';
+import * as Transaction from '../model/transaction';
 import AssetRepository from '../repository/asset';
 import TransactionRepository from '../repository/transaction';
 /**
@@ -10,7 +10,7 @@ import TransactionRepository from '../repository/transaction';
  *
  * @memberOf StockServiceInterpreter
  */
-export declare function unauthorizeCOASeatReservation(authorization: Authorization.COASeatReservationAuthorization): () => Promise<void>;
+export declare function unauthorizeCOASeatReservation(authorization: Authorization.ICOASeatReservationAuthorization): () => Promise<void>;
 /**
  * 資産移動(COA座席予約)
  *
@@ -19,11 +19,11 @@ export declare function unauthorizeCOASeatReservation(authorization: Authorizati
  *
  * @memberOf StockServiceInterpreter
  */
-export declare function transferCOASeatReservation(authorization: Authorization.COASeatReservationAuthorization): (assetRepository: AssetRepository) => Promise<void>;
+export declare function transferCOASeatReservation(authorization: Authorization.ICOASeatReservationAuthorization): (assetRepository: AssetRepository) => Promise<void>;
 /**
  * 取引照会を無効にする
  * COAのゴミ購入データを削除する
  *
  * @memberOf StockServiceInterpreter
  */
-export declare function disableTransactionInquiry(transaction: Transaction): (transactionRepository: TransactionRepository) => Promise<void>;
+export declare function disableTransactionInquiry(transaction: Transaction.ITransaction): (transactionRepository: TransactionRepository) => Promise<void>;

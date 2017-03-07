@@ -1,12 +1,19 @@
-import Authorization from '../model/authorization';
-import Notification from '../model/notification';
-import Transaction from '../model/transaction';
+/**
+ * キューファクトリー
+ * キュー(実行日時つきのタスク)
+ *
+ * @namespace QueueFacroty
+ */
+import * as Authorization from '../model/authorization';
+import * as Notification from '../model/notification';
+import * as Transaction from '../model/transaction';
 import QueueGroup from './queueGroup';
 import QueueStatus from './queueStatus';
 /**
- * キュー(実行日時つきのタスク)
+ * キューインターフェース
  *
- * @class Queue
+ * @export
+ * @interface IQueue
  *
  * @param {string} id
  * @param {QueueGroup} group キューグループ
@@ -17,199 +24,93 @@ import QueueStatus from './queueStatus';
  * @param {number} count_tried 試行回数
  * @param {Array<string>} results 実行結果リスト
  */
-declare class Queue {
-    readonly id: string;
-    readonly group: QueueGroup;
-    readonly status: QueueStatus;
-    readonly run_at: Date;
-    readonly max_count_try: number;
-    readonly last_tried_at: Date | null;
-    readonly count_tried: number;
-    readonly results: string[];
-    constructor(id: string, group: QueueGroup, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[]);
+export interface IQueue {
+    id: string;
+    group: QueueGroup;
+    status: QueueStatus;
+    run_at: Date;
+    max_count_try: number;
+    last_tried_at: Date | null;
+    count_tried: number;
+    results: string[];
 }
-declare namespace Queue {
-    /**
-     * オーソリ解除キュー
-     *
-     *
-     * @class CancelAuthorizationQueue
-     * @extends {Queue}
-     * @template T
-     */
-    class CancelAuthorizationQueue<T extends Authorization> extends Queue {
-        readonly id: string;
-        readonly status: QueueStatus;
-        readonly run_at: Date;
-        readonly max_count_try: number;
-        readonly last_tried_at: Date | null;
-        readonly count_tried: number;
-        readonly results: string[];
-        readonly authorization: T;
-        /**
-         * Creates an instance of CancelAuthorizationQueue.
-         *
-         * @param {string} id
-         * @param {QueueStatus} status
-         * @param {Date} run_at
-         * @param {number} max_count_try
-         * @param {(Date | null)} last_tried_at
-         * @param {number} count_tried
-         * @param {Array<string>} results
-         * @param {T} authorization
-         *
-         * @memberOf CancelAuthorizationQueue
-         */
-        constructor(id: string, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], authorization: T);
-    }
-    /**
-     * 取引照会無効化キュー
-     *
-     *
-     * @class DisableTransactionInquiryQueue
-     * @extends {Queue}
-     */
-    class DisableTransactionInquiryQueue extends Queue {
-        readonly id: string;
-        readonly status: QueueStatus;
-        readonly run_at: Date;
-        readonly max_count_try: number;
-        readonly last_tried_at: Date | null;
-        readonly count_tried: number;
-        readonly results: string[];
-        readonly transaction: Transaction;
-        /**
-         * Creates an instance of DisableTransactionInquiryQueue.
-         *
-         * @param {string} id
-         * @param {QueueStatus} status
-         * @param {Date} run_at
-         * @param {number} max_count_try
-         * @param {(Date | null)} last_tried_at
-         * @param {number} count_tried
-         * @param {Array<string>} results
-         * @param {string} transaction_id
-         *
-         * @memberOf DisableTransactionInquiryQueue
-         */
-        constructor(id: string, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], transaction: Transaction);
-    }
-    /**
-     * プッシュ通知キュー
-     *
-     *
-     * @class PushNotificationQueue
-     * @extends {Queue}
-     * @template T
-     */
-    class PushNotificationQueue<T extends Notification> extends Queue {
-        readonly id: string;
-        readonly status: QueueStatus;
-        readonly run_at: Date;
-        readonly max_count_try: number;
-        readonly last_tried_at: Date | null;
-        readonly count_tried: number;
-        readonly results: string[];
-        readonly notification: T;
-        /**
-         * Creates an instance of PushNotificationQueue.
-         *
-         * @param {string} id
-         * @param {QueueStatus} status
-         * @param {Date} run_at
-         * @param {number} max_count_try
-         * @param {(Date | null)} last_tried_at
-         * @param {number} count_tried
-         * @param {Array<string>} results
-         * @param {T} notification
-         *
-         * @memberOf PushNotificationQueue
-         */
-        constructor(id: string, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], notification: T);
-    }
-    /**
-     * 資産移動キュー
-     *
-     *
-     * @class SettleAuthorizationQueue
-     * @extends {Queue}
-     * @template T
-     */
-    class SettleAuthorizationQueue<T extends Authorization> extends Queue {
-        readonly id: string;
-        readonly status: QueueStatus;
-        readonly run_at: Date;
-        readonly max_count_try: number;
-        readonly last_tried_at: Date | null;
-        readonly count_tried: number;
-        readonly results: string[];
-        readonly authorization: T;
-        /**
-         * Creates an instance of SettleAuthorizationQueue.
-         *
-         * @param {string} id
-         * @param {QueueStatus} status
-         * @param {Date} run_at
-         * @param {number} max_count_try
-         * @param {(Date | null)} last_tried_at
-         * @param {number} count_tried
-         * @param {Array<string>} results
-         * @param {T} authorization
-         *
-         * @memberOf SettleAuthorizationQueue
-         */
-        constructor(id: string, status: QueueStatus, run_at: Date, max_count_try: number, last_tried_at: Date | null, count_tried: number, results: string[], authorization: T);
-    }
-    interface IQueue {
-        id: string;
-        group: QueueGroup;
-        status: QueueStatus;
-        run_at: Date;
-        max_count_try: number;
-        last_tried_at: Date | null;
-        count_tried: number;
-        results: string[];
-    }
-    function create(args: IQueue): Queue;
-    function createSettleAuthorization<T extends Authorization>(args: {
-        id: string;
-        authorization: T;
-        status: QueueStatus;
-        run_at: Date;
-        max_count_try: number;
-        last_tried_at: Date | null;
-        count_tried: number;
-        results: string[];
-    }): SettleAuthorizationQueue<T>;
-    function createCancelAuthorization<T extends Authorization>(args: {
-        id: string;
-        authorization: T;
-        status: QueueStatus;
-        run_at: Date;
-        max_count_try: number;
-        last_tried_at: Date | null;
-        count_tried: number;
-        results: string[];
-    }): CancelAuthorizationQueue<T>;
-    function createPushNotification<T extends Notification>(args: {
-        id: string;
-        notification: T;
-        status: QueueStatus;
-        run_at: Date;
-        max_count_try: number;
-        last_tried_at: Date | null;
-        count_tried: number;
-        results: string[];
-    }): PushNotificationQueue<T>;
-    function createDisableTransactionInquiry(args: {
-        id: string;
-        transaction: Transaction;
-        status: QueueStatus;
-        run_at: Date;
-        max_count_try: number;
-        last_tried_at: Date | null;
-        count_tried: number;
-        results: string[];
-    }): DisableTransactionInquiryQueue;
+/**
+ * オーソリ解除キュー
+ *
+ * @param {T} authorization
+ */
+export interface ICancelAuthorizationQueue<T extends Authorization.IAuthorization> extends IQueue {
+    authorization: T;
 }
-export default Queue;
+/**
+ * 取引照会無効化キュー
+ */
+export interface IDisableTransactionInquiryQueue extends IQueue {
+    transaction: Transaction.ITransaction;
+}
+/**
+ * プッシュ通知キュー
+ *
+ * @param {T} notification
+ */
+export interface IPushNotificationQueue<T extends Notification.INotification> extends IQueue {
+    notification: T;
+}
+/**
+ * 資産移動キュー
+ *
+ * @param {T} authorization
+ */
+export interface ISettleAuthorizationQueue<T extends Authorization.IAuthorization> extends IQueue {
+    authorization: T;
+}
+export declare function create(args: {
+    id?: string;
+    group: QueueGroup;
+    status: QueueStatus;
+    run_at: Date;
+    max_count_try: number;
+    last_tried_at: Date | null;
+    count_tried: number;
+    results: string[];
+}): IQueue;
+export declare function createSettleAuthorization<T extends Authorization.IAuthorization>(args: {
+    id?: string;
+    authorization: T;
+    status: QueueStatus;
+    run_at: Date;
+    max_count_try: number;
+    last_tried_at: Date | null;
+    count_tried: number;
+    results: string[];
+}): ISettleAuthorizationQueue<T>;
+export declare function createCancelAuthorization<T extends Authorization.IAuthorization>(args: {
+    id?: string;
+    authorization: T;
+    status: QueueStatus;
+    run_at: Date;
+    max_count_try: number;
+    last_tried_at: Date | null;
+    count_tried: number;
+    results: string[];
+}): ICancelAuthorizationQueue<T>;
+export declare function createPushNotification<T extends Notification.INotification>(args: {
+    id?: string;
+    notification: T;
+    status: QueueStatus;
+    run_at: Date;
+    max_count_try: number;
+    last_tried_at: Date | null;
+    count_tried: number;
+    results: string[];
+}): IPushNotificationQueue<T>;
+export declare function createDisableTransactionInquiry(args: {
+    id?: string;
+    transaction: Transaction.ITransaction;
+    status: QueueStatus;
+    run_at: Date;
+    max_count_try: number;
+    last_tried_at: Date | null;
+    count_tried: number;
+    results: string[];
+}): IDisableTransactionInquiryQueue;

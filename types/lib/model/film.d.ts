@@ -1,10 +1,7 @@
-import * as COA from '@motionpicture/coa-service';
-import MultilingualString from './multilingualString';
-import Theater from './theater';
 /**
- * 作品
+ * 作品ファクトリー
  *
- * @class Film
+ * @namespace TheaterFacroty
  *
  * @param {string} id
  * @param {string} coa_title_code COA作品コード
@@ -22,60 +19,31 @@ import Theater from './theater';
  * @param {string} kbn_joueihousiki 上映方式区分
  * @param {string} kbn_jimakufukikae 字幕吹替区分
  */
-declare class Film {
-    readonly id: string;
-    readonly coa_title_code: string;
-    readonly coa_title_branch_num: string;
-    readonly theater: Theater;
-    readonly name: MultilingualString;
-    readonly name_kana: string;
-    readonly name_short: string;
-    readonly name_original: string;
-    readonly minutes: number;
-    readonly date_start: string;
-    readonly date_end: string;
-    readonly kbn_eirin: string;
-    readonly kbn_eizou: string;
-    readonly kbn_joueihousiki: string;
-    readonly kbn_jimakufukikae: string;
-    constructor(id: string, coa_title_code: string, coa_title_branch_num: string, theater: Theater, name: MultilingualString, name_kana: string, name_short: string, name_original: string, minutes: number, date_start: string, date_end: string, kbn_eirin: string, kbn_eizou: string, kbn_joueihousiki: string, kbn_jimakufukikae: string);
-    toDocument(): {
-        id: string;
-        coa_title_code: string;
-        coa_title_branch_num: string;
-        theater: string;
-        name: MultilingualString;
-        name_kana: string;
-        name_short: string;
-        name_original: string;
-        minutes: number;
-        date_start: string;
-        date_end: string;
-        kbn_eirin: string;
-        kbn_eizou: string;
-        kbn_joueihousiki: string;
-        kbn_jimakufukikae: string;
-    };
+import * as COA from '@motionpicture/coa-service';
+import MultilingualString from './multilingualString';
+import * as Theater from './theater';
+export interface IFilm {
+    id: string;
+    coa_title_code: string;
+    coa_title_branch_num: string;
+    theater: string;
+    name: MultilingualString;
+    name_kana: string;
+    name_short: string;
+    name_original: string;
+    minutes: number;
+    date_start: string;
+    date_end: string;
+    kbn_eirin?: string;
+    kbn_eizou?: string;
+    kbn_joueihousiki?: string;
+    kbn_jimakufukikae?: string;
 }
-declare namespace Film {
-    interface IFilm {
-        id: string;
-        coa_title_code: string;
-        coa_title_branch_num: string;
-        theater: Theater;
-        name: MultilingualString;
-        name_kana: string;
-        name_short: string;
-        name_original: string;
-        minutes: number;
-        date_start: string;
-        date_end: string;
-        kbn_eirin?: string;
-        kbn_eizou?: string;
-        kbn_joueihousiki?: string;
-        kbn_jimakufukikae?: string;
-    }
-    function create(args: IFilm): Film;
-    function createFromCOA(filmFromCOA: COA.MasterService.TitleResult): (theater: Theater) => Promise<Film>;
-}
-export default Film;
+/**
+ * COAの作品抽出結果からFilmオブジェクトを作成する
+ *
+ * @export
+ * @param {COA.MasterService.TitleResult} filmFromCOA
+ * @returns
+ */
+export declare function createFromCOA(filmFromCOA: COA.MasterService.TitleResult): (theater: Theater.ITheater) => IFilm;

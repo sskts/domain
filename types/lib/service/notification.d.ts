@@ -1,4 +1,4 @@
-import Notification from '../model/notification';
+import * as Notification from '../model/notification';
 export declare type Operation<T> = () => Promise<T>;
 /**
  * メール送信
@@ -9,4 +9,4 @@ export declare type Operation<T> = () => Promise<T>;
  *
  * @memberOf NotificationService
  */
-export declare function sendEmail(email: Notification.EmailNotification): Operation<void>;
+export declare function sendEmail(email: Notification.IEmailNotification): Operation<void>;

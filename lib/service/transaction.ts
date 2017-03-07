@@ -8,16 +8,15 @@ import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 import * as util from 'util';
 
-import Authorization from '../model/authorization';
-import Notification from '../model/notification';
-import ObjectId from '../model/objectId';
-import Owner from '../model/owner';
+import * as Authorization from '../model/authorization';
+import * as Notification from '../model/notification';
+import * as Owner from '../model/owner';
 import OwnerGroup from '../model/ownerGroup';
-import Queue from '../model/queue';
+import * as Queue from '../model/queue';
 import QueueStatus from '../model/queueStatus';
-import Transaction from '../model/transaction';
-import TransactionEvent from '../model/transactionEvent';
-import TransactionInquiryKey from '../model/transactionInquiryKey';
+import * as Transaction from '../model/transaction';
+import * as TransactionEvent from '../model/transactionEvent';
+import * as TransactionInquiryKey from '../model/transactionInquiryKey';
 import TransactionStatus from '../model/transactionStatus';
 
 import OwnerRepository from '../repository/owner';
@@ -91,7 +90,7 @@ export function updateAnonymousOwner(args: {
  *
  * @memberOf TransactionService
  */
-export function findById(transactionId: string): TransactionOperation<monapt.Option<Transaction>> {
+export function findById(transactionId: string): TransactionOperation<monapt.Option<Transaction.ITransaction>> {
     return async (transactionRepo: TransactionRepository) => await transactionRepo.findById(transactionId);
 }
 
@@ -106,9 +105,7 @@ export function findById(transactionId: string): TransactionOperation<monapt.Opt
 export function start(expiredAt: Date) {
     return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
         // 一般所有者作成
-        const anonymousOwner = Owner.createAnonymous({
-            id: ObjectId().toString()
-        });
+        const anonymousOwner = Owner.createAnonymous({});
 
         // 興行主取得
         const option = await ownerRepo.findPromoter();
@@ -120,7 +117,6 @@ export function start(expiredAt: Date) {
 
         // 取引作成
         const transaction = Transaction.create({
-            id: ObjectId().toString(),
             status: TransactionStatus.UNDERWAY,
             owners: [promoter, anonymousOwner],
             expired_at: expiredAt
@@ -145,7 +141,7 @@ export function start(expiredAt: Date) {
  *
  * @memberOf TransactionService
  */
-export function addGMOAuthorization(transactionId: string, authorization: Authorization.GMOAuthorization) {
+export function addGMOAuthorization(transactionId: string, authorization: Authorization.IGMOAuthorization) {
     return async (transactionRepo: TransactionRepository) => {
         // 取引取得
         const optionTransaction = await transactionRepo.findById(transactionId);
@@ -168,7 +164,6 @@ export function addGMOAuthorization(transactionId: string, authorization: Author
 
         // イベント作成
         const event = TransactionEvent.createAuthorize({
-            id: ObjectId().toString(),
             transaction: transaction.id,
             occurred_at: new Date(),
             authorization: authorization
@@ -189,7 +184,7 @@ export function addGMOAuthorization(transactionId: string, authorization: Author
  *
  * @memberOf TransactionService
  */
-export function addCOASeatReservationAuthorization(transactionId: string, authorization: Authorization.COASeatReservationAuthorization) {
+export function addCOASeatReservationAuthorization(transactionId: string, authorization: Authorization.ICOASeatReservationAuthorization) {
     return async (transactionRepo: TransactionRepository) => {
         // 取引取得
         const optionTransaction = await transactionRepo.findById(transactionId);
@@ -211,7 +206,6 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
 
         // イベント作成
         const event = TransactionEvent.createAuthorize({
-            id: ObjectId().toString(),
             transaction: transaction.id,
             occurred_at: new Date(),
             authorization: authorization
@@ -250,7 +244,6 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
 
         // イベント作成
         const event = TransactionEvent.createUnauthorize({
-            id: ObjectId().toString(),
             transaction: transaction.id,
             occurred_at: new Date(),
             authorization: removedAuthorization
@@ -271,7 +264,7 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
  *
  * @memberOf TransactionService
  */
-export function enableInquiry(transactionId: string, key: TransactionInquiryKey) {
+export function enableInquiry(transactionId: string, key: TransactionInquiryKey.ITransactionInquiryKey) {
     return async (transactionRepo: TransactionRepository) => {
         // 永続化
         const update = {
@@ -301,10 +294,12 @@ export function enableInquiry(transactionId: string, key: TransactionInquiryKey)
  *
  * @memberOf TransactionService
  */
-export function makeInquiry(key: TransactionInquiryKey): TransactionOperation<monapt.Option<Transaction>> {
+export function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey) {
     debug('finding a transaction...', key);
     return async (transactionRepo: TransactionRepository) => await transactionRepo.findOne({
-        inquiry_key: key,
+        'inquiry_key.theater_code': key.theater_code,
+        'inquiry_key.reserve_num': key.reserve_num,
+        'inquiry_key.tel': key.tel,
         status: TransactionStatus.CLOSED
     });
 }
@@ -328,7 +323,7 @@ export function close(transactionId: string) {
         const transaction = optionTransaction.get();
 
         // 照会可能になっているかどうか
-        if (!transaction.isInquiryAvailable()) {
+        if (!transaction.inquiry_key) {
             throw new Error('inquiry is not available.');
         }
 
@@ -403,13 +398,12 @@ export function exportQueues(transactionId: string) {
 
         const transaction = option.get();
 
-        const queues: Queue[] = [];
+        const queues: Queue.IQueue[] = [];
         switch (transaction.status) {
             case TransactionStatus.CLOSED:
                 // 取引イベントからキューリストを作成
                 (await transactionRepo.findAuthorizationsById(transaction.id)).forEach((authorization) => {
                     queues.push(Queue.createSettleAuthorization({
-                        id: ObjectId().toString(),
                         authorization: authorization,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(), // なるはやで実行
@@ -422,7 +416,6 @@ export function exportQueues(transactionId: string) {
 
                 (await transactionRepo.findNotificationsById(transaction.id)).forEach((notification) => {
                     queues.push(Queue.createPushNotification({
-                        id: ObjectId().toString(),
                         notification: notification,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(), // todo emailのsent_atを指定
@@ -439,7 +432,6 @@ export function exportQueues(transactionId: string) {
             case TransactionStatus.EXPIRED:
                 (await transactionRepo.findAuthorizationsById(transaction.id)).forEach((authorization) => {
                     queues.push(Queue.createCancelAuthorization({
-                        id: ObjectId().toString(),
                         authorization: authorization,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(),
@@ -451,9 +443,8 @@ export function exportQueues(transactionId: string) {
                 });
 
                 // COA本予約があれば取消
-                if (transaction.isInquiryAvailable()) {
+                if (transaction.inquiry_key) {
                     queues.push(Queue.createDisableTransactionInquiry({
-                        id: ObjectId().toString(),
                         transaction: transaction,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(),
@@ -468,9 +459,7 @@ export function exportQueues(transactionId: string) {
                 if (process.env.NODE_ENV !== 'production') {
                     queues.push(Queue.createPushNotification(
                         {
-                            id: ObjectId().toString(),
                             notification: Notification.createEmail({
-                                id: ObjectId().toString(),
                                 from: 'noreply@localhost',
                                 to: 'hello@motionpicture.jp',
                                 subject: 'transaction expired',
@@ -513,11 +502,10 @@ ${util.inspect(transaction, { showHidden: true, depth: 10 })}\n
  *
  * @memberOf TransactionService
  */
-export function addEmail(transactionId: string, notification: Notification.EmailNotification) {
+export function addEmail(transactionId: string, notification: Notification.IEmailNotification) {
     return async (transactionRepo: TransactionRepository) => {
         // イベント作成
         const event = TransactionEvent.createNotificationAdd({
-            id: ObjectId().toString(),
             transaction: transactionId,
             occurred_at: new Date(),
             notification: notification
@@ -556,7 +544,6 @@ export function removeEmail(transactionId: string, notificationId: string) {
 
         // イベント作成
         const event = TransactionEvent.createNotificationRemove({
-            id: ObjectId().toString(),
             transaction: transactionId,
             occurred_at: new Date(),
             notification: removedNotification

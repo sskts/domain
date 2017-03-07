@@ -2,8 +2,8 @@
 import * as assert from 'assert';
 import * as mongoose from 'mongoose';
 
-import Transaction from '../../lib/model/transaction';
 import * as sskts from '../../lib/index';
+import * as Transaction from '../../lib/model/transaction';
 
 let connection: mongoose.Connection;
 before(() => {

@@ -4,8 +4,9 @@
  * @class AssetRepositoryInterpreter
  */
 
+import * as clone from 'clone';
 import { Connection } from 'mongoose';
-import Asset from '../../model/asset';
+import * as Asset from '../../model/asset';
 import AssetRepository from '../asset';
 import assetModel from './mongoose/model/asset';
 
@@ -16,8 +17,9 @@ export default class AssetRepositoryInterpreter implements AssetRepository {
         this.model = this.connection.model(assetModel.modelName);
     }
 
-    public async store(asset: Asset) {
-        await this.model.findByIdAndUpdate(asset.id, asset, {
+    public async store(asset: Asset.IAsset) {
+        const update = clone(asset, false);
+        await this.model.findByIdAndUpdate(update.id, update, {
             new: true,
             upsert: true
         }).lean().exec();
