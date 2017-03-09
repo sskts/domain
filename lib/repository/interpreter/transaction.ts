@@ -78,8 +78,6 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
     }
 
     public async findAuthorizationsById(id: string): Promise<Authorization.IAuthorization[]> {
-        const model = this.connection.model(TransactionEventModel.modelName);
-
         const authorizations = (await this.transactionEventModel.find(
             {
                 transaction: id,
@@ -91,16 +89,16 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             .exec())
             .map((doc) => <Authorization.IAuthorization>doc.get('authorization'));
 
-        const removedAuthorizationIds = (await model.find(
+        const removedAuthorizationIds = (await this.transactionEventModel.find(
             {
                 transaction: id,
                 group: TransactionEventGroup.UNAUTHORIZE
             },
-            'authorization._id'
+            'authorization.id'
         )
             .setOptions({ maxTimeMS: 10000 })
             .exec())
-            .map((doc) => doc.get('id'));
+            .map((doc) => doc.get('authorization.id'));
 
         return authorizations.filter(
             (authorization) => removedAuthorizationIds.indexOf(authorization.id) < 0
@@ -108,8 +106,6 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
     }
 
     public async findNotificationsById(id: string): Promise<Notification.INotification[]> {
-        const model = this.connection.model(TransactionEventModel.modelName);
-
         const notifications = (await this.transactionEventModel.find(
             {
                 transaction: id,
@@ -121,16 +117,16 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             .exec())
             .map((doc) => <Notification.INotification>doc.get('notification'));
 
-        const removedNotificationIds = (await model.find(
+        const removedNotificationIds = (await this.transactionEventModel.find(
             {
                 transaction: id,
                 group: TransactionEventGroup.NOTIFICATION_REMOVE
             },
-            'notification._id'
+            'notification.id'
         )
             .setOptions({ maxTimeMS: 10000 })
             .exec())
-            .map((doc) => doc.get('id'));
+            .map((doc) => doc.get('notification.id'));
 
         return notifications.filter(
             (notification) => (removedNotificationIds.indexOf(notification.id) < 0)
