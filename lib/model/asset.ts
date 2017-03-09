@@ -51,7 +51,6 @@ export interface IAsset {
  */
 export interface ISeatReservationAsset extends IAsset {
     ownership: Ownership.IOwnership;
-    authorizations: Authorization.IAssetAuthorization[];
     performance: string;
     section: string;
     seat_code: string;
@@ -73,7 +72,7 @@ export interface ISeatReservationAsset extends IAsset {
 export function createSeatReservation(args: {
     id?: string,
     ownership: Ownership.IOwnership;
-    authorizations: Authorization.IAssetAuthorization[];
+    authorizations?: Authorization.IAssetAuthorization[];
     performance: string;
     section: string;
     seat_code: string;
@@ -91,7 +90,7 @@ export function createSeatReservation(args: {
         ownership: args.ownership,
         group: AssetGroup.SEAT_RESERVATION,
         price: args.sale_price,
-        authorizations: args.authorizations,
+        authorizations: (args.authorizations) ? args.authorizations : [],
         performance: args.performance,
         section: args.section,
         seat_code: args.seat_code,

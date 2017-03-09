@@ -19,6 +19,7 @@ export default class AssetRepositoryInterpreter implements AssetRepository {
 
     public async store(asset: Asset.IAsset) {
         const update = clone(asset, false);
+        (<any>update).ownership._id = update.ownership.id; // 子オブジェクトのidは_idに変換の必要あり
         await this.model.findByIdAndUpdate(update.id, update, {
             new: true,
             upsert: true

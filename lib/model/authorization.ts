@@ -30,8 +30,8 @@ export interface IAuthorization {
     owner_to: string;
 }
 
-export interface IAssetAuthorization extends IAuthorization {
-    asset: Asset.IAsset;
+// 後に何かmemberが増えるかもしれない
+export interface IAssetAuthorization extends IAuthorization { // tslint:disable-line:no-empty-interface no-empty-interfaces
 }
 
 /**

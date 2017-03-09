@@ -19,7 +19,6 @@ export interface IAuthorization {
     owner_to: string;
 }
 export interface IAssetAuthorization extends IAuthorization {
-    asset: Asset.IAsset;
 }
 /**
  * COA座席仮予約

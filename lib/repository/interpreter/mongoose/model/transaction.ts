@@ -15,6 +15,7 @@ const schema = new mongoose.Schema(
             ref: ownerModel.modelName
         }],
         inquiry_key: {
+            _id: false,
             theater_code: String, // 照会劇場コード
             reserve_num: Number, // 照会ID
             tel: String // 照会PASS
