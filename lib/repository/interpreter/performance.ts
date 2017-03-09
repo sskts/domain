@@ -26,6 +26,7 @@ export default class PerformanceRepositoryInterpreter implements PerformanceRepo
 
     public async find(conditions: any): Promise<Performance.IPerformanceWithFilmAndScreen[]> {
         const docs = await this.model.find(conditions)
+            .setOptions({ maxTimeMS: 10000 })
             .populate('film')
             .populate('theater')
             .populate('screen')

@@ -28,7 +28,7 @@ export default class FilmRepositoryInterpreter implements FilmRepository {
     }
 
     public async store(film: Film.IFilm) {
-        debug('updating a film...', film);
+        debug('updating...', film);
         const update = clone(film, false);
         await this.model.findByIdAndUpdate(update.id, update, {
             new: true,

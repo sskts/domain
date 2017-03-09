@@ -22,7 +22,7 @@ function main() {
         catch (error) {
             console.error(error);
         }
-        process.exit(0);
+        mongoose.disconnect();
     });
 }
 main();

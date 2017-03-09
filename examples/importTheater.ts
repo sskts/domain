@@ -12,7 +12,6 @@ async function main() {
     }
 
     mongoose.disconnect();
-    process.exit(0);
 }
 
 main();

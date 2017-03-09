@@ -31,6 +31,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
 
     public async find(conditions: any) {
         const docs = await this.transactionModel.find()
+            .setOptions({ maxTimeMS: 10000 })
             .where(conditions)
             .populate('owner')
             .exec();
@@ -86,6 +87,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             },
             'authorization'
         )
+            .setOptions({ maxTimeMS: 10000 })
             .exec())
             .map((doc) => <Authorization.IAuthorization>doc.get('authorization'));
 
@@ -96,6 +98,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             },
             'authorization._id'
         )
+            .setOptions({ maxTimeMS: 10000 })
             .exec())
             .map((doc) => doc.get('id'));
 
@@ -114,6 +117,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             },
             'notification'
         )
+            .setOptions({ maxTimeMS: 10000 })
             .exec())
             .map((doc) => <Notification.INotification>doc.get('notification'));
 
@@ -124,6 +128,7 @@ export default class TransactionRepositoryInterpreter implements TransactionRepo
             },
             'notification._id'
         )
+            .setOptions({ maxTimeMS: 10000 })
             .exec())
             .map((doc) => doc.get('id'));
 

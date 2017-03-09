@@ -38,4 +38,5 @@ sskts.service.notification.sendEmail(notification)()
     })
     .catch((err) => {
         console.error(err);
+        process.exit(1);
     });

@@ -28,7 +28,9 @@ export default class ScreenRepositoryInterpreter implements ScreenRepository {
     }
 
     public async findByTheater(theaterId: string) {
-        const docs = await this.model.find({ theater: theaterId }).exec();
+        const docs = await this.model.find({ theater: theaterId })
+            .setOptions({ maxTimeMS: 10000 })
+            .exec();
 
         return docs.map((doc) => <Screen.IScreen>doc.toObject());
     }

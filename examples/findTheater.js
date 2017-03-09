@@ -11,19 +11,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /* tslint:disable */
 const mongoose = require("mongoose");
 const sskts = require("../lib/index");
+const connectionOptions_1 = require("./connectionOptions");
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             mongoose.Promise = global.Promise;
-            const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-            const theater = yield sskts.service.master.findTheater('118')(sskts.createTheaterRepository(connection));
+            mongoose.connect(process.env.MONGOLAB_URI, connectionOptions_1.default);
+            const theater = yield sskts.service.master.findTheater('118')(sskts.createTheaterRepository(mongoose.connection));
             console.log(theater);
+            mongoose.disconnect();
         }
         catch (error) {
             console.error(error);
         }
-        mongoose.disconnect();
-        process.exit(0);
     });
 }
 main();

@@ -253,10 +253,12 @@ http://www.cinemasunshine.co.jp/\n
         // 照会してみる
         const inquiryResult = yield transactionService.makeInquiry(key)(transactionRepository);
         console.log('makeInquiry result:', inquiryResult);
+        mongoose.disconnect();
     });
 }
 main().then(() => {
-    console.log('main processed.');
+    console.log('success!');
 }).catch((err) => {
-    console.error(err.message);
+    console.error(err);
+    process.exit(1);
 });

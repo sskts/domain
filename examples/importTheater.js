@@ -22,7 +22,6 @@ function main() {
             console.error(error);
         }
         mongoose.disconnect();
-        process.exit(0);
     });
 }
 main();

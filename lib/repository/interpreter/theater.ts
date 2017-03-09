@@ -30,7 +30,7 @@ export default class TheaterRepositoryInterpreter implements TheaterRepository {
     }
 
     public async store(theater: Theater.ITheater) {
-        debug('updating a theater...', theater);
+        debug('updating...', theater);
         const update = clone(theater);
         await this.model.findByIdAndUpdate(update.id, update, {
             new: true,

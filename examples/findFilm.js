@@ -22,8 +22,8 @@ function main() {
         catch (error) {
             console.error(error);
         }
+        console.log('disconnecting...');
         mongoose.disconnect();
-        process.exit(0);
     });
 }
 main();
