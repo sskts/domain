@@ -10,8 +10,8 @@ before(() => {
 describe('transaction service', () => {
     // it('export queues', async () => {
     //     await sskts.service.transaction.exportQueues('58ab949eedc005093c5fe3c6')(
-    //         sskts.createTransactionRepository(connection),
-    //         sskts.createQueueRepository(connection)
+    //         sskts.createTransactionAdapter(connection),
+    //         sskts.createQueueAdapter(connection)
     //     );
     // });
 });

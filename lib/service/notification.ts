@@ -6,7 +6,7 @@
 
 import * as createDebug from 'debug';
 import * as sendgrid from 'sendgrid';
-import * as Notification from '../model/notification';
+import * as Notification from '../factory/notification';
 
 export type Operation<T> = () => Promise<T>;
 

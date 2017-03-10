@@ -25,14 +25,14 @@ function main() {
         const gmoShopId = 'tshop00026096';
         const gmoShopPass = 'xbxmkaa6';
         const transactionService = sskts.service.transaction;
-        const ownerRepository = sskts.createOwnerRepository(connection);
-        const transactionRepository = sskts.createTransactionRepository(connection);
+        const ownerAdapter = sskts.createOwnerAdapter(connection);
+        const transactionAdapter = sskts.createTransactionAdapter(connection);
         // 取引開始
         // 30分後のunix timestampを送信する場合
         // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
         // tslint:disable-next-line:no-console
         console.log('starting transaction...');
-        const transaction = yield transactionService.start(moment().add(30, 'minutes').toDate())(ownerRepository, transactionRepository);
+        const transaction = yield transactionService.start(moment().add(30, 'minutes').toDate())(ownerAdapter, transactionAdapter);
         console.log('transaction started.');
         const transactionId = transaction.id;
         const promoterOwner = transaction.owners.find((owner) => {
@@ -98,7 +98,7 @@ function main() {
         // COAオーソリ追加
         console.log('adding authorizations coaSeatReservation...');
         const totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
-        const coaAuthorization = sskts.model.Authorization.createCOASeatReservation({
+        const coaAuthorization = sskts.factory.authorization.createCOASeatReservation({
             owner_from: promoterOwnerId,
             owner_to: anonymousOwnerId,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
@@ -109,8 +109,8 @@ function main() {
             coa_time_begin: timeBegin,
             coa_screen_code: screenCode,
             assets: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
-                return sskts.model.Asset.createSeatReservation({
-                    ownership: sskts.model.Ownership.create({
+                return sskts.factory.asset.createSeatReservation({
+                    ownership: sskts.factory.ownership.create({
                         owner: anonymousOwnerId,
                         authenticated: false,
                     }),
@@ -130,7 +130,7 @@ function main() {
             }),
             price: totalPrice
         });
-        yield transactionService.addCOASeatReservationAuthorization(transactionId, coaAuthorization)(transactionRepository);
+        yield transactionService.addCOASeatReservationAuthorization(transactionId, coaAuthorization)(transactionAdapter);
         console.log('coaAuthorization added.');
         // GMOオーソリ取得
         const orderId = Date.now().toString();
@@ -153,7 +153,7 @@ function main() {
         console.log(execTranResult);
         // GMOオーソリ追加
         console.log('adding authorizations gmo...');
-        const gmoAuthorization = sskts.model.Authorization.createGMO({
+        const gmoAuthorization = sskts.factory.authorization.createGMO({
             owner_from: anonymousOwnerId,
             owner_to: promoterOwnerId,
             gmo_shop_id: gmoShopId,
@@ -166,7 +166,7 @@ function main() {
             gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
             price: totalPrice,
         });
-        yield transactionService.addGMOAuthorization(transactionId, gmoAuthorization)(transactionRepository);
+        yield transactionService.addGMOAuthorization(transactionId, gmoAuthorization)(transactionAdapter);
         console.log('GMOAuthorization added.');
         // 購入者情報登録
         console.log('updating anonymous...');
@@ -176,7 +176,7 @@ function main() {
             name_last: 'Yamazaki',
             tel: '09012345678',
             email: 'hello@motionpicture.jp',
-        })(ownerRepository, transactionRepository);
+        })(ownerAdapter, transactionAdapter);
         console.log('anonymousOwner updated.');
         // COA本予約
         const tel = '09012345678';
@@ -209,12 +209,12 @@ function main() {
         console.log('updateReserveResult:', updateReserveResult);
         // 照会情報登録(購入番号と電話番号で照会する場合)
         console.log('enabling inquiry...');
-        const key = sskts.model.TransactionInquiryKey.create({
+        const key = sskts.factory.transactionInquiryKey.create({
             theater_code: theaterCode,
             reserve_num: updateReserveResult.reserve_num,
             tel: tel,
         });
-        yield transactionService.enableInquiry(transactionId, key)(transactionRepository);
+        yield transactionService.enableInquiry(transactionId, key)(transactionAdapter);
         console.log('inquiry enabled.');
         // メール追加
         const content = `
@@ -237,21 +237,21 @@ http://www.cinemasunshine.co.jp/\n
 -------------------------------------------------------------------\n
 `;
         console.log('adding email...');
-        const notification = sskts.model.Notification.createEmail({
+        const notification = sskts.factory.notification.createEmail({
             from: 'noreply@localhost',
             to: 'hello@motionpicture.jp',
             subject: '購入完了',
             content: content,
         });
-        yield transactionService.addEmail(transactionId, notification)(transactionRepository);
+        yield transactionService.addEmail(transactionId, notification)(transactionAdapter);
         console.log('email added.');
         // let notificationId = notification._id;
         // 取引成立
         console.log('closing transaction...');
-        yield transactionService.close(transactionId)(transactionRepository);
+        yield transactionService.close(transactionId)(transactionAdapter);
         console.log('closed.');
         // 照会してみる
-        const inquiryResult = yield transactionService.makeInquiry(key)(transactionRepository);
+        const inquiryResult = yield transactionService.makeInquiry(key)(transactionAdapter);
         console.log('makeInquiry result:', inquiryResult);
         mongoose.disconnect();
     });

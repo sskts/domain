@@ -9,7 +9,7 @@ async function main() {
         const performances = await sskts.service.master.searchPerformances({
             day: '20170311',
             theater: '118'
-        })(sskts.createPerformanceRepository(connection));
+        })(sskts.createPerformanceAdapter(connection));
         console.log(performances);
     } catch (error) {
         console.error(error);

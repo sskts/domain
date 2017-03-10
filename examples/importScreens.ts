@@ -6,7 +6,7 @@ async function main() {
     try {
         (<any>mongoose).Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        await sskts.service.master.importScreens('118')(sskts.createTheaterRepository(connection), sskts.createScreenRepository(connection));
+        await sskts.service.master.importScreens('118')(sskts.createTheaterAdapter(connection), sskts.createScreenAdapter(connection));
     } catch (error) {
         console.error(error);
     }

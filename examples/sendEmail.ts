@@ -5,7 +5,7 @@
  */
 import * as sskts from '../lib/index';
 
-const notification = sskts.model.Notification.createEmail({
+const notification = sskts.factory.notification.createEmail({
     from: 'noreply@localhost',
     to: 'ilovegadd@gmail.com',
     subject: 'test subject',

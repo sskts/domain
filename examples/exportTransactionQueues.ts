@@ -18,9 +18,9 @@ mongoose.connect(process.env.MONGOLAB_URI);
  * @ignore
  */
 async function main() {
-    const transactionRepository = sskts.createTransactionRepository(mongoose.connection);
+    const transactionAdapter = sskts.createTransactionAdapter(mongoose.connection);
 
-    const option = await transactionRepository.findOneAndUpdate(
+    const option = await transactionAdapter.findOneAndUpdate(
         {
             _id: '58c1619daefa8e0c80605e40'
         },
@@ -34,8 +34,8 @@ async function main() {
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
         await sskts.service.transaction.exportQueues(transaction.id.toString())(
-            transactionRepository,
-            sskts.createQueueRepository(mongoose.connection)
+            transactionAdapter,
+            sskts.createQueueAdapter(mongoose.connection)
         );
     }
 

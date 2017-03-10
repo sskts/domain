@@ -16,7 +16,7 @@ function main() {
         try {
             mongoose.Promise = global.Promise;
             const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-            yield sskts.service.master.importTheater('118')(sskts.createTheaterRepository(connection));
+            yield sskts.service.master.importTheater('118')(sskts.createTheaterAdapter(connection));
         }
         catch (error) {
             console.error(error);

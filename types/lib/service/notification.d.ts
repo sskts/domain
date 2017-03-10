@@ -1,4 +1,4 @@
-import * as Notification from '../model/notification';
+import * as Notification from '../factory/notification';
 export declare type Operation<T> = () => Promise<T>;
 /**
  * メール送信

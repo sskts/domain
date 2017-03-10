@@ -2,8 +2,8 @@
 import * as assert from 'assert';
 import * as mongoose from 'mongoose';
 
+import * as Transaction from '../../lib/factory/transaction';
 import * as sskts from '../../lib/index';
-import * as Transaction from '../../lib/model/transaction';
 
 let connection: mongoose.Connection;
 before(() => {
@@ -19,7 +19,7 @@ describe('stock service', () => {
         });
 
         sskts.service.stock.disableTransactionInquiry(transaction)(
-            sskts.createTransactionRepository(connection)
+            sskts.createTransactionAdapter(connection)
         ).then(() => {
             done(new Error('unexpected.'));
         }).catch((err) => {

@@ -1,4 +1,4 @@
-import * as Authorization from '../model/authorization';
+import * as Authorization from '../factory/authorization';
 /**
  * GMOオーソリ取消
  */

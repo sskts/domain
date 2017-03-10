@@ -20,10 +20,10 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         mongoose.Promise = global.Promise;
         mongoose.connect(process.env.MONGOLAB_URI);
-        const queueRepository = sskts.createQueueRepository(mongoose.connection);
-        const assetRepository = sskts.createAssetRepository(mongoose.connection);
+        const queueAdapter = sskts.createQueueAdapter(mongoose.connection);
+        const assetAdapter = sskts.createAssetAdapter(mongoose.connection);
         // 未実行のCOA資産移動キューを取得
-        const option = yield queueRepository.findOneSettleCOASeatReservationAuthorizationAndUpdate({
+        const option = yield queueAdapter.findOneSettleCOASeatReservationAuthorizationAndUpdate({
             _id: '58c1262196970616d0fe2e30'
         }, {});
         if (!option.isEmpty) {
@@ -31,7 +31,7 @@ function main() {
             console.log(util.inspect(queue, { showHidden: true, depth: 10 }));
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
-                yield sskts.service.stock.transferCOASeatReservation(queue.authorization)(assetRepository);
+                yield sskts.service.stock.transferCOASeatReservation(queue.authorization)(assetAdapter);
             }
             catch (error) {
                 console.error(error);

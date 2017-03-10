@@ -6,10 +6,12 @@
 
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
-import * as Authorization from '../model/authorization';
-import * as Transaction from '../model/transaction';
-import AssetRepository from '../repository/asset';
-import TransactionRepository from '../repository/transaction';
+
+import * as Authorization from '../factory/authorization';
+import * as Transaction from '../factory/transaction';
+
+import AssetAdapter from '../adapter/asset';
+import TransactionAdapter from '../adapter/transaction';
 
 const debug = createDebug('sskts-domain:service:stock');
 
@@ -44,7 +46,7 @@ export function unauthorizeCOASeatReservation(authorization: Authorization.ICOAS
  * @memberOf StockServiceInterpreter
  */
 export function transferCOASeatReservation(authorization: Authorization.ICOASeatReservationAuthorization) {
-    return async (assetRepository: AssetRepository) => {
+    return async (assetAdapter: AssetAdapter) => {
 
         // ウェブフロントで事前に本予約済みなので不要
         // await COA.updateReserveInterface.call({
@@ -53,7 +55,7 @@ export function transferCOASeatReservation(authorization: Authorization.ICOASeat
         const promises = authorization.assets.map(async (asset) => {
             // 資産永続化
             debug('storing asset...', asset);
-            await assetRepository.store(asset);
+            await assetAdapter.store(asset);
             debug('asset stored.');
         });
 
@@ -68,7 +70,7 @@ export function transferCOASeatReservation(authorization: Authorization.ICOASeat
  * @memberOf StockServiceInterpreter
  */
 export function disableTransactionInquiry(transaction: Transaction.ITransaction) {
-    return async (transactionRepository: TransactionRepository) => {
+    return async (transactionAdapter: TransactionAdapter) => {
         if (!transaction.inquiry_key) {
             throw new RangeError('inquiry_key not created.');
         }
@@ -100,7 +102,7 @@ export function disableTransactionInquiry(transaction: Transaction.ITransaction)
             }
         };
         debug('updating transaction...', update);
-        await transactionRepository.findOneAndUpdate(
+        await transactionAdapter.findOneAndUpdate(
             {
                 _id: transaction.id
             },

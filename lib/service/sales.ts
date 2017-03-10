@@ -6,7 +6,7 @@
 
 import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
-import * as Authorization from '../model/authorization';
+import * as Authorization from '../factory/authorization';
 
 const debug = createDebug('sskts-domain:service:sales');
 

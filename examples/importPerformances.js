@@ -16,7 +16,7 @@ function main() {
         try {
             mongoose.Promise = global.Promise;
             const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-            yield sskts.service.master.importPerformances('118', '20170201', '20170401')(sskts.createFilmRepository(connection), sskts.createScreenRepository(connection), sskts.createPerformanceRepository(connection));
+            yield sskts.service.master.importPerformances('118', '20170201', '20170401')(sskts.createFilmAdapter(connection), sskts.createScreenAdapter(connection), sskts.createPerformanceAdapter(connection));
         }
         catch (error) {
             console.error(error);

@@ -11,47 +11,47 @@ import * as salesService from './service/sales';
 import * as stockService from './service/stock';
 import * as transactionService from './service/transaction';
 
-import AssetRepository from './repository/interpreter/asset';
-import FilmRepository from './repository/interpreter/film';
-import OwnerRepository from './repository/interpreter/owner';
-import PerformanceRepository from './repository/interpreter/performance';
-import QueueRepository from './repository/interpreter/queue';
-import ScreenRepository from './repository/interpreter/screen';
-import TheaterRepository from './repository/interpreter/theater';
-import TransactionRepository from './repository/interpreter/transaction';
+import AssetAdapter from './adapter/interpreter/asset';
+import FilmAdapter from './adapter/interpreter/film';
+import OwnerAdapter from './adapter/interpreter/owner';
+import PerformanceAdapter from './adapter/interpreter/performance';
+import QueueAdapter from './adapter/interpreter/queue';
+import ScreenAdapter from './adapter/interpreter/screen';
+import TheaterAdapter from './adapter/interpreter/theater';
+import TransactionAdapter from './adapter/interpreter/transaction';
 
-import * as Asset from './model/asset';
-import * as Authorization from './model/authorization';
-import * as Notification from './model/notification';
-import * as Ownership from './model/ownership';
-import QueueStatus from './model/queueStatus';
-import * as TransactionInquiryKey from './model/transactionInquiryKey';
-import TransactionQueuesStatus from './model/transactionQueuesStatus';
-import TransactionStatus from './model/transactionStatus';
+import * as asset from './factory/asset';
+import * as authorization from './factory/authorization';
+import * as notification from './factory/notification';
+import * as ownership from './factory/ownership';
+import queueStatus from './factory/queueStatus';
+import * as transactionInquiryKey from './factory/transactionInquiryKey';
+import transactionQueuesStatus from './factory/transactionQueuesStatus';
+import transactionStatus from './factory/transactionStatus';
 
-export function createAssetRepository(connection: Connection) {
-    return new AssetRepository(connection);
+export function createAssetAdapter(connection: Connection) {
+    return new AssetAdapter(connection);
 }
-export function createFilmRepository(connection: Connection) {
-    return new FilmRepository(connection);
+export function createFilmAdapter(connection: Connection) {
+    return new FilmAdapter(connection);
 }
-export function createOwnerRepository(connection: Connection) {
-    return new OwnerRepository(connection);
+export function createOwnerAdapter(connection: Connection) {
+    return new OwnerAdapter(connection);
 }
-export function createPerformanceRepository(connection: Connection) {
-    return new PerformanceRepository(connection);
+export function createPerformanceAdapter(connection: Connection) {
+    return new PerformanceAdapter(connection);
 }
-export function createQueueRepository(connection: Connection) {
-    return new QueueRepository(connection);
+export function createQueueAdapter(connection: Connection) {
+    return new QueueAdapter(connection);
 }
-export function createScreenRepository(connection: Connection) {
-    return new ScreenRepository(connection);
+export function createScreenAdapter(connection: Connection) {
+    return new ScreenAdapter(connection);
 }
-export function createTransactionRepository(connection: Connection) {
-    return new TransactionRepository(connection);
+export function createTransactionAdapter(connection: Connection) {
+    return new TransactionAdapter(connection);
 }
-export function createTheaterRepository(connection: Connection) {
-    return new TheaterRepository(connection);
+export function createTheaterAdapter(connection: Connection) {
+    return new TheaterAdapter(connection);
 }
 
 export const service = {
@@ -62,13 +62,13 @@ export const service = {
     transaction: transactionService
 };
 
-export const model = {
-    Asset,
-    Authorization,
-    Notification,
-    Ownership,
-    QueueStatus,
-    TransactionInquiryKey,
-    TransactionQueuesStatus,
-    TransactionStatus
+export const factory = {
+    asset,
+    authorization,
+    notification,
+    ownership,
+    queueStatus,
+    transactionInquiryKey,
+    transactionQueuesStatus,
+    transactionStatus
 };

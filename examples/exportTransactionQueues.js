@@ -26,15 +26,15 @@ mongoose.connect(process.env.MONGOLAB_URI);
  */
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const transactionRepository = sskts.createTransactionRepository(mongoose.connection);
-        const option = yield transactionRepository.findOneAndUpdate({
+        const transactionAdapter = sskts.createTransactionAdapter(mongoose.connection);
+        const option = yield transactionAdapter.findOneAndUpdate({
             _id: '58c1619daefa8e0c80605e40'
         }, {});
         if (!option.isEmpty) {
             const transaction = option.get();
             debug('transaction is', transaction);
             // 失敗してもここでは戻さない(RUNNINGのまま待機)
-            yield sskts.service.transaction.exportQueues(transaction.id.toString())(transactionRepository, sskts.createQueueRepository(mongoose.connection));
+            yield sskts.service.transaction.exportQueues(transaction.id.toString())(transactionAdapter, sskts.createQueueAdapter(mongoose.connection));
         }
         mongoose.disconnect();
     });

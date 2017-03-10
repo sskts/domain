@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line:missing-jsdoc
 const assert = require("assert");
 const mongoose = require("mongoose");
+const Transaction = require("../../lib/factory/transaction");
 const sskts = require("../../lib/index");
-const Transaction = require("../../lib/model/transaction");
 let connection;
 before(() => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
@@ -16,7 +16,7 @@ describe('stock service', () => {
             owners: [],
             expired_at: new Date()
         });
-        sskts.service.stock.disableTransactionInquiry(transaction)(sskts.createTransactionRepository(connection)).then(() => {
+        sskts.service.stock.disableTransactionInquiry(transaction)(sskts.createTransactionAdapter(connection)).then(() => {
             done(new Error('unexpected.'));
         }).catch((err) => {
             assert(err instanceof RangeError);

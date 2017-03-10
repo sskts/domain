@@ -8,26 +8,26 @@ import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 import * as util from 'util';
 
-import * as Authorization from '../model/authorization';
-import * as Notification from '../model/notification';
-import * as Owner from '../model/owner';
-import OwnerGroup from '../model/ownerGroup';
-import * as Queue from '../model/queue';
-import QueueStatus from '../model/queueStatus';
-import * as Transaction from '../model/transaction';
-import * as TransactionEvent from '../model/transactionEvent';
-import * as TransactionInquiryKey from '../model/transactionInquiryKey';
-import TransactionStatus from '../model/transactionStatus';
+import * as Authorization from '../factory/authorization';
+import * as Notification from '../factory/notification';
+import * as Owner from '../factory/owner';
+import OwnerGroup from '../factory/ownerGroup';
+import * as Queue from '../factory/queue';
+import QueueStatus from '../factory/queueStatus';
+import * as Transaction from '../factory/transaction';
+import * as TransactionEvent from '../factory/transactionEvent';
+import * as TransactionInquiryKey from '../factory/transactionInquiryKey';
+import TransactionStatus from '../factory/transactionStatus';
 
-import OwnerRepository from '../repository/owner';
-import QueueRepository from '../repository/queue';
-import TransactionRepository from '../repository/transaction';
+import OwnerAdapter from '../adapter/owner';
+import QueueAdapter from '../adapter/queue';
+import TransactionAdapter from '../adapter/transaction';
 
 export type TransactionAndQueueOperation<T> =
-    (transactionRepo: TransactionRepository, queueRepo: QueueRepository) => Promise<T>;
+    (transactionRepo: TransactionAdapter, queueRepo: QueueAdapter) => Promise<T>;
 export type OwnerAndTransactionOperation<T> =
-    (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => Promise<T>;
-export type TransactionOperation<T> = (transactionRepo: TransactionRepository) => Promise<T>;
+    (ownerRepo: OwnerAdapter, transactionRepo: TransactionAdapter) => Promise<T>;
+export type TransactionOperation<T> = (transactionRepo: TransactionAdapter) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:transaction');
 
@@ -45,7 +45,7 @@ export function updateAnonymousOwner(args: {
     email?: string,
     tel?: string
 }): OwnerAndTransactionOperation<void> {
-    return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
+    return async (ownerRepo: OwnerAdapter, transactionRepo: TransactionAdapter) => {
         // 取引取得
         const optionTransaction = await transactionRepo.findById(args.transaction_id);
         if (optionTransaction.isEmpty) {
@@ -91,7 +91,7 @@ export function updateAnonymousOwner(args: {
  * @memberOf TransactionService
  */
 export function findById(transactionId: string): TransactionOperation<monapt.Option<Transaction.ITransaction>> {
-    return async (transactionRepo: TransactionRepository) => await transactionRepo.findById(transactionId);
+    return async (transactionRepo: TransactionAdapter) => await transactionRepo.findById(transactionId);
 }
 
 /**
@@ -103,7 +103,7 @@ export function findById(transactionId: string): TransactionOperation<monapt.Opt
  * @memberOf TransactionService
  */
 export function start(expiredAt: Date) {
-    return async (ownerRepo: OwnerRepository, transactionRepo: TransactionRepository) => {
+    return async (ownerRepo: OwnerAdapter, transactionRepo: TransactionAdapter) => {
         // 一般所有者作成
         const anonymousOwner = Owner.createAnonymous({});
 
@@ -142,7 +142,7 @@ export function start(expiredAt: Date) {
  * @memberOf TransactionService
  */
 export function addGMOAuthorization(transactionId: string, authorization: Authorization.IGMOAuthorization) {
-    return async (transactionRepo: TransactionRepository) => {
+    return async (transactionRepo: TransactionAdapter) => {
         // 取引取得
         const optionTransaction = await transactionRepo.findById(transactionId);
         if (optionTransaction.isEmpty) {
@@ -185,7 +185,7 @@ export function addGMOAuthorization(transactionId: string, authorization: Author
  * @memberOf TransactionService
  */
 export function addCOASeatReservationAuthorization(transactionId: string, authorization: Authorization.ICOASeatReservationAuthorization) {
-    return async (transactionRepo: TransactionRepository) => {
+    return async (transactionRepo: TransactionAdapter) => {
         // 取引取得
         const optionTransaction = await transactionRepo.findById(transactionId);
         if (optionTransaction.isEmpty) {
@@ -227,7 +227,7 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
  * @memberOf TransactionService
  */
 export function removeAuthorization(transactionId: string, authorizationId: string) {
-    return async (transactionRepo: TransactionRepository) => {
+    return async (transactionRepo: TransactionAdapter) => {
         // 取引取得
         const optionTransacton = await transactionRepo.findById(transactionId);
         if (optionTransacton.isEmpty) {
@@ -265,7 +265,7 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
  * @memberOf TransactionService
  */
 export function enableInquiry(transactionId: string, key: TransactionInquiryKey.ITransactionInquiryKey) {
-    return async (transactionRepo: TransactionRepository) => {
+    return async (transactionRepo: TransactionAdapter) => {
         // 永続化
         const update = {
             $set: {
@@ -296,7 +296,7 @@ export function enableInquiry(transactionId: string, key: TransactionInquiryKey.
  */
 export function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey) {
     debug('finding a transaction...', key);
-    return async (transactionRepo: TransactionRepository) => await transactionRepo.findOne({
+    return async (transactionRepo: TransactionAdapter) => await transactionRepo.findOne({
         'inquiry_key.theater_code': key.theater_code,
         'inquiry_key.reserve_num': key.reserve_num,
         'inquiry_key.tel': key.tel,
@@ -313,7 +313,7 @@ export function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey) {
  * @memberOf TransactionService
  */
 export function close(transactionId: string) {
-    return async (transactionRepo: TransactionRepository) => {
+    return async (transactionRepo: TransactionAdapter) => {
         // 取引取得
         const optionTransaction = await transactionRepo.findById(transactionId);
         if (optionTransaction.isEmpty) {
@@ -360,7 +360,7 @@ export function close(transactionId: string) {
  * @memberOf TransactionService
  */
 export function expireOne() {
-    return async (transactionRepo: TransactionRepository) => {
+    return async (transactionRepo: TransactionAdapter) => {
         // 永続化
         const update = {
             $set: {
@@ -390,7 +390,7 @@ export function expireOne() {
  */
 export function exportQueues(transactionId: string) {
     // tslint:disable-next-line:max-func-body-length
-    return async (transactionRepo: TransactionRepository, queueRepo: QueueRepository) => {
+    return async (transactionRepo: TransactionAdapter, queueRepo: QueueAdapter) => {
         const option = await transactionRepo.findById(transactionId);
         if (option.isEmpty) {
             throw new Error('transaction not found.');
@@ -503,7 +503,7 @@ ${util.inspect(transaction, { showHidden: true, depth: 10 })}\n
  * @memberOf TransactionService
  */
 export function addEmail(transactionId: string, notification: Notification.IEmailNotification) {
-    return async (transactionRepo: TransactionRepository) => {
+    return async (transactionRepo: TransactionAdapter) => {
         // イベント作成
         const event = TransactionEvent.createNotificationAdd({
             transaction: transactionId,
@@ -527,7 +527,7 @@ export function addEmail(transactionId: string, notification: Notification.IEmai
  * @memberOf TransactionService
  */
 export function removeEmail(transactionId: string, notificationId: string) {
-    return async (transactionRepo: TransactionRepository) => {
+    return async (transactionRepo: TransactionAdapter) => {
         // 取引取得
         const optionTransacton = await transactionRepo.findById(transactionId);
         if (optionTransacton.isEmpty) {

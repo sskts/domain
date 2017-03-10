@@ -7,26 +7,28 @@
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
-import * as Film from '../model/film';
-import MultilingualString from '../model/multilingualString';
-import * as Performance from '../model/performance';
-import * as Screen from '../model/screen';
-import * as Theater from '../model/theater';
-import FilmRepository from '../repository/film';
-import PerformanceRepository from '../repository/performance';
-import ScreenRepository from '../repository/screen';
-import TheaterRepository from '../repository/theater';
 
-export type TheaterOperation<T> = (repository: TheaterRepository) => Promise<T>;
-export type FilmOperation<T> = (repository: FilmRepository) => Promise<T>;
-export type ScreenOperation<T> = (repository: ScreenRepository) => Promise<T>;
-export type PerformanceOperation<T> = (repository: PerformanceRepository) => Promise<T>;
+import * as Film from '../factory/film';
+import MultilingualString from '../factory/multilingualString';
+import * as Performance from '../factory/performance';
+import * as Screen from '../factory/screen';
+import * as Theater from '../factory/theater';
+
+import FilmAdapter from '../adapter/film';
+import PerformanceAdapter from '../adapter/performance';
+import ScreenAdapter from '../adapter/screen';
+import TheaterAdapter from '../adapter/theater';
+
+export type TheaterOperation<T> = (adapter: TheaterAdapter) => Promise<T>;
+export type FilmOperation<T> = (adapter: FilmAdapter) => Promise<T>;
+export type ScreenOperation<T> = (adapter: ScreenAdapter) => Promise<T>;
+export type PerformanceOperation<T> = (adapter: PerformanceAdapter) => Promise<T>;
 export type TheaterAndScreenOperation<T> =
-    (theaterRepo: TheaterRepository, screenRepo: ScreenRepository) => Promise<T>;
+    (theaterRepo: TheaterAdapter, screenRepo: ScreenAdapter) => Promise<T>;
 export type TheaterAndFilmOperation<T> =
-    (theaterRepo: TheaterRepository, filmRepo: FilmRepository) => Promise<T>;
+    (theaterRepo: TheaterAdapter, filmRepo: FilmAdapter) => Promise<T>;
 export type FilmAndScreenAndPerformanceOperation<T> =
-    (filmRepo: FilmRepository, screenRepo: ScreenRepository, performanceRepo: PerformanceRepository) => Promise<T>;
+    (filmRepo: FilmAdapter, screenRepo: ScreenAdapter, performanceRepo: PerformanceAdapter) => Promise<T>;
 
 export interface ISearchPerformancesConditions {
     day?: string;
@@ -63,7 +65,7 @@ const debug = createDebug('sskts-domain:service:master');
  * @memberOf MasterService
  */
 export function importTheater(theaterCode: string): TheaterOperation<void> {
-    return async (repository: TheaterRepository) => {
+    return async (adapter: TheaterAdapter) => {
         // COAから取得
         const theaterFromCOA = await COA.MasterService.theater({
             theater_code: theaterCode
@@ -72,7 +74,7 @@ export function importTheater(theaterCode: string): TheaterOperation<void> {
         // 永続化
         const theater = Theater.createFromCOA(theaterFromCOA);
         debug('storing theater...', theater);
-        await repository.store(theater);
+        await adapter.store(theater);
         debug('theater stored.');
     };
 }
@@ -86,9 +88,9 @@ export function importTheater(theaterCode: string): TheaterOperation<void> {
  * @memberOf MasterService
  */
 export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> {
-    return async (theaterRepository: TheaterRepository, filmRepo: FilmRepository) => {
+    return async (theaterAdapter: TheaterAdapter, filmRepo: FilmAdapter) => {
         // 劇場取得
-        const optionTheater = await theaterRepository.findById(theaterCode);
+        const optionTheater = await theaterAdapter.findById(theaterCode);
         if (optionTheater.isEmpty) {
             throw new Error('theater not found.');
         }
@@ -117,9 +119,9 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
  * @memberOf MasterService
  */
 export function importScreens(theaterCode: string): TheaterAndScreenOperation<void> {
-    return async (theaterRepository: TheaterRepository, screenRepo: ScreenRepository) => {
+    return async (theaterAdapter: TheaterAdapter, screenRepo: ScreenAdapter) => {
         // 劇場取得
-        const optionTheater = await theaterRepository.findById(theaterCode);
+        const optionTheater = await theaterAdapter.findById(theaterCode);
         if (optionTheater.isEmpty) {
             throw new Error('theater not found.');
         }
@@ -152,9 +154,9 @@ export function importScreens(theaterCode: string): TheaterAndScreenOperation<vo
 export function importPerformances(theaterCode: string, dayStart: string, dayEnd: string):
     FilmAndScreenAndPerformanceOperation<void> {
     return async (
-        filmRepo: FilmRepository,
-        screenRepo: ScreenRepository,
-        performanceRepo: PerformanceRepository
+        filmRepo: FilmAdapter,
+        screenRepo: ScreenAdapter,
+        performanceRepo: PerformanceAdapter
     ) => {
         // スクリーン取得
         const screens = await screenRepo.findByTheater(theaterCode);
@@ -205,7 +207,7 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
  */
 export function searchPerformances(conditions: ISearchPerformancesConditions):
     PerformanceOperation<ISearchPerformancesResult[]> {
-    return async (performanceRepo: PerformanceRepository): Promise<ISearchPerformancesResult[]> => {
+    return async (performanceRepo: PerformanceAdapter): Promise<ISearchPerformancesResult[]> => {
         // 検索条件を作成
         const andConditions: any[] = [
             { _id: { $ne: null } }
@@ -258,7 +260,7 @@ export function searchPerformances(conditions: ISearchPerformancesConditions):
  */
 export function findTheater(theaterId: string): TheaterOperation<monapt.Option<Theater.ITheater>> {
     debug('finding a theater...', theaterId);
-    return async (repository: TheaterRepository) => await repository.findById(theaterId);
+    return async (adapter: TheaterAdapter) => await adapter.findById(theaterId);
 }
 
 /**
@@ -271,7 +273,7 @@ export function findTheater(theaterId: string): TheaterOperation<monapt.Option<T
  */
 export function findFilm(filmId: string): FilmOperation<monapt.Option<Film.IFilm>> {
     debug('finding a film...', filmId);
-    return async (repository: FilmRepository) => await repository.findById(filmId);
+    return async (adapter: FilmAdapter) => await adapter.findById(filmId);
 }
 
 /**
@@ -284,7 +286,7 @@ export function findFilm(filmId: string): FilmOperation<monapt.Option<Film.IFilm
  */
 export function findScreen(screenId: string): ScreenOperation<monapt.Option<Screen.IScreen>> {
     debug('finding a screen...', screenId);
-    return async (repository: ScreenRepository) => await repository.findById(screenId);
+    return async (adapter: ScreenAdapter) => await adapter.findById(screenId);
 }
 
 /**
@@ -297,5 +299,5 @@ export function findScreen(screenId: string): ScreenOperation<monapt.Option<Scre
  */
 export function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<Performance.IPerformanceWithFilmAndScreen>> {
     debug('finding a performance...', performanceId);
-    return async (repository: PerformanceRepository) => await repository.findById(performanceId);
+    return async (adapter: PerformanceAdapter) => await adapter.findById(performanceId);
 }

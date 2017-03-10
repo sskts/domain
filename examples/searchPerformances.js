@@ -19,7 +19,7 @@ function main() {
             const performances = yield sskts.service.master.searchPerformances({
                 day: '20170311',
                 theater: '118'
-            })(sskts.createPerformanceRepository(connection));
+            })(sskts.createPerformanceAdapter(connection));
             console.log(performances);
         }
         catch (error) {

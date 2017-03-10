@@ -32,7 +32,7 @@ describe('notification service', () => {
 http://www.cinemasunshine.co.jp/\n
 -------------------------------------------------------------------\n
 `;
-        const notification = sskts.model.Notification.createEmail({
+        const notification = sskts.factory.notification.createEmail({
             from: 'noreply@localhost',
             to: 'hello@motionpicture.jp',
             subject: 'test subject',
