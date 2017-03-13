@@ -21,6 +21,7 @@ import TransactionAdapter from './adapter/interpreter/transaction';
 import * as asset from './factory/asset';
 import * as authorization from './factory/authorization';
 import * as notification from './factory/notification';
+import * as owner from './factory/owner';
 import * as ownership from './factory/ownership';
 import queueStatus from './factory/queueStatus';
 import * as transactionInquiryKey from './factory/transactionInquiryKey';
@@ -45,6 +46,7 @@ export declare const factory: {
     asset: typeof asset;
     authorization: typeof authorization;
     notification: typeof notification;
+    owner: typeof owner;
     ownership: typeof ownership;
     queueStatus: typeof queueStatus;
     transactionInquiryKey: typeof transactionInquiryKey;
