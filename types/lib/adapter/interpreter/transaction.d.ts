@@ -14,8 +14,9 @@ export default class TransactionAdapterInterpreter implements TransactionAdapter
     find(conditions: any): Promise<Transaction.ITransaction[]>;
     findById(id: string): Promise<monapt.Option<Transaction.ITransaction>>;
     findOne(conditions: any): Promise<monapt.Option<Transaction.ITransaction>>;
-    findOneAndUpdate(conditions: any, update: any): Promise<monapt.Option<Transaction.ITransaction>>;
+    findOneAndUpdate(conditions: any, update: any): Promise<monapt.Option<any>>;
     store(transaction: Transaction.ITransaction): Promise<void>;
+    create(transactions: Transaction.ITransaction[]): Promise<void>;
     addEvent(transactionEvent: TransactionEvent.ITransactionEvent): Promise<void>;
     findAuthorizationsById(id: string): Promise<Authorization.IAuthorization[]>;
     findNotificationsById(id: string): Promise<Notification.INotification[]>;
@@ -25,4 +26,5 @@ export default class TransactionAdapterInterpreter implements TransactionAdapter
      * @returns {Promies<boolean>}
      */
     canBeClosed(id: string): Promise<boolean>;
+    remove(conditions: any): Promise<void>;
 }

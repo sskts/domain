@@ -33,13 +33,19 @@ interface ITransactionAdapter {
      * @param {Object} conditions 検索条件
      * @param {Object} update 更新内容
      */
-    findOneAndUpdate(conditions: any, update: any): Promise<monapt.Option<Transaction.ITransaction>>;
+    findOneAndUpdate(conditions: any, update: any): Promise<monapt.Option<any>>;
     /**
      * 保管する
      *
-     * @param {Transaction} transaction 取引
+     * @param {Transaction.ITransaction} transaction 取引
      */
     store(transaction: Transaction.ITransaction): Promise<void>;
+    /**
+     * まとめて作成する
+     *
+     * @param {Transaction.ITransaction[]} transactions 取引リスト
+     */
+    create(transactions: Transaction.ITransaction[]): Promise<void>;
     /**
      * イベント追加する
      *
@@ -64,5 +70,11 @@ interface ITransactionAdapter {
      * @returns {Promies<boolean>}
      */
     canBeClosed(id: string): Promise<boolean>;
+    /**
+     * 条件指定で削除する
+     *
+     * @param {any} conditions 条件
+     */
+    remove(conditions: any): Promise<void>;
 }
 export default ITransactionAdapter;

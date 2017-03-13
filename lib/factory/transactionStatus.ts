@@ -5,12 +5,17 @@
  */
 
 type TransactionStatus =
-    'UNDERWAY'
+    'READY'
+    | 'UNDERWAY'
     | 'CLOSED'
     | 'EXPIRED'
     ;
 
 namespace TransactionStatus {
+    /**
+     * 開始待機
+     */
+    export const READY = 'READY';
     /**
      * 進行中
      */

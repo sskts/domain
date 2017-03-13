@@ -15,7 +15,7 @@ describe('stock service', () => {
         const transaction = Transaction.create({
             status: 'UNDERWAY',
             owners: [],
-            expired_at: new Date()
+            expires_at: new Date()
         });
 
         sskts.service.stock.disableTransactionInquiry(transaction)(

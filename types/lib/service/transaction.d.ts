@@ -6,9 +6,18 @@ import * as TransactionInquiryKey from '../factory/transactionInquiryKey';
 import OwnerAdapter from '../adapter/owner';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
-export declare type TransactionAndQueueOperation<T> = (transactionRepo: TransactionAdapter, queueRepo: QueueAdapter) => Promise<T>;
-export declare type OwnerAndTransactionOperation<T> = (ownerRepo: OwnerAdapter, transactionRepo: TransactionAdapter) => Promise<T>;
-export declare type TransactionOperation<T> = (transactionRepo: TransactionAdapter) => Promise<T>;
+export declare type TransactionAndQueueOperation<T> = (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => Promise<T>;
+export declare type OwnerAndTransactionOperation<T> = (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
+export declare type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) => Promise<T>;
+/**
+ * 開始準備のできた取引を用意する
+ *
+ * @export
+ * @param {number} length 取引数
+ * @param {number} expiresInSeconds 現在から何秒後に期限切れにするか
+ * @returns
+ */
+export declare function prepare(length: number, expiresInSeconds: number): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 匿名所有者更新
  *
@@ -35,12 +44,12 @@ export declare function findById(transactionId: string): TransactionOperation<mo
 /**
  * 取引開始
  *
- * @param {Date} expiredAt
+ * @param {Date} expiresAt
  * @returns {OwnerAndTransactionOperation<Transaction>}
  *
  * @memberOf TransactionService
  */
-export declare function start(expiredAt: Date): (ownerRepo: OwnerAdapter, transactionRepo: TransactionAdapter) => Promise<Transaction.ITransaction>;
+export declare function start(expiresAt: Date): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<monapt.Option<Transaction.ITransaction>>;
 /**
  * GMO資産承認
  *
@@ -50,7 +59,7 @@ export declare function start(expiredAt: Date): (ownerRepo: OwnerAdapter, transa
  *
  * @memberOf TransactionService
  */
-export declare function addGMOAuthorization(transactionId: string, authorization: Authorization.IGMOAuthorization): (transactionRepo: TransactionAdapter) => Promise<void>;
+export declare function addGMOAuthorization(transactionId: string, authorization: Authorization.IGMOAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * COA資産承認
  *
@@ -60,7 +69,7 @@ export declare function addGMOAuthorization(transactionId: string, authorization
  *
  * @memberOf TransactionService
  */
-export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: Authorization.ICOASeatReservationAuthorization): (transactionRepo: TransactionAdapter) => Promise<void>;
+export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: Authorization.ICOASeatReservationAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 資産承認解除
  *
@@ -70,7 +79,7 @@ export declare function addCOASeatReservationAuthorization(transactionId: string
  *
  * @memberOf TransactionService
  */
-export declare function removeAuthorization(transactionId: string, authorizationId: string): (transactionRepo: TransactionAdapter) => Promise<void>;
+export declare function removeAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 照合を可能にする
  *
@@ -80,7 +89,7 @@ export declare function removeAuthorization(transactionId: string, authorization
  *
  * @memberOf TransactionService
  */
-export declare function enableInquiry(transactionId: string, key: TransactionInquiryKey.ITransactionInquiryKey): (transactionRepo: TransactionAdapter) => Promise<void>;
+export declare function enableInquiry(transactionId: string, key: TransactionInquiryKey.ITransactionInquiryKey): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 照会する
  *
@@ -89,7 +98,7 @@ export declare function enableInquiry(transactionId: string, key: TransactionInq
  *
  * @memberOf TransactionService
  */
-export declare function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey): (transactionRepo: TransactionAdapter) => Promise<monapt.Option<Transaction.ITransaction>>;
+export declare function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<Transaction.ITransaction>>;
 /**
  * 取引成立
  *
@@ -98,7 +107,7 @@ export declare function makeInquiry(key: TransactionInquiryKey.ITransactionInqui
  *
  * @memberOf TransactionService
  */
-export declare function close(transactionId: string): (transactionRepo: TransactionAdapter) => Promise<void>;
+export declare function close(transactionId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 取引期限切れ
  *
@@ -106,7 +115,7 @@ export declare function close(transactionId: string): (transactionRepo: Transact
  *
  * @memberOf TransactionService
  */
-export declare function expireOne(): (transactionRepo: TransactionAdapter) => Promise<void>;
+export declare function expireOne(): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * キュー出力
  *
@@ -115,7 +124,7 @@ export declare function expireOne(): (transactionRepo: TransactionAdapter) => Pr
  *
  * @memberOf TransactionService
  */
-export declare function exportQueues(transactionId: string): (transactionRepo: TransactionAdapter, queueRepo: QueueAdapter) => Promise<void>;
+export declare function exportQueues(transactionId: string): (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => Promise<void>;
 /**
  * メール追加
  *
@@ -125,7 +134,7 @@ export declare function exportQueues(transactionId: string): (transactionRepo: T
  *
  * @memberOf TransactionService
  */
-export declare function addEmail(transactionId: string, notification: Notification.IEmailNotification): (transactionRepo: TransactionAdapter) => Promise<void>;
+export declare function addEmail(transactionId: string, notification: Notification.IEmailNotification): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * メール削除
  *
@@ -135,4 +144,4 @@ export declare function addEmail(transactionId: string, notification: Notificati
  *
  * @memberOf TransactionService
  */
-export declare function removeEmail(transactionId: string, notificationId: string): (transactionRepo: TransactionAdapter) => Promise<void>;
+export declare function removeEmail(transactionId: string, notificationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;

@@ -3,8 +3,12 @@
  *
  * @namespace TransactionStatus
  */
-declare type TransactionStatus = 'UNDERWAY' | 'CLOSED' | 'EXPIRED';
+declare type TransactionStatus = 'READY' | 'UNDERWAY' | 'CLOSED' | 'EXPIRED';
 declare namespace TransactionStatus {
+    /**
+     * 開始待機
+     */
+    const READY = "READY";
     /**
      * 進行中
      */

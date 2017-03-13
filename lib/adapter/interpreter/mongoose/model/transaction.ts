@@ -8,7 +8,7 @@ import ownerModel from './owner';
  */
 const schema = new mongoose.Schema(
     {
-        expired_at: Date,
+        expires_at: Date,
         status: String,
         owners: [{ // 取引の対象所有者リスト
             type: mongoose.Schema.Types.ObjectId,

@@ -1,13 +1,16 @@
 /**
  * 取引リポジトリ
  *
+ * todo ITransactionにIOwnerが結合しているために、デフォルトで.populate('owner')したりしている
+ * Ownerをjoinするしないを必要に応じて使い分けられるようにする
+ *
  * @class TransactionAdapterInterpreter
  */
 
 import * as clone from 'clone';
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
-import { Connection } from 'mongoose';
+import { Connection, Types } from 'mongoose';
 
 import * as Authorization from '../../factory/authorization';
 import * as Notification from '../../factory/notification';
@@ -40,14 +43,13 @@ export default class TransactionAdapterInterpreter implements TransactionAdapter
     }
 
     public async findById(id: string) {
-        const doc = await this.transactionModel.findById(id)
-            .populate('owners').exec();
+        const doc = await this.transactionModel.findById(id).populate('owners').exec();
 
         return (doc) ? monapt.Option(<Transaction.ITransaction>doc.toObject()) : monapt.None;
     }
 
     public async findOne(conditions: any) {
-        const doc = await this.transactionModel.findOne(conditions).exec();
+        const doc = await this.transactionModel.findOne(conditions).populate('owners').exec();
 
         return (doc) ? monapt.Option(<Transaction.ITransaction>doc.toObject()) : monapt.None;
     }
@@ -58,7 +60,7 @@ export default class TransactionAdapterInterpreter implements TransactionAdapter
             upsert: false
         }).exec();
 
-        return (doc) ? monapt.Option(<Transaction.ITransaction>doc.toObject()) : monapt.None;
+        return (doc) ? monapt.Option(<any>doc.toObject()) : monapt.None;
     }
 
     public async store(transaction: Transaction.ITransaction) {
@@ -70,6 +72,17 @@ export default class TransactionAdapterInterpreter implements TransactionAdapter
             new: true,
             upsert: true
         }).lean().exec();
+    }
+
+    public async create(transactions: Transaction.ITransaction[]) {
+        const updates = transactions.map((transaction) => {
+            const update = clone(transaction);
+            (<any>update)._id = Types.ObjectId(update.id);
+            update.owners = <any[]>update.owners.map((owner) => owner.id);
+            return update;
+        });
+
+        await this.transactionModel.create(updates);
     }
 
     public async addEvent(transactionEvent: TransactionEvent.ITransactionEvent) {
@@ -157,5 +170,9 @@ export default class TransactionAdapterInterpreter implements TransactionAdapter
         });
 
         return Object.keys(pricesByOwner).every((ownerId) => (pricesByOwner[ownerId] === 0));
+    }
+
+    public async remove(conditions: any) {
+        await this.transactionModel.remove(conditions).exec();
     }
 }
