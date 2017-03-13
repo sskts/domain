@@ -110,6 +110,7 @@ export declare function makeInquiry(key: TransactionInquiryKey.ITransactionInqui
 export declare function close(transactionId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 取引期限切れ
+ * todo ひとつずつ期限切れにする必要ある？
  *
  * @returns {TransactionOperation<void>}
  *

@@ -1,35 +1,51 @@
-import * as monapt from 'monapt';
-import * as Owner from '../factory/owner';
-
 /**
  * 所有者リポジトリ
  *
- * @interface OwnerAdapter
+ * @class OwnerAdapter
  */
-interface IOwnerAdapter {
-    /**
-     * ID検索
-     *
-     * @param {string} id
-     */
-    findById(id: string): Promise<monapt.Option<Owner.IOwner>>;
-    /**
-     * 興行所有者を検索
-     */
-    findPromoter(): Promise<monapt.Option<Owner.IPromoterOwner>>;
-    /**
-     * ひとつ検索&更新
-     *
-     * @param {Object} conditions 検索条件
-     * @param {Object} update 更新内容
-     */
-    findOneAndUpdate(conditions: any, update: any): Promise<monapt.Option<Owner.IOwner>>;
-    /**
-     * 保管する
-     *
-     * @param {Owner} owner 所有者
-     */
-    store(owner: Owner.IOwner): Promise<void>;
-}
 
-export default IOwnerAdapter;
+import * as clone from 'clone';
+import * as monapt from 'monapt';
+import { Connection } from 'mongoose';
+
+import * as Owner from '../factory/owner';
+import OwnerGroup from '../factory/ownerGroup';
+
+import ownerModel from './mongoose/model/owner';
+
+export default class OwnerAdapter {
+    public model: typeof ownerModel;
+
+    constructor(readonly connection: Connection) {
+        this.model = this.connection.model(ownerModel.modelName);
+    }
+
+    public async findById(id: string) {
+        const doc = await this.model.findById(id).exec();
+
+        return (doc) ? monapt.Option(<Owner.IOwner>doc.toObject()) : monapt.None;
+    }
+
+    public async findPromoter() {
+        const doc = await this.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
+
+        return (doc) ? monapt.Option(<Owner.IPromoterOwner>doc.toObject()) : monapt.None;
+    }
+
+    public async findOneAndUpdate(conditions: any, update: any) {
+        const doc = await this.model.findOneAndUpdate(conditions, update, {
+            new: true,
+            upsert: false
+        }).exec();
+
+        return (doc) ? monapt.Option(<Owner.IOwner>doc.toObject()) : monapt.None;
+    }
+
+    public async store(owner: Owner.IOwner) {
+        const update = clone(owner, false);
+        await this.model.findByIdAndUpdate(update.id, update, {
+            new: true,
+            upsert: true
+        }).lean().exec();
+    }
+}

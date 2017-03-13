@@ -1,28 +1,46 @@
-import * as monapt from 'monapt';
-import * as Screen from '../factory/screen';
-
 /**
  * スクリーンリポジトリ
  *
- * @interface ScreenAdapter
+ * @class ScreenAdapter
  */
-interface IScreenAdapter {
-    /**
-     * ID検索
-     *
-     * @param {string} id
-     */
-    findById(id: string): Promise<monapt.Option<Screen.IScreen>>;
-    /**
-     * 劇場で検索
-     */
-    findByTheater(theaterId: string): Promise<Screen.IScreen[]>;
-    /**
-     * 保管する
-     *
-     * @param {Screen} screen スクリーン
-     */
-    store(screen: Screen.IScreen): Promise<void>;
-}
 
-export default IScreenAdapter;
+import * as clone from 'clone';
+import * as createDebug from 'debug';
+import * as monapt from 'monapt';
+import { Connection } from 'mongoose';
+import * as Screen from '../factory/screen';
+
+import screenModel from './mongoose/model/screen';
+
+const debug = createDebug('sskts-domain:adapter:screen');
+
+export default class ScreenAdapter {
+    public model: typeof screenModel;
+
+    constructor(readonly connection: Connection) {
+        this.model = this.connection.model(screenModel.modelName);
+    }
+
+    public async findById(id: string) {
+        const doc = await this.model.findById(id).exec();
+
+        return (doc) ? monapt.Option(<Screen.IScreen>doc.toObject()) : monapt.None;
+    }
+
+    public async findByTheater(theaterId: string) {
+        const docs = await this.model.find({ theater: theaterId })
+            .setOptions({ maxTimeMS: 10000 })
+            .exec();
+
+        return docs.map((doc) => <Screen.IScreen>doc.toObject());
+    }
+
+    public async store(screen: Screen.IScreen) {
+        debug('updating a screen...', screen);
+        const update = clone(screen, false);
+        await this.model.findByIdAndUpdate(update.id, update, {
+            new: true,
+            upsert: true
+        }).lean().exec();
+    }
+}

@@ -8,7 +8,7 @@ import TransactionAdapter from '../adapter/transaction';
  * @param {COASeatReservationAuthorization} authorization
  * @returns {COAOperation<void>}
  *
- * @memberOf StockServiceInterpreter
+ * @memberOf StockService
  */
 export declare function unauthorizeCOASeatReservation(authorization: Authorization.ICOASeatReservationAuthorization): () => Promise<void>;
 /**
@@ -17,13 +17,13 @@ export declare function unauthorizeCOASeatReservation(authorization: Authorizati
  * @param {COASeatReservationAuthorization} authorization
  * @returns {AssetOperation<void>}
  *
- * @memberOf StockServiceInterpreter
+ * @memberOf StockService
  */
 export declare function transferCOASeatReservation(authorization: Authorization.ICOASeatReservationAuthorization): (assetAdapter: AssetAdapter) => Promise<void>;
 /**
  * 取引照会を無効にする
  * COAのゴミ購入データを削除する
  *
- * @memberOf StockServiceInterpreter
+ * @memberOf StockService
  */
 export declare function disableTransactionInquiry(transaction: Transaction.ITransaction): (transactionAdapter: TransactionAdapter) => Promise<void>;

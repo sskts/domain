@@ -58,7 +58,7 @@
   "scripts": {
     "build": "tsc",
     "check": "tslint -c tslint.json lib/**/*.ts && nsp check",
-    "clean": "rimraf examples/**/*.js lib/**/*.js test/**/*.js types/**/*.d.ts npm-debug.log* docs/*",
+    "clean": "rimraf examples/**/*.js lib/**/*.js test/**/*.js types/* npm-debug.log* docs/*",
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
     "prepublishOnly": "npm run clean && npm run build && npm test",
     "test": "tslint -c tslint.json lib/**/*.ts && nsp check && mocha --no-timeouts --recursive",

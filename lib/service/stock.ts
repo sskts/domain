@@ -21,7 +21,7 @@ const debug = createDebug('sskts-domain:service:stock');
  * @param {COASeatReservationAuthorization} authorization
  * @returns {COAOperation<void>}
  *
- * @memberOf StockServiceInterpreter
+ * @memberOf StockService
  */
 export function unauthorizeCOASeatReservation(authorization: Authorization.ICOASeatReservationAuthorization) {
     return async () => {
@@ -43,7 +43,7 @@ export function unauthorizeCOASeatReservation(authorization: Authorization.ICOAS
  * @param {COASeatReservationAuthorization} authorization
  * @returns {AssetOperation<void>}
  *
- * @memberOf StockServiceInterpreter
+ * @memberOf StockService
  */
 export function transferCOASeatReservation(authorization: Authorization.ICOASeatReservationAuthorization) {
     return async (assetAdapter: AssetAdapter) => {
@@ -67,7 +67,7 @@ export function transferCOASeatReservation(authorization: Authorization.ICOASeat
  * 取引照会を無効にする
  * COAのゴミ購入データを削除する
  *
- * @memberOf StockServiceInterpreter
+ * @memberOf StockService
  */
 export function disableTransactionInquiry(transaction: Transaction.ITransaction) {
     return async (transactionAdapter: TransactionAdapter) => {

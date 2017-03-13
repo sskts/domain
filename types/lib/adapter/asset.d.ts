@@ -1,15 +1,10 @@
+/// <reference types="mongoose" />
+import { Connection } from 'mongoose';
 import * as Asset from '../factory/asset';
-/**
- * 資産リポジトリ
- *
- * @interface AssetAdapter
- */
-interface IAssetAdapter {
-    /**
-     * 保管する
-     *
-     * @param {Asset} asset 資産
-     */
+import assetModel from './mongoose/model/asset';
+export default class AssetAdapter {
+    readonly connection: Connection;
+    model: typeof assetModel;
+    constructor(connection: Connection);
     store(asset: Asset.IAsset): Promise<void>;
 }
-export default IAssetAdapter;

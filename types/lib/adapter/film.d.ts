@@ -1,22 +1,12 @@
+/// <reference types="mongoose" />
 import * as monapt from 'monapt';
+import { Connection } from 'mongoose';
 import * as Film from '../factory/film';
-/**
- * 作品リポジトリ
- *
- * @interface FilmAdapter
- */
-interface IFilmAdapter {
-    /**
-     * IDで検索
-     *
-     * @param {string} id
-     */
+import filmModel from './mongoose/model/film';
+export default class FilmAdapter {
+    readonly connection: Connection;
+    model: typeof filmModel;
+    constructor(connection: Connection);
     findById(id: string): Promise<monapt.Option<Film.IFilm>>;
-    /**
-     * 保管する
-     *
-     * @param {Film} film
-     */
     store(film: Film.IFilm): Promise<void>;
 }
-export default IFilmAdapter;

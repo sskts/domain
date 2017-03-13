@@ -1,28 +1,13 @@
+/// <reference types="mongoose" />
 import * as monapt from 'monapt';
+import { Connection } from 'mongoose';
 import * as Performance from '../factory/performance';
-/**
- * パフォーマンスリポジトリ
- *
- * @interface PerformanceAdapter
- */
-interface IPerformanceAdapter {
-    /**
-     * ID検索
-     *
-     * @param {string} id
-     */
-    findById(id: string): Promise<monapt.Option<Performance.IPerformanceWithFilmAndScreen>>;
-    /**
-     * 検索
-     *
-     * @param {Object} conditions 検索条件
-     */
+import performanceModel from './mongoose/model/performance';
+export default class PerformanceAdapter {
+    readonly connection: Connection;
+    model: typeof performanceModel;
+    constructor(connection: Connection);
     find(conditions: any): Promise<Performance.IPerformanceWithFilmAndScreen[]>;
-    /**
-     * 保管する
-     *
-     * @param {Performance} performance パフォーマンス
-     */
+    findById(id: string): Promise<monapt.Option<Performance.IPerformanceWithFilmAndScreen>>;
     store(performance: Performance.IPerformance): Promise<void>;
 }
-export default IPerformanceAdapter;

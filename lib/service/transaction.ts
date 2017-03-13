@@ -394,6 +394,7 @@ export function close(transactionId: string) {
 
 /**
  * 取引期限切れ
+ * todo ひとつずつ期限切れにする必要ある？
  *
  * @returns {TransactionOperation<void>}
  *
@@ -410,7 +411,7 @@ export function expireOne() {
         debug('updating transaction...', update);
         await transactionAdapter.findOneAndUpdate(
             {
-                status: TransactionStatus.UNDERWAY,
+                status: { $in: [TransactionStatus.READY, TransactionStatus.UNDERWAY] },
                 expires_at: { $lt: new Date() }
             },
             update
