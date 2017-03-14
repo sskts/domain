@@ -14,11 +14,11 @@ before(async () => {
 });
 
 describe('transaction service', () => {
-    it('start fail', (done) => {
+    it('startIfPossible fail', (done) => {
         const ownerAdapter = sskts.createOwnerAdapter(connection);
         const transactionAdapter = sskts.createTransactionAdapter(connection);
         const expiresAt = moment().add(30, 'minutes').toDate(); // tslint:disable-line:no-magic-numbers
-        sskts.service.transaction.start(expiresAt)(ownerAdapter, transactionAdapter)
+        sskts.service.transaction.startIfPossible(expiresAt)(ownerAdapter, transactionAdapter)
             .then((transactionOption) => {
                 assert(transactionOption.isEmpty);
                 done();
@@ -38,13 +38,13 @@ describe('transaction service', () => {
             });
     });
 
-    it('start ok', (done) => {
+    it('startIfPossible ok', (done) => {
         const ownerAdapter = sskts.createOwnerAdapter(connection);
         const transactionAdapter = sskts.createTransactionAdapter(connection);
         sskts.service.transaction.prepare(1, 60)(transactionAdapter) // tslint:disable-line:no-magic-numbers
             .then(() => {
                 const expiresAt = moment().add(30, 'minutes').toDate(); // tslint:disable-line:no-magic-numbers
-                sskts.service.transaction.start(expiresAt)(ownerAdapter, transactionAdapter)
+                sskts.service.transaction.startIfPossible(expiresAt)(ownerAdapter, transactionAdapter)
                     .then((transactionOption) => {
                         assert(transactionOption.isDefined);
                         assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
@@ -54,6 +54,20 @@ describe('transaction service', () => {
                     .catch((err) => {
                         done(err);
                     });
+            })
+            .catch((err) => {
+                done(err);
+            });
+    });
+
+    it('startForcibly ok', (done) => {
+        const ownerAdapter = sskts.createOwnerAdapter(connection);
+        const transactionAdapter = sskts.createTransactionAdapter(connection);
+        const expiresAt = moment().add(30, 'minutes').toDate(); // tslint:disable-line:no-magic-numbers
+        sskts.service.transaction.startForcibly(expiresAt)(ownerAdapter, transactionAdapter)
+            .then((transaction) => {
+                assert.equal(transaction.expires_at.valueOf(), expiresAt.valueOf());
+                done();
             })
             .catch((err) => {
                 done(err);

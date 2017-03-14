@@ -42,14 +42,22 @@ export declare function updateAnonymousOwner(args: {
  */
 export declare function findById(id: string): TransactionOperation<monapt.Option<Transaction.ITransaction>>;
 /**
- * 取引開始
+ * 取引を強制的に開始する
+ *
+ * @export
+ * @param {Date} expiresAt
+ * @returns
+ */
+export declare function startForcibly(expiresAt: Date): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<Transaction.ITransaction>;
+/**
+ * 可能であれば取引開始する
  *
  * @param {Date} expiresAt
- * @returns {OwnerAndTransactionOperation<Transaction>}
+ * @returns {OwnerAndTransactionOperation<Promise<monapt.Option<Transaction.ITransaction>>>}
  *
  * @memberOf TransactionService
  */
-export declare function start(expiresAt: Date): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<monapt.Option<Transaction.ITransaction>>;
+export declare function startIfPossible(expiresAt: Date): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<monapt.Option<Transaction.ITransaction>>;
 /**
  * GMO資産承認
  *

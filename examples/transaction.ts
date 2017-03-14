@@ -27,8 +27,8 @@ async function main() {
     // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
     // tslint:disable-next-line:no-console
     console.log('starting transaction...');
-    // tslint:disable-next-line:no-magic-numbers
-    const transactionOption = await transactionService.start(moment().add(30, 'minutes').toDate())(ownerAdapter, transactionAdapter);
+    // tslint:disable-next-line:no-magic-numbers max-line-length
+    const transactionOption = await transactionService.startIfPossible(moment().add(30, 'minutes').toDate())(ownerAdapter, transactionAdapter);
     if (transactionOption.isEmpty) {
         throw new Error('no ready transaction');
     }

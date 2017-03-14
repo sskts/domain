@@ -3,6 +3,7 @@
  *
  * @namespace TransactionService
  */
+import * as clone from 'clone';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as monapt from 'monapt';
@@ -123,14 +124,52 @@ export function findById(id: string): TransactionOperation<monapt.Option<Transac
 }
 
 /**
- * 取引開始
+ * 取引を強制的に開始する
+ *
+ * @export
+ * @param {Date} expiresAt
+ * @returns
+ */
+export function startForcibly(expiresAt: Date) {
+    return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
+        // 一般所有者作成
+        const anonymousOwner = Owner.createAnonymous({});
+
+        // 興行主取得
+        const ownerDoc = await ownerAdapter.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
+        if (!ownerDoc) {
+            throw new Error('promoter not found');
+        }
+        const promoter = <Owner.IPromoterOwner>ownerDoc.toObject();
+
+        const transaction = Transaction.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [promoter, anonymousOwner],
+            expires_at: expiresAt
+        });
+
+        // 所有者永続化
+        debug('storing anonymous owner...', anonymousOwner);
+        await ownerAdapter.store(anonymousOwner);
+
+        // ステータスを変更&しつつ、期限も延長する
+        debug('updating transaction...');
+        const update = Object.assign(clone(transaction), { owners: [promoter.id, anonymousOwner.id] });
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, update, { new: true, upsert: true });
+
+        return transaction;
+    };
+}
+
+/**
+ * 可能であれば取引開始する
  *
  * @param {Date} expiresAt
- * @returns {OwnerAndTransactionOperation<Transaction>}
+ * @returns {OwnerAndTransactionOperation<Promise<monapt.Option<Transaction.ITransaction>>>}
  *
  * @memberOf TransactionService
  */
-export function start(expiresAt: Date) {
+export function startIfPossible(expiresAt: Date) {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
         // 一般所有者作成
         const anonymousOwner = Owner.createAnonymous({});
