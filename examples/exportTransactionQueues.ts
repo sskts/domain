@@ -20,16 +20,16 @@ mongoose.connect(process.env.MONGOLAB_URI);
 async function main() {
     const transactionAdapter = sskts.createTransactionAdapter(mongoose.connection);
 
-    const option = await transactionAdapter.findOneAndUpdate(
+    const doc = await transactionAdapter.transactionModel.findOneAndUpdate(
         {
             _id: '58c1619daefa8e0c80605e40'
         },
         {
         }
-    );
+    ).exec();
 
-    if (!option.isEmpty) {
-        const transaction = option.get();
+    if (doc) {
+        const transaction = <any>doc.toObject();
         debug('transaction is', transaction);
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)

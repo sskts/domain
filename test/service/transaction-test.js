@@ -18,7 +18,7 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
     // 全て削除してからテスト開始
     const transactionAdapter = sskts.createTransactionAdapter(connection);
-    yield transactionAdapter.remove({});
+    yield transactionAdapter.transactionModel.remove({}).exec();
 }));
 describe('transaction service', () => {
     it('start fail', (done) => {
@@ -54,6 +54,23 @@ describe('transaction service', () => {
                 assert(transactionOption.isDefined);
                 assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
                 assert.equal(transactionOption.get().expires_at.valueOf(), expiresAt.valueOf());
+                done();
+            })
+                .catch((err) => {
+                done(err);
+            });
+        })
+            .catch((err) => {
+            done(err);
+        });
+    });
+    it('makeExpired ok', (done) => {
+        const transactionAdapter = sskts.createTransactionAdapter(connection);
+        // 期限切れの取引を作成
+        sskts.service.transaction.prepare(3, -60)(transactionAdapter) // tslint:disable-line:no-magic-numbers
+            .then(() => {
+            sskts.service.transaction.makeExpired()(transactionAdapter)
+                .then(() => {
                 done();
             })
                 .catch((err) => {

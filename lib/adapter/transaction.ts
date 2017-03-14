@@ -9,12 +9,10 @@
 
 import * as clone from 'clone';
 import * as createDebug from 'debug';
-import * as monapt from 'monapt';
-import { Connection, Types } from 'mongoose';
+import { Connection } from 'mongoose';
 
 import * as Authorization from '../factory/authorization';
 import * as Notification from '../factory/notification';
-import * as Transaction from '../factory/transaction';
 import * as TransactionEvent from '../factory/transactionEvent';
 import TransactionEventGroup from '../factory/transactionEventGroup';
 
@@ -32,60 +30,8 @@ export default class TransactionAdapter {
         this.transactionEventModel = this.connection.model(TransactionEventModel.modelName);
     }
 
-    public async find(conditions: any) {
-        const docs = await this.transactionModel.find()
-            .setOptions({ maxTimeMS: 10000 })
-            .where(conditions)
-            .populate('owner')
-            .exec();
-
-        return docs.map((doc) => <Transaction.ITransaction>doc.toObject());
-    }
-
-    public async findById(id: string) {
-        const doc = await this.transactionModel.findById(id).populate('owners').exec();
-
-        return (doc) ? monapt.Option(<Transaction.ITransaction>doc.toObject()) : monapt.None;
-    }
-
-    public async findOne(conditions: any) {
-        const doc = await this.transactionModel.findOne(conditions).populate('owners').exec();
-
-        return (doc) ? monapt.Option(<Transaction.ITransaction>doc.toObject()) : monapt.None;
-    }
-
-    public async findOneAndUpdate(conditions: any, update: any) {
-        const doc = await this.transactionModel.findOneAndUpdate(conditions, update, {
-            new: true,
-            upsert: false
-        }).exec();
-
-        return (doc) ? monapt.Option(<any>doc.toObject()) : monapt.None;
-    }
-
-    public async store(transaction: Transaction.ITransaction) {
-        debug('findByIdAndUpdate...', transaction);
-
-        const update = clone(transaction, false);
-        update.owners = <any[]>update.owners.map((owner) => owner.id);
-        await this.transactionModel.findByIdAndUpdate(update.id, update, {
-            new: true,
-            upsert: true
-        }).lean().exec();
-    }
-
-    public async create(transactions: Transaction.ITransaction[]) {
-        const updates = transactions.map((transaction) => {
-            const update = clone(transaction);
-            (<any>update)._id = Types.ObjectId(update.id);
-            update.owners = <any[]>update.owners.map((owner) => owner.id);
-            return update;
-        });
-
-        await this.transactionModel.create(updates);
-    }
-
     public async addEvent(transactionEvent: TransactionEvent.ITransactionEvent) {
+        debug('creating transactionEvent...', transactionEvent);
         const update = clone(transactionEvent, false);
         await this.transactionEventModel.create([update]);
     }
@@ -170,9 +116,5 @@ export default class TransactionAdapter {
         });
 
         return Object.keys(pricesByOwner).every((ownerId) => (pricesByOwner[ownerId] === 0));
-    }
-
-    public async remove(conditions: any) {
-        await this.transactionModel.remove(conditions).exec();
     }
 }

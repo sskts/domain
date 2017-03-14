@@ -96,17 +96,14 @@ export function disableTransactionInquiry(transaction: Transaction.ITransaction)
         });
 
         // 永続化
-        const update = {
-            $set: {
-                inquiry_key: null
-            }
-        };
-        debug('updating transaction...', update);
-        await transactionAdapter.findOneAndUpdate(
+        debug('updating transaction...');
+        await transactionAdapter.transactionModel.findOneAndUpdate(
             {
                 _id: transaction.id
             },
-            update
+            {
+                inquiry_key: null
+            }
         );
     };
 }

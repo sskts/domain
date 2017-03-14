@@ -132,11 +132,12 @@ describe('master service', () => {
             });
     });
 
+    // todo 特定のパフォーマンスコードでしかテスト通らない
     it('findPerformance ok', (done) => {
-        sskts.service.master.findPerformance('1182017030917149061500')(sskts.createPerformanceAdapter(connection))
+        sskts.service.master.findPerformance('1182017030116140071355')(sskts.createPerformanceAdapter(connection))
             .then((performanceOption) => {
                 assert(performanceOption.isDefined);
-                assert.equal(performanceOption.get().id, '1182017030917149061500');
+                assert.equal(performanceOption.get().id, '1182017030116140071355');
                 done();
             })
             .catch((err) => {

@@ -3,7 +3,6 @@
  *
  * @namespace TransactionService
  */
-
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as monapt from 'monapt';
@@ -42,19 +41,21 @@ const debug = createDebug('sskts-domain:service:transaction');
  */
 export function prepare(length: number, expiresInSeconds: number) {
     return async (transactionAdapter: TransactionAdapter) => {
-        // 取引をlengthコ作成
+        // 取引を{length}コ作成
         const expiresAt = moment().add(expiresInSeconds, 'seconds').toDate();
         const transactions = Array.from(Array(length).keys()).map(() => {
-            return Transaction.create({
+            const transaction = Transaction.create({
                 status: TransactionStatus.READY,
                 owners: [],
                 expires_at: expiresAt
             });
+            (<any>transaction)._id = transaction.id;
+            return transaction;
         });
 
         // 永続化
         debug('creating transactions...', transactions);
-        await transactionAdapter.create(transactions);
+        await transactionAdapter.transactionModel.create(transactions);
     };
 }
 
@@ -74,12 +75,11 @@ export function updateAnonymousOwner(args: {
 }): OwnerAndTransactionOperation<void> {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
         // 取引取得
-        const optionTransaction = await transactionAdapter.findById(args.transaction_id);
-        if (optionTransaction.isEmpty) {
+        const doc = await transactionAdapter.transactionModel.findById(args.transaction_id).populate('owners').exec();
+        if (!doc) {
             throw new Error(`transaction[${args.transaction_id}] not found.`);
         }
-
-        const transaction = optionTransaction.get();
+        const transaction = <Transaction.ITransaction>doc.toObject();
 
         const anonymousOwner = transaction.owners.find((owner) => {
             return (owner.group === OwnerGroup.ANONYMOUS);
@@ -90,20 +90,18 @@ export function updateAnonymousOwner(args: {
 
         // 永続化
         debug('updating anonymous owner...');
-        const option = await ownerAdapter.findOneAndUpdate(
+        const ownerDoc = await ownerAdapter.model.findOneAndUpdate(
             {
                 _id: anonymousOwner.id
             },
             {
-                $set: {
-                    name_first: args.name_first,
-                    name_last: args.name_last,
-                    email: args.email,
-                    tel: args.tel
-                }
+                name_first: args.name_first,
+                name_last: args.name_last,
+                email: args.email,
+                tel: args.tel
             }
-        );
-        if (option.isEmpty) {
+        ).exec();
+        if (!ownerDoc) {
             throw new Error('owner not found.');
         }
     };
@@ -112,13 +110,16 @@ export function updateAnonymousOwner(args: {
 /**
  * IDから取得する
  *
- * @param {string} transactionId
+ * @param {string} id
  * @returns {TransactionOperation<monapt.Option<Transaction>>}
  *
  * @memberOf TransactionService
  */
-export function findById(transactionId: string): TransactionOperation<monapt.Option<Transaction.ITransaction>> {
-    return async (transactionAdapter: TransactionAdapter) => await transactionAdapter.findById(transactionId);
+export function findById(id: string): TransactionOperation<monapt.Option<Transaction.ITransaction>> {
+    return async (transactionAdapter: TransactionAdapter) => {
+        const doc = await transactionAdapter.transactionModel.findById(id).populate('owners').exec();
+        return (doc) ? monapt.Option(<Transaction.ITransaction>doc.toObject()) : monapt.None;
+    };
 }
 
 /**
@@ -135,35 +136,35 @@ export function start(expiresAt: Date) {
         const anonymousOwner = Owner.createAnonymous({});
 
         // 興行主取得
-        const option = await ownerAdapter.findPromoter();
-        if (option.isEmpty) {
+        const ownerDoc = await ownerAdapter.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
+        if (!ownerDoc) {
             throw new Error('promoter not found');
         }
-
-        const promoter = option.get();
+        const promoter = <Owner.IPromoterOwner>ownerDoc.toObject();
 
         // 所有者永続化
         debug('storing anonymous owner...', anonymousOwner);
         await ownerAdapter.store(anonymousOwner);
 
-        // 取引永続化
-        const update = {
-            $set: {
-                status: TransactionStatus.UNDERWAY,
-                owners: [promoter.id, anonymousOwner.id],
-                expires_at: expiresAt
-            }
-        };
-        debug('updating transaction...', update);
-        const transactionOption = await transactionAdapter.findOneAndUpdate(
+        // ステータスを変更&しつつ、期限も延長する
+        debug('updating transaction...');
+        const transactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
             {
                 status: TransactionStatus.READY
             },
-            update
-        );
+            {
+                status: TransactionStatus.UNDERWAY,
+                owners: [promoter.id, anonymousOwner.id],
+                expires_at: expiresAt
+            },
+            {
+                new: true,
+                upsert: false
+            }
+        ).exec();
 
-        if (transactionOption.isDefined) {
-            const transaction = <Transaction.ITransaction>transactionOption.get();
+        if (transactionDoc) {
+            const transaction = <Transaction.ITransaction>transactionDoc.toObject();
             transaction.owners = [promoter, anonymousOwner];
             return monapt.Option(transaction);
         } else {
@@ -184,12 +185,11 @@ export function start(expiresAt: Date) {
 export function addGMOAuthorization(transactionId: string, authorization: Authorization.IGMOAuthorization) {
     return async (transactionAdapter: TransactionAdapter) => {
         // 取引取得
-        const optionTransaction = await transactionAdapter.findById(transactionId);
-        if (optionTransaction.isEmpty) {
+        const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
+        if (!doc) {
             throw new Error(`transaction[${transactionId}] not found.`);
         }
-
-        const transaction = optionTransaction.get();
+        const transaction = <Transaction.ITransaction>doc.toObject();
 
         // 所有者が取引に存在するかチェック
         const ownerIds = transaction.owners.map((owner) => {
@@ -227,12 +227,11 @@ export function addGMOAuthorization(transactionId: string, authorization: Author
 export function addCOASeatReservationAuthorization(transactionId: string, authorization: Authorization.ICOASeatReservationAuthorization) {
     return async (transactionAdapter: TransactionAdapter) => {
         // 取引取得
-        const optionTransaction = await transactionAdapter.findById(transactionId);
-        if (optionTransaction.isEmpty) {
+        const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
+        if (!doc) {
             throw new Error(`transaction[${transactionId}] not found.`);
         }
-
-        const transaction = optionTransaction.get();
+        const transaction = <Transaction.ITransaction>doc.toObject();
 
         const ownerIds = transaction.owners.map((owner) => {
             return owner.id;
@@ -269,12 +268,12 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
 export function removeAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
         // 取引取得
-        const optionTransacton = await transactionAdapter.findById(transactionId);
-        if (optionTransacton.isEmpty) {
-            throw new Error('tranasction not found.');
+        const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
+        if (!doc) {
+            throw new Error(`transaction[${transactionId}] not found.`);
         }
+        const transaction = <Transaction.ITransaction>doc.toObject();
 
-        const transaction = optionTransacton.get();
         const authorizations = await transactionAdapter.findAuthorizationsById(transaction.id);
 
         const removedAuthorization = authorizations.find((authorization) => authorization.id === authorizationId);
@@ -296,6 +295,67 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
 }
 
 /**
+ * メール追加
+ *
+ * @param {string} transactionId
+ * @param {EmailNotification} notification
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionService
+ */
+export function addEmail(transactionId: string, notification: Notification.IEmailNotification) {
+    return async (transactionAdapter: TransactionAdapter) => {
+        // イベント作成
+        const event = TransactionEvent.createNotificationAdd({
+            transaction: transactionId,
+            occurred_at: new Date(),
+            notification: notification
+        });
+
+        // 永続化
+        debug('adding an event...', event);
+        await transactionAdapter.addEvent(event);
+    };
+}
+
+/**
+ * メール削除
+ *
+ * @param {string} transactionId
+ * @param {string} notificationId
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionService
+ */
+export function removeEmail(transactionId: string, notificationId: string) {
+    return async (transactionAdapter: TransactionAdapter) => {
+        // 取引取得
+        const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
+        if (!doc) {
+            throw new Error(`transaction[${transactionId}] not found.`);
+        }
+        const transaction = <Transaction.ITransaction>doc.toObject();
+
+        const notifications = await transactionAdapter.findNotificationsById(transaction.id);
+
+        const removedNotification = notifications.find((notification) => notification.id === notificationId);
+        if (!removedNotification) {
+            throw new Error(`notification [${notificationId}] not found in the transaction.`);
+        }
+
+        // イベント作成
+        const event = TransactionEvent.createNotificationRemove({
+            transaction: transactionId,
+            occurred_at: new Date(),
+            notification: removedNotification
+        });
+
+        // 永続化
+        await transactionAdapter.addEvent(event);
+    };
+}
+
+/**
  * 照合を可能にする
  *
  * @param {string} transactionId
@@ -306,21 +366,20 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
  */
 export function enableInquiry(transactionId: string, key: TransactionInquiryKey.ITransactionInquiryKey) {
     return async (transactionAdapter: TransactionAdapter) => {
-        // 永続化
-        const update = {
-            $set: {
-                inquiry_key: key
-            }
-        };
-        debug('updating transaction...', update);
-        const option = await transactionAdapter.findOneAndUpdate(
+        // 進行中の取引に照会キー情報を追加
+        debug('updating transaction...');
+        const doc = await transactionAdapter.transactionModel.findOneAndUpdate(
             {
                 _id: transactionId,
                 status: TransactionStatus.UNDERWAY
             },
-            update
-        );
-        if (option.isEmpty) {
+            {
+                inquiry_key: key
+            },
+            { new: true }
+        ).exec();
+
+        if (!doc) {
             throw new Error('UNDERWAY transaction not found.');
         }
     };
@@ -336,12 +395,16 @@ export function enableInquiry(transactionId: string, key: TransactionInquiryKey.
  */
 export function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey) {
     debug('finding a transaction...', key);
-    return async (transactionAdapter: TransactionAdapter) => await transactionAdapter.findOne({
-        'inquiry_key.theater_code': key.theater_code,
-        'inquiry_key.reserve_num': key.reserve_num,
-        'inquiry_key.tel': key.tel,
-        status: TransactionStatus.CLOSED
-    });
+    return async (transactionAdapter: TransactionAdapter) => {
+        const doc = await transactionAdapter.transactionModel.findOne({
+            'inquiry_key.theater_code': key.theater_code,
+            'inquiry_key.reserve_num': key.reserve_num,
+            'inquiry_key.tel': key.tel,
+            status: TransactionStatus.CLOSED
+        }).populate('owners').exec();
+
+        return (doc) ? monapt.Option(<Transaction.ITransaction>doc.toObject()) : monapt.None;
+    };
 }
 
 /**
@@ -355,12 +418,11 @@ export function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey) {
 export function close(transactionId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
         // 取引取得
-        const optionTransaction = await transactionAdapter.findById(transactionId);
-        if (optionTransaction.isEmpty) {
-            throw new Error('transaction not found.');
+        const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
+        if (!doc) {
+            throw new Error(`transaction[${transactionId}] not found.`);
         }
-
-        const transaction = optionTransaction.get();
+        const transaction = <Transaction.ITransaction>doc.toObject();
 
         // 照会可能になっているかどうか
         if (!transaction.inquiry_key) {
@@ -368,56 +430,46 @@ export function close(transactionId: string) {
         }
 
         // 条件が対等かどうかチェック
+        // todo 余計なクエリか？
         if (!await transactionAdapter.canBeClosed(transaction.id)) {
             throw new Error('transaction cannot be closed.');
         }
 
-        // 永続化
-        const update = {
-            $set: {
-                status: TransactionStatus.CLOSED
-            }
-        };
-        debug('updating transaction...', update);
-        const option = await transactionAdapter.findOneAndUpdate(
+        // ステータス変更
+        debug('updating transaction...');
+        const closedTransactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
             {
                 _id: transactionId,
                 status: TransactionStatus.UNDERWAY
             },
-            update
-        );
-        if (option.isEmpty) {
+            {
+                status: TransactionStatus.CLOSED
+            },
+            { new: true }
+        ).exec();
+
+        if (!closedTransactionDoc) {
             throw new Error('UNDERWAY transaction not found.');
         }
     };
 }
 
 /**
- * 取引期限切れ
- * todo ひとつずつ期限切れにする必要ある？
- *
- * @returns {TransactionOperation<void>}
- *
- * @memberOf TransactionService
+ * 取引を期限切れにする
  */
-export function expireOne() {
+export function makeExpired() {
     return async (transactionAdapter: TransactionAdapter) => {
-        // 永続化
-        const update = {
-            $set: {
-                status: TransactionStatus.EXPIRED
-            }
-        };
-        debug('updating transaction...', update);
-        await transactionAdapter.findOneAndUpdate(
+        // ステータスと期限を見て更新
+        await transactionAdapter.transactionModel.update(
             {
                 status: { $in: [TransactionStatus.READY, TransactionStatus.UNDERWAY] },
                 expires_at: { $lt: new Date() }
             },
-            update
-        );
-
-        // 永続化結果がemptyの場合は、もう取引中ステータスではないということなので、期限切れタスクとしては成功
+            {
+                status: TransactionStatus.EXPIRED
+            },
+            { multi: true }
+        ).exec();
     };
 }
 
@@ -432,12 +484,11 @@ export function expireOne() {
 export function exportQueues(transactionId: string) {
     // tslint:disable-next-line:max-func-body-length
     return async (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => {
-        const option = await transactionAdapter.findById(transactionId);
-        if (option.isEmpty) {
-            throw new Error('transaction not found.');
+        const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
+        if (!doc) {
+            throw new Error(`transaction[${transactionId}] not found.`);
         }
-
-        const transaction = option.get();
+        const transaction = <Transaction.ITransaction>doc.toObject();
 
         const queues: Queue.IQueue[] = [];
         switch (transaction.status) {
@@ -531,66 +582,5 @@ ${util.inspect(transaction, { showHidden: true, depth: 10 })}\n
             await queueAdapter.store(queue);
         });
         await Promise.all(promises);
-    };
-}
-
-/**
- * メール追加
- *
- * @param {string} transactionId
- * @param {EmailNotification} notification
- * @returns {TransactionOperation<void>}
- *
- * @memberOf TransactionService
- */
-export function addEmail(transactionId: string, notification: Notification.IEmailNotification) {
-    return async (transactionAdapter: TransactionAdapter) => {
-        // イベント作成
-        const event = TransactionEvent.createNotificationAdd({
-            transaction: transactionId,
-            occurred_at: new Date(),
-            notification: notification
-        });
-
-        // 永続化
-        debug('adding an event...', event);
-        await transactionAdapter.addEvent(event);
-    };
-}
-
-/**
- * メール削除
- *
- * @param {string} transactionId
- * @param {string} notificationId
- * @returns {TransactionOperation<void>}
- *
- * @memberOf TransactionService
- */
-export function removeEmail(transactionId: string, notificationId: string) {
-    return async (transactionAdapter: TransactionAdapter) => {
-        // 取引取得
-        const optionTransacton = await transactionAdapter.findById(transactionId);
-        if (optionTransacton.isEmpty) {
-            throw new Error('tranasction not found.');
-        }
-
-        const transaction = optionTransacton.get();
-        const notifications = await transactionAdapter.findNotificationsById(transaction.id);
-
-        const removedNotification = notifications.find((notification) => notification.id === notificationId);
-        if (!removedNotification) {
-            throw new Error(`notification [${notificationId}] not found in the transaction.`);
-        }
-
-        // イベント作成
-        const event = TransactionEvent.createNotificationRemove({
-            transaction: transactionId,
-            occurred_at: new Date(),
-            notification: removedNotification
-        });
-
-        // 永続化
-        await transactionAdapter.addEvent(event);
     };
 }

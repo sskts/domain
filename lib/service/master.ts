@@ -90,10 +90,11 @@ export function importTheater(theaterCode: string): TheaterOperation<void> {
 export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> {
     return async (theaterAdapter: TheaterAdapter, filmRepo: FilmAdapter) => {
         // 劇場取得
-        const optionTheater = await theaterAdapter.findById(theaterCode);
-        if (optionTheater.isEmpty) {
+        const doc = await theaterAdapter.model.findById(theaterCode).exec();
+        if (!doc) {
             throw new Error('theater not found.');
         }
+        const theater = <Theater.ITheater>doc.toObject();
 
         // COAから作品取得
         const films = await COA.MasterService.title({
@@ -102,7 +103,7 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
 
         // 永続化
         await Promise.all(films.map(async (filmFromCOA) => {
-            const film = await Film.createFromCOA(filmFromCOA)(optionTheater.get());
+            const film = await Film.createFromCOA(filmFromCOA)(theater);
             debug('storing film...', film);
             await filmRepo.store(film);
             debug('film stored.');
@@ -121,10 +122,11 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
 export function importScreens(theaterCode: string): TheaterAndScreenOperation<void> {
     return async (theaterAdapter: TheaterAdapter, screenRepo: ScreenAdapter) => {
         // 劇場取得
-        const optionTheater = await theaterAdapter.findById(theaterCode);
-        if (optionTheater.isEmpty) {
+        const doc = await theaterAdapter.model.findById(theaterCode).exec();
+        if (!doc) {
             throw new Error('theater not found.');
         }
+        const theater = <Theater.ITheater>doc.toObject();
 
         // COAからスクリーン取得
         const screens = await COA.MasterService.screen({
@@ -133,7 +135,7 @@ export function importScreens(theaterCode: string): TheaterAndScreenOperation<vo
 
         // 永続化
         await Promise.all(screens.map(async (screenFromCOA) => {
-            const screen = Screen.createFromCOA(screenFromCOA)(optionTheater.get());
+            const screen = Screen.createFromCOA(screenFromCOA)(theater);
             debug('storing screen...');
             await screenRepo.store(screen);
             debug('screen stored.');
@@ -159,7 +161,10 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
         performanceRepo: PerformanceAdapter
     ) => {
         // スクリーン取得
-        const screens = await screenRepo.findByTheater(theaterCode);
+        const docs = await screenRepo.model.find({ theater: theaterCode })
+            .setOptions({ maxTimeMS: 10000 })
+            .exec();
+        const screens = docs.map((doc) => <Screen.IScreen>doc.toObject());
         debug('screens:', screens);
 
         // COAからパフォーマンス取得
@@ -182,14 +187,15 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
             }
 
             // 作品取得
-            const optionFilm = await filmRepo.findById(filmId);
-            if (optionFilm.isEmpty) {
+            const doc = await filmRepo.model.findById(filmId).exec();
+            if (!doc) {
                 console.error('film not found.', filmId);
                 return;
             }
+            const film = <Film.IFilm>doc.toObject();
 
             // 永続化
-            const performance = Performance.createFromCOA(performanceFromCOA)(screenOfPerformance, optionFilm.get());
+            const performance = Performance.createFromCOA(performanceFromCOA)(screenOfPerformance, film);
             debug('storing performance', performance);
             await performanceRepo.store(performance);
             debug('performance stored.');
@@ -260,7 +266,10 @@ export function searchPerformances(conditions: ISearchPerformancesConditions):
  */
 export function findTheater(theaterId: string): TheaterOperation<monapt.Option<Theater.ITheater>> {
     debug('finding a theater...', theaterId);
-    return async (adapter: TheaterAdapter) => await adapter.findById(theaterId);
+    return async (adapter: TheaterAdapter) => {
+        const doc = await adapter.model.findById(theaterId).exec();
+        return (doc) ? monapt.Option(<Theater.ITheater>doc.toObject()) : monapt.None;
+    };
 }
 
 /**
@@ -273,7 +282,10 @@ export function findTheater(theaterId: string): TheaterOperation<monapt.Option<T
  */
 export function findFilm(filmId: string): FilmOperation<monapt.Option<Film.IFilm>> {
     debug('finding a film...', filmId);
-    return async (adapter: FilmAdapter) => await adapter.findById(filmId);
+    return async (adapter: FilmAdapter) => {
+        const doc = await adapter.model.findById(filmId).exec();
+        return (doc) ? monapt.Option(<Film.IFilm>doc.toObject()) : monapt.None;
+    };
 }
 
 /**
@@ -286,7 +298,10 @@ export function findFilm(filmId: string): FilmOperation<monapt.Option<Film.IFilm
  */
 export function findScreen(screenId: string): ScreenOperation<monapt.Option<Screen.IScreen>> {
     debug('finding a screen...', screenId);
-    return async (adapter: ScreenAdapter) => await adapter.findById(screenId);
+    return async (adapter: ScreenAdapter) => {
+        const doc = await adapter.model.findById(screenId).exec();
+        return (doc) ? monapt.Option(<Screen.IScreen>doc.toObject()) : monapt.None;
+    };
 }
 
 /**
@@ -299,5 +314,41 @@ export function findScreen(screenId: string): ScreenOperation<monapt.Option<Scre
  */
 export function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<Performance.IPerformanceWithFilmAndScreen>> {
     debug('finding a performance...', performanceId);
-    return async (adapter: PerformanceAdapter) => await adapter.findById(performanceId);
+    return async (adapter: PerformanceAdapter) => {
+        const doc = await adapter.model.findById(performanceId)
+            .populate('film')
+            .populate('theater')
+            .populate('screen')
+            .exec();
+
+        if (doc) {
+            return monapt.Option(
+                {
+                    id: doc.get('id'),
+                    theater: {
+                        id: doc.get('theater').id,
+                        name: doc.get('theater').name
+                    },
+                    screen: {
+                        id: doc.get('screen').id,
+                        name: doc.get('screen').name
+                    },
+                    film: {
+                        id: doc.get('film').id,
+                        name: doc.get('film').name,
+                        name_kana: doc.get('film').name_kana,
+                        name_short: doc.get('film').name_short,
+                        name_original: doc.get('film').name_original,
+                        minutes: doc.get('film').minutes
+                    },
+                    day: doc.get('day'),
+                    time_start: doc.get('time_start'),
+                    time_end: doc.get('time_end'),
+                    canceled: doc.get('canceled')
+                }
+            );
+        } else {
+            return monapt.None;
+        }
+    };
 }

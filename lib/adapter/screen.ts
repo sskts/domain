@@ -6,7 +6,6 @@
 
 import * as clone from 'clone';
 import * as createDebug from 'debug';
-import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
 import * as Screen from '../factory/screen';
 
@@ -19,20 +18,6 @@ export default class ScreenAdapter {
 
     constructor(readonly connection: Connection) {
         this.model = this.connection.model(screenModel.modelName);
-    }
-
-    public async findById(id: string) {
-        const doc = await this.model.findById(id).exec();
-
-        return (doc) ? monapt.Option(<Screen.IScreen>doc.toObject()) : monapt.None;
-    }
-
-    public async findByTheater(theaterId: string) {
-        const docs = await this.model.find({ theater: theaterId })
-            .setOptions({ maxTimeMS: 10000 })
-            .exec();
-
-        return docs.map((doc) => <Screen.IScreen>doc.toObject());
     }
 
     public async store(screen: Screen.IScreen) {
