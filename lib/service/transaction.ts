@@ -91,10 +91,8 @@ export function updateAnonymousOwner(args: {
 
         // 永続化
         debug('updating anonymous owner...');
-        const ownerDoc = await ownerAdapter.model.findOneAndUpdate(
-            {
-                _id: anonymousOwner.id
-            },
+        const ownerDoc = await ownerAdapter.model.findByIdAndUpdate(
+            anonymousOwner.id,
             {
                 name_first: args.name_first,
                 name_last: args.name_last,
@@ -150,7 +148,7 @@ export function startForcibly(expiresAt: Date) {
 
         // 所有者永続化
         debug('storing anonymous owner...', anonymousOwner);
-        await ownerAdapter.store(anonymousOwner);
+        await ownerAdapter.model.findByIdAndUpdate(anonymousOwner.id, anonymousOwner, { new: true, upsert: true }).exec();
 
         // ステータスを変更&しつつ、期限も延長する
         debug('updating transaction...');
@@ -183,7 +181,7 @@ export function startIfPossible(expiresAt: Date) {
 
         // 所有者永続化
         debug('storing anonymous owner...', anonymousOwner);
-        await ownerAdapter.store(anonymousOwner);
+        await ownerAdapter.model.findByIdAndUpdate(anonymousOwner.id, anonymousOwner, { new: true, upsert: true }).exec();
 
         // ステータスを変更&しつつ、期限も延長する
         debug('updating transaction...');
@@ -618,7 +616,7 @@ ${util.inspect(transaction, { showHidden: true, depth: 10 })}\n
 
         const promises = queues.map(async (queue) => {
             debug('storing queue...', queue);
-            await queueAdapter.store(queue);
+            await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
         });
         await Promise.all(promises);
     };

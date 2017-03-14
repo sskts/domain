@@ -5,16 +5,10 @@
  *
  * @class PerformanceAdapter
  */
-
-import * as clone from 'clone';
-import * as createDebug from 'debug';
 import { Connection } from 'mongoose';
 
 import * as Performance from '../factory/performance';
-
 import performanceModel from './mongoose/model/performance';
-
-const debug = createDebug('sskts-domain:adapter:performance');
 
 export default class PerformanceAdapter {
     public model: typeof performanceModel;
@@ -56,14 +50,5 @@ export default class PerformanceAdapter {
                 canceled: doc.get('canceled')
             };
         });
-    }
-
-    public async store(performance: Performance.IPerformance) {
-        debug('updating a performance...', performance);
-        const update = clone(performance);
-        await this.model.findByIdAndUpdate(update.id, update, {
-            new: true,
-            upsert: true
-        }).lean().exec();
     }
 }

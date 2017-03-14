@@ -55,7 +55,7 @@ export function transferCOASeatReservation(authorization: Authorization.ICOASeat
         const promises = authorization.assets.map(async (asset) => {
             // 資産永続化
             debug('storing asset...', asset);
-            await assetAdapter.store(asset);
+            await assetAdapter.model.findByIdAndUpdate(asset.id, asset, { new: true, upsert: true }).exec();
             debug('asset stored.');
         });
 

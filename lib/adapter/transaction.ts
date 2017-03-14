@@ -6,7 +6,6 @@
  *
  * @class TransactionAdapter
  */
-
 import * as clone from 'clone';
 import * as createDebug from 'debug';
 import { Connection } from 'mongoose';

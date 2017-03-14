@@ -74,7 +74,7 @@ export function importTheater(theaterCode: string): TheaterOperation<void> {
         // 永続化
         const theater = Theater.createFromCOA(theaterFromCOA);
         debug('storing theater...', theater);
-        await adapter.store(theater);
+        await adapter.model.findByIdAndUpdate(theater.id, theater, { new: true, upsert: true }).exec();
         debug('theater stored.');
     };
 }
@@ -105,7 +105,7 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
         await Promise.all(films.map(async (filmFromCOA) => {
             const film = await Film.createFromCOA(filmFromCOA)(theater);
             debug('storing film...', film);
-            await filmRepo.store(film);
+            await filmRepo.model.findByIdAndUpdate(film.id, film, { new: true, upsert: true }).exec();
             debug('film stored.');
         }));
     };
@@ -137,7 +137,7 @@ export function importScreens(theaterCode: string): TheaterAndScreenOperation<vo
         await Promise.all(screens.map(async (screenFromCOA) => {
             const screen = Screen.createFromCOA(screenFromCOA)(theater);
             debug('storing screen...');
-            await screenRepo.store(screen);
+            await screenRepo.model.findByIdAndUpdate(screen.id, screen, { new: true, upsert: true }).exec();
             debug('screen stored.');
         }));
     };
@@ -197,7 +197,7 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
             // 永続化
             const performance = Performance.createFromCOA(performanceFromCOA)(screenOfPerformance, film);
             debug('storing performance', performance);
-            await performanceRepo.store(performance);
+            await performanceRepo.model.findByIdAndUpdate(performance.id, performance, { new: true, upsert: true }).exec();
             debug('performance stored.');
         }));
     };

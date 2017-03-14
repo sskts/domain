@@ -3,8 +3,6 @@
  *
  * @class QueueAdapter
  */
-
-import * as clone from 'clone';
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
 
@@ -21,15 +19,6 @@ export default class QueueAdapter {
 
     constructor(readonly connection: Connection) {
         this.model = this.connection.model(queueModel.modelName);
-    }
-
-    public async findOneAndUpdate(conditions: any, update: any) {
-        const doc = await this.model.findOneAndUpdate(conditions, update, {
-            new: true,
-            upsert: false
-        }).exec();
-
-        return (doc) ? monapt.Option(<Queue.IQueue>doc.toObject()) : monapt.None;
     }
 
     public async findOneSendEmailAndUpdate(conditions: any, update: any) {
@@ -116,13 +105,5 @@ export default class QueueAdapter {
             .exec();
 
         return (doc) ? monapt.Option(<Queue.IDisableTransactionInquiryQueue>doc.toObject()) : monapt.None;
-    }
-
-    public async store(queue: Queue.IQueue) {
-        const update = clone(queue, false);
-        await this.model.findByIdAndUpdate(update.id, update, {
-            new: true,
-            upsert: true
-        }).lean().exec();
     }
 }

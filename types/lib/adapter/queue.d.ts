@@ -1,4 +1,9 @@
 /// <reference types="mongoose" />
+/**
+ * キューリポジトリ
+ *
+ * @class QueueAdapter
+ */
 import * as monapt from 'monapt';
 import { Connection } from 'mongoose';
 import * as Authorization from '../factory/authorization';
@@ -9,12 +14,10 @@ export default class QueueAdapter {
     readonly connection: Connection;
     model: typeof queueModel;
     constructor(connection: Connection);
-    findOneAndUpdate(conditions: any, update: any): Promise<monapt.Option<Queue.IQueue>>;
     findOneSendEmailAndUpdate(conditions: any, update: any): Promise<monapt.Option<Queue.IPushNotificationQueue<Notification.IEmailNotification>>>;
     findOneSettleGMOAuthorizationAndUpdate(conditions: any, update: any): Promise<monapt.Option<Queue.ISettleAuthorizationQueue<Authorization.IGMOAuthorization>>>;
     findOneSettleCOASeatReservationAuthorizationAndUpdate(conditions: any, update: any): Promise<monapt.Option<Queue.ISettleAuthorizationQueue<Authorization.ICOASeatReservationAuthorization>>>;
     findOneCancelGMOAuthorizationAndUpdate(conditions: any, update: any): Promise<monapt.Option<Queue.ICancelAuthorizationQueue<Authorization.IGMOAuthorization>>>;
     findOneCancelCOASeatReservationAuthorizationAndUpdate(conditions: any, update: any): Promise<monapt.Option<Queue.ICancelAuthorizationQueue<Authorization.ICOASeatReservationAuthorization>>>;
     findOneDisableTransactionInquiryAndUpdate(conditions: any, update: any): Promise<monapt.Option<Queue.IDisableTransactionInquiryQueue>>;
-    store(queue: Queue.IQueue): Promise<void>;
 }

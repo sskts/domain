@@ -28,7 +28,7 @@ function main() {
                 en: 'Cinema Sunshine Co., Ltd.'
             },
         });
-        yield ownerAdapter.store(owner);
+        yield ownerAdapter.model.findByIdAndUpdate(owner.id, owner, { new: true, upsert: true });
         mongoose.disconnect();
     });
 }

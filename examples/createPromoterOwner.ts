@@ -21,7 +21,7 @@ async function main() {
             en: 'Cinema Sunshine Co., Ltd.'
         },
     });
-    await ownerAdapter.store(owner);
+    await ownerAdapter.model.findByIdAndUpdate(owner.id, owner, { new: true, upsert: true });
 
     mongoose.disconnect();
 }
