@@ -18,7 +18,8 @@ import QueueStatus from '../factory/queueStatus';
 import * as Transaction from '../factory/transaction';
 import * as TransactionEvent from '../factory/transactionEvent';
 import * as TransactionInquiryKey from '../factory/transactionInquiryKey';
-import TransactionStatus from '../factory/transactionStatus';
+import transactionQueuesStatus from '../factory/transactionQueuesStatus';
+import transactionStatus from '../factory/transactionStatus';
 
 import OwnerAdapter from '../adapter/owner';
 import QueueAdapter from '../adapter/queue';
@@ -46,7 +47,7 @@ export function prepare(length: number, expiresInSeconds: number) {
         const expiresAt = moment().add(expiresInSeconds, 'seconds').toDate();
         const transactions = Array.from(Array(length).keys()).map(() => {
             const transaction = Transaction.create({
-                status: TransactionStatus.READY,
+                status: transactionStatus.READY,
                 owners: [],
                 expires_at: expiresAt
             });
@@ -141,7 +142,7 @@ export function startForcibly(expiresAt: Date) {
         const promoter = <Owner.IPromoterOwner>ownerDoc.toObject();
 
         const transaction = Transaction.create({
-            status: TransactionStatus.UNDERWAY,
+            status: transactionStatus.UNDERWAY,
             owners: [promoter, anonymousOwner],
             expires_at: expiresAt
         });
@@ -187,10 +188,10 @@ export function startIfPossible(expiresAt: Date) {
         debug('updating transaction...');
         const transactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
             {
-                status: TransactionStatus.READY
+                status: transactionStatus.READY
             },
             {
-                status: TransactionStatus.UNDERWAY,
+                status: transactionStatus.UNDERWAY,
                 owners: [promoter.id, anonymousOwner.id],
                 expires_at: expiresAt
             },
@@ -309,9 +310,8 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
         if (!doc) {
             throw new Error(`transaction[${transactionId}] not found.`);
         }
-        const transaction = <Transaction.ITransaction>doc.toObject();
 
-        const authorizations = await transactionAdapter.findAuthorizationsById(transaction.id);
+        const authorizations = await transactionAdapter.findAuthorizationsById(doc.get('id'));
 
         const removedAuthorization = authorizations.find((authorization) => authorization.id === authorizationId);
         if (!removedAuthorization) {
@@ -320,7 +320,7 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
 
         // イベント作成
         const event = TransactionEvent.createUnauthorize({
-            transaction: transaction.id,
+            transaction: doc.get('id'),
             occurred_at: new Date(),
             authorization: removedAuthorization
         });
@@ -371,9 +371,8 @@ export function removeEmail(transactionId: string, notificationId: string) {
         if (!doc) {
             throw new Error(`transaction[${transactionId}] not found.`);
         }
-        const transaction = <Transaction.ITransaction>doc.toObject();
 
-        const notifications = await transactionAdapter.findNotificationsById(transaction.id);
+        const notifications = await transactionAdapter.findNotificationsById(doc.get('id'));
 
         const removedNotification = notifications.find((notification) => notification.id === notificationId);
         if (!removedNotification) {
@@ -382,7 +381,7 @@ export function removeEmail(transactionId: string, notificationId: string) {
 
         // イベント作成
         const event = TransactionEvent.createNotificationRemove({
-            transaction: transactionId,
+            transaction: doc.get('id'),
             occurred_at: new Date(),
             notification: removedNotification
         });
@@ -401,14 +400,14 @@ export function removeEmail(transactionId: string, notificationId: string) {
  *
  * @memberOf TransactionService
  */
-export function enableInquiry(transactionId: string, key: TransactionInquiryKey.ITransactionInquiryKey) {
+export function enableInquiry(id: string, key: TransactionInquiryKey.ITransactionInquiryKey) {
     return async (transactionAdapter: TransactionAdapter) => {
         // 進行中の取引に照会キー情報を追加
         debug('updating transaction...');
         const doc = await transactionAdapter.transactionModel.findOneAndUpdate(
             {
-                _id: transactionId,
-                status: TransactionStatus.UNDERWAY
+                _id: id,
+                status: transactionStatus.UNDERWAY
             },
             {
                 inquiry_key: key
@@ -437,7 +436,7 @@ export function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey) {
             'inquiry_key.theater_code': key.theater_code,
             'inquiry_key.reserve_num': key.reserve_num,
             'inquiry_key.tel': key.tel,
-            status: TransactionStatus.CLOSED
+            status: transactionStatus.CLOSED
         }).populate('owners').exec();
 
         return (doc) ? monapt.Option(<Transaction.ITransaction>doc.toObject()) : monapt.None;
@@ -452,23 +451,22 @@ export function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey) {
  *
  * @memberOf TransactionService
  */
-export function close(transactionId: string) {
+export function close(id: string) {
     return async (transactionAdapter: TransactionAdapter) => {
         // 取引取得
-        const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
+        const doc = await transactionAdapter.transactionModel.findById(id).exec();
         if (!doc) {
-            throw new Error(`transaction[${transactionId}] not found.`);
+            throw new Error(`transaction[${id}] not found.`);
         }
-        const transaction = <Transaction.ITransaction>doc.toObject();
 
         // 照会可能になっているかどうか
-        if (!transaction.inquiry_key) {
+        if (!doc.get('inquiry_key')) {
             throw new Error('inquiry is not available.');
         }
 
         // 条件が対等かどうかチェック
         // todo 余計なクエリか？
-        if (!await transactionAdapter.canBeClosed(transaction.id)) {
+        if (!await transactionAdapter.canBeClosed(doc.get('id'))) {
             throw new Error('transaction cannot be closed.');
         }
 
@@ -476,11 +474,11 @@ export function close(transactionId: string) {
         debug('updating transaction...');
         const closedTransactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
             {
-                _id: transactionId,
-                status: TransactionStatus.UNDERWAY
+                _id: doc.get('id'),
+                status: transactionStatus.UNDERWAY
             },
             {
-                status: TransactionStatus.CLOSED
+                status: transactionStatus.CLOSED
             },
             { new: true }
         ).exec();
@@ -499,11 +497,11 @@ export function makeExpired() {
         // ステータスと期限を見て更新
         await transactionAdapter.transactionModel.update(
             {
-                status: { $in: [TransactionStatus.READY, TransactionStatus.UNDERWAY] },
+                status: { $in: [transactionStatus.READY, transactionStatus.UNDERWAY] },
                 expires_at: { $lt: new Date() }
             },
             {
-                status: TransactionStatus.EXPIRED
+                status: transactionStatus.EXPIRED
             },
             { multi: true }
         ).exec();
@@ -511,25 +509,57 @@ export function makeExpired() {
 }
 
 /**
+ * ひとつの取引のキューをエクスポートする
+ */
+export function exportQueues() {
+    return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
+        let transactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
+            {
+                status: { $in: [transactionStatus.CLOSED, transactionStatus.EXPIRED] },
+                queues_status: transactionQueuesStatus.UNEXPORTED
+            },
+            { queues_status: transactionQueuesStatus.EXPORTING },
+            { new: true }
+        ).exec();
+
+        if (transactionDoc) {
+            // 失敗してもここでは戻さない(RUNNINGのまま待機)
+            await exportQueuesById(transactionDoc.get('id'))(
+                queueAdapter,
+                transactionAdapter
+            );
+
+            transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
+                transactionDoc.get('id'),
+                { queues_status: transactionQueuesStatus.EXPORTED },
+                { new: true }
+            ).exec();
+        }
+
+        return (transactionDoc) ? <transactionQueuesStatus>transactionDoc.get('queues_status') : null;
+    };
+}
+
+/**
  * キュー出力
  *
- * @param {string} transactionId
+ * @param {string} id
  * @returns {TransactionAndQueueOperation<void>}
  *
  * @memberOf TransactionService
  */
-export function exportQueues(transactionId: string) {
+export function exportQueuesById(id: string) {
     // tslint:disable-next-line:max-func-body-length
-    return async (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => {
-        const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
+    return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
+        const doc = await transactionAdapter.transactionModel.findById(id).populate('owners').exec();
         if (!doc) {
-            throw new Error(`transaction[${transactionId}] not found.`);
+            throw new Error(`transaction[${id}] not found.`);
         }
         const transaction = <Transaction.ITransaction>doc.toObject();
 
         const queues: Queue.IQueue[] = [];
         switch (transaction.status) {
-            case TransactionStatus.CLOSED:
+            case transactionStatus.CLOSED:
                 // 取引イベントからキューリストを作成
                 (await transactionAdapter.findAuthorizationsById(transaction.id)).forEach((authorization) => {
                     queues.push(Queue.createSettleAuthorization({
@@ -558,7 +588,7 @@ export function exportQueues(transactionId: string) {
                 break;
 
             // 期限切れの場合は、キューリストを作成する
-            case TransactionStatus.EXPIRED:
+            case transactionStatus.EXPIRED:
                 (await transactionAdapter.findAuthorizationsById(transaction.id)).forEach((authorization) => {
                     queues.push(Queue.createCancelAuthorization({
                         authorization: authorization,
@@ -619,5 +649,7 @@ ${util.inspect(transaction, { showHidden: true, depth: 10 })}\n
             await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
         });
         await Promise.all(promises);
+
+        return queues.map((queue) => queue.id);
     };
 }

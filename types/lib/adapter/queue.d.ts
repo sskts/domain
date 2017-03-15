@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
 /**
- * キューリポジトリ
+ * キューアダプター
  *
  * @class QueueAdapter
  */

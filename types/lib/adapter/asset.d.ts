@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
 /**
- * 資産リポジトリ
+ * 資産アダプター
  *
  * @class AssetAdapter
  */

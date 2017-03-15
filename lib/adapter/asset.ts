@@ -1,5 +1,5 @@
 /**
- * 資産リポジトリ
+ * 資産アダプター
  *
  * @class AssetAdapter
  */

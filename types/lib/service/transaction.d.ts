@@ -117,7 +117,7 @@ export declare function removeEmail(transactionId: string, notificationId: strin
  *
  * @memberOf TransactionService
  */
-export declare function enableInquiry(transactionId: string, key: TransactionInquiryKey.ITransactionInquiryKey): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function enableInquiry(id: string, key: TransactionInquiryKey.ITransactionInquiryKey): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 照会する
  *
@@ -135,17 +135,21 @@ export declare function makeInquiry(key: TransactionInquiryKey.ITransactionInqui
  *
  * @memberOf TransactionService
  */
-export declare function close(transactionId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function close(id: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 取引を期限切れにする
  */
 export declare function makeExpired(): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
+ * ひとつの取引のキューをエクスポートする
+ */
+export declare function exportQueues(): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<"UNEXPORTED" | "EXPORTING" | "EXPORTED" | null>;
+/**
  * キュー出力
  *
- * @param {string} transactionId
+ * @param {string} id
  * @returns {TransactionAndQueueOperation<void>}
  *
  * @memberOf TransactionService
  */
-export declare function exportQueues(transactionId: string): (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => Promise<void>;
+export declare function exportQueuesById(id: string): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<string[]>;

@@ -1,5 +1,5 @@
 /**
- * 取引リポジトリ
+ * 取引アダプター
  *
  * todo ITransactionにIOwnerが結合しているために、デフォルトで.populate('owner')したりしている
  * Ownerをjoinするしないを必要に応じて使い分けられるようにする

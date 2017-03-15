@@ -145,4 +145,28 @@ describe('master service', () => {
             done(err);
         });
     });
+    it('searchPerformances by theater ok', (done) => {
+        sskts.service.master.searchPerformances({ theater: '118' })(sskts.adapter.performance(connection))
+            .then((performances) => {
+            performances.map((performance) => {
+                assert.equal(performance.theater.id, '118');
+            });
+            done();
+        })
+            .catch((err) => {
+            done(err);
+        });
+    });
+    it('searchPerformances by day ok', (done) => {
+        sskts.service.master.searchPerformances({ day: '20170301' })(sskts.adapter.performance(connection))
+            .then((performances) => {
+            performances.map((performance) => {
+                assert.equal(performance.day, '20170301');
+            });
+            done();
+        })
+            .catch((err) => {
+            done(err);
+        });
+    });
 });

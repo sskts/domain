@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
 /**
- * スクリーンリポジトリ
+ * スクリーンアダプター
  *
  * @class ScreenAdapter
  */

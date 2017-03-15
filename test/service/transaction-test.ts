@@ -4,6 +4,13 @@ import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import * as sskts from '../../lib/index';
 
+import * as notificationFactory from '../../lib/factory/notification';
+import * as transactionEvent from '../../lib/factory/transactionEvent';
+import * as transactionFactory from '../../lib/factory/transaction';
+import * as transactionInquiryKey from '../../lib/factory/transactionInquiryKey';
+import transactionQueuesStatus from '../../lib/factory/transactionQueuesStatus';
+import transactionStatus from '../../lib/factory/transactionStatus';
+
 let connection: mongoose.Connection;
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
@@ -14,6 +21,66 @@ before(async () => {
 });
 
 describe('transaction service', () => {
+    it('exportQueues ok.', async () => {
+        const queueAdapter = sskts.adapter.queue(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+
+        // test data
+        const transaction = transactionFactory.create({
+            status: transactionStatus.CLOSED,
+            owners: [],
+            expires_at: new Date(),
+            inquiry_key: transactionInquiryKey.create({
+                theater_code: '000',
+                reserve_num: 123,
+                tel: '09012345678'
+            }),
+            queues_status: transactionQueuesStatus.UNEXPORTED
+        });
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+
+        const status = await sskts.service.transaction.exportQueues()(queueAdapter, transactionAdapter);
+        assert.equal(status, transactionQueuesStatus.EXPORTED);
+    });
+
+    it('exportQueuesById ok.', async () => {
+        const queueAdapter = sskts.adapter.queue(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+
+        // test data
+        const transaction = transactionFactory.create({
+            status: transactionStatus.CLOSED,
+            owners: [],
+            expires_at: new Date(),
+            inquiry_key: transactionInquiryKey.create({
+                theater_code: '000',
+                reserve_num: 123,
+                tel: '09012345678'
+            }),
+            queues_status: transactionQueuesStatus.UNEXPORTED
+        });
+
+        const event = transactionEvent.createNotificationAdd({
+            transaction: transaction.id,
+            occurred_at: new Date(),
+            notification: notificationFactory.createEmail({
+                from: 'noreply@localhost',
+                to: 'hello',
+                subject: 'sskts-domain:test:service:transaction-test',
+                content: 'sskts-domain:test:service:transaction-test'
+            })
+        });
+
+        // todo オーソリイベントもテストデータに追加する
+
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+        await transactionAdapter.addEvent(event);
+
+        const queueIds = await sskts.service.transaction.exportQueuesById(transaction.id)(queueAdapter, transactionAdapter);
+        const numberOfQueues = await queueAdapter.model.count({ _id: { $in: queueIds } }).exec();
+        assert.equal(numberOfQueues, queueIds.length);
+    });
+
     it('startIfPossible fail', (done) => {
         const ownerAdapter = sskts.adapter.owner(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);

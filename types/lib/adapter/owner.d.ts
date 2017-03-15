@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
 /**
- * 所有者リポジトリ
+ * 所有者アダプター
  *
  * @class OwnerAdapter
  */

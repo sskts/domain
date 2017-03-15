@@ -1,10 +1,9 @@
 /**
- * 所有者リポジトリ
+ * 所有者アダプター
  *
  * @class OwnerAdapter
  */
 import { Connection } from 'mongoose';
-
 import ownerModel from './mongoose/model/owner';
 
 export default class OwnerAdapter {

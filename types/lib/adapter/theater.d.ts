@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
 /**
- * 劇場リポジトリ
+ * 劇場アダプター
  *
  * @class TheaterAdapter
  */

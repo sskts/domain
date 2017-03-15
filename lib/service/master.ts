@@ -228,29 +228,34 @@ export function searchPerformances(conditions: ISearchPerformancesConditions):
         }
 
         debug('finding performances...', andConditions);
-        const performances = await performanceRepo.find({ $and: andConditions });
+        const docs = await performanceRepo.model.find({ $and: andConditions })
+            .setOptions({ maxTimeMS: 10000 })
+            .populate('film')
+            .populate('theater')
+            .populate('screen')
+            .exec();
 
         // todo 空席状況を追加
 
-        return performances.map((performance) => {
+        return docs.map((doc) => {
             return {
-                id: performance.id,
+                id: doc.get('id'),
                 theater: {
-                    id: performance.theater.id,
-                    name: performance.theater.name
+                    id: doc.get('theater').id,
+                    name: doc.get('theater').name
                 },
                 screen: {
-                    id: performance.screen.id,
-                    name: performance.screen.name
+                    id: doc.get('screen').id,
+                    name: doc.get('screen').name
                 },
                 film: {
-                    id: performance.film.id,
-                    name: performance.film.name
+                    id: doc.get('film').id,
+                    name: doc.get('film').name
                 },
-                day: performance.day,
-                time_start: performance.time_start,
-                time_end: performance.time_end,
-                canceled: performance.canceled
+                day: doc.get('day'),
+                time_start: doc.get('time_start'),
+                time_end: doc.get('time_end'),
+                canceled: doc.get('canceled')
             };
         });
     };

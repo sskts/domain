@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
 /**
- * 作品リポジトリ
+ * 作品アダプター
  *
  * @class FilmAdapter
  */
