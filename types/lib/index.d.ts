@@ -28,14 +28,16 @@ import queueStatus from './factory/queueStatus';
 import * as transactionInquiryKey from './factory/transactionInquiryKey';
 import transactionQueuesStatus from './factory/transactionQueuesStatus';
 import transactionStatus from './factory/transactionStatus';
-export declare function createAssetAdapter(connection: Connection): AssetAdapter;
-export declare function createFilmAdapter(connection: Connection): FilmAdapter;
-export declare function createOwnerAdapter(connection: Connection): OwnerAdapter;
-export declare function createPerformanceAdapter(connection: Connection): PerformanceAdapter;
-export declare function createQueueAdapter(connection: Connection): QueueAdapter;
-export declare function createScreenAdapter(connection: Connection): ScreenAdapter;
-export declare function createTransactionAdapter(connection: Connection): TransactionAdapter;
-export declare function createTheaterAdapter(connection: Connection): TheaterAdapter;
+export declare const adapter: {
+    asset: (connection: Connection) => AssetAdapter;
+    film: (connection: Connection) => FilmAdapter;
+    owner: (connection: Connection) => OwnerAdapter;
+    performance: (connection: Connection) => PerformanceAdapter;
+    queue: (connection: Connection) => QueueAdapter;
+    screen: (connection: Connection) => ScreenAdapter;
+    theater: (connection: Connection) => TheaterAdapter;
+    transaction: (connection: Connection) => TransactionAdapter;
+};
 export declare const service: {
     master: typeof masterService;
     notification: typeof notificationService;

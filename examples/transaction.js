@@ -26,8 +26,8 @@ function main() {
         const gmoShopId = 'tshop00026096';
         const gmoShopPass = 'xbxmkaa6';
         const transactionService = sskts.service.transaction;
-        const ownerAdapter = sskts.createOwnerAdapter(connection);
-        const transactionAdapter = sskts.createTransactionAdapter(connection);
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
         // 取引開始
         // 30分後のunix timestampを送信する場合
         // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93

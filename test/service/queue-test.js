@@ -25,12 +25,12 @@ let connection;
 before(() => __awaiter(this, void 0, void 0, function* () {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
     // 全て削除してからテスト開始
-    const queueAdapter = sskts.createQueueAdapter(connection);
+    const queueAdapter = sskts.adapter.queue(connection);
     yield queueAdapter.model.remove({}).exec();
 }));
 describe('queue service', () => {
     it('executeSendEmailNotification ok.', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = queueFactory.createPushNotification({
             notification: notificationFactory.createEmail({
@@ -51,7 +51,7 @@ describe('queue service', () => {
         assert.equal(status, queueStatus_1.default.EXECUTED);
     }));
     it('executeSendEmailNotification fail because email to is invalid.', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = queueFactory.createPushNotification({
             notification: notificationFactory.createEmail({
@@ -72,8 +72,8 @@ describe('queue service', () => {
         assert.equal(status, queueStatus_1.default.RUNNING);
     }));
     it('executeSettleCOASeatReservationAuthorization fail because coa authorization is invalid.', () => __awaiter(this, void 0, void 0, function* () {
-        const assetAdapter = sskts.createAssetAdapter(connection);
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const assetAdapter = sskts.adapter.asset(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = queueFactory.createSettleAuthorization({
             authorization: authorizationFactory.createCOASeatReservation({
@@ -120,7 +120,7 @@ describe('queue service', () => {
         assert.equal(status, queueStatus_1.default.RUNNING);
     }));
     it('executeSettleGMOAuthorization fail because gmo authorization is invalid.', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = queueFactory.createSettleAuthorization({
             authorization: authorizationFactory.createGMO({
@@ -149,8 +149,8 @@ describe('queue service', () => {
         assert.equal(status, queueStatus_1.default.RUNNING);
     }));
     it('executeDisableTransactionInquiry fail because transaction has no inquiry key.', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.createQueueAdapter(connection);
-        const transactionAdapter = sskts.createTransactionAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
         // test data
         const queue = queueFactory.createDisableTransactionInquiry({
             transaction: transactionFactory.create({
@@ -170,7 +170,7 @@ describe('queue service', () => {
         assert.equal(status, queueStatus_1.default.RUNNING);
     }));
     it('retry ok.', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = queueFactory.createPushNotification({
             notification: notificationFactory.createEmail({
@@ -193,7 +193,7 @@ describe('queue service', () => {
         assert.equal(retriedQueue.get('status'), queueStatus_1.default.UNEXECUTED);
     }));
     it('abort ok.', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = queueFactory.createPushNotification({
             notification: notificationFactory.createEmail({
@@ -214,7 +214,7 @@ describe('queue service', () => {
         assert.equal(queueId, queue.id);
     }));
     it('not retry because it has reached to max_count_try.', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = queueFactory.createPushNotification({
             notification: notificationFactory.createEmail({

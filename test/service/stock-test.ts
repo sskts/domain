@@ -19,7 +19,7 @@ describe('stock service', () => {
         });
 
         sskts.service.stock.disableTransactionInquiry(transaction)(
-            sskts.createTransactionAdapter(connection)
+            sskts.adapter.transaction(connection)
         ).then(() => {
             done(new Error('unexpected.'));
         }).catch((err) => {

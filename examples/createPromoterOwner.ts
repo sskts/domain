@@ -13,7 +13,7 @@ const debug = createDebug('sskts-api:*');
 mongoose.connect(process.env.MONGOLAB_URI);
 
 async function main() {
-    const ownerAdapter = sskts.createOwnerAdapter(mongoose.connection);
+    const ownerAdapter = sskts.adapter.owner(mongoose.connection);
 
     const owner = sskts.factory.owner.createPromoter({
         name: {

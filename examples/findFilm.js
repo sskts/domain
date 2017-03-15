@@ -16,7 +16,7 @@ function main() {
         try {
             mongoose.Promise = global.Promise;
             const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-            const filmOption = yield sskts.service.master.findFilm('118170620')(sskts.createFilmAdapter(connection));
+            const filmOption = yield sskts.service.master.findFilm('118170620')(sskts.adapter.film(connection));
             console.log(filmOption);
         }
         catch (error) {

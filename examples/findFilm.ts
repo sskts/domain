@@ -6,7 +6,7 @@ async function main() {
     try {
         (<any>mongoose).Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        const filmOption = await sskts.service.master.findFilm('118170620')(sskts.createFilmAdapter(connection));
+        const filmOption = await sskts.service.master.findFilm('118170620')(sskts.adapter.film(connection));
         console.log(filmOption);
     } catch (error) {
         console.error(error);

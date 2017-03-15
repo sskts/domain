@@ -19,8 +19,8 @@ async function main() {
     const gmoShopPass = 'xbxmkaa6';
 
     const transactionService = sskts.service.transaction;
-    const ownerAdapter = sskts.createOwnerAdapter(connection);
-    const transactionAdapter = sskts.createTransactionAdapter(connection);
+    const ownerAdapter = sskts.adapter.owner(connection);
+    const transactionAdapter = sskts.adapter.transaction(connection);
 
     // 取引開始
     // 30分後のunix timestampを送信する場合

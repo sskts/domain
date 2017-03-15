@@ -17,7 +17,7 @@ function main() {
         try {
             mongoose.Promise = global.Promise;
             mongoose.connect(process.env.MONGOLAB_URI, connectionOptions_1.default);
-            const theater = yield sskts.service.master.findTheater('118')(sskts.createTheaterAdapter(mongoose.connection));
+            const theater = yield sskts.service.master.findTheater('118')(sskts.adapter.theater(mongoose.connection));
             console.log(theater);
             mongoose.disconnect();
         }

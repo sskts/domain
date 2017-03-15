@@ -16,7 +16,7 @@ describe('stock service', () => {
             owners: [],
             expires_at: new Date()
         });
-        sskts.service.stock.disableTransactionInquiry(transaction)(sskts.createTransactionAdapter(connection)).then(() => {
+        sskts.service.stock.disableTransactionInquiry(transaction)(sskts.adapter.transaction(connection)).then(() => {
             done(new Error('unexpected.'));
         }).catch((err) => {
             assert(err instanceof RangeError);

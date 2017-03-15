@@ -19,13 +19,13 @@ before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 
     // 全て削除してからテスト開始
-    const queueAdapter = sskts.createQueueAdapter(connection);
+    const queueAdapter = sskts.adapter.queue(connection);
     await queueAdapter.model.remove({}).exec();
 });
 
 describe('queue service', () => {
     it('executeSendEmailNotification ok.', async () => {
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
         const queue = queueFactory.createPushNotification({
@@ -49,7 +49,7 @@ describe('queue service', () => {
     });
 
     it('executeSendEmailNotification fail because email to is invalid.', async () => {
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
         const queue = queueFactory.createPushNotification({
@@ -73,8 +73,8 @@ describe('queue service', () => {
     });
 
     it('executeSettleCOASeatReservationAuthorization fail because coa authorization is invalid.', async () => {
-        const assetAdapter = sskts.createAssetAdapter(connection);
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const assetAdapter = sskts.adapter.asset(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
         const queue = queueFactory.createSettleAuthorization({
@@ -124,7 +124,7 @@ describe('queue service', () => {
     });
 
     it('executeSettleGMOAuthorization fail because gmo authorization is invalid.', async () => {
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
         const queue = queueFactory.createSettleAuthorization({
@@ -156,8 +156,8 @@ describe('queue service', () => {
     });
 
     it('executeDisableTransactionInquiry fail because transaction has no inquiry key.', async () => {
-        const queueAdapter = sskts.createQueueAdapter(connection);
-        const transactionAdapter = sskts.createTransactionAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
 
         // test data
         const queue = queueFactory.createDisableTransactionInquiry({
@@ -180,7 +180,7 @@ describe('queue service', () => {
     });
 
     it('retry ok.', async () => {
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
         const queue = queueFactory.createPushNotification({
@@ -207,7 +207,7 @@ describe('queue service', () => {
     });
 
     it('abort ok.', async () => {
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
         const queue = queueFactory.createPushNotification({
@@ -231,7 +231,7 @@ describe('queue service', () => {
     });
 
     it('not retry because it has reached to max_count_try.', async () => {
-        const queueAdapter = sskts.createQueueAdapter(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
         const queue = queueFactory.createPushNotification({

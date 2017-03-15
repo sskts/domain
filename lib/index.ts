@@ -31,30 +31,32 @@ import * as transactionInquiryKey from './factory/transactionInquiryKey';
 import transactionQueuesStatus from './factory/transactionQueuesStatus';
 import transactionStatus from './factory/transactionStatus';
 
-export function createAssetAdapter(connection: Connection) {
-    return new AssetAdapter(connection);
-}
-export function createFilmAdapter(connection: Connection) {
-    return new FilmAdapter(connection);
-}
-export function createOwnerAdapter(connection: Connection) {
-    return new OwnerAdapter(connection);
-}
-export function createPerformanceAdapter(connection: Connection) {
-    return new PerformanceAdapter(connection);
-}
-export function createQueueAdapter(connection: Connection) {
-    return new QueueAdapter(connection);
-}
-export function createScreenAdapter(connection: Connection) {
-    return new ScreenAdapter(connection);
-}
-export function createTransactionAdapter(connection: Connection) {
-    return new TransactionAdapter(connection);
-}
-export function createTheaterAdapter(connection: Connection) {
-    return new TheaterAdapter(connection);
-}
+export const adapter = {
+    asset: (connection: Connection) => {
+        return new AssetAdapter(connection);
+    },
+    film: (connection: Connection) => {
+        return new FilmAdapter(connection);
+    },
+    owner: (connection: Connection) => {
+        return new OwnerAdapter(connection);
+    },
+    performance: (connection: Connection) => {
+        return new PerformanceAdapter(connection);
+    },
+    queue: (connection: Connection) => {
+        return new QueueAdapter(connection);
+    },
+    screen: (connection: Connection) => {
+        return new ScreenAdapter(connection);
+    },
+    theater: (connection: Connection) => {
+        return new TheaterAdapter(connection);
+    },
+    transaction: (connection: Connection) => {
+        return new TransactionAdapter(connection);
+    }
+};
 
 export const service = {
     master: masterService,

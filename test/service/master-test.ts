@@ -10,7 +10,7 @@ before(() => {
 
 describe('master service', () => {
     it('importTheater fail', (done) => {
-        sskts.service.master.importTheater('000')(sskts.createTheaterAdapter(connection))
+        sskts.service.master.importTheater('000')(sskts.adapter.theater(connection))
             .then(() => {
                 done(new Error('thenable.'));
             })
@@ -20,7 +20,7 @@ describe('master service', () => {
     });
 
     it('importTheater ok', (done) => {
-        sskts.service.master.importTheater('118')(sskts.createTheaterAdapter(connection))
+        sskts.service.master.importTheater('118')(sskts.adapter.theater(connection))
             .then(() => {
                 done();
             })
@@ -31,8 +31,8 @@ describe('master service', () => {
 
     it('importScreens fail', (done) => {
         sskts.service.master.importScreens('000')(
-            sskts.createTheaterAdapter(connection),
-            sskts.createScreenAdapter(connection)
+            sskts.adapter.theater(connection),
+            sskts.adapter.screen(connection)
         )
             .then(() => {
                 done(new Error('thenable.'));
@@ -44,8 +44,8 @@ describe('master service', () => {
 
     it('importScreens ok', (done) => {
         sskts.service.master.importScreens('118')(
-            sskts.createTheaterAdapter(connection),
-            sskts.createScreenAdapter(connection)
+            sskts.adapter.theater(connection),
+            sskts.adapter.screen(connection)
         )
             .then(() => {
                 done();
@@ -57,8 +57,8 @@ describe('master service', () => {
 
     it('importFilms fail', (done) => {
         sskts.service.master.importFilms('000')(
-            sskts.createTheaterAdapter(connection),
-            sskts.createFilmAdapter(connection)
+            sskts.adapter.theater(connection),
+            sskts.adapter.film(connection)
         )
             .then(() => {
                 done(new Error('thenable.'));
@@ -70,8 +70,8 @@ describe('master service', () => {
 
     it('importFilms ok', (done) => {
         sskts.service.master.importFilms('118')(
-            sskts.createTheaterAdapter(connection),
-            sskts.createFilmAdapter(connection)
+            sskts.adapter.theater(connection),
+            sskts.adapter.film(connection)
         )
             .then(() => {
                 done();
@@ -83,9 +83,9 @@ describe('master service', () => {
 
     it('importPerformances fail', (done) => {
         sskts.service.master.importPerformances('000', '20170301', '20170303')(
-            sskts.createFilmAdapter(connection),
-            sskts.createScreenAdapter(connection),
-            sskts.createPerformanceAdapter(connection)
+            sskts.adapter.film(connection),
+            sskts.adapter.screen(connection),
+            sskts.adapter.performance(connection)
         )
             .then(() => {
                 done(new Error('thenable.'));
@@ -97,9 +97,9 @@ describe('master service', () => {
 
     it('importPerformances ok', (done) => {
         sskts.service.master.importPerformances('118', '20170301', '20170303')(
-            sskts.createFilmAdapter(connection),
-            sskts.createScreenAdapter(connection),
-            sskts.createPerformanceAdapter(connection)
+            sskts.adapter.film(connection),
+            sskts.adapter.screen(connection),
+            sskts.adapter.performance(connection)
         )
             .then(() => {
                 done();
@@ -110,7 +110,7 @@ describe('master service', () => {
     });
 
     it('findTheater ok', (done) => {
-        sskts.service.master.findTheater('118')(sskts.createTheaterAdapter(connection))
+        sskts.service.master.findTheater('118')(sskts.adapter.theater(connection))
             .then((theaterOption) => {
                 assert(theaterOption.isDefined);
                 assert.equal(theaterOption.get().id, '118');
@@ -122,7 +122,7 @@ describe('master service', () => {
     });
 
     it('findTheater not found', (done) => {
-        sskts.service.master.findTheater('000')(sskts.createTheaterAdapter(connection))
+        sskts.service.master.findTheater('000')(sskts.adapter.theater(connection))
             .then((theaterOption) => {
                 assert(theaterOption.isEmpty);
                 done();
@@ -134,7 +134,7 @@ describe('master service', () => {
 
     // todo 特定のパフォーマンスコードでしかテスト通らない
     it('findPerformance ok', (done) => {
-        sskts.service.master.findPerformance('1182017030116140071355')(sskts.createPerformanceAdapter(connection))
+        sskts.service.master.findPerformance('1182017030116140071355')(sskts.adapter.performance(connection))
             .then((performanceOption) => {
                 assert(performanceOption.isDefined);
                 assert.equal(performanceOption.get().id, '1182017030116140071355');
@@ -146,7 +146,7 @@ describe('master service', () => {
     });
 
     it('findPerformance not found', (done) => {
-        sskts.service.master.findPerformance('000')(sskts.createPerformanceAdapter(connection))
+        sskts.service.master.findPerformance('000')(sskts.adapter.performance(connection))
             .then((performanceOption) => {
                 assert(performanceOption.isEmpty);
                 done();
@@ -157,7 +157,7 @@ describe('master service', () => {
     });
 
     it('findFilm ok', (done) => {
-        sskts.service.master.findFilm('118170620')(sskts.createFilmAdapter(connection))
+        sskts.service.master.findFilm('118170620')(sskts.adapter.film(connection))
             .then((filmOption) => {
                 assert(filmOption.isDefined);
                 assert.equal(filmOption.get().id, '118170620');
@@ -169,7 +169,7 @@ describe('master service', () => {
     });
 
     it('findFilm not found', (done) => {
-        sskts.service.master.findFilm('000000000')(sskts.createFilmAdapter(connection))
+        sskts.service.master.findFilm('000000000')(sskts.adapter.film(connection))
             .then((filmOption) => {
                 assert(filmOption.isEmpty);
                 done();

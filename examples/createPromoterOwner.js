@@ -21,7 +21,7 @@ mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const ownerAdapter = sskts.createOwnerAdapter(mongoose.connection);
+        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
         const owner = sskts.factory.owner.createPromoter({
             name: {
                 ja: '佐々木興業株式会社',

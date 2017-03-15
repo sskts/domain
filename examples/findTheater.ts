@@ -8,7 +8,7 @@ async function main() {
         (<any>mongoose).Promise = global.Promise;
         mongoose.connect(process.env.MONGOLAB_URI, connectionOptions);
 
-        const theater = await sskts.service.master.findTheater('118')(sskts.createTheaterAdapter(mongoose.connection));
+        const theater = await sskts.service.master.findTheater('118')(sskts.adapter.theater(mongoose.connection));
         console.log(theater);
 
         mongoose.disconnect();
