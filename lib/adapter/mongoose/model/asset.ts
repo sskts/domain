@@ -12,6 +12,7 @@ const schema = new mongoose.Schema(
         _id: String,
         ownership: { // 所有権
             id: String,
+            // todo relationがあると扱いづらいかも？
             owner: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: ownerModel.modelName

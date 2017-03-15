@@ -7,6 +7,7 @@ import { Connection } from 'mongoose';
 
 import * as masterService from './service/master';
 import * as notificationService from './service/notification';
+import * as queueService from './service/queue';
 import * as salesService from './service/sales';
 import * as stockService from './service/stock';
 import * as transactionService from './service/transaction';
@@ -58,6 +59,7 @@ export function createTheaterAdapter(connection: Connection) {
 export const service = {
     master: masterService,
     notification: notificationService,
+    queue: queueService,
     sales: salesService,
     stock: stockService,
     transaction: transactionService

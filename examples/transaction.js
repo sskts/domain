@@ -208,7 +208,8 @@ function main() {
                     sale_price: salesTicketResult[0].sale_price,
                     mvtk_app_price: 0,
                     ticket_count: 1,
-                    seat_num: tmpReserve.seat_num
+                    seat_num: tmpReserve.seat_num,
+                    add_glasses: 0
                 };
             })
         });
