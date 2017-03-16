@@ -7,7 +7,6 @@ import * as clone from 'clone';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as monapt from 'monapt';
-import * as util from 'util';
 
 import * as Authorization from '../factory/authorization';
 import * as Notification from '../factory/notification';
@@ -24,8 +23,6 @@ import transactionStatus from '../factory/transactionStatus';
 import OwnerAdapter from '../adapter/owner';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
-
-import * as notificationService from '../service/notification';
 
 export type TransactionAndQueueOperation<T> =
     (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => Promise<T>;
@@ -614,15 +611,15 @@ export function exportQueuesById(id: string) {
                     }));
                 }
 
-                // 開発時のみ通知
-                if (process.env.NODE_ENV === 'development') {
-                    await notificationService.report2developers(
-                        '取引の期限が切れました', `
-transaction:\n
-${util.inspect(transaction, { showHidden: true, depth: 10 })}\n
-`
-                    )();
-                }
+                // 開発時のみ通知(メール送信数が増えすぎるので中止)
+                //                 if (process.env.NODE_ENV === 'development') {
+                //                     await notificationService.report2developers(
+                //                         '取引の期限が切れました', `
+                // transaction:\n
+                // ${util.inspect(transaction, { showHidden: true, depth: 10 })}\n
+                // `
+                //                     )();
+                //                 }
 
                 break;
 

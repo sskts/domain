@@ -18,7 +18,7 @@ describe('notification service', () => {
     it('send an email', () => __awaiter(this, void 0, void 0, function* () {
         const notification = sskts.factory.notification.createEmail({
             from: 'noreply@localhost',
-            to: 'hello@motionpicture.jp',
+            to: process.env.SSKTS_DEVELOPER_EMAIL,
             subject: 'test subject',
             content: 'test content'
         });

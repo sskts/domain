@@ -31,7 +31,7 @@ describe('queue service', () => {
         const queue = queueFactory.createPushNotification({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
-                to: 'hello@motionpicture.jp',
+                to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
                 content: 'sskts-domain:test:service:queue-test'
             }),
@@ -186,7 +186,7 @@ describe('queue service', () => {
         const queue = queueFactory.createPushNotification({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
-                to: 'hello@motionpicture.jp',
+                to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
                 content: 'sskts-domain:test:service:queue-test'
             }),
@@ -213,7 +213,7 @@ describe('queue service', () => {
         const queue = queueFactory.createPushNotification({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
-                to: 'hello@motionpicture.jp',
+                to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
                 content: 'sskts-domain:test:service:queue-test'
             }),
@@ -237,7 +237,7 @@ describe('queue service', () => {
         const queue = queueFactory.createPushNotification({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
-                to: 'hello@motionpicture.jp',
+                to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
                 content: 'sskts-domain:test:service:queue-test'
             }),

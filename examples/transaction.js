@@ -181,7 +181,7 @@ function main() {
             name_first: 'Tetsu',
             name_last: 'Yamazaki',
             tel: '09012345678',
-            email: 'hello@motionpicture.jp'
+            email: process.env.SSKTS_DEVELOPER_EMAIL
         })(ownerAdapter, transactionAdapter);
         console.log('anonymousOwner updated.');
         // COA本予約
@@ -246,7 +246,7 @@ http://www.cinemasunshine.co.jp/\n
         console.log('adding email...');
         const notification = sskts.factory.notification.createEmail({
             from: 'noreply@localhost',
-            to: 'hello@motionpicture.jp',
+            to: process.env.SSKTS_DEVELOPER_EMAIL,
             subject: '購入完了',
             content: content
         });

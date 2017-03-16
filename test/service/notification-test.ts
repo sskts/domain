@@ -9,7 +9,7 @@ describe('notification service', () => {
     it('send an email', async () => {
         const notification = sskts.factory.notification.createEmail({
             from: 'noreply@localhost',
-            to: 'hello@motionpicture.jp',
+            to: process.env.SSKTS_DEVELOPER_EMAIL,
             subject: 'test subject',
             content: 'test content'
         });
