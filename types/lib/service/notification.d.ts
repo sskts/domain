@@ -1,4 +1,4 @@
-import * as Notification from '../factory/notification';
+import * as notificationFactory from '../factory/notification';
 export declare type Operation<T> = () => Promise<T>;
 /**
  * メール送信
@@ -6,7 +6,15 @@ export declare type Operation<T> = () => Promise<T>;
  *
  * @param {EmailNotification} email
  * @returns {Operation<void>}
+ * @see https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
  *
  * @memberOf NotificationService
  */
-export declare function sendEmail(email: Notification.IEmailNotification): Operation<void>;
+export declare function sendEmail(email: notificationFactory.IEmailNotification): Operation<void>;
+/**
+ * 開発者に報告する
+ *
+ * @param {string} subject
+ * @param {string} content
+ */
+export declare function report2developers(subject: string, content: string): () => Promise<void>;

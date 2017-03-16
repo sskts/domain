@@ -3,10 +3,12 @@
  *
  * @namespace NotificationService
  */
-
 import * as createDebug from 'debug';
+import * as httpStatus from 'http-status';
 import * as sendgrid from 'sendgrid';
-import * as Notification from '../factory/notification';
+import * as util from 'util';
+
+import * as notificationFactory from '../factory/notification';
 
 export type Operation<T> = () => Promise<T>;
 
@@ -18,10 +20,11 @@ const debug = createDebug('sskts-domain:service:notification');
  *
  * @param {EmailNotification} email
  * @returns {Operation<void>}
+ * @see https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
  *
  * @memberOf NotificationService
  */
-export function sendEmail(email: Notification.IEmailNotification): Operation<void> {
+export function sendEmail(email: notificationFactory.IEmailNotification): Operation<void> {
     return async () => {
         const mail = new sendgrid.mail.Mail(
             new sendgrid.mail.Email(email.from),
@@ -44,8 +47,29 @@ export function sendEmail(email: Notification.IEmailNotification): Operation<voi
         });
 
         debug('requesting sendgrid api...', request);
-        await sg.API(request);
-        // todo check the response.
-        // const response = await sg.API(request);
+        const response = await sg.API(request);
+        debug('response is', response);
+
+        // check the response.
+        if (response.statusCode !== httpStatus.ACCEPTED) {
+            throw new Error(`sendgrid request not accepted. response is ${util.inspect(response)}`);
+        }
+    };
+}
+
+/**
+ * 開発者に報告する
+ *
+ * @param {string} subject
+ * @param {string} content
+ */
+export function report2developers(subject: string, content: string) {
+    return async () => {
+        await sendEmail(notificationFactory.createEmail({
+            from: 'noreply@localhost',
+            to: process.env.SSKTS_DEVELOPER_EMAIL,
+            subject: `sskts-domain[${process.env.NODE_ENV}]:開発者へ報告があります ${subject}`,
+            content: content
+        }))();
     };
 }

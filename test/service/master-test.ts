@@ -1,4 +1,8 @@
-// tslint:disable-next-line:missing-jsdoc
+/**
+ * マスターサービステスト
+ *
+ * @ignore
+ */
 import * as assert from 'assert';
 import * as mongoose from 'mongoose';
 import * as sskts from '../../lib/index';

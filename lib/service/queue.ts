@@ -12,7 +12,6 @@ import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
 
 import authorizationGroup from '../factory/authorizationGroup';
-import * as notification from '../factory/notification';
 import notificationGroup from '../factory/notificationGroup';
 import queueGroup from '../factory/queueGroup';
 import queueStatus from '../factory/queueStatus';
@@ -351,15 +350,12 @@ export function abort(intervalInMinutes: number) {
 
         if (abortedQueueDoc) {
             // メール通知
-            await notificationService.sendEmail(notification.createEmail({
-                from: 'noreply@localhost',
-                to: process.env.SSKTS_DEVELOPER_EMAIL,
-                subject: `sskts-api[${process.env.NODE_ENV}] queue aborted.`,
-                content: `
+            await notificationService.report2developers(
+                'キューの実行が中止されました', `
 aborted queue:\n
 ${util.inspect(abortedQueueDoc.toObject(), { showHidden: true, depth: 10 })}\n
 `
-            }))();
+            )();
         }
 
         return (abortedQueueDoc) ? <string>abortedQueueDoc.get('id') : null;

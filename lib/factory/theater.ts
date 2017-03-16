@@ -6,21 +6,27 @@
 import * as COA from '@motionpicture/coa-service';
 import MultilingualString from './multilingualString';
 
-export interface ITheater {
+export interface ITheaterWithoutGMO {
     id: string;
     name: MultilingualString;
     name_kana: string;
     address: MultilingualString;
 }
 
+export type ITheater = ITheaterWithoutGMO & {
+    gmo_site_id: string;
+    gmo_shop_id: string;
+    gmo_shop_pass: string;
+};
+
 /**
  * COAの劇場抽出結果からTheaterオブジェクトを作成する
  *
  * @export
  * @param {COA.MasterService.TheaterResult} theaterFromCOA
- * @returns {ITheater}
+ * @returns {ITheaterWithoutGMO}
  */
-export function createFromCOA(theaterFromCOA: COA.MasterService.TheaterResult): ITheater {
+export function createFromCOA(theaterFromCOA: COA.MasterService.TheaterResult): ITheaterWithoutGMO {
     return {
         id: theaterFromCOA.theater_code,
         name: {

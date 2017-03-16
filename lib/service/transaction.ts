@@ -25,6 +25,8 @@ import OwnerAdapter from '../adapter/owner';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
 
+import * as notificationService from '../service/notification';
+
 export type TransactionAndQueueOperation<T> =
     (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => Promise<T>;
 export type OwnerAndTransactionOperation<T> =
@@ -613,26 +615,13 @@ export function exportQueuesById(id: string) {
                 }
 
                 // 開発時のみ通知
-                if (process.env.NODE_ENV !== 'production') {
-                    queues.push(Queue.createPushNotification(
-                        {
-                            notification: Notification.createEmail({
-                                from: 'noreply@localhost',
-                                to: 'hello@motionpicture.jp',
-                                subject: 'transaction has expired',
-                                content: `
+                if (process.env.NODE_ENV === 'development') {
+                    await notificationService.report2developers(
+                        '取引の期限が切れました', `
 transaction:\n
 ${util.inspect(transaction, { showHidden: true, depth: 10 })}\n
 `
-                            }),
-                            status: QueueStatus.UNEXECUTED,
-                            run_at: new Date(),
-                            max_count_try: 10,
-                            last_tried_at: null,
-                            count_tried: 0,
-                            results: []
-                        }
-                    ));
+                    )();
                 }
 
                 break;

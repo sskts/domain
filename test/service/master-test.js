@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable-next-line:missing-jsdoc
+/**
+ * マスターサービステスト
+ *
+ * @ignore
+ */
 const assert = require("assert");
 const mongoose = require("mongoose");
 const sskts = require("../../lib/index");
