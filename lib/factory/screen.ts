@@ -53,7 +53,6 @@ export interface IScreen {
  *
  * @export
  * @param {COA.MasterService.ScreenResult} screenFromCOA
- * @returns
  */
 export function createFromCOA(screenFromCOA: COA.MasterService.ScreenResult) {
     return (theater: Theater.ITheater): IScreen => {

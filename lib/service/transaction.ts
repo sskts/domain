@@ -39,7 +39,6 @@ const debug = createDebug('sskts-domain:service:transaction');
  * @export
  * @param {number} length 取引数
  * @param {number} expiresInSeconds 現在から何秒後に期限切れにするか
- * @returns
  */
 export function prepare(length: number, expiresInSeconds: number) {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -127,7 +126,6 @@ export function findById(id: string): TransactionOperation<monapt.Option<Transac
  *
  * @export
  * @param {Date} expiresAt
- * @returns
  */
 export function startForcibly(expiresAt: Date) {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
@@ -660,7 +658,6 @@ ${util.inspect(transaction, { showHidden: true, depth: 10 })}\n
  *
  * @export
  * @param {number} intervalInMinutes
- * @returns
  */
 export function reexportQueues(intervalInMinutes: number) {
     return async (transactionAdapter: TransactionAdapter) => {

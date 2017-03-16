@@ -15,7 +15,6 @@ export declare type TransactionOperation<T> = (transactionAdapter: TransactionAd
  * @export
  * @param {number} length 取引数
  * @param {number} expiresInSeconds 現在から何秒後に期限切れにするか
- * @returns
  */
 export declare function prepare(length: number, expiresInSeconds: number): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
@@ -46,7 +45,6 @@ export declare function findById(id: string): TransactionOperation<monapt.Option
  *
  * @export
  * @param {Date} expiresAt
- * @returns
  */
 export declare function startForcibly(expiresAt: Date): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<Transaction.ITransaction>;
 /**
@@ -159,6 +157,5 @@ export declare function exportQueuesById(id: string): (queueAdapter: QueueAdapte
  *
  * @export
  * @param {number} intervalInMinutes
- * @returns
  */
 export declare function reexportQueues(intervalInMinutes: number): (transactionAdapter: TransactionAdapter) => Promise<void>;

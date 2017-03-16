@@ -2,7 +2,6 @@
  * 所有者ファクトリー
  *
  * @namespace OwnerFacroty
- *
  */
 import MultilingualString from '../factory/multilingualString';
 import OwnerGroup from './ownerGroup';
@@ -43,10 +42,8 @@ export declare function createAnonymous(args: {
  * 興行所有者オブジェクトを作成する
  *
  * @export
- * @param {{
- *     id?: string;
- *     name?: MultilingualString;
- * }} args
+ * @param {string} [args.id]
+ * @param {string} [args.name]
  * @returns {IPromoterOwner}
  */
 export declare function createPromoter(args: {

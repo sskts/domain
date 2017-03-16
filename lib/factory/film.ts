@@ -46,7 +46,6 @@ export interface IFilm {
  *
  * @export
  * @param {COA.MasterService.TitleResult} filmFromCOA
- * @returns
  */
 export function createFromCOA(filmFromCOA: COA.MasterService.TitleResult) {
     return (theater: Theater.ITheater): IFilm => {

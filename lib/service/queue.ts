@@ -27,7 +27,6 @@ const debug = createDebug('sskts-domain:service:queue');
  * メール送信キュー実行
  *
  * @export
- * @returns
  */
 export function executeSendEmailNotification() {
     return async (queueAdapter: QueueAdapter) => {
@@ -75,7 +74,6 @@ export function executeSendEmailNotification() {
  * COA仮予約キャンセルキュー実行
  *
  * @export
- * @returns
  */
 export function executeCancelCOASeatReservationAuthorization() {
     return async (queueAdapter: QueueAdapter) => {
@@ -123,7 +121,6 @@ export function executeCancelCOASeatReservationAuthorization() {
  * GMO仮売上取消キュー実行
  *
  * @export
- * @returns
  */
 export function executeCancelGMOAuthorization() {
     return async (queueAdapter: QueueAdapter) => {
@@ -171,7 +168,6 @@ export function executeCancelGMOAuthorization() {
  * 取引照会無効化キュー実行
  *
  * @export
- * @returns
  */
 export function executeDisableTransactionInquiry() {
     return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
@@ -218,7 +214,6 @@ export function executeDisableTransactionInquiry() {
  * COA本予約キュー実行
  *
  * @export
- * @returns
  */
 export function executeSettleCOASeatReservationAuthorization() {
     return async (assetAdapter: AssetAdapter, queueAdapter: QueueAdapter) => {
@@ -266,7 +261,6 @@ export function executeSettleCOASeatReservationAuthorization() {
  * GMO実売上キュー実行
  *
  * @export
- * @returns
  */
 export function executeSettleGMOAuthorization() {
     return async (queueAdapter: QueueAdapter) => {
@@ -315,7 +309,6 @@ export function executeSettleGMOAuthorization() {
  *
  * @export
  * @param {number} intervalInMinutes
- * @returns
  */
 export function retry(intervalInMinutes: number) {
     return async (queueAdapter: QueueAdapter) => {
@@ -339,7 +332,6 @@ export function retry(intervalInMinutes: number) {
  *
  * @export
  * @param {number} intervalInMinutes
- * @returns
  */
 export function abort(intervalInMinutes: number) {
     return async (queueAdapter: QueueAdapter) => {
