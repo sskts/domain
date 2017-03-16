@@ -153,3 +153,12 @@ export declare function exportQueues(): (queueAdapter: QueueAdapter, transaction
  * @memberOf TransactionService
  */
 export declare function exportQueuesById(id: string): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<string[]>;
+/**
+ * キューエクスポートリトライ
+ * todo updated_atを基準にしているが、キューエクスポートトライ日時を持たせた方が安全か？
+ *
+ * @export
+ * @param {number} intervalInMinutes
+ * @returns
+ */
+export declare function reexportQueues(intervalInMinutes: number): (transactionAdapter: TransactionAdapter) => Promise<void>;

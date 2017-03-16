@@ -5,8 +5,8 @@ import * as mongoose from 'mongoose';
 import * as sskts from '../../lib/index';
 
 import * as notificationFactory from '../../lib/factory/notification';
-import * as transactionEvent from '../../lib/factory/transactionEvent';
 import * as transactionFactory from '../../lib/factory/transaction';
+import * as transactionEvent from '../../lib/factory/transactionEvent';
 import * as transactionInquiryKey from '../../lib/factory/transactionInquiryKey';
 import transactionQueuesStatus from '../../lib/factory/transactionQueuesStatus';
 import transactionStatus from '../../lib/factory/transactionStatus';
@@ -79,6 +79,30 @@ describe('transaction service', () => {
         const queueIds = await sskts.service.transaction.exportQueuesById(transaction.id)(queueAdapter, transactionAdapter);
         const numberOfQueues = await queueAdapter.model.count({ _id: { $in: queueIds } }).exec();
         assert.equal(numberOfQueues, queueIds.length);
+    });
+
+    it('reexportQueues ok.', async () => {
+        const transactionAdapter = sskts.adapter.transaction(connection);
+
+        // test data
+        const transaction = transactionFactory.create({
+            status: transactionStatus.CLOSED,
+            owners: [],
+            expires_at: new Date(),
+            inquiry_key: transactionInquiryKey.create({
+                theater_code: '000',
+                reserve_num: 123,
+                tel: '09012345678'
+            }),
+            queues_status: transactionQueuesStatus.EXPORTING
+        });
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+
+        await sskts.service.transaction.reexportQueues(0)(transactionAdapter); // tslint:disable-line:no-magic-numbers
+
+        // ステータスが変更されているかどうか確認
+        const retriedTransaction = await transactionAdapter.transactionModel.findById(transaction.id).exec();
+        assert.equal(retriedTransaction.get('queues_status'), transactionQueuesStatus.UNEXPORTED);
     });
 
     it('startIfPossible fail', (done) => {

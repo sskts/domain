@@ -653,3 +653,25 @@ ${util.inspect(transaction, { showHidden: true, depth: 10 })}\n
         return queues.map((queue) => queue.id);
     };
 }
+
+/**
+ * キューエクスポートリトライ
+ * todo updated_atを基準にしているが、キューエクスポートトライ日時を持たせた方が安全か？
+ *
+ * @export
+ * @param {number} intervalInMinutes
+ * @returns
+ */
+export function reexportQueues(intervalInMinutes: number) {
+    return async (transactionAdapter: TransactionAdapter) => {
+        await transactionAdapter.transactionModel.findOneAndUpdate(
+            {
+                queues_status: transactionQueuesStatus.EXPORTING,
+                updated_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() } // tslint:disable-line:no-magic-numbers
+            },
+            {
+                queues_status: transactionQueuesStatus.UNEXPORTED
+            }
+        ).exec();
+    };
+}

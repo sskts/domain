@@ -14,8 +14,8 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const sskts = require("../../lib/index");
 const notificationFactory = require("../../lib/factory/notification");
-const transactionEvent = require("../../lib/factory/transactionEvent");
 const transactionFactory = require("../../lib/factory/transaction");
+const transactionEvent = require("../../lib/factory/transactionEvent");
 const transactionInquiryKey = require("../../lib/factory/transactionInquiryKey");
 const transactionQueuesStatus_1 = require("../../lib/factory/transactionQueuesStatus");
 const transactionStatus_1 = require("../../lib/factory/transactionStatus");
@@ -77,6 +77,26 @@ describe('transaction service', () => {
         const queueIds = yield sskts.service.transaction.exportQueuesById(transaction.id)(queueAdapter, transactionAdapter);
         const numberOfQueues = yield queueAdapter.model.count({ _id: { $in: queueIds } }).exec();
         assert.equal(numberOfQueues, queueIds.length);
+    }));
+    it('reexportQueues ok.', () => __awaiter(this, void 0, void 0, function* () {
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        // test data
+        const transaction = transactionFactory.create({
+            status: transactionStatus_1.default.CLOSED,
+            owners: [],
+            expires_at: new Date(),
+            inquiry_key: transactionInquiryKey.create({
+                theater_code: '000',
+                reserve_num: 123,
+                tel: '09012345678'
+            }),
+            queues_status: transactionQueuesStatus_1.default.EXPORTING
+        });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+        yield sskts.service.transaction.reexportQueues(0)(transactionAdapter); // tslint:disable-line:no-magic-numbers
+        // ステータスが変更されているかどうか確認
+        const retriedTransaction = yield transactionAdapter.transactionModel.findById(transaction.id).exec();
+        assert.equal(retriedTransaction.get('queues_status'), transactionQueuesStatus_1.default.UNEXPORTED);
     }));
     it('startIfPossible fail', (done) => {
         const ownerAdapter = sskts.adapter.owner(connection);
