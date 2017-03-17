@@ -11,6 +11,7 @@ import * as queueService from './service/queue';
 import * as salesService from './service/sales';
 import * as stockService from './service/stock';
 import * as transactionService from './service/transaction';
+import * as transactionWithIdService from './service/transactionWithId';
 
 import AssetAdapter from './adapter/asset';
 import FilmAdapter from './adapter/film';
@@ -77,7 +78,8 @@ export const service = {
     queue: queueService,
     sales: salesService,
     stock: stockService,
-    transaction: transactionService
+    transaction: transactionService,
+    transactionWithId: transactionWithIdService
 };
 
 export const factory = {

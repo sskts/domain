@@ -11,6 +11,7 @@ import * as queueService from './service/queue';
 import * as salesService from './service/sales';
 import * as stockService from './service/stock';
 import * as transactionService from './service/transaction';
+import * as transactionWithIdService from './service/transactionWithId';
 import AssetAdapter from './adapter/asset';
 import FilmAdapter from './adapter/film';
 import OwnerAdapter from './adapter/owner';
@@ -58,6 +59,7 @@ export declare const service: {
     sales: typeof salesService;
     stock: typeof stockService;
     transaction: typeof transactionService;
+    transactionWithId: typeof transactionWithIdService;
 };
 export declare const factory: {
     asset: typeof asset;

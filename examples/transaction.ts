@@ -4,7 +4,6 @@
  *
  * @ignore
  */
-
 import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
 import * as moment from 'moment';
@@ -28,7 +27,7 @@ async function main() {
     // tslint:disable-next-line:no-console
     console.log('starting transaction...');
     // tslint:disable-next-line:no-magic-numbers max-line-length
-    const transactionOption = await transactionService.startIfPossible(moment().add(30, 'minutes').toDate())(ownerAdapter, transactionAdapter);
+    const transactionOption = await sskts.service.transaction.startIfPossible(moment().add(30, 'minutes').toDate())(ownerAdapter, transactionAdapter);
     if (transactionOption.isEmpty) {
         throw new Error('no ready transaction');
     }
@@ -134,7 +133,7 @@ async function main() {
         }),
         price: totalPrice
     });
-    await transactionService.addCOASeatReservationAuthorization(transactionId, coaAuthorization)(transactionAdapter);
+    await sskts.service.transactionWithId.addCOASeatReservationAuthorization(transactionId, coaAuthorization)(transactionAdapter);
     console.log('coaAuthorization added.');
 
     // GMOオーソリ取得
@@ -173,12 +172,12 @@ async function main() {
         gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
         price: totalPrice
     });
-    await transactionService.addGMOAuthorization(transactionId, gmoAuthorization)(transactionAdapter);
+    await sskts.service.transactionWithId.addGMOAuthorization(transactionId, gmoAuthorization)(transactionAdapter);
     console.log('GMOAuthorization added.');
 
     // 購入者情報登録
     console.log('updating anonymous...');
-    await transactionService.updateAnonymousOwner({
+    await sskts.service.transactionWithId.updateAnonymousOwner({
         transaction_id: transactionId,
         name_first: 'Tetsu',
         name_last: 'Yamazaki',
@@ -225,7 +224,7 @@ async function main() {
         reserve_num: updateReserveResult.reserve_num,
         tel: tel
     });
-    await transactionService.enableInquiry(transactionId, key)(transactionAdapter);
+    await sskts.service.transactionWithId.enableInquiry(transactionId, key)(transactionAdapter);
     console.log('inquiry enabled.');
 
     // メール追加
@@ -255,13 +254,13 @@ http://www.cinemasunshine.co.jp/\n
         subject: '購入完了',
         content: content
     });
-    await transactionService.addEmail(transactionId, notification)(transactionAdapter);
+    await sskts.service.transactionWithId.addEmail(transactionId, notification)(transactionAdapter);
     console.log('email added.');
     // let notificationId = notification._id;
 
     // 取引成立
     console.log('closing transaction...');
-    await transactionService.close(transactionId)(transactionAdapter);
+    await sskts.service.transactionWithId.close(transactionId)(transactionAdapter);
     console.log('closed.');
 
     // 照会してみる

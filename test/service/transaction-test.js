@@ -27,6 +27,19 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     yield transactionAdapter.transactionModel.remove({}).exec();
 }));
 describe('transaction service', () => {
+    it('startIfPossible fail', (done) => {
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const expiresAt = moment().add(30, 'minutes').toDate(); // tslint:disable-line:no-magic-numbers
+        sskts.service.transaction.startIfPossible(expiresAt)(ownerAdapter, transactionAdapter)
+            .then((transactionOption) => {
+            assert(transactionOption.isEmpty);
+            done();
+        })
+            .catch((err) => {
+            done(err);
+        });
+    });
     it('exportQueues ok.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
@@ -98,23 +111,27 @@ describe('transaction service', () => {
         const retriedTransaction = yield transactionAdapter.transactionModel.findById(transaction.id).exec();
         assert.equal(retriedTransaction.get('queues_status'), transactionQueuesStatus_1.default.UNEXPORTED);
     }));
-    it('startIfPossible fail', (done) => {
-        const ownerAdapter = sskts.adapter.owner(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        const expiresAt = moment().add(30, 'minutes').toDate(); // tslint:disable-line:no-magic-numbers
-        sskts.service.transaction.startIfPossible(expiresAt)(ownerAdapter, transactionAdapter)
-            .then((transactionOption) => {
-            assert(transactionOption.isEmpty);
+    it('prepare ok', (done) => {
+        sskts.service.transaction.prepare(3, 60)(sskts.adapter.transaction(connection)) // tslint:disable-line:no-magic-numbers
+            .then(() => {
             done();
         })
             .catch((err) => {
             done(err);
         });
     });
-    it('prepare ok', (done) => {
-        sskts.service.transaction.prepare(3, 60)(sskts.adapter.transaction(connection)) // tslint:disable-line:no-magic-numbers
+    it('makeExpired ok', (done) => {
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        // 期限切れの取引を作成
+        sskts.service.transaction.prepare(3, -60)(transactionAdapter) // tslint:disable-line:no-magic-numbers
             .then(() => {
-            done();
+            sskts.service.transaction.makeExpired()(transactionAdapter)
+                .then(() => {
+                done();
+            })
+                .catch((err) => {
+                done(err);
+            });
         })
             .catch((err) => {
             done(err);
@@ -149,23 +166,6 @@ describe('transaction service', () => {
             .then((transaction) => {
             assert.equal(transaction.expires_at.valueOf(), expiresAt.valueOf());
             done();
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
-    it('makeExpired ok', (done) => {
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        // 期限切れの取引を作成
-        sskts.service.transaction.prepare(3, -60)(transactionAdapter) // tslint:disable-line:no-magic-numbers
-            .then(() => {
-            sskts.service.transaction.makeExpired()(transactionAdapter)
-                .then(() => {
-                done();
-            })
-                .catch((err) => {
-                done(err);
-            });
         })
             .catch((err) => {
             done(err);

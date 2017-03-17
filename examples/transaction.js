@@ -1,9 +1,3 @@
-// tslint:disable:no-console
-/**
- * 取フローの例
- *
- * @ignore
- */
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -14,6 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// tslint:disable:no-console
+/**
+ * 取フローの例
+ *
+ * @ignore
+ */
 const COA = require("@motionpicture/coa-service");
 const GMO = require("@motionpicture/gmo-service");
 const moment = require("moment");
@@ -34,7 +34,7 @@ function main() {
         // tslint:disable-next-line:no-console
         console.log('starting transaction...');
         // tslint:disable-next-line:no-magic-numbers max-line-length
-        const transactionOption = yield transactionService.startIfPossible(moment().add(30, 'minutes').toDate())(ownerAdapter, transactionAdapter);
+        const transactionOption = yield sskts.service.transaction.startIfPossible(moment().add(30, 'minutes').toDate())(ownerAdapter, transactionAdapter);
         if (transactionOption.isEmpty) {
             throw new Error('no ready transaction');
         }
@@ -136,7 +136,7 @@ function main() {
             }),
             price: totalPrice
         });
-        yield transactionService.addCOASeatReservationAuthorization(transactionId, coaAuthorization)(transactionAdapter);
+        yield sskts.service.transactionWithId.addCOASeatReservationAuthorization(transactionId, coaAuthorization)(transactionAdapter);
         console.log('coaAuthorization added.');
         // GMOオーソリ取得
         const orderId = Date.now().toString();
@@ -172,11 +172,11 @@ function main() {
             gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT,
             price: totalPrice
         });
-        yield transactionService.addGMOAuthorization(transactionId, gmoAuthorization)(transactionAdapter);
+        yield sskts.service.transactionWithId.addGMOAuthorization(transactionId, gmoAuthorization)(transactionAdapter);
         console.log('GMOAuthorization added.');
         // 購入者情報登録
         console.log('updating anonymous...');
-        yield transactionService.updateAnonymousOwner({
+        yield sskts.service.transactionWithId.updateAnonymousOwner({
             transaction_id: transactionId,
             name_first: 'Tetsu',
             name_last: 'Yamazaki',
@@ -221,7 +221,7 @@ function main() {
             reserve_num: updateReserveResult.reserve_num,
             tel: tel
         });
-        yield transactionService.enableInquiry(transactionId, key)(transactionAdapter);
+        yield sskts.service.transactionWithId.enableInquiry(transactionId, key)(transactionAdapter);
         console.log('inquiry enabled.');
         // メール追加
         const content = `
@@ -250,12 +250,12 @@ http://www.cinemasunshine.co.jp/\n
             subject: '購入完了',
             content: content
         });
-        yield transactionService.addEmail(transactionId, notification)(transactionAdapter);
+        yield sskts.service.transactionWithId.addEmail(transactionId, notification)(transactionAdapter);
         console.log('email added.');
         // let notificationId = notification._id;
         // 取引成立
         console.log('closing transaction...');
-        yield transactionService.close(transactionId)(transactionAdapter);
+        yield sskts.service.transactionWithId.close(transactionId)(transactionAdapter);
         console.log('closed.');
         // 照会してみる
         const inquiryResult = yield transactionService.makeInquiry(key)(transactionAdapter);
