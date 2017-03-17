@@ -22,11 +22,24 @@ import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
 
 import * as asset from './factory/asset';
+import assetGroup from './factory/assetGroup';
 import * as authorization from './factory/authorization';
+import authorizationGroup from './factory/authorizationGroup';
+import * as film from './factory/film';
 import * as notification from './factory/notification';
+import * as notificationGroup from './factory/notificationGroup';
 import * as owner from './factory/owner';
+import * as ownerGroup from './factory/ownerGroup';
 import * as ownership from './factory/ownership';
+import * as performance from './factory/performance';
+import * as queue from './factory/queue';
+import queueGroup from './factory/queueGroup';
 import queueStatus from './factory/queueStatus';
+import * as screen from './factory/screen';
+import * as theater from './factory/theater';
+import * as transaction from './factory/transaction';
+import * as transactionEvent from './factory/transactionEvent';
+import transactionEventGroup from './factory/transactionEventGroup';
 import * as transactionInquiryKey from './factory/transactionInquiryKey';
 import transactionQueuesStatus from './factory/transactionQueuesStatus';
 import transactionStatus from './factory/transactionStatus';
@@ -69,11 +82,24 @@ export const service = {
 
 export const factory = {
     asset,
+    assetGroup,
     authorization,
+    authorizationGroup,
+    film,
     notification,
+    notificationGroup,
     owner,
+    ownerGroup,
     ownership,
+    performance,
+    queue,
+    queueGroup,
     queueStatus,
+    screen,
+    theater,
+    transaction,
+    transactionEventGroup,
+    transactionEvent,
     transactionInquiryKey,
     transactionQueuesStatus,
     transactionStatus
