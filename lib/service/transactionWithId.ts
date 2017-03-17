@@ -27,52 +27,6 @@ export type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) =
 const debug = createDebug('sskts-domain:service:transaction');
 
 /**
- * 匿名所有者更新
- *
- * @returns {OwnerAndTransactionOperation<void>}
- *
- * @memberOf TransactionService
- */
-export function updateAnonymousOwner(args: {
-    transaction_id: string,
-    name_first?: string,
-    name_last?: string,
-    email?: string,
-    tel?: string
-}): OwnerAndTransactionOperation<void> {
-    return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
-        // 取引取得
-        const doc = await transactionAdapter.transactionModel.findById(args.transaction_id).populate('owners').exec();
-        if (!doc) {
-            throw new Error(`transaction[${args.transaction_id}] not found.`);
-        }
-        const transaction = <Transaction.ITransaction>doc.toObject();
-
-        const anonymousOwner = transaction.owners.find((owner) => {
-            return (owner.group === OwnerGroup.ANONYMOUS);
-        });
-        if (!anonymousOwner) {
-            throw new Error('anonymous owner not found.');
-        }
-
-        // 永続化
-        debug('updating anonymous owner...');
-        const ownerDoc = await ownerAdapter.model.findByIdAndUpdate(
-            anonymousOwner.id,
-            {
-                name_first: args.name_first,
-                name_last: args.name_last,
-                email: args.email,
-                tel: args.tel
-            }
-        ).exec();
-        if (!ownerDoc) {
-            throw new Error('owner not found.');
-        }
-    };
-}
-
-/**
  * IDから取得する
  *
  * @param {string} id
@@ -264,6 +218,52 @@ export function removeEmail(transactionId: string, notificationId: string) {
 
         // 永続化
         await transactionAdapter.addEvent(event);
+    };
+}
+
+/**
+ * 匿名所有者更新
+ *
+ * @returns {OwnerAndTransactionOperation<void>}
+ *
+ * @memberOf TransactionService
+ */
+export function updateAnonymousOwner(args: {
+    transaction_id: string,
+    name_first?: string,
+    name_last?: string,
+    email?: string,
+    tel?: string
+}): OwnerAndTransactionOperation<void> {
+    return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
+        // 取引取得
+        const doc = await transactionAdapter.transactionModel.findById(args.transaction_id).populate('owners').exec();
+        if (!doc) {
+            throw new Error(`transaction[${args.transaction_id}] not found.`);
+        }
+        const transaction = <Transaction.ITransaction>doc.toObject();
+
+        const anonymousOwner = transaction.owners.find((owner) => {
+            return (owner.group === OwnerGroup.ANONYMOUS);
+        });
+        if (!anonymousOwner) {
+            throw new Error('anonymous owner not found.');
+        }
+
+        // 永続化
+        debug('updating anonymous owner...');
+        const ownerDoc = await ownerAdapter.model.findByIdAndUpdate(
+            anonymousOwner.id,
+            {
+                name_first: args.name_first,
+                name_last: args.name_last,
+                email: args.email,
+                tel: args.tel
+            }
+        ).exec();
+        if (!ownerDoc) {
+            throw new Error('owner not found.');
+        }
     };
 }
 

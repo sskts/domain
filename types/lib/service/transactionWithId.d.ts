@@ -10,20 +10,6 @@ export declare type TransactionAndQueueOperation<T> = (transactionAdapter: Trans
 export declare type OwnerAndTransactionOperation<T> = (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 export declare type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) => Promise<T>;
 /**
- * 匿名所有者更新
- *
- * @returns {OwnerAndTransactionOperation<void>}
- *
- * @memberOf TransactionService
- */
-export declare function updateAnonymousOwner(args: {
-    transaction_id: string;
-    name_first?: string;
-    name_last?: string;
-    email?: string;
-    tel?: string;
-}): OwnerAndTransactionOperation<void>;
-/**
  * IDから取得する
  *
  * @param {string} id
@@ -82,6 +68,20 @@ export declare function addEmail(transactionId: string, notification: Notificati
  * @memberOf TransactionService
  */
 export declare function removeEmail(transactionId: string, notificationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
+/**
+ * 匿名所有者更新
+ *
+ * @returns {OwnerAndTransactionOperation<void>}
+ *
+ * @memberOf TransactionService
+ */
+export declare function updateAnonymousOwner(args: {
+    transaction_id: string;
+    name_first?: string;
+    name_last?: string;
+    email?: string;
+    tel?: string;
+}): OwnerAndTransactionOperation<void>;
 /**
  * 照合を可能にする
  *

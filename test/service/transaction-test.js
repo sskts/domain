@@ -43,9 +43,10 @@ describe('transaction service', () => {
     it('exportQueues ok.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
+        const status = transactionStatus_1.default.CLOSED;
         // test data
         const transaction = transactionFactory.create({
-            status: transactionStatus_1.default.CLOSED,
+            status: status,
             owners: [],
             expires_at: new Date(),
             inquiry_key: transactionInquiryKey.create({
@@ -56,8 +57,35 @@ describe('transaction service', () => {
             queues_status: transactionQueuesStatus_1.default.UNEXPORTED
         });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
-        const status = yield sskts.service.transaction.exportQueues()(queueAdapter, transactionAdapter);
-        assert.equal(status, transactionQueuesStatus_1.default.EXPORTED);
+        const queueStatus = yield sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
+        assert.equal(queueStatus, transactionQueuesStatus_1.default.EXPORTED);
+    }));
+    it('exportQueues prohibited status.', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const status = transactionStatus_1.default.UNDERWAY;
+        // test data
+        const transaction = transactionFactory.create({
+            status: status,
+            owners: [],
+            expires_at: new Date(),
+            inquiry_key: transactionInquiryKey.create({
+                theater_code: '000',
+                reserve_num: 123,
+                tel: '09012345678'
+            }),
+            queues_status: transactionQueuesStatus_1.default.UNEXPORTED
+        });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+        let exportQueues;
+        try {
+            yield sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
+        }
+        catch (error) {
+            exportQueues = error;
+        }
+        assert(exportQueues instanceof RangeError);
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
     }));
     it('exportQueuesById ok.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
@@ -171,4 +199,40 @@ describe('transaction service', () => {
             done(err);
         });
     });
+    it('clean should be removed', () => __awaiter(this, void 0, void 0, function* () {
+        // test data
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const transactionIds = [];
+        const promises = Array.from(Array(3).keys()).map(() => __awaiter(this, void 0, void 0, function* () {
+            const transaction = transactionFactory.create({
+                status: transactionStatus_1.default.READY,
+                owners: [],
+                expires_at: moment().add(0, 'seconds').toDate()
+            });
+            yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+            transactionIds.push(transaction.id);
+        }));
+        yield Promise.all(promises);
+        yield sskts.service.transaction.clean()(sskts.adapter.transaction(connection));
+        const nubmerOfTransaction = yield transactionAdapter.transactionModel.find({ _id: { $in: transactionIds } }).count().exec();
+        assert.equal(nubmerOfTransaction, 0);
+    }));
+    it('clean should not be removed', () => __awaiter(this, void 0, void 0, function* () {
+        // test data
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const transactionIds = [];
+        const promises = Array.from(Array(3).keys()).map(() => __awaiter(this, void 0, void 0, function* () {
+            const transaction = transactionFactory.create({
+                status: transactionStatus_1.default.READY,
+                owners: [],
+                expires_at: moment().add(60, 'seconds').toDate() // tslint:disable-line:no-magic-numbers
+            });
+            yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+            transactionIds.push(transaction.id);
+        }));
+        yield Promise.all(promises);
+        yield sskts.service.transaction.clean()(sskts.adapter.transaction(connection));
+        const nubmerOfTransaction = yield transactionAdapter.transactionModel.find({ _id: { $in: transactionIds } }).count().exec();
+        assert.equal(nubmerOfTransaction, 3); // tslint:disable-line:no-magic-numbers
+    }));
 });

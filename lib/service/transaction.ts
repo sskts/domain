@@ -169,6 +169,21 @@ export function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey) {
 }
 
 /**
+ * 不要な取引を削除する
+ */
+export function clean() {
+    return async (transactionAdapter: TransactionAdapter) => {
+        // 開始準備ステータスのまま期限切れの取引を削除する
+        await transactionAdapter.transactionModel.remove(
+            {
+                status: transactionStatus.READY,
+                expires_at: { $lt: new Date() }
+            }
+        ).exec();
+    };
+}
+
+/**
  * 取引を期限切れにする
  */
 export function makeExpired() {
@@ -176,7 +191,7 @@ export function makeExpired() {
         // ステータスと期限を見て更新
         await transactionAdapter.transactionModel.update(
             {
-                status: { $in: [transactionStatus.READY, transactionStatus.UNDERWAY] },
+                status: transactionStatus.UNDERWAY,
                 expires_at: { $lt: new Date() }
             },
             {
@@ -189,12 +204,19 @@ export function makeExpired() {
 
 /**
  * ひとつの取引のキューをエクスポートする
+ *
+ * @param {transactionStatus} statu 取引ステータス
  */
-export function exportQueues() {
+export function exportQueues(status: transactionStatus) {
     return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
+        const statusesQueueExportable = [transactionStatus.EXPIRED, transactionStatus.CLOSED];
+        if (statusesQueueExportable.indexOf(status) < 0) {
+            throw new RangeError(`transaction status should be in [${statusesQueueExportable.join(',')}]`);
+        }
+
         let transactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
             {
-                status: { $in: [transactionStatus.CLOSED, transactionStatus.EXPIRED] },
+                status: status,
                 queues_status: transactionQueuesStatus.UNEXPORTED
             },
             { queues_status: transactionQueuesStatus.EXPORTING },
@@ -221,6 +243,7 @@ export function exportQueues() {
 
 /**
  * キュー出力
+ * todo TransactionWithIdに移行するべき？
  *
  * @param {string} id
  * @returns {TransactionAndQueueOperation<void>}

@@ -1,6 +1,7 @@
 import * as monapt from 'monapt';
 import * as Transaction from '../factory/transaction';
 import * as TransactionInquiryKey from '../factory/transactionInquiryKey';
+import transactionStatus from '../factory/transactionStatus';
 import OwnerAdapter from '../adapter/owner';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
@@ -41,15 +42,22 @@ export declare function startIfPossible(expiresAt: Date): (ownerAdapter: OwnerAd
  */
 export declare function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<Transaction.ITransaction>>;
 /**
+ * 不要な取引を削除する
+ */
+export declare function clean(): (transactionAdapter: TransactionAdapter) => Promise<void>;
+/**
  * 取引を期限切れにする
  */
 export declare function makeExpired(): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * ひとつの取引のキューをエクスポートする
+ *
+ * @param {transactionStatus} statu 取引ステータス
  */
-export declare function exportQueues(): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<"UNEXPORTED" | "EXPORTING" | "EXPORTED" | null>;
+export declare function exportQueues(status: transactionStatus): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<"UNEXPORTED" | "EXPORTING" | "EXPORTED" | null>;
 /**
  * キュー出力
+ * todo TransactionWithIdに移行するべき？
  *
  * @param {string} id
  * @returns {TransactionAndQueueOperation<void>}
