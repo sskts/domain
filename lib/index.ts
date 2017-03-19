@@ -8,6 +8,7 @@ import { Connection } from 'mongoose';
 import * as masterService from './service/master';
 import * as notificationService from './service/notification';
 import * as queueService from './service/queue';
+import * as reportService from './service/report';
 import * as salesService from './service/sales';
 import * as stockService from './service/stock';
 import * as transactionService from './service/transaction';
@@ -76,6 +77,7 @@ export const service = {
     master: masterService,
     notification: notificationService,
     queue: queueService,
+    report: reportService,
     sales: salesService,
     stock: stockService,
     transaction: transactionService,
