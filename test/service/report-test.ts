@@ -13,7 +13,6 @@ before(() => {
 
 describe('report service', () => {
     it('transactionStatuses ok', async () => {
-        const report = await sskts.service.report.transactionStatuses()(sskts.adapter.transaction(connection));
-        console.log(report);
+        await sskts.service.report.transactionStatuses()(sskts.adapter.transaction(connection));
     });
 });

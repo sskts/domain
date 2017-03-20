@@ -21,7 +21,6 @@ before(() => {
 });
 describe('report service', () => {
     it('transactionStatuses ok', () => __awaiter(this, void 0, void 0, function* () {
-        const report = yield sskts.service.report.transactionStatuses()(sskts.adapter.transaction(connection));
-        console.log(report);
+        yield sskts.service.report.transactionStatuses()(sskts.adapter.transaction(connection));
     }));
 });

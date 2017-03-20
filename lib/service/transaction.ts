@@ -123,7 +123,8 @@ export function startIfPossible(expiresAt: Date) {
         debug('updating transaction...');
         const transactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
             {
-                status: transactionStatus.READY
+                status: transactionStatus.READY,
+                expires_at: { $gt: new Date() }
             },
             {
                 status: transactionStatus.UNDERWAY,
