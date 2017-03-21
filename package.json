@@ -11,6 +11,7 @@
   "dependencies": {
     "@motionpicture/coa-service": "^1.4.1",
     "@motionpicture/gmo-service": "^2.0.10",
+    "@types/mongoose": "^4.7.8",
     "clone": "^2.1.0",
     "debug": "2.6.1",
     "http-status": "^1.0.1",
@@ -32,7 +33,6 @@
     "@types/http-status": "^0.2.29",
     "@types/i18n": "0.5.20",
     "@types/mocha": "^2.2.39",
-    "@types/mongoose": "^4.7.8",
     "@types/redis": "0.12.36",
     "@types/request": "0.0.40",
     "@types/request-promise-native": "1.0.2",
@@ -67,5 +67,5 @@
     "postversion": "git push origin --tags"
   },
   "types": "./types/lib/index.d.ts",
-  "version": "7.0.3"
+  "version": "7.0.4"
 }
