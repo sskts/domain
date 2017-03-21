@@ -1,13 +1,14 @@
 /// <reference types="mongoose" />
+import { Connection } from 'mongoose';
+import performanceModel from './mongoose/model/performance';
 /**
  * パフォーマンスアダプター
  *
+ * @export
  * @class PerformanceAdapter
  */
-import { Connection } from 'mongoose';
-import performanceModel from './mongoose/model/performance';
 export default class PerformanceAdapter {
-    readonly connection: Connection;
     model: typeof performanceModel;
+    private readonly connection;
     constructor(connection: Connection);
 }

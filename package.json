@@ -11,20 +11,18 @@
   "dependencies": {
     "@motionpicture/coa-service": "^1.4.1",
     "@motionpicture/gmo-service": "^2.0.10",
-    "@types/mongoose": "^4.7.8",
     "clone": "^2.1.0",
     "debug": "2.6.1",
     "http-status": "^1.0.1",
     "i18n": "^0.8.3",
-    "jsonwebtoken": "^7.3.0",
-    "moment": "^2.17.1",
+    "moment": "^2.18.0",
     "monapt": "^0.7.0",
-    "mongoose": "^4.8.6",
+    "mongoose": "^4.9.1",
     "nsp": "^2.6.3",
-    "redis": "^2.6.3",
+    "redis": "^2.7.1",
     "request": "^2.80.0",
     "request-promise-native": "^1.0.3",
-    "sendgrid": "^4.7.1",
+    "sendgrid": "^4.8.4",
     "validator": "^6.2.1"
   },
   "description": "SSKTS Domain Library for Node.js",
@@ -33,8 +31,8 @@
     "@types/debug": "0.0.29",
     "@types/http-status": "^0.2.29",
     "@types/i18n": "0.5.20",
-    "@types/jsonwebtoken": "^7.2.0",
     "@types/mocha": "^2.2.39",
+    "@types/mongoose": "^4.7.8",
     "@types/redis": "0.12.36",
     "@types/request": "0.0.40",
     "@types/request-promise-native": "1.0.2",
@@ -45,7 +43,7 @@
     "nsp": "^2.6.2",
     "rimraf": "^2.6.1",
     "tslint": "^4.5.1",
-    "tslint-microsoft-contrib": "^4.0.0",
+    "tslint-microsoft-contrib": "^4.0.1",
     "typescript": "^2.2.1"
   },
   "engines": {
@@ -59,15 +57,15 @@
   "repository": {},
   "scripts": {
     "build": "tsc",
-    "check": "tslint -c tslint.json lib/**/*.ts && nsp check",
+    "check": "tslint --type-check --project tsconfig.json -c tslint.json lib/**/*.ts && nsp check",
     "clean": "rimraf examples/**/*.js lib/**/*.js test/**/*.js types/* npm-debug.log* docs/*",
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
     "prepublishOnly": "npm run clean && npm run build && npm test",
-    "test": "tslint -c tslint.json lib/**/*.ts && nsp check && mocha --no-timeouts --recursive",
+    "test": "npm run check && mocha --no-timeouts --recursive",
     "preversion": "npm run clean && npm run build && npm test",
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
   "types": "./types/lib/index.d.ts",
-  "version": "7.0.2"
+  "version": "7.0.3"
 }

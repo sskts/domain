@@ -80,7 +80,7 @@ export function createAuthorize(args: {
     authorization: Authorization.IAuthorization
 }): IAuthorizeTransactionEvent {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: TransactionEventGroup.AUTHORIZE,
         transaction: args.transaction,
         occurred_at: args.occurred_at,
@@ -95,7 +95,7 @@ export function createUnauthorize(args: {
     authorization: Authorization.IAuthorization
 }): IUnauthorizeTransactionEvent {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: TransactionEventGroup.UNAUTHORIZE,
         transaction: args.transaction,
         occurred_at: args.occurred_at,
@@ -110,7 +110,7 @@ export function createNotificationAdd<T extends Notification.INotification>(args
     notification: T
 }): INotificationAddTransactionEvent<T> {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: TransactionEventGroup.NOTIFICATION_ADD,
         transaction: args.transaction,
         occurred_at: args.occurred_at,
@@ -125,7 +125,7 @@ export function createNotificationRemove<T extends Notification.INotification>(a
     notification: T
 }): INotificationRemoveTransactionEvent<T> {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: TransactionEventGroup.NOTIFICATION_REMOVE,
         transaction: args.transaction,
         occurred_at: args.occurred_at,

@@ -1,13 +1,14 @@
 /// <reference types="mongoose" />
+import { Connection } from 'mongoose';
+import queueModel from './mongoose/model/queue';
 /**
  * キューアダプター
  *
+ * @export
  * @class QueueAdapter
  */
-import { Connection } from 'mongoose';
-import queueModel from './mongoose/model/queue';
 export default class QueueAdapter {
-    readonly connection: Connection;
     model: typeof queueModel;
+    private readonly connection;
     constructor(connection: Connection);
 }

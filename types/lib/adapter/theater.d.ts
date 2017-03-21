@@ -1,13 +1,14 @@
 /// <reference types="mongoose" />
+import { Connection } from 'mongoose';
+import theaterModel from './mongoose/model/theater';
 /**
  * 劇場アダプター
  *
+ * @export
  * @class TheaterAdapter
  */
-import { Connection } from 'mongoose';
-import theaterModel from './mongoose/model/theater';
 export default class TheaterAdapter {
-    readonly connection: Connection;
     model: typeof theaterModel;
+    private readonly connection;
     constructor(connection: Connection);
 }

@@ -95,7 +95,7 @@ export function createGMO(args: {
     gmo_pay_type: string;
 }): IGMOAuthorization {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: AuthorizationGroup.GMO,
         price: args.price,
         owner_from: args.owner_from,
@@ -138,7 +138,7 @@ export function createCOASeatReservation(args: {
     if (validator.isEmpty(args.owner_to.toString())) throw new Error('owner_to required.');
 
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: AuthorizationGroup.COA_SEAT_RESERVATION,
         coa_tmp_reserve_num: args.coa_tmp_reserve_num,
         coa_theater_code: args.coa_theater_code,

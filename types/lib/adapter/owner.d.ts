@@ -1,13 +1,14 @@
 /// <reference types="mongoose" />
+import { Connection } from 'mongoose';
+import ownerModel from './mongoose/model/owner';
 /**
  * 所有者アダプター
  *
+ * @export
  * @class OwnerAdapter
  */
-import { Connection } from 'mongoose';
-import ownerModel from './mongoose/model/owner';
 export default class OwnerAdapter {
-    readonly connection: Connection;
     model: typeof ownerModel;
+    private readonly connection;
     constructor(connection: Connection);
 }

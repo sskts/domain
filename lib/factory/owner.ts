@@ -44,12 +44,12 @@ export function createAnonymous(args: {
     tel?: string;
 }): IAnonymousOwner {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: OwnerGroup.ANONYMOUS,
-        name_first: (args.name_first) ? args.name_first : '',
-        name_last: (args.name_last) ? args.name_last : '',
-        email: (args.email) ? args.email : '',
-        tel: (args.tel) ? args.tel : ''
+        name_first: (args.name_first === undefined) ? '' : args.name_first,
+        name_last: (args.name_last === undefined) ? '' : args.name_last,
+        email: (args.email === undefined) ? '' : args.email,
+        tel: (args.tel === undefined) ? '' : args.tel
     };
 }
 
@@ -66,8 +66,8 @@ export function createPromoter(args: {
     name?: MultilingualString;
 }): IPromoterOwner {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: OwnerGroup.PROMOTER,
-        name: (args.name) ? args.name : { ja: '', en: '' }
+        name: (args.name === undefined) ? { ja: '', en: '' } : args.name
     };
 }

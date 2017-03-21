@@ -1,13 +1,14 @@
 /// <reference types="mongoose" />
+import { Connection } from 'mongoose';
+import filmModel from './mongoose/model/film';
 /**
  * 作品アダプター
  *
+ * @export
  * @class FilmAdapter
  */
-import { Connection } from 'mongoose';
-import filmModel from './mongoose/model/film';
 export default class FilmAdapter {
-    readonly connection: Connection;
     model: typeof filmModel;
+    private readonly connection;
     constructor(connection: Connection);
 }

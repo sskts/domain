@@ -37,7 +37,7 @@ const debug = createDebug('sskts-domain:service:transaction');
 export function findById(id: string): TransactionOperation<monapt.Option<Transaction.ITransaction>> {
     return async (transactionAdapter: TransactionAdapter) => {
         const doc = await transactionAdapter.transactionModel.findById(id).populate('owners').exec();
-        return (doc) ? monapt.Option(<Transaction.ITransaction>doc.toObject()) : monapt.None;
+        return (doc === null) ? monapt.None : monapt.Option(<Transaction.ITransaction>doc.toObject());
     };
 }
 
@@ -54,7 +54,7 @@ export function addGMOAuthorization(transactionId: string, authorization: Author
     return async (transactionAdapter: TransactionAdapter) => {
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
-        if (!doc) {
+        if (doc === null) {
             throw new Error(`transaction[${transactionId}] not found.`);
         }
         const transaction = <Transaction.ITransaction>doc.toObject();
@@ -96,7 +96,7 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
     return async (transactionAdapter: TransactionAdapter) => {
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
-        if (!doc) {
+        if (doc === null) {
             throw new Error(`transaction[${transactionId}] not found.`);
         }
         const transaction = <Transaction.ITransaction>doc.toObject();
@@ -137,14 +137,14 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
     return async (transactionAdapter: TransactionAdapter) => {
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
-        if (!doc) {
+        if (doc === null) {
             throw new Error(`transaction[${transactionId}] not found.`);
         }
 
         const authorizations = await transactionAdapter.findAuthorizationsById(doc.get('id'));
 
         const removedAuthorization = authorizations.find((authorization) => authorization.id === authorizationId);
-        if (!removedAuthorization) {
+        if (removedAuthorization === undefined) {
             throw new Error(`authorization [${authorizationId}] not found in the transaction.`);
         }
 
@@ -198,14 +198,14 @@ export function removeEmail(transactionId: string, notificationId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
-        if (!doc) {
+        if (doc === null) {
             throw new Error(`transaction[${transactionId}] not found.`);
         }
 
         const notifications = await transactionAdapter.findNotificationsById(doc.get('id'));
 
         const removedNotification = notifications.find((notification) => notification.id === notificationId);
-        if (!removedNotification) {
+        if (removedNotification === undefined) {
             throw new Error(`notification [${notificationId}] not found in the transaction.`);
         }
 
@@ -238,7 +238,7 @@ export function updateAnonymousOwner(args: {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(args.transaction_id).populate('owners').exec();
-        if (!doc) {
+        if (doc === null) {
             throw new Error(`transaction[${args.transaction_id}] not found.`);
         }
         const transaction = <Transaction.ITransaction>doc.toObject();
@@ -246,7 +246,7 @@ export function updateAnonymousOwner(args: {
         const anonymousOwner = transaction.owners.find((owner) => {
             return (owner.group === OwnerGroup.ANONYMOUS);
         });
-        if (!anonymousOwner) {
+        if (anonymousOwner === undefined) {
             throw new Error('anonymous owner not found.');
         }
 
@@ -261,7 +261,7 @@ export function updateAnonymousOwner(args: {
                 tel: args.tel
             }
         ).exec();
-        if (!ownerDoc) {
+        if (ownerDoc === null) {
             throw new Error('owner not found.');
         }
     };
@@ -291,7 +291,7 @@ export function enableInquiry(id: string, key: TransactionInquiryKey.ITransactio
             { new: true }
         ).exec();
 
-        if (!doc) {
+        if (doc === null) {
             throw new Error('UNDERWAY transaction not found.');
         }
     };
@@ -309,12 +309,12 @@ export function close(id: string) {
     return async (transactionAdapter: TransactionAdapter) => {
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(id).exec();
-        if (!doc) {
+        if (doc === null) {
             throw new Error(`transaction[${id}] not found.`);
         }
 
         // 照会可能になっているかどうか
-        if (!doc.get('inquiry_key')) {
+        if (doc.get('inquiry_key') === null) {
             throw new Error('inquiry is not available.');
         }
 
@@ -337,7 +337,7 @@ export function close(id: string) {
             { new: true }
         ).exec();
 
-        if (!closedTransactionDoc) {
+        if (closedTransactionDoc === null) {
             throw new Error('UNDERWAY transaction not found.');
         }
     };

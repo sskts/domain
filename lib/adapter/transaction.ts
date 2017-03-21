@@ -1,11 +1,3 @@
-/**
- * 取引アダプター
- *
- * todo ITransactionにIOwnerが結合しているために、デフォルトで.populate('owner')したりしている
- * Ownerをjoinするしないを必要に応じて使い分けられるようにする
- *
- * @class TransactionAdapter
- */
 import * as clone from 'clone';
 import * as createDebug from 'debug';
 import { Connection } from 'mongoose';
@@ -20,11 +12,22 @@ import TransactionEventModel from './mongoose/model/transactionEvent';
 
 const debug = createDebug('sskts-domain:adapter:transaction');
 
+/**
+ * 取引アダプター
+ *
+ * todo ITransactionにIOwnerが結合しているために、デフォルトで.populate('owner')したりしている
+ * Ownerをjoinするしないを必要に応じて使い分けられるようにする
+ *
+ * @export
+ * @class TransactionAdapter
+ */
 export default class TransactionAdapter {
-    public transactionModel: typeof TransactionModel;
-    public transactionEventModel: typeof TransactionEventModel;
+    public readonly transactionModel: typeof TransactionModel;
+    public readonly transactionEventModel: typeof TransactionEventModel;
+    private readonly connection: Connection;
 
-    constructor(readonly connection: Connection) {
+    constructor(connection: Connection) {
+        this.connection = connection;
         this.transactionModel = this.connection.model(TransactionModel.modelName);
         this.transactionEventModel = this.connection.model(TransactionEventModel.modelName);
     }
@@ -103,10 +106,10 @@ export default class TransactionAdapter {
         } = {};
 
         authorizations.forEach((authorization) => {
-            if (!pricesByOwner[authorization.owner_from]) {
+            if (pricesByOwner[authorization.owner_from] === undefined) {
                 pricesByOwner[authorization.owner_from] = 0;
             }
-            if (!pricesByOwner[authorization.owner_to]) {
+            if (pricesByOwner[authorization.owner_to] === undefined) {
                 pricesByOwner[authorization.owner_to] = 0;
             }
 

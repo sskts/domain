@@ -26,7 +26,7 @@ export function create(args: {
     authenticated: boolean
 }): IOwnership {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         owner: args.owner,
         authenticated: args.authenticated
     };

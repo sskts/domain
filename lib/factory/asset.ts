@@ -86,11 +86,11 @@ export function createSeatReservation(args: {
     sale_price: number;
 }): ISeatReservationAsset {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         ownership: args.ownership,
         group: AssetGroup.SEAT_RESERVATION,
         price: args.sale_price,
-        authorizations: (args.authorizations) ? args.authorizations : [],
+        authorizations: (args.authorizations === undefined) ? [] : args.authorizations,
         performance: args.performance,
         section: args.section,
         seat_code: args.seat_code,

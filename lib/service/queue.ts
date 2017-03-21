@@ -46,7 +46,9 @@ export function executeSendEmailNotification() {
         ).exec();
         debug('queueDoc is', queueDoc);
 
-        if (queueDoc) {
+        if (queueDoc === null) {
+            return null;
+        } else {
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
                 await notificationService.sendEmail(queueDoc.get('notification'))();
@@ -63,9 +65,9 @@ export function executeSendEmailNotification() {
                     { new: true }
                 ).exec();
             }
-        }
 
-        return (queueDoc) ? <queueStatus>queueDoc.get('status') : null;
+            return <queueStatus>queueDoc.get('status');
+        }
     };
 }
 
@@ -93,7 +95,9 @@ export function executeCancelCOASeatReservationAuthorization() {
         ).exec();
         debug('queueDoc is', queueDoc);
 
-        if (queueDoc) {
+        if (queueDoc === null) {
+            return null;
+        } else {
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
                 await stockService.unauthorizeCOASeatReservation(queueDoc.get('authorization'))();
@@ -110,9 +114,9 @@ export function executeCancelCOASeatReservationAuthorization() {
                     { new: true }
                 ).exec();
             }
-        }
 
-        return (queueDoc) ? <queueStatus>queueDoc.get('status') : null;
+            return <queueStatus>queueDoc.get('status');
+        }
     };
 }
 
@@ -140,7 +144,9 @@ export function executeCancelGMOAuthorization() {
         ).exec();
         debug('queueDoc is', queueDoc);
 
-        if (queueDoc) {
+        if (queueDoc === null) {
+            return null;
+        } else {
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
                 await salesService.cancelGMOAuth(queueDoc.get('authorization'))();
@@ -157,9 +163,9 @@ export function executeCancelGMOAuthorization() {
                     { new: true }
                 ).exec();
             }
-        }
 
-        return (queueDoc) ? <queueStatus>queueDoc.get('status') : null;
+            return <queueStatus>queueDoc.get('status');
+        }
     };
 }
 
@@ -186,7 +192,9 @@ export function executeDisableTransactionInquiry() {
         ).exec();
         debug('queueDoc is', queueDoc);
 
-        if (queueDoc) {
+        if (queueDoc === null) {
+            return null;
+        } else {
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
                 await stockService.disableTransactionInquiry(queueDoc.get('transaction'))(transactionAdapter);
@@ -203,9 +211,9 @@ export function executeDisableTransactionInquiry() {
                     { new: true }
                 ).exec();
             }
-        }
 
-        return (queueDoc) ? <queueStatus>queueDoc.get('status') : null;
+            return <queueStatus>queueDoc.get('status');
+        }
     };
 }
 
@@ -233,7 +241,9 @@ export function executeSettleCOASeatReservationAuthorization() {
         ).exec();
         debug('queueDoc is', queueDoc);
 
-        if (queueDoc) {
+        if (queueDoc === null) {
+            return null;
+        } else {
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
                 await stockService.transferCOASeatReservation(queueDoc.get('authorization'))(assetAdapter);
@@ -250,9 +260,9 @@ export function executeSettleCOASeatReservationAuthorization() {
                     { new: true }
                 ).exec();
             }
-        }
 
-        return (queueDoc) ? <queueStatus>queueDoc.get('status') : null;
+            return <queueStatus>queueDoc.get('status');
+        }
     };
 }
 
@@ -280,7 +290,9 @@ export function executeSettleGMOAuthorization() {
         ).exec();
         debug('queueDoc is', queueDoc);
 
-        if (queueDoc) {
+        if (queueDoc === null) {
+            return null;
+        } else {
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
                 await salesService.settleGMOAuth(queueDoc.get('authorization'))();
@@ -297,9 +309,9 @@ export function executeSettleGMOAuthorization() {
                     { new: true }
                 ).exec();
             }
-        }
 
-        return (queueDoc) ? <queueStatus>queueDoc.get('status') : null;
+            return <queueStatus>queueDoc.get('status');
+        }
     };
 }
 
@@ -348,7 +360,9 @@ export function abort(intervalInMinutes: number) {
         ).exec();
         debug('abortedQueueDoc:', abortedQueueDoc);
 
-        if (abortedQueueDoc) {
+        if (abortedQueueDoc === null) {
+            return null;
+        } else {
             // メール通知
             await notificationService.report2developers(
                 'キューの実行が中止されました', `
@@ -356,8 +370,8 @@ aborted queue:\n
 ${util.inspect(abortedQueueDoc.toObject(), { showHidden: true, depth: 10 })}\n
 `
             )();
-        }
 
-        return (abortedQueueDoc) ? <string>abortedQueueDoc.get('id') : null;
+            return <string>abortedQueueDoc.get('id');
+        }
     };
 }

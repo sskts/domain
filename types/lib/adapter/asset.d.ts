@@ -1,13 +1,14 @@
 /// <reference types="mongoose" />
+import { Connection } from 'mongoose';
+import assetModel from './mongoose/model/asset';
 /**
  * 資産アダプター
  *
+ * @export
  * @class AssetAdapter
  */
-import { Connection } from 'mongoose';
-import assetModel from './mongoose/model/asset';
 export default class AssetAdapter {
-    readonly connection: Connection;
     model: typeof assetModel;
+    private readonly connection;
     constructor(connection: Connection);
 }

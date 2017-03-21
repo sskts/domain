@@ -82,7 +82,7 @@ export function create(args: {
     results: string[];
 }): IQueue {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: args.group,
         status: args.status,
         run_at: args.run_at,
@@ -104,7 +104,7 @@ export function createSettleAuthorization<T extends Authorization.IAuthorization
     results: string[]
 }): ISettleAuthorizationQueue<T> {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: QueueGroup.SETTLE_AUTHORIZATION,
         status: args.status,
         run_at: args.run_at,
@@ -127,7 +127,7 @@ export function createCancelAuthorization<T extends Authorization.IAuthorization
     results: string[]
 }): ICancelAuthorizationQueue<T> {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: QueueGroup.CANCEL_AUTHORIZATION,
         status: args.status,
         run_at: args.run_at,
@@ -150,7 +150,7 @@ export function createPushNotification<T extends Notification.INotification>(arg
     results: string[]
 }): IPushNotificationQueue<T> {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: QueueGroup.PUSH_NOTIFICATION,
         status: args.status,
         run_at: args.run_at,
@@ -173,7 +173,7 @@ export function createDisableTransactionInquiry(args: {
     results: string[]
 }): IDisableTransactionInquiryQueue {
     return {
-        id: (args.id) ? args.id : ObjectId().toString(),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: QueueGroup.DISABLE_TRANSACTION_INQUIRY,
         status: args.status,
         run_at: args.run_at,

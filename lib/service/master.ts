@@ -91,7 +91,7 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
     return async (theaterAdapter: TheaterAdapter, filmRepo: FilmAdapter) => {
         // 劇場取得
         const doc = await theaterAdapter.model.findById(theaterCode).exec();
-        if (!doc) {
+        if (doc === null) {
             throw new Error('theater not found.');
         }
         const theater = <Theater.ITheater>doc.toObject();
@@ -103,7 +103,7 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
 
         // 永続化
         await Promise.all(films.map(async (filmFromCOA) => {
-            const film = await Film.createFromCOA(filmFromCOA)(theater);
+            const film = Film.createFromCOA(filmFromCOA)(theater);
             debug('storing film...', film);
             await filmRepo.model.findByIdAndUpdate(film.id, film, { new: true, upsert: true }).exec();
             debug('film stored.');
@@ -123,7 +123,7 @@ export function importScreens(theaterCode: string): TheaterAndScreenOperation<vo
     return async (theaterAdapter: TheaterAdapter, screenRepo: ScreenAdapter) => {
         // 劇場取得
         const doc = await theaterAdapter.model.findById(theaterCode).exec();
-        if (!doc) {
+        if (doc === null) {
             throw new Error('theater not found.');
         }
         const theater = <Theater.ITheater>doc.toObject();
@@ -181,14 +181,14 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
 
             // スクリーン存在チェック
             const screenOfPerformance = screens.find((screen) => (screen.id === screenId));
-            if (!screenOfPerformance) {
+            if (screenOfPerformance === undefined) {
                 console.error('screen not found.', screenId);
                 return;
             }
 
             // 作品取得
             const doc = await filmRepo.model.findById(filmId).exec();
-            if (!doc) {
+            if (doc === null) {
                 console.error('film not found.', filmId);
                 return;
             }
@@ -219,11 +219,11 @@ export function searchPerformances(conditions: ISearchPerformancesConditions):
             { _id: { $ne: null } }
         ];
 
-        if (conditions.day) {
+        if (conditions.day !== undefined) {
             andConditions.push({ day: conditions.day });
         }
 
-        if (conditions.theater) {
+        if (conditions.theater !== undefined) {
             andConditions.push({ theater: conditions.theater });
         }
 
@@ -273,7 +273,7 @@ export function findTheater(theaterId: string): TheaterOperation<monapt.Option<T
     debug('finding a theater...', theaterId);
     return async (adapter: TheaterAdapter) => {
         const doc = await adapter.model.findById(theaterId).exec();
-        return (doc) ? monapt.Option(<Theater.ITheater>doc.toObject()) : monapt.None;
+        return (doc === null) ? monapt.None : monapt.Option(<Theater.ITheater>doc.toObject());
     };
 }
 
@@ -289,7 +289,7 @@ export function findFilm(filmId: string): FilmOperation<monapt.Option<Film.IFilm
     debug('finding a film...', filmId);
     return async (adapter: FilmAdapter) => {
         const doc = await adapter.model.findById(filmId).exec();
-        return (doc) ? monapt.Option(<Film.IFilm>doc.toObject()) : monapt.None;
+        return (doc === null) ? monapt.None : monapt.Option(<Film.IFilm>doc.toObject());
     };
 }
 
@@ -305,7 +305,7 @@ export function findScreen(screenId: string): ScreenOperation<monapt.Option<Scre
     debug('finding a screen...', screenId);
     return async (adapter: ScreenAdapter) => {
         const doc = await adapter.model.findById(screenId).exec();
-        return (doc) ? monapt.Option(<Screen.IScreen>doc.toObject()) : monapt.None;
+        return (doc === null) ? monapt.None : monapt.Option(<Screen.IScreen>doc.toObject());
     };
 }
 
@@ -326,7 +326,9 @@ export function findPerformance(performanceId: string): PerformanceOperation<mon
             .populate('screen')
             .exec();
 
-        if (doc) {
+        if (doc === null) {
+            return monapt.None;
+        } else {
             return monapt.Option(
                 {
                     id: doc.get('id'),
@@ -352,8 +354,6 @@ export function findPerformance(performanceId: string): PerformanceOperation<mon
                     canceled: doc.get('canceled')
                 }
             );
-        } else {
-            return monapt.None;
         }
     };
 }

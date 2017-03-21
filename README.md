@@ -19,8 +19,6 @@ set SENDGRID_API_KEY=**********sendgrid api key**********
 set GMO_ENDPOINT=**********gmo apiのエンドポイント**********
 set COA_ENDPOINT=**********coa apiのエンドポイント**********
 set COA_REFRESH_TOKEN=**********coa apiのリフレッシュトークン**********
-set SSKTS_API_SECRET=**********本apiでjsonwebtoken署名に使用するシークレット文字列**********
-set SSKTS_API_REFRESH_TOKEN=**********本apiのリフレッシュトークン**********
 set SSKTS_DEVELOPER_EMAIL=**********本apiで使用される開発者メールアドレス**********
 ```
 

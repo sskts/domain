@@ -71,7 +71,7 @@ export function startForcibly(expiresAt: Date) {
 
         // 興行主取得
         const ownerDoc = await ownerAdapter.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
-        if (!ownerDoc) {
+        if (ownerDoc === null) {
             throw new Error('promoter not found');
         }
         const promoter = <Owner.IPromoterOwner>ownerDoc.toObject();
@@ -89,7 +89,7 @@ export function startForcibly(expiresAt: Date) {
         // ステータスを変更&しつつ、期限も延長する
         debug('updating transaction...');
         const update = Object.assign(clone(transaction), { owners: [promoter.id, anonymousOwner.id] });
-        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, update, { new: true, upsert: true });
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, update, { new: true, upsert: true }).exec();
 
         return transaction;
     };
@@ -110,7 +110,7 @@ export function startIfPossible(expiresAt: Date) {
 
         // 興行主取得
         const ownerDoc = await ownerAdapter.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
-        if (!ownerDoc) {
+        if (ownerDoc === null) {
             throw new Error('promoter not found');
         }
         const promoter = <Owner.IPromoterOwner>ownerDoc.toObject();
@@ -137,12 +137,12 @@ export function startIfPossible(expiresAt: Date) {
             }
         ).exec();
 
-        if (transactionDoc) {
+        if (transactionDoc === null) {
+            return monapt.None;
+        } else {
             const transaction = <Transaction.ITransaction>transactionDoc.toObject();
             transaction.owners = [promoter, anonymousOwner];
             return monapt.Option(transaction);
-        } else {
-            return monapt.None;
         }
     };
 }
@@ -165,7 +165,7 @@ export function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey) {
             status: transactionStatus.CLOSED
         }).populate('owners').exec();
 
-        return (doc) ? monapt.Option(<Transaction.ITransaction>doc.toObject()) : monapt.None;
+        return (doc === null) ? monapt.None : monapt.Option(<Transaction.ITransaction>doc.toObject());
     };
 }
 
@@ -224,7 +224,9 @@ export function exportQueues(status: transactionStatus) {
             { new: true }
         ).exec();
 
-        if (transactionDoc) {
+        if (transactionDoc === null) {
+            return null;
+        } else {
             // 失敗してもここでは戻さない(RUNNINGのまま待機)
             await exportQueuesById(transactionDoc.get('id'))(
                 queueAdapter,
@@ -236,9 +238,9 @@ export function exportQueues(status: transactionStatus) {
                 { queues_status: transactionQueuesStatus.EXPORTED },
                 { new: true }
             ).exec();
-        }
 
-        return (transactionDoc) ? <transactionQueuesStatus>transactionDoc.get('queues_status') : null;
+            return <transactionQueuesStatus>transactionDoc.get('queues_status');
+        }
     };
 }
 
@@ -255,7 +257,7 @@ export function exportQueuesById(id: string) {
     // tslint:disable-next-line:max-func-body-length
     return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
         const doc = await transactionAdapter.transactionModel.findById(id).populate('owners').exec();
-        if (!doc) {
+        if (doc === null) {
             throw new Error(`transaction[${id}] not found.`);
         }
         const transaction = <Transaction.ITransaction>doc.toObject();
@@ -305,7 +307,7 @@ export function exportQueuesById(id: string) {
                 });
 
                 // COA本予約があれば取消
-                if (transaction.inquiry_key) {
+                if (transaction.inquiry_key !== null) {
                     queues.push(Queue.createDisableTransactionInquiry({
                         transaction: transaction,
                         status: QueueStatus.UNEXECUTED,
