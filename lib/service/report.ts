@@ -6,17 +6,27 @@
  */
 import * as createDebug from 'debug';
 
+import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
 
+import queueStatus from '../factory/queueStatus';
 import transactionQueuesStatus from '../factory/transactionQueuesStatus';
 import transactionStatus from '../factory/transactionStatus';
 
-export type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) => Promise<T>;
+export type QueueAndTransactionOperation<T> = (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:report');
 
-export function transactionStatuses(): TransactionOperation<any> {
-    return async (transactionAdapter: TransactionAdapter) => {
+export interface IReportTransactionStatuses {
+    numberOfTransactionsReady: number;
+    numberOfTransactionsUnderway: number;
+    numberOfTransactionsClosedWithQueuesUnexported: number;
+    numberOfTransactionsExpiredWithQueuesUnexported: number;
+    numberOfQueuesUnexecuted: number;
+}
+
+export function transactionStatuses(): QueueAndTransactionOperation<IReportTransactionStatuses> {
+    return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
         debug('counting ready transactions...');
         const numberOfTransactionsReady = await transactionAdapter.transactionModel.count({
             status: transactionStatus.READY,
@@ -38,14 +48,16 @@ export function transactionStatuses(): TransactionOperation<any> {
             queues_status: transactionQueuesStatus.UNEXPORTED
         }).exec();
 
-        const report = {
+        const numberOfQueuesUnexecuted = await queueAdapter.model.count({
+            status: queueStatus.UNEXECUTED
+        }).exec();
+
+        return {
             numberOfTransactionsReady: numberOfTransactionsReady,
             numberOfTransactionsUnderway: numberOfTransactionsUnderway,
             numberOfTransactionsClosedWithQueuesUnexported: numberOfTransactionsClosedWithQueuesUnexported,
-            numberOfTransactionsExpiredWithQueuesUnexported: numberOfTransactionsExpiredWithQueuesUnexported
+            numberOfTransactionsExpiredWithQueuesUnexported: numberOfTransactionsExpiredWithQueuesUnexported,
+            numberOfQueuesUnexecuted: numberOfQueuesUnexecuted
         };
-        debug(report);
-
-        return report;
     };
 }

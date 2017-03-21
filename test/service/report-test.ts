@@ -13,6 +13,9 @@ before(() => {
 
 describe('report service', () => {
     it('transactionStatuses ok', async () => {
-        await sskts.service.report.transactionStatuses()(sskts.adapter.transaction(connection));
+        await sskts.service.report.transactionStatuses()(
+            sskts.adapter.queue(connection),
+            sskts.adapter.transaction(connection)
+        );
     });
 });

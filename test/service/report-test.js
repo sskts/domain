@@ -21,6 +21,6 @@ before(() => {
 });
 describe('report service', () => {
     it('transactionStatuses ok', () => __awaiter(this, void 0, void 0, function* () {
-        yield sskts.service.report.transactionStatuses()(sskts.adapter.transaction(connection));
+        yield sskts.service.report.transactionStatuses()(sskts.adapter.queue(connection), sskts.adapter.transaction(connection));
     }));
 });
