@@ -1,7 +1,7 @@
 import * as monapt from 'monapt';
-import * as Transaction from '../factory/transaction';
-import * as TransactionInquiryKey from '../factory/transactionInquiryKey';
-import transactionStatus from '../factory/transactionStatus';
+import * as TransactionFactory from '../factory/transaction';
+import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
+import TransactionStatus from '../factory/transactionStatus';
 import OwnerAdapter from '../adapter/owner';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
@@ -22,7 +22,7 @@ export declare function prepare(length: number, expiresInSeconds: number): (tran
  * @export
  * @param {Date} expiresAt
  */
-export declare function startForcibly(expiresAt: Date): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<Transaction.ITransaction>;
+export declare function startForcibly(expiresAt: Date): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<TransactionFactory.ITransaction>;
 /**
  * 可能であれば取引開始する
  *
@@ -31,7 +31,7 @@ export declare function startForcibly(expiresAt: Date): (ownerAdapter: OwnerAdap
  *
  * @memberOf TransactionService
  */
-export declare function startIfPossible(expiresAt: Date): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<monapt.Option<Transaction.ITransaction>>;
+export declare function startIfPossible(expiresAt: Date): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<monapt.Option<TransactionFactory.ITransaction>>;
 /**
  * 照会する
  *
@@ -40,7 +40,7 @@ export declare function startIfPossible(expiresAt: Date): (ownerAdapter: OwnerAd
  *
  * @memberOf TransactionService
  */
-export declare function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<Transaction.ITransaction>>;
+export declare function makeInquiry(key: TransactionInquiryKeyFactory.ITransactionInquiryKey): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<TransactionFactory.ITransaction>>;
 /**
  * 不要な取引を削除する
  */
@@ -52,9 +52,9 @@ export declare function makeExpired(): (transactionAdapter: TransactionAdapter) 
 /**
  * ひとつの取引のキューをエクスポートする
  *
- * @param {transactionStatus} statu 取引ステータス
+ * @param {TransactionStatus} statu 取引ステータス
  */
-export declare function exportQueues(status: transactionStatus): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<"UNEXPORTED" | "EXPORTING" | "EXPORTED" | null>;
+export declare function exportQueues(status: TransactionStatus): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<"UNEXPORTED" | "EXPORTING" | "EXPORTED" | null>;
 /**
  * キュー出力
  * todo TransactionWithIdに移行するべき？

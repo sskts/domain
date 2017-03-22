@@ -2,7 +2,7 @@
  * 所有権ファクトリー
  * 誰が、何を、所有するのか
  *
- * @namespace AssetFacroty
+ * @namespace AssetFactory
  */
 
 import ObjectId from './objectId';

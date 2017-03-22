@@ -1,9 +1,9 @@
 import * as monapt from 'monapt';
-import * as Film from '../factory/film';
+import * as FilmFactory from '../factory/film';
 import MultilingualString from '../factory/multilingualString';
-import * as Performance from '../factory/performance';
-import * as Screen from '../factory/screen';
-import * as Theater from '../factory/theater';
+import * as PerformanceFactory from '../factory/performance';
+import * as ScreenFactory from '../factory/screen';
+import * as TheaterFactory from '../factory/theater';
 import FilmAdapter from '../adapter/film';
 import PerformanceAdapter from '../adapter/performance';
 import ScreenAdapter from '../adapter/screen';
@@ -93,7 +93,7 @@ export declare function searchPerformances(searchConditions: ISearchPerformances
  *
  * @memberOf MasterService
  */
-export declare function findTheater(theaterId: string): TheaterOperation<monapt.Option<Theater.ITheater>>;
+export declare function findTheater(theaterId: string): TheaterOperation<monapt.Option<TheaterFactory.ITheater>>;
 /**
  * IDで作品検索
  *
@@ -102,7 +102,7 @@ export declare function findTheater(theaterId: string): TheaterOperation<monapt.
  *
  * @memberOf MasterService
  */
-export declare function findFilm(filmId: string): FilmOperation<monapt.Option<Film.IFilm>>;
+export declare function findFilm(filmId: string): FilmOperation<monapt.Option<FilmFactory.IFilm>>;
 /**
  *
  *
@@ -111,7 +111,7 @@ export declare function findFilm(filmId: string): FilmOperation<monapt.Option<Fi
  *
  * @memberOf MasterService
  */
-export declare function findScreen(screenId: string): ScreenOperation<monapt.Option<Screen.IScreen>>;
+export declare function findScreen(screenId: string): ScreenOperation<monapt.Option<ScreenFactory.IScreen>>;
 /**
  * IDでパフォーマンス検索
  *
@@ -120,4 +120,4 @@ export declare function findScreen(screenId: string): ScreenOperation<monapt.Opt
  *
  * @memberOf MasterService
  */
-export declare function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<Performance.IPerformanceWithFilmAndScreen>>;
+export declare function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<PerformanceFactory.IPerformanceWithFilmAndScreen>>;

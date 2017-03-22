@@ -2,7 +2,7 @@
  * キューファクトリー
  * キュー(実行日時つきのタスク)
  *
- * @namespace QueueFacroty
+ * @namespace QueueFactory
  */
 import QueueGroup from './queueGroup';
 import QueueStatus from './queueStatus';

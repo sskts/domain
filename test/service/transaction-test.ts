@@ -4,9 +4,9 @@ import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import * as sskts from '../../lib/index';
 
-import * as notificationFactory from '../../lib/factory/notification';
+import * as emailNotificationFactory from '../../lib/factory/notification/email';
 import * as transactionFactory from '../../lib/factory/transaction';
-import * as transactionEvent from '../../lib/factory/transactionEvent';
+import * as AddNotificationTransactionEventFactory from '../../lib/factory/transactionEvent/addNotification';
 import * as transactionInquiryKey from '../../lib/factory/transactionInquiryKey';
 import transactionQueuesStatus from '../../lib/factory/transactionQueuesStatus';
 import transactionStatus from '../../lib/factory/transactionStatus';
@@ -106,10 +106,10 @@ describe('transaction service', () => {
             queues_status: transactionQueuesStatus.UNEXPORTED
         });
 
-        const event = transactionEvent.createNotificationAdd({
+        const event = AddNotificationTransactionEventFactory.create({
             transaction: transaction.id,
             occurred_at: new Date(),
-            notification: notificationFactory.createEmail({
+            notification: emailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: 'hello',
                 subject: 'sskts-domain:test:service:transaction-test',

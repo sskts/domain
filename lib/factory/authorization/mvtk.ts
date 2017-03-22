@@ -1,10 +1,10 @@
 /**
  * ムビチケ着券情報ファクトリー
  *
- * @namespace MvtkAuthorizationFacroty
+ * @namespace MvtkAuthorizationFactory
  */
 import * as validator from 'validator';
-import * as Authorization from '../authorization';
+import * as AuthorizationFactory from '../authorization';
 import AuthorizationGroup from '../authorizationGroup';
 import ObjectId from '../objectId';
 
@@ -38,7 +38,7 @@ export interface IZskInfo {
 /**
  * ムビチケ着券情報
  */
-export interface IMvtkAuthorization extends Authorization.IAuthorization {
+export interface IMvtkAuthorization extends AuthorizationFactory.IAuthorization {
     kgygish_cd: string;
     yyk_dvc_typ: string;
     trksh_flg: string;

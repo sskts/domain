@@ -6,14 +6,14 @@
 
 import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
-import * as GMOAuthorization from '../factory/authorization/gmo';
+import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
 
 const debug = createDebug('sskts-domain:service:sales');
 
 /**
  * GMOオーソリ取消
  */
-export function cancelGMOAuth(authorization: GMOAuthorization.IGMOAuthorization) {
+export function cancelGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthorization) {
     return async () => {
         debug('calling alterTran...');
         await GMO.CreditService.alterTran({
@@ -32,7 +32,7 @@ export function cancelGMOAuth(authorization: GMOAuthorization.IGMOAuthorization)
 /**
  * GMO売上確定
  */
-export function settleGMOAuth(authorization: GMOAuthorization.IGMOAuthorization) {
+export function settleGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthorization) {
     return async () => {
         debug('calling alterTran...');
         await GMO.CreditService.alterTran({

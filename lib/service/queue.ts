@@ -11,10 +11,10 @@ import AssetAdapter from '../adapter/asset';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
 
-import authorizationGroup from '../factory/authorizationGroup';
-import notificationGroup from '../factory/notificationGroup';
-import queueGroup from '../factory/queueGroup';
-import queueStatus from '../factory/queueStatus';
+import AuthorizationGroup from '../factory/authorizationGroup';
+import NotificationGroup from '../factory/notificationGroup';
+import QueueGroup from '../factory/queueGroup';
+import QueueStatus from '../factory/queueStatus';
 
 import * as notificationService from './notification';
 import * as salesService from './sales';
@@ -32,13 +32,13 @@ export function executeSendEmailNotification() {
         // 未実行のメール送信キューを取得
         let queueDoc = await queueAdapter.model.findOneAndUpdate(
             {
-                status: queueStatus.UNEXECUTED,
+                status: QueueStatus.UNEXECUTED,
                 run_at: { $lt: new Date() },
-                group: queueGroup.PUSH_NOTIFICATION,
-                'notification.group': notificationGroup.EMAIL
+                group: QueueGroup.PUSH_NOTIFICATION,
+                'notification.group': NotificationGroup.EMAIL
             },
             {
-                status: queueStatus.RUNNING, // 実行中に変更
+                status: QueueStatus.RUNNING, // 実行中に変更
                 last_tried_at: new Date(),
                 $inc: { count_tried: 1 } // トライ回数増やす
             },
@@ -54,7 +54,7 @@ export function executeSendEmailNotification() {
                 await notificationService.sendEmail(queueDoc.get('notification'))();
                 queueDoc = await queueAdapter.model.findByIdAndUpdate(
                     queueDoc.get('id'),
-                    { status: queueStatus.EXECUTED },
+                    { status: QueueStatus.EXECUTED },
                     { new: true }
                 ).exec();
             } catch (error) {
@@ -66,7 +66,7 @@ export function executeSendEmailNotification() {
                 ).exec();
             }
 
-            return <queueStatus>queueDoc.get('status');
+            return <QueueStatus>queueDoc.get('status');
         }
     };
 }
@@ -81,13 +81,13 @@ export function executeCancelCOASeatReservationAuthorization() {
         // 未実行のCOA仮予約取消キューを取得
         let queueDoc = await queueAdapter.model.findOneAndUpdate(
             {
-                status: queueStatus.UNEXECUTED,
+                status: QueueStatus.UNEXECUTED,
                 run_at: { $lt: new Date() },
-                group: queueGroup.CANCEL_AUTHORIZATION,
-                'authorization.group': authorizationGroup.COA_SEAT_RESERVATION
+                group: QueueGroup.CANCEL_AUTHORIZATION,
+                'authorization.group': AuthorizationGroup.COA_SEAT_RESERVATION
             },
             {
-                status: queueStatus.RUNNING, // 実行中に変更
+                status: QueueStatus.RUNNING, // 実行中に変更
                 last_tried_at: new Date(),
                 $inc: { count_tried: 1 } // トライ回数増やす
             },
@@ -103,7 +103,7 @@ export function executeCancelCOASeatReservationAuthorization() {
                 await stockService.unauthorizeCOASeatReservation(queueDoc.get('authorization'))();
                 queueDoc = await queueAdapter.model.findByIdAndUpdate(
                     queueDoc.get('id'),
-                    { status: queueStatus.EXECUTED },
+                    { status: QueueStatus.EXECUTED },
                     { new: true }
                 ).exec();
             } catch (error) {
@@ -115,7 +115,7 @@ export function executeCancelCOASeatReservationAuthorization() {
                 ).exec();
             }
 
-            return <queueStatus>queueDoc.get('status');
+            return <QueueStatus>queueDoc.get('status');
         }
     };
 }
@@ -130,13 +130,13 @@ export function executeCancelGMOAuthorization() {
         // 未実行のGMOオーソリ取消キューを取得
         let queueDoc = await queueAdapter.model.findOneAndUpdate(
             {
-                status: queueStatus.UNEXECUTED,
+                status: QueueStatus.UNEXECUTED,
                 run_at: { $lt: new Date() },
-                group: queueGroup.CANCEL_AUTHORIZATION,
-                'authorization.group': authorizationGroup.GMO
+                group: QueueGroup.CANCEL_AUTHORIZATION,
+                'authorization.group': AuthorizationGroup.GMO
             },
             {
-                status: queueStatus.RUNNING, // 実行中に変更
+                status: QueueStatus.RUNNING, // 実行中に変更
                 last_tried_at: new Date(),
                 $inc: { count_tried: 1 } // トライ回数増やす
             },
@@ -152,7 +152,7 @@ export function executeCancelGMOAuthorization() {
                 await salesService.cancelGMOAuth(queueDoc.get('authorization'))();
                 queueDoc = await queueAdapter.model.findByIdAndUpdate(
                     queueDoc.get('id'),
-                    { status: queueStatus.EXECUTED },
+                    { status: QueueStatus.EXECUTED },
                     { new: true }
                 ).exec();
             } catch (error) {
@@ -164,7 +164,7 @@ export function executeCancelGMOAuthorization() {
                 ).exec();
             }
 
-            return <queueStatus>queueDoc.get('status');
+            return <QueueStatus>queueDoc.get('status');
         }
     };
 }
@@ -179,12 +179,12 @@ export function executeDisableTransactionInquiry() {
 
         let queueDoc = await queueAdapter.model.findOneAndUpdate(
             {
-                status: queueStatus.UNEXECUTED,
+                status: QueueStatus.UNEXECUTED,
                 run_at: { $lt: new Date() },
-                group: queueGroup.DISABLE_TRANSACTION_INQUIRY
+                group: QueueGroup.DISABLE_TRANSACTION_INQUIRY
             },
             {
-                status: queueStatus.RUNNING, // 実行中に変更
+                status: QueueStatus.RUNNING, // 実行中に変更
                 last_tried_at: new Date(),
                 $inc: { count_tried: 1 } // トライ回数増やす
             },
@@ -200,7 +200,7 @@ export function executeDisableTransactionInquiry() {
                 await stockService.disableTransactionInquiry(queueDoc.get('transaction'))(transactionAdapter);
                 queueDoc = await queueAdapter.model.findByIdAndUpdate(
                     queueDoc.get('id'),
-                    { status: queueStatus.EXECUTED },
+                    { status: QueueStatus.EXECUTED },
                     { new: true }
                 ).exec();
             } catch (error) {
@@ -212,7 +212,7 @@ export function executeDisableTransactionInquiry() {
                 ).exec();
             }
 
-            return <queueStatus>queueDoc.get('status');
+            return <QueueStatus>queueDoc.get('status');
         }
     };
 }
@@ -227,13 +227,13 @@ export function executeSettleCOASeatReservationAuthorization() {
         // 未実行のCOA資産移動キューを取得
         let queueDoc = await queueAdapter.model.findOneAndUpdate(
             {
-                status: queueStatus.UNEXECUTED,
+                status: QueueStatus.UNEXECUTED,
                 run_at: { $lt: new Date() },
-                group: queueGroup.SETTLE_AUTHORIZATION,
-                'authorization.group': authorizationGroup.COA_SEAT_RESERVATION
+                group: QueueGroup.SETTLE_AUTHORIZATION,
+                'authorization.group': AuthorizationGroup.COA_SEAT_RESERVATION
             },
             {
-                status: queueStatus.RUNNING, // 実行中に変更
+                status: QueueStatus.RUNNING, // 実行中に変更
                 last_tried_at: new Date(),
                 $inc: { count_tried: 1 } // トライ回数増やす
             },
@@ -249,7 +249,7 @@ export function executeSettleCOASeatReservationAuthorization() {
                 await stockService.transferCOASeatReservation(queueDoc.get('authorization'))(assetAdapter);
                 queueDoc = await queueAdapter.model.findByIdAndUpdate(
                     queueDoc.get('id'),
-                    { status: queueStatus.EXECUTED },
+                    { status: QueueStatus.EXECUTED },
                     { new: true }
                 ).exec();
             } catch (error) {
@@ -261,7 +261,7 @@ export function executeSettleCOASeatReservationAuthorization() {
                 ).exec();
             }
 
-            return <queueStatus>queueDoc.get('status');
+            return <QueueStatus>queueDoc.get('status');
         }
     };
 }
@@ -276,13 +276,13 @@ export function executeSettleGMOAuthorization() {
         // 未実行のGMO実売上キューを取得
         let queueDoc = await queueAdapter.model.findOneAndUpdate(
             {
-                status: queueStatus.UNEXECUTED,
+                status: QueueStatus.UNEXECUTED,
                 run_at: { $lt: new Date() },
-                group: queueGroup.SETTLE_AUTHORIZATION,
-                'authorization.group': authorizationGroup.GMO
+                group: QueueGroup.SETTLE_AUTHORIZATION,
+                'authorization.group': AuthorizationGroup.GMO
             },
             {
-                status: queueStatus.RUNNING, // 実行中に変更
+                status: QueueStatus.RUNNING, // 実行中に変更
                 last_tried_at: new Date(),
                 $inc: { count_tried: 1 } // トライ回数増やす
             },
@@ -298,7 +298,7 @@ export function executeSettleGMOAuthorization() {
                 await salesService.settleGMOAuth(queueDoc.get('authorization'))();
                 queueDoc = await queueAdapter.model.findByIdAndUpdate(
                     queueDoc.get('id'),
-                    { status: queueStatus.EXECUTED },
+                    { status: QueueStatus.EXECUTED },
                     { new: true }
                 ).exec();
             } catch (error) {
@@ -310,7 +310,7 @@ export function executeSettleGMOAuthorization() {
                 ).exec();
             }
 
-            return <queueStatus>queueDoc.get('status');
+            return <QueueStatus>queueDoc.get('status');
         }
     };
 }
@@ -325,13 +325,13 @@ export function retry(intervalInMinutes: number) {
     return async (queueAdapter: QueueAdapter) => {
         await queueAdapter.model.update(
             {
-                status: queueStatus.RUNNING,
+                status: QueueStatus.RUNNING,
                 last_tried_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() }, // tslint:disable-line:no-magic-numbers
                 // tslint:disable-next-line:no-invalid-this space-before-function-paren
                 $where: function (this: any) { return (this.max_count_try > this.count_tried); }
             },
             {
-                status: queueStatus.UNEXECUTED // 実行中に変更
+                status: QueueStatus.UNEXECUTED // 実行中に変更
             },
             { multi: true }
         ).exec();
@@ -348,13 +348,13 @@ export function abort(intervalInMinutes: number) {
     return async (queueAdapter: QueueAdapter) => {
         const abortedQueueDoc = await queueAdapter.model.findOneAndUpdate(
             {
-                status: queueStatus.RUNNING,
+                status: QueueStatus.RUNNING,
                 last_tried_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() }, // tslint:disable-line:no-magic-numbers
                 // tslint:disable-next-line:no-invalid-this space-before-function-paren
                 $where: function (this: any) { return (this.max_count_try === this.count_tried); }
             },
             {
-                status: queueStatus.ABORTED
+                status: QueueStatus.ABORTED
             },
             { new: true }
         ).exec();

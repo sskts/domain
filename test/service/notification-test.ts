@@ -7,7 +7,7 @@ import * as sskts from '../../lib/index';
 
 describe('notification service', () => {
     it('send an email', async () => {
-        const notification = sskts.factory.notification.createEmail({
+        const notification = sskts.factory.notification.email.create({
             from: 'noreply@localhost',
             to: process.env.SSKTS_DEVELOPER_EMAIL,
             subject: 'test subject',

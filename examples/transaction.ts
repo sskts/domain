@@ -248,7 +248,7 @@ http://www.cinemasunshine.co.jp/\n
 -------------------------------------------------------------------\n
 `;
     console.log('adding email...');
-    const notification = sskts.factory.notification.createEmail({
+    const notification = sskts.factory.notification.email.create({
         from: 'noreply@localhost',
         to: process.env.SSKTS_DEVELOPER_EMAIL,
         subject: '購入完了',

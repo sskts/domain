@@ -9,9 +9,9 @@ import * as createDebug from 'debug';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
 
-import queueStatus from '../factory/queueStatus';
-import transactionQueuesStatus from '../factory/transactionQueuesStatus';
-import transactionStatus from '../factory/transactionStatus';
+import QueueStatus from '../factory/queueStatus';
+import TransactionQueuesStatus from '../factory/transactionQueuesStatus';
+import TransactionStatus from '../factory/transactionStatus';
 
 export type QueueAndTransactionOperation<T> = (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 
@@ -29,27 +29,27 @@ export function transactionStatuses(): QueueAndTransactionOperation<IReportTrans
     return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
         debug('counting ready transactions...');
         const numberOfTransactionsReady = await transactionAdapter.transactionModel.count({
-            status: transactionStatus.READY,
+            status: TransactionStatus.READY,
             expires_at: { $gt: new Date() }
         }).exec();
 
         debug('counting underway transactions...');
         const numberOfTransactionsUnderway = await transactionAdapter.transactionModel.count({
-            status: transactionStatus.UNDERWAY
+            status: TransactionStatus.UNDERWAY
         }).exec();
 
         const numberOfTransactionsClosedWithQueuesUnexported = await transactionAdapter.transactionModel.count({
-            status: transactionStatus.CLOSED,
-            queues_status: transactionQueuesStatus.UNEXPORTED
+            status: TransactionStatus.CLOSED,
+            queues_status: TransactionQueuesStatus.UNEXPORTED
         }).exec();
 
         const numberOfTransactionsExpiredWithQueuesUnexported = await transactionAdapter.transactionModel.count({
-            status: transactionStatus.EXPIRED,
-            queues_status: transactionQueuesStatus.UNEXPORTED
+            status: TransactionStatus.EXPIRED,
+            queues_status: TransactionQueuesStatus.UNEXPORTED
         }).exec();
 
         const numberOfQueuesUnexecuted = await queueAdapter.model.count({
-            status: queueStatus.UNEXECUTED
+            status: QueueStatus.UNEXECUTED
         }).exec();
 
         return {

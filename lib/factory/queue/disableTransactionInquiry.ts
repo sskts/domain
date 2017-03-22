@@ -1,9 +1,9 @@
 /**
  * 取引照会無効化キューファクトリー
  *
- * @namespace DisableTransactionInquiryQueueFacroty
+ * @namespace DisableTransactionInquiryQueueFactory
  */
-import * as Queue from '../../factory/queue';
+import * as QueueFactory from '../../factory/queue';
 import * as Transaction from '../../factory/transaction';
 import ObjectId from '../objectId';
 import QueueGroup from '../queueGroup';
@@ -12,7 +12,7 @@ import QueueStatus from '../queueStatus';
 /**
  * 取引照会無効化キュー
  */
-export interface IDisableTransactionInquiryQueue extends Queue.IQueue {
+export interface IDisableTransactionInquiryQueue extends QueueFactory.IQueue {
     transaction: Transaction.ITransaction;
 }
 

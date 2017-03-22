@@ -6,7 +6,7 @@ import * as mongoose from 'mongoose';
 import * as assetFactory from '../../lib/factory/asset';
 import * as coaSeatReservationAuthorizationFactory from '../../lib/factory/authorization/coaSeatReservation';
 import * as gmoAuthorizationFactory from '../../lib/factory/authorization/gmo';
-import * as notificationFactory from '../../lib/factory/notification';
+import * as emailNotificationFactory from '../../lib/factory/notification/email';
 import * as ownershipFactory from '../../lib/factory/ownership';
 import * as disableTransactionInquiryQueueFactory from '../../lib/factory/queue/disableTransactionInquiry';
 import * as pushNotificationQueueFactory from '../../lib/factory/queue/pushNotification';
@@ -32,7 +32,7 @@ describe('queue service', () => {
 
         // test data
         const queue = pushNotificationQueueFactory.create({
-            notification: notificationFactory.createEmail({
+            notification: emailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
@@ -56,7 +56,7 @@ describe('queue service', () => {
 
         // test data
         const queue = pushNotificationQueueFactory.create({
-            notification: notificationFactory.createEmail({
+            notification: emailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: 'hello',
                 subject: 'sskts-domain:test:service:queue-test',
@@ -187,7 +187,7 @@ describe('queue service', () => {
 
         // test data
         const queue = pushNotificationQueueFactory.create({
-            notification: notificationFactory.createEmail({
+            notification: emailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
@@ -214,7 +214,7 @@ describe('queue service', () => {
 
         // test data
         const queue = pushNotificationQueueFactory.create({
-            notification: notificationFactory.createEmail({
+            notification: emailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
@@ -238,7 +238,7 @@ describe('queue service', () => {
 
         // test data
         const queue = pushNotificationQueueFactory.create({
-            notification: notificationFactory.createEmail({
+            notification: emailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',

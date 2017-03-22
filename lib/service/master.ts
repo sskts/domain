@@ -8,11 +8,11 @@ import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 
-import * as Film from '../factory/film';
+import * as FilmFactory from '../factory/film';
 import MultilingualString from '../factory/multilingualString';
-import * as Performance from '../factory/performance';
-import * as Screen from '../factory/screen';
-import * as Theater from '../factory/theater';
+import * as PerformanceFactory from '../factory/performance';
+import * as ScreenFactory from '../factory/screen';
+import * as TheaterFactory from '../factory/theater';
 
 import FilmAdapter from '../adapter/film';
 import PerformanceAdapter from '../adapter/performance';
@@ -72,7 +72,7 @@ export function importTheater(theaterCode: string): TheaterOperation<void> {
         });
 
         // 永続化
-        const theater = Theater.createFromCOA(theaterFromCOA);
+        const theater = TheaterFactory.createFromCOA(theaterFromCOA);
         debug('storing theater...', theater);
         await adapter.model.findByIdAndUpdate(theater.id, theater, { new: true, upsert: true }).exec();
         debug('theater stored.');
@@ -94,7 +94,7 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
         if (doc === null) {
             throw new Error('theater not found.');
         }
-        const theater = <Theater.ITheater>doc.toObject();
+        const theater = <TheaterFactory.ITheater>doc.toObject();
 
         // COAから作品取得
         const films = await COA.MasterService.title({
@@ -103,7 +103,7 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
 
         // 永続化
         await Promise.all(films.map(async (filmFromCOA) => {
-            const film = Film.createFromCOA(filmFromCOA)(theater);
+            const film = FilmFactory.createFromCOA(filmFromCOA)(theater);
             debug('storing film...', film);
             await filmRepo.model.findByIdAndUpdate(film.id, film, { new: true, upsert: true }).exec();
             debug('film stored.');
@@ -126,7 +126,7 @@ export function importScreens(theaterCode: string): TheaterAndScreenOperation<vo
         if (doc === null) {
             throw new Error('theater not found.');
         }
-        const theater = <Theater.ITheater>doc.toObject();
+        const theater = <TheaterFactory.ITheater>doc.toObject();
 
         // COAからスクリーン取得
         const screens = await COA.MasterService.screen({
@@ -135,7 +135,7 @@ export function importScreens(theaterCode: string): TheaterAndScreenOperation<vo
 
         // 永続化
         await Promise.all(screens.map(async (screenFromCOA) => {
-            const screen = Screen.createFromCOA(screenFromCOA)(theater);
+            const screen = ScreenFactory.createFromCOA(screenFromCOA)(theater);
             debug('storing screen...');
             await screenRepo.model.findByIdAndUpdate(screen.id, screen, { new: true, upsert: true }).exec();
             debug('screen stored.');
@@ -164,7 +164,7 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
         const docs = await screenRepo.model.find({ theater: theaterCode })
             .setOptions({ maxTimeMS: 10000 })
             .exec();
-        const screens = docs.map((doc) => <Screen.IScreen>doc.toObject());
+        const screens = docs.map((doc) => <ScreenFactory.IScreen>doc.toObject());
         debug('screens:', screens);
 
         // COAからパフォーマンス取得
@@ -192,10 +192,10 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
                 console.error('film not found.', filmId);
                 return;
             }
-            const film = <Film.IFilm>doc.toObject();
+            const film = <FilmFactory.IFilm>doc.toObject();
 
             // 永続化
-            const performance = Performance.createFromCOA(performanceFromCOA)(screenOfPerformance, film);
+            const performance = PerformanceFactory.createFromCOA(performanceFromCOA)(screenOfPerformance, film);
             debug('storing performance', performance);
             await performanceRepo.model.findByIdAndUpdate(performance.id, performance, { new: true, upsert: true }).exec();
             debug('performance stored.');
@@ -267,11 +267,11 @@ export function searchPerformances(searchConditions: ISearchPerformancesConditio
  *
  * @memberOf MasterService
  */
-export function findTheater(theaterId: string): TheaterOperation<monapt.Option<Theater.ITheater>> {
+export function findTheater(theaterId: string): TheaterOperation<monapt.Option<TheaterFactory.ITheater>> {
     debug('finding a theater...', theaterId);
     return async (adapter: TheaterAdapter) => {
         const doc = await adapter.model.findById(theaterId).exec();
-        return (doc === null) ? monapt.None : monapt.Option(<Theater.ITheater>doc.toObject());
+        return (doc === null) ? monapt.None : monapt.Option(<TheaterFactory.ITheater>doc.toObject());
     };
 }
 
@@ -283,11 +283,11 @@ export function findTheater(theaterId: string): TheaterOperation<monapt.Option<T
  *
  * @memberOf MasterService
  */
-export function findFilm(filmId: string): FilmOperation<monapt.Option<Film.IFilm>> {
+export function findFilm(filmId: string): FilmOperation<monapt.Option<FilmFactory.IFilm>> {
     debug('finding a film...', filmId);
     return async (adapter: FilmAdapter) => {
         const doc = await adapter.model.findById(filmId).exec();
-        return (doc === null) ? monapt.None : monapt.Option(<Film.IFilm>doc.toObject());
+        return (doc === null) ? monapt.None : monapt.Option(<FilmFactory.IFilm>doc.toObject());
     };
 }
 
@@ -299,11 +299,11 @@ export function findFilm(filmId: string): FilmOperation<monapt.Option<Film.IFilm
  *
  * @memberOf MasterService
  */
-export function findScreen(screenId: string): ScreenOperation<monapt.Option<Screen.IScreen>> {
+export function findScreen(screenId: string): ScreenOperation<monapt.Option<ScreenFactory.IScreen>> {
     debug('finding a screen...', screenId);
     return async (adapter: ScreenAdapter) => {
         const doc = await adapter.model.findById(screenId).exec();
-        return (doc === null) ? monapt.None : monapt.Option(<Screen.IScreen>doc.toObject());
+        return (doc === null) ? monapt.None : monapt.Option(<ScreenFactory.IScreen>doc.toObject());
     };
 }
 
@@ -315,7 +315,9 @@ export function findScreen(screenId: string): ScreenOperation<monapt.Option<Scre
  *
  * @memberOf MasterService
  */
-export function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<Performance.IPerformanceWithFilmAndScreen>> {
+export function findPerformance(
+    performanceId: string
+): PerformanceOperation<monapt.Option<PerformanceFactory.IPerformanceWithFilmAndScreen>> {
     debug('finding a performance...', performanceId);
     return async (adapter: PerformanceAdapter) => {
         const doc = await adapter.model.findById(performanceId)

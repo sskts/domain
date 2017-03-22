@@ -8,7 +8,7 @@ import * as httpStatus from 'http-status';
 import * as sendgrid from 'sendgrid';
 import * as util from 'util';
 
-import * as notificationFactory from '../factory/notification';
+import * as EmailNotificationFactory from '../factory/notification/email';
 
 export type Operation<T> = () => Promise<T>;
 
@@ -24,7 +24,7 @@ const debug = createDebug('sskts-domain:service:notification');
  *
  * @memberOf NotificationService
  */
-export function sendEmail(email: notificationFactory.IEmailNotification): Operation<void> {
+export function sendEmail(email: EmailNotificationFactory.IEmailNotification): Operation<void> {
     return async () => {
         const mail = new sendgrid.mail.Mail(
             new sendgrid.mail.Email(email.from),
@@ -65,7 +65,7 @@ export function sendEmail(email: notificationFactory.IEmailNotification): Operat
  */
 export function report2developers(subject: string, content: string) {
     return async () => {
-        await sendEmail(notificationFactory.createEmail({
+        await sendEmail(EmailNotificationFactory.create({
             from: 'noreply@localhost',
             to: process.env.SSKTS_DEVELOPER_EMAIL,
             subject: `sskts-domain[${process.env.NODE_ENV}]:開発者へ報告があります ${subject}`,

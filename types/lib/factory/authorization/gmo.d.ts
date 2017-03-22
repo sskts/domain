@@ -1,9 +1,9 @@
 /**
  * GMOオーソリファクトリー
  *
- * @namespace GMOAuthorizationFacroty
+ * @namespace GMOAuthorizationFactory
  */
-import * as Authorization from '../authorization';
+import * as AuthorizationFactory from '../authorization';
 /**
  * GMOオーソリ
  *
@@ -16,7 +16,7 @@ import * as Authorization from '../authorization';
  * @param {string} gmo_job_cd
  * @param {string} gmo_pay_type
  */
-export interface IGMOAuthorization extends Authorization.IAuthorization {
+export interface IGMOAuthorization extends AuthorizationFactory.IAuthorization {
     gmo_shop_id: string;
     gmo_shop_pass: string;
     gmo_order_id: string;

@@ -1,11 +1,11 @@
 /**
  * COA座席仮予約ファクトリー
  *
- * @namespace COASeatReservationAuthorizationFacroty
+ * @namespace COASeatReservationAuthorizationFactory
  */
 import * as validator from 'validator';
 import * as Asset from '../asset';
-import * as Authorization from '../authorization';
+import * as AuthorizationFactory from '../authorization';
 import AuthorizationGroup from '../authorizationGroup';
 import ObjectId from '../objectId';
 
@@ -21,7 +21,7 @@ import ObjectId from '../objectId';
  * @param {string} coa_screen_code
  * @param {Asset.ISeatReservationAsset[]} assets 資産リスト(COA側では複数座席に対してひとつの仮予約番号が割り当てられるため)
  */
-export interface ICOASeatReservationAuthorization extends Authorization.IAuthorization {
+export interface ICOASeatReservationAuthorization extends AuthorizationFactory.IAuthorization {
     coa_tmp_reserve_num: number;
     coa_theater_code: string;
     coa_date_jouei: string;

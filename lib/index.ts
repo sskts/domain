@@ -23,31 +23,33 @@ import ScreenAdapter from './adapter/screen';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
 
-import * as asset from './factory/asset';
-import assetGroup from './factory/assetGroup';
-// import * as authorization from './factory/authorization';
-import * as coaSeatReservationAuthorization from './factory/authorization/coaSeatReservation';
-import * as gmoAuthorization from './factory/authorization/gmo';
-import * as mvtkAuthorization from './factory/authorization/mvtk';
-import authorizationGroup from './factory/authorizationGroup';
-import * as film from './factory/film';
-import * as notification from './factory/notification';
-import * as notificationGroup from './factory/notificationGroup';
-import * as owner from './factory/owner';
-import * as ownerGroup from './factory/ownerGroup';
-import * as ownership from './factory/ownership';
-import * as performance from './factory/performance';
-import * as queue from './factory/queue';
-import queueGroup from './factory/queueGroup';
-import queueStatus from './factory/queueStatus';
-import * as screen from './factory/screen';
-import * as theater from './factory/theater';
-import * as transaction from './factory/transaction';
-import * as transactionEvent from './factory/transactionEvent';
-import transactionEventGroup from './factory/transactionEventGroup';
-import * as transactionInquiryKey from './factory/transactionInquiryKey';
-import transactionQueuesStatus from './factory/transactionQueuesStatus';
-import transactionStatus from './factory/transactionStatus';
+import * as AssetFactory from './factory/asset';
+import AssetGroup from './factory/assetGroup';
+import * as CoaSeatReservationAuthorizationFactory from './factory/authorization/coaSeatReservation';
+import * as GmoAuthorizationFactory from './factory/authorization/gmo';
+import * as MvtkAuthorizationFactory from './factory/authorization/mvtk';
+import AuthorizationGroup from './factory/authorizationGroup';
+import * as FilmFactory from './factory/film';
+import * as EmailNotificationFactory from './factory/notification/email';
+import NotificationGroup from './factory/notificationGroup';
+import * as AnonymousOwnerFactory from './factory/owner/anonymous';
+import * as PromoterOwnerFactory from './factory/owner/promoter';
+import OwnerGroup from './factory/ownerGroup';
+import * as OwnershipFactory from './factory/ownership';
+import * as PerformanceFactory from './factory/performance';
+import * as CancelAuthorizationQueueFactory from './factory/queue/cancelAuthorization';
+import * as DisableTransactionInquiryQueueFactory from './factory/queue/disableTransactionInquiry';
+import * as PushNotificationQueueFactory from './factory/queue/pushNotification';
+import * as SettleAuthorizationQueueFactory from './factory/queue/settleAuthorization';
+import QueueGroup from './factory/queueGroup';
+import QueueStatus from './factory/queueStatus';
+import * as ScreenFactory from './factory/screen';
+import * as TheaterFactory from './factory/theater';
+import * as TransactionFactory from './factory/transaction';
+import TransactionEventGroup from './factory/transactionEventGroup';
+import * as TransactionInquiryKeyFactory from './factory/transactionInquiryKey';
+import TransactionQueuesStatus from './factory/transactionQueuesStatus';
+import TransactionStatus from './factory/transactionStatus';
 
 export const adapter = {
     asset: (connection: Connection) => {
@@ -88,30 +90,39 @@ export const service = {
 };
 
 export const factory = {
-    asset,
-    assetGroup,
+    asset: AssetFactory,
+    assetGroup: AssetGroup,
     authorization: {
-        coaSeatReservation: coaSeatReservationAuthorization,
-        gmo: gmoAuthorization,
-        mvtk: mvtkAuthorization
+        coaSeatReservation: CoaSeatReservationAuthorizationFactory,
+        gmo: GmoAuthorizationFactory,
+        mvtk: MvtkAuthorizationFactory
     },
-    authorizationGroup,
-    film,
-    notification,
-    notificationGroup,
-    owner,
-    ownerGroup,
-    ownership,
-    performance,
-    queue,
-    queueGroup,
-    queueStatus,
-    screen,
-    theater,
-    transaction,
-    transactionEventGroup,
-    transactionEvent,
-    transactionInquiryKey,
-    transactionQueuesStatus,
-    transactionStatus
+    authorizationGroup: AuthorizationGroup,
+    film: FilmFactory,
+    notification: {
+        email: EmailNotificationFactory
+    },
+    notificationGroup: NotificationGroup,
+    owner: {
+        anonymous: AnonymousOwnerFactory,
+        promoter: PromoterOwnerFactory
+    },
+    ownerGroup: OwnerGroup,
+    ownership: OwnershipFactory,
+    performance: PerformanceFactory,
+    queue: {
+        cancelAuthorization: CancelAuthorizationQueueFactory,
+        disableTransactionInquiry: DisableTransactionInquiryQueueFactory,
+        pushNotification: PushNotificationQueueFactory,
+        settleAuthorization: SettleAuthorizationQueueFactory
+    },
+    queueGroup: QueueGroup,
+    queueStatus: QueueStatus,
+    screen: ScreenFactory,
+    theater: TheaterFactory,
+    transaction: TransactionFactory,
+    transactionEventGroup: TransactionEventGroup,
+    transactionInquiryKey: TransactionInquiryKeyFactory,
+    transactionQueuesStatus: TransactionQueuesStatus,
+    transactionStatus: TransactionStatus
 };

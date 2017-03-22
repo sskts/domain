@@ -1,17 +1,17 @@
 /**
  * オーソリ解除キューファクトリー
  *
- * @namespace CancelAuthorizationQueueFacroty
+ * @namespace CancelAuthorizationQueueFactory
  */
 import * as Authorization from '../../factory/authorization';
-import * as Queue from '../../factory/queue';
+import * as QueueFactory from '../../factory/queue';
 import QueueStatus from '../queueStatus';
 /**
  * オーソリ解除キュー
  *
  * @param {T} authorization
  */
-export interface ICancelAuthorizationQueue<T extends Authorization.IAuthorization> extends Queue.IQueue {
+export interface ICancelAuthorizationQueue<T extends Authorization.IAuthorization> extends QueueFactory.IQueue {
     authorization: T;
 }
 export declare function create<T extends Authorization.IAuthorization>(args: {

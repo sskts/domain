@@ -13,9 +13,9 @@ const assert = require("assert");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const sskts = require("../../lib/index");
-const notificationFactory = require("../../lib/factory/notification");
+const emailNotificationFactory = require("../../lib/factory/notification/email");
 const transactionFactory = require("../../lib/factory/transaction");
-const transactionEvent = require("../../lib/factory/transactionEvent");
+const AddNotificationTransactionEventFactory = require("../../lib/factory/transactionEvent/addNotification");
 const transactionInquiryKey = require("../../lib/factory/transactionInquiryKey");
 const transactionQueuesStatus_1 = require("../../lib/factory/transactionQueuesStatus");
 const transactionStatus_1 = require("../../lib/factory/transactionStatus");
@@ -102,10 +102,10 @@ describe('transaction service', () => {
             }),
             queues_status: transactionQueuesStatus_1.default.UNEXPORTED
         });
-        const event = transactionEvent.createNotificationAdd({
+        const event = AddNotificationTransactionEventFactory.create({
             transaction: transaction.id,
             occurred_at: new Date(),
-            notification: notificationFactory.createEmail({
+            notification: emailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: 'hello',
                 subject: 'sskts-domain:test:service:transaction-test',

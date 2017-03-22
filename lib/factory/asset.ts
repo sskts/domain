@@ -1,7 +1,7 @@
 /**
  * 資産ファクトリー
  *
- * @namespace AssetFacroty
+ * @namespace AssetFactory
  */
 import AssetGroup from './assetGroup';
 import * as Authorization from './authorization';

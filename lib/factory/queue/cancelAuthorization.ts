@@ -1,10 +1,10 @@
 /**
  * オーソリ解除キューファクトリー
  *
- * @namespace CancelAuthorizationQueueFacroty
+ * @namespace CancelAuthorizationQueueFactory
  */
 import * as Authorization from '../../factory/authorization';
-import * as Queue from '../../factory/queue';
+import * as QueueFactory from '../../factory/queue';
 import ObjectId from '../objectId';
 import QueueGroup from '../queueGroup';
 import QueueStatus from '../queueStatus';
@@ -14,7 +14,7 @@ import QueueStatus from '../queueStatus';
  *
  * @param {T} authorization
  */
-export interface ICancelAuthorizationQueue<T extends Authorization.IAuthorization> extends Queue.IQueue {
+export interface ICancelAuthorizationQueue<T extends Authorization.IAuthorization> extends QueueFactory.IQueue {
     authorization: T;
 }
 

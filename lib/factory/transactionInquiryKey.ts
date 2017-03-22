@@ -1,7 +1,7 @@
 /**
  * 取引照会キーファクトリー
  *
- * @namespace TransactionInquiryKeyFacroty
+ * @namespace TransactionInquiryKeyFactory
  */
 
 export interface ITransactionInquiryKey {

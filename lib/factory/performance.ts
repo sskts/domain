@@ -1,7 +1,7 @@
 /**
  * パフォーマンスファクトリー
  *
- * @namespace TheaterFacroty
+ * @namespace TheaterFactory
  *
  * @param {string} id
  * @param {Theater} theater 劇場

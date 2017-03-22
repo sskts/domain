@@ -1,4 +1,4 @@
-import * as Authorization from '../authorization';
+import * as AuthorizationFactory from '../authorization';
 /**
  * 券種情報
  * @interface IKnshInfo
@@ -26,7 +26,7 @@ export interface IZskInfo {
 /**
  * ムビチケ着券情報
  */
-export interface IMvtkAuthorization extends Authorization.IAuthorization {
+export interface IMvtkAuthorization extends AuthorizationFactory.IAuthorization {
     kgygish_cd: string;
     yyk_dvc_typ: string;
     trksh_flg: string;

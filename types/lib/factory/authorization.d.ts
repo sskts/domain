@@ -4,7 +4,7 @@
  * 誰が、誰に対して、何の所有を、承認するのか
  * 何の所有を、というのは承認グループによって異なる
  *
- * @namespace AuthorizationFacroty
+ * @namespace AuthorizationFactory
  */
 import AuthorizationGroup from './authorizationGroup';
 /**

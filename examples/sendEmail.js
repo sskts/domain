@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @ignore
  */
 const sskts = require("../lib/index");
-const notification = sskts.factory.notification.createEmail({
+const notification = sskts.factory.notification.email.create({
     from: 'noreply@localhost',
     to: 'ilovegadd@gmail.com',
     subject: 'test subject',

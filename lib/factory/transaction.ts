@@ -1,7 +1,7 @@
 /**
  * 取引ファクトリー
  *
- * @namespace TransactionFacroty
+ * @namespace TransactionFactory
  *
  * @param {string} id
  * @param {TransactionStatus} status

@@ -3,7 +3,7 @@
  *
  * @namespace TransactionEventGroup
  */
-declare type TransactionEventGroup = 'AUTHORIZE' | 'UNAUTHORIZE' | 'NOTIFICATION_ADD' | 'NOTIFICATION_REMOVE';
+declare type TransactionEventGroup = 'AUTHORIZE' | 'UNAUTHORIZE' | 'ADD_NOTIFICATION' | 'REMOVE_NOTIFICATION';
 declare namespace TransactionEventGroup {
     /**
      * オーソリアイテム追加
@@ -16,10 +16,10 @@ declare namespace TransactionEventGroup {
     /**
      * 通知アイテム追加
      */
-    const NOTIFICATION_ADD = "NOTIFICATION_ADD";
+    const ADD_NOTIFICATION = "ADD_NOTIFICATION";
     /**
      * 通知アイテム削除
      */
-    const NOTIFICATION_REMOVE = "NOTIFICATION_REMOVE";
+    const REMOVE_NOTIFICATION = "REMOVE_NOTIFICATION";
 }
 export default TransactionEventGroup;

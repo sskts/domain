@@ -1,4 +1,4 @@
-import * as notificationFactory from '../factory/notification';
+import * as EmailNotificationFactory from '../factory/notification/email';
 export declare type Operation<T> = () => Promise<T>;
 /**
  * メール送信
@@ -10,7 +10,7 @@ export declare type Operation<T> = () => Promise<T>;
  *
  * @memberOf NotificationService
  */
-export declare function sendEmail(email: notificationFactory.IEmailNotification): Operation<void>;
+export declare function sendEmail(email: EmailNotificationFactory.IEmailNotification): Operation<void>;
 /**
  * 開発者に報告する
  *

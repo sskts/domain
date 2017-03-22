@@ -7,8 +7,8 @@
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 
-import * as COASeatReservationAuthorization from '../factory/authorization/coaSeatReservation';
-import * as Transaction from '../factory/transaction';
+import * as COASeatReservationAuthorizationFactory from '../factory/authorization/coaSeatReservation';
+import * as TransactionFactory from '../factory/transaction';
 
 import AssetAdapter from '../adapter/asset';
 import TransactionAdapter from '../adapter/transaction';
@@ -22,7 +22,7 @@ const debug = createDebug('sskts-domain:service:stock');
  *
  * @memberOf StockService
  */
-export function unauthorizeCOASeatReservation(authorization: COASeatReservationAuthorization.ICOASeatReservationAuthorization) {
+export function unauthorizeCOASeatReservation(authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization) {
     return async () => {
         debug('calling deleteTmpReserve...');
         await COA.ReserveService.delTmpReserve({
@@ -44,7 +44,7 @@ export function unauthorizeCOASeatReservation(authorization: COASeatReservationA
  *
  * @memberOf StockService
  */
-export function transferCOASeatReservation(authorization: COASeatReservationAuthorization.ICOASeatReservationAuthorization) {
+export function transferCOASeatReservation(authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization) {
     return async (assetAdapter: AssetAdapter) => {
 
         // ウェブフロントで事前に本予約済みなので不要
@@ -68,7 +68,7 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
  *
  * @memberOf StockService
  */
-export function disableTransactionInquiry(transaction: Transaction.ITransaction) {
+export function disableTransactionInquiry(transaction: TransactionFactory.ITransaction) {
     return async (transactionAdapter: TransactionAdapter) => {
         if (transaction.inquiry_key === null) {
             throw new RangeError('inquiry_key not created.');

@@ -16,7 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("../../lib/index");
 describe('notification service', () => {
     it('send an email', () => __awaiter(this, void 0, void 0, function* () {
-        const notification = sskts.factory.notification.createEmail({
+        const notification = sskts.factory.notification.email.create({
             from: 'noreply@localhost',
             to: process.env.SSKTS_DEVELOPER_EMAIL,
             subject: 'test subject',

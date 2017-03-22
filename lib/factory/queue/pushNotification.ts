@@ -1,10 +1,10 @@
 /**
  * プッシュ通知キューファクトリー
  *
- * @namespace PushNotificationQueueFacroty
+ * @namespace PushNotificationQueueFactory
  */
 import * as Notification from '../../factory/notification';
-import * as Queue from '../../factory/queue';
+import * as QueueFactory from '../../factory/queue';
 import ObjectId from '../objectId';
 import QueueGroup from '../queueGroup';
 import QueueStatus from '../queueStatus';
@@ -14,7 +14,7 @@ import QueueStatus from '../queueStatus';
  *
  * @param {T} notification
  */
-export interface IPushNotificationQueue<T extends Notification.INotification> extends Queue.IQueue {
+export interface IPushNotificationQueue<T extends Notification.INotification> extends QueueFactory.IQueue {
     notification: T;
 }
 

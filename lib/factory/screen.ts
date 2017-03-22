@@ -1,7 +1,7 @@
 /**
  * スクリーンファクトリー
  *
- * @namespace TheaterFacroty
+ * @namespace TheaterFactory
  */
 import * as COA from '@motionpicture/coa-service';
 import MultilingualString from './multilingualString';

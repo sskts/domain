@@ -10,18 +10,19 @@ import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as monapt from 'monapt';
 
-import * as Owner from '../factory/owner';
+import * as AnonymousOwnerFactory from '../factory/owner/anonymous';
+import * as PromoterOwnerFactory from '../factory/owner/promoter';
 import OwnerGroup from '../factory/ownerGroup';
-import * as queueFactory from '../factory/queue';
-import * as cancelAuthorizationQueueFactory from '../factory/queue/cancelAuthorization';
-import * as disableTransactionInquiryQueueFactory from '../factory/queue/disableTransactionInquiry';
-import * as pushNotificationQueueFactory from '../factory/queue/pushNotification';
-import * as settleAuthorizationQueueFactory from '../factory/queue/settleAuthorization';
+import * as QueueFactory from '../factory/queue';
+import * as CancelAuthorizationQueueFactory from '../factory/queue/cancelAuthorization';
+import * as DisableTransactionInquiryQueueFactory from '../factory/queue/disableTransactionInquiry';
+import * as PushNotificationQueueFactory from '../factory/queue/pushNotification';
+import * as SettleAuthorizationQueueFactory from '../factory/queue/settleAuthorization';
 import QueueStatus from '../factory/queueStatus';
-import * as Transaction from '../factory/transaction';
-import * as TransactionInquiryKey from '../factory/transactionInquiryKey';
-import transactionQueuesStatus from '../factory/transactionQueuesStatus';
-import transactionStatus from '../factory/transactionStatus';
+import * as TransactionFactory from '../factory/transaction';
+import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
+import TransactionQueuesStatus from '../factory/transactionQueuesStatus';
+import TransactionStatus from '../factory/transactionStatus';
 
 import OwnerAdapter from '../adapter/owner';
 import QueueAdapter from '../adapter/queue';
@@ -47,8 +48,8 @@ export function prepare(length: number, expiresInSeconds: number) {
         // 取引を{length}コ作成
         const expiresAt = moment().add(expiresInSeconds, 'seconds').toDate();
         const transactions = Array.from(Array(length).keys()).map(() => {
-            const transaction = Transaction.create({
-                status: transactionStatus.READY,
+            const transaction = TransactionFactory.create({
+                status: TransactionStatus.READY,
                 owners: [],
                 expires_at: expiresAt
             });
@@ -71,17 +72,17 @@ export function prepare(length: number, expiresInSeconds: number) {
 export function startForcibly(expiresAt: Date) {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
         // 一般所有者作成
-        const anonymousOwner = Owner.createAnonymous({});
+        const anonymousOwner = AnonymousOwnerFactory.create({});
 
         // 興行主取得
         const ownerDoc = await ownerAdapter.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
         if (ownerDoc === null) {
             throw new Error('promoter not found');
         }
-        const promoter = <Owner.IPromoterOwner>ownerDoc.toObject();
+        const promoter = <PromoterOwnerFactory.IPromoterOwner>ownerDoc.toObject();
 
-        const transaction = Transaction.create({
-            status: transactionStatus.UNDERWAY,
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
             owners: [promoter, anonymousOwner],
             expires_at: expiresAt
         });
@@ -110,14 +111,14 @@ export function startForcibly(expiresAt: Date) {
 export function startIfPossible(expiresAt: Date) {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
         // 一般所有者作成
-        const anonymousOwner = Owner.createAnonymous({});
+        const anonymousOwner = AnonymousOwnerFactory.create({});
 
         // 興行主取得
         const ownerDoc = await ownerAdapter.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
         if (ownerDoc === null) {
             throw new Error('promoter not found');
         }
-        const promoter = <Owner.IPromoterOwner>ownerDoc.toObject();
+        const promoter = <PromoterOwnerFactory.IPromoterOwner>ownerDoc.toObject();
 
         // 所有者永続化
         debug('storing anonymous owner...', anonymousOwner);
@@ -127,11 +128,11 @@ export function startIfPossible(expiresAt: Date) {
         debug('updating transaction...');
         const transactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
             {
-                status: transactionStatus.READY,
+                status: TransactionStatus.READY,
                 expires_at: { $gt: new Date() }
             },
             {
-                status: transactionStatus.UNDERWAY,
+                status: TransactionStatus.UNDERWAY,
                 owners: [promoter.id, anonymousOwner.id],
                 expires_at: expiresAt
             },
@@ -144,7 +145,7 @@ export function startIfPossible(expiresAt: Date) {
         if (transactionDoc === null) {
             return monapt.None;
         } else {
-            const transaction = <Transaction.ITransaction>transactionDoc.toObject();
+            const transaction = <TransactionFactory.ITransaction>transactionDoc.toObject();
             transaction.owners = [promoter, anonymousOwner];
             return monapt.Option(transaction);
         }
@@ -159,17 +160,17 @@ export function startIfPossible(expiresAt: Date) {
  *
  * @memberOf TransactionService
  */
-export function makeInquiry(key: TransactionInquiryKey.ITransactionInquiryKey) {
+export function makeInquiry(key: TransactionInquiryKeyFactory.ITransactionInquiryKey) {
     debug('finding a transaction...', key);
     return async (transactionAdapter: TransactionAdapter) => {
         const doc = await transactionAdapter.transactionModel.findOne({
             'inquiry_key.theater_code': key.theater_code,
             'inquiry_key.reserve_num': key.reserve_num,
             'inquiry_key.tel': key.tel,
-            status: transactionStatus.CLOSED
+            status: TransactionStatus.CLOSED
         }).populate('owners').exec();
 
-        return (doc === null) ? monapt.None : monapt.Option(<Transaction.ITransaction>doc.toObject());
+        return (doc === null) ? monapt.None : monapt.Option(<TransactionFactory.ITransaction>doc.toObject());
     };
 }
 
@@ -181,7 +182,7 @@ export function clean() {
         // 開始準備ステータスのまま期限切れの取引を削除する
         await transactionAdapter.transactionModel.remove(
             {
-                status: transactionStatus.READY,
+                status: TransactionStatus.READY,
                 expires_at: { $lt: new Date() }
             }
         ).exec();
@@ -196,11 +197,11 @@ export function makeExpired() {
         // ステータスと期限を見て更新
         await transactionAdapter.transactionModel.update(
             {
-                status: transactionStatus.UNDERWAY,
+                status: TransactionStatus.UNDERWAY,
                 expires_at: { $lt: new Date() }
             },
             {
-                status: transactionStatus.EXPIRED
+                status: TransactionStatus.EXPIRED
             },
             { multi: true }
         ).exec();
@@ -210,11 +211,11 @@ export function makeExpired() {
 /**
  * ひとつの取引のキューをエクスポートする
  *
- * @param {transactionStatus} statu 取引ステータス
+ * @param {TransactionStatus} statu 取引ステータス
  */
-export function exportQueues(status: transactionStatus) {
+export function exportQueues(status: TransactionStatus) {
     return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
-        const statusesQueueExportable = [transactionStatus.EXPIRED, transactionStatus.CLOSED];
+        const statusesQueueExportable = [TransactionStatus.EXPIRED, TransactionStatus.CLOSED];
         if (statusesQueueExportable.indexOf(status) < 0) {
             throw new RangeError(`transaction status should be in [${statusesQueueExportable.join(',')}]`);
         }
@@ -222,9 +223,9 @@ export function exportQueues(status: transactionStatus) {
         let transactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
             {
                 status: status,
-                queues_status: transactionQueuesStatus.UNEXPORTED
+                queues_status: TransactionQueuesStatus.UNEXPORTED
             },
-            { queues_status: transactionQueuesStatus.EXPORTING },
+            { queues_status: TransactionQueuesStatus.EXPORTING },
             { new: true }
         ).exec();
 
@@ -239,11 +240,11 @@ export function exportQueues(status: transactionStatus) {
 
             transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
                 transactionDoc.get('id'),
-                { queues_status: transactionQueuesStatus.EXPORTED },
+                { queues_status: TransactionQueuesStatus.EXPORTED },
                 { new: true }
             ).exec();
 
-            return <transactionQueuesStatus>transactionDoc.get('queues_status');
+            return <TransactionQueuesStatus>transactionDoc.get('queues_status');
         }
     };
 }
@@ -264,14 +265,14 @@ export function exportQueuesById(id: string) {
         if (doc === null) {
             throw new Error(`transaction[${id}] not found.`);
         }
-        const transaction = <Transaction.ITransaction>doc.toObject();
+        const transaction = <TransactionFactory.ITransaction>doc.toObject();
 
-        const queues: queueFactory.IQueue[] = [];
+        const queues: QueueFactory.IQueue[] = [];
         switch (transaction.status) {
-            case transactionStatus.CLOSED:
+            case TransactionStatus.CLOSED:
                 // 取引イベントからキューリストを作成
                 (await transactionAdapter.findAuthorizationsById(transaction.id)).forEach((authorization) => {
-                    queues.push(settleAuthorizationQueueFactory.create({
+                    queues.push(SettleAuthorizationQueueFactory.create({
                         authorization: authorization,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(), // なるはやで実行
@@ -283,7 +284,7 @@ export function exportQueuesById(id: string) {
                 });
 
                 (await transactionAdapter.findNotificationsById(transaction.id)).forEach((notification) => {
-                    queues.push(pushNotificationQueueFactory.create({
+                    queues.push(PushNotificationQueueFactory.create({
                         notification: notification,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(), // todo emailのsent_atを指定
@@ -297,9 +298,9 @@ export function exportQueuesById(id: string) {
                 break;
 
             // 期限切れの場合は、キューリストを作成する
-            case transactionStatus.EXPIRED:
+            case TransactionStatus.EXPIRED:
                 (await transactionAdapter.findAuthorizationsById(transaction.id)).forEach((authorization) => {
-                    queues.push(cancelAuthorizationQueueFactory.create({
+                    queues.push(CancelAuthorizationQueueFactory.create({
                         authorization: authorization,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(),
@@ -312,7 +313,7 @@ export function exportQueuesById(id: string) {
 
                 // COA本予約があれば取消
                 if (transaction.inquiry_key !== null) {
-                    queues.push(disableTransactionInquiryQueueFactory.create({
+                    queues.push(DisableTransactionInquiryQueueFactory.create({
                         transaction: transaction,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(),
@@ -361,11 +362,11 @@ export function reexportQueues(intervalInMinutes: number) {
     return async (transactionAdapter: TransactionAdapter) => {
         await transactionAdapter.transactionModel.findOneAndUpdate(
             {
-                queues_status: transactionQueuesStatus.EXPORTING,
+                queues_status: TransactionQueuesStatus.EXPORTING,
                 updated_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() } // tslint:disable-line:no-magic-numbers
             },
             {
-                queues_status: transactionQueuesStatus.UNEXPORTED
+                queues_status: TransactionQueuesStatus.UNEXPORTED
             }
         ).exec();
     };

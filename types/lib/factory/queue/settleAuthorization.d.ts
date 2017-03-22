@@ -1,17 +1,17 @@
 /**
  * 資産移動キューファクトリー
  *
- * @namespace SettleAuthorizationQueueFacroty
+ * @namespace SettleAuthorizationQueueFactory
  */
 import * as Authorization from '../../factory/authorization';
-import * as Queue from '../../factory/queue';
+import * as QueueFactory from '../../factory/queue';
 import QueueStatus from '../queueStatus';
 /**
  * 資産移動キュー
  *
  * @param {T} authorization
  */
-export interface ISettleAuthorizationQueue<T extends Authorization.IAuthorization> extends Queue.IQueue {
+export interface ISettleAuthorizationQueue<T extends Authorization.IAuthorization> extends QueueFactory.IQueue {
     authorization: T;
 }
 export declare function create<T extends Authorization.IAuthorization>(args: {

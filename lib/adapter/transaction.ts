@@ -70,7 +70,7 @@ export default class TransactionAdapter {
         const notifications = (await this.transactionEventModel.find(
             {
                 transaction: id,
-                group: TransactionEventGroup.NOTIFICATION_ADD
+                group: TransactionEventGroup.ADD_NOTIFICATION
             },
             'notification'
         )
@@ -81,7 +81,7 @@ export default class TransactionAdapter {
         const removedNotificationIds = (await this.transactionEventModel.find(
             {
                 transaction: id,
-                group: TransactionEventGroup.NOTIFICATION_REMOVE
+                group: TransactionEventGroup.REMOVE_NOTIFICATION
             },
             'notification.id'
         )

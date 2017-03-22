@@ -1,7 +1,7 @@
 /**
  * 作品ファクトリー
  *
- * @namespace TheaterFacroty
+ * @namespace TheaterFactory
  *
  * @param {string} id
  * @param {string} coa_title_code COA作品コード

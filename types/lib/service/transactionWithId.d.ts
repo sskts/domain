@@ -1,10 +1,10 @@
 import * as monapt from 'monapt';
-import * as COASeatReservationAuthorization from '../factory/authorization/coaSeatReservation';
-import * as GMOAuthorization from '../factory/authorization/gmo';
-import * as MvtkAuthorization from '../factory/authorization/mvtk';
-import * as Notification from '../factory/notification';
-import * as Transaction from '../factory/transaction';
-import * as TransactionInquiryKey from '../factory/transactionInquiryKey';
+import * as COASeatReservationAuthorizationFactory from '../factory/authorization/coaSeatReservation';
+import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
+import * as MvtkAuthorizationFactory from '../factory/authorization/mvtk';
+import * as EmailNotificationFactory from '../factory/notification/email';
+import * as TransactionFactory from '../factory/transaction';
+import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
 import OwnerAdapter from '../adapter/owner';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
@@ -19,7 +19,7 @@ export declare type TransactionOperation<T> = (transactionAdapter: TransactionAd
  *
  * @memberOf TransactionWithIdService
  */
-export declare function findById(id: string): TransactionOperation<monapt.Option<Transaction.ITransaction>>;
+export declare function findById(id: string): TransactionOperation<monapt.Option<TransactionFactory.ITransaction>>;
 /**
  * GMO資産承認
  *
@@ -29,7 +29,7 @@ export declare function findById(id: string): TransactionOperation<monapt.Option
  *
  * @memberOf TransactionWithIdService
  */
-export declare function addGMOAuthorization(transactionId: string, authorization: GMOAuthorization.IGMOAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function addGMOAuthorization(transactionId: string, authorization: GMOAuthorizationFactory.IGMOAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * COA資産承認
  *
@@ -39,7 +39,7 @@ export declare function addGMOAuthorization(transactionId: string, authorization
  *
  * @memberOf TransactionWithIdService
  */
-export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorization.ICOASeatReservationAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * ムビチケ着券承認追加
  *
@@ -49,7 +49,7 @@ export declare function addCOASeatReservationAuthorization(transactionId: string
  *
  * @memberOf TransactionWithIdService
  */
-export declare function addMvtkAuthorization(transactionId: string, authorization: MvtkAuthorization.IMvtkAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function addMvtkAuthorization(transactionId: string, authorization: MvtkAuthorizationFactory.IMvtkAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 資産承認解除
  *
@@ -69,7 +69,7 @@ export declare function removeAuthorization(transactionId: string, authorization
  *
  * @memberOf TransactionWithIdService
  */
-export declare function addEmail(transactionId: string, notification: Notification.IEmailNotification): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function addEmail(transactionId: string, notification: EmailNotificationFactory.IEmailNotification): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * メール削除
  *
@@ -103,7 +103,7 @@ export declare function updateAnonymousOwner(args: {
  *
  * @memberOf TransactionWithIdService
  */
-export declare function enableInquiry(id: string, key: TransactionInquiryKey.ITransactionInquiryKey): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function enableInquiry(id: string, key: TransactionInquiryKeyFactory.ITransactionInquiryKey): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 取引成立
  *

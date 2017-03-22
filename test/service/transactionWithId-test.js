@@ -31,8 +31,8 @@ describe('transactionWithId service', () => {
         const ownerAdapter = sskts.adapter.owner(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         // test data
-        const owner1 = sskts.factory.owner.createAnonymous({});
-        const owner2 = sskts.factory.owner.createAnonymous({});
+        const owner1 = sskts.factory.owner.anonymous.create({});
+        const owner2 = sskts.factory.owner.anonymous.create({});
         const transaction = sskts.factory.transaction.create({
             status: sskts.factory.transactionStatus.UNDERWAY,
             owners: [owner1, owner2],
