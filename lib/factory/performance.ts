@@ -13,9 +13,9 @@
  * @param {boolean} canceled 上映中止フラグ
  */
 import * as COA from '@motionpicture/coa-service';
-import * as Film from './film';
+import * as FilmFactory from './film';
 import MultilingualString from './multilingualString';
-import * as Screen from './screen';
+import * as ScreenFactory from './screen';
 
 export interface IPerformance {
     id: string;
@@ -58,7 +58,7 @@ export interface IPerformanceWithFilmAndScreen {
 }
 
 export function createFromCOA(performanceFromCOA: COA.MasterService.ScheduleResult) {
-    return (screen: Screen.IScreen, film: Film.IFilm): IPerformance => {
+    return (screen: ScreenFactory.IScreen, film: FilmFactory.IFilm): IPerformance => {
         const id = [
             screen.theater,
             performanceFromCOA.date_jouei,

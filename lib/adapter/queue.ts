@@ -8,11 +8,9 @@ import queueModel from './mongoose/model/queue';
  * @class QueueAdapter
  */
 export default class QueueAdapter {
-    public model: typeof queueModel;
-    private readonly connection: Connection;
+    public readonly model: typeof queueModel;
 
     constructor(connection: Connection) {
-        this.connection = connection;
-        this.model = this.connection.model(queueModel.modelName);
+        this.model = connection.model(queueModel.modelName);
     }
 }

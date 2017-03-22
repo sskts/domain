@@ -21,7 +21,7 @@
  */
 import * as COA from '@motionpicture/coa-service';
 import MultilingualString from './multilingualString';
-import * as Theater from './theater';
+import * as TheaterFactory from './theater';
 export interface IFilm {
     id: string;
     coa_title_code: string;
@@ -45,4 +45,4 @@ export interface IFilm {
  * @export
  * @param {COA.MasterService.TitleResult} filmFromCOA
  */
-export declare function createFromCOA(filmFromCOA: COA.MasterService.TitleResult): (theater: Theater.ITheater) => IFilm;
+export declare function createFromCOA(filmFromCOA: COA.MasterService.TitleResult): (theater: TheaterFactory.ITheater) => IFilm;

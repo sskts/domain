@@ -8,11 +8,9 @@ import theaterModel from './mongoose/model/theater';
  * @class TheaterAdapter
  */
 export default class TheaterAdapter {
-    public model: typeof theaterModel;
-    private readonly connection: Connection;
+    public readonly model: typeof theaterModel;
 
     constructor(connection: Connection) {
-        this.connection = connection;
-        this.model = this.connection.model(theaterModel.modelName);
+        this.model = connection.model(theaterModel.modelName);
     }
 }

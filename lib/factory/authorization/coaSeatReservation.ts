@@ -48,15 +48,15 @@ export function create(args: {
 }): ICOASeatReservationAuthorization {
     // todo validation
     if (validator.isEmpty(args.coa_tmp_reserve_num.toString())) throw new Error('coa_tmp_reserve_num required.');
-    if (validator.isEmpty(args.coa_theater_code)) throw new Error('coa_theater_code required.');
-    if (validator.isEmpty(args.coa_date_jouei)) throw new Error('coa_date_jouei required.');
-    if (validator.isEmpty(args.coa_title_code)) throw new Error('coa_title_code required.');
-    if (validator.isEmpty(args.coa_title_branch_num)) throw new Error('coa_title_branch_num required.');
-    if (validator.isEmpty(args.coa_time_begin)) throw new Error('coa_time_begin required.');
-    if (validator.isEmpty(args.coa_screen_code)) throw new Error('coa_screen_code required.');
-    if (validator.isEmpty(args.price.toString())) throw new Error('price required.');
-    if (validator.isEmpty(args.owner_from.toString())) throw new Error('owner_from required.');
-    if (validator.isEmpty(args.owner_to.toString())) throw new Error('owner_to required.');
+    if (validator.isEmpty(args.coa_theater_code)) throw new RangeError('coa_theater_code required.');
+    if (validator.isEmpty(args.coa_date_jouei)) throw new RangeError('coa_date_jouei required.');
+    if (validator.isEmpty(args.coa_title_code)) throw new RangeError('coa_title_code required.');
+    if (validator.isEmpty(args.coa_title_branch_num)) throw new RangeError('coa_title_branch_num required.');
+    if (validator.isEmpty(args.coa_time_begin)) throw new RangeError('coa_time_begin required.');
+    if (validator.isEmpty(args.coa_screen_code)) throw new RangeError('coa_screen_code required.');
+    if (validator.isEmpty(args.price.toString())) throw new RangeError('price required.');
+    if (validator.isEmpty(args.owner_from.toString())) throw new RangeError('owner_from required.');
+    if (validator.isEmpty(args.owner_to.toString())) throw new RangeError('owner_to required.');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,

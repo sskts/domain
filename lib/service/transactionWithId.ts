@@ -52,7 +52,7 @@ function addAuthorization(transactionId: string, authorization: AuthorizationFac
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
         if (doc === null) {
-            throw new Error(`transaction[${transactionId}] not found.`);
+            return monapt.Option(new RangeError(`transaction[${transactionId}] not found.`));
         }
         const transaction = <TransactionFactory.ITransaction>doc.toObject();
 
@@ -61,10 +61,10 @@ function addAuthorization(transactionId: string, authorization: AuthorizationFac
             return owner.id;
         });
         if (ownerIds.indexOf(authorization.owner_from) < 0) {
-            throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_from}].`);
+            return monapt.Option(new RangeError(`transaction[${transactionId}] does not contain a owner[${authorization.owner_from}].`));
         }
         if (ownerIds.indexOf(authorization.owner_to) < 0) {
-            throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_to}].`);
+            return monapt.Option(new RangeError(`transaction[${transactionId}] does not contain a owner[${authorization.owner_to}].`));
         }
 
         // イベント作成
@@ -77,6 +77,8 @@ function addAuthorization(transactionId: string, authorization: AuthorizationFac
         // 永続化
         debug('adding an event...', event);
         await transactionAdapter.addEvent(event);
+
+        return monapt.None;
     };
 }
 
@@ -136,14 +138,14 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
         if (doc === null) {
-            throw new Error(`transaction[${transactionId}] not found.`);
+            return monapt.Option(new RangeError(`transaction[${transactionId}] not found.`));
         }
 
         const authorizations = await transactionAdapter.findAuthorizationsById(doc.get('id'));
 
         const removedAuthorization = authorizations.find((authorization) => authorization.id === authorizationId);
         if (removedAuthorization === undefined) {
-            throw new Error(`authorization [${authorizationId}] not found in the transaction.`);
+            return monapt.Option(new RangeError(`authorization [${authorizationId}] not found in the transaction.`));
         }
 
         // イベント作成
@@ -156,6 +158,8 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
         // 永続化
         debug('adding an event...', event);
         await transactionAdapter.addEvent(event);
+
+        return monapt.None;
     };
 }
 
@@ -197,14 +201,14 @@ export function removeEmail(transactionId: string, notificationId: string) {
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
         if (doc === null) {
-            throw new Error(`transaction[${transactionId}] not found.`);
+            return monapt.Option(new RangeError(`transaction[${transactionId}] not found.`));
         }
 
         const notifications = await transactionAdapter.findNotificationsById(doc.get('id'));
 
         const removedNotification = notifications.find((notification) => notification.id === notificationId);
         if (removedNotification === undefined) {
-            throw new Error(`notification [${notificationId}] not found in the transaction.`);
+            return monapt.Option(new RangeError(`notification [${notificationId}] not found in the transaction.`));
         }
 
         // イベント作成
@@ -216,6 +220,8 @@ export function removeEmail(transactionId: string, notificationId: string) {
 
         // 永続化
         await transactionAdapter.addEvent(event);
+
+        return monapt.None;
     };
 }
 
@@ -232,12 +238,12 @@ export function updateAnonymousOwner(args: {
     name_last?: string,
     email?: string,
     tel?: string
-}): OwnerAndTransactionOperation<void> {
+}) {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(args.transaction_id).populate('owners').exec();
         if (doc === null) {
-            throw new Error(`transaction[${args.transaction_id}] not found.`);
+            return monapt.Option(new RangeError(`transaction[${args.transaction_id}] not found.`));
         }
         const transaction = <TransactionFactory.ITransaction>doc.toObject();
 
@@ -245,7 +251,7 @@ export function updateAnonymousOwner(args: {
             return (owner.group === OwnerGroup.ANONYMOUS);
         });
         if (anonymousOwner === undefined) {
-            throw new Error('anonymous owner not found.');
+            return monapt.Option(new RangeError('anonymous owner not found.'));
         }
 
         // 永続化
@@ -260,8 +266,10 @@ export function updateAnonymousOwner(args: {
             }
         ).exec();
         if (ownerDoc === null) {
-            throw new Error('owner not found.');
+            return monapt.Option(new RangeError('owner not found.'));
         }
+
+        return monapt.None;
     };
 }
 
@@ -289,9 +297,7 @@ export function enableInquiry(id: string, key: TransactionInquiryKeyFactory.ITra
             { new: true }
         ).exec();
 
-        if (doc === null) {
-            throw new Error('UNDERWAY transaction not found.');
-        }
+        return (doc === null) ? monapt.Option(new RangeError('UNDERWAY transaction not found.')) : monapt.None;
     };
 }
 
@@ -308,18 +314,18 @@ export function close(id: string) {
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(id).exec();
         if (doc === null) {
-            throw new Error(`transaction[${id}] not found.`);
+            return monapt.Option(new RangeError(`transaction[${id}] not found.`));
         }
 
         // 照会可能になっているかどうか
         if (doc.get('inquiry_key') === null) {
-            throw new Error('inquiry is not available.');
+            return monapt.Option(new RangeError('inquiry is not available.'));
         }
 
         // 条件が対等かどうかチェック
         // todo 余計なクエリか？
         if (!await transactionAdapter.canBeClosed(doc.get('id'))) {
-            throw new Error('transaction cannot be closed.');
+            return monapt.Option(new RangeError('transaction cannot be closed.'));
         }
 
         // ステータス変更
@@ -336,7 +342,9 @@ export function close(id: string) {
         ).exec();
 
         if (closedTransactionDoc === null) {
-            throw new Error('UNDERWAY transaction not found.');
+            return monapt.Option(new RangeError('UNDERWAY transaction not found.'));
         }
+
+        return monapt.None;
     };
 }

@@ -5,7 +5,7 @@
  */
 import * as COA from '@motionpicture/coa-service';
 import MultilingualString from './multilingualString';
-import * as Theater from './theater';
+import * as TheaterFactory from './theater';
 
 /**
  * スクリーン座席
@@ -55,7 +55,7 @@ export interface IScreen {
  * @param {COA.MasterService.ScreenResult} screenFromCOA
  */
 export function createFromCOA(screenFromCOA: COA.MasterService.ScreenResult) {
-    return (theater: Theater.ITheater): IScreen => {
+    return (theater: TheaterFactory.ITheater): IScreen => {
         const sections: ISection[] = [];
         const sectionCodes: string[] = [];
         screenFromCOA.list_seat.forEach((seat) => {

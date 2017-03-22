@@ -3,6 +3,7 @@
  *
  * @namespace AuthorizeTransactionEventFactory
  */
+import * as validator from 'validator';
 
 import * as Authorization from '../authorization';
 import ObjectId from '../objectId';
@@ -26,6 +27,8 @@ export function create(args: {
     occurred_at: Date,
     authorization: Authorization.IAuthorization
 }): IAuthorizeTransactionEvent {
+    if (validator.isEmpty(args.transaction)) throw new Error('transaction required.');
+
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: TransactionEventGroup.AUTHORIZE,

@@ -8,7 +8,6 @@ import screenModel from './mongoose/model/screen';
  * @class ScreenAdapter
  */
 export default class ScreenAdapter {
-    model: typeof screenModel;
-    private readonly connection;
+    readonly model: typeof screenModel;
     constructor(connection: Connection);
 }

@@ -13,26 +13,26 @@
  * @param {TransactionQueuesStatus} queues_status
  */
 import ObjectId from './objectId';
-import * as Owner from './owner';
-import * as TransactionInquiryKey from './transactionInquiryKey';
+import * as OwnerFactory from './owner';
+import * as TransactionInquiryKeyFactory from './transactionInquiryKey';
 import TransactionQueuesStatus from './transactionQueuesStatus';
 import TransactionStatus from './transactionStatus';
 
 export interface ITransaction {
     id: string;
     status: TransactionStatus;
-    owners: Owner.IOwner[];
+    owners: OwnerFactory.IOwner[];
     expires_at: Date;
-    inquiry_key: TransactionInquiryKey.ITransactionInquiryKey | null;
+    inquiry_key: TransactionInquiryKeyFactory.ITransactionInquiryKey | null;
     queues_status: TransactionQueuesStatus;
 }
 
 export function create(args: {
     id?: string;
     status: TransactionStatus;
-    owners: Owner.IOwner[];
+    owners: OwnerFactory.IOwner[];
     expires_at: Date;
-    inquiry_key?: TransactionInquiryKey.ITransactionInquiryKey;
+    inquiry_key?: TransactionInquiryKeyFactory.ITransactionInquiryKey;
     queues_status?: TransactionQueuesStatus;
 }): ITransaction {
     return {

@@ -337,7 +337,7 @@ export function exportQueuesById(id: string) {
                 break;
 
             default:
-                throw new Error('transaction group not implemented.');
+                throw new RangeError('transaction group not implemented.');
         }
         debug('queues:', queues);
 

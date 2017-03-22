@@ -8,11 +8,9 @@ import performanceModel from './mongoose/model/performance';
  * @class PerformanceAdapter
  */
 export default class PerformanceAdapter {
-    public model: typeof performanceModel;
-    private readonly connection: Connection;
+    public readonly model: typeof performanceModel;
 
     constructor(connection: Connection) {
-        this.connection = connection;
-        this.model = this.connection.model(performanceModel.modelName);
+        this.model = connection.model(performanceModel.modelName);
     }
 }

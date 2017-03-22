@@ -29,7 +29,7 @@ export declare function findById(id: string): TransactionOperation<monapt.Option
  *
  * @memberOf TransactionWithIdService
  */
-export declare function addGMOAuthorization(transactionId: string, authorization: GMOAuthorizationFactory.IGMOAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function addGMOAuthorization(transactionId: string, authorization: GMOAuthorizationFactory.IGMOAuthorization): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<RangeError>>;
 /**
  * COA資産承認
  *
@@ -39,7 +39,7 @@ export declare function addGMOAuthorization(transactionId: string, authorization
  *
  * @memberOf TransactionWithIdService
  */
-export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<RangeError>>;
 /**
  * ムビチケ着券承認追加
  *
@@ -49,7 +49,7 @@ export declare function addCOASeatReservationAuthorization(transactionId: string
  *
  * @memberOf TransactionWithIdService
  */
-export declare function addMvtkAuthorization(transactionId: string, authorization: MvtkAuthorizationFactory.IMvtkAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function addMvtkAuthorization(transactionId: string, authorization: MvtkAuthorizationFactory.IMvtkAuthorization): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<RangeError>>;
 /**
  * 資産承認解除
  *
@@ -59,7 +59,7 @@ export declare function addMvtkAuthorization(transactionId: string, authorizatio
  *
  * @memberOf TransactionWithIdService
  */
-export declare function removeAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function removeAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<RangeError>>;
 /**
  * メール追加
  *
@@ -79,7 +79,7 @@ export declare function addEmail(transactionId: string, notification: EmailNotif
  *
  * @memberOf TransactionWithIdService
  */
-export declare function removeEmail(transactionId: string, notificationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function removeEmail(transactionId: string, notificationId: string): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<RangeError>>;
 /**
  * 匿名所有者更新
  *
@@ -93,7 +93,7 @@ export declare function updateAnonymousOwner(args: {
     name_last?: string;
     email?: string;
     tel?: string;
-}): OwnerAndTransactionOperation<void>;
+}): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<monapt.Option<RangeError>>;
 /**
  * 照合を可能にする
  *
@@ -103,7 +103,7 @@ export declare function updateAnonymousOwner(args: {
  *
  * @memberOf TransactionWithIdService
  */
-export declare function enableInquiry(id: string, key: TransactionInquiryKeyFactory.ITransactionInquiryKey): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function enableInquiry(id: string, key: TransactionInquiryKeyFactory.ITransactionInquiryKey): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<RangeError>>;
 /**
  * 取引成立
  *
@@ -112,4 +112,4 @@ export declare function enableInquiry(id: string, key: TransactionInquiryKeyFact
  *
  * @memberOf TransactionWithIdService
  */
-export declare function close(id: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function close(id: string): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<RangeError>>;

@@ -6,7 +6,7 @@
 import * as assert from 'assert';
 import * as mongoose from 'mongoose';
 
-import * as Transaction from '../../lib/factory/transaction';
+import * as TransactionFactory from '../../lib/factory/transaction';
 import * as sskts from '../../lib/index';
 
 let connection: mongoose.Connection;
@@ -16,7 +16,7 @@ before(() => {
 
 describe('stock service', () => {
     it('disableTransactionInquiry key not exists.', (done) => {
-        const transaction = Transaction.create({
+        const transaction = TransactionFactory.create({
             status: 'UNDERWAY',
             owners: [],
             expires_at: new Date()

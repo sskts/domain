@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const assert = require("assert");
 const mongoose = require("mongoose");
-const Transaction = require("../../lib/factory/transaction");
+const TransactionFactory = require("../../lib/factory/transaction");
 const sskts = require("../../lib/index");
 let connection;
 before(() => {
@@ -15,7 +15,7 @@ before(() => {
 });
 describe('stock service', () => {
     it('disableTransactionInquiry key not exists.', (done) => {
-        const transaction = Transaction.create({
+        const transaction = TransactionFactory.create({
             status: 'UNDERWAY',
             owners: [],
             expires_at: new Date()

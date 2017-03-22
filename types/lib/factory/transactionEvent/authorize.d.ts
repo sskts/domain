@@ -1,8 +1,3 @@
-/**
- * オーソリ追加取引イベントファクトリー
- *
- * @namespace AuthorizeTransactionEventFactory
- */
 import * as Authorization from '../authorization';
 import * as TransactionEventFactory from '../transactionEvent';
 /**

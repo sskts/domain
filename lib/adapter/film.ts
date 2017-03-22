@@ -8,11 +8,9 @@ import filmModel from './mongoose/model/film';
  * @class FilmAdapter
  */
 export default class FilmAdapter {
-    public model: typeof filmModel;
-    private readonly connection: Connection;
+    public readonly model: typeof filmModel;
 
     constructor(connection: Connection) {
-        this.connection = connection;
-        this.model = this.connection.model(filmModel.modelName);
+        this.model = connection.model(filmModel.modelName);
     }
 }

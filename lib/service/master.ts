@@ -3,7 +3,6 @@
  *
  * @namespace MasterService
  */
-
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
@@ -92,7 +91,7 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
         // 劇場取得
         const doc = await theaterAdapter.model.findById(theaterCode).exec();
         if (doc === null) {
-            throw new Error('theater not found.');
+            throw new RangeError('theater not found.');
         }
         const theater = <TheaterFactory.ITheater>doc.toObject();
 
@@ -124,7 +123,7 @@ export function importScreens(theaterCode: string): TheaterAndScreenOperation<vo
         // 劇場取得
         const doc = await theaterAdapter.model.findById(theaterCode).exec();
         if (doc === null) {
-            throw new Error('theater not found.');
+            throw new RangeError('theater not found.');
         }
         const theater = <TheaterFactory.ITheater>doc.toObject();
 

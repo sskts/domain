@@ -8,11 +8,9 @@ import assetModel from './mongoose/model/asset';
  * @class AssetAdapter
  */
 export default class AssetAdapter {
-    public model: typeof assetModel;
-    private readonly connection: Connection;
+    public readonly model: typeof assetModel;
 
     constructor(connection: Connection) {
-        this.connection = connection;
-        this.model = this.connection.model(assetModel.modelName);
+        this.model = connection.model(assetModel.modelName);
     }
 }

@@ -3,7 +3,6 @@
  *
  * @namespace SalesService
  */
-
 import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
 import * as GMOAuthorizationFactory from '../factory/authorization/gmo';

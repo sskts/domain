@@ -2,9 +2,9 @@ import * as clone from 'clone';
 import * as createDebug from 'debug';
 import { Connection } from 'mongoose';
 
-import * as Authorization from '../factory/authorization';
-import * as Notification from '../factory/notification';
-import * as TransactionEvent from '../factory/transactionEvent';
+import * as AuthorizationFactory from '../factory/authorization';
+import * as NotificationFactory from '../factory/notification';
+import * as TransactionEventFactory from '../factory/transactionEvent';
 import TransactionEventGroup from '../factory/transactionEventGroup';
 
 import TransactionModel from './mongoose/model/transaction';
@@ -24,21 +24,19 @@ const debug = createDebug('sskts-domain:adapter:transaction');
 export default class TransactionAdapter {
     public readonly transactionModel: typeof TransactionModel;
     public readonly transactionEventModel: typeof TransactionEventModel;
-    private readonly connection: Connection;
 
     constructor(connection: Connection) {
-        this.connection = connection;
-        this.transactionModel = this.connection.model(TransactionModel.modelName);
-        this.transactionEventModel = this.connection.model(TransactionEventModel.modelName);
+        this.transactionModel = connection.model(TransactionModel.modelName);
+        this.transactionEventModel = connection.model(TransactionEventModel.modelName);
     }
 
-    public async addEvent(transactionEvent: TransactionEvent.ITransactionEvent) {
+    public async addEvent(transactionEvent: TransactionEventFactory.ITransactionEvent) {
         debug('creating transactionEvent...', transactionEvent);
         const update = clone(transactionEvent, false);
         await this.transactionEventModel.create([update]);
     }
 
-    public async findAuthorizationsById(id: string): Promise<Authorization.IAuthorization[]> {
+    public async findAuthorizationsById(id: string): Promise<AuthorizationFactory.IAuthorization[]> {
         const authorizations = (await this.transactionEventModel.find(
             {
                 transaction: id,
@@ -48,7 +46,7 @@ export default class TransactionAdapter {
         )
             .setOptions({ maxTimeMS: 10000 })
             .exec())
-            .map((doc) => <Authorization.IAuthorization>doc.get('authorization'));
+            .map((doc) => <AuthorizationFactory.IAuthorization>doc.get('authorization'));
 
         const removedAuthorizationIds = (await this.transactionEventModel.find(
             {
@@ -66,7 +64,7 @@ export default class TransactionAdapter {
         );
     }
 
-    public async findNotificationsById(id: string): Promise<Notification.INotification[]> {
+    public async findNotificationsById(id: string): Promise<NotificationFactory.INotification[]> {
         const notifications = (await this.transactionEventModel.find(
             {
                 transaction: id,
@@ -76,7 +74,7 @@ export default class TransactionAdapter {
         )
             .setOptions({ maxTimeMS: 10000 })
             .exec())
-            .map((doc) => <Notification.INotification>doc.get('notification'));
+            .map((doc) => <NotificationFactory.INotification>doc.get('notification'));
 
         const removedNotificationIds = (await this.transactionEventModel.find(
             {

@@ -34,10 +34,10 @@ export function create(args: {
     content: string;
 }): IEmailNotification {
     // todo validation
-    if (validator.isEmpty(args.from)) throw new Error('from required.');
-    if (validator.isEmpty(args.to)) throw new Error('to required.');
-    if (validator.isEmpty(args.subject)) throw new Error('subject required.');
-    if (validator.isEmpty(args.content)) throw new Error('content required.');
+    if (validator.isEmpty(args.from)) throw new RangeError('from required.');
+    if (validator.isEmpty(args.to)) throw new RangeError('to required.');
+    if (validator.isEmpty(args.subject)) throw new RangeError('subject required.');
+    if (validator.isEmpty(args.content)) throw new RangeError('content required.');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : (args.id),

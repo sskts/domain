@@ -17,10 +17,10 @@ const assert = require("assert");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const sskts = require("../../lib/index");
-const emailNotificationFactory = require("../../lib/factory/notification/email");
-const transactionFactory = require("../../lib/factory/transaction");
+const EmailNotificationFactory = require("../../lib/factory/notification/email");
+const TransactionFactory = require("../../lib/factory/transaction");
 const AddNotificationTransactionEventFactory = require("../../lib/factory/transactionEvent/addNotification");
-const transactionInquiryKey = require("../../lib/factory/transactionInquiryKey");
+const TransactionInquiryKeyFactory = require("../../lib/factory/transactionInquiryKey");
 const transactionQueuesStatus_1 = require("../../lib/factory/transactionQueuesStatus");
 const transactionStatus_1 = require("../../lib/factory/transactionStatus");
 let connection;
@@ -49,11 +49,11 @@ describe('transaction service', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         const status = transactionStatus_1.default.CLOSED;
         // test data
-        const transaction = transactionFactory.create({
+        const transaction = TransactionFactory.create({
             status: status,
             owners: [],
             expires_at: new Date(),
-            inquiry_key: transactionInquiryKey.create({
+            inquiry_key: TransactionInquiryKeyFactory.create({
                 theater_code: '000',
                 reserve_num: 123,
                 tel: '09012345678'
@@ -69,11 +69,11 @@ describe('transaction service', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         const status = transactionStatus_1.default.UNDERWAY;
         // test data
-        const transaction = transactionFactory.create({
+        const transaction = TransactionFactory.create({
             status: status,
             owners: [],
             expires_at: new Date(),
-            inquiry_key: transactionInquiryKey.create({
+            inquiry_key: TransactionInquiryKeyFactory.create({
                 theater_code: '000',
                 reserve_num: 123,
                 tel: '09012345678'
@@ -95,11 +95,11 @@ describe('transaction service', () => {
         const queueAdapter = sskts.adapter.queue(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         // test data
-        const transaction = transactionFactory.create({
+        const transaction = TransactionFactory.create({
             status: transactionStatus_1.default.CLOSED,
             owners: [],
             expires_at: new Date(),
-            inquiry_key: transactionInquiryKey.create({
+            inquiry_key: TransactionInquiryKeyFactory.create({
                 theater_code: '000',
                 reserve_num: 123,
                 tel: '09012345678'
@@ -109,7 +109,7 @@ describe('transaction service', () => {
         const event = AddNotificationTransactionEventFactory.create({
             transaction: transaction.id,
             occurred_at: new Date(),
-            notification: emailNotificationFactory.create({
+            notification: EmailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: 'hello',
                 subject: 'sskts-domain:test:service:transaction-test',
@@ -126,11 +126,11 @@ describe('transaction service', () => {
     it('reexportQueues ok.', () => __awaiter(this, void 0, void 0, function* () {
         const transactionAdapter = sskts.adapter.transaction(connection);
         // test data
-        const transaction = transactionFactory.create({
+        const transaction = TransactionFactory.create({
             status: transactionStatus_1.default.CLOSED,
             owners: [],
             expires_at: new Date(),
-            inquiry_key: transactionInquiryKey.create({
+            inquiry_key: TransactionInquiryKeyFactory.create({
                 theater_code: '000',
                 reserve_num: 123,
                 tel: '09012345678'
@@ -208,7 +208,7 @@ describe('transaction service', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         const transactionIds = [];
         const promises = Array.from(Array(3).keys()).map(() => __awaiter(this, void 0, void 0, function* () {
-            const transaction = transactionFactory.create({
+            const transaction = TransactionFactory.create({
                 status: transactionStatus_1.default.READY,
                 owners: [],
                 expires_at: moment().add(0, 'seconds').toDate()
@@ -226,7 +226,7 @@ describe('transaction service', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         const transactionIds = [];
         const promises = Array.from(Array(3).keys()).map(() => __awaiter(this, void 0, void 0, function* () {
-            const transaction = transactionFactory.create({
+            const transaction = TransactionFactory.create({
                 status: transactionStatus_1.default.READY,
                 owners: [],
                 expires_at: moment().add(60, 'seconds').toDate() // tslint:disable-line:no-magic-numbers

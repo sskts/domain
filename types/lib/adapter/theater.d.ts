@@ -8,7 +8,6 @@ import theaterModel from './mongoose/model/theater';
  * @class TheaterAdapter
  */
 export default class TheaterAdapter {
-    model: typeof theaterModel;
-    private readonly connection;
+    readonly model: typeof theaterModel;
     constructor(connection: Connection);
 }

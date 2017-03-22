@@ -1,8 +1,8 @@
 /// <reference types="mongoose" />
 import { Connection } from 'mongoose';
-import * as Authorization from '../factory/authorization';
-import * as Notification from '../factory/notification';
-import * as TransactionEvent from '../factory/transactionEvent';
+import * as AuthorizationFactory from '../factory/authorization';
+import * as NotificationFactory from '../factory/notification';
+import * as TransactionEventFactory from '../factory/transactionEvent';
 import TransactionModel from './mongoose/model/transaction';
 import TransactionEventModel from './mongoose/model/transactionEvent';
 /**
@@ -17,11 +17,10 @@ import TransactionEventModel from './mongoose/model/transactionEvent';
 export default class TransactionAdapter {
     readonly transactionModel: typeof TransactionModel;
     readonly transactionEventModel: typeof TransactionEventModel;
-    private readonly connection;
     constructor(connection: Connection);
-    addEvent(transactionEvent: TransactionEvent.ITransactionEvent): Promise<void>;
-    findAuthorizationsById(id: string): Promise<Authorization.IAuthorization[]>;
-    findNotificationsById(id: string): Promise<Notification.INotification[]>;
+    addEvent(transactionEvent: TransactionEventFactory.ITransactionEvent): Promise<void>;
+    findAuthorizationsById(id: string): Promise<AuthorizationFactory.IAuthorization[]>;
+    findNotificationsById(id: string): Promise<NotificationFactory.INotification[]>;
     /**
      * 成立可能かどうか
      *

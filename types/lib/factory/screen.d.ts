@@ -5,7 +5,7 @@
  */
 import * as COA from '@motionpicture/coa-service';
 import MultilingualString from './multilingualString';
-import * as Theater from './theater';
+import * as TheaterFactory from './theater';
 /**
  * スクリーン座席
  *
@@ -51,4 +51,4 @@ export interface IScreen {
  * @export
  * @param {COA.MasterService.ScreenResult} screenFromCOA
  */
-export declare function createFromCOA(screenFromCOA: COA.MasterService.ScreenResult): (theater: Theater.ITheater) => IScreen;
+export declare function createFromCOA(screenFromCOA: COA.MasterService.ScreenResult): (theater: TheaterFactory.ITheater) => IScreen;

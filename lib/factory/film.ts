@@ -21,7 +21,7 @@
  */
 import * as COA from '@motionpicture/coa-service';
 import MultilingualString from './multilingualString';
-import * as Theater from './theater';
+import * as TheaterFactory from './theater';
 
 export interface IFilm {
     id: string;
@@ -48,7 +48,7 @@ export interface IFilm {
  * @param {COA.MasterService.TitleResult} filmFromCOA
  */
 export function createFromCOA(filmFromCOA: COA.MasterService.TitleResult) {
-    return (theater: Theater.ITheater): IFilm => {
+    return (theater: TheaterFactory.ITheater): IFilm => {
         return {
             // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
             id: `${theater.id}${filmFromCOA.title_code}${filmFromCOA.title_branch_num}`,

@@ -8,12 +8,12 @@ import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import * as sskts from '../../lib/index';
 
-import * as emailNotificationFactory from '../../lib/factory/notification/email';
-import * as transactionFactory from '../../lib/factory/transaction';
+import * as EmailNotificationFactory from '../../lib/factory/notification/email';
+import * as TransactionFactory from '../../lib/factory/transaction';
 import * as AddNotificationTransactionEventFactory from '../../lib/factory/transactionEvent/addNotification';
-import * as transactionInquiryKey from '../../lib/factory/transactionInquiryKey';
-import transactionQueuesStatus from '../../lib/factory/transactionQueuesStatus';
-import transactionStatus from '../../lib/factory/transactionStatus';
+import * as TransactionInquiryKeyFactory from '../../lib/factory/transactionInquiryKey';
+import TransactionQueuesStatus from '../../lib/factory/transactionQueuesStatus';
+import TransactionStatus from '../../lib/factory/transactionStatus';
 
 let connection: mongoose.Connection;
 before(async () => {
@@ -42,42 +42,42 @@ describe('transaction service', () => {
     it('exportQueues ok.', async () => {
         const queueAdapter = sskts.adapter.queue(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
-        const status = transactionStatus.CLOSED;
+        const status = TransactionStatus.CLOSED;
 
         // test data
-        const transaction = transactionFactory.create({
+        const transaction = TransactionFactory.create({
             status: status,
             owners: [],
             expires_at: new Date(),
-            inquiry_key: transactionInquiryKey.create({
+            inquiry_key: TransactionInquiryKeyFactory.create({
                 theater_code: '000',
                 reserve_num: 123,
                 tel: '09012345678'
             }),
-            queues_status: transactionQueuesStatus.UNEXPORTED
+            queues_status: TransactionQueuesStatus.UNEXPORTED
         });
         await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
 
         const queueStatus = await sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
-        assert.equal(queueStatus, transactionQueuesStatus.EXPORTED);
+        assert.equal(queueStatus, TransactionQueuesStatus.EXPORTED);
     });
 
     it('exportQueues prohibited status.', async () => {
         const queueAdapter = sskts.adapter.queue(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
-        const status = transactionStatus.UNDERWAY;
+        const status = TransactionStatus.UNDERWAY;
 
         // test data
-        const transaction = transactionFactory.create({
+        const transaction = TransactionFactory.create({
             status: status,
             owners: [],
             expires_at: new Date(),
-            inquiry_key: transactionInquiryKey.create({
+            inquiry_key: TransactionInquiryKeyFactory.create({
                 theater_code: '000',
                 reserve_num: 123,
                 tel: '09012345678'
             }),
-            queues_status: transactionQueuesStatus.UNEXPORTED
+            queues_status: TransactionQueuesStatus.UNEXPORTED
         });
         await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
 
@@ -98,22 +98,22 @@ describe('transaction service', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
 
         // test data
-        const transaction = transactionFactory.create({
-            status: transactionStatus.CLOSED,
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.CLOSED,
             owners: [],
             expires_at: new Date(),
-            inquiry_key: transactionInquiryKey.create({
+            inquiry_key: TransactionInquiryKeyFactory.create({
                 theater_code: '000',
                 reserve_num: 123,
                 tel: '09012345678'
             }),
-            queues_status: transactionQueuesStatus.UNEXPORTED
+            queues_status: TransactionQueuesStatus.UNEXPORTED
         });
 
         const event = AddNotificationTransactionEventFactory.create({
             transaction: transaction.id,
             occurred_at: new Date(),
-            notification: emailNotificationFactory.create({
+            notification: EmailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: 'hello',
                 subject: 'sskts-domain:test:service:transaction-test',
@@ -135,16 +135,16 @@ describe('transaction service', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
 
         // test data
-        const transaction = transactionFactory.create({
-            status: transactionStatus.CLOSED,
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.CLOSED,
             owners: [],
             expires_at: new Date(),
-            inquiry_key: transactionInquiryKey.create({
+            inquiry_key: TransactionInquiryKeyFactory.create({
                 theater_code: '000',
                 reserve_num: 123,
                 tel: '09012345678'
             }),
-            queues_status: transactionQueuesStatus.EXPORTING
+            queues_status: TransactionQueuesStatus.EXPORTING
         });
         await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
 
@@ -152,7 +152,7 @@ describe('transaction service', () => {
 
         // ステータスが変更されているかどうか確認
         const retriedTransaction = await transactionAdapter.transactionModel.findById(transaction.id).exec();
-        assert.equal(retriedTransaction.get('queues_status'), transactionQueuesStatus.UNEXPORTED);
+        assert.equal(retriedTransaction.get('queues_status'), TransactionQueuesStatus.UNEXPORTED);
     });
 
     it('prepare ok', (done) => {
@@ -224,8 +224,8 @@ describe('transaction service', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         const transactionIds: string[] = [];
         const promises = Array.from(Array(3).keys()).map(async () => { // tslint:disable-line:no-magic-numbers
-            const transaction = transactionFactory.create({
-                status: transactionStatus.READY,
+            const transaction = TransactionFactory.create({
+                status: TransactionStatus.READY,
                 owners: [],
                 expires_at: moment().add(0, 'seconds').toDate()
             });
@@ -246,8 +246,8 @@ describe('transaction service', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         const transactionIds: string[] = [];
         const promises = Array.from(Array(3).keys()).map(async () => { // tslint:disable-line:no-magic-numbers
-            const transaction = transactionFactory.create({
-                status: transactionStatus.READY,
+            const transaction = TransactionFactory.create({
+                status: TransactionStatus.READY,
                 owners: [],
                 expires_at: moment().add(60, 'seconds').toDate() // tslint:disable-line:no-magic-numbers
             });

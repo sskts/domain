@@ -8,7 +8,6 @@ import ownerModel from './mongoose/model/owner';
  * @class OwnerAdapter
  */
 export default class OwnerAdapter {
-    model: typeof ownerModel;
-    private readonly connection;
+    readonly model: typeof ownerModel;
     constructor(connection: Connection);
 }

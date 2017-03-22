@@ -3,7 +3,6 @@
  *
  * @namespace StockService
  */
-
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 

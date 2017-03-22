@@ -4,8 +4,8 @@
  * @namespace AssetFactory
  */
 import AssetGroup from './assetGroup';
-import * as Authorization from './authorization';
-import * as Ownership from './ownership';
+import * as AuthorizationFactory from './authorization';
+import * as OwnershipFactory from './ownership';
 
 /**
  * 資産インターフェース
@@ -22,7 +22,7 @@ import * as Ownership from './ownership';
 export interface IAsset {
     id: string;
     group: AssetGroup;
-    ownership: Ownership.IOwnership;
+    ownership: OwnershipFactory.IOwnership;
     price: number;
-    authorizations: Authorization.IAuthorization[];
+    authorizations: AuthorizationFactory.IAuthorization[];
 }
