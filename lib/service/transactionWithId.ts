@@ -7,6 +7,9 @@ import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 
 import * as Authorization from '../factory/authorization';
+import * as COASeatReservationAuthorization from '../factory/authorization/coaSeatReservation';
+import * as GMOAuthorization from '../factory/authorization/gmo';
+import * as MvtkAuthorization from '../factory/authorization/mvtk';
 import * as Notification from '../factory/notification';
 import OwnerGroup from '../factory/ownerGroup';
 import * as Transaction from '../factory/transaction';
@@ -32,7 +35,7 @@ const debug = createDebug('sskts-domain:service:transaction');
  * @param {string} id
  * @returns {TransactionOperation<monapt.Option<Transaction>>}
  *
- * @memberOf TransactionService
+ * @memberOf TransactionWithIdService
  */
 export function findById(id: string): TransactionOperation<monapt.Option<Transaction.ITransaction>> {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -41,16 +44,7 @@ export function findById(id: string): TransactionOperation<monapt.Option<Transac
     };
 }
 
-/**
- * GMO資産承認
- *
- * @param {string} transactionId
- * @param {GMOAuthorization} authorization
- * @returns {TransactionOperation<void>}
- *
- * @memberOf TransactionService
- */
-export function addGMOAuthorization(transactionId: string, authorization: Authorization.IGMOAuthorization) {
+function addAuthorization(transactionId: string, authorization: Authorization.IAuthorization) {
     return async (transactionAdapter: TransactionAdapter) => {
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
@@ -84,44 +78,45 @@ export function addGMOAuthorization(transactionId: string, authorization: Author
 }
 
 /**
+ * GMO資産承認
+ *
+ * @param {string} transactionId
+ * @param {GMOAuthorization} authorization
+ * @returns {TransactionOperation<void>}
+ *
+ * @memberOf TransactionWithIdService
+ */
+export function addGMOAuthorization(transactionId: string, authorization: GMOAuthorization.IGMOAuthorization) {
+    return addAuthorization(transactionId, authorization);
+}
+
+/**
  * COA資産承認
  *
  * @param {string} transactionId
  * @param {COASeatReservationAuthorization} authorization
  * @returns {OwnerAndTransactionOperation<void>}
  *
- * @memberOf TransactionService
+ * @memberOf TransactionWithIdService
  */
-export function addCOASeatReservationAuthorization(transactionId: string, authorization: Authorization.ICOASeatReservationAuthorization) {
-    return async (transactionAdapter: TransactionAdapter) => {
-        // 取引取得
-        const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
-        if (doc === null) {
-            throw new Error(`transaction[${transactionId}] not found.`);
-        }
-        const transaction = <Transaction.ITransaction>doc.toObject();
+export function addCOASeatReservationAuthorization(
+    transactionId: string,
+    authorization: COASeatReservationAuthorization.ICOASeatReservationAuthorization
+) {
+    return addAuthorization(transactionId, authorization);
+}
 
-        const ownerIds = transaction.owners.map((owner) => {
-            return owner.id;
-        });
-        if (ownerIds.indexOf(authorization.owner_from) < 0) {
-            throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_from}].`);
-        }
-        if (ownerIds.indexOf(authorization.owner_to) < 0) {
-            throw new Error(`transaction[${transactionId}] does not contain a owner[${authorization.owner_to}].`);
-        }
-
-        // イベント作成
-        const event = TransactionEvent.createAuthorize({
-            transaction: transaction.id,
-            occurred_at: new Date(),
-            authorization: authorization
-        });
-
-        // 永続化
-        debug('adding an event...', event);
-        await transactionAdapter.addEvent(event);
-    };
+/**
+ * ムビチケ着券承認追加
+ *
+ * @param {string} transactionId
+ * @param {MvtkAuthorization.IMvtkAuthorization} authorization
+ * @returns {OwnerAndTransactionOperation<void>}
+ *
+ * @memberOf TransactionWithIdService
+ */
+export function addMvtkAuthorization(transactionId: string, authorization: MvtkAuthorization.IMvtkAuthorization) {
+    return addAuthorization(transactionId, authorization);
 }
 
 /**
@@ -131,7 +126,7 @@ export function addCOASeatReservationAuthorization(transactionId: string, author
  * @param {string} authorizationId
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionService
+ * @memberOf TransactionWithIdService
  */
 export function removeAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -168,7 +163,7 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
  * @param {EmailNotification} notification
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionService
+ * @memberOf TransactionWithIdService
  */
 export function addEmail(transactionId: string, notification: Notification.IEmailNotification) {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -192,7 +187,7 @@ export function addEmail(transactionId: string, notification: Notification.IEmai
  * @param {string} notificationId
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionService
+ * @memberOf TransactionWithIdService
  */
 export function removeEmail(transactionId: string, notificationId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -226,7 +221,7 @@ export function removeEmail(transactionId: string, notificationId: string) {
  *
  * @returns {OwnerAndTransactionOperation<void>}
  *
- * @memberOf TransactionService
+ * @memberOf TransactionWithIdService
  */
 export function updateAnonymousOwner(args: {
     transaction_id: string,
@@ -274,7 +269,7 @@ export function updateAnonymousOwner(args: {
  * @param {TransactionInquiryKey} key
  * @returns {TransactionOperation<monapt.Option<Transaction>>}
  *
- * @memberOf TransactionService
+ * @memberOf TransactionWithIdService
  */
 export function enableInquiry(id: string, key: TransactionInquiryKey.ITransactionInquiryKey) {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -303,7 +298,7 @@ export function enableInquiry(id: string, key: TransactionInquiryKey.ITransactio
  * @param {string} transactionId
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionService
+ * @memberOf TransactionWithIdService
  */
 export function close(id: string) {
     return async (transactionAdapter: TransactionAdapter) => {

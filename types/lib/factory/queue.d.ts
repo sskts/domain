@@ -4,9 +4,6 @@
  *
  * @namespace QueueFacroty
  */
-import * as Authorization from '../factory/authorization';
-import * as Notification from '../factory/notification';
-import * as Transaction from '../factory/transaction';
 import QueueGroup from './queueGroup';
 import QueueStatus from './queueStatus';
 /**
@@ -34,83 +31,3 @@ export interface IQueue {
     count_tried: number;
     results: string[];
 }
-/**
- * オーソリ解除キュー
- *
- * @param {T} authorization
- */
-export interface ICancelAuthorizationQueue<T extends Authorization.IAuthorization> extends IQueue {
-    authorization: T;
-}
-/**
- * 取引照会無効化キュー
- */
-export interface IDisableTransactionInquiryQueue extends IQueue {
-    transaction: Transaction.ITransaction;
-}
-/**
- * プッシュ通知キュー
- *
- * @param {T} notification
- */
-export interface IPushNotificationQueue<T extends Notification.INotification> extends IQueue {
-    notification: T;
-}
-/**
- * 資産移動キュー
- *
- * @param {T} authorization
- */
-export interface ISettleAuthorizationQueue<T extends Authorization.IAuthorization> extends IQueue {
-    authorization: T;
-}
-export declare function create(args: {
-    id?: string;
-    group: QueueGroup;
-    status: QueueStatus;
-    run_at: Date;
-    max_count_try: number;
-    last_tried_at: Date | null;
-    count_tried: number;
-    results: string[];
-}): IQueue;
-export declare function createSettleAuthorization<T extends Authorization.IAuthorization>(args: {
-    id?: string;
-    authorization: T;
-    status: QueueStatus;
-    run_at: Date;
-    max_count_try: number;
-    last_tried_at: Date | null;
-    count_tried: number;
-    results: string[];
-}): ISettleAuthorizationQueue<T>;
-export declare function createCancelAuthorization<T extends Authorization.IAuthorization>(args: {
-    id?: string;
-    authorization: T;
-    status: QueueStatus;
-    run_at: Date;
-    max_count_try: number;
-    last_tried_at: Date | null;
-    count_tried: number;
-    results: string[];
-}): ICancelAuthorizationQueue<T>;
-export declare function createPushNotification<T extends Notification.INotification>(args: {
-    id?: string;
-    notification: T;
-    status: QueueStatus;
-    run_at: Date;
-    max_count_try: number;
-    last_tried_at: Date | null;
-    count_tried: number;
-    results: string[];
-}): IPushNotificationQueue<T>;
-export declare function createDisableTransactionInquiry(args: {
-    id?: string;
-    transaction: Transaction.ITransaction;
-    status: QueueStatus;
-    run_at: Date;
-    max_count_try: number;
-    last_tried_at: Date | null;
-    count_tried: number;
-    results: string[];
-}): IDisableTransactionInquiryQueue;

@@ -4,10 +4,13 @@ import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import * as assetFactory from '../../lib/factory/asset';
-import * as authorizationFactory from '../../lib/factory/authorization';
+import * as coaSeatReservationAuthorizationFactory from '../../lib/factory/authorization/coaSeatReservation';
+import * as gmoAuthorizationFactory from '../../lib/factory/authorization/gmo';
 import * as notificationFactory from '../../lib/factory/notification';
 import * as ownershipFactory from '../../lib/factory/ownership';
-import * as queueFactory from '../../lib/factory/queue';
+import * as disableTransactionInquiryQueueFactory from '../../lib/factory/queue/disableTransactionInquiry';
+import * as pushNotificationQueueFactory from '../../lib/factory/queue/pushNotification';
+import * as settleAuthorizationQueueFactory from '../../lib/factory/queue/settleAuthorization';
 import queueStatus from '../../lib/factory/queueStatus';
 import * as transactionFactory from '../../lib/factory/transaction';
 import transactionStatus from '../../lib/factory/transactionStatus';
@@ -28,7 +31,7 @@ describe('queue service', () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = queueFactory.createPushNotification({
+        const queue = pushNotificationQueueFactory.create({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
@@ -52,7 +55,7 @@ describe('queue service', () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = queueFactory.createPushNotification({
+        const queue = pushNotificationQueueFactory.create({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
                 to: 'hello',
@@ -77,8 +80,8 @@ describe('queue service', () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = queueFactory.createSettleAuthorization({
-            authorization: authorizationFactory.createCOASeatReservation({
+        const queue = settleAuthorizationQueueFactory.create({
+            authorization: coaSeatReservationAuthorizationFactory.create({
                 price: 0,
                 owner_from: 'xxx',
                 owner_to: 'xxx',
@@ -127,8 +130,8 @@ describe('queue service', () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = queueFactory.createSettleAuthorization({
-            authorization: authorizationFactory.createGMO({
+        const queue = settleAuthorizationQueueFactory.create({
+            authorization: gmoAuthorizationFactory.create({
                 id: 'xxx',
                 price: 0,
                 owner_from: 'xxx',
@@ -160,7 +163,7 @@ describe('queue service', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
 
         // test data
-        const queue = queueFactory.createDisableTransactionInquiry({
+        const queue = disableTransactionInquiryQueueFactory.create({
             transaction: transactionFactory.create({
                 status: transactionStatus.CLOSED,
                 owners: [],
@@ -183,7 +186,7 @@ describe('queue service', () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = queueFactory.createPushNotification({
+        const queue = pushNotificationQueueFactory.create({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
@@ -210,7 +213,7 @@ describe('queue service', () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = queueFactory.createPushNotification({
+        const queue = pushNotificationQueueFactory.create({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
@@ -234,7 +237,7 @@ describe('queue service', () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = queueFactory.createPushNotification({
+        const queue = pushNotificationQueueFactory.create({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,

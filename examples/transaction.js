@@ -55,11 +55,11 @@ function main() {
         const anonymousOwnerId = anonymousOwner.id;
         // 空席なくなったら変更する
         const theaterCode = '118';
-        const dateJouei = '20170309';
-        const titleCode = '17062';
+        const dateJouei = '20170324';
+        const titleCode = '17165';
         const titleBranchNum = '0';
-        const timeBegin = '1450';
-        const screenCode = '2';
+        const timeBegin = '2045';
+        const screenCode = '60';
         // 販売可能チケット検索
         const salesTicketResult = yield COA.ReserveService.salesTicket({
             theater_code: theaterCode,
@@ -104,7 +104,7 @@ function main() {
         // COAオーソリ追加
         console.log('adding authorizations coaSeatReservation...');
         const totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
-        const coaAuthorization = sskts.factory.authorization.createCOASeatReservation({
+        const coaAuthorization = sskts.factory.authorization.coaSeatReservation.create({
             owner_from: promoterOwnerId,
             owner_to: anonymousOwnerId,
             coa_tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
@@ -159,7 +159,7 @@ function main() {
         console.log(execTranResult);
         // GMOオーソリ追加
         console.log('adding authorizations gmo...');
-        const gmoAuthorization = sskts.factory.authorization.createGMO({
+        const gmoAuthorization = sskts.factory.authorization.gmo.create({
             owner_from: anonymousOwnerId,
             owner_to: promoterOwnerId,
             gmo_shop_id: gmoShopId,

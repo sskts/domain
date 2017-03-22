@@ -23,7 +23,7 @@ export interface IAsset {
     group: AssetGroup;
     ownership: Ownership.IOwnership;
     price: number;
-    authorizations: Authorization.IAssetAuthorization[];
+    authorizations: Authorization.IAuthorization[];
 }
 /**
  * 座席予約資産
@@ -68,7 +68,7 @@ export interface ISeatReservationAsset extends IAsset {
 export declare function createSeatReservation(args: {
     id?: string;
     ownership: Ownership.IOwnership;
-    authorizations?: Authorization.IAssetAuthorization[];
+    authorizations?: Authorization.IAuthorization[];
     performance: string;
     section: string;
     seat_code: string;

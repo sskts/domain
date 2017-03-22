@@ -13,10 +13,13 @@ const assert = require("assert");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const assetFactory = require("../../lib/factory/asset");
-const authorizationFactory = require("../../lib/factory/authorization");
+const coaSeatReservationAuthorizationFactory = require("../../lib/factory/authorization/coaSeatReservation");
+const gmoAuthorizationFactory = require("../../lib/factory/authorization/gmo");
 const notificationFactory = require("../../lib/factory/notification");
 const ownershipFactory = require("../../lib/factory/ownership");
-const queueFactory = require("../../lib/factory/queue");
+const disableTransactionInquiryQueueFactory = require("../../lib/factory/queue/disableTransactionInquiry");
+const pushNotificationQueueFactory = require("../../lib/factory/queue/pushNotification");
+const settleAuthorizationQueueFactory = require("../../lib/factory/queue/settleAuthorization");
 const queueStatus_1 = require("../../lib/factory/queueStatus");
 const transactionFactory = require("../../lib/factory/transaction");
 const transactionStatus_1 = require("../../lib/factory/transactionStatus");
@@ -32,7 +35,7 @@ describe('queue service', () => {
     it('executeSendEmailNotification ok.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = queueFactory.createPushNotification({
+        const queue = pushNotificationQueueFactory.create({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
@@ -53,7 +56,7 @@ describe('queue service', () => {
     it('executeSendEmailNotification fail because email to is invalid.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = queueFactory.createPushNotification({
+        const queue = pushNotificationQueueFactory.create({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
                 to: 'hello',
@@ -75,8 +78,8 @@ describe('queue service', () => {
         const assetAdapter = sskts.adapter.asset(connection);
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = queueFactory.createSettleAuthorization({
-            authorization: authorizationFactory.createCOASeatReservation({
+        const queue = settleAuthorizationQueueFactory.create({
+            authorization: coaSeatReservationAuthorizationFactory.create({
                 price: 0,
                 owner_from: 'xxx',
                 owner_to: 'xxx',
@@ -122,8 +125,8 @@ describe('queue service', () => {
     it('executeSettleGMOAuthorization fail because gmo authorization is invalid.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = queueFactory.createSettleAuthorization({
-            authorization: authorizationFactory.createGMO({
+        const queue = settleAuthorizationQueueFactory.create({
+            authorization: gmoAuthorizationFactory.create({
                 id: 'xxx',
                 price: 0,
                 owner_from: 'xxx',
@@ -152,7 +155,7 @@ describe('queue service', () => {
         const queueAdapter = sskts.adapter.queue(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         // test data
-        const queue = queueFactory.createDisableTransactionInquiry({
+        const queue = disableTransactionInquiryQueueFactory.create({
             transaction: transactionFactory.create({
                 status: transactionStatus_1.default.CLOSED,
                 owners: [],
@@ -172,7 +175,7 @@ describe('queue service', () => {
     it('retry ok.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = queueFactory.createPushNotification({
+        const queue = pushNotificationQueueFactory.create({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
@@ -195,7 +198,7 @@ describe('queue service', () => {
     it('abort ok.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = queueFactory.createPushNotification({
+        const queue = pushNotificationQueueFactory.create({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
@@ -216,7 +219,7 @@ describe('queue service', () => {
     it('not retry because it has reached to max_count_try.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = queueFactory.createPushNotification({
+        const queue = pushNotificationQueueFactory.create({
             notification: notificationFactory.createEmail({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,

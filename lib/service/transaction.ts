@@ -12,7 +12,11 @@ import * as monapt from 'monapt';
 
 import * as Owner from '../factory/owner';
 import OwnerGroup from '../factory/ownerGroup';
-import * as Queue from '../factory/queue';
+import * as queueFactory from '../factory/queue';
+import * as cancelAuthorizationQueueFactory from '../factory/queue/cancelAuthorization';
+import * as disableTransactionInquiryQueueFactory from '../factory/queue/disableTransactionInquiry';
+import * as pushNotificationQueueFactory from '../factory/queue/pushNotification';
+import * as settleAuthorizationQueueFactory from '../factory/queue/settleAuthorization';
 import QueueStatus from '../factory/queueStatus';
 import * as Transaction from '../factory/transaction';
 import * as TransactionInquiryKey from '../factory/transactionInquiryKey';
@@ -262,12 +266,12 @@ export function exportQueuesById(id: string) {
         }
         const transaction = <Transaction.ITransaction>doc.toObject();
 
-        const queues: Queue.IQueue[] = [];
+        const queues: queueFactory.IQueue[] = [];
         switch (transaction.status) {
             case transactionStatus.CLOSED:
                 // 取引イベントからキューリストを作成
                 (await transactionAdapter.findAuthorizationsById(transaction.id)).forEach((authorization) => {
-                    queues.push(Queue.createSettleAuthorization({
+                    queues.push(settleAuthorizationQueueFactory.create({
                         authorization: authorization,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(), // なるはやで実行
@@ -279,7 +283,7 @@ export function exportQueuesById(id: string) {
                 });
 
                 (await transactionAdapter.findNotificationsById(transaction.id)).forEach((notification) => {
-                    queues.push(Queue.createPushNotification({
+                    queues.push(pushNotificationQueueFactory.create({
                         notification: notification,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(), // todo emailのsent_atを指定
@@ -295,7 +299,7 @@ export function exportQueuesById(id: string) {
             // 期限切れの場合は、キューリストを作成する
             case transactionStatus.EXPIRED:
                 (await transactionAdapter.findAuthorizationsById(transaction.id)).forEach((authorization) => {
-                    queues.push(Queue.createCancelAuthorization({
+                    queues.push(cancelAuthorizationQueueFactory.create({
                         authorization: authorization,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(),
@@ -308,7 +312,7 @@ export function exportQueuesById(id: string) {
 
                 // COA本予約があれば取消
                 if (transaction.inquiry_key !== null) {
-                    queues.push(Queue.createDisableTransactionInquiry({
+                    queues.push(disableTransactionInquiryQueueFactory.create({
                         transaction: transaction,
                         status: QueueStatus.UNEXECUTED,
                         run_at: new Date(),

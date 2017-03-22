@@ -23,7 +23,9 @@ import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
 import * as asset from './factory/asset';
 import assetGroup from './factory/assetGroup';
-import * as authorization from './factory/authorization';
+import * as coaSeatReservationAuthorization from './factory/authorization/coaSeatReservation';
+import * as gmoAuthorization from './factory/authorization/gmo';
+import * as mvtkAuthorization from './factory/authorization/mvtk';
 import authorizationGroup from './factory/authorizationGroup';
 import * as film from './factory/film';
 import * as notification from './factory/notification';
@@ -66,7 +68,11 @@ export declare const service: {
 export declare const factory: {
     asset: typeof asset;
     assetGroup: typeof assetGroup;
-    authorization: typeof authorization;
+    authorization: {
+        coaSeatReservation: typeof coaSeatReservationAuthorization;
+        gmo: typeof gmoAuthorization;
+        mvtk: typeof mvtkAuthorization;
+    };
     authorizationGroup: typeof authorizationGroup;
     film: typeof film;
     notification: typeof notification;
