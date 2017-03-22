@@ -38,27 +38,28 @@ const schema = new mongoose.Schema(
 
 // キューエクスポート時の検索で使用
 schema.index(
-    {
-        status: 1,
-        queues_status: 1
-    }
+    { status: 1, queues_status: 1 }
 );
 
 // 取引期限切れ確認等に使用
 schema.index(
-    {
-        status: 1,
-        expires_at: 1
-    }
+    { status: 1, expires_at: 1 }
 );
 
 // 実行中キューエクスポート監視に使用
 // todo updated_atでの確認仕様を見直し
 schema.index(
-    {
-        queues_status: 1,
-        updated_at: 1
-    }
+    { queues_status: 1, updated_at: 1 }
+);
+
+// 取引進行中は、基本的にIDとステータスで参照する
+schema.index(
+    { _id: 1, status: 1 }
+);
+
+// 購入番号から照会の際に使用
+schema.index(
+    { 'inquiry_key.reserve_num': 1, 'inquiry_key.tel': 1, 'inquiry_key.theater_code': 1, status: 1 }
 );
 
 export default mongoose.model('Transaction', schema);

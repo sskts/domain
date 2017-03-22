@@ -5,6 +5,7 @@ import theaterModel from './theater';
 
 /**
  * パフォーマンススキーマ
+ * todo COAから引き継げていない項目追加
  *
  * @ignore
  */
@@ -59,11 +60,9 @@ const schema = new mongoose.Schema(
     }
 );
 
+// パフォーマンス検索時に使用
 schema.index(
-    {
-        day: 1,
-        time_start: 1
-    }
+    { theater: 1, day: 1, time_start: 1 }
 );
 
 export default mongoose.model('Performance', schema);

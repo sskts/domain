@@ -17,7 +17,7 @@ function main() {
             mongoose.Promise = global.Promise;
             const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
             const performances = yield sskts.service.master.searchPerformances({
-                day: '20170311',
+                day: '20170328',
                 theater: '118'
             })(sskts.adapter.performance(connection));
             console.log(performances);

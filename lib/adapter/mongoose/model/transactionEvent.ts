@@ -31,4 +31,9 @@ const schema = new mongoose.Schema(
     }
 );
 
+// 取引のイベント検索時に使用
+schema.index(
+    { group: 1, transaction: 1 }
+);
+
 export default mongoose.model('TransactionEvent', schema);

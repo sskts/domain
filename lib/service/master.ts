@@ -211,24 +211,22 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
  *
  * @memberOf MasterService
  */
-export function searchPerformances(conditions: ISearchPerformancesConditions):
+export function searchPerformances(searchConditions: ISearchPerformancesConditions):
     PerformanceOperation<ISearchPerformancesResult[]> {
     return async (performanceRepo: PerformanceAdapter): Promise<ISearchPerformancesResult[]> => {
         // 検索条件を作成
-        const andConditions: any[] = [
-            { _id: { $ne: null } }
-        ];
+        const conditions: any = {};
 
-        if (conditions.day !== undefined) {
-            andConditions.push({ day: conditions.day });
+        if (searchConditions.day !== undefined) {
+            conditions.day = searchConditions.day;
         }
 
-        if (conditions.theater !== undefined) {
-            andConditions.push({ theater: conditions.theater });
+        if (searchConditions.theater !== undefined) {
+            conditions.theater = searchConditions.theater;
         }
 
-        debug('finding performances...', andConditions);
-        const docs = await performanceRepo.model.find({ $and: andConditions })
+        debug('finding performances...', conditions);
+        const docs = await performanceRepo.model.find(conditions)
             .setOptions({ maxTimeMS: 10000 })
             .populate('film')
             .populate('theater')

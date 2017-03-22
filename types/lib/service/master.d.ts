@@ -84,7 +84,7 @@ export declare function importPerformances(theaterCode: string, dayStart: string
  *
  * @memberOf MasterService
  */
-export declare function searchPerformances(conditions: ISearchPerformancesConditions): PerformanceOperation<ISearchPerformancesResult[]>;
+export declare function searchPerformances(searchConditions: ISearchPerformancesConditions): PerformanceOperation<ISearchPerformancesResult[]>;
 /**
  * IDで劇場検索
  *

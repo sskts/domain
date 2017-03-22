@@ -33,4 +33,9 @@ const schema = new mongoose.Schema(
     }
 );
 
+// 所有者を特定する時に使用
+schema.index(
+    { group: 1 }
+);
+
 export default mongoose.model('Owner', schema);
