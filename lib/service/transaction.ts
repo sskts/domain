@@ -312,7 +312,7 @@ export function exportQueuesById(id: string) {
                 });
 
                 // COA本予約があれば取消
-                if (transaction.inquiry_key !== null) {
+                if (transaction.inquiry_key !== undefined) {
                     queues.push(DisableTransactionInquiryQueueFactory.create({
                         transaction: transaction,
                         status: QueueStatus.UNEXECUTED,

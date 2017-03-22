@@ -7,7 +7,7 @@ import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
 import * as sskts from '../lib/index';
 
-const debug = createDebug('sskts-api:*');
+const debug = createDebug('sskts-domain:examples');
 
 (<any>mongoose).Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);

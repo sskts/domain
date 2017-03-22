@@ -318,7 +318,7 @@ export function close(id: string) {
         }
 
         // 照会可能になっているかどうか
-        if (doc.get('inquiry_key') === null) {
+        if (doc.get('inquiry_key') === undefined) {
             return monapt.Option(new RangeError('inquiry is not available.'));
         }
 

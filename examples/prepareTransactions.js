@@ -9,26 +9,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 興行所有者作成
+ * 取引在庫準備
  *
  * @ignore
  */
 const createDebug = require("debug");
 const mongoose = require("mongoose");
 const sskts = require("../lib/index");
-const debug = createDebug('sskts-domain:examples');
-mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI);
+const debug = createDebug('sskts-domain:examples:prepareTransactions');
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        const ownerAdapter = sskts.adapter.owner(mongoose.connection);
-        const owner = sskts.factory.owner.promoter.create({
-            name: {
-                ja: '佐々木興業株式会社',
-                en: 'Cinema Sunshine Co., Ltd.'
-            },
-        });
-        yield ownerAdapter.model.findByIdAndUpdate(owner.id, owner, { new: true, upsert: true });
+        mongoose.Promise = global.Promise;
+        const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        yield transactionAdapter.transactionModel.remove({}).exec();
+        // tslint:disable-next-line:no-magic-numbers
+        yield sskts.service.transaction.prepare(1, 60)(transactionAdapter);
         mongoose.disconnect();
     });
 }

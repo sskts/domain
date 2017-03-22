@@ -7,7 +7,7 @@ export interface ITransaction {
     status: TransactionStatus;
     owners: OwnerFactory.IOwner[];
     expires_at: Date;
-    inquiry_key: TransactionInquiryKeyFactory.ITransactionInquiryKey | null;
+    inquiry_key: TransactionInquiryKeyFactory.ITransactionInquiryKey | undefined;
     queues_status: TransactionQueuesStatus;
 }
 export declare function create(args: {

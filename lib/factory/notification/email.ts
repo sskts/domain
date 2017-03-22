@@ -40,7 +40,7 @@ export function create(args: {
     if (validator.isEmpty(args.content)) throw new RangeError('content required.');
 
     return {
-        id: (args.id === undefined) ? ObjectId().toString() : (args.id),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: NotificationGroup.EMAIL,
         from: args.from,
         to: args.to,

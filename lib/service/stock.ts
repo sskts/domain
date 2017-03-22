@@ -69,7 +69,7 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
  */
 export function disableTransactionInquiry(transaction: TransactionFactory.ITransaction) {
     return async (transactionAdapter: TransactionAdapter) => {
-        if (transaction.inquiry_key === null) {
+        if (transaction.inquiry_key === undefined) {
             throw new RangeError('inquiry_key not created.');
         }
 
@@ -99,9 +99,7 @@ export function disableTransactionInquiry(transaction: TransactionFactory.ITrans
             {
                 _id: transaction.id
             },
-            {
-                inquiry_key: null
-            }
+            { $unset: { inquiry_key: '' } }
         ).exec();
     };
 }

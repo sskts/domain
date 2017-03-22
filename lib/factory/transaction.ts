@@ -23,7 +23,7 @@ export interface ITransaction {
     status: TransactionStatus;
     owners: OwnerFactory.IOwner[];
     expires_at: Date;
-    inquiry_key: TransactionInquiryKeyFactory.ITransactionInquiryKey | null;
+    inquiry_key: TransactionInquiryKeyFactory.ITransactionInquiryKey | undefined;
     queues_status: TransactionQueuesStatus;
 }
 
@@ -36,11 +36,11 @@ export function create(args: {
     queues_status?: TransactionQueuesStatus;
 }): ITransaction {
     return {
-        id: (args.id === undefined) ? ObjectId().toString() : (args.id),
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         status: args.status,
         owners: args.owners,
         expires_at: args.expires_at,
-        inquiry_key: (args.inquiry_key === undefined) ? null : (args.inquiry_key),
-        queues_status: (args.queues_status === undefined) ? TransactionQueuesStatus.UNEXPORTED : (args.queues_status)
+        inquiry_key: args.inquiry_key,
+        queues_status: (args.queues_status === undefined) ? TransactionQueuesStatus.UNEXPORTED : args.queues_status
     };
 }
