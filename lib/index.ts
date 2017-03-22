@@ -23,7 +23,7 @@ import ScreenAdapter from './adapter/screen';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
 
-import * as AssetFactory from './factory/asset';
+import * as SeatReservationAssetFactory from './factory/asset/seatReservation';
 import AssetGroup from './factory/assetGroup';
 import * as CoaSeatReservationAuthorizationFactory from './factory/authorization/coaSeatReservation';
 import * as GmoAuthorizationFactory from './factory/authorization/gmo';
@@ -90,7 +90,9 @@ export const service = {
 };
 
 export const factory = {
-    asset: AssetFactory,
+    asset: {
+        seatReservation: SeatReservationAssetFactory
+    },
     assetGroup: AssetGroup,
     authorization: {
         coaSeatReservation: CoaSeatReservationAuthorizationFactory,

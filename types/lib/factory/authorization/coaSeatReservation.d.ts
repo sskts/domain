@@ -1,4 +1,4 @@
-import * as Asset from '../asset';
+import * as SeatReservationAssetFactory from '../asset/seatReservation';
 import * as AuthorizationFactory from '../authorization';
 /**
  * COA座席仮予約
@@ -20,7 +20,7 @@ export interface ICOASeatReservationAuthorization extends AuthorizationFactory.I
     coa_title_branch_num: string;
     coa_time_begin: string;
     coa_screen_code: string;
-    assets: Asset.ISeatReservationAsset[];
+    assets: SeatReservationAssetFactory.ISeatReservationAsset[];
 }
 export declare function create(args: {
     id?: string;
@@ -34,5 +34,5 @@ export declare function create(args: {
     coa_title_branch_num: string;
     coa_time_begin: string;
     coa_screen_code: string;
-    assets: Asset.ISeatReservationAsset[];
+    assets: SeatReservationAssetFactory.ISeatReservationAsset[];
 }): ICOASeatReservationAuthorization;

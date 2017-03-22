@@ -112,7 +112,7 @@ async function main() {
         coa_time_begin: timeBegin,
         coa_screen_code: screenCode,
         assets: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
-            return sskts.factory.asset.createSeatReservation({
+            return sskts.factory.asset.seatReservation.create({
                 ownership: sskts.factory.ownership.create({
                     owner: anonymousOwnerId,
                     authenticated: false

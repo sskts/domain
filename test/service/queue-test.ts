@@ -1,19 +1,23 @@
-// tslint:disable-next-line:missing-jsdoc
+/**
+ * キューサービステスト
+ *
+ * @ignore
+ */
 import * as assert from 'assert';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-import * as assetFactory from '../../lib/factory/asset';
-import * as coaSeatReservationAuthorizationFactory from '../../lib/factory/authorization/coaSeatReservation';
-import * as gmoAuthorizationFactory from '../../lib/factory/authorization/gmo';
-import * as emailNotificationFactory from '../../lib/factory/notification/email';
-import * as ownershipFactory from '../../lib/factory/ownership';
-import * as disableTransactionInquiryQueueFactory from '../../lib/factory/queue/disableTransactionInquiry';
-import * as pushNotificationQueueFactory from '../../lib/factory/queue/pushNotification';
-import * as settleAuthorizationQueueFactory from '../../lib/factory/queue/settleAuthorization';
-import queueStatus from '../../lib/factory/queueStatus';
-import * as transactionFactory from '../../lib/factory/transaction';
-import transactionStatus from '../../lib/factory/transactionStatus';
+import * as SeatReservationAssetFactory from '../../lib/factory/asset/seatReservation';
+import * as CoaSeatReservationAuthorizationFactory from '../../lib/factory/authorization/coaSeatReservation';
+import * as GmoAuthorizationFactory from '../../lib/factory/authorization/gmo';
+import * as EmailNotificationFactory from '../../lib/factory/notification/email';
+import * as OwnershipFactory from '../../lib/factory/ownership';
+import * as DisableTransactionInquiryQueueFactory from '../../lib/factory/queue/disableTransactionInquiry';
+import * as PushNotificationQueueFactory from '../../lib/factory/queue/pushNotification';
+import * as SettleAuthorizationQueueFactory from '../../lib/factory/queue/settleAuthorization';
+import QueueStatus from '../../lib/factory/queueStatus';
+import * as TransactionFactory from '../../lib/factory/transaction';
+import TransactionStatus from '../../lib/factory/transactionStatus';
 
 import * as sskts from '../../lib/index';
 
@@ -31,14 +35,14 @@ describe('queue service', () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = pushNotificationQueueFactory.create({
-            notification: emailNotificationFactory.create({
+        const queue = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
                 content: 'sskts-domain:test:service:queue-test'
             }),
-            status: queueStatus.UNEXECUTED,
+            status: QueueStatus.UNEXECUTED,
             run_at: new Date(),
             max_count_try: 1,
             last_tried_at: null,
@@ -48,21 +52,21 @@ describe('queue service', () => {
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
         const status = await sskts.service.queue.executeSendEmailNotification()(queueAdapter);
-        assert.equal(status, queueStatus.EXECUTED);
+        assert.equal(status, QueueStatus.EXECUTED);
     });
 
     it('executeSendEmailNotification fail because email to is invalid.', async () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = pushNotificationQueueFactory.create({
-            notification: emailNotificationFactory.create({
+        const queue = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: 'hello',
                 subject: 'sskts-domain:test:service:queue-test',
                 content: 'sskts-domain:test:service:queue-test'
             }),
-            status: queueStatus.UNEXECUTED,
+            status: QueueStatus.UNEXECUTED,
             run_at: new Date(),
             max_count_try: 1,
             last_tried_at: null,
@@ -72,7 +76,7 @@ describe('queue service', () => {
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
         const status = await sskts.service.queue.executeSendEmailNotification()(queueAdapter);
-        assert.equal(status, queueStatus.RUNNING);
+        assert.equal(status, QueueStatus.RUNNING);
     });
 
     it('executeSettleCOASeatReservationAuthorization fail because coa authorization is invalid.', async () => {
@@ -80,8 +84,8 @@ describe('queue service', () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = settleAuthorizationQueueFactory.create({
-            authorization: coaSeatReservationAuthorizationFactory.create({
+        const queue = SettleAuthorizationQueueFactory.create({
+            authorization: CoaSeatReservationAuthorizationFactory.create({
                 price: 0,
                 owner_from: 'xxx',
                 owner_to: 'xxx',
@@ -93,9 +97,9 @@ describe('queue service', () => {
                 coa_time_begin: '000',
                 coa_screen_code: '000',
                 assets: [
-                    assetFactory.createSeatReservation({
+                    SeatReservationAssetFactory.create({
                         id: 'xxx',
-                        ownership: ownershipFactory.create({
+                        ownership: OwnershipFactory.create({
                             owner: '',
                             authenticated: false
                         }),
@@ -113,7 +117,7 @@ describe('queue service', () => {
                     })
                 ]
             }),
-            status: queueStatus.UNEXECUTED,
+            status: QueueStatus.UNEXECUTED,
             run_at: new Date(),
             max_count_try: 1,
             last_tried_at: null,
@@ -123,15 +127,15 @@ describe('queue service', () => {
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
         const status = await sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, queueAdapter);
-        assert.equal(status, queueStatus.RUNNING);
+        assert.equal(status, QueueStatus.RUNNING);
     });
 
     it('executeSettleGMOAuthorization fail because gmo authorization is invalid.', async () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = settleAuthorizationQueueFactory.create({
-            authorization: gmoAuthorizationFactory.create({
+        const queue = SettleAuthorizationQueueFactory.create({
+            authorization: GmoAuthorizationFactory.create({
                 id: 'xxx',
                 price: 0,
                 owner_from: 'xxx',
@@ -145,7 +149,7 @@ describe('queue service', () => {
                 gmo_job_cd: 'xxx',
                 gmo_pay_type: 'xxx'
             }),
-            status: queueStatus.UNEXECUTED,
+            status: QueueStatus.UNEXECUTED,
             run_at: new Date(),
             max_count_try: 1,
             last_tried_at: null,
@@ -155,7 +159,7 @@ describe('queue service', () => {
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
         const status = await sskts.service.queue.executeSettleGMOAuthorization()(queueAdapter);
-        assert.equal(status, queueStatus.RUNNING);
+        assert.equal(status, QueueStatus.RUNNING);
     });
 
     it('executeDisableTransactionInquiry fail because transaction has no inquiry key.', async () => {
@@ -163,13 +167,13 @@ describe('queue service', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
 
         // test data
-        const queue = disableTransactionInquiryQueueFactory.create({
-            transaction: transactionFactory.create({
-                status: transactionStatus.CLOSED,
+        const queue = DisableTransactionInquiryQueueFactory.create({
+            transaction: TransactionFactory.create({
+                status: TransactionStatus.CLOSED,
                 owners: [],
                 expires_at: new Date()
             }),
-            status: queueStatus.UNEXECUTED,
+            status: QueueStatus.UNEXECUTED,
             run_at: new Date(),
             max_count_try: 1,
             last_tried_at: null,
@@ -179,21 +183,21 @@ describe('queue service', () => {
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
         const status = await sskts.service.queue.executeDisableTransactionInquiry()(queueAdapter, transactionAdapter);
-        assert.equal(status, queueStatus.RUNNING);
+        assert.equal(status, QueueStatus.RUNNING);
     });
 
     it('retry ok.', async () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = pushNotificationQueueFactory.create({
-            notification: emailNotificationFactory.create({
+        const queue = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
                 content: 'sskts-domain:test:service:queue-test'
             }),
-            status: queueStatus.RUNNING,
+            status: QueueStatus.RUNNING,
             run_at: moment().add(-10, 'minutes').toDate(), // tslint:disable-line:no-magic-numbers
             max_count_try: 2,
             last_tried_at: moment().add(-10, 'minutes').toDate(), // tslint:disable-line:no-magic-numbers
@@ -206,21 +210,21 @@ describe('queue service', () => {
 
         // ステータスが変更されているかどうか確認
         const retriedQueue = await queueAdapter.model.findById(queue.id).exec();
-        assert.equal(retriedQueue.get('status'), queueStatus.UNEXECUTED);
+        assert.equal(retriedQueue.get('status'), QueueStatus.UNEXECUTED);
     });
 
     it('abort ok.', async () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = pushNotificationQueueFactory.create({
-            notification: emailNotificationFactory.create({
+        const queue = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
                 content: 'sskts-domain:test:service:queue-test'
             }),
-            status: queueStatus.RUNNING,
+            status: QueueStatus.RUNNING,
             run_at: moment().add(-10, 'minutes').toDate(), // tslint:disable-line:no-magic-numbers
             max_count_try: 1,
             last_tried_at: moment().add(-10, 'minutes').toDate(), // tslint:disable-line:no-magic-numbers
@@ -237,14 +241,14 @@ describe('queue service', () => {
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
-        const queue = pushNotificationQueueFactory.create({
-            notification: emailNotificationFactory.create({
+        const queue = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
                 content: 'sskts-domain:test:service:queue-test'
             }),
-            status: queueStatus.RUNNING,
+            status: QueueStatus.RUNNING,
             run_at: moment().add(-10, 'minutes').toDate(), // tslint:disable-line:no-magic-numbers
             max_count_try: 1,
             last_tried_at: moment().add(-10, 'minutes').toDate(), // tslint:disable-line:no-magic-numbers
@@ -257,6 +261,6 @@ describe('queue service', () => {
 
         // ステータスが変更されているかどうか確認
         const retriedQueue = await queueAdapter.model.findById(queue.id).exec();
-        assert.equal(retriedQueue.get('status'), queueStatus.RUNNING);
+        assert.equal(retriedQueue.get('status'), QueueStatus.RUNNING);
     });
 });

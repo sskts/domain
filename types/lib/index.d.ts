@@ -21,7 +21,7 @@ import QueueAdapter from './adapter/queue';
 import ScreenAdapter from './adapter/screen';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
-import * as AssetFactory from './factory/asset';
+import * as SeatReservationAssetFactory from './factory/asset/seatReservation';
 import AssetGroup from './factory/assetGroup';
 import * as CoaSeatReservationAuthorizationFactory from './factory/authorization/coaSeatReservation';
 import * as GmoAuthorizationFactory from './factory/authorization/gmo';
@@ -69,7 +69,9 @@ export declare const service: {
     transactionWithId: typeof transactionWithIdService;
 };
 export declare const factory: {
-    asset: typeof AssetFactory;
+    asset: {
+        seatReservation: typeof SeatReservationAssetFactory;
+    };
     assetGroup: typeof AssetGroup;
     authorization: {
         coaSeatReservation: typeof CoaSeatReservationAuthorizationFactory;

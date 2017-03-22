@@ -4,7 +4,7 @@
  * @namespace COASeatReservationAuthorizationFactory
  */
 import * as validator from 'validator';
-import * as Asset from '../asset';
+import * as SeatReservationAssetFactory from '../asset/seatReservation';
 import * as AuthorizationFactory from '../authorization';
 import AuthorizationGroup from '../authorizationGroup';
 import ObjectId from '../objectId';
@@ -29,7 +29,7 @@ export interface ICOASeatReservationAuthorization extends AuthorizationFactory.I
     coa_title_branch_num: string;
     coa_time_begin: string;
     coa_screen_code: string;
-    assets: Asset.ISeatReservationAsset[];
+    assets: SeatReservationAssetFactory.ISeatReservationAsset[];
 }
 
 export function create(args: {
@@ -44,7 +44,7 @@ export function create(args: {
     coa_title_branch_num: string;
     coa_time_begin: string;
     coa_screen_code: string;
-    assets: Asset.ISeatReservationAsset[];
+    assets: SeatReservationAssetFactory.ISeatReservationAsset[];
 }): ICOASeatReservationAuthorization {
     // todo validation
     if (validator.isEmpty(args.coa_tmp_reserve_num.toString())) throw new Error('coa_tmp_reserve_num required.');

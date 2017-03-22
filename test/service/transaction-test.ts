@@ -1,4 +1,8 @@
-// tslint:disable-next-line:missing-jsdoc
+/**
+ * 取引サービステスト
+ *
+ * @ignore
+ */
 import * as assert from 'assert';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';

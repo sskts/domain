@@ -8,7 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable-next-line:missing-jsdoc
+/**
+ * 取引サービステスト
+ *
+ * @ignore
+ */
 const assert = require("assert");
 const moment = require("moment");
 const mongoose = require("mongoose");

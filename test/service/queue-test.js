@@ -8,20 +8,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable-next-line:missing-jsdoc
+/**
+ * キューサービステスト
+ *
+ * @ignore
+ */
 const assert = require("assert");
 const moment = require("moment");
 const mongoose = require("mongoose");
-const assetFactory = require("../../lib/factory/asset");
-const coaSeatReservationAuthorizationFactory = require("../../lib/factory/authorization/coaSeatReservation");
-const gmoAuthorizationFactory = require("../../lib/factory/authorization/gmo");
-const emailNotificationFactory = require("../../lib/factory/notification/email");
-const ownershipFactory = require("../../lib/factory/ownership");
-const disableTransactionInquiryQueueFactory = require("../../lib/factory/queue/disableTransactionInquiry");
-const pushNotificationQueueFactory = require("../../lib/factory/queue/pushNotification");
-const settleAuthorizationQueueFactory = require("../../lib/factory/queue/settleAuthorization");
+const SeatReservationAssetFactory = require("../../lib/factory/asset/seatReservation");
+const CoaSeatReservationAuthorizationFactory = require("../../lib/factory/authorization/coaSeatReservation");
+const GmoAuthorizationFactory = require("../../lib/factory/authorization/gmo");
+const EmailNotificationFactory = require("../../lib/factory/notification/email");
+const OwnershipFactory = require("../../lib/factory/ownership");
+const DisableTransactionInquiryQueueFactory = require("../../lib/factory/queue/disableTransactionInquiry");
+const PushNotificationQueueFactory = require("../../lib/factory/queue/pushNotification");
+const SettleAuthorizationQueueFactory = require("../../lib/factory/queue/settleAuthorization");
 const queueStatus_1 = require("../../lib/factory/queueStatus");
-const transactionFactory = require("../../lib/factory/transaction");
+const TransactionFactory = require("../../lib/factory/transaction");
 const transactionStatus_1 = require("../../lib/factory/transactionStatus");
 const sskts = require("../../lib/index");
 let connection;
@@ -35,8 +39,8 @@ describe('queue service', () => {
     it('executeSendEmailNotification ok.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = pushNotificationQueueFactory.create({
-            notification: emailNotificationFactory.create({
+        const queue = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
@@ -56,8 +60,8 @@ describe('queue service', () => {
     it('executeSendEmailNotification fail because email to is invalid.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = pushNotificationQueueFactory.create({
-            notification: emailNotificationFactory.create({
+        const queue = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: 'hello',
                 subject: 'sskts-domain:test:service:queue-test',
@@ -78,8 +82,8 @@ describe('queue service', () => {
         const assetAdapter = sskts.adapter.asset(connection);
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = settleAuthorizationQueueFactory.create({
-            authorization: coaSeatReservationAuthorizationFactory.create({
+        const queue = SettleAuthorizationQueueFactory.create({
+            authorization: CoaSeatReservationAuthorizationFactory.create({
                 price: 0,
                 owner_from: 'xxx',
                 owner_to: 'xxx',
@@ -91,9 +95,9 @@ describe('queue service', () => {
                 coa_time_begin: '000',
                 coa_screen_code: '000',
                 assets: [
-                    assetFactory.createSeatReservation({
+                    SeatReservationAssetFactory.create({
                         id: 'xxx',
-                        ownership: ownershipFactory.create({
+                        ownership: OwnershipFactory.create({
                             owner: '',
                             authenticated: false
                         }),
@@ -125,8 +129,8 @@ describe('queue service', () => {
     it('executeSettleGMOAuthorization fail because gmo authorization is invalid.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = settleAuthorizationQueueFactory.create({
-            authorization: gmoAuthorizationFactory.create({
+        const queue = SettleAuthorizationQueueFactory.create({
+            authorization: GmoAuthorizationFactory.create({
                 id: 'xxx',
                 price: 0,
                 owner_from: 'xxx',
@@ -155,8 +159,8 @@ describe('queue service', () => {
         const queueAdapter = sskts.adapter.queue(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         // test data
-        const queue = disableTransactionInquiryQueueFactory.create({
-            transaction: transactionFactory.create({
+        const queue = DisableTransactionInquiryQueueFactory.create({
+            transaction: TransactionFactory.create({
                 status: transactionStatus_1.default.CLOSED,
                 owners: [],
                 expires_at: new Date()
@@ -175,8 +179,8 @@ describe('queue service', () => {
     it('retry ok.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = pushNotificationQueueFactory.create({
-            notification: emailNotificationFactory.create({
+        const queue = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
@@ -198,8 +202,8 @@ describe('queue service', () => {
     it('abort ok.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = pushNotificationQueueFactory.create({
-            notification: emailNotificationFactory.create({
+        const queue = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
@@ -219,8 +223,8 @@ describe('queue service', () => {
     it('not retry because it has reached to max_count_try.', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
-        const queue = pushNotificationQueueFactory.create({
-            notification: emailNotificationFactory.create({
+        const queue = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
                 from: 'noreply@localhost',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
