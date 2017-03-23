@@ -16,18 +16,12 @@ import * as COA from '@motionpicture/coa-service';
 import * as FilmFactory from './film';
 import MultilingualString from './multilingualString';
 import * as ScreenFactory from './screen';
-export interface IPerformance {
-    id: string;
+export interface IReferences {
     theater: string;
     screen: string;
     film: string;
-    day: string;
-    time_start: string;
-    time_end: string;
-    canceled: boolean;
 }
-export interface IPerformanceWithFilmAndScreen {
-    id: string;
+export interface IReferencesWithDetails {
     theater: {
         id: string;
         name: MultilingualString;
@@ -44,9 +38,26 @@ export interface IPerformanceWithFilmAndScreen {
         name_original: string;
         minutes: number;
     };
+}
+export interface ICOAFields {
+    coa_trailer_time?: number;
+    coa_kbn_service?: string;
+    coa_kbn_acoustic?: string;
+    coa_name_service_day?: string;
+    coa_available_num?: number;
+    coa_rsv_start_date?: string;
+    coa_flg_early_booking?: string;
+}
+export interface IPerformanceBase {
+    id: string;
     day: string;
     time_start: string;
     time_end: string;
     canceled: boolean;
 }
+export declare type IPerformance = IPerformanceBase & ICOAFields & IReferences;
+/**
+ * 劇場、作品、スクリーンの詳細ありパフォーマンスインターフェース
+ */
+export declare type IPerformanceWithReferenceDetails = IPerformanceBase & ICOAFields & IReferencesWithDetails;
 export declare function createFromCOA(performanceFromCOA: COA.MasterService.ScheduleResult): (screen: ScreenFactory.IScreen, film: FilmFactory.IFilm) => IPerformance;

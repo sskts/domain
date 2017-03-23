@@ -6,7 +6,7 @@ async function main() {
     try {
         (<any>mongoose).Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        const performance = await sskts.service.master.findPerformance('1182017022848278022120')(sskts.adapter.performance(connection));
+        const performance = await sskts.service.master.findPerformance('11820170325162210101720')(sskts.adapter.performance(connection));
         console.log(performance);
     } catch (error) {
         console.error(error);

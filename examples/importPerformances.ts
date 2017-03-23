@@ -6,10 +6,15 @@ async function main() {
     try {
         (<any>mongoose).Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        await sskts.service.master.importPerformances('118', '20170201', '20170401')(
-            sskts.adapter.film(connection),
-            sskts.adapter.screen(connection),
-            sskts.adapter.performance(connection)
+        const filmAdapter = sskts.adapter.film(connection);
+        const screenAdapter = sskts.adapter.screen(connection);
+        const performanceAdapter = sskts.adapter.performance(connection);
+
+        await performanceAdapter.model.remove({}).exec();
+        await sskts.service.master.importPerformances('118', '20170325', '20170401')(
+            filmAdapter,
+            screenAdapter,
+            performanceAdapter
         );
     } catch (error) {
         console.error(error);

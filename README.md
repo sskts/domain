@@ -33,6 +33,10 @@ var sskts = require('@motionpicture/sskts-domain');
 
 コードサンプルは./examplesにあります。
 
-# JsDoc
+## JsDoc
 
 `npm run jsdoc`でjsdocを作成できます。./docsに出力されます。
+
+
+# License
+UNLICENSED

@@ -120,4 +120,4 @@ export declare function findScreen(screenId: string): ScreenOperation<monapt.Opt
  *
  * @memberOf MasterService
  */
-export declare function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<PerformanceFactory.IPerformanceWithFilmAndScreen>>;
+export declare function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<PerformanceFactory.IPerformanceWithReferenceDetails>>;

@@ -17,23 +17,13 @@ import * as FilmFactory from './film';
 import MultilingualString from './multilingualString';
 import * as ScreenFactory from './screen';
 
-export interface IPerformance {
-    id: string;
+export interface IReferences {
     theater: string;
     screen: string;
     film: string;
-    day: string; // 上映日(※日付は西暦8桁 "YYYYMMDD")
-    time_start: string; // 上映開始時刻
-    time_end: string; // 上映終了時刻
-    canceled: boolean; // 上映中止フラグ
-    // trailer_time: String, // トレーラー時間(トレーラー含む本編以外の時間（分）)
-    // kbn_service: String, // サービス区分(「通常興行」「レイトショー」など)
-    // kbn_acoustic: String, // 音響区分
-    // name_service_day: String, // サービスデイ名称(「映画の日」「レディースデイ」など ※割引区分、割引コード、特定日等の組み合わせで登録するため名称で連携の方が容易)
 }
 
-export interface IPerformanceWithFilmAndScreen {
-    id: string;
+export interface IReferencesWithDetails {
     theater: {
         id: string;
         name: MultilingualString;
@@ -51,11 +41,32 @@ export interface IPerformanceWithFilmAndScreen {
         name_original: string;
         minutes: number;
     };
-    day: string;
-    time_start: string;
-    time_end: string;
-    canceled: boolean;
 }
+
+export interface ICOAFields {
+    coa_trailer_time?: number; // トレーラー時間(トレーラー含む本編以外の時間（分）)
+    coa_kbn_service?: string; // サービス区分(「通常興行」「レイトショー」など)
+    coa_kbn_acoustic?: string; // 音響区分
+    coa_name_service_day?: string; // サービスデイ名称(「映画の日」「レディースデイ」など ※割引区分、割引コード、特定日等の組み合わせで登録するため名称で連携の方が容易)
+    coa_available_num?: number; // 購入可能枚数
+    coa_rsv_start_date?: string; // 予約開始日
+    coa_flg_early_booking?: string; // 先行予約フラグ
+}
+
+export interface IPerformanceBase {
+    id: string;
+    day: string; // 上映日(※日付は西暦8桁 "YYYYMMDD")
+    time_start: string; // 上映開始時刻
+    time_end: string; // 上映終了時刻
+    canceled: boolean; // 上映中止フラグ
+}
+
+export type IPerformance = IPerformanceBase & ICOAFields & IReferences;
+
+/**
+ * 劇場、作品、スクリーンの詳細ありパフォーマンスインターフェース
+ */
+export type IPerformanceWithReferenceDetails = IPerformanceBase & ICOAFields & IReferencesWithDetails;
 
 export function createFromCOA(performanceFromCOA: COA.MasterService.ScheduleResult) {
     return (screen: ScreenFactory.IScreen, film: FilmFactory.IFilm): IPerformance => {
@@ -76,7 +87,14 @@ export function createFromCOA(performanceFromCOA: COA.MasterService.ScheduleResu
             day: performanceFromCOA.date_jouei,
             time_start: performanceFromCOA.time_begin,
             time_end: performanceFromCOA.time_end,
-            canceled: false
+            canceled: false,
+            coa_trailer_time: performanceFromCOA.trailer_time,
+            coa_kbn_service: performanceFromCOA.kbn_service,
+            coa_kbn_acoustic: performanceFromCOA.kbn_acoustic,
+            coa_name_service_day: performanceFromCOA.name_service_day,
+            coa_available_num: performanceFromCOA.available_num,
+            coa_rsv_start_date: performanceFromCOA.rsv_start_date
+            // coa_flg_early_booking: performanceFromCOA.flg_early_booking
         };
     };
 }

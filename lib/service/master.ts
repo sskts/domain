@@ -227,9 +227,9 @@ export function searchPerformances(searchConditions: ISearchPerformancesConditio
         debug('finding performances...', conditions);
         const docs = await performanceRepo.model.find(conditions)
             .setOptions({ maxTimeMS: 10000 })
-            .populate('film')
-            .populate('theater')
-            .populate('screen')
+            .populate('film', '_id name')
+            .populate('theater', '_id name')
+            .populate('screen', '_id name')
             .exec();
 
         // todo 空席状況を追加
@@ -316,43 +316,14 @@ export function findScreen(screenId: string): ScreenOperation<monapt.Option<Scre
  */
 export function findPerformance(
     performanceId: string
-): PerformanceOperation<monapt.Option<PerformanceFactory.IPerformanceWithFilmAndScreen>> {
+): PerformanceOperation<monapt.Option<PerformanceFactory.IPerformanceWithReferenceDetails>> {
     debug('finding a performance...', performanceId);
     return async (adapter: PerformanceAdapter) => {
         const doc = await adapter.model.findById(performanceId)
-            .populate('film')
-            .populate('theater')
-            .populate('screen')
+            .populate('film', '_id name name_kana name_short name_original minutes')
+            .populate('theater', '_id name')
+            .populate('screen', '_id name')
             .exec();
-
-        if (doc === null) {
-            return monapt.None;
-        } else {
-            return monapt.Option(
-                {
-                    id: doc.get('id'),
-                    theater: {
-                        id: doc.get('theater').id,
-                        name: doc.get('theater').name
-                    },
-                    screen: {
-                        id: doc.get('screen').id,
-                        name: doc.get('screen').name
-                    },
-                    film: {
-                        id: doc.get('film').id,
-                        name: doc.get('film').name,
-                        name_kana: doc.get('film').name_kana,
-                        name_short: doc.get('film').name_short,
-                        name_original: doc.get('film').name_original,
-                        minutes: doc.get('film').minutes
-                    },
-                    day: doc.get('day'),
-                    time_start: doc.get('time_start'),
-                    time_end: doc.get('time_end'),
-                    canceled: doc.get('canceled')
-                }
-            );
-        }
+        return (doc === null) ? monapt.None : monapt.Option(<PerformanceFactory.IPerformanceWithReferenceDetails>doc.toObject());
     };
 }
