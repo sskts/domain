@@ -68,7 +68,7 @@ export type IPerformance = IPerformanceBase & ICOAFields & IReferences;
  */
 export type IPerformanceWithReferenceDetails = IPerformanceBase & ICOAFields & IReferencesWithDetails;
 
-export function createFromCOA(performanceFromCOA: COA.MasterService.ScheduleResult) {
+export function createFromCOA(performanceFromCOA: COA.MasterService.IScheduleResult) {
     return (screen: ScreenFactory.IScreen, film: FilmFactory.IFilm): IPerformance => {
         const id = [
             screen.theater,

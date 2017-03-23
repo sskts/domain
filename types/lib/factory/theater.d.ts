@@ -23,4 +23,4 @@ export declare type ITheater = ITheaterWithoutGMO & {
  * @param {COA.MasterService.TheaterResult} theaterFromCOA
  * @returns {ITheaterWithoutGMO}
  */
-export declare function createFromCOA(theaterFromCOA: COA.MasterService.TheaterResult): ITheaterWithoutGMO;
+export declare function createFromCOA(theaterFromCOA: COA.MasterService.ITheaterResult): ITheaterWithoutGMO;

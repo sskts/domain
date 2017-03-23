@@ -26,7 +26,7 @@ export type ITheater = ITheaterWithoutGMO & {
  * @param {COA.MasterService.TheaterResult} theaterFromCOA
  * @returns {ITheaterWithoutGMO}
  */
-export function createFromCOA(theaterFromCOA: COA.MasterService.TheaterResult): ITheaterWithoutGMO {
+export function createFromCOA(theaterFromCOA: COA.MasterService.ITheaterResult): ITheaterWithoutGMO {
     return {
         id: theaterFromCOA.theater_code,
         name: {

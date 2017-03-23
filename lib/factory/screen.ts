@@ -54,7 +54,7 @@ export interface IScreen {
  * @export
  * @param {COA.MasterService.ScreenResult} screenFromCOA
  */
-export function createFromCOA(screenFromCOA: COA.MasterService.ScreenResult) {
+export function createFromCOA(screenFromCOA: COA.MasterService.IScreenResult) {
     return (theater: TheaterFactory.ITheater): IScreen => {
         const sections: ISection[] = [];
         const sectionCodes: string[] = [];

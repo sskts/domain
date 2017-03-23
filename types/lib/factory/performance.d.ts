@@ -60,4 +60,4 @@ export declare type IPerformance = IPerformanceBase & ICOAFields & IReferences;
  * 劇場、作品、スクリーンの詳細ありパフォーマンスインターフェース
  */
 export declare type IPerformanceWithReferenceDetails = IPerformanceBase & ICOAFields & IReferencesWithDetails;
-export declare function createFromCOA(performanceFromCOA: COA.MasterService.ScheduleResult): (screen: ScreenFactory.IScreen, film: FilmFactory.IFilm) => IPerformance;
+export declare function createFromCOA(performanceFromCOA: COA.MasterService.IScheduleResult): (screen: ScreenFactory.IScreen, film: FilmFactory.IFilm) => IPerformance;

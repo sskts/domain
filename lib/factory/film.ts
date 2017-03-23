@@ -47,7 +47,7 @@ export interface IFilm {
  * @export
  * @param {COA.MasterService.TitleResult} filmFromCOA
  */
-export function createFromCOA(filmFromCOA: COA.MasterService.TitleResult) {
+export function createFromCOA(filmFromCOA: COA.MasterService.ITitleResult) {
     return (theater: TheaterFactory.ITheater): IFilm => {
         return {
             // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
