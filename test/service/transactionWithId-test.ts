@@ -6,6 +6,8 @@
 import * as assert from 'assert';
 import * as clone from 'clone';
 import * as mongoose from 'mongoose';
+
+import ArgumentError from '../../lib/error/argument';
 import * as sskts from '../../lib/index';
 
 let connection: mongoose.Connection;
@@ -18,10 +20,10 @@ before(async () => {
     await transactionAdapter.transactionEventModel.remove({}).exec();
 });
 
-describe('transactionWithId service', () => {
+describe('addMvtkAuthorization', () => {
     // todo テストコードをかく
 
-    it('addMvtkAuthorization ok.', async () => {
+    it('ok', async () => {
         const ownerAdapter = sskts.adapter.owner(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
 
@@ -55,13 +57,10 @@ describe('transactionWithId service', () => {
 
         await ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
         await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
-        const update = Object.assign(clone(transaction), { owners: [owner1.id, owner2.id] });
+        const update = Object.assign(clone(transaction), { owners: transaction.owners.map((owner) => owner.id) });
         await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
 
-        const error = await sskts.service.transactionWithId.addMvtkAuthorization(transaction.id, authorization)(transactionAdapter);
-        if (error.isDefined) {
-            throw error.get();
-        }
+        await sskts.service.transactionWithId.addMvtkAuthorization(transaction.id, authorization)(transactionAdapter);
 
         // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
         const transactionEvent = await transactionAdapter.transactionEventModel.findOne(
@@ -77,7 +76,7 @@ describe('transactionWithId service', () => {
         await ownerAdapter.model.findByIdAndRemove(owner2.id).exec();
     });
 
-    it('addMvtkAuthorization ng because transaction not found.', async () => {
+    it('ng because transaction not found', async () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
 
         // test data
@@ -108,10 +107,166 @@ describe('transactionWithId service', () => {
             skhn_cd: '0000000000'
         });
 
-        const error = await sskts.service.transactionWithId.addMvtkAuthorization(transaction.id, authorization)(
-            transactionAdapter
-        );
-        assert(error.isDefined);
-        assert(error.get() instanceof RangeError);
+        let addMvtkAuthorizationError: any;
+        try {
+            await sskts.service.transactionWithId.addMvtkAuthorization(transaction.id, authorization)(
+                transactionAdapter
+            );
+        } catch (error) {
+            addMvtkAuthorizationError = error;
+        }
+
+        assert(addMvtkAuthorizationError instanceof ArgumentError);
+        assert.equal((<ArgumentError>addMvtkAuthorizationError).argumentName, 'transactionId');
+    });
+
+    it('ng because owner not found', async () => {
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+
+        // test data
+        const owner1 = sskts.factory.owner.anonymous.create({});
+        const owner2 = sskts.factory.owner.anonymous.create({});
+
+        const transaction = sskts.factory.transaction.create({
+            status: sskts.factory.transactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        const authorization = sskts.factory.authorization.mvtk.create({
+            price: 1234,
+            owner_from: owner1.id,
+            owner_to: 'xxx', // 取引に存在しない所有者を設定
+            kgygish_cd: '000000',
+            yyk_dvc_typ: '00',
+            trksh_flg: '0',
+            kgygish_sstm_zskyyk_no: 'xxx',
+            kgygish_usr_zskyyk_no: 'xxx',
+            jei_dt: '2012/02/01 25:45:00',
+            kij_ymd: '2012/02/01',
+            st_cd: '0000000000',
+            scren_cd: '0000000000',
+            knyknr_no_info: [],
+            zsk_info: [],
+            skhn_cd: '0000000000'
+        });
+
+        await ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
+        const update = Object.assign(clone(transaction), { owners: transaction.owners.map((owner) => owner.id) });
+        await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
+
+        let addMvtkAuthorizationError: any;
+        try {
+            await sskts.service.transactionWithId.addMvtkAuthorization(transaction.id, authorization)(
+                transactionAdapter
+            );
+        } catch (error) {
+            addMvtkAuthorizationError = error;
+        }
+
+        assert(addMvtkAuthorizationError instanceof ArgumentError);
+        assert.equal((<ArgumentError>addMvtkAuthorizationError).argumentName, 'authorization.owner_from');
+
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(owner1.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(owner2.id).exec();
+    });
+});
+
+describe('removeAuthorization', () => {
+    it('ng because transaction not found', async () => {
+        const transactionAdapter = sskts.adapter.transaction(connection);
+
+        // test data
+        const owner1 = sskts.factory.owner.anonymous.create({});
+        const owner2 = sskts.factory.owner.anonymous.create({});
+
+        const transaction = sskts.factory.transaction.create({
+            status: sskts.factory.transactionStatus.UNDERWAY,
+            owners: [owner1, owner2],
+            expires_at: new Date()
+        });
+
+        const authorization = sskts.factory.authorization.mvtk.create({
+            price: 1234,
+            owner_from: owner1.id,
+            owner_to: owner2.id,
+            kgygish_cd: '000000',
+            yyk_dvc_typ: '00',
+            trksh_flg: '0',
+            kgygish_sstm_zskyyk_no: 'xxx',
+            kgygish_usr_zskyyk_no: 'xxx',
+            jei_dt: '2012/02/01 25:45:00',
+            kij_ymd: '2012/02/01',
+            st_cd: '0000000000',
+            scren_cd: '0000000000',
+            knyknr_no_info: [],
+            zsk_info: [],
+            skhn_cd: '0000000000'
+        });
+
+        let removeAuthorizationError: any;
+        try {
+            await sskts.service.transactionWithId.removeAuthorization(transaction.id, authorization.id)(transactionAdapter);
+        } catch (error) {
+            removeAuthorizationError = error;
+        }
+
+        assert(removeAuthorizationError instanceof ArgumentError);
+        assert.equal((<ArgumentError>removeAuthorizationError).argumentName, 'transactionId');
+    });
+
+    it('ng because authorization not found', async () => {
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+
+        // test data
+        const owner1 = sskts.factory.owner.anonymous.create({});
+        const owner2 = sskts.factory.owner.anonymous.create({});
+
+        const transaction = sskts.factory.transaction.create({
+            status: sskts.factory.transactionStatus.UNDERWAY,
+            owners: [owner1, owner2],
+            expires_at: new Date()
+        });
+
+        const authorization = sskts.factory.authorization.mvtk.create({
+            price: 1234,
+            owner_from: owner1.id,
+            owner_to: owner2.id,
+            kgygish_cd: '000000',
+            yyk_dvc_typ: '00',
+            trksh_flg: '0',
+            kgygish_sstm_zskyyk_no: 'xxx',
+            kgygish_usr_zskyyk_no: 'xxx',
+            jei_dt: '2012/02/01 25:45:00',
+            kij_ymd: '2012/02/01',
+            st_cd: '0000000000',
+            scren_cd: '0000000000',
+            knyknr_no_info: [],
+            zsk_info: [],
+            skhn_cd: '0000000000'
+        });
+
+        await ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
+        const update = Object.assign(clone(transaction), { owners: transaction.owners.map((owner) => owner.id) });
+        await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
+
+        let removeAuthorizationError: ArgumentError | undefined;
+        try {
+            await sskts.service.transactionWithId.removeAuthorization(transaction.id, authorization.id)(transactionAdapter);
+        } catch (error) {
+            removeAuthorizationError = error;
+        }
+
+        assert(removeAuthorizationError instanceof ArgumentError);
+        assert.equal((<ArgumentError>removeAuthorizationError).argumentName, 'authorizationId');
+
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(owner1.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(owner2.id).exec();
     });
 });
