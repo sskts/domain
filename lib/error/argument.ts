@@ -10,7 +10,9 @@ export default class ArgumentError extends Error {
     public readonly argumentName: string;
 
     constructor(argumentName: string, message?: string) {
-        message = message || util.format('Invalid or missing argument supplied: %s', argumentName);
+        if (message === undefined || message.length === 0) {
+            message = util.format('Invalid or missing argument supplied: %s', argumentName);
+        }
 
         super(message);
 
