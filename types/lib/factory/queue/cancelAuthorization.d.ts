@@ -1,8 +1,3 @@
-/**
- * オーソリ解除キューファクトリー
- *
- * @namespace CancelAuthorizationQueueFactory
- */
 import * as Authorization from '../../factory/authorization';
 import * as QueueFactory from '../../factory/queue';
 import QueueStatus from '../queueStatus';

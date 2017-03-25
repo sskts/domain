@@ -6,7 +6,7 @@
 import * as sskts from '../lib/index';
 
 const notification = sskts.factory.notification.email.create({
-    from: 'noreply@localhost',
+    from: 'noreply@example.net',
     to: 'ilovegadd@gmail.com',
     subject: 'test subject',
     // tslint:disable-next-line:no-multiline-string

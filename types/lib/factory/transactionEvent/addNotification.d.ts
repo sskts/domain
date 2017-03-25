@@ -1,8 +1,3 @@
-/**
- * 通知追加取引イベントファクトリー
- *
- * @namespace AddNotificationTransactionEventFactory
- */
 import * as Notification from '../notification';
 import * as TransactionEventFactory from '../transactionEvent';
 /**

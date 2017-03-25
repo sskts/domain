@@ -3,6 +3,11 @@
  *
  * @namespace DisableTransactionInquiryQueueFactory
  */
+import * as validator from 'validator';
+
+import ArgumentError from '../../error/argument';
+import ArgumentNullError from '../../error/argumentNull';
+
 import * as QueueFactory from '../../factory/queue';
 import * as Transaction from '../../factory/transaction';
 import ObjectId from '../objectId';
@@ -26,6 +31,10 @@ export function create(args: {
     count_tried: number,
     results: string[]
 }): IDisableTransactionInquiryQueue {
+    if (validator.isEmpty(args.status)) throw new ArgumentNullError('status');
+
+    if (!(args.run_at instanceof Date)) throw new ArgumentError('run_at', 'run_at should be Date');
+
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: QueueGroup.DISABLE_TRANSACTION_INQUIRY,

@@ -70,7 +70,7 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
 export function disableTransactionInquiry(transaction: TransactionFactory.ITransaction) {
     return async (transactionAdapter: TransactionAdapter) => {
         if (transaction.inquiry_key === undefined) {
-            throw new RangeError('inquiry_key not created.');
+            throw new Error('inquiry_key not created.');
         }
 
         // COAから内容抽出

@@ -4,6 +4,10 @@
  * @namespace EmailNotificationFactory
  */
 import * as validator from 'validator';
+
+import ArgumentError from '../../error/argument';
+import ArgumentNullError from '../../error/argumentNull';
+
 import * as NotificationFactory from '../notification';
 import NotificationGroup from '../notificationGroup';
 import ObjectId from '../objectId';
@@ -34,10 +38,13 @@ export function create(args: {
     content: string;
 }): IEmailNotification {
     // todo validation
-    if (validator.isEmpty(args.from)) throw new RangeError('from required.');
-    if (validator.isEmpty(args.to)) throw new RangeError('to required.');
-    if (validator.isEmpty(args.subject)) throw new RangeError('subject required.');
-    if (validator.isEmpty(args.content)) throw new RangeError('content required.');
+    if (validator.isEmpty(args.from)) throw new ArgumentNullError('from');
+    if (validator.isEmpty(args.to)) throw new ArgumentNullError('to');
+    if (validator.isEmpty(args.subject)) throw new ArgumentNullError('subject');
+    if (validator.isEmpty(args.content)) throw new ArgumentNullError('content');
+
+    if (!validator.isEmail(args.from)) throw new ArgumentError('from', 'from should be email');
+    if (!validator.isEmail(args.to)) throw new ArgumentError('to', 'to should be email');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,

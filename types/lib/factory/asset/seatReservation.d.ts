@@ -1,8 +1,3 @@
-/**
- * 座席予約資産ファクトリー
- *
- * @namespace SeatReservationAssetFactory
- */
 import * as AssetFactory from '../asset';
 import * as AuthorizationFactory from '../authorization';
 import * as OwnershipFactory from '../ownership';

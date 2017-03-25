@@ -41,7 +41,7 @@ describe('queue service', () => {
         // test data
         const queue = PushNotificationQueueFactory.create({
             notification: EmailNotificationFactory.create({
-                from: 'noreply@localhost',
+                from: 'noreply@example.net',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
                 content: 'sskts-domain:test:service:queue-test'
@@ -56,27 +56,6 @@ describe('queue service', () => {
         yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
         const status = yield sskts.service.queue.executeSendEmailNotification()(queueAdapter);
         assert.equal(status, queueStatus_1.default.EXECUTED);
-    }));
-    it('executeSendEmailNotification fail because email to is invalid.', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.adapter.queue(connection);
-        // test data
-        const queue = PushNotificationQueueFactory.create({
-            notification: EmailNotificationFactory.create({
-                from: 'noreply@localhost',
-                to: 'hello',
-                subject: 'sskts-domain:test:service:queue-test',
-                content: 'sskts-domain:test:service:queue-test'
-            }),
-            status: queueStatus_1.default.UNEXECUTED,
-            run_at: new Date(),
-            max_count_try: 1,
-            last_tried_at: null,
-            count_tried: 0,
-            results: []
-        });
-        yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
-        const status = yield sskts.service.queue.executeSendEmailNotification()(queueAdapter);
-        assert.equal(status, queueStatus_1.default.RUNNING);
     }));
     it('executeSettleCOASeatReservationAuthorization fail because coa authorization is invalid.', () => __awaiter(this, void 0, void 0, function* () {
         const assetAdapter = sskts.adapter.asset(connection);
@@ -98,13 +77,13 @@ describe('queue service', () => {
                     SeatReservationAssetFactory.create({
                         id: 'xxx',
                         ownership: OwnershipFactory.create({
-                            owner: '',
+                            owner: 'xxx',
                             authenticated: false
                         }),
-                        performance: '',
+                        performance: 'xxx',
                         section: '',
-                        seat_code: '',
-                        ticket_code: '',
+                        seat_code: 'xxx',
+                        ticket_code: 'xxx',
                         ticket_name_ja: '',
                         ticket_name_en: '',
                         ticket_name_kana: '',
@@ -181,7 +160,7 @@ describe('queue service', () => {
         // test data
         const queue = PushNotificationQueueFactory.create({
             notification: EmailNotificationFactory.create({
-                from: 'noreply@localhost',
+                from: 'noreply@example.net',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
                 content: 'sskts-domain:test:service:queue-test'
@@ -204,7 +183,7 @@ describe('queue service', () => {
         // test data
         const queue = PushNotificationQueueFactory.create({
             notification: EmailNotificationFactory.create({
-                from: 'noreply@localhost',
+                from: 'noreply@example.net',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
                 content: 'sskts-domain:test:service:queue-test'
@@ -225,7 +204,7 @@ describe('queue service', () => {
         // test data
         const queue = PushNotificationQueueFactory.create({
             notification: EmailNotificationFactory.create({
-                from: 'noreply@localhost',
+                from: 'noreply@example.net',
                 to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:queue-test',
                 content: 'sskts-domain:test:service:queue-test'

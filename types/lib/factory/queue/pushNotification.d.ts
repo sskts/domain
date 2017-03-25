@@ -1,8 +1,3 @@
-/**
- * プッシュ通知キューファクトリー
- *
- * @namespace PushNotificationQueueFactory
- */
 import * as Notification from '../../factory/notification';
 import * as QueueFactory from '../../factory/queue';
 import QueueStatus from '../queueStatus';

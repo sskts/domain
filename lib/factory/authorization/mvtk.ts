@@ -4,6 +4,10 @@
  * @namespace MvtkAuthorizationFactory
  */
 import * as validator from 'validator';
+
+import ArgumentError from '../../error/argument';
+import ArgumentNullError from '../../error/argumentNull';
+
 import * as AuthorizationFactory from '../authorization';
 import AuthorizationGroup from '../authorizationGroup';
 import ObjectId from '../objectId';
@@ -72,19 +76,26 @@ export function create(args: {
     skhn_cd: string;
 }): IMvtkAuthorization {
     // todo validation
-    if (validator.isEmpty(args.kgygish_cd)) throw new RangeError('kgygish_cd required.');
-    if (validator.isEmpty(args.yyk_dvc_typ)) throw new RangeError('yyk_dvc_typ required.');
-    if (validator.isEmpty(args.trksh_flg)) throw new RangeError('trksh_flg required.');
-    if (validator.isEmpty(args.kgygish_sstm_zskyyk_no)) throw new RangeError('kgygish_sstm_zskyyk_no required.');
-    if (validator.isEmpty(args.kgygish_usr_zskyyk_no)) throw new RangeError('kgygish_usr_zskyyk_no required.');
-    if (validator.isEmpty(args.jei_dt)) throw new RangeError('jei_dt required.');
-    if (validator.isEmpty(args.kij_ymd)) throw new RangeError('kij_ymd required.');
-    if (validator.isEmpty(args.st_cd)) throw new RangeError('st_cd required.');
-    if (validator.isEmpty(args.scren_cd)) throw new RangeError('scren_cd required.');
-    if (validator.isEmpty(args.skhn_cd)) throw new RangeError('skhn_cd required.');
-    if (validator.isEmpty(args.price.toString())) throw new RangeError('price required.');
-    if (validator.isEmpty(args.owner_from)) throw new RangeError('owner_from required.');
-    if (validator.isEmpty(args.owner_to)) throw new RangeError('owner_to required.');
+    if (validator.isEmpty(args.kgygish_cd)) throw new ArgumentNullError('kgygish_cd');
+    if (validator.isEmpty(args.yyk_dvc_typ)) throw new ArgumentNullError('yyk_dvc_typ');
+    if (validator.isEmpty(args.trksh_flg)) throw new ArgumentNullError('trksh_flg');
+    if (validator.isEmpty(args.kgygish_sstm_zskyyk_no)) throw new ArgumentNullError('kgygish_sstm_zskyyk_no');
+    if (validator.isEmpty(args.kgygish_usr_zskyyk_no)) throw new ArgumentNullError('kgygish_usr_zskyyk_no');
+    if (validator.isEmpty(args.jei_dt)) throw new ArgumentNullError('jei_dt');
+    if (validator.isEmpty(args.kij_ymd)) throw new ArgumentNullError('kij_ymd');
+    if (validator.isEmpty(args.st_cd)) throw new ArgumentNullError('st_cd');
+    if (validator.isEmpty(args.scren_cd)) throw new ArgumentNullError('scren_cd');
+    if (validator.isEmpty(args.skhn_cd)) throw new ArgumentNullError('skhn_cd');
+    if (validator.isEmpty(args.price.toString())) throw new ArgumentNullError('price');
+    if (validator.isEmpty(args.owner_from)) throw new ArgumentNullError('owner_from');
+    if (validator.isEmpty(args.owner_to)) throw new ArgumentNullError('owner_to');
+
+    if (!Array.isArray(args.knyknr_no_info)) throw new ArgumentError('knyknr_no_info shoud be array');
+    if (args.knyknr_no_info.length === 0) throw new ArgumentError('knyknr_no_info should not be empty');
+    if (!Array.isArray(args.zsk_info)) throw new ArgumentError('zsk_info shoud be array');
+    if (args.zsk_info.length === 0) throw new ArgumentError('zsk_info should not be empty');
+
+    if (validator.isEmpty(args.price.toString())) throw new ArgumentError('price', 'price should be number');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,

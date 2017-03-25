@@ -1,8 +1,3 @@
-/**
- * GMOオーソリファクトリー
- *
- * @namespace GMOAuthorizationFactory
- */
 import * as AuthorizationFactory from '../authorization';
 /**
  * GMOオーソリ

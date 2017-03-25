@@ -3,6 +3,11 @@
  *
  * @namespace PushNotificationQueueFactory
  */
+import * as validator from 'validator';
+
+import ArgumentError from '../../error/argument';
+import ArgumentNullError from '../../error/argumentNull';
+
 import * as Notification from '../../factory/notification';
 import * as QueueFactory from '../../factory/queue';
 import ObjectId from '../objectId';
@@ -28,6 +33,10 @@ export function create<T extends Notification.INotification>(args: {
     count_tried: number,
     results: string[]
 }): IPushNotificationQueue<T> {
+    if (validator.isEmpty(args.status)) throw new ArgumentNullError('status');
+
+    if (!(args.run_at instanceof Date)) throw new ArgumentError('run_at', 'run_at should be Date');
+
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: QueueGroup.PUSH_NOTIFICATION,

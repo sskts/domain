@@ -3,7 +3,13 @@
  *
  * @namespace GMOAuthorizationFactory
  */
+import * as validator from 'validator';
+
 import * as AuthorizationFactory from '../authorization';
+
+import ArgumentError from '../../error/argument';
+import ArgumentNullError from '../../error/argumentNull';
+
 import AuthorizationGroup from '../authorizationGroup';
 import ObjectId from '../objectId';
 
@@ -44,6 +50,10 @@ export function create(args: {
     gmo_job_cd: string;
     gmo_pay_type: string;
 }): IGMOAuthorization {
+    if (validator.isEmpty(args.gmo_shop_id)) throw new ArgumentNullError('gmo_shop_id');
+
+    if (validator.isEmpty(args.price.toString())) throw new ArgumentError('price', 'price should be number');
+
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: AuthorizationGroup.GMO,

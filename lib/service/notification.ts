@@ -66,7 +66,7 @@ export function sendEmail(email: EmailNotificationFactory.IEmailNotification): O
 export function report2developers(subject: string, content: string) {
     return async () => {
         await sendEmail(EmailNotificationFactory.create({
-            from: 'noreply@localhost',
+            from: 'noreply@example.net',
             to: process.env.SSKTS_DEVELOPER_EMAIL,
             subject: `sskts-domain[${process.env.NODE_ENV}]:開発者へ報告があります ${subject}`,
             content: content

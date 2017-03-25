@@ -50,8 +50,23 @@ describe('addMvtkAuthorization', () => {
             kij_ymd: '2012/02/01',
             st_cd: '0000000000',
             scren_cd: '0000000000',
-            knyknr_no_info: [],
-            zsk_info: [],
+            knyknr_no_info: [
+                {
+                    knyknr_no: '0000000000',
+                    pin_cd: '0000',
+                    knsh_info: [
+                        {
+                            knsh_typ: '01',
+                            mi_num: '1'
+                        }
+                    ]
+                }
+            ],
+            zsk_info: [
+                {
+                    zsk_cd: 'Ａ－２'
+                }
+            ],
             skhn_cd: '0000000000'
         });
 
@@ -102,8 +117,23 @@ describe('addMvtkAuthorization', () => {
             kij_ymd: '2012/02/01',
             st_cd: '0000000000',
             scren_cd: '0000000000',
-            knyknr_no_info: [],
-            zsk_info: [],
+            knyknr_no_info: [
+                {
+                    knyknr_no: '0000000000',
+                    pin_cd: '0000',
+                    knsh_info: [
+                        {
+                            knsh_typ: '01',
+                            mi_num: '1'
+                        }
+                    ]
+                }
+            ],
+            zsk_info: [
+                {
+                    zsk_cd: 'Ａ－２'
+                }
+            ],
             skhn_cd: '0000000000'
         });
 
@@ -147,8 +177,23 @@ describe('addMvtkAuthorization', () => {
             kij_ymd: '2012/02/01',
             st_cd: '0000000000',
             scren_cd: '0000000000',
-            knyknr_no_info: [],
-            zsk_info: [],
+            knyknr_no_info: [
+                {
+                    knyknr_no: '0000000000',
+                    pin_cd: '0000',
+                    knsh_info: [
+                        {
+                            knsh_typ: '01',
+                            mi_num: '1'
+                        }
+                    ]
+                }
+            ],
+            zsk_info: [
+                {
+                    zsk_cd: 'Ａ－２'
+                }
+            ],
             skhn_cd: '0000000000'
         });
 
@@ -189,22 +234,18 @@ describe('removeAuthorization', () => {
             expires_at: new Date()
         });
 
-        const authorization = sskts.factory.authorization.mvtk.create({
+        const authorization = sskts.factory.authorization.gmo.create({
             price: 1234,
-            owner_from: owner1.id,
-            owner_to: owner2.id,
-            kgygish_cd: '000000',
-            yyk_dvc_typ: '00',
-            trksh_flg: '0',
-            kgygish_sstm_zskyyk_no: 'xxx',
-            kgygish_usr_zskyyk_no: 'xxx',
-            jei_dt: '2012/02/01 25:45:00',
-            kij_ymd: '2012/02/01',
-            st_cd: '0000000000',
-            scren_cd: '0000000000',
-            knyknr_no_info: [],
-            zsk_info: [],
-            skhn_cd: '0000000000'
+            owner_from: 'xxx',
+            owner_to: 'xxx',
+            gmo_shop_id: 'xxx',
+            gmo_shop_pass: 'xxx',
+            gmo_order_id: 'xxx',
+            gmo_amount: 1234,
+            gmo_access_id: 'xxx',
+            gmo_access_pass: 'xxx',
+            gmo_job_cd: 'xxx',
+            gmo_pay_type: 'xxx'
         });
 
         let removeAuthorizationError: any;
@@ -232,22 +273,18 @@ describe('removeAuthorization', () => {
             expires_at: new Date()
         });
 
-        const authorization = sskts.factory.authorization.mvtk.create({
+        const authorization = sskts.factory.authorization.gmo.create({
             price: 1234,
-            owner_from: owner1.id,
-            owner_to: owner2.id,
-            kgygish_cd: '000000',
-            yyk_dvc_typ: '00',
-            trksh_flg: '0',
-            kgygish_sstm_zskyyk_no: 'xxx',
-            kgygish_usr_zskyyk_no: 'xxx',
-            jei_dt: '2012/02/01 25:45:00',
-            kij_ymd: '2012/02/01',
-            st_cd: '0000000000',
-            scren_cd: '0000000000',
-            knyknr_no_info: [],
-            zsk_info: [],
-            skhn_cd: '0000000000'
+            owner_from: 'xxx',
+            owner_to: 'xxx',
+            gmo_shop_id: 'xxx',
+            gmo_shop_pass: 'xxx',
+            gmo_order_id: 'xxx',
+            gmo_amount: 1234,
+            gmo_access_id: 'xxx',
+            gmo_access_pass: 'xxx',
+            gmo_job_cd: 'xxx',
+            gmo_pay_type: 'xxx'
         });
 
         await ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();

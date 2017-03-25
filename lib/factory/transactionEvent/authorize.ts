@@ -5,6 +5,9 @@
  */
 import * as validator from 'validator';
 
+import ArgumentError from '../../error/argument';
+import ArgumentNullError from '../../error/argumentNull';
+
 import * as Authorization from '../authorization';
 import ObjectId from '../objectId';
 import * as TransactionEventFactory from '../transactionEvent';
@@ -27,7 +30,9 @@ export function create(args: {
     occurred_at: Date,
     authorization: Authorization.IAuthorization
 }): IAuthorizeTransactionEvent {
-    if (validator.isEmpty(args.transaction)) throw new Error('transaction required.');
+    if (validator.isEmpty(args.transaction)) throw new ArgumentNullError('transaction');
+    if (validator.isEmpty(args.occurred_at.toString())) throw new ArgumentNullError('occurred_at');
+    if (!(args.occurred_at instanceof Date)) throw new ArgumentError('occurred_at should be Date');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,

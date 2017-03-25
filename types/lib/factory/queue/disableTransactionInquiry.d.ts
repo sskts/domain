@@ -1,8 +1,3 @@
-/**
- * 取引照会無効化キューファクトリー
- *
- * @namespace DisableTransactionInquiryQueueFactory
- */
 import * as QueueFactory from '../../factory/queue';
 import * as Transaction from '../../factory/transaction';
 import QueueStatus from '../queueStatus';

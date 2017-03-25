@@ -1,8 +1,3 @@
-/**
- * オーソリ削除取引イベントファクトリー
- *
- * @namespace UnauthorizeTransactionEventFactory
- */
 import * as Authorization from '../authorization';
 import * as TransactionEventFactory from '../transactionEvent';
 /**

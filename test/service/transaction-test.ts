@@ -88,7 +88,7 @@ describe('transaction service', () => {
             exportQueues = error;
         }
 
-        assert(exportQueues instanceof RangeError);
+        assert(exportQueues instanceof Error);
 
         await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
     });
@@ -114,8 +114,8 @@ describe('transaction service', () => {
             transaction: transaction.id,
             occurred_at: new Date(),
             notification: EmailNotificationFactory.create({
-                from: 'noreply@localhost',
-                to: 'hello',
+                from: 'noreply@example.net',
+                to: process.env.SSKTS_DEVELOPER_EMAIL,
                 subject: 'sskts-domain:test:service:transaction-test',
                 content: 'sskts-domain:test:service:transaction-test'
             })

@@ -3,6 +3,10 @@
  *
  * @namespace AnonymousOwnerFactory
  */
+import * as validator from 'validator';
+
+import ArgumentError from '../../error/argument';
+
 import ObjectId from '../objectId';
 import * as OwnerFactory from '../owner';
 import OwnerGroup from '../ownerGroup';
@@ -25,6 +29,8 @@ export function create(args: {
     email?: string;
     tel?: string;
 }): IAnonymousOwner {
+    if (args.email !== undefined && !validator.isEmail(args.email)) throw new ArgumentError('invalid email');
+
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: OwnerGroup.ANONYMOUS,

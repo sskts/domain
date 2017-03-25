@@ -1,8 +1,3 @@
-/**
- * 資産移動キューファクトリー
- *
- * @namespace SettleAuthorizationQueueFactory
- */
 import * as Authorization from '../../factory/authorization';
 import * as QueueFactory from '../../factory/queue';
 import QueueStatus from '../queueStatus';

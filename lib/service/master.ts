@@ -7,6 +7,8 @@ import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 
+import ArgumentError from '../error/argument';
+
 import * as FilmFactory from '../factory/film';
 import MultilingualString from '../factory/multilingualString';
 import * as PerformanceFactory from '../factory/performance';
@@ -91,7 +93,7 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
         // 劇場取得
         const doc = await theaterAdapter.model.findById(theaterCode).exec();
         if (doc === null) {
-            throw new RangeError('theater not found.');
+            throw new ArgumentError('theater not found.');
         }
         const theater = <TheaterFactory.ITheater>doc.toObject();
 
@@ -123,7 +125,7 @@ export function importScreens(theaterCode: string): TheaterAndScreenOperation<vo
         // 劇場取得
         const doc = await theaterAdapter.model.findById(theaterCode).exec();
         if (doc === null) {
-            throw new RangeError('theater not found.');
+            throw new ArgumentError('theater not found.');
         }
         const theater = <TheaterFactory.ITheater>doc.toObject();
 

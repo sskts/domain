@@ -15,20 +15,22 @@ before(() => {
 });
 
 describe('stock service', () => {
-    it('disableTransactionInquiry key not exists.', (done) => {
+    it('disableTransactionInquiry key not exists.', async () => {
         const transaction = TransactionFactory.create({
             status: 'UNDERWAY',
             owners: [],
             expires_at: new Date()
         });
 
-        sskts.service.stock.disableTransactionInquiry(transaction)(
-            sskts.adapter.transaction(connection)
-        ).then(() => {
-            done(new Error('unexpected.'));
-        }).catch((err) => {
-            assert(err instanceof RangeError);
-            done();
-        });
+        let disableTransactionInquiryError: any;
+        try {
+            await sskts.service.stock.disableTransactionInquiry(transaction)(
+                sskts.adapter.transaction(connection)
+            );
+        } catch (error) {
+            disableTransactionInquiryError = error;
+        }
+
+        assert(disableTransactionInquiryError instanceof Error);
     });
 });

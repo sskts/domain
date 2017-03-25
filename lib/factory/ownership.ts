@@ -4,6 +4,9 @@
  *
  * @namespace AssetFactory
  */
+import * as validator from 'validator';
+
+import ArgumentNullError from '../error/argumentNull';
 
 import ObjectId from './objectId';
 
@@ -25,6 +28,8 @@ export function create(args: {
     owner: string,
     authenticated: boolean
 }): IOwnership {
+    if (validator.isEmpty(args.owner)) throw new ArgumentNullError('owner');
+
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
         owner: args.owner,

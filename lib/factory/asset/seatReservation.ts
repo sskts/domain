@@ -3,6 +3,11 @@
  *
  * @namespace SeatReservationAssetFactory
  */
+import * as validator from 'validator';
+
+import ArgumentError from '../../error/argument';
+import ArgumentNullError from '../../error/argumentNull';
+
 import * as AssetFactory from '../asset';
 import AssetGroup from '../assetGroup';
 import * as AuthorizationFactory from '../authorization';
@@ -66,6 +71,19 @@ export function create(args: {
     dis_price: number;
     sale_price: number;
 }): ISeatReservationAsset {
+    if (validator.isEmpty(args.performance)) throw new ArgumentNullError('performance');
+    if (validator.isEmpty(args.seat_code)) throw new ArgumentNullError('seat_code');
+    if (validator.isEmpty(args.ticket_code)) throw new ArgumentNullError('ticket_code');
+    if (validator.isEmpty(args.std_price.toString())) throw new ArgumentNullError('std_price');
+    if (validator.isEmpty(args.add_price.toString())) throw new ArgumentNullError('add_price');
+    if (validator.isEmpty(args.dis_price.toString())) throw new ArgumentNullError('dis_price');
+    if (validator.isEmpty(args.sale_price.toString())) throw new ArgumentNullError('sale_price');
+
+    if (!validator.isInt(args.std_price.toString())) throw new ArgumentError('std_price', 'std_price should be number');
+    if (!validator.isInt(args.add_price.toString())) throw new ArgumentError('add_price', 'add_price should be number');
+    if (!validator.isInt(args.dis_price.toString())) throw new ArgumentError('dis_price', 'dis_price should be number');
+    if (!validator.isInt(args.sale_price.toString())) throw new ArgumentError('sale_price', 'sale_price should be number');
+
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
         ownership: args.ownership,

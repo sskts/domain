@@ -1,8 +1,3 @@
-/**
- * 通知削除取引イベントファクトリー
- *
- * @namespace RemoveNotificationTransactionEventFactory
- */
 import * as Notification from '../notification';
 import * as TransactionEventFactory from '../transactionEvent';
 /**

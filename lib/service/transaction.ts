@@ -10,6 +10,8 @@ import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as monapt from 'monapt';
 
+import ArgumentError from '../error/argument';
+
 import * as AnonymousOwnerFactory from '../factory/owner/anonymous';
 import * as PromoterOwnerFactory from '../factory/owner/promoter';
 import OwnerGroup from '../factory/ownerGroup';
@@ -217,7 +219,7 @@ export function exportQueues(status: TransactionStatus) {
     return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
         const statusesQueueExportable = [TransactionStatus.EXPIRED, TransactionStatus.CLOSED];
         if (statusesQueueExportable.indexOf(status) < 0) {
-            throw new RangeError(`transaction status should be in [${statusesQueueExportable.join(',')}]`);
+            throw new ArgumentError('status', `transaction status should be in [${statusesQueueExportable.join(',')}]`);
         }
 
         let transactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
@@ -337,7 +339,7 @@ export function exportQueuesById(id: string) {
                 break;
 
             default:
-                throw new RangeError('transaction group not implemented.');
+                throw new ArgumentError('id', 'transaction group not implemented.');
         }
         debug('queues:', queues);
 
