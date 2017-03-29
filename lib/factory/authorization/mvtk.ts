@@ -75,7 +75,6 @@ export function create(args: {
     zsk_info: IZskInfo[];
     skhn_cd: string;
 }): IMvtkAuthorization {
-    // todo validation
     if (validator.isEmpty(args.kgygish_cd)) throw new ArgumentNullError('kgygish_cd');
     if (validator.isEmpty(args.yyk_dvc_typ)) throw new ArgumentNullError('yyk_dvc_typ');
     if (validator.isEmpty(args.trksh_flg)) throw new ArgumentNullError('trksh_flg');
@@ -96,6 +95,22 @@ export function create(args: {
     if (args.zsk_info.length === 0) throw new ArgumentError('zsk_info should not be empty');
 
     if (validator.isEmpty(args.price.toString())) throw new ArgumentError('price', 'price should be number');
+
+    args.knyknr_no_info.forEach((knyknrNoInfo) => {
+        if (validator.isEmpty(knyknrNoInfo.knyknr_no)) throw new ArgumentNullError('knyknr_no_info.knyknr_no');
+        if (validator.isEmpty(knyknrNoInfo.pin_cd)) throw new ArgumentNullError('knyknr_no_info.pin_cd');
+        if (!Array.isArray(knyknrNoInfo.knsh_info)) throw new ArgumentError('knyknr_no_info.knsh_info shoud be array');
+        if (knyknrNoInfo.knsh_info.length === 0) throw new ArgumentError('knyknr_no_info.knsh_info  should not be empty');
+
+        knyknrNoInfo.knsh_info.forEach((knshInfo) => {
+            if (validator.isEmpty(knshInfo.knsh_typ)) throw new ArgumentNullError('knyknr_no_info.knsh_info.knsh_typ');
+            if (validator.isEmpty(knshInfo.mi_num)) throw new ArgumentNullError('knyknr_no_info.knsh_info.mi_num');
+        });
+    });
+
+    args.zsk_info.forEach((zskInfo) => {
+        if (validator.isEmpty(zskInfo.zsk_cd)) throw new ArgumentNullError('knyknr_no_info.knyknr_no');
+    });
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
