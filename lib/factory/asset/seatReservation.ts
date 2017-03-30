@@ -3,7 +3,7 @@
  *
  * @namespace SeatReservationAssetFactory
  */
-import * as validator from 'validator';
+import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
 import ArgumentNullError from '../../error/argumentNull';
@@ -13,7 +13,6 @@ import AssetGroup from '../assetGroup';
 import * as AuthorizationFactory from '../authorization';
 import ObjectId from '../objectId';
 import * as OwnershipFactory from '../ownership';
-
 /**
  * 座席予約資産
  *
@@ -30,10 +29,10 @@ import * as OwnershipFactory from '../ownership';
  * @param {string} ticket_name_ja
  * @param {string} ticket_name_en
  * @param {string} ticket_name_kana
- * @param {number} std_price
- * @param {number} add_price
- * @param {number} dis_price
- * @param {number} sale_price
+ * @param {number} std_price 標準単価
+ * @param {number} add_price 加算単価
+ * @param {number} dis_price 割引額
+ * @param {number} sale_price 販売単価
  */
 export interface ISeatReservationAsset extends AssetFactory.IAsset {
     ownership: OwnershipFactory.IOwnership;
@@ -71,18 +70,14 @@ export function create(args: {
     dis_price: number;
     sale_price: number;
 }): ISeatReservationAsset {
-    if (validator.isEmpty(args.performance)) throw new ArgumentNullError('performance');
-    if (validator.isEmpty(args.seat_code)) throw new ArgumentNullError('seat_code');
-    if (validator.isEmpty(args.ticket_code)) throw new ArgumentNullError('ticket_code');
-    if (validator.isEmpty(args.std_price.toString())) throw new ArgumentNullError('std_price');
-    if (validator.isEmpty(args.add_price.toString())) throw new ArgumentNullError('add_price');
-    if (validator.isEmpty(args.dis_price.toString())) throw new ArgumentNullError('dis_price');
-    if (validator.isEmpty(args.sale_price.toString())) throw new ArgumentNullError('sale_price');
+    if (_.isEmpty(args.performance)) throw new ArgumentNullError('performance');
+    if (_.isEmpty(args.seat_code)) throw new ArgumentNullError('seat_code');
+    if (_.isEmpty(args.ticket_code)) throw new ArgumentNullError('ticket_code');
 
-    if (!validator.isInt(args.std_price.toString())) throw new ArgumentError('std_price', 'std_price should be number');
-    if (!validator.isInt(args.add_price.toString())) throw new ArgumentError('add_price', 'add_price should be number');
-    if (!validator.isInt(args.dis_price.toString())) throw new ArgumentError('dis_price', 'dis_price should be number');
-    if (!validator.isInt(args.sale_price.toString())) throw new ArgumentError('sale_price', 'sale_price should be number');
+    if (!_.isNumber(args.std_price)) throw new ArgumentError('std_price', 'std_price should be number');
+    if (!_.isNumber(args.add_price)) throw new ArgumentError('add_price', 'add_price should be number');
+    if (!_.isNumber(args.dis_price)) throw new ArgumentError('dis_price', 'dis_price should be number');
+    if (!_.isNumber(args.sale_price)) throw new ArgumentError('sale_price', 'sale_price should be number');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,

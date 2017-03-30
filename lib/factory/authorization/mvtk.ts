@@ -3,7 +3,7 @@
  *
  * @namespace MvtkAuthorizationFactory
  */
-import * as validator from 'validator';
+import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
 import ArgumentNullError from '../../error/argumentNull';
@@ -75,41 +75,44 @@ export function create(args: {
     zsk_info: IZskInfo[];
     skhn_cd: string;
 }): IMvtkAuthorization {
-    if (validator.isEmpty(args.kgygish_cd)) throw new ArgumentNullError('kgygish_cd');
-    if (validator.isEmpty(args.yyk_dvc_typ)) throw new ArgumentNullError('yyk_dvc_typ');
-    if (validator.isEmpty(args.trksh_flg)) throw new ArgumentNullError('trksh_flg');
-    if (validator.isEmpty(args.kgygish_sstm_zskyyk_no)) throw new ArgumentNullError('kgygish_sstm_zskyyk_no');
-    if (validator.isEmpty(args.kgygish_usr_zskyyk_no)) throw new ArgumentNullError('kgygish_usr_zskyyk_no');
-    if (validator.isEmpty(args.jei_dt)) throw new ArgumentNullError('jei_dt');
-    if (validator.isEmpty(args.kij_ymd)) throw new ArgumentNullError('kij_ymd');
-    if (validator.isEmpty(args.st_cd)) throw new ArgumentNullError('st_cd');
-    if (validator.isEmpty(args.scren_cd)) throw new ArgumentNullError('scren_cd');
-    if (validator.isEmpty(args.skhn_cd)) throw new ArgumentNullError('skhn_cd');
-    if (validator.isEmpty(args.price.toString())) throw new ArgumentNullError('price');
-    if (validator.isEmpty(args.owner_from)) throw new ArgumentNullError('owner_from');
-    if (validator.isEmpty(args.owner_to)) throw new ArgumentNullError('owner_to');
+    if (_.isEmpty(args.kgygish_cd)) throw new ArgumentNullError('kgygish_cd');
+    if (_.isEmpty(args.yyk_dvc_typ)) throw new ArgumentNullError('yyk_dvc_typ');
+    if (_.isEmpty(args.trksh_flg)) throw new ArgumentNullError('trksh_flg');
+    if (_.isEmpty(args.kgygish_sstm_zskyyk_no)) throw new ArgumentNullError('kgygish_sstm_zskyyk_no');
+    if (_.isEmpty(args.kgygish_usr_zskyyk_no)) throw new ArgumentNullError('kgygish_usr_zskyyk_no');
+    if (_.isEmpty(args.jei_dt)) throw new ArgumentNullError('jei_dt');
+    if (_.isEmpty(args.kij_ymd)) throw new ArgumentNullError('kij_ymd');
+    if (_.isEmpty(args.st_cd)) throw new ArgumentNullError('st_cd');
+    if (_.isEmpty(args.scren_cd)) throw new ArgumentNullError('scren_cd');
+    if (_.isEmpty(args.skhn_cd)) throw new ArgumentNullError('skhn_cd');
+    if (_.isEmpty(args.owner_from)) throw new ArgumentNullError('owner_from');
+    if (_.isEmpty(args.owner_to)) throw new ArgumentNullError('owner_to');
 
-    if (!Array.isArray(args.knyknr_no_info)) throw new ArgumentError('knyknr_no_info shoud be array');
-    if (args.knyknr_no_info.length === 0) throw new ArgumentError('knyknr_no_info should not be empty');
-    if (!Array.isArray(args.zsk_info)) throw new ArgumentError('zsk_info shoud be array');
-    if (args.zsk_info.length === 0) throw new ArgumentError('zsk_info should not be empty');
+    if (!Array.isArray(args.knyknr_no_info)) throw new ArgumentError('knyknr_no_info', 'knyknr_no_info shoud be array');
+    if (args.knyknr_no_info.length === 0) throw new ArgumentError('knyknr_no_info', 'knyknr_no_info should not be empty');
+    if (!Array.isArray(args.zsk_info)) throw new ArgumentError('zsk_info', 'zsk_info shoud be array');
+    if (args.zsk_info.length === 0) throw new ArgumentError('zsk_info', 'zsk_info should not be empty');
 
-    if (validator.isEmpty(args.price.toString())) throw new ArgumentError('price', 'price should be number');
+    if (!_.isNumber(args.price)) throw new ArgumentError('price', 'price should be number');
 
     args.knyknr_no_info.forEach((knyknrNoInfo) => {
-        if (validator.isEmpty(knyknrNoInfo.knyknr_no)) throw new ArgumentNullError('knyknr_no_info.knyknr_no');
-        if (validator.isEmpty(knyknrNoInfo.pin_cd)) throw new ArgumentNullError('knyknr_no_info.pin_cd');
-        if (!Array.isArray(knyknrNoInfo.knsh_info)) throw new ArgumentError('knyknr_no_info.knsh_info shoud be array');
-        if (knyknrNoInfo.knsh_info.length === 0) throw new ArgumentError('knyknr_no_info.knsh_info  should not be empty');
+        if (_.isEmpty(knyknrNoInfo.knyknr_no)) throw new ArgumentNullError('knyknr_no_info.knyknr_no');
+        if (_.isEmpty(knyknrNoInfo.pin_cd)) throw new ArgumentNullError('knyknr_no_info.pin_cd');
+        if (!Array.isArray(knyknrNoInfo.knsh_info)) {
+            throw new ArgumentError('knyknr_no_info.knsh_info', 'knyknr_no_info.knsh_info shoud be array');
+        }
+        if (knyknrNoInfo.knsh_info.length === 0) {
+            throw new ArgumentError('knyknr_no_info.knsh_info', 'knyknr_no_info.knsh_info  should not be empty');
+        }
 
         knyknrNoInfo.knsh_info.forEach((knshInfo) => {
-            if (validator.isEmpty(knshInfo.knsh_typ)) throw new ArgumentNullError('knyknr_no_info.knsh_info.knsh_typ');
-            if (validator.isEmpty(knshInfo.mi_num)) throw new ArgumentNullError('knyknr_no_info.knsh_info.mi_num');
+            if (_.isEmpty(knshInfo.knsh_typ)) throw new ArgumentNullError('knyknr_no_info.knsh_info.knsh_typ');
+            if (_.isEmpty(knshInfo.mi_num)) throw new ArgumentNullError('knyknr_no_info.knsh_info.mi_num');
         });
     });
 
     args.zsk_info.forEach((zskInfo) => {
-        if (validator.isEmpty(zskInfo.zsk_cd)) throw new ArgumentNullError('knyknr_no_info.knyknr_no');
+        if (_.isEmpty(zskInfo.zsk_cd)) throw new ArgumentNullError('knyknr_no_info.knyknr_no');
     });
 
     return {

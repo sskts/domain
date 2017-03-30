@@ -3,7 +3,7 @@
  *
  * @namespace COASeatReservationAuthorizationFactory
  */
-import * as validator from 'validator';
+import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
 import ArgumentNullError from '../../error/argumentNull';
@@ -50,19 +50,17 @@ export function create(args: {
     coa_screen_code: string;
     assets: SeatReservationAssetFactory.ISeatReservationAsset[];
 }): ICOASeatReservationAuthorization {
-    // todo validation
-    if (validator.isEmpty(args.coa_tmp_reserve_num.toString())) throw new ArgumentNullError('coa_tmp_reserve_num');
-    if (validator.isEmpty(args.coa_theater_code)) throw new ArgumentNullError('coa_theater_code');
-    if (validator.isEmpty(args.coa_date_jouei)) throw new ArgumentNullError('coa_date_jouei');
-    if (validator.isEmpty(args.coa_title_code)) throw new ArgumentNullError('coa_title_code');
-    if (validator.isEmpty(args.coa_title_branch_num)) throw new ArgumentNullError('coa_title_branch_num');
-    if (validator.isEmpty(args.coa_time_begin)) throw new ArgumentNullError('coa_time_begin');
-    if (validator.isEmpty(args.coa_screen_code)) throw new ArgumentNullError('coa_screen_code');
-    if (validator.isEmpty(args.price.toString())) throw new ArgumentNullError('price');
-    if (validator.isEmpty(args.owner_from.toString())) throw new ArgumentNullError('owner_from');
-    if (validator.isEmpty(args.owner_to.toString())) throw new ArgumentNullError('owner_to');
+    if (_.isEmpty(args.owner_from)) throw new ArgumentNullError('owner_from');
+    if (_.isEmpty(args.owner_to)) throw new ArgumentNullError('owner_to');
+    if (_.isEmpty(args.coa_theater_code)) throw new ArgumentNullError('coa_theater_code');
+    if (_.isEmpty(args.coa_date_jouei)) throw new ArgumentNullError('coa_date_jouei');
+    if (_.isEmpty(args.coa_title_code)) throw new ArgumentNullError('coa_title_code');
+    if (_.isEmpty(args.coa_title_branch_num)) throw new ArgumentNullError('coa_title_branch_num');
+    if (_.isEmpty(args.coa_time_begin)) throw new ArgumentNullError('coa_time_begin');
+    if (_.isEmpty(args.coa_screen_code)) throw new ArgumentNullError('coa_screen_code');
 
-    if (validator.isEmpty(args.price.toString())) throw new ArgumentError('price', 'price should be number');
+    if (!_.isNumber(args.coa_tmp_reserve_num)) throw new ArgumentError('coa_tmp_reserve_num', 'coa_tmp_reserve_num should be number');
+    if (!_.isNumber(args.price)) throw new ArgumentError('price', 'price should be number');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,

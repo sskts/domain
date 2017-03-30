@@ -3,7 +3,7 @@
  *
  * @namespace GMOAuthorizationFactory
  */
-import * as validator from 'validator';
+import * as _ from 'underscore';
 
 import * as AuthorizationFactory from '../authorization';
 
@@ -50,9 +50,16 @@ export function create(args: {
     gmo_job_cd: string;
     gmo_pay_type: string;
 }): IGMOAuthorization {
-    if (validator.isEmpty(args.gmo_shop_id)) throw new ArgumentNullError('gmo_shop_id');
+    if (_.isEmpty(args.owner_from)) throw new ArgumentNullError('owner_from');
+    if (_.isEmpty(args.owner_to)) throw new ArgumentNullError('owner_to');
+    if (_.isEmpty(args.gmo_shop_id)) throw new ArgumentNullError('gmo_shop_id');
+    if (_.isEmpty(args.gmo_shop_pass)) throw new ArgumentNullError('gmo_shop_pass');
+    if (_.isEmpty(args.gmo_order_id)) throw new ArgumentNullError('gmo_order_id');
+    if (_.isEmpty(args.gmo_access_id)) throw new ArgumentNullError('gmo_access_id');
+    if (_.isEmpty(args.gmo_access_pass)) throw new ArgumentNullError('gmo_access_pass');
 
-    if (validator.isEmpty(args.price.toString())) throw new ArgumentError('price', 'price should be number');
+    if (!_.isNumber(args.price)) throw new ArgumentError('price', 'price should be number');
+    if (!_.isNumber(args.gmo_amount)) throw new ArgumentError('gmo_amount', 'gmo_amount should be number');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,

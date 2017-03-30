@@ -17,10 +17,10 @@ import * as OwnershipFactory from '../ownership';
  * @param {string} ticket_name_ja
  * @param {string} ticket_name_en
  * @param {string} ticket_name_kana
- * @param {number} std_price
- * @param {number} add_price
- * @param {number} dis_price
- * @param {number} sale_price
+ * @param {number} std_price 標準単価
+ * @param {number} add_price 加算単価
+ * @param {number} dis_price 割引額
+ * @param {number} sale_price 販売単価
  */
 export interface ISeatReservationAsset extends AssetFactory.IAsset {
     ownership: OwnershipFactory.IOwnership;
