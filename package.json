@@ -9,20 +9,20 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/coa-service": "^2.0.2",
+    "@motionpicture/coa-service": "^2.0.3",
     "@motionpicture/gmo-service": "^2.0.10",
-    "@types/mongoose": "^4.7.8",
+    "@types/mongoose": "^4.7.9",
     "clone": "^2.1.1",
     "debug": "^2.6.3",
     "http-status": "^1.0.1",
     "i18n": "^0.8.3",
     "moment": "^2.18.1",
     "monapt": "^0.7.1",
-    "mongoose": "^4.9.1",
+    "mongoose": "^4.9.2",
     "redis": "^2.7.1",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.3",
-    "sendgrid": "^4.8.4",
+    "sendgrid": "^4.9.0",
     "underscore": "^1.8.3",
     "validator": "^7.0.0"
   },
@@ -45,7 +45,7 @@
     "rimraf": "^2.6.1",
     "tslint": "^4.5.1",
     "tslint-microsoft-contrib": "^4.0.1",
-    "typescript": "^2.2.1"
+    "typescript": "^2.2.2"
   },
   "engines": {
     "node": ">=6.9.1",
@@ -68,5 +68,5 @@
     "postversion": "git push origin --tags"
   },
   "types": "./types/lib/index.d.ts",
-  "version": "9.0.6"
+  "version": "9.0.7"
 }
