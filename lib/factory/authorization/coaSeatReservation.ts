@@ -61,6 +61,7 @@ export function create(args: {
 
     if (!_.isNumber(args.coa_tmp_reserve_num)) throw new ArgumentError('coa_tmp_reserve_num', 'coa_tmp_reserve_num should be number');
     if (!_.isNumber(args.price)) throw new ArgumentError('price', 'price should be number');
+    if (args.price <= 0) throw new ArgumentError('price', 'price should be greater than 0');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,

@@ -62,7 +62,7 @@ describe('queue service', () => {
         // test data
         const queue = SettleAuthorizationQueueFactory.create({
             authorization: CoaSeatReservationAuthorizationFactory.create({
-                price: 0,
+                price: 123,
                 owner_from: 'xxx',
                 owner_to: 'xxx',
                 coa_tmp_reserve_num: 123,
@@ -83,7 +83,7 @@ describe('queue service', () => {
                         section: '',
                         seat_code: 'xxx',
                         ticket_code: 'xxx',
-                        ticket_name_ja: '',
+                        ticket_name_ja: 'xxx',
                         ticket_name_en: '',
                         ticket_name_kana: '',
                         std_price: 0,
@@ -113,7 +113,7 @@ describe('queue service', () => {
         const queue = SettleAuthorizationQueueFactory.create({
             authorization: GmoAuthorizationFactory.create({
                 id: 'xxx',
-                price: 0,
+                price: 123,
                 owner_from: 'xxx',
                 owner_to: 'xxx',
                 gmo_shop_id: 'xxx',

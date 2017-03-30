@@ -77,4 +77,29 @@ describe('GMOオーソリファクトリー', () => {
             }
         );
     });
+
+    it('価格が0以下なので作成できない', () => {
+        assert.throws(
+            () => {
+                GmoAuthorizationFactory.create({
+                    price: 0,
+                    owner_from: 'xxx',
+                    owner_to: 'xxx',
+                    gmo_shop_id: 'xxx',
+                    gmo_shop_pass: 'xxx',
+                    gmo_order_id: 'xxx',
+                    gmo_amount: 123,
+                    gmo_access_id: 'xxx',
+                    gmo_access_pass: 'xxx',
+                    gmo_job_cd: 'xxx',
+                    gmo_pay_type: 'xxx'
+                });
+            },
+            (err: any) => {
+                assert(err instanceof ArgumentError);
+                assert.equal((<ArgumentError>err).argumentName, 'price');
+                return true;
+            }
+        );
+    });
 });

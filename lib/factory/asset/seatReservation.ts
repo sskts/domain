@@ -73,6 +73,7 @@ export function create(args: {
     if (_.isEmpty(args.performance)) throw new ArgumentNullError('performance');
     if (_.isEmpty(args.seat_code)) throw new ArgumentNullError('seat_code');
     if (_.isEmpty(args.ticket_code)) throw new ArgumentNullError('ticket_code');
+    if (_.isEmpty(args.ticket_name_ja)) throw new ArgumentNullError('ticket_name_ja');
 
     if (!_.isNumber(args.std_price)) throw new ArgumentError('std_price', 'std_price should be number');
     if (!_.isNumber(args.add_price)) throw new ArgumentError('add_price', 'add_price should be number');

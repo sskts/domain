@@ -181,4 +181,49 @@ describe('COA仮予約ファクトリー', () => {
             }
         );
     });
+
+    it('価格が0以下なので作成できない', () => {
+        const assets = [
+            SeatReservationAssetFactory.create({
+                ownership: OwnershipFactory.create({
+                    owner: 'xxx',
+                    authenticated: false
+                }),
+                performance: 'xxx',
+                section: 'xxx',
+                seat_code: 'xxx',
+                ticket_code: 'xxx',
+                ticket_name_ja: 'xxx',
+                ticket_name_en: 'xxx',
+                ticket_name_kana: 'xxx',
+                std_price: 123,
+                add_price: 123,
+                dis_price: 123,
+                sale_price: 123
+            })
+        ];
+
+        assert.throws(
+            () => {
+                CoaSeatReservationAuthorizationFactory.create({
+                    price: 0,
+                    owner_from: 'xxx',
+                    owner_to: 'xxx',
+                    coa_tmp_reserve_num: 123,
+                    coa_theater_code: 'xxx',
+                    coa_date_jouei: 'xxx',
+                    coa_title_code: 'xxx',
+                    coa_title_branch_num: 'xxx',
+                    coa_time_begin: 'xxx',
+                    coa_screen_code: 'xxx',
+                    assets: assets
+                });
+            },
+            (err: any) => {
+                assert(err instanceof ArgumentError);
+                assert.equal((<ArgumentError>err).argumentName, 'price');
+                return true;
+            }
+        );
+    });
 });

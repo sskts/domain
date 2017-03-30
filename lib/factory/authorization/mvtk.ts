@@ -94,6 +94,7 @@ export function create(args: {
     if (args.zsk_info.length === 0) throw new ArgumentError('zsk_info', 'zsk_info should not be empty');
 
     if (!_.isNumber(args.price)) throw new ArgumentError('price', 'price should be number');
+    if (args.price <= 0) throw new ArgumentError('price', 'price should be greater than 0');
 
     args.knyknr_no_info.forEach((knyknrNoInfo) => {
         if (_.isEmpty(knyknrNoInfo.knyknr_no)) throw new ArgumentNullError('knyknr_no_info.knyknr_no');

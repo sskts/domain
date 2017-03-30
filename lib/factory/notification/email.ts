@@ -3,6 +3,7 @@
  *
  * @namespace EmailNotificationFactory
  */
+import * as _ from 'underscore';
 import * as validator from 'validator';
 
 import ArgumentError from '../../error/argument';
@@ -38,10 +39,10 @@ export function create(args: {
     content: string;
 }): IEmailNotification {
     // todo validation
-    if (validator.isEmpty(args.from)) throw new ArgumentNullError('from');
-    if (validator.isEmpty(args.to)) throw new ArgumentNullError('to');
-    if (validator.isEmpty(args.subject)) throw new ArgumentNullError('subject');
-    if (validator.isEmpty(args.content)) throw new ArgumentNullError('content');
+    if (_.isEmpty(args.from)) throw new ArgumentNullError('from');
+    if (_.isEmpty(args.to)) throw new ArgumentNullError('to');
+    if (_.isEmpty(args.subject)) throw new ArgumentNullError('subject');
+    if (_.isEmpty(args.content)) throw new ArgumentNullError('content');
 
     if (!validator.isEmail(args.from)) throw new ArgumentError('from', 'from should be email');
     if (!validator.isEmail(args.to)) throw new ArgumentError('to', 'to should be email');

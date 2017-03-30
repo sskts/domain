@@ -60,6 +60,7 @@ export function create(args: {
 
     if (!_.isNumber(args.price)) throw new ArgumentError('price', 'price should be number');
     if (!_.isNumber(args.gmo_amount)) throw new ArgumentError('gmo_amount', 'gmo_amount should be number');
+    if (args.price <= 0) throw new ArgumentError('price', 'price should be greater than 0');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
