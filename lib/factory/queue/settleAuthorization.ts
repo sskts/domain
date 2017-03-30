@@ -3,7 +3,7 @@
  *
  * @namespace SettleAuthorizationQueueFactory
  */
-import * as validator from 'validator';
+import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
 import ArgumentNullError from '../../error/argumentNull';
@@ -33,9 +33,15 @@ export function create<T extends Authorization.IAuthorization>(args: {
     count_tried: number,
     results: string[]
 }): ISettleAuthorizationQueue<T> {
-    if (validator.isEmpty(args.status)) throw new ArgumentNullError('status');
-
-    if (!(args.run_at instanceof Date)) throw new ArgumentError('run_at', 'run_at should be Date');
+    if (_.isEmpty(args.authorization)) throw new ArgumentNullError('authorization');
+    if (_.isEmpty(args.status)) throw new ArgumentNullError('status');
+    if (!_.isDate(args.run_at)) throw new ArgumentError('run_at', 'run_at should be Date');
+    if (!_.isNumber(args.max_count_try)) throw new ArgumentError('max_count_try', 'max_count_try should be number');
+    if (!_.isNull(args.last_tried_at) && !_.isDate(args.last_tried_at)) {
+        throw new ArgumentError('last_tried_at', 'last_tried_at should be Date or null');
+    }
+    if (!_.isNumber(args.count_tried)) throw new ArgumentError('count_tried', 'count_tried should be number');
+    if (!_.isArray(args.results)) throw new ArgumentError('results', 'results should be array');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
