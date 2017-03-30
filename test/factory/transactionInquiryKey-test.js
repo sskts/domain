@@ -11,40 +11,38 @@ const argumentNull_1 = require("../../lib/error/argumentNull");
 const TransactionInquiryKeyFactory = require("../../lib/factory/transactionInquiryKey");
 describe('取引照会キーファクトリー', () => {
     it('作成できる', () => {
-        TransactionInquiryKeyFactory.create({
-            theater_code: 'xxx',
-            reserve_num: 123,
-            tel: 'xxx',
+        assert.doesNotThrow(() => {
+            TransactionInquiryKeyFactory.create({
+                theater_code: 'xxx',
+                reserve_num: 123,
+                tel: 'xxx',
+            });
         });
     });
     it('劇場コード空なので作成できない', () => {
-        let createError;
-        try {
+        assert.throws(() => {
             TransactionInquiryKeyFactory.create({
                 theater_code: '',
                 reserve_num: 123,
                 tel: 'xxx',
             });
-        }
-        catch (error) {
-            createError = error;
-        }
-        assert(createError instanceof argumentNull_1.default);
-        assert.equal(createError.argumentName, 'theater_code');
+        }, (err) => {
+            assert(err instanceof argumentNull_1.default);
+            assert.equal(err.argumentName, 'theater_code');
+            return true;
+        });
     });
     it('購入番号が数字でないので作成できない', () => {
-        let createError;
-        try {
+        assert.throws(() => {
             TransactionInquiryKeyFactory.create({
                 theater_code: 'xxx',
                 reserve_num: '123',
                 tel: 'xxx',
             });
-        }
-        catch (error) {
-            createError = error;
-        }
-        assert(createError instanceof argument_1.default);
-        assert.equal(createError.argumentName, 'reserve_num');
+        }, (err) => {
+            assert(err instanceof argument_1.default);
+            assert.equal(err.argumentName, 'reserve_num');
+            return true;
+        });
     });
 });

@@ -12,22 +12,24 @@ const SeatReservationAssetFactory = require("../../../lib/factory/asset/seatRese
 const OwnershipFactory = require("../../../lib/factory/ownership");
 describe('座席予約資産ファクトリー', () => {
     it('作成できる', () => {
-        SeatReservationAssetFactory.create({
-            ownership: OwnershipFactory.create({
-                owner: 'xxx',
-                authenticated: false
-            }),
-            performance: 'xxx',
-            section: 'xxx',
-            seat_code: 'xxx',
-            ticket_code: 'xxx',
-            ticket_name_ja: 'xxx',
-            ticket_name_en: 'xxx',
-            ticket_name_kana: 'xxx',
-            std_price: 123,
-            add_price: 123,
-            dis_price: 123,
-            sale_price: 123
+        assert.doesNotThrow(() => {
+            SeatReservationAssetFactory.create({
+                ownership: OwnershipFactory.create({
+                    owner: 'xxx',
+                    authenticated: false
+                }),
+                performance: 'xxx',
+                section: 'xxx',
+                seat_code: 'xxx',
+                ticket_code: 'xxx',
+                ticket_name_ja: 'xxx',
+                ticket_name_en: 'xxx',
+                ticket_name_kana: 'xxx',
+                std_price: 123,
+                add_price: 123,
+                dis_price: 123,
+                sale_price: 123
+            });
         });
     });
     it('パフォーマンス空なので作成できない', () => {

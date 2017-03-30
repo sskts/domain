@@ -32,18 +32,20 @@ describe('COA仮予約ファクトリー', () => {
                 sale_price: 123
             })
         ];
-        CoaSeatReservationAuthorizationFactory.create({
-            price: 123,
-            owner_from: 'xxx',
-            owner_to: 'xxx',
-            coa_tmp_reserve_num: 123,
-            coa_theater_code: 'xxx',
-            coa_date_jouei: 'xxx',
-            coa_title_code: 'xxx',
-            coa_title_branch_num: 'xxx',
-            coa_time_begin: 'xxx',
-            coa_screen_code: 'xxx',
-            assets: assets
+        assert.doesNotThrow(() => {
+            CoaSeatReservationAuthorizationFactory.create({
+                price: 123,
+                owner_from: 'xxx',
+                owner_to: 'xxx',
+                coa_tmp_reserve_num: 123,
+                coa_theater_code: 'xxx',
+                coa_date_jouei: 'xxx',
+                coa_title_code: 'xxx',
+                coa_title_branch_num: 'xxx',
+                coa_time_begin: 'xxx',
+                coa_screen_code: 'xxx',
+                assets: assets
+            });
         });
     });
     it('from所有者が空なので作成できない', () => {

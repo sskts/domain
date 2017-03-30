@@ -10,24 +10,27 @@ import * as OwnershipFactory from '../../lib/factory/ownership';
 
 describe('所有権ファクトリー', () => {
     it('作成できる', () => {
-        OwnershipFactory.create({
-            owner: 'xxx',
-            authenticated: false
+        assert.doesNotThrow(() => {
+            OwnershipFactory.create({
+                owner: 'xxx',
+                authenticated: false
+            });
         });
     });
 
     it('所有者空なので作成できない', () => {
-        let createError: any;
-        try {
-            OwnershipFactory.create({
-                owner: '',
-                authenticated: false
-            });
-        } catch (error) {
-            createError = error;
-        }
-
-        assert(createError instanceof ArgumentNullError);
-        assert.equal((<ArgumentNullError>createError).argumentName, 'owner');
+        assert.throws(
+            () => {
+                OwnershipFactory.create({
+                    owner: '',
+                    authenticated: false
+                });
+            },
+            (err: any) => {
+                assert(err instanceof ArgumentNullError);
+                assert.equal((<ArgumentNullError>err).argumentName, 'owner');
+                return true;
+            }
+        );
     });
 });

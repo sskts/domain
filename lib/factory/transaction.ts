@@ -12,6 +12,11 @@
  * @param {string} inquiry_pass
  * @param {TransactionQueuesStatus} queues_status
  */
+import * as _ from 'underscore';
+
+import ArgumentError from '../error/argument';
+import ArgumentNullError from '../error/argumentNull';
+
 import ObjectId from './objectId';
 import * as OwnerFactory from './owner';
 import * as TransactionInquiryKeyFactory from './transactionInquiryKey';
@@ -35,6 +40,10 @@ export function create(args: {
     inquiry_key?: TransactionInquiryKeyFactory.ITransactionInquiryKey;
     queues_status?: TransactionQueuesStatus;
 }): ITransaction {
+    if (_.isEmpty(args.status)) throw new ArgumentNullError('status');
+    if (!_.isArray(args.owners)) throw new ArgumentError('owners', 'owner should be array');
+    if (!_.isDate(args.expires_at)) throw new ArgumentError('expires_at', 'expires_at should be Date');
+
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
         status: args.status,
