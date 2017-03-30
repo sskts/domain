@@ -3,7 +3,7 @@
  *
  * @namespace UnauthorizeTransactionEventFactory
  */
-import * as validator from 'validator';
+import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
 import ArgumentNullError from '../../error/argumentNull';
@@ -30,8 +30,9 @@ export function create(args: {
     occurred_at: Date,
     authorization: Authorization.IAuthorization
 }): IUnauthorizeTransactionEvent {
-    if (validator.isEmpty(args.occurred_at.toString())) throw new ArgumentNullError('occurred_at');
-    if (!(args.occurred_at instanceof Date)) throw new ArgumentError('occurred_at should be Date');
+    if (_.isEmpty(args.transaction)) throw new ArgumentNullError('transaction');
+    if (_.isEmpty(args.authorization)) throw new ArgumentNullError('authorization');
+    if (!_.isDate(args.occurred_at)) throw new ArgumentError('occurred_at', 'occurred_at should be Date');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,

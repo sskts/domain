@@ -3,6 +3,7 @@
  *
  * @namespace AnonymousOwnerFactory
  */
+import * as _ from 'underscore';
 import * as validator from 'validator';
 
 import ArgumentError from '../../error/argument';
@@ -29,7 +30,7 @@ export function create(args: {
     email?: string;
     tel?: string;
 }): IAnonymousOwner {
-    if (args.email !== undefined && !validator.isEmail(args.email)) throw new ArgumentError('invalid email');
+    if (!_.isEmpty(args.email) && !validator.isEmail(<string>args.email)) throw new ArgumentError('email', 'invalid email');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,

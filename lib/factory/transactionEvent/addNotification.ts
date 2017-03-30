@@ -3,7 +3,7 @@
  *
  * @namespace AddNotificationTransactionEventFactory
  */
-import * as validator from 'validator';
+import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
 import ArgumentNullError from '../../error/argumentNull';
@@ -32,8 +32,9 @@ export function create<T extends Notification.INotification>(args: {
     occurred_at: Date,
     notification: T
 }): IAddNotificationTransactionEvent<T> {
-    if (validator.isEmpty(args.occurred_at.toString())) throw new ArgumentNullError('occurred_at');
-    if (!(args.occurred_at instanceof Date)) throw new ArgumentError('occurred_at should be Date');
+    if (_.isEmpty(args.transaction)) throw new ArgumentNullError('transaction');
+    if (_.isEmpty(args.notification)) throw new ArgumentNullError('notification');
+    if (!_.isDate(args.occurred_at)) throw new ArgumentError('occurred_at', 'occurred_at should be Date');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
