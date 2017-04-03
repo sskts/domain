@@ -1,53 +1,64 @@
 import AssetAdapter from '../adapter/asset';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
+export declare type AssetAndQueueOperation<T> = (assetAdapter: AssetAdapter, queueAdapter: QueueAdapter) => Promise<T>;
+export declare type QueueOperation<T> = (queueAdapter: QueueAdapter) => Promise<T>;
+export declare type QueueAndTransactionOperation<T> = (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 /**
  * メール送信キュー実行
  *
- * @export
+ * @memberOf QueueService
+ * @returns {QueueOperation<void>}
  */
-export declare function executeSendEmailNotification(): (queueAdapter: QueueAdapter) => Promise<void>;
+export declare function executeSendEmailNotification(): QueueOperation<void>;
 /**
  * COA仮予約キャンセルキュー実行
  *
- * @export
+ * @memberOf QueueService
+ * @returns {QueueOperation<void>}
  */
-export declare function executeCancelCOASeatReservationAuthorization(): (queueAdapter: QueueAdapter) => Promise<void>;
+export declare function executeCancelCOASeatReservationAuthorization(): QueueOperation<void>;
 /**
  * GMO仮売上取消キュー実行
  *
- * @export
+ * @memberOf QueueService
+ * @returns {QueueOperation<void>}
  */
-export declare function executeCancelGMOAuthorization(): (queueAdapter: QueueAdapter) => Promise<void>;
+export declare function executeCancelGMOAuthorization(): QueueOperation<void>;
 /**
  * 取引照会無効化キュー実行
  *
- * @export
+ * @memberOf QueueService
+ * @returns {QueueAndTransactionOperation<void>}
  */
-export declare function executeDisableTransactionInquiry(): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function executeDisableTransactionInquiry(): QueueAndTransactionOperation<void>;
 /**
  * COA本予約キュー実行
  *
- * @export
+ * @memberOf QueueService
+ * @returns {AssetAndQueueOperation<void>}
  */
-export declare function executeSettleCOASeatReservationAuthorization(): (assetAdapter: AssetAdapter, queueAdapter: QueueAdapter) => Promise<void>;
+export declare function executeSettleCOASeatReservationAuthorization(): AssetAndQueueOperation<void>;
 /**
  * GMO実売上キュー実行
  *
- * @export
+ * @memberOf QueueService
+ * @returns {QueueOperation<void>}
  */
-export declare function executeSettleGMOAuthorization(): (queueAdapter: QueueAdapter) => Promise<void>;
+export declare function executeSettleGMOAuthorization(): QueueOperation<void>;
 /**
  * リトライ
  *
- * @export
- * @param {number} intervalInMinutes
+ * @memberOf QueueService
+ * @param {number} intervalInMinutes 最終試行日時から何分経過したキューをリトライするか
+ * @returns {QueueOperation<void>}
  */
-export declare function retry(intervalInMinutes: number): (queueAdapter: QueueAdapter) => Promise<void>;
+export declare function retry(intervalInMinutes: number): QueueOperation<void>;
 /**
  * 実行中止
  *
- * @export
- * @param {number} intervalInMinutes
+ * @memberOf QueueService
+ * @param {number} intervalInMinutes 最終試行日時から何分経過したキューを中止するか
+ * @returns {QueueOperation<void>}
  */
-export declare function abort(intervalInMinutes: number): (queueAdapter: QueueAdapter) => Promise<void>;
+export declare function abort(intervalInMinutes: number): QueueOperation<void>;

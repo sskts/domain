@@ -24,6 +24,7 @@ const OwnershipFactory = require("../../lib/factory/ownership");
 const DisableTransactionInquiryQueueFactory = require("../../lib/factory/queue/disableTransactionInquiry");
 const PushNotificationQueueFactory = require("../../lib/factory/queue/pushNotification");
 const SettleAuthorizationQueueFactory = require("../../lib/factory/queue/settleAuthorization");
+const queueGroup_1 = require("../../lib/factory/queueGroup");
 const queueStatus_1 = require("../../lib/factory/queueStatus");
 const TransactionFactory = require("../../lib/factory/transaction");
 const transactionStatus_1 = require("../../lib/factory/transactionStatus");
@@ -36,6 +37,68 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     yield queueAdapter.model.remove({}).exec();
 }));
 describe('キューサービス', () => {
+    it('Eメール送信キューがなければ何もしない', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        yield sskts.service.queue.executeSendEmailNotification()(queueAdapter);
+        // 実行済みのキューはないはず
+        const queueDoc = yield queueAdapter.model.findOne({
+            status: queueStatus_1.default.EXECUTED,
+            group: queueGroup_1.default.PUSH_NOTIFICATION
+        }).exec();
+        assert.equal(queueDoc, null);
+    }));
+    it('COA仮予約キャンセルキューがなければ何もしない', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        yield sskts.service.queue.executeCancelCOASeatReservationAuthorization()(queueAdapter);
+        // 実行済みのキューはないはず
+        const queueDoc = yield queueAdapter.model.findOne({
+            status: queueStatus_1.default.EXECUTED,
+            group: queueGroup_1.default.CANCEL_AUTHORIZATION
+        }).exec();
+        assert.equal(queueDoc, null);
+    }));
+    it('GMO仮売上取消キューがなければ何もしない', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        yield sskts.service.queue.executeCancelGMOAuthorization()(queueAdapter);
+        // 実行済みのキューはないはず
+        const queueDoc = yield queueAdapter.model.findOne({
+            status: queueStatus_1.default.EXECUTED,
+            group: queueGroup_1.default.CANCEL_AUTHORIZATION
+        }).exec();
+        assert.equal(queueDoc, null);
+    }));
+    it('取引照会無効化キューがなければ何もしない', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        yield sskts.service.queue.executeDisableTransactionInquiry()(queueAdapter, transactionAdapter);
+        // 実行済みのキューはないはず
+        const queueDoc = yield queueAdapter.model.findOne({
+            status: queueStatus_1.default.EXECUTED,
+            group: queueGroup_1.default.DISABLE_TRANSACTION_INQUIRY
+        }).exec();
+        assert.equal(queueDoc, null);
+    }));
+    it('COA本予約キューがなければ何もしない', () => __awaiter(this, void 0, void 0, function* () {
+        const assetAdapter = sskts.adapter.asset(connection);
+        const queueAdapter = sskts.adapter.queue(connection);
+        yield sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, queueAdapter);
+        // 実行済みのキューはないはず
+        const queueDoc = yield queueAdapter.model.findOne({
+            status: queueStatus_1.default.EXECUTED,
+            group: queueGroup_1.default.SETTLE_AUTHORIZATION
+        }).exec();
+        assert.equal(queueDoc, null);
+    }));
+    it('GMO実売上キューがなければ何もしない', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        yield sskts.service.queue.executeSettleGMOAuthorization()(queueAdapter);
+        // 実行済みのキューはないはず
+        const queueDoc = yield queueAdapter.model.findOne({
+            status: queueStatus_1.default.EXECUTED,
+            group: queueGroup_1.default.SETTLE_AUTHORIZATION
+        }).exec();
+        assert.equal(queueDoc, null);
+    }));
     it('Eメール通知成功', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
@@ -57,6 +120,8 @@ describe('キューサービス', () => {
         yield sskts.service.queue.executeSendEmailNotification()(queueAdapter);
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.EXECUTED);
+        // テストデータ削除
+        queueDoc.remove();
     }));
     it('COA仮予約承認が不適切なので資産移動失敗', () => __awaiter(this, void 0, void 0, function* () {
         const assetAdapter = sskts.adapter.asset(connection);
@@ -106,6 +171,8 @@ describe('キューサービス', () => {
         yield sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, queueAdapter);
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
+        // テストデータ削除
+        queueDoc.remove();
     }));
     it('GMOオーソリが不適切なので実売上失敗', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
@@ -136,6 +203,8 @@ describe('キューサービス', () => {
         yield sskts.service.queue.executeSettleGMOAuthorization()(queueAdapter);
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
+        // テストデータ削除
+        queueDoc.remove();
     }));
     it('照会キーがないので取引照会無効化失敗', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
@@ -158,8 +227,10 @@ describe('キューサービス', () => {
         yield sskts.service.queue.executeDisableTransactionInquiry()(queueAdapter, transactionAdapter);
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
+        // テストデータ削除
+        queueDoc.remove();
     }));
-    it('リトライ成功', () => __awaiter(this, void 0, void 0, function* () {
+    it('最大試行回数に達していなければリトライする', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = PushNotificationQueueFactory.create({
@@ -179,10 +250,12 @@ describe('キューサービス', () => {
         yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
         yield sskts.service.queue.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
         // ステータスが変更されているかどうか確認
-        const retriedQueue = yield queueAdapter.model.findById(queue.id).exec();
-        assert.equal(retriedQueue.get('status'), queueStatus_1.default.UNEXECUTED);
+        const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
+        assert.equal(queueDoc.get('status'), queueStatus_1.default.UNEXECUTED);
+        // テストデータ削除
+        queueDoc.remove();
     }));
-    it('中止成功', () => __awaiter(this, void 0, void 0, function* () {
+    it('最大試行回数に達すると中止する', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = PushNotificationQueueFactory.create({
@@ -204,6 +277,8 @@ describe('キューサービス', () => {
         // ステータスが変更されているかどうか確認
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.ABORTED);
+        // テストデータ削除
+        queueDoc.remove();
     }));
     it('最大試行回数に達するとリトライしない', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
@@ -225,7 +300,35 @@ describe('キューサービス', () => {
         yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
         yield sskts.service.queue.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
         // ステータスが変更されているかどうか確認
-        const retriedQueue = yield queueAdapter.model.findById(queue.id).exec();
-        assert.equal(retriedQueue.get('status'), queueStatus_1.default.RUNNING);
+        const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
+        assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
+        // テストデータ削除
+        queueDoc.remove();
+    }));
+    it('最終試行日時から指定インターバル経過していなければリトライしない', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        // test data
+        const queue = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
+                from: 'noreply@example.net',
+                to: process.env.SSKTS_DEVELOPER_EMAIL,
+                subject: 'sskts-domain:test:service:queue-test',
+                content: 'sskts-domain:test:service:queue-test'
+            }),
+            status: queueStatus_1.default.RUNNING,
+            run_at: moment().add(-10, 'minutes').toDate(),
+            max_count_try: 2,
+            last_tried_at: moment().add(-9, 'minutes').toDate(),
+            count_tried: 1,
+            results: ['xxx']
+        });
+        yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
+        // 9分前に最終試行に対して、10分のインターバルでリトライ
+        yield sskts.service.queue.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
+        // ステータスが変更されているかどうか確認
+        const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
+        assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
+        // テストデータ削除
+        queueDoc.remove();
     }));
 });
