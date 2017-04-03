@@ -8,7 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// tslint:disable:no-console
 /**
  * 取フローの例
  *
@@ -16,12 +15,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const COA = require("@motionpicture/coa-service");
 const GMO = require("@motionpicture/gmo-service");
+const createDebug = require("debug");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const sskts = require("../lib/index");
+const debug = createDebug('sskts-domain:example:transaction');
 // tslint:disable-next-line:max-func-body-length
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
+        mongoose.Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
         const gmoShopId = 'tshop00026096';
         const gmoShopPass = 'xbxmkaa6';
@@ -32,13 +34,13 @@ function main() {
         // 30分後のunix timestampを送信する場合
         // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
         // tslint:disable-next-line:no-console
-        console.log('starting transaction...');
+        debug('starting transaction...');
         // tslint:disable-next-line:no-magic-numbers max-line-length
         const transactionOption = yield sskts.service.transaction.startIfPossible(moment().add(30, 'minutes').toDate())(ownerAdapter, transactionAdapter);
         if (transactionOption.isEmpty) {
             throw new Error('no ready transaction');
         }
-        console.log('transaction started.');
+        debug('transaction started.');
         const transaction = transactionOption.get();
         const transactionId = transaction.id;
         const promoterOwner = transaction.owners.find((owner) => {
@@ -81,7 +83,7 @@ function main() {
         const freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
             return freeSeat.seat_num;
         });
-        console.log('freeSeatCodes count', freeSeatCodes.length);
+        debug('freeSeatCodes count', freeSeatCodes.length);
         if (getStateReserveSeatResult.cnt_reserve_free === 0)
             throw new Error('no available seats.');
         // COA仮予約
@@ -100,9 +102,9 @@ function main() {
                     seat_num: freeSeatCodes[1]
                 }]
         });
-        console.log(reserveSeatsTemporarilyResult);
+        debug(reserveSeatsTemporarilyResult);
         // COAオーソリ追加
-        console.log('adding authorizations coaSeatReservation...');
+        debug('adding authorizations coaSeatReservation...');
         const totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
         const coaAuthorization = sskts.factory.authorization.coaSeatReservation.create({
             owner_from: promoterOwnerId,
@@ -137,7 +139,7 @@ function main() {
             price: totalPrice
         });
         yield sskts.service.transactionWithId.addCOASeatReservationAuthorization(transactionId, coaAuthorization)(transactionAdapter);
-        console.log('coaAuthorization added.');
+        debug('coaAuthorization added.');
         // GMOオーソリ取得
         const orderId = Date.now().toString();
         const entryTranResult = yield GMO.CreditService.entryTran({
@@ -156,9 +158,9 @@ function main() {
             expire: '2012',
             securityCode: '123'
         });
-        console.log(execTranResult);
+        debug(execTranResult);
         // GMOオーソリ追加
-        console.log('adding authorizations gmo...');
+        debug('adding authorizations gmo...');
         const gmoAuthorization = sskts.factory.authorization.gmo.create({
             owner_from: anonymousOwnerId,
             owner_to: promoterOwnerId,
@@ -173,9 +175,9 @@ function main() {
             price: totalPrice
         });
         yield sskts.service.transactionWithId.addGMOAuthorization(transactionId, gmoAuthorization)(transactionAdapter);
-        console.log('GMOAuthorization added.');
+        debug('GMOAuthorization added.');
         // 購入者情報登録
-        console.log('updating anonymous...');
+        debug('updating anonymous...');
         yield sskts.service.transactionWithId.updateAnonymousOwner({
             transaction_id: transactionId,
             name_first: 'Tetsu',
@@ -183,7 +185,7 @@ function main() {
             tel: '09012345678',
             email: process.env.SSKTS_DEVELOPER_EMAIL
         })(ownerAdapter, transactionAdapter);
-        console.log('anonymousOwner updated.');
+        debug('anonymousOwner updated.');
         // COA本予約
         const tel = '09012345678';
         const updateReserveResult = yield COA.ReserveService.updReserve({
@@ -213,16 +215,16 @@ function main() {
                 };
             })
         });
-        console.log('updateReserveResult:', updateReserveResult);
+        debug('updateReserveResult:', updateReserveResult);
         // 照会情報登録(購入番号と電話番号で照会する場合)
-        console.log('enabling inquiry...');
+        debug('enabling inquiry...');
         const key = sskts.factory.transactionInquiryKey.create({
             theater_code: theaterCode,
             reserve_num: updateReserveResult.reserve_num,
             tel: tel
         });
         yield sskts.service.transactionWithId.enableInquiry(transactionId, key)(transactionAdapter);
-        console.log('inquiry enabled.');
+        debug('inquiry enabled.');
         // メール追加
         const content = `
 テスト 購入 様\n
@@ -243,7 +245,7 @@ function main() {
 http://www.cinemasunshine.co.jp/\n
 -------------------------------------------------------------------\n
 `;
-        console.log('adding email...');
+        debug('adding email...');
         const notification = sskts.factory.notification.email.create({
             from: 'noreply@example.net',
             to: process.env.SSKTS_DEVELOPER_EMAIL,
@@ -251,20 +253,20 @@ http://www.cinemasunshine.co.jp/\n
             content: content
         });
         yield sskts.service.transactionWithId.addEmail(transactionId, notification)(transactionAdapter);
-        console.log('email added.');
+        debug('email added.');
         // let notificationId = notification._id;
         // 取引成立
-        console.log('closing transaction...');
+        debug('closing transaction...');
         yield sskts.service.transactionWithId.close(transactionId)(transactionAdapter);
-        console.log('closed.');
+        debug('closed.');
         // 照会してみる
         const inquiryResult = yield transactionService.makeInquiry(key)(transactionAdapter);
-        console.log('makeInquiry result:', inquiryResult);
+        debug('makeInquiry result:', inquiryResult);
         mongoose.disconnect();
     });
 }
 main().then(() => {
-    console.log('success!');
+    debug('success!');
 }).catch((err) => {
     console.error(err);
     process.exit(1);

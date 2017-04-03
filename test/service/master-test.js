@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * マスターサービステスト
@@ -12,17 +20,18 @@ let connection;
 before(() => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 });
-describe('master service', () => {
-    it('importTheater fail', (done) => {
-        sskts.service.master.importTheater('000')(sskts.adapter.theater(connection))
-            .then(() => {
-            done(new Error('thenable.'));
-        })
-            .catch(() => {
-            done();
-        });
-    });
-    it('importTheater ok', (done) => {
+describe('マスターサービス', () => {
+    it('存在しない劇場コードで劇場抽出失敗', () => __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield sskts.service.master.importTheater('000')(sskts.adapter.theater(connection));
+        }
+        catch (error) {
+            assert(error instanceof Error);
+            return;
+        }
+        throw new Error('should not be passed');
+    }));
+    it('存在する劇場コードで劇場抽出成功', (done) => {
         sskts.service.master.importTheater('118')(sskts.adapter.theater(connection))
             .then(() => {
             done();

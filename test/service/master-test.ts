@@ -12,18 +12,19 @@ before(() => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 });
 
-describe('master service', () => {
-    it('importTheater fail', (done) => {
-        sskts.service.master.importTheater('000')(sskts.adapter.theater(connection))
-            .then(() => {
-                done(new Error('thenable.'));
-            })
-            .catch(() => {
-                done();
-            });
+describe('マスターサービス', () => {
+    it('存在しない劇場コードで劇場抽出失敗', async () => {
+        try {
+            await sskts.service.master.importTheater('000')(sskts.adapter.theater(connection));
+        } catch (error) {
+            assert(error instanceof Error);
+            return;
+        }
+
+        throw new Error('should not be passed');
     });
 
-    it('importTheater ok', (done) => {
+    it('存在する劇場コードで劇場抽出成功', (done) => {
         sskts.service.master.importTheater('118')(sskts.adapter.theater(connection))
             .then(() => {
                 done();
