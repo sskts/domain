@@ -45,11 +45,6 @@ export function unauthorizeCOASeatReservation(authorization: COASeatReservationA
  */
 export function transferCOASeatReservation(authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization) {
     return async (assetAdapter: AssetAdapter) => {
-
-        // ウェブフロントで事前に本予約済みなので不要
-        // await COA.updateReserveInterface.call({
-        // });
-
         const promises = authorization.assets.map(async (asset) => {
             // 資産永続化
             debug('storing asset...', asset);
@@ -58,6 +53,44 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
         });
 
         await Promise.all(promises);
+
+        // 所有者情報を取得
+        // await owner = assetAdapter.model.findById(authorization.assets[0].ownership.owner).exec();
+
+        // COA本予約
+        // let reserveAmount = 0;
+        // authorization.assets.forEach((asset) => {
+        //     reserveAmount += asset.sale_price;
+        // });
+
+        // await COA.ReserveService.updReserve({
+        //     theater_code: authorization.coa_theater_code,
+        //     date_jouei: authorization.coa_date_jouei,
+        //     title_code: authorization.coa_title_code,
+        //     title_branch_num: authorization.coa_title_branch_num,
+        //     time_begin: authorization.coa_time_begin,
+        //     tmp_reserve_num: authorization.coa_tmp_reserve_num,
+
+        //     reserve_name: authorization.coa_date_jouei,
+        //     reserve_name_jkana: authorization.coa_date_jouei,
+        //     tel_num: authorization.coa_date_jouei,
+        //     mail_addr: authorization.coa_date_jouei,
+
+        //     reserve_amount: reserveAmount,
+        //     list_ticket: authorization.assets.map((asset) => {
+        //         return {
+        //             ticket_code: asset.ticket_code,
+        //             std_price: asset.std_price,
+        //             add_price: asset.add_price,
+        //             dis_price: 0,
+        //             sale_price: (asset.std_price + asset.add_price),
+        //             ticket_count: 1,
+        //             mvtk_app_price: asset.mvtk_app_price,
+        //             seat_num: asset.seat_code,
+        //             add_glasses: asset.add_glasses
+        //         };
+        //     })
+        // });
     };
 }
 

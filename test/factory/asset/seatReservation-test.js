@@ -28,7 +28,9 @@ describe('座席予約資産ファクトリー', () => {
                 std_price: 123,
                 add_price: 123,
                 dis_price: 123,
-                sale_price: 123
+                sale_price: 123,
+                mvtk_app_price: 0,
+                add_glasses: 0
             });
         });
     });
@@ -49,7 +51,9 @@ describe('座席予約資産ファクトリー', () => {
                 std_price: 123,
                 add_price: 123,
                 dis_price: 123,
-                sale_price: 123
+                sale_price: 123,
+                mvtk_app_price: 0,
+                add_glasses: 0
             });
         }, (err) => {
             assert(err instanceof argumentNull_1.default);
@@ -74,7 +78,9 @@ describe('座席予約資産ファクトリー', () => {
                 std_price: 123,
                 add_price: 123,
                 dis_price: 123,
-                sale_price: 123
+                sale_price: 123,
+                mvtk_app_price: 0,
+                add_glasses: 0
             });
         }, (err) => {
             assert(err instanceof argumentNull_1.default);
@@ -99,7 +105,9 @@ describe('座席予約資産ファクトリー', () => {
                 std_price: '123',
                 add_price: 123,
                 dis_price: 123,
-                sale_price: 123
+                sale_price: 123,
+                mvtk_app_price: 0,
+                add_glasses: 0
             });
         }, (err) => {
             assert(err instanceof argument_1.default);
@@ -124,7 +132,9 @@ describe('座席予約資産ファクトリー', () => {
                 std_price: 123,
                 add_price: '123',
                 dis_price: 123,
-                sale_price: 123
+                sale_price: 123,
+                mvtk_app_price: 0,
+                add_glasses: 0
             });
         }, (err) => {
             assert(err instanceof argument_1.default);
@@ -149,7 +159,9 @@ describe('座席予約資産ファクトリー', () => {
                 std_price: 123,
                 add_price: 123,
                 dis_price: '123',
-                sale_price: 123
+                sale_price: 123,
+                mvtk_app_price: 0,
+                add_glasses: 0
             });
         }, (err) => {
             assert(err instanceof argument_1.default);
@@ -174,11 +186,67 @@ describe('座席予約資産ファクトリー', () => {
                 std_price: 123,
                 add_price: 123,
                 dis_price: 123,
-                sale_price: '123'
+                sale_price: '123',
+                mvtk_app_price: 0,
+                add_glasses: 0
             });
         }, (err) => {
             assert(err instanceof argument_1.default);
             assert.equal(err.argumentName, 'sale_price');
+            return true;
+        });
+    });
+    it('ムビチケ計上単価が数字でないので作成できない', () => {
+        assert.throws(() => {
+            SeatReservationAssetFactory.create({
+                ownership: OwnershipFactory.create({
+                    owner: 'xxx',
+                    authenticated: false
+                }),
+                performance: 'xxx',
+                section: 'xxx',
+                seat_code: 'xxx',
+                ticket_code: 'xxx',
+                ticket_name_ja: 'xxx',
+                ticket_name_en: 'xxx',
+                ticket_name_kana: 'xxx',
+                std_price: 123,
+                add_price: 123,
+                dis_price: 123,
+                sale_price: 123,
+                mvtk_app_price: '',
+                add_glasses: 0
+            });
+        }, (err) => {
+            assert(err instanceof argument_1.default);
+            assert.equal(err.argumentName, 'mvtk_app_price');
+            return true;
+        });
+    });
+    it('メガネ単価が数字でないので作成できない', () => {
+        assert.throws(() => {
+            SeatReservationAssetFactory.create({
+                ownership: OwnershipFactory.create({
+                    owner: 'xxx',
+                    authenticated: false
+                }),
+                performance: 'xxx',
+                section: 'xxx',
+                seat_code: 'xxx',
+                ticket_code: 'xxx',
+                ticket_name_ja: 'xxx',
+                ticket_name_en: 'xxx',
+                ticket_name_kana: 'xxx',
+                std_price: 123,
+                add_price: 123,
+                dis_price: 123,
+                sale_price: 123,
+                mvtk_app_price: 123,
+                add_glasses: ''
+            });
+        }, (err) => {
+            assert(err instanceof argument_1.default);
+            assert.equal(err.argumentName, 'add_glasses');
             return true;
         });
     });

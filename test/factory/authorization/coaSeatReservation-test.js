@@ -29,7 +29,9 @@ describe('COA仮予約ファクトリー', () => {
                 std_price: 123,
                 add_price: 123,
                 dis_price: 123,
-                sale_price: 123
+                sale_price: 123,
+                mvtk_app_price: 0,
+                add_glasses: 0
             })
         ];
         assert.doesNotThrow(() => {
@@ -65,7 +67,9 @@ describe('COA仮予約ファクトリー', () => {
                 std_price: 123,
                 add_price: 123,
                 dis_price: 123,
-                sale_price: 123
+                sale_price: 123,
+                mvtk_app_price: 0,
+                add_glasses: 0
             })
         ];
         assert.throws(() => {
@@ -105,7 +109,9 @@ describe('COA仮予約ファクトリー', () => {
                 std_price: 123,
                 add_price: 123,
                 dis_price: 123,
-                sale_price: 123
+                sale_price: 123,
+                mvtk_app_price: 0,
+                add_glasses: 0
             })
         ];
         assert.throws(() => {
@@ -145,7 +151,9 @@ describe('COA仮予約ファクトリー', () => {
                 std_price: 123,
                 add_price: 123,
                 dis_price: 123,
-                sale_price: 123
+                sale_price: 123,
+                mvtk_app_price: 0,
+                add_glasses: 0
             })
         ];
         assert.throws(() => {
@@ -185,7 +193,9 @@ describe('COA仮予約ファクトリー', () => {
                 std_price: 123,
                 add_price: 123,
                 dis_price: 123,
-                sale_price: 123
+                sale_price: 123,
+                mvtk_app_price: 0,
+                add_glasses: 0
             })
         ];
         assert.throws(() => {

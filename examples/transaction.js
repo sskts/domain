@@ -57,11 +57,11 @@ function main() {
         const anonymousOwnerId = anonymousOwner.id;
         // 空席なくなったら変更する
         const theaterCode = '118';
-        const dateJouei = '20170331';
-        const titleCode = '17019';
+        const dateJouei = '20170403';
+        const titleCode = '16344';
         const titleBranchNum = '0';
-        const timeBegin = '2020';
-        const screenCode = '50';
+        const timeBegin = '1000';
+        const screenCode = '30';
         // 販売可能チケット検索
         const salesTicketResult = yield COA.ReserveService.salesTicket({
             theater_code: theaterCode,
@@ -133,7 +133,9 @@ function main() {
                     std_price: salesTicketResult[0].std_price,
                     add_price: salesTicketResult[0].add_price,
                     dis_price: 0,
-                    sale_price: salesTicketResult[0].sale_price
+                    sale_price: salesTicketResult[0].sale_price,
+                    mvtk_app_price: 0,
+                    add_glasses: 0
                 });
             }),
             price: totalPrice

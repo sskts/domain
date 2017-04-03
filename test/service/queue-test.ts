@@ -169,7 +169,9 @@ describe('キューサービス', () => {
                         std_price: 0,
                         add_price: 0,
                         dis_price: 0,
-                        sale_price: 0
+                        sale_price: 0,
+                        mvtk_app_price: 0,
+                        add_glasses: 0
                     })
                 ]
             }),

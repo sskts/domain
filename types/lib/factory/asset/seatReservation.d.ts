@@ -35,6 +35,14 @@ export interface ISeatReservationAsset extends AssetFactory.IAsset {
     add_price: number;
     dis_price: number;
     sale_price: number;
+    /**
+     * ムビチケ計上単価
+     */
+    mvtk_app_price: number;
+    /**
+     * メガネ単価
+     */
+    add_glasses: number;
 }
 /**
  * 座席予約資産を作成する
@@ -56,4 +64,6 @@ export declare function create(args: {
     add_price: number;
     dis_price: number;
     sale_price: number;
+    mvtk_app_price: number;
+    add_glasses: number;
 }): ISeatReservationAsset;

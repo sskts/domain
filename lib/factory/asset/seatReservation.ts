@@ -47,6 +47,14 @@ export interface ISeatReservationAsset extends AssetFactory.IAsset {
     add_price: number;
     dis_price: number;
     sale_price: number;
+    /**
+     * ムビチケ計上単価
+     */
+    mvtk_app_price: number;
+    /**
+     * メガネ単価
+     */
+    add_glasses: number;
 }
 
 /**
@@ -69,6 +77,8 @@ export function create(args: {
     add_price: number;
     dis_price: number;
     sale_price: number;
+    mvtk_app_price: number;
+    add_glasses: number;
 }): ISeatReservationAsset {
     if (_.isEmpty(args.performance)) throw new ArgumentNullError('performance');
     if (_.isEmpty(args.seat_code)) throw new ArgumentNullError('seat_code');
@@ -79,6 +89,8 @@ export function create(args: {
     if (!_.isNumber(args.add_price)) throw new ArgumentError('add_price', 'add_price should be number');
     if (!_.isNumber(args.dis_price)) throw new ArgumentError('dis_price', 'dis_price should be number');
     if (!_.isNumber(args.sale_price)) throw new ArgumentError('sale_price', 'sale_price should be number');
+    if (!_.isNumber(args.mvtk_app_price)) throw new ArgumentError('mvtk_app_price', 'mvtk_app_price should be number');
+    if (!_.isNumber(args.add_glasses)) throw new ArgumentError('add_glasses', 'add_glasses should be number');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
@@ -96,6 +108,8 @@ export function create(args: {
         std_price: args.std_price,
         add_price: args.add_price,
         dis_price: args.dis_price,
-        sale_price: args.sale_price
+        sale_price: args.sale_price,
+        mvtk_app_price: args.mvtk_app_price,
+        add_glasses: args.add_glasses
     };
 }
