@@ -47,7 +47,7 @@ export function executeSendEmailNotification() {
         debug('queueDoc is', queueDoc);
 
         if (queueDoc === null) {
-            return null;
+            // return null;
         } else {
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
@@ -66,7 +66,7 @@ export function executeSendEmailNotification() {
                 ).exec();
             }
 
-            return <QueueStatus>queueDoc.get('status');
+            // return <QueueStatus>queueDoc.get('status');
         }
     };
 }
@@ -96,7 +96,7 @@ export function executeCancelCOASeatReservationAuthorization() {
         debug('queueDoc is', queueDoc);
 
         if (queueDoc === null) {
-            return null;
+            // return null;
         } else {
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
@@ -115,7 +115,7 @@ export function executeCancelCOASeatReservationAuthorization() {
                 ).exec();
             }
 
-            return <QueueStatus>queueDoc.get('status');
+            // return <QueueStatus>queueDoc.get('status');
         }
     };
 }
@@ -145,7 +145,7 @@ export function executeCancelGMOAuthorization() {
         debug('queueDoc is', queueDoc);
 
         if (queueDoc === null) {
-            return null;
+            // return null;
         } else {
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
@@ -164,7 +164,7 @@ export function executeCancelGMOAuthorization() {
                 ).exec();
             }
 
-            return <QueueStatus>queueDoc.get('status');
+            // return <QueueStatus>queueDoc.get('status');
         }
     };
 }
@@ -193,7 +193,7 @@ export function executeDisableTransactionInquiry() {
         debug('queueDoc is', queueDoc);
 
         if (queueDoc === null) {
-            return null;
+            // return null;
         } else {
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
@@ -212,7 +212,7 @@ export function executeDisableTransactionInquiry() {
                 ).exec();
             }
 
-            return <QueueStatus>queueDoc.get('status');
+            // return <QueueStatus>queueDoc.get('status');
         }
     };
 }
@@ -242,7 +242,7 @@ export function executeSettleCOASeatReservationAuthorization() {
         debug('queueDoc is', queueDoc);
 
         if (queueDoc === null) {
-            return null;
+            // return null;
         } else {
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
@@ -261,7 +261,7 @@ export function executeSettleCOASeatReservationAuthorization() {
                 ).exec();
             }
 
-            return <QueueStatus>queueDoc.get('status');
+            // return <QueueStatus>queueDoc.get('status');
         }
     };
 }
@@ -291,7 +291,7 @@ export function executeSettleGMOAuthorization() {
         debug('queueDoc is', queueDoc);
 
         if (queueDoc === null) {
-            return null;
+            // return null;
         } else {
             try {
                 // 失敗してもここでは戻さない(RUNNINGのまま待機)
@@ -310,7 +310,7 @@ export function executeSettleGMOAuthorization() {
                 ).exec();
             }
 
-            return <QueueStatus>queueDoc.get('status');
+            // return <QueueStatus>queueDoc.get('status');
         }
     };
 }
@@ -361,7 +361,7 @@ export function abort(intervalInMinutes: number) {
         debug('abortedQueueDoc:', abortedQueueDoc);
 
         if (abortedQueueDoc === null) {
-            return null;
+            // return null;
         } else {
             // メール通知
             await notificationService.report2developers(
@@ -371,7 +371,7 @@ ${util.inspect(abortedQueueDoc.toObject(), { showHidden: true, depth: 10 })}\n
 `
             )();
 
-            return <string>abortedQueueDoc.get('id');
+            // return <string>abortedQueueDoc.get('id');
         }
     };
 }

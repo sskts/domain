@@ -35,8 +35,8 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     const queueAdapter = sskts.adapter.queue(connection);
     yield queueAdapter.model.remove({}).exec();
 }));
-describe('queue service', () => {
-    it('executeSendEmailNotification ok.', () => __awaiter(this, void 0, void 0, function* () {
+describe('キューサービス', () => {
+    it('Eメール通知成功', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = PushNotificationQueueFactory.create({
@@ -54,10 +54,11 @@ describe('queue service', () => {
             results: []
         });
         yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
-        const status = yield sskts.service.queue.executeSendEmailNotification()(queueAdapter);
-        assert.equal(status, queueStatus_1.default.EXECUTED);
+        yield sskts.service.queue.executeSendEmailNotification()(queueAdapter);
+        const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
+        assert.equal(queueDoc.get('status'), queueStatus_1.default.EXECUTED);
     }));
-    it('executeSettleCOASeatReservationAuthorization fail because coa authorization is invalid.', () => __awaiter(this, void 0, void 0, function* () {
+    it('COA仮予約承認が不適切なので資産移動失敗', () => __awaiter(this, void 0, void 0, function* () {
         const assetAdapter = sskts.adapter.asset(connection);
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
@@ -102,10 +103,11 @@ describe('queue service', () => {
             results: []
         });
         yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
-        const status = yield sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, queueAdapter);
-        assert.equal(status, queueStatus_1.default.RUNNING);
+        yield sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, queueAdapter);
+        const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
+        assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
     }));
-    it('executeSettleGMOAuthorization fail because gmo authorization is invalid.', () => __awaiter(this, void 0, void 0, function* () {
+    it('GMOオーソリが不適切なので実売上失敗', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = SettleAuthorizationQueueFactory.create({
@@ -131,10 +133,11 @@ describe('queue service', () => {
             results: []
         });
         yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
-        const status = yield sskts.service.queue.executeSettleGMOAuthorization()(queueAdapter);
-        assert.equal(status, queueStatus_1.default.RUNNING);
+        yield sskts.service.queue.executeSettleGMOAuthorization()(queueAdapter);
+        const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
+        assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
     }));
-    it('executeDisableTransactionInquiry fail because transaction has no inquiry key.', () => __awaiter(this, void 0, void 0, function* () {
+    it('照会キーがないので取引照会無効化失敗', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         // test data
@@ -152,10 +155,11 @@ describe('queue service', () => {
             results: []
         });
         yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
-        const status = yield sskts.service.queue.executeDisableTransactionInquiry()(queueAdapter, transactionAdapter);
-        assert.equal(status, queueStatus_1.default.RUNNING);
+        yield sskts.service.queue.executeDisableTransactionInquiry()(queueAdapter, transactionAdapter);
+        const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
+        assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
     }));
-    it('retry ok.', () => __awaiter(this, void 0, void 0, function* () {
+    it('リトライ成功', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = PushNotificationQueueFactory.create({
@@ -178,7 +182,7 @@ describe('queue service', () => {
         const retriedQueue = yield queueAdapter.model.findById(queue.id).exec();
         assert.equal(retriedQueue.get('status'), queueStatus_1.default.UNEXECUTED);
     }));
-    it('abort ok.', () => __awaiter(this, void 0, void 0, function* () {
+    it('中止成功', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = PushNotificationQueueFactory.create({
@@ -196,10 +200,12 @@ describe('queue service', () => {
             results: ['xxx']
         });
         yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
-        const queueId = yield sskts.service.queue.abort(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
-        assert.equal(queueId, queue.id);
+        yield sskts.service.queue.abort(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
+        // ステータスが変更されているかどうか確認
+        const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
+        assert.equal(queueDoc.get('status'), queueStatus_1.default.ABORTED);
     }));
-    it('not retry because it has reached to max_count_try.', () => __awaiter(this, void 0, void 0, function* () {
+    it('最大試行回数に達するとリトライしない', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = PushNotificationQueueFactory.create({
