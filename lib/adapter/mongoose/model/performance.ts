@@ -47,6 +47,7 @@ const schema = new mongoose.Schema(
         coa_name_service_day: String, // サービスデイ名称(「映画の日」「レディースデイ」など ※割引区分、割引コード、特定日等の組み合わせで登録するため名称で連携の方が容易)
         coa_available_num: Number, // 購入可能枚数
         coa_rsv_start_date: String, // 予約開始日
+        coa_rsv_end_date: String, // 予約終了日
         coa_flg_early_booking: String // 先行予約フラグ
     },
     {

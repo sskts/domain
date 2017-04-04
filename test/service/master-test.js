@@ -15,15 +15,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const assert = require("assert");
 const mongoose = require("mongoose");
-const sskts = require("../../lib/index");
+const film_1 = require("../../lib/adapter/film");
+const performance_1 = require("../../lib/adapter/performance");
+const screen_1 = require("../../lib/adapter/screen");
+const theater_1 = require("../../lib/adapter/theater");
+const MasterService = require("../../lib/service/master");
 let connection;
-before(() => {
+before(() => __awaiter(this, void 0, void 0, function* () {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-});
-describe('マスターサービス', () => {
-    it('存在しない劇場コードで劇場抽出失敗', () => __awaiter(this, void 0, void 0, function* () {
+    // 全て削除してからテスト開始
+    const theaterAdapter = new theater_1.default(connection);
+    const screenAdapter = new screen_1.default(connection);
+    const filmAdapter = new film_1.default(connection);
+    const performanceAdapter = new performance_1.default(connection);
+    yield theaterAdapter.model.remove({}).exec();
+    yield screenAdapter.model.remove({}).exec();
+    yield filmAdapter.model.remove({}).exec();
+    yield performanceAdapter.model.remove({}).exec();
+}));
+describe('マスターサービス 劇場インポート', () => {
+    it('存在しない劇場コードで失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const theaterAdapter = new theater_1.default(connection);
         try {
-            yield sskts.service.master.importTheater('000')(sskts.adapter.theater(connection));
+            yield MasterService.importTheater('000')(theaterAdapter);
         }
         catch (error) {
             assert(error instanceof Error);
@@ -31,8 +45,9 @@ describe('マスターサービス', () => {
         }
         throw new Error('should not be passed');
     }));
-    it('存在する劇場コードで劇場抽出成功', (done) => {
-        sskts.service.master.importTheater('118')(sskts.adapter.theater(connection))
+    it('成功', (done) => {
+        const theaterAdapter = new theater_1.default(connection);
+        MasterService.importTheater('118')(theaterAdapter)
             .then(() => {
             done();
         })
@@ -40,8 +55,12 @@ describe('マスターサービス', () => {
             done(err);
         });
     });
-    it('importScreens fail', (done) => {
-        sskts.service.master.importScreens('000')(sskts.adapter.theater(connection), sskts.adapter.screen(connection))
+});
+describe('マスターサービス スクリーンインポート', () => {
+    it('劇場が存在しないので失敗', (done) => {
+        const theaterAdapter = new theater_1.default(connection);
+        const screenAdapter = new screen_1.default(connection);
+        MasterService.importScreens('000')(theaterAdapter, screenAdapter)
             .then(() => {
             done(new Error('thenable.'));
         })
@@ -49,8 +68,10 @@ describe('マスターサービス', () => {
             done();
         });
     });
-    it('importScreens ok', (done) => {
-        sskts.service.master.importScreens('118')(sskts.adapter.theater(connection), sskts.adapter.screen(connection))
+    it('成功', (done) => {
+        const theaterAdapter = new theater_1.default(connection);
+        const screenAdapter = new screen_1.default(connection);
+        MasterService.importScreens('118')(theaterAdapter, screenAdapter)
             .then(() => {
             done();
         })
@@ -58,108 +79,100 @@ describe('マスターサービス', () => {
             done(err);
         });
     });
-    it('importFilms fail', (done) => {
-        sskts.service.master.importFilms('000')(sskts.adapter.theater(connection), sskts.adapter.film(connection))
-            .then(() => {
-            done(new Error('thenable.'));
-        })
-            .catch(() => {
-            done();
-        });
-    });
-    it('importFilms ok', (done) => {
-        sskts.service.master.importFilms('118')(sskts.adapter.theater(connection), sskts.adapter.film(connection))
-            .then(() => {
-            done();
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
-    it('importPerformances fail', (done) => {
-        sskts.service.master.importPerformances('000', '20170301', '20170303')(sskts.adapter.film(connection), sskts.adapter.screen(connection), sskts.adapter.performance(connection))
-            .then(() => {
-            done(new Error('thenable.'));
-        })
-            .catch(() => {
-            done();
-        });
-    });
-    it('importPerformances ok', (done) => {
-        sskts.service.master.importPerformances('118', '20170301', '20170303')(sskts.adapter.film(connection), sskts.adapter.screen(connection), sskts.adapter.performance(connection))
-            .then(() => {
-            done();
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
-    it('findTheater ok', (done) => {
-        sskts.service.master.findTheater('118')(sskts.adapter.theater(connection))
-            .then((theaterOption) => {
-            assert(theaterOption.isDefined);
-            assert.equal(theaterOption.get().id, '118');
-            done();
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
-    it('findTheater not found', (done) => {
-        sskts.service.master.findTheater('000')(sskts.adapter.theater(connection))
-            .then((theaterOption) => {
-            assert(theaterOption.isEmpty);
-            done();
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
+});
+describe('マスターサービス 作品インポート', () => {
+    it('劇場が存在しないので失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const theaterAdapter = new theater_1.default(connection);
+        const filmAdapter = new film_1.default(connection);
+        try {
+            yield MasterService.importFilms('000')(theaterAdapter, filmAdapter);
+        }
+        catch (error) {
+            assert(error instanceof Error);
+            return;
+        }
+        throw new Error('存在しないはず');
+    }));
+    it('成功', () => __awaiter(this, void 0, void 0, function* () {
+        const theaterAdapter = new theater_1.default(connection);
+        const filmAdapter = new film_1.default(connection);
+        yield MasterService.importFilms('118')(theaterAdapter, filmAdapter);
+    }));
+});
+describe('マスターサービス パフォーマンスインポート', () => {
+    it('劇場が存在しないので失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const filmAdapter = new film_1.default(connection);
+        const screenAdapter = new screen_1.default(connection);
+        const performanceAdapter = new performance_1.default(connection);
+        try {
+            yield MasterService.importPerformances('000', '20170401', '20170401')(filmAdapter, screenAdapter, performanceAdapter);
+        }
+        catch (error) {
+            assert(error instanceof Error);
+            return;
+        }
+        throw new Error('失敗するはず');
+    }));
+    it('成功', () => __awaiter(this, void 0, void 0, function* () {
+        const filmAdapter = new film_1.default(connection);
+        const screenAdapter = new screen_1.default(connection);
+        const performanceAdapter = new performance_1.default(connection);
+        yield MasterService.importPerformances('118', '20170401', '20170401')(filmAdapter, screenAdapter, performanceAdapter);
+    }));
+});
+describe('マスターサービス 劇場取得', () => {
+    it('存在する', () => __awaiter(this, void 0, void 0, function* () {
+        const theaterAdapter = new theater_1.default(connection);
+        const theaterOption = yield MasterService.findTheater('118')(theaterAdapter);
+        assert(theaterOption.isDefined);
+        assert.equal(theaterOption.get().id, '118');
+    }));
+    it('存在しない', () => __awaiter(this, void 0, void 0, function* () {
+        const theaterAdapter = new theater_1.default(connection);
+        const theaterOption = yield MasterService.findTheater('000')(theaterAdapter);
+        assert(theaterOption.isEmpty);
+    }));
+});
+describe('マスターサービス 作品取得', () => {
+    it('存在する', () => __awaiter(this, void 0, void 0, function* () {
+        const filmAdapter = new film_1.default(connection);
+        const filmOption = yield MasterService.findFilm('118170620')(filmAdapter);
+        assert(filmOption.isDefined);
+        assert.equal(filmOption.get().id, '118170620');
+    }));
+    it('存在しない', () => __awaiter(this, void 0, void 0, function* () {
+        const filmAdapter = new film_1.default(connection);
+        const filmOption = yield MasterService.findFilm('000000000')(filmAdapter);
+        assert(filmOption.isEmpty);
+    }));
+});
+describe('マスターサービス パフォーマンス取得', () => {
     // todo 特定のパフォーマンスコードでしかテスト通らない
-    it('findPerformance ok', (done) => {
-        sskts.service.master.findPerformance('1182017030116140071355')(sskts.adapter.performance(connection))
-            .then((performanceOption) => {
-            assert(performanceOption.isDefined);
-            assert.equal(performanceOption.get().id, '1182017030116140071355');
-            done();
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
-    it('findPerformance not found', (done) => {
-        sskts.service.master.findPerformance('000')(sskts.adapter.performance(connection))
-            .then((performanceOption) => {
-            assert(performanceOption.isEmpty);
-            done();
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
-    it('findFilm ok', (done) => {
-        sskts.service.master.findFilm('118170620')(sskts.adapter.film(connection))
-            .then((filmOption) => {
-            assert(filmOption.isDefined);
-            assert.equal(filmOption.get().id, '118170620');
-            done();
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
-    it('findFilm not found', (done) => {
-        sskts.service.master.findFilm('000000000')(sskts.adapter.film(connection))
-            .then((filmOption) => {
-            assert(filmOption.isEmpty);
-            done();
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
+    it('存在する', () => __awaiter(this, void 0, void 0, function* () {
+        const performanceAdapter = new performance_1.default(connection);
+        const performance = {
+            id: '12345',
+            day: '20170401',
+            time_start: '0900',
+            time_end: '1100',
+            canceled: false
+        };
+        const performanceDoc = yield performanceAdapter.model.findByIdAndUpdate(performance.id, performance, { new: true, upsert: true });
+        const performanceOption = yield MasterService.findPerformance('12345')(performanceAdapter);
+        assert(performanceOption.isDefined);
+        assert.equal(performanceOption.get().id, '12345');
+        yield performanceDoc.remove();
+    }));
+    it('存在しない', () => __awaiter(this, void 0, void 0, function* () {
+        const performanceAdapter = new performance_1.default(connection);
+        const performanceOption = yield MasterService.findPerformance('000')(performanceAdapter);
+        assert(performanceOption.isEmpty);
+    }));
+});
+describe('マスターサービス パフォーマンス検索', () => {
     it('searchPerformances by theater ok', (done) => {
-        sskts.service.master.searchPerformances({ theater: '118' })(sskts.adapter.performance(connection))
+        const performanceAdapter = new performance_1.default(connection);
+        MasterService.searchPerformances({ theater: '118' })(performanceAdapter)
             .then((performances) => {
             performances.map((performance) => {
                 assert.equal(performance.theater.id, '118');
@@ -171,7 +184,8 @@ describe('マスターサービス', () => {
         });
     });
     it('searchPerformances by day ok', (done) => {
-        sskts.service.master.searchPerformances({ day: '20170301' })(sskts.adapter.performance(connection))
+        const performanceAdapter = new performance_1.default(connection);
+        MasterService.searchPerformances({ day: '20170301' })(performanceAdapter)
             .then((performances) => {
             performances.map((performance) => {
                 assert.equal(performance.day, '20170301');

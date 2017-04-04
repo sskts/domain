@@ -29,7 +29,9 @@ const schema = new mongoose.Schema(
         kbn_jimakufukikae: String, // 字幕吹替区分(字幕、吹き替え)
         copyright: String, // コピーライト
         coa_title_code: String,
-        coa_title_branch_num: String
+        coa_title_branch_num: String,
+        flg_mvtk_use: String, // ムビチケ使用フラグ
+        date_mvtk_begin: String // ムビチケ利用開始日
     },
     {
         collection: 'films',

@@ -40,13 +40,26 @@ export interface IReferencesWithDetails {
     };
 }
 export interface ICOAFields {
-    coa_trailer_time?: number;
-    coa_kbn_service?: string;
-    coa_kbn_acoustic?: string;
-    coa_name_service_day?: string;
-    coa_available_num?: number;
-    coa_rsv_start_date?: string;
-    coa_flg_early_booking?: string;
+    coa_trailer_time: number;
+    coa_kbn_service: string;
+    coa_kbn_acoustic: string;
+    coa_name_service_day: string;
+    coa_available_num: number;
+    /**
+     * 予約開始日
+     * 予約可能になる日付(YYYYMMDD)
+     */
+    coa_rsv_start_date: string;
+    /**
+     * 予約終了日
+     * 予約終了になる日付(YYYYMMDD)
+     */
+    coa_rsv_end_date: string;
+    /**
+     * 先行予約フラグ
+     * 先行予約の場合は'1'、それ以外は'0'
+     */
+    coa_flg_early_booking: string;
 }
 export interface IPerformanceBase {
     id: string;

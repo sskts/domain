@@ -34,10 +34,21 @@ export interface IFilm {
     minutes: number;
     date_start: string;
     date_end: string;
-    kbn_eirin?: string;
-    kbn_eizou?: string;
-    kbn_joueihousiki?: string;
-    kbn_jimakufukikae?: string;
+    kbn_eirin: string;
+    kbn_eizou: string;
+    kbn_joueihousiki: string;
+    kbn_jimakufukikae: string;
+    copyright: string;
+    /**
+     * ムビチケ使用フラグ
+     * 1：ムビチケ使用対象
+     */
+    flg_mvtk_use: string;
+    /**
+     * ムビチケ利用開始日
+     * ※日付は西暦8桁 "YYYYMMDD"
+     */
+    date_mvtk_begin: string;
 }
 /**
  * COAの作品抽出結果からFilmオブジェクトを作成する

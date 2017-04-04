@@ -35,10 +35,21 @@ export interface IFilm {
     minutes: number; // 上映時間
     date_start: string; // 公演開始予定日※日付は西暦8桁 "YYYYMMDD"
     date_end: string; // 公演終了予定日※日付は西暦8桁 "YYYYMMDD"
-    kbn_eirin?: string;
-    kbn_eizou?: string;
-    kbn_joueihousiki?: string;
-    kbn_jimakufukikae?: string;
+    kbn_eirin: string; // 映倫区分(PG12,R15,R18)
+    kbn_eizou: string; // 映像区分(２D、３D)
+    kbn_joueihousiki: string; // 上映方式区分(ＩＭＡＸ，４ＤＸ等)
+    kbn_jimakufukikae: string; // 字幕吹替区分(字幕、吹き替え)
+    copyright: string; // コピーライト
+    /**
+     * ムビチケ使用フラグ
+     * 1：ムビチケ使用対象
+     */
+    flg_mvtk_use: string;
+    /**
+     * ムビチケ利用開始日
+     * ※日付は西暦8桁 "YYYYMMDD"
+     */
+    date_mvtk_begin: string;
 }
 
 /**
@@ -68,7 +79,10 @@ export function createFromCOA(filmFromCOA: COA.MasterService.ITitleResult) {
             kbn_eirin: filmFromCOA.kbn_eirin,
             kbn_eizou: filmFromCOA.kbn_eizou,
             kbn_joueihousiki: filmFromCOA.kbn_joueihousiki,
-            kbn_jimakufukikae: filmFromCOA.kbn_jimakufukikae
+            kbn_jimakufukikae: filmFromCOA.kbn_jimakufukikae,
+            copyright: '',
+            flg_mvtk_use: filmFromCOA.flg_mvtk_use,
+            date_mvtk_begin: filmFromCOA.date_mvtk_begin
         };
     };
 }

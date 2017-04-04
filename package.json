@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/coa-service": "^2.0.5",
+    "@motionpicture/coa-service": "^2.0.6",
     "@motionpicture/gmo-service": "^2.0.10",
     "@types/mongoose": "^4.7.9",
     "clone": "^2.1.1",
@@ -68,5 +68,5 @@
     "postversion": "git push origin --tags"
   },
   "types": "./types/lib/index.d.ts",
-  "version": "10.0.0"
+  "version": "10.0.1"
 }
