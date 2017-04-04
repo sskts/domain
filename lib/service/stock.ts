@@ -78,6 +78,18 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
         // COA本予約
         // COA本予約は一度成功すると成功できない
         // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
+        // すでに本予約済みかどうか確認
+        const stateReserveResult = await COA.ReserveService.stateReserve({
+            theater_code: authorization.coa_theater_code,
+            reserve_num: authorization.coa_tmp_reserve_num,
+            tel_num: owner.tel
+        });
+
+        if (stateReserveResult !== null) {
+            // すでに本予約済み
+            return;
+        }
+
         await COA.ReserveService.updReserve({
             theater_code: authorization.coa_theater_code,
             date_jouei: authorization.coa_date_jouei,
@@ -129,18 +141,20 @@ export function disableTransactionInquiry(transaction: TransactionFactory.ITrans
             tel_num: transaction.inquiry_key.tel
         });
 
-        // COA購入チケット取消
-        debug('calling deleteReserve...');
-        await COA.ReserveService.delReserve({
-            theater_code: transaction.inquiry_key.theater_code,
-            reserve_num: transaction.inquiry_key.reserve_num,
-            tel_num: transaction.inquiry_key.tel,
-            date_jouei: reservation.date_jouei,
-            title_code: reservation.title_code,
-            title_branch_num: reservation.title_branch_num,
-            time_begin: reservation.time_begin,
-            list_seat: reservation.list_ticket
-        });
+        if (reservation !== null) {
+            // COA購入チケット取消
+            debug('calling deleteReserve...');
+            await COA.ReserveService.delReserve({
+                theater_code: transaction.inquiry_key.theater_code,
+                reserve_num: transaction.inquiry_key.reserve_num,
+                tel_num: transaction.inquiry_key.tel,
+                date_jouei: reservation.date_jouei,
+                title_code: reservation.title_code,
+                title_branch_num: reservation.title_branch_num,
+                time_begin: reservation.time_begin,
+                list_seat: reservation.list_ticket
+            });
+        }
 
         // 永続化
         debug('updating transaction...');

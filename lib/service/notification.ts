@@ -26,6 +26,7 @@ const debug = createDebug('sskts-domain:service:notification');
  */
 export function sendEmail(email: EmailNotificationFactory.IEmailNotification): Operation<void> {
     return async () => {
+        debug('sending email...', email.content);
         const mail = new sendgrid.mail.Mail(
             new sendgrid.mail.Email(email.from),
             email.subject,

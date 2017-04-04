@@ -12,9 +12,9 @@ import AssetAdapter from '../../lib/adapter/asset';
 import OwnerAdapter from '../../lib/adapter/owner';
 import TransactionAdapter from '../../lib/adapter/transaction';
 
-import AssetGroup from '../../lib/factory/assetGroup';
+// import AssetGroup from '../../lib/factory/assetGroup';
 import * as CoaSeatReservationAuthorizationFactory from '../../lib/factory/authorization/coaSeatReservation';
-import AuthorizationGroup from '../../lib/factory/authorizationGroup';
+// import AuthorizationGroup from '../../lib/factory/authorizationGroup';
 import ObjectId from '../../lib/factory/objectId';
 import * as TransactionFactory from '../../lib/factory/transaction';
 
@@ -25,7 +25,7 @@ before(() => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 });
 
-describe('在庫サービス', () => {
+describe('在庫サービス 取引照会無効化', () => {
     it('照会キーがないので取引照会無効化失敗', async () => {
         const transactionAdapter = new TransactionAdapter(connection);
         const transaction = TransactionFactory.create({
@@ -43,85 +43,91 @@ describe('在庫サービス', () => {
 
         assert(disableTransactionInquiryError instanceof Error);
     });
+});
 
-    it('COAで本予約できないので座席予約資産移動失敗', async () => {
+describe('在庫サービス 座席予約資産移動', () => {
+    it('成功', async () => {
         const assetAdapter = new AssetAdapter(connection);
         const ownerAdapter = new OwnerAdapter(connection);
 
         const authorization: CoaSeatReservationAuthorizationFactory.ICOASeatReservationAuthorization = {
-            id: '58e1e6d268ae4a2fc8f4e4c0',
-            group: AuthorizationGroup.COA_SEAT_RESERVATION,
-            coa_tmp_reserve_num: 995,
-            coa_theater_code: '118',
-            coa_date_jouei: '20170403',
-            coa_title_code: '16344',
-            coa_title_branch_num: '0',
-            coa_time_begin: '1000',
-            coa_screen_code: '30',
-            price: 4000,
-            owner_from: '5868e16789cc75249cdbfa4b',
-            owner_to: '58e1e6cc68ae4a2fc8f4e4bb',
             assets: [
                 {
-                    id: '58e1e6d268ae4a2fc8f4e4bd',
-                    ownership: {
-                        id: '58e1e6d268ae4a2fc8f4e4bc',
-                        owner: '58e1e6cc68ae4a2fc8f4e4bb',
-                        authenticated: false
-                    },
-                    group: AssetGroup.SEAT_RESERVATION,
-                    price: 2000,
-                    authorizations: [],
-                    performance: '001201701208513021010',
-                    section: '   ',
-                    seat_code: 'Ｂ－４',
-                    ticket_code: '10',
-                    ticket_name_ja: '当日一般',
-                    ticket_name_en: 'General Price',
-                    ticket_name_kana: 'トウジツイッパン',
-                    std_price: 1800,
-                    add_price: 200,
-                    dis_price: 0,
-                    sale_price: 2000,
+                    add_glasses: 0,
                     mvtk_app_price: 0,
-                    add_glasses: 0
+                    sale_price: 2800,
+                    dis_price: 0,
+                    add_price: 1000,
+                    std_price: 1800,
+                    ticket_name_kana: 'トウジツイッパン',
+                    ticket_name_en: 'General Price',
+                    ticket_name_ja: '当日一般',
+                    ticket_code: '10',
+                    seat_code: 'Ａ－３',
+                    section: '   ',
+                    performance: '001201701208513021010',
+                    authorizations: [],
+                    price: 2800,
+                    group: 'SEAT_RESERVATION',
+                    ownership: {
+                        authenticated: false,
+                        owner: '58e344ac36a44424c0997dad',
+                        id: '58e344b236a44424c0997dae'
+                    },
+                    id: '58e344b236a44424c0997daf'
                 },
                 {
-                    id: '58e1e6d268ae4a2fc8f4e4bf',
-                    ownership: {
-                        id: '58e1e6d268ae4a2fc8f4e4be',
-                        owner: '58e1e6cc68ae4a2fc8f4e4bb',
-                        authenticated: false
-                    },
-                    group: AssetGroup.SEAT_RESERVATION,
-                    price: 2000,
-                    authorizations: [],
-                    performance: '001201701208513021010',
-                    section: '   ',
-                    seat_code: 'Ｂ－５',
-                    ticket_code: '10',
-                    ticket_name_ja: '当日一般',
-                    ticket_name_en: 'General Price',
-                    ticket_name_kana: 'トウジツイッパン',
-                    std_price: 1800,
-                    add_price: 200,
-                    dis_price: 0,
-                    sale_price: 2000,
+                    add_glasses: 0,
                     mvtk_app_price: 0,
-                    add_glasses: 0
+                    sale_price: 2800,
+                    dis_price: 0,
+                    add_price: 1000,
+                    std_price: 1800,
+                    ticket_name_kana: 'トウジツイッパン',
+                    ticket_name_en: 'General Price',
+                    ticket_name_ja: '当日一般',
+                    ticket_code: '10',
+                    seat_code: 'Ａ－４',
+                    section: '   ',
+                    performance: '001201701208513021010',
+                    authorizations: [],
+                    price: 2800,
+                    group: 'SEAT_RESERVATION',
+                    ownership: {
+                        authenticated: false,
+                        owner: '58e344ac36a44424c0997dad',
+                        id: '58e344b236a44424c0997db0'
+                    },
+                    id: '58e344b236a44424c0997db1'
                 }
-            ]
+            ],
+            owner_to: '58e344ac36a44424c0997dad',
+            owner_from: '5868e16789cc75249cdbfa4b',
+            price: 5600,
+            coa_screen_code: '60',
+            coa_time_begin: '0950',
+            coa_title_branch_num: '0',
+            coa_title_code: '17165',
+            coa_date_jouei: '20170404',
+            coa_theater_code: '118',
+            coa_tmp_reserve_num: 1103,
+            group: 'COA_SEAT_RESERVATION',
+            id: '58e344b236a44424c0997db2'
         };
 
-        try {
-            await StockService.transferCOASeatReservation(authorization)(assetAdapter, ownerAdapter);
-        } catch (error) {
-            assert(error instanceof Error);
-            assert.equal((<Error>error).message, '本予約失敗');
-            return;
-        }
+        await StockService.transferCOASeatReservation(authorization)(assetAdapter, ownerAdapter);
 
-        throw new Error('should not be passed');
+        // 資産の存在を確認
+        const asset1Doc = await assetAdapter.model.findById('58e344b236a44424c0997daf').exec();
+        assert.notEqual(asset1Doc, null);
+        assert.equal(asset1Doc.get('performance'), '001201701208513021010');
+        assert.equal(asset1Doc.get('seat_code'), 'Ａ－３');
+        assert.equal(asset1Doc.get('ownership').owner, '58e344ac36a44424c0997dad');
+        const asset2Doc = await assetAdapter.model.findById('58e344b236a44424c0997db1').exec();
+        assert.notEqual(asset2Doc, null);
+        assert.equal(asset2Doc.get('performance'), '001201701208513021010');
+        assert.equal(asset2Doc.get('seat_code'), 'Ａ－４');
+        assert.equal(asset2Doc.get('ownership').owner, '58e344ac36a44424c0997dad');
     });
 
     it('所有者が存在しないので座席予約資産移動失敗', async () => {
