@@ -57,11 +57,11 @@ function main() {
         const anonymousOwnerId = anonymousOwner.id;
         // 空席なくなったら変更する
         const theaterCode = '118';
-        const dateJouei = '20170403';
-        const titleCode = '16344';
+        const dateJouei = '20170404';
+        const titleCode = '17165';
         const titleBranchNum = '0';
-        const timeBegin = '1000';
-        const screenCode = '30';
+        const timeBegin = '0950';
+        const screenCode = '60';
         // 販売可能チケット検索
         const salesTicketResult = yield COA.ReserveService.salesTicket({
             theater_code: theaterCode,
@@ -180,49 +180,20 @@ function main() {
         debug('GMOAuthorization added.');
         // 購入者情報登録
         debug('updating anonymous...');
+        const tel = '09012345678';
         yield sskts.service.transactionWithId.updateAnonymousOwner({
             transaction_id: transactionId,
             name_first: 'Tetsu',
             name_last: 'Yamazaki',
-            tel: '09012345678',
+            tel: tel,
             email: process.env.SSKTS_DEVELOPER_EMAIL
         })(ownerAdapter, transactionAdapter);
         debug('anonymousOwner updated.');
-        // COA本予約
-        const tel = '09012345678';
-        const updateReserveResult = yield COA.ReserveService.updReserve({
-            theater_code: theaterCode,
-            date_jouei: dateJouei,
-            title_code: titleCode,
-            title_branch_num: titleBranchNum,
-            time_begin: timeBegin,
-            // screen_code: screenCode,
-            tmp_reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
-            reserve_name: '山崎 哲',
-            reserve_name_jkana: 'ヤマザキ テツ',
-            tel_num: '09012345678',
-            mail_addr: 'yamazaki@motionpicture.jp',
-            reserve_amount: totalPrice,
-            list_ticket: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
-                return {
-                    ticket_code: salesTicketResult[0].ticket_code,
-                    std_price: salesTicketResult[0].std_price,
-                    add_price: salesTicketResult[0].add_price,
-                    dis_price: 0,
-                    sale_price: salesTicketResult[0].sale_price,
-                    mvtk_app_price: 0,
-                    ticket_count: 1,
-                    seat_num: tmpReserve.seat_num,
-                    add_glasses: 0
-                };
-            })
-        });
-        debug('updateReserveResult:', updateReserveResult);
         // 照会情報登録(購入番号と電話番号で照会する場合)
         debug('enabling inquiry...');
         const key = sskts.factory.transactionInquiryKey.create({
             theater_code: theaterCode,
-            reserve_num: updateReserveResult.reserve_num,
+            reserve_num: reserveSeatsTemporarilyResult.tmp_reserve_num,
             tel: tel
         });
         yield sskts.service.transactionWithId.enableInquiry(transactionId, key)(transactionAdapter);
@@ -237,7 +208,7 @@ function main() {
 ※チケット発券時は、自動発券機に下記チケットQRコードをかざしていただくか、購入番号と電話番号を入力していただく必要があります。\n
 -------------------------------------------------------------------\n
 \n
-◆購入番号 ：${updateReserveResult.reserve_num}\n
+◆購入番号 ：${reserveSeatsTemporarilyResult.tmp_reserve_num}\n
 ◆電話番号 ：09012345678\n
 ◆合計金額 ：${totalPrice}円\n
 \n

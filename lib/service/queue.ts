@@ -9,6 +9,7 @@ import * as moment from 'moment';
 import * as util from 'util';
 
 import AssetAdapter from '../adapter/asset';
+import OwnerAdapter from '../adapter/owner';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
 
@@ -21,7 +22,8 @@ import * as notificationService from './notification';
 import * as salesService from './sales';
 import * as stockService from './stock';
 
-export type AssetAndQueueOperation<T> = (assetAdapter: AssetAdapter, queueAdapter: QueueAdapter) => Promise<T>;
+export type AssetAndOwnerAndQueueOperation<T> =
+    (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, queueAdapter: QueueAdapter) => Promise<T>;
 export type QueueOperation<T> = (queueAdapter: QueueAdapter) => Promise<T>;
 export type QueueAndTransactionOperation<T> = (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 
@@ -223,8 +225,8 @@ export function executeDisableTransactionInquiry(): QueueAndTransactionOperation
  * @memberOf QueueService
  * @returns {AssetAndQueueOperation<void>}
  */
-export function executeSettleCOASeatReservationAuthorization(): AssetAndQueueOperation<void> {
-    return async (assetAdapter: AssetAdapter, queueAdapter: QueueAdapter) => {
+export function executeSettleCOASeatReservationAuthorization(): AssetAndOwnerAndQueueOperation<void> {
+    return async (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, queueAdapter: QueueAdapter) => {
         // 未実行のCOA資産移動キューを取得
         const queueDoc = await queueAdapter.model.findOneAndUpdate(
             {
@@ -248,7 +250,7 @@ export function executeSettleCOASeatReservationAuthorization(): AssetAndQueueOpe
 
         try {
             // 失敗してもここでは戻さない(RUNNINGのまま待機)
-            await stockService.transferCOASeatReservation(queueDoc.get('authorization'))(assetAdapter);
+            await stockService.transferCOASeatReservation(queueDoc.get('authorization'))(assetAdapter, ownerAdapter);
             await queueAdapter.model.findByIdAndUpdate(
                 queueDoc.get('id'),
                 { status: QueueStatus.EXECUTED },

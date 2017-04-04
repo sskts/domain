@@ -6,10 +6,15 @@
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 
+import ArgumentError from '../error/argument';
+
 import * as COASeatReservationAuthorizationFactory from '../factory/authorization/coaSeatReservation';
+import * as AnonymousOwnerFactory from '../factory/owner/anonymous';
+import OwnerGroup from '../factory/ownerGroup';
 import * as TransactionFactory from '../factory/transaction';
 
 import AssetAdapter from '../adapter/asset';
+import OwnerAdapter from '../adapter/owner';
 import TransactionAdapter from '../adapter/transaction';
 
 const debug = createDebug('sskts-domain:service:stock');
@@ -44,7 +49,7 @@ export function unauthorizeCOASeatReservation(authorization: COASeatReservationA
  * @memberOf StockService
  */
 export function transferCOASeatReservation(authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization) {
-    return async (assetAdapter: AssetAdapter) => {
+    return async (assetAdapter: AssetAdapter, ownertAdapter: OwnerAdapter) => {
         const promises = authorization.assets.map(async (asset) => {
             // 資産永続化
             debug('storing asset...', asset);
@@ -52,45 +57,56 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
             debug('asset stored.');
         });
 
+        // 資産永続化は成功後もリトライできるのでCOA本予約の先に行う
         await Promise.all(promises);
 
         // 所有者情報を取得
-        // await owner = assetAdapter.model.findById(authorization.assets[0].ownership.owner).exec();
+        const ownerDoc = await ownertAdapter.model.findById(authorization.owner_to).exec();
+
+        if (ownerDoc === null) {
+            throw new ArgumentError('authorization.owner_to', 'owner not found');
+        }
+
+        // 一般以外は現時点で未対応
+        // todo implemented error
+        if (ownerDoc.get('group') !== OwnerGroup.ANONYMOUS) {
+            throw new Error('owner group not implemented');
+        }
+
+        const owner = <AnonymousOwnerFactory.IAnonymousOwner>ownerDoc.toObject();
 
         // COA本予約
-        // let reserveAmount = 0;
-        // authorization.assets.forEach((asset) => {
-        //     reserveAmount += asset.sale_price;
-        // });
-
-        // await COA.ReserveService.updReserve({
-        //     theater_code: authorization.coa_theater_code,
-        //     date_jouei: authorization.coa_date_jouei,
-        //     title_code: authorization.coa_title_code,
-        //     title_branch_num: authorization.coa_title_branch_num,
-        //     time_begin: authorization.coa_time_begin,
-        //     tmp_reserve_num: authorization.coa_tmp_reserve_num,
-
-        //     reserve_name: authorization.coa_date_jouei,
-        //     reserve_name_jkana: authorization.coa_date_jouei,
-        //     tel_num: authorization.coa_date_jouei,
-        //     mail_addr: authorization.coa_date_jouei,
-
-        //     reserve_amount: reserveAmount,
-        //     list_ticket: authorization.assets.map((asset) => {
-        //         return {
-        //             ticket_code: asset.ticket_code,
-        //             std_price: asset.std_price,
-        //             add_price: asset.add_price,
-        //             dis_price: 0,
-        //             sale_price: (asset.std_price + asset.add_price),
-        //             ticket_count: 1,
-        //             mvtk_app_price: asset.mvtk_app_price,
-        //             seat_num: asset.seat_code,
-        //             add_glasses: asset.add_glasses
-        //         };
-        //     })
-        // });
+        // COA本予約は一度成功すると成功できない
+        // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
+        await COA.ReserveService.updReserve({
+            theater_code: authorization.coa_theater_code,
+            date_jouei: authorization.coa_date_jouei,
+            title_code: authorization.coa_title_code,
+            title_branch_num: authorization.coa_title_branch_num,
+            time_begin: authorization.coa_time_begin,
+            tmp_reserve_num: authorization.coa_tmp_reserve_num,
+            reserve_name: `${owner.name_last}　${owner.name_first}`,
+            reserve_name_jkana: `${owner.name_last}　${owner.name_first}`,
+            tel_num: owner.tel,
+            mail_addr: owner.email,
+            reserve_amount: authorization.assets.reduce(
+                (a, b) => a + b.sale_price,
+                0
+            ),
+            list_ticket: authorization.assets.map((asset) => {
+                return {
+                    ticket_code: asset.ticket_code,
+                    std_price: asset.std_price,
+                    add_price: asset.add_price,
+                    dis_price: 0,
+                    sale_price: (asset.std_price + asset.add_price),
+                    ticket_count: 1,
+                    mvtk_app_price: asset.mvtk_app_price,
+                    seat_num: asset.seat_code,
+                    add_glasses: asset.add_glasses
+                };
+            })
+        });
     };
 }
 
@@ -132,7 +148,7 @@ export function disableTransactionInquiry(transaction: TransactionFactory.ITrans
             {
                 _id: transaction.id
             },
-            { $unset: { inquiry_key: '' } }
+            { $unset: { inquiry_key: '' } } // 照会キーフィールドを削除する
         ).exec();
     };
 }

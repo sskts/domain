@@ -36,7 +36,9 @@ const schema = new mongoose.Schema(
         std_price: Number,
         add_price: Number,
         dis_price: Number,
-        sale_price: Number
+        sale_price: Number,
+        mvtk_app_price: Number,
+        add_glasses: Number
     },
     {
         collection: 'assets',

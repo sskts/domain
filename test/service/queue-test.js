@@ -80,8 +80,9 @@ describe('キューサービス', () => {
     }));
     it('COA本予約キューがなければ何もしない', () => __awaiter(this, void 0, void 0, function* () {
         const assetAdapter = sskts.adapter.asset(connection);
+        const ownerAdapter = sskts.adapter.owner(connection);
         const queueAdapter = sskts.adapter.queue(connection);
-        yield sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, queueAdapter);
+        yield sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, ownerAdapter, queueAdapter);
         // 実行済みのキューはないはず
         const queueDoc = yield queueAdapter.model.findOne({
             status: queueStatus_1.default.EXECUTED,
@@ -125,6 +126,7 @@ describe('キューサービス', () => {
     }));
     it('COA仮予約承認が不適切なので資産移動失敗', () => __awaiter(this, void 0, void 0, function* () {
         const assetAdapter = sskts.adapter.asset(connection);
+        const ownerAdapter = sskts.adapter.owner(connection);
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
         const queue = SettleAuthorizationQueueFactory.create({
@@ -170,7 +172,7 @@ describe('キューサービス', () => {
             results: []
         });
         yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
-        yield sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, queueAdapter);
+        yield sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, ownerAdapter, queueAdapter);
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
         // テストデータ削除

@@ -83,8 +83,9 @@ describe('キューサービス', () => {
 
     it('COA本予約キューがなければ何もしない', async () => {
         const assetAdapter = sskts.adapter.asset(connection);
+        const ownerAdapter = sskts.adapter.owner(connection);
         const queueAdapter = sskts.adapter.queue(connection);
-        await sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, queueAdapter);
+        await sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, ownerAdapter, queueAdapter);
 
         // 実行済みのキューはないはず
         const queueDoc = await queueAdapter.model.findOne({
@@ -137,6 +138,7 @@ describe('キューサービス', () => {
 
     it('COA仮予約承認が不適切なので資産移動失敗', async () => {
         const assetAdapter = sskts.adapter.asset(connection);
+        const ownerAdapter = sskts.adapter.owner(connection);
         const queueAdapter = sskts.adapter.queue(connection);
 
         // test data
@@ -184,7 +186,7 @@ describe('キューサービス', () => {
         });
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
-        await sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, queueAdapter);
+        await sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, ownerAdapter, queueAdapter);
 
         const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
