@@ -68,5 +68,5 @@
     "postversion": "git push origin --tags"
   },
   "types": "./types/lib/index.d.ts",
-  "version": "9.0.11"
+  "version": "10.0.0"
 }
