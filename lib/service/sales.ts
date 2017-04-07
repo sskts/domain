@@ -33,6 +33,19 @@ export function cancelGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthori
  */
 export function settleGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthorization) {
     return async () => {
+        // 取引状態参照
+        const searchTradeResult = await GMO.CreditService.searchTrade({
+            shopId: authorization.gmo_shop_id,
+            shopPass: authorization.gmo_shop_pass,
+            orderId: authorization.gmo_order_id
+        });
+
+        if (searchTradeResult.jobCd === GMO.Util.JOB_CD_SALES) {
+            debug('already in SALES');
+            // すでに実売上済み
+            return;
+        }
+
         debug('calling alterTran...');
         await GMO.CreditService.alterTran({
             shopId: authorization.gmo_shop_id,
