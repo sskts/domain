@@ -26,9 +26,32 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     yield transactionAdapter.transactionModel.remove({}).exec();
     yield transactionAdapter.transactionEventModel.remove({}).exec();
 }));
-describe('addMvtkAuthorization', () => {
+describe('取引成立', () => {
+    // todo テストコード
+    it('照会可能になっていなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        // 照会キーのないテストデータ作成
+        const transaction = sskts.factory.transaction.create({
+            status: sskts.factory.transactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+        let closeError;
+        try {
+            yield sskts.service.transactionWithId.close(transaction.id)(transactionAdapter);
+        }
+        catch (error) {
+            closeError = error;
+        }
+        assert(closeError instanceof Error);
+        // テストデータ削除
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    }));
+});
+describe('ムビチケ着券承認追加', () => {
     // todo テストコードをかく
-    it('ok', () => __awaiter(this, void 0, void 0, function* () {
+    it('成功', () => __awaiter(this, void 0, void 0, function* () {
         const ownerAdapter = sskts.adapter.owner(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         // test data
@@ -86,7 +109,7 @@ describe('addMvtkAuthorization', () => {
         yield ownerAdapter.model.findByIdAndRemove(owner1.id).exec();
         yield ownerAdapter.model.findByIdAndRemove(owner2.id).exec();
     }));
-    it('ng because transaction not found', () => __awaiter(this, void 0, void 0, function* () {
+    it('取引が存在しなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
         const transactionAdapter = sskts.adapter.transaction(connection);
         // test data
         const owner1 = sskts.factory.owner.anonymous.create({});
@@ -138,7 +161,7 @@ describe('addMvtkAuthorization', () => {
         assert(addMvtkAuthorizationError instanceof argument_1.default);
         assert.equal(addMvtkAuthorizationError.argumentName, 'transactionId');
     }));
-    it('ng because owner not found', () => __awaiter(this, void 0, void 0, function* () {
+    it('所有者が存在しなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
         const ownerAdapter = sskts.adapter.owner(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         // test data
@@ -199,8 +222,8 @@ describe('addMvtkAuthorization', () => {
         yield ownerAdapter.model.findByIdAndRemove(owner2.id).exec();
     }));
 });
-describe('removeAuthorization', () => {
-    it('ng because transaction not found', () => __awaiter(this, void 0, void 0, function* () {
+describe('承認削除', () => {
+    it('取引が存在しなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
         const transactionAdapter = sskts.adapter.transaction(connection);
         // test data
         const owner1 = sskts.factory.owner.anonymous.create({});
@@ -233,7 +256,7 @@ describe('removeAuthorization', () => {
         assert(removeAuthorizationError instanceof argument_1.default);
         assert.equal(removeAuthorizationError.argumentName, 'transactionId');
     }));
-    it('ng because authorization not found', () => __awaiter(this, void 0, void 0, function* () {
+    it('承認が存在しなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
         const ownerAdapter = sskts.adapter.owner(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         // test data

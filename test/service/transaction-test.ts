@@ -56,7 +56,10 @@ describe('transaction service', () => {
             }),
             queues_status: TransactionQueuesStatus.UNEXPORTED
         });
-        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, {
+            new: true, upsert: true,
+            setDefaultsOnInsert: false
+        }).exec();
 
         const queueStatus = await sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
         assert.equal(queueStatus, TransactionQueuesStatus.EXPORTED);

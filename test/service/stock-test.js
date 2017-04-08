@@ -30,7 +30,7 @@ before(() => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 });
 describe('在庫サービス 取引照会無効化', () => {
-    it('照会キーがないので取引照会無効化失敗', () => __awaiter(this, void 0, void 0, function* () {
+    it('照会キーがなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
         const transactionAdapter = new transaction_1.default(connection);
         const transaction = TransactionFactory.create({
             status: 'UNDERWAY',
@@ -44,7 +44,8 @@ describe('在庫サービス 取引照会無効化', () => {
         catch (error) {
             disableTransactionInquiryError = error;
         }
-        assert(disableTransactionInquiryError instanceof Error);
+        assert(disableTransactionInquiryError instanceof argument_1.default);
+        assert.equal(disableTransactionInquiryError.argumentName, 'transaction.inquiry_key');
     }));
 });
 describe('在庫サービス 座席予約資産移動', () => {

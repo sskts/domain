@@ -9,6 +9,7 @@ import * as clone from 'clone';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as monapt from 'monapt';
+import * as _ from 'underscore';
 
 import ArgumentError from '../error/argument';
 
@@ -86,7 +87,8 @@ export function startForcibly(expiresAt: Date) {
         const transaction = TransactionFactory.create({
             status: TransactionStatus.UNDERWAY,
             owners: [promoter, anonymousOwner],
-            expires_at: expiresAt
+            expires_at: expiresAt,
+            started_at: moment().toDate()
         });
 
         // 所有者永続化
@@ -136,7 +138,8 @@ export function startIfPossible(expiresAt: Date) {
             {
                 status: TransactionStatus.UNDERWAY,
                 owners: [promoter.id, anonymousOwner.id],
-                expires_at: expiresAt
+                expires_at: expiresAt,
+                started_at: moment().toDate()
             },
             {
                 new: true,
@@ -203,7 +206,8 @@ export function makeExpired() {
                 expires_at: { $lt: new Date() }
             },
             {
-                status: TransactionStatus.EXPIRED
+                status: TransactionStatus.EXPIRED,
+                expired_at: moment().toDate()
             },
             { multi: true }
         ).exec();
@@ -242,7 +246,10 @@ export function exportQueues(status: TransactionStatus) {
 
             transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
                 transactionDoc.get('id'),
-                { queues_status: TransactionQueuesStatus.EXPORTED },
+                {
+                    queues_status: TransactionQueuesStatus.EXPORTED,
+                    queues_exported_at: moment().toDate()
+                },
                 { new: true }
             ).exec();
 
@@ -314,7 +321,7 @@ export function exportQueuesById(id: string) {
                 });
 
                 // COA本予約があれば取消
-                if (transaction.inquiry_key !== undefined) {
+                if (!_.isEmpty(transaction.inquiry_key)) {
                     queues.push(DisableTransactionInquiryQueueFactory.create({
                         transaction: transaction,
                         status: QueueStatus.UNEXECUTED,
@@ -325,16 +332,6 @@ export function exportQueuesById(id: string) {
                         results: []
                     }));
                 }
-
-                // 開発時のみ通知(メール送信数が増えすぎるので中止)
-                //                 if (process.env.NODE_ENV === 'development') {
-                //                     await notificationService.report2developers(
-                //                         '取引の期限が切れました', `
-                // transaction:\n
-                // ${util.inspect(transaction, { showHidden: true, depth: 10 })}\n
-                // `
-                //                     )();
-                //                 }
 
                 break;
 

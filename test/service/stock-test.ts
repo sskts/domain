@@ -26,7 +26,7 @@ before(() => {
 });
 
 describe('在庫サービス 取引照会無効化', () => {
-    it('照会キーがないので取引照会無効化失敗', async () => {
+    it('照会キーがなければ失敗', async () => {
         const transactionAdapter = new TransactionAdapter(connection);
         const transaction = TransactionFactory.create({
             status: 'UNDERWAY',
@@ -41,7 +41,8 @@ describe('在庫サービス 取引照会無効化', () => {
             disableTransactionInquiryError = error;
         }
 
-        assert(disableTransactionInquiryError instanceof Error);
+        assert(disableTransactionInquiryError instanceof ArgumentError);
+        assert.equal((<ArgumentError>disableTransactionInquiryError).argumentName, 'transaction.inquiry_key');
     });
 });
 

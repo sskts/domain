@@ -60,7 +60,10 @@ describe('transaction service', () => {
             }),
             queues_status: transactionQueuesStatus_1.default.UNEXPORTED
         });
-        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, {
+            new: true, upsert: true,
+            setDefaultsOnInsert: false
+        }).exec();
         const queueStatus = yield sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
         assert.equal(queueStatus, transactionQueuesStatus_1.default.EXPORTED);
     }));

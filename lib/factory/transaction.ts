@@ -25,10 +25,41 @@ import TransactionStatus from './transactionStatus';
 
 export interface ITransaction {
     id: string;
+    /**
+     * 取引状態
+     */
     status: TransactionStatus;
+    /**
+     * 取引に参加している所有者リスト
+     */
     owners: OwnerFactory.IOwner[];
+    /**
+     * 期限切れ予定日時
+     */
     expires_at: Date;
-    inquiry_key: TransactionInquiryKeyFactory.ITransactionInquiryKey | undefined;
+    /**
+     * 期限切れ日時
+     */
+    expired_at?: Date;
+    /**
+     * 開始日時
+     */
+    started_at?: Date;
+    /**
+     * 成立日時
+     */
+    closed_at?: Date;
+    /**
+     * 照会キー
+     */
+    inquiry_key?: TransactionInquiryKeyFactory.ITransactionInquiryKey;
+    /**
+     * キューエクスポート日時
+     */
+    queues_exported_at?: Date;
+    /**
+     * キューエクスポート状態
+     */
     queues_status: TransactionQueuesStatus;
 }
 
@@ -37,7 +68,11 @@ export function create(args: {
     status: TransactionStatus;
     owners: OwnerFactory.IOwner[];
     expires_at: Date;
+    expired_at?: Date;
+    started_at?: Date;
+    closed_at?: Date;
     inquiry_key?: TransactionInquiryKeyFactory.ITransactionInquiryKey;
+    queues_exported_at?: Date;
     queues_status?: TransactionQueuesStatus;
 }): ITransaction {
     if (_.isEmpty(args.status)) throw new ArgumentNullError('status');
@@ -49,7 +84,11 @@ export function create(args: {
         status: args.status,
         owners: args.owners,
         expires_at: args.expires_at,
+        expired_at: args.expired_at,
+        started_at: args.started_at,
+        closed_at: args.closed_at,
         inquiry_key: args.inquiry_key,
+        queues_exported_at: args.queues_exported_at,
         queues_status: (args.queues_status === undefined) ? TransactionQueuesStatus.UNEXPORTED : args.queues_status
     };
 }

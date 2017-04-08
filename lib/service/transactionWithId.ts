@@ -4,7 +4,9 @@
  * @namespace TransactionWithIdService
  */
 import * as createDebug from 'debug';
+import * as moment from 'moment';
 import * as monapt from 'monapt';
+import * as _ from 'underscore';
 
 import ArgumentError from '../error/argument';
 
@@ -320,12 +322,11 @@ export function close(id: string) {
         }
 
         // 照会可能になっているかどうか
-        if (doc.get('inquiry_key') === undefined) {
+        if (_.isEmpty(doc.get('inquiry_key'))) {
             throw new Error('inquiry is not available');
         }
 
         // 条件が対等かどうかチェック
-        // todo 余計なクエリか？
         if (!await transactionAdapter.canBeClosed(doc.get('id'))) {
             throw new Error('transaction cannot be closed');
         }
@@ -338,7 +339,8 @@ export function close(id: string) {
                 status: TransactionStatus.UNDERWAY
             },
             {
-                status: TransactionStatus.CLOSED
+                status: TransactionStatus.CLOSED,
+                closed_at: moment().toDate()
             },
             { new: true }
         ).exec();

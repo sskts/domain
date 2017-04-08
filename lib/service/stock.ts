@@ -5,6 +5,7 @@
  */
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
+import * as _ from 'underscore';
 
 import ArgumentError from '../error/argument';
 
@@ -12,6 +13,7 @@ import * as COASeatReservationAuthorizationFactory from '../factory/authorizatio
 import * as AnonymousOwnerFactory from '../factory/owner/anonymous';
 import OwnerGroup from '../factory/ownerGroup';
 import * as TransactionFactory from '../factory/transaction';
+import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
 
 import AssetAdapter from '../adapter/asset';
 import OwnerAdapter from '../adapter/owner';
@@ -130,24 +132,26 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
  */
 export function disableTransactionInquiry(transaction: TransactionFactory.ITransaction) {
     return async (transactionAdapter: TransactionAdapter) => {
-        if (transaction.inquiry_key === undefined) {
-            throw new Error('inquiry_key not created.');
+        if (_.isEmpty(transaction.inquiry_key)) {
+            throw new ArgumentError('transaction.inquiry_key', 'inquiry_key not created.');
         }
+
+        const inquiryKey = <TransactionInquiryKeyFactory.ITransactionInquiryKey>transaction.inquiry_key;
 
         // COAから内容抽出
         const reservation = await COA.ReserveService.stateReserve({
-            theater_code: transaction.inquiry_key.theater_code,
-            reserve_num: transaction.inquiry_key.reserve_num,
-            tel_num: transaction.inquiry_key.tel
+            theater_code: inquiryKey.theater_code,
+            reserve_num: inquiryKey.reserve_num,
+            tel_num: inquiryKey.tel
         });
 
         if (reservation !== null) {
             // COA購入チケット取消
             debug('calling deleteReserve...');
             await COA.ReserveService.delReserve({
-                theater_code: transaction.inquiry_key.theater_code,
-                reserve_num: transaction.inquiry_key.reserve_num,
-                tel_num: transaction.inquiry_key.tel,
+                theater_code: inquiryKey.theater_code,
+                reserve_num: inquiryKey.reserve_num,
+                tel_num: inquiryKey.tel,
                 date_jouei: reservation.date_jouei,
                 title_code: reservation.title_code,
                 title_branch_num: reservation.title_branch_num,

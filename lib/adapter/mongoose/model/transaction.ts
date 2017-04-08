@@ -8,7 +8,7 @@ import ownerModel from './owner';
  */
 const schema = new mongoose.Schema(
     {
-        expires_at: Date,
+        expires_at: Date, // 期限切れ予定日時
         status: String,
         owners: [{ // 取引の対象所有者リスト
             type: mongoose.Schema.Types.ObjectId,
@@ -20,7 +20,11 @@ const schema = new mongoose.Schema(
             reserve_num: Number, // 照会ID
             tel: String // 照会PASS
         },
-        queues_status: String
+        queues_status: String,
+        expired_at: Date, // 期限切れ日時
+        started_at: Date, // 開始日時
+        closed_at: Date, // 成立日時
+        queues_exported_at: Date // キューエクスポート日時
     },
     {
         collection: 'transactions',
