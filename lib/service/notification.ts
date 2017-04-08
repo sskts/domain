@@ -34,6 +34,9 @@ export function sendEmail(email: EmailNotificationFactory.IEmailNotification): O
             new sendgrid.mail.Content('text/plain', email.content)
         );
 
+        // 追跡用に通知IDをカスタムフィールドとしてセットする
+        mail.addCustomArg(new sendgrid.mail.CustomArgs('notification', email.id));
+
         const sg = sendgrid(process.env.SENDGRID_API_KEY);
 
         const request = sg.emptyRequest({
