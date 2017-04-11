@@ -107,6 +107,58 @@ describe('キューサービス', () => {
         assert.equal(queueDoc, null);
     });
 
+    it('実行日時の早さよりも試行回数の少なさを優先する', async () => {
+        const queueAdapter = sskts.adapter.queue(connection);
+
+        // test data
+        // 20分前
+        const queue = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
+                from: 'noreply@example.net',
+                to: process.env.SSKTS_DEVELOPER_EMAIL,
+                subject: 'sskts-domain:test:service:queue-test',
+                content: 'sskts-domain:test:service:queue-test'
+            }),
+            status: QueueStatus.UNEXECUTED,
+            // tslint:disable-next-line:no-magic-numbers
+            run_at: moment().add('minutes', -20).toDate(),
+            max_count_try: 1,
+            last_tried_at: moment().toDate(),
+            count_tried: 1,
+            results: []
+        });
+        // 10分前(実行日時はこちらの方が遅い)
+        const queue2 = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
+                from: 'noreply@example.net',
+                to: process.env.SSKTS_DEVELOPER_EMAIL,
+                subject: 'sskts-domain:test:service:queue-test',
+                content: 'sskts-domain:test:service:queue-test'
+            }),
+            status: QueueStatus.UNEXECUTED,
+            // tslint:disable-next-line:no-magic-numbers
+            run_at: moment().add('minutes', -10).toDate(),
+            max_count_try: 1,
+            last_tried_at: null,
+            count_tried: 0,
+            results: []
+        });
+        await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
+        await queueAdapter.model.findByIdAndUpdate(queue2.id, queue2, { new: true, upsert: true }).exec();
+
+        await sskts.service.queue.executeSendEmailNotification()(queueAdapter);
+
+        // 試行回数の少ない方が優先されるはず
+        const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
+        const queue2Doc = await queueAdapter.model.findById(queue2.id, 'status').exec();
+        assert.equal(queueDoc.get('status'), QueueStatus.UNEXECUTED);
+        assert.equal(queue2Doc.get('status'), QueueStatus.EXECUTED);
+
+        // テストデータ削除
+        queueDoc.remove();
+        queue2Doc.remove();
+    });
+
     it('Eメール通知成功', async () => {
         const queueAdapter = sskts.adapter.queue(connection);
 

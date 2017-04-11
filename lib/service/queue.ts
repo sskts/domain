@@ -30,6 +30,14 @@ export type QueueAndTransactionOperation<T> = (queueAdapter: QueueAdapter, trans
 const debug = createDebug('sskts-domain:service:queue');
 
 /**
+ * キュー実行時のソート条件
+ */
+const sortOrder4executionOfQueues = {
+    count_tried: 1, // 試行回数の少なさ優先
+    run_at: 1 // 実行予定日時の早さ優先
+};
+
+/**
  * メール送信キュー実行
  *
  * @memberOf QueueService
@@ -51,7 +59,7 @@ export function executeSendEmailNotification(): QueueOperation<void> {
                 $inc: { count_tried: 1 } // トライ回数増やす
             },
             { new: true }
-        ).exec();
+        ).sort(sortOrder4executionOfQueues).exec();
         debug('queueDoc is', queueDoc);
 
         if (queueDoc === null) {
@@ -99,7 +107,7 @@ export function executeCancelCOASeatReservationAuthorization(): QueueOperation<v
                 $inc: { count_tried: 1 } // トライ回数増やす
             },
             { new: true }
-        ).exec();
+        ).sort(sortOrder4executionOfQueues).exec();
         debug('queueDoc is', queueDoc);
 
         if (queueDoc === null) {
@@ -147,7 +155,7 @@ export function executeCancelGMOAuthorization(): QueueOperation<void> {
                 $inc: { count_tried: 1 } // トライ回数増やす
             },
             { new: true }
-        ).exec();
+        ).sort(sortOrder4executionOfQueues).exec();
         debug('queueDoc is', queueDoc);
 
         if (queueDoc === null) {
@@ -193,7 +201,7 @@ export function executeDisableTransactionInquiry(): QueueAndTransactionOperation
                 $inc: { count_tried: 1 } // トライ回数増やす
             },
             { new: true }
-        ).exec();
+        ).sort(sortOrder4executionOfQueues).exec();
         debug('queueDoc is', queueDoc);
 
         if (queueDoc === null) {
@@ -241,7 +249,7 @@ export function executeSettleCOASeatReservationAuthorization(): AssetAndOwnerAnd
                 $inc: { count_tried: 1 } // トライ回数増やす
             },
             { new: true }
-        ).exec();
+        ).sort(sortOrder4executionOfQueues).exec();
         debug('queueDoc is', queueDoc);
 
         if (queueDoc === null) {
@@ -289,7 +297,7 @@ export function executeSettleGMOAuthorization(): QueueOperation<void> {
                 $inc: { count_tried: 1 } // トライ回数増やす
             },
             { new: true }
-        ).exec();
+        ).sort(sortOrder4executionOfQueues).exec();
         debug('queueDoc is', queueDoc);
 
         if (queueDoc === null) {
