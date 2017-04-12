@@ -6,6 +6,7 @@
 import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
 import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
+import * as MVTKAuthorizationFactory from '../factory/authorization/mvtk';
 
 const debug = createDebug('sskts-domain:service:sales');
 
@@ -57,5 +58,14 @@ export function settleGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthori
         });
 
         // todo 失敗したら取引状態確認する?
+    };
+}
+
+/**
+ * ムビチケ資産移動
+ */
+export function settleMvtkAuthorization(__: MVTKAuthorizationFactory.IMvtkAuthorization) {
+    return async () => {
+        // 実は取引成立の前に着券済みなので何もしない
     };
 }

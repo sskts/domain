@@ -17,6 +17,7 @@ const GMO = require("@motionpicture/gmo-service");
 const assert = require("assert");
 const mongoose = require("mongoose");
 const GMOAuthorizationFactory = require("../../lib/factory/authorization/gmo");
+const MVTKAuthorizationFactory = require("../../lib/factory/authorization/mvtk");
 const SalesService = require("../../lib/service/sales");
 let connection;
 before(() => {
@@ -109,5 +110,36 @@ describe('売上サービス GMO実売上', () => {
             gmo_pay_type: GMO.Util.PAY_TYPE_CREDIT
         });
         yield SalesService.settleGMOAuth(authorization)();
+    }));
+});
+describe('売上サービス ムビチケ資産移動', () => {
+    it('OK', () => __awaiter(this, void 0, void 0, function* () {
+        const authorization = MVTKAuthorizationFactory.create({
+            price: 1234,
+            owner_from: 'xxx',
+            owner_to: 'xxx',
+            kgygish_cd: 'xxx',
+            yyk_dvc_typ: 'xxx',
+            trksh_flg: 'xxx',
+            kgygish_sstm_zskyyk_no: 'xxx',
+            kgygish_usr_zskyyk_no: 'xxx',
+            jei_dt: 'xxx',
+            kij_ymd: 'xxx',
+            st_cd: 'xxx',
+            scren_cd: 'xxx',
+            knyknr_no_info: [{
+                    knyknr_no: 'xxx',
+                    pin_cd: 'xxx',
+                    knsh_info: [{
+                            knsh_typ: 'xxx',
+                            mi_num: 'xxx'
+                        }]
+                }],
+            zsk_info: [{
+                    zsk_cd: 'xxx'
+                }],
+            skhn_cd: 'xxx'
+        });
+        yield SalesService.settleMvtkAuthorization(authorization)();
     }));
 });
