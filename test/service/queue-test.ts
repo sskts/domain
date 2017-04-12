@@ -107,6 +107,18 @@ describe('キューサービス', () => {
         assert.equal(queueDoc, null);
     });
 
+    it('ムビチケ資産移動キューがなければ何もしない', async () => {
+        const queueAdapter = sskts.adapter.queue(connection);
+        await sskts.service.queue.executeSettleMvtkAuthorization()(queueAdapter);
+
+        // 実行済みのキューはないはず
+        const queueDoc = await queueAdapter.model.findOne({
+            status: QueueStatus.EXECUTED,
+            group: QueueGroup.SETTLE_AUTHORIZATION
+        }).exec();
+        assert.equal(queueDoc, null);
+    });
+
     it('実行日時の早さよりも試行回数の少なさを優先する', async () => {
         const queueAdapter = sskts.adapter.queue(connection);
 

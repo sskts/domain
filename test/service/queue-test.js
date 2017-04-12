@@ -100,6 +100,16 @@ describe('キューサービス', () => {
         }).exec();
         assert.equal(queueDoc, null);
     }));
+    it('ムビチケ資産移動キューがなければ何もしない', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        yield sskts.service.queue.executeSettleMvtkAuthorization()(queueAdapter);
+        // 実行済みのキューはないはず
+        const queueDoc = yield queueAdapter.model.findOne({
+            status: queueStatus_1.default.EXECUTED,
+            group: queueGroup_1.default.SETTLE_AUTHORIZATION
+        }).exec();
+        assert.equal(queueDoc, null);
+    }));
     it('実行日時の早さよりも試行回数の少なさを優先する', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data

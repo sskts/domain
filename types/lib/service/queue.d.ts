@@ -48,6 +48,13 @@ export declare function executeSettleCOASeatReservationAuthorization(): AssetAnd
  */
 export declare function executeSettleGMOAuthorization(): QueueOperation<void>;
 /**
+ * ムビチケ資産移動キュー実行
+ *
+ * @memberOf QueueService
+ * @returns {QueueOperation<void>}
+ */
+export declare function executeSettleMvtkAuthorization(): QueueOperation<void>;
+/**
  * リトライ
  *
  * @memberOf QueueService

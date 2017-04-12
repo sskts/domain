@@ -324,6 +324,54 @@ export function executeSettleGMOAuthorization(): QueueOperation<void> {
 }
 
 /**
+ * ムビチケ資産移動キュー実行
+ *
+ * @memberOf QueueService
+ * @returns {QueueOperation<void>}
+ */
+export function executeSettleMvtkAuthorization(): QueueOperation<void> {
+    return async (queueAdapter: QueueAdapter) => {
+        // 未実行のムビチケ資産移動キューを取得
+        const queueDoc = await queueAdapter.model.findOneAndUpdate(
+            {
+                status: QueueStatus.UNEXECUTED,
+                run_at: { $lt: new Date() },
+                group: QueueGroup.SETTLE_AUTHORIZATION,
+                'authorization.group': AuthorizationGroup.MVTK
+            },
+            {
+                status: QueueStatus.RUNNING, // 実行中に変更
+                last_tried_at: new Date(),
+                $inc: { count_tried: 1 } // トライ回数増やす
+            },
+            { new: true }
+        ).sort(sortOrder4executionOfQueues).exec();
+        debug('queueDoc is', queueDoc);
+
+        if (queueDoc === null) {
+            return;
+        }
+
+        try {
+            // 失敗してもここでは戻さない(RUNNINGのまま待機)
+            await salesService.settleMvtkAuthorization(queueDoc.get('authorization'))();
+            await queueAdapter.model.findByIdAndUpdate(
+                queueDoc.get('id'),
+                { status: QueueStatus.EXECUTED },
+                { new: true }
+            ).exec();
+        } catch (error) {
+            // 実行結果追加
+            await queueAdapter.model.findByIdAndUpdate(
+                queueDoc.get('id'),
+                { $push: { results: error.stack } },
+                { new: true }
+            ).exec();
+        }
+    };
+}
+
+/**
  * リトライ
  *
  * @memberOf QueueService
