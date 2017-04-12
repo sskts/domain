@@ -16,5 +16,6 @@ export declare function sendEmail(email: EmailNotificationFactory.IEmailNotifica
  *
  * @param {string} subject
  * @param {string} content
+ * @see https://notify-bot.line.me/doc/ja/
  */
 export declare function report2developers(subject: string, content: string): () => Promise<void>;

@@ -15,8 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const assert = require("assert");
 const sskts = require("../../lib/index");
-describe('通知サービス', () => {
-    it('Eメール通知成功', () => __awaiter(this, void 0, void 0, function* () {
+describe('通知サービス Eメール通知', () => {
+    it('成功', () => __awaiter(this, void 0, void 0, function* () {
         const notification = sskts.factory.notification.email.create({
             from: 'noreply@example.net',
             to: process.env.SSKTS_DEVELOPER_EMAIL,
@@ -25,7 +25,7 @@ describe('通知サービス', () => {
         });
         yield sskts.service.notification.sendEmail(notification)();
     }));
-    it('送信先不適切でメール送信失敗', () => __awaiter(this, void 0, void 0, function* () {
+    it('送信先不適切で失敗', () => __awaiter(this, void 0, void 0, function* () {
         try {
             yield sskts.service.notification.sendEmail({
                 id: 'xxx',
@@ -43,7 +43,22 @@ describe('通知サービス', () => {
         }
         throw new Error('should not be passed');
     }));
-    it('開発者への報告成功', () => __awaiter(this, void 0, void 0, function* () {
+});
+describe('通知サービス 開発者への報告', () => {
+    it('成功', () => __awaiter(this, void 0, void 0, function* () {
         yield sskts.service.notification.report2developers('sskts-domain:test:service:notification-test', 'sskts-domain:test:service:notification-test')();
+    }));
+    it('アクセストークンが設定されていないと失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const accessToken = process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN;
+        process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN = undefined;
+        let report2developers;
+        try {
+            yield sskts.service.notification.report2developers('sskts-domain:test:service:notification-test', 'sskts-domain:test:service:notification-test')();
+        }
+        catch (error) {
+            report2developers = error;
+        }
+        assert(report2developers instanceof Error);
+        process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN = accessToken;
     }));
 });

@@ -5,6 +5,7 @@
  */
 import * as createDebug from 'debug';
 import * as httpStatus from 'http-status';
+import * as request from 'request-promise-native';
 import * as sendgrid from 'sendgrid';
 import * as util from 'util';
 
@@ -66,14 +67,40 @@ export function sendEmail(email: EmailNotificationFactory.IEmailNotification): O
  *
  * @param {string} subject
  * @param {string} content
+ * @see https://notify-bot.line.me/doc/ja/
  */
 export function report2developers(subject: string, content: string) {
     return async () => {
-        await sendEmail(EmailNotificationFactory.create({
-            from: 'noreply@example.net',
-            to: process.env.SSKTS_DEVELOPER_EMAIL,
-            subject: `sskts-domain[${process.env.NODE_ENV}]:開発者へ報告があります ${subject}`,
-            content: content
-        }))();
+        if (process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN === undefined) {
+            throw new Error('access token for LINE Notify undefined');
+        }
+
+        const message = `
+sskts-domain[${process.env.NODE_ENV}]:開発者へ報告があります
+--------
+${subject}
+--------
+${content}`
+            ;
+
+        // LINE通知APIにPOST
+        const response = await request.post(
+            {
+                url: 'https://notify-api.line.me/api/notify',
+                auth: { bearer: process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN },
+                form: {
+                    message: message,
+                    stickerPackageId: '1',
+                    stickerId: '4'
+                },
+                json: true,
+                simple: false,
+                resolveWithFullResponse: true
+            }
+        ).promise();
+
+        if (response.statusCode !== httpStatus.OK) {
+            throw new Error(response.body.message);
+        }
     };
 }
