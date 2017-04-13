@@ -51,7 +51,6 @@ schema.index(
 );
 
 // 実行中キューエクスポート監視に使用
-// todo updated_atでの確認仕様を見直し
 schema.index(
     { queues_status: 1, updated_at: 1 }
 );

@@ -37,6 +37,8 @@ export function sendEmail(email: EmailNotificationFactory.IEmailNotification): O
 
         // 追跡用に通知IDをカスタムフィールドとしてセットする
         mail.addCustomArg(new sendgrid.mail.CustomArgs('notification', email.id));
+        // todo 送信予定を追加することもできるが、キューの実行予定日時でコントロールするかもしれないのでいったん保留
+        // mail.setSendAt(moment(email.send_at).unix());
 
         const sg = sendgrid(process.env.SENDGRID_API_KEY);
 

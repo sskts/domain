@@ -179,7 +179,6 @@ describe('マスターサービス 作品取得', () => {
 });
 
 describe('マスターサービス パフォーマンス取得', () => {
-    // todo 特定のパフォーマンスコードでしかテスト通らない
     it('存在する', async () => {
         const performanceAdapter = new PerformanceAdapter(connection);
         const performance: PerformanceFactory.IPerformanceBase = {

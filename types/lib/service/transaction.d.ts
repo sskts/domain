@@ -54,17 +54,16 @@ export declare function makeExpired(): (transactionAdapter: TransactionAdapter) 
  *
  * @param {TransactionStatus} statu 取引ステータス
  */
-export declare function exportQueues(status: TransactionStatus): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<"UNEXPORTED" | "EXPORTING" | "EXPORTED" | null>;
+export declare function exportQueues(status: TransactionStatus): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
- * キュー出力
- * todo TransactionWithIdに移行するべき？
+ * ID指定で取引のキュー出力
  *
  * @param {string} id
  * @returns {TransactionAndQueueOperation<void>}
  *
  * @memberOf TransactionService
  */
-export declare function exportQueuesById(id: string): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<string[]>;
+export declare function exportQueuesById(id: string): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * キューエクスポートリトライ
  * todo updated_atを基準にしているが、キューエクスポートトライ日時を持たせた方が安全か？

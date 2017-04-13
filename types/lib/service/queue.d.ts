@@ -27,6 +27,13 @@ export declare function executeCancelCOASeatReservationAuthorization(): QueueOpe
  */
 export declare function executeCancelGMOAuthorization(): QueueOperation<void>;
 /**
+ * ムビチケ着券取消キュー実行
+ *
+ * @memberOf QueueService
+ * @returns {QueueOperation<void>}
+ */
+export declare function executeCancelMvtkAuthorization(): QueueOperation<void>;
+/**
  * 取引照会無効化キュー実行
  *
  * @memberOf QueueService

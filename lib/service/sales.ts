@@ -6,7 +6,7 @@
 import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
 import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
-import * as MVTKAuthorizationFactory from '../factory/authorization/mvtk';
+import * as MvtkAuthorizationFactory from '../factory/authorization/mvtk';
 
 const debug = createDebug('sskts-domain:service:sales');
 
@@ -25,7 +25,9 @@ export function cancelGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthori
             amount: authorization.gmo_amount
         });
 
-        // todo 失敗したら取引状態確認する?
+        // 失敗したら取引状態確認してどうこう、という処理も考えうるが、
+        // GMOはapiのコール制限が厳しく、下手にコールするとすぐにクライアントサイドにも影響をあたえてしまう
+        // リトライはキューの仕組みに含まれているので失敗してもここでは何もしない
     };
 }
 
@@ -57,14 +59,25 @@ export function settleGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthori
             amount: authorization.gmo_amount
         });
 
-        // todo 失敗したら取引状態確認する?
+        // 失敗したら取引状態確認してどうこう、という処理も考えうるが、
+        // GMOはapiのコール制限が厳しく、下手にコールするとすぐにクライアントサイドにも影響をあたえてしまう
+        // リトライはキューの仕組みに含まれているので失敗してもここでは何もしない
+    };
+}
+
+/**
+ * ムビチケ着券取消し
+ */
+export function cancelMvtkAuthorization(__: MvtkAuthorizationFactory.IMvtkAuthorization) {
+    return async () => {
+        // ムビチケは実は仮押さえの仕組みがないので何もしない
     };
 }
 
 /**
  * ムビチケ資産移動
  */
-export function settleMvtkAuthorization(__: MVTKAuthorizationFactory.IMvtkAuthorization) {
+export function settleMvtkAuthorization(__: MvtkAuthorizationFactory.IMvtkAuthorization) {
     return async () => {
         // 実は取引成立の前に着券済みなので何もしない
     };

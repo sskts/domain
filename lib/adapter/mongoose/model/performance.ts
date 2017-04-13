@@ -5,7 +5,6 @@ import theaterModel from './theater';
 
 /**
  * パフォーマンススキーマ
- * todo COAから引き継げていない項目追加
  *
  * @ignore
  */

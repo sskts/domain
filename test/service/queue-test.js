@@ -19,8 +19,11 @@ const mongoose = require("mongoose");
 const SeatReservationAssetFactory = require("../../lib/factory/asset/seatReservation");
 const CoaSeatReservationAuthorizationFactory = require("../../lib/factory/authorization/coaSeatReservation");
 const GmoAuthorizationFactory = require("../../lib/factory/authorization/gmo");
+const MvtkAuthorizationFactory = require("../../lib/factory/authorization/mvtk");
+const authorizationGroup_1 = require("../../lib/factory/authorizationGroup");
 const EmailNotificationFactory = require("../../lib/factory/notification/email");
 const OwnershipFactory = require("../../lib/factory/ownership");
+const CancelAuthorizationQueueFactory = require("../../lib/factory/queue/cancelAuthorization");
 const DisableTransactionInquiryQueueFactory = require("../../lib/factory/queue/disableTransactionInquiry");
 const PushNotificationQueueFactory = require("../../lib/factory/queue/pushNotification");
 const SettleAuthorizationQueueFactory = require("../../lib/factory/queue/settleAuthorization");
@@ -123,7 +126,7 @@ describe('キューサービス', () => {
             }),
             status: queueStatus_1.default.UNEXECUTED,
             // tslint:disable-next-line:no-magic-numbers
-            run_at: moment().add('minutes', -20).toDate(),
+            run_at: moment().add(-20, 'minutes').toDate(),
             max_count_try: 1,
             last_tried_at: moment().toDate(),
             count_tried: 1,
@@ -139,7 +142,7 @@ describe('キューサービス', () => {
             }),
             status: queueStatus_1.default.UNEXECUTED,
             // tslint:disable-next-line:no-magic-numbers
-            run_at: moment().add('minutes', -10).toDate(),
+            run_at: moment().add(-10, 'minutes').toDate(),
             max_count_try: 1,
             last_tried_at: null,
             count_tried: 0,
@@ -291,31 +294,8 @@ describe('キューサービス', () => {
         // テストデータ削除
         queueDoc.remove();
     }));
-    it('最大試行回数に達していなければリトライする', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.adapter.queue(connection);
-        // test data
-        const queue = PushNotificationQueueFactory.create({
-            notification: EmailNotificationFactory.create({
-                from: 'noreply@example.net',
-                to: process.env.SSKTS_DEVELOPER_EMAIL,
-                subject: 'sskts-domain:test:service:queue-test',
-                content: 'sskts-domain:test:service:queue-test'
-            }),
-            status: queueStatus_1.default.RUNNING,
-            run_at: moment().add(-10, 'minutes').toDate(),
-            max_count_try: 2,
-            last_tried_at: moment().add(-10, 'minutes').toDate(),
-            count_tried: 1,
-            results: ['xxx']
-        });
-        yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
-        yield sskts.service.queue.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
-        // ステータスが変更されているかどうか確認
-        const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
-        assert.equal(queueDoc.get('status'), queueStatus_1.default.UNEXECUTED);
-        // テストデータ削除
-        queueDoc.remove();
-    }));
+});
+describe('キューサービス 中止', () => {
     it('最大試行回数に達すると中止する', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = sskts.adapter.queue(connection);
         // test data
@@ -338,6 +318,33 @@ describe('キューサービス', () => {
         // ステータスが変更されているかどうか確認
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.ABORTED);
+        // テストデータ削除
+        queueDoc.remove();
+    }));
+});
+describe('キューサービス リトライ', () => {
+    it('最大試行回数に達していなければリトライする', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        // test data
+        const queue = PushNotificationQueueFactory.create({
+            notification: EmailNotificationFactory.create({
+                from: 'noreply@example.net',
+                to: process.env.SSKTS_DEVELOPER_EMAIL,
+                subject: 'sskts-domain:test:service:queue-test',
+                content: 'sskts-domain:test:service:queue-test'
+            }),
+            status: queueStatus_1.default.RUNNING,
+            run_at: moment().add(-10, 'minutes').toDate(),
+            max_count_try: 2,
+            last_tried_at: moment().add(-10, 'minutes').toDate(),
+            count_tried: 1,
+            results: ['xxx']
+        });
+        yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
+        yield sskts.service.queue.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
+        // ステータスが変更されているかどうか確認
+        const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
+        assert.equal(queueDoc.get('status'), queueStatus_1.default.UNEXECUTED);
         // テストデータ削除
         queueDoc.remove();
     }));
@@ -389,6 +396,64 @@ describe('キューサービス', () => {
         // ステータスが変更されているかどうか確認
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
+        // テストデータ削除
+        queueDoc.remove();
+    }));
+});
+describe('キューサービス ムビチケ着券取消キュー実行', () => {
+    it('ムビチケ着券取消キューがなければ何もしない', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        yield sskts.service.queue.executeCancelMvtkAuthorization()(queueAdapter);
+        // 実行済みのキューはないはず
+        const queueDoc = yield queueAdapter.model.findOne({
+            status: queueStatus_1.default.EXECUTED,
+            group: queueGroup_1.default.CANCEL_AUTHORIZATION,
+            'authorization.group': authorizationGroup_1.default.MVTK
+        }).exec();
+        assert.equal(queueDoc, null);
+    }));
+    it('OK', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        // test data
+        const queue = CancelAuthorizationQueueFactory.create({
+            authorization: MvtkAuthorizationFactory.create({
+                price: 1234,
+                owner_from: 'xxx',
+                owner_to: 'xxx',
+                kgygish_cd: 'xxx',
+                yyk_dvc_typ: 'xxx',
+                trksh_flg: 'xxx',
+                kgygish_sstm_zskyyk_no: 'xxx',
+                kgygish_usr_zskyyk_no: 'xxx',
+                jei_dt: 'xxx',
+                kij_ymd: 'xxx',
+                st_cd: 'xxx',
+                scren_cd: 'xxx',
+                knyknr_no_info: [{
+                        knyknr_no: 'xxx',
+                        pin_cd: 'xxx',
+                        knsh_info: [{
+                                knsh_typ: 'xxx',
+                                mi_num: 'xxx'
+                            }]
+                    }],
+                zsk_info: [{
+                        zsk_cd: 'xxx'
+                    }],
+                skhn_cd: 'xxx'
+            }),
+            status: queueStatus_1.default.UNEXECUTED,
+            run_at: moment().toDate(),
+            max_count_try: 0,
+            last_tried_at: null,
+            count_tried: 1,
+            results: []
+        });
+        yield queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
+        yield sskts.service.queue.executeCancelMvtkAuthorization()(queueAdapter);
+        // ステータスが変更されているかどうか確認
+        const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
+        assert.equal(queueDoc.get('status'), queueStatus_1.default.EXECUTED);
         // テストデータ削除
         queueDoc.remove();
     }));

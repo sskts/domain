@@ -147,7 +147,6 @@ describe('マスターサービス 作品取得', () => {
     }));
 });
 describe('マスターサービス パフォーマンス取得', () => {
-    // todo 特定のパフォーマンスコードでしかテスト通らない
     it('存在する', () => __awaiter(this, void 0, void 0, function* () {
         const performanceAdapter = new performance_1.default(connection);
         const performance = {

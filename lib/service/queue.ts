@@ -182,6 +182,54 @@ export function executeCancelGMOAuthorization(): QueueOperation<void> {
 }
 
 /**
+ * ムビチケ着券取消キュー実行
+ *
+ * @memberOf QueueService
+ * @returns {QueueOperation<void>}
+ */
+export function executeCancelMvtkAuthorization(): QueueOperation<void> {
+    return async (queueAdapter: QueueAdapter) => {
+        // 未実行のムビチケ着券取消キューを取得
+        const queueDoc = await queueAdapter.model.findOneAndUpdate(
+            {
+                status: QueueStatus.UNEXECUTED,
+                run_at: { $lt: new Date() },
+                group: QueueGroup.CANCEL_AUTHORIZATION,
+                'authorization.group': AuthorizationGroup.MVTK
+            },
+            {
+                status: QueueStatus.RUNNING, // 実行中に変更
+                last_tried_at: new Date(),
+                $inc: { count_tried: 1 } // トライ回数増やす
+            },
+            { new: true }
+        ).sort(sortOrder4executionOfQueues).exec();
+        debug('queueDoc is', queueDoc);
+
+        if (queueDoc === null) {
+            return;
+        }
+
+        try {
+            // 失敗してもここでは戻さない(RUNNINGのまま待機)
+            await salesService.cancelMvtkAuthorization(queueDoc.get('authorization'))();
+            await queueAdapter.model.findByIdAndUpdate(
+                queueDoc.get('id'),
+                { status: QueueStatus.EXECUTED },
+                { new: true }
+            ).exec();
+        } catch (error) {
+            // 実行結果追加
+            await queueAdapter.model.findByIdAndUpdate(
+                queueDoc.get('id'),
+                { $push: { results: error.stack } },
+                { new: true }
+            ).exec();
+        }
+    };
+}
+
+/**
  * 取引照会無効化キュー実行
  *
  * @memberOf QueueService

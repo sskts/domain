@@ -18,6 +18,7 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const sskts = require("../../lib/index");
 const EmailNotificationFactory = require("../../lib/factory/notification/email");
+const queueGroup_1 = require("../../lib/factory/queueGroup");
 const TransactionFactory = require("../../lib/factory/transaction");
 const AddNotificationTransactionEventFactory = require("../../lib/factory/transactionEvent/addNotification");
 const TransactionInquiryKeyFactory = require("../../lib/factory/transactionInquiryKey");
@@ -30,7 +31,7 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     const transactionAdapter = sskts.adapter.transaction(connection);
     yield transactionAdapter.transactionModel.remove({}).exec();
 }));
-describe('transaction service', () => {
+describe('取引サービス', () => {
     it('startIfPossible fail', (done) => {
         const ownerAdapter = sskts.adapter.owner(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
@@ -44,108 +45,6 @@ describe('transaction service', () => {
             done(err);
         });
     });
-    it('exportQueues ok.', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.adapter.queue(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        const status = transactionStatus_1.default.CLOSED;
-        // test data
-        const transaction = TransactionFactory.create({
-            status: status,
-            owners: [],
-            expires_at: new Date(),
-            inquiry_key: TransactionInquiryKeyFactory.create({
-                theater_code: '000',
-                reserve_num: 123,
-                tel: '09012345678'
-            }),
-            queues_status: transactionQueuesStatus_1.default.UNEXPORTED
-        });
-        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, {
-            new: true, upsert: true,
-            setDefaultsOnInsert: false
-        }).exec();
-        const queueStatus = yield sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
-        assert.equal(queueStatus, transactionQueuesStatus_1.default.EXPORTED);
-    }));
-    it('exportQueues prohibited status.', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.adapter.queue(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        const status = transactionStatus_1.default.UNDERWAY;
-        // test data
-        const transaction = TransactionFactory.create({
-            status: status,
-            owners: [],
-            expires_at: new Date(),
-            inquiry_key: TransactionInquiryKeyFactory.create({
-                theater_code: '000',
-                reserve_num: 123,
-                tel: '09012345678'
-            }),
-            queues_status: transactionQueuesStatus_1.default.UNEXPORTED
-        });
-        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
-        let exportQueues;
-        try {
-            yield sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
-        }
-        catch (error) {
-            exportQueues = error;
-        }
-        assert(exportQueues instanceof Error);
-        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
-    }));
-    it('exportQueuesById ok.', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.adapter.queue(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        // test data
-        const transaction = TransactionFactory.create({
-            status: transactionStatus_1.default.CLOSED,
-            owners: [],
-            expires_at: new Date(),
-            inquiry_key: TransactionInquiryKeyFactory.create({
-                theater_code: '000',
-                reserve_num: 123,
-                tel: '09012345678'
-            }),
-            queues_status: transactionQueuesStatus_1.default.UNEXPORTED
-        });
-        const event = AddNotificationTransactionEventFactory.create({
-            transaction: transaction.id,
-            occurred_at: new Date(),
-            notification: EmailNotificationFactory.create({
-                from: 'noreply@example.net',
-                to: process.env.SSKTS_DEVELOPER_EMAIL,
-                subject: 'sskts-domain:test:service:transaction-test',
-                content: 'sskts-domain:test:service:transaction-test'
-            })
-        });
-        // todo オーソリイベントもテストデータに追加する
-        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
-        yield transactionAdapter.addEvent(event);
-        const queueIds = yield sskts.service.transaction.exportQueuesById(transaction.id)(queueAdapter, transactionAdapter);
-        const numberOfQueues = yield queueAdapter.model.count({ _id: { $in: queueIds } }).exec();
-        assert.equal(numberOfQueues, queueIds.length);
-    }));
-    it('reexportQueues ok.', () => __awaiter(this, void 0, void 0, function* () {
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        // test data
-        const transaction = TransactionFactory.create({
-            status: transactionStatus_1.default.CLOSED,
-            owners: [],
-            expires_at: new Date(),
-            inquiry_key: TransactionInquiryKeyFactory.create({
-                theater_code: '000',
-                reserve_num: 123,
-                tel: '09012345678'
-            }),
-            queues_status: transactionQueuesStatus_1.default.EXPORTING
-        });
-        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
-        yield sskts.service.transaction.reexportQueues(0)(transactionAdapter); // tslint:disable-line:no-magic-numbers
-        // ステータスが変更されているかどうか確認
-        const retriedTransaction = yield transactionAdapter.transactionModel.findById(transaction.id).exec();
-        assert.equal(retriedTransaction.get('queues_status'), transactionQueuesStatus_1.default.UNEXPORTED);
-    }));
     it('prepare ok', (done) => {
         sskts.service.transaction.prepare(3, 60)(sskts.adapter.transaction(connection)) // tslint:disable-line:no-magic-numbers
             .then(() => {
@@ -193,19 +92,6 @@ describe('transaction service', () => {
             done(err);
         });
     });
-    it('startForcibly ok', (done) => {
-        const ownerAdapter = sskts.adapter.owner(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        const expiresAt = moment().add(30, 'minutes').toDate(); // tslint:disable-line:no-magic-numbers
-        sskts.service.transaction.startForcibly(expiresAt)(ownerAdapter, transactionAdapter)
-            .then((transaction) => {
-            assert.equal(transaction.expires_at.valueOf(), expiresAt.valueOf());
-            done();
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
     it('clean should be removed', () => __awaiter(this, void 0, void 0, function* () {
         // test data
         const transactionAdapter = sskts.adapter.transaction(connection);
@@ -241,5 +127,134 @@ describe('transaction service', () => {
         yield sskts.service.transaction.clean()(sskts.adapter.transaction(connection));
         const nubmerOfTransaction = yield transactionAdapter.transactionModel.find({ _id: { $in: transactionIds } }).count().exec();
         assert.equal(nubmerOfTransaction, 3); // tslint:disable-line:no-magic-numbers
+    }));
+});
+describe('取引サービス 再エクスポート', () => {
+    it('ok', () => __awaiter(this, void 0, void 0, function* () {
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        // test data
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.CLOSED,
+            owners: [],
+            expires_at: new Date(),
+            inquiry_key: TransactionInquiryKeyFactory.create({
+                theater_code: '000',
+                reserve_num: 123,
+                tel: '09012345678'
+            }),
+            queues_status: transactionQueuesStatus_1.default.EXPORTING
+        });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+        yield sskts.service.transaction.reexportQueues(0)(transactionAdapter); // tslint:disable-line:no-magic-numbers
+        // ステータスが変更されているかどうか確認
+        const retriedTransaction = yield transactionAdapter.transactionModel.findById(transaction.id).exec();
+        assert.equal(retriedTransaction.get('queues_status'), transactionQueuesStatus_1.default.UNEXPORTED);
+        // テストデータ削除
+        yield retriedTransaction.remove();
+    }));
+});
+describe('取引サービス 強制的に開始', () => {
+    it('ok', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const expiresAt = moment().add(30, 'minutes').toDate(); // tslint:disable-line:no-magic-numbers
+        const transaction = yield sskts.service.transaction.startForcibly(expiresAt)(ownerAdapter, transactionAdapter);
+        assert.equal(transaction.expires_at.valueOf(), expiresAt.valueOf());
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    }));
+});
+describe('取引サービス キューエクスポート', () => {
+    it('ok.', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const status = transactionStatus_1.default.CLOSED;
+        // test data
+        const transaction = TransactionFactory.create({
+            status: status,
+            owners: [],
+            expires_at: new Date(),
+            inquiry_key: TransactionInquiryKeyFactory.create({
+                theater_code: '000',
+                reserve_num: 123,
+                tel: '09012345678'
+            }),
+            queues_status: transactionQueuesStatus_1.default.UNEXPORTED
+        });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, {
+            new: true, upsert: true,
+            setDefaultsOnInsert: false
+        }).exec();
+        yield sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
+        // 取引のキューエクスポートステータスを確認
+        const transactionDoc = yield transactionAdapter.transactionModel.findById(transaction.id).exec();
+        assert.equal(transactionDoc.get('queues_status'), transactionQueuesStatus_1.default.EXPORTED);
+        // テストデータ削除
+        yield transactionDoc.remove();
+    }));
+    it('ステータスが不適切なので失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const status = transactionStatus_1.default.UNDERWAY;
+        // test data
+        const transaction = TransactionFactory.create({
+            status: status,
+            owners: [],
+            expires_at: new Date(),
+            inquiry_key: TransactionInquiryKeyFactory.create({
+                theater_code: '000',
+                reserve_num: 123,
+                tel: '09012345678'
+            }),
+            queues_status: transactionQueuesStatus_1.default.UNEXPORTED
+        });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+        let exportQueues;
+        try {
+            yield sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
+        }
+        catch (error) {
+            exportQueues = error;
+        }
+        assert(exportQueues instanceof Error);
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    }));
+});
+describe('取引サービス 取引IDからキュー出力する', () => {
+    it('成立取引の出力成功', () => __awaiter(this, void 0, void 0, function* () {
+        const queueAdapter = sskts.adapter.queue(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        // test data
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.CLOSED,
+            owners: [],
+            expires_at: new Date(),
+            inquiry_key: TransactionInquiryKeyFactory.create({
+                theater_code: '000',
+                reserve_num: 123,
+                tel: '09012345678'
+            }),
+            queues_status: transactionQueuesStatus_1.default.UNEXPORTED
+        });
+        const event = AddNotificationTransactionEventFactory.create({
+            transaction: transaction.id,
+            occurred_at: new Date(),
+            notification: EmailNotificationFactory.create({
+                from: 'noreply@example.net',
+                to: process.env.SSKTS_DEVELOPER_EMAIL,
+                subject: 'sskts-domain:test:service:transaction-test',
+                content: 'sskts-domain:test:service:transaction-test'
+            })
+        });
+        const transactionDoc = yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+        yield transactionAdapter.addEvent(event);
+        yield sskts.service.transaction.exportQueuesById(transaction.id)(queueAdapter, transactionAdapter);
+        const queueDoc4pushNotification = yield queueAdapter.model.findOne({
+            group: queueGroup_1.default.PUSH_NOTIFICATION,
+            'notification.id': event.notification.id
+        }).exec();
+        assert.notEqual(queueDoc4pushNotification, null);
+        yield transactionDoc.remove();
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield queueDoc4pushNotification.remove();
     }));
 });

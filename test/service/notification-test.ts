@@ -5,29 +5,32 @@
  */
 import * as assert from 'assert';
 
-import * as sskts from '../../lib/index';
+import * as EmailNotificationFactory from '../../lib/factory/notification/email';
+import NotificationGroup from '../../lib/factory/notificationGroup';
+import * as NotificationService from '../../lib/service/notification';
 
 describe('通知サービス Eメール通知', () => {
     it('成功', async () => {
-        const notification = sskts.factory.notification.email.create({
+        const notification = EmailNotificationFactory.create({
             from: 'noreply@example.net',
             to: process.env.SSKTS_DEVELOPER_EMAIL,
             subject: 'sskts-domain:test:service:notification-test',
             content: 'sskts-domain:test:service:notification-test'
         });
 
-        await sskts.service.notification.sendEmail(notification)();
+        await NotificationService.sendEmail(notification)();
     });
 
     it('送信先不適切で失敗', async () => {
         try {
-            await sskts.service.notification.sendEmail({
+            await NotificationService.sendEmail({
                 id: 'xxx',
-                group: sskts.factory.notificationGroup.EMAIL,
+                group: NotificationGroup.EMAIL,
                 from: 'noreply@example.net',
                 to: 'invalidemail',
                 subject: 'sskts-domain:test:service:notification-test',
-                content: 'sskts-domain:test:service:notification-test'
+                content: 'sskts-domain:test:service:notification-test',
+                send_at: new Date()
             })();
         } catch (error) {
             assert(error instanceof Error);
@@ -41,7 +44,7 @@ describe('通知サービス Eメール通知', () => {
 
 describe('通知サービス 開発者への報告', () => {
     it('成功', async () => {
-        await sskts.service.notification.report2developers(
+        await NotificationService.report2developers(
             'sskts-domain:test:service:notification-test',
             'sskts-domain:test:service:notification-test'
         )();
@@ -52,7 +55,7 @@ describe('通知サービス 開発者への報告', () => {
         process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN = undefined;
         let report2developers: any;
         try {
-            await sskts.service.notification.report2developers(
+            await NotificationService.report2developers(
                 'sskts-domain:test:service:notification-test',
                 'sskts-domain:test:service:notification-test'
             )();

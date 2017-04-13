@@ -236,31 +236,28 @@ export function exportQueues(status: TransactionStatus) {
         ).exec();
 
         if (transactionDoc === null) {
-            return null;
-        } else {
-            // 失敗してもここでは戻さない(RUNNINGのまま待機)
-            await exportQueuesById(transactionDoc.get('id'))(
-                queueAdapter,
-                transactionAdapter
-            );
-
-            transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
-                transactionDoc.get('id'),
-                {
-                    queues_status: TransactionQueuesStatus.EXPORTED,
-                    queues_exported_at: moment().toDate()
-                },
-                { new: true }
-            ).exec();
-
-            return <TransactionQueuesStatus>transactionDoc.get('queues_status');
+            return;
         }
+
+        // 失敗してもここでは戻さない(RUNNINGのまま待機)
+        await exportQueuesById(transactionDoc.get('id'))(
+            queueAdapter,
+            transactionAdapter
+        );
+
+        transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
+            transactionDoc.get('id'),
+            {
+                queues_status: TransactionQueuesStatus.EXPORTED,
+                queues_exported_at: moment().toDate()
+            },
+            { new: true }
+        ).exec();
     };
 }
 
 /**
- * キュー出力
- * todo TransactionWithIdに移行するべき？
+ * ID指定で取引のキュー出力
  *
  * @param {string} id
  * @returns {TransactionAndQueueOperation<void>}
@@ -345,8 +342,6 @@ export function exportQueuesById(id: string) {
             await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
         });
         await Promise.all(promises);
-
-        return queues.map((queue) => queue.id);
     };
 }
 
