@@ -78,7 +78,7 @@ export function report2developers(subject: string, content: string) {
         }
 
         const message = `
-sskts-domain[${process.env.NODE_ENV}]:開発者へ報告があります
+環境[${process.env.NODE_ENV}]
 --------
 ${subject}
 --------

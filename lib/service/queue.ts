@@ -6,7 +6,6 @@
  */
 import * as createDebug from 'debug';
 import * as moment from 'moment';
-import * as util from 'util';
 
 import AssetAdapter from '../adapter/asset';
 import OwnerAdapter from '../adapter/owner';
@@ -471,11 +470,18 @@ export function abort(intervalInMinutes: number): QueueOperation<void> {
         }
 
         // メール通知
+        const results = <string[]>abortedQueueDoc.get('results');
+        const authorization = abortedQueueDoc.get('authorization');
+        const notification = abortedQueueDoc.get('notification');
         await notificationService.report2developers(
-            'キューの実行が中止されました', `
-aborted queue:\n
-${util.inspect(abortedQueueDoc.toObject(), { showHidden: true, depth: 10 })}\n
-`
+            'キューの実行が中止されました',
+            `id:${abortedQueueDoc.get('_id')}
+group:${abortedQueueDoc.get('group')}
+authorization:${(authorization !== undefined) ? authorization.group : ''}
+notification:${(notification !== undefined) ? notification.group : ''}
+run_at:${moment(abortedQueueDoc.get('run_at')).toISOString()}
+last_tried_at:${moment(abortedQueueDoc.get('last_tried_at')).toISOString()}
+最終結果:${results[results.length - 1]}`
         )();
     };
 }

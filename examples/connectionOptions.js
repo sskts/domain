@@ -1,9 +1,9 @@
+"use strict";
 /**
  * mongodbコネクションオプション
  *
  * @ignore
  */
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const options = {
     server: {
