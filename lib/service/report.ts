@@ -4,8 +4,11 @@
  *
  * @namespace ReportService
  */
+import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
+import * as moment from 'moment';
 
+import GMONotificationAdapter from '../adapter/gmoNotification';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
 
@@ -59,5 +62,33 @@ export function transactionStatuses(): QueueAndTransactionOperation<IReportTrans
             numberOfTransactionsExpiredWithQueuesUnexported: numberOfTransactionsExpiredWithQueuesUnexported,
             numberOfQueuesUnexecuted: numberOfQueuesUnexecuted
         };
+    };
+}
+
+/**
+ * GMO実売上検索
+ */
+export function searchGMOSales(dateFrom: Date, dateTo: Date) {
+    return async (gmoNotificationAdapter: GMONotificationAdapter) => {
+        // "tran_date": "20170415230109"の形式
+        const notificationDocs = await gmoNotificationAdapter.gmoNotificationModel.find(
+            {
+                job_cd: GMO.Util.JOB_CD_SALES,
+                tran_date: {
+                    $gte: moment(dateFrom).format('YYYYMMDDHHmmss'),
+                    $lte: moment(dateTo).format('YYYYMMDDHHmmss')
+                }
+            }
+        ).exec();
+
+        return notificationDocs.map((notificationDoc) => {
+            return {
+                shop_id: <string>notificationDoc.get('shop_id'),
+                order_id: <string>notificationDoc.get('order_id'),
+                // tslint:disable-next-line:no-magic-numbers
+                amount: parseInt(notificationDoc.get('amount'), 10),
+                tran_date: <string>notificationDoc.get('tran_date')
+            };
+        });
     };
 }
