@@ -21,8 +21,8 @@ const schema = new mongoose.Schema(
         tran_id: String, // トランザクションID
         approve: String, // 承認番号
         tran_date: String, // 処理日付
-        ErrCode: String, // エラーコード
-        ErrInfo: String, // エラー詳細コード
+        err_code: String, // エラーコード
+        err_info: String, // エラー詳細コード
         pay_type: String // 決済方法
     },
     {
