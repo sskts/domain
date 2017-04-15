@@ -16,6 +16,7 @@ import * as transactionWithIdService from './service/transactionWithId';
 
 import AssetAdapter from './adapter/asset';
 import FilmAdapter from './adapter/film';
+import GMONotificationAdapter from './adapter/gmoNotification';
 import OwnerAdapter from './adapter/owner';
 import PerformanceAdapter from './adapter/performance';
 import QueueAdapter from './adapter/queue';
@@ -57,6 +58,9 @@ export const adapter = {
     },
     film: (connection: Connection) => {
         return new FilmAdapter(connection);
+    },
+    gmoNotification: (connection: Connection) => {
+        return new GMONotificationAdapter(connection);
     },
     owner: (connection: Connection) => {
         return new OwnerAdapter(connection);

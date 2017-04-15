@@ -199,15 +199,17 @@ export function clean() {
  */
 export function makeExpired() {
     return async (transactionAdapter: TransactionAdapter) => {
+        const expiredAt = moment().toDate();
+
         // ステータスと期限を見て更新
         await transactionAdapter.transactionModel.update(
             {
                 status: TransactionStatus.UNDERWAY,
-                expires_at: { $lt: new Date() }
+                expires_at: { $lt: expiredAt }
             },
             {
                 status: TransactionStatus.EXPIRED,
-                expired_at: moment().toDate()
+                expired_at: expiredAt
             },
             { multi: true }
         ).exec();

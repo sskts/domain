@@ -15,6 +15,7 @@ import * as transactionService from './service/transaction';
 import * as transactionWithIdService from './service/transactionWithId';
 import AssetAdapter from './adapter/asset';
 import FilmAdapter from './adapter/film';
+import GMONotificationAdapter from './adapter/gmoNotification';
 import OwnerAdapter from './adapter/owner';
 import PerformanceAdapter from './adapter/performance';
 import QueueAdapter from './adapter/queue';
@@ -51,6 +52,7 @@ import TransactionStatus from './factory/transactionStatus';
 export declare const adapter: {
     asset: (connection: Connection) => AssetAdapter;
     film: (connection: Connection) => FilmAdapter;
+    gmoNotification: (connection: Connection) => GMONotificationAdapter;
     owner: (connection: Connection) => OwnerAdapter;
     performance: (connection: Connection) => PerformanceAdapter;
     queue: (connection: Connection) => QueueAdapter;
