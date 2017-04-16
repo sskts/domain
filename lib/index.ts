@@ -47,6 +47,10 @@ import QueueStatus from './factory/queueStatus';
 import * as ScreenFactory from './factory/screen';
 import * as TheaterFactory from './factory/theater';
 import * as TransactionFactory from './factory/transaction';
+import * as AddNotificationTransactionEventFactory from './factory/transactionEvent/addNotification';
+import * as AuthorizeTransactionEventFactory from './factory/transactionEvent/authorize';
+import * as RemoveNotificationTransactionEventFactory from './factory/transactionEvent/removeNotification';
+import * as UnauthorizeTransactionEventFactory from './factory/transactionEvent/unauthorize';
 import TransactionEventGroup from './factory/transactionEventGroup';
 import * as TransactionInquiryKeyFactory from './factory/transactionInquiryKey';
 import TransactionQueuesStatus from './factory/transactionQueuesStatus';
@@ -127,6 +131,12 @@ export const factory = {
     screen: ScreenFactory,
     theater: TheaterFactory,
     transaction: TransactionFactory,
+    transactionEvent: {
+        addNotification: AddNotificationTransactionEventFactory,
+        authorize: AuthorizeTransactionEventFactory,
+        removeNotification: RemoveNotificationTransactionEventFactory,
+        unauthorize: UnauthorizeTransactionEventFactory
+    },
     transactionEventGroup: TransactionEventGroup,
     transactionInquiryKey: TransactionInquiryKeyFactory,
     transactionQueuesStatus: TransactionQueuesStatus,
