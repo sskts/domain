@@ -240,7 +240,8 @@ describe('キューサービス', () => {
                         dis_price: 0,
                         sale_price: 0,
                         mvtk_app_price: 0,
-                        add_glasses: 0
+                        add_glasses: 0,
+                        kbn_eisyahousiki: '00'
                     })
                 ]
             }),

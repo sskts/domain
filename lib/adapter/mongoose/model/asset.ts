@@ -38,7 +38,8 @@ const schema = new mongoose.Schema(
         dis_price: Number,
         sale_price: Number,
         mvtk_app_price: Number,
-        add_glasses: Number
+        add_glasses: Number,
+        kbn_eisyahousiki: String
     },
     {
         collection: 'assets',

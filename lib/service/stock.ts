@@ -117,7 +117,8 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
                     ticket_count: 1,
                     mvtk_app_price: asset.mvtk_app_price,
                     seat_num: asset.seat_code,
-                    add_glasses: asset.add_glasses
+                    add_glasses: asset.add_glasses,
+                    kbn_eisyahousiki: asset.kbn_eisyahousiki
                 };
             })
         });

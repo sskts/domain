@@ -75,6 +75,10 @@ export interface ISeatReservationAsset extends AssetFactory.IAsset {
      * メガネ単価
      */
     add_glasses: number;
+    /**
+     * ムビチケ映写方式区分
+     */
+    kbn_eisyahousiki: string;
 }
 
 /**
@@ -99,11 +103,13 @@ export function create(args: {
     sale_price: number;
     mvtk_app_price: number;
     add_glasses: number;
+    kbn_eisyahousiki: string;
 }): ISeatReservationAsset {
     if (_.isEmpty(args.performance)) throw new ArgumentNullError('performance');
     if (_.isEmpty(args.seat_code)) throw new ArgumentNullError('seat_code');
     if (_.isEmpty(args.ticket_code)) throw new ArgumentNullError('ticket_code');
     if (_.isEmpty(args.ticket_name_ja)) throw new ArgumentNullError('ticket_name_ja');
+    if (_.isEmpty(args.kbn_eisyahousiki)) throw new ArgumentNullError('kbn_eisyahousiki');
 
     if (!_.isNumber(args.std_price)) throw new ArgumentError('std_price', 'std_price should be number');
     if (!_.isNumber(args.add_price)) throw new ArgumentError('add_price', 'add_price should be number');
@@ -130,6 +136,7 @@ export function create(args: {
         dis_price: args.dis_price,
         sale_price: args.sale_price,
         mvtk_app_price: args.mvtk_app_price,
-        add_glasses: args.add_glasses
+        add_glasses: args.add_glasses,
+        kbn_eisyahousiki: args.kbn_eisyahousiki
     };
 }

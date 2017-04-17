@@ -31,7 +31,8 @@ describe('COA仮予約ファクトリー', () => {
                 dis_price: 123,
                 sale_price: 123,
                 mvtk_app_price: 0,
-                add_glasses: 0
+                add_glasses: 0,
+                kbn_eisyahousiki: '00'
             })
         ];
 
@@ -71,7 +72,8 @@ describe('COA仮予約ファクトリー', () => {
                 dis_price: 123,
                 sale_price: 123,
                 mvtk_app_price: 0,
-                add_glasses: 0
+                add_glasses: 0,
+                kbn_eisyahousiki: '00'
             })
         ];
 
@@ -118,7 +120,8 @@ describe('COA仮予約ファクトリー', () => {
                 dis_price: 123,
                 sale_price: 123,
                 mvtk_app_price: 0,
-                add_glasses: 0
+                add_glasses: 0,
+                kbn_eisyahousiki: '00'
             })
         ];
 
@@ -165,7 +168,8 @@ describe('COA仮予約ファクトリー', () => {
                 dis_price: 123,
                 sale_price: 123,
                 mvtk_app_price: 0,
-                add_glasses: 0
+                add_glasses: 0,
+                kbn_eisyahousiki: '00'
             })
         ];
 
@@ -212,7 +216,8 @@ describe('COA仮予約ファクトリー', () => {
                 dis_price: 123,
                 sale_price: 123,
                 mvtk_app_price: 0,
-                add_glasses: 0
+                add_glasses: 0,
+                kbn_eisyahousiki: '00'
             })
         ];
 

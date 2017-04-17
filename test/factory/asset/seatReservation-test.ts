@@ -30,7 +30,8 @@ describe('座席予約資産ファクトリー', () => {
                 dis_price: 123,
                 sale_price: 123,
                 mvtk_app_price: 0,
-                add_glasses: 0
+                add_glasses: 0,
+                kbn_eisyahousiki: '00'
             });
         });
     });
@@ -55,7 +56,8 @@ describe('座席予約資産ファクトリー', () => {
                     dis_price: 123,
                     sale_price: 123,
                     mvtk_app_price: 0,
-                    add_glasses: 0
+                    add_glasses: 0,
+                    kbn_eisyahousiki: '00'
                 });
 
             },
@@ -87,7 +89,8 @@ describe('座席予約資産ファクトリー', () => {
                     dis_price: 123,
                     sale_price: 123,
                     mvtk_app_price: 0,
-                    add_glasses: 0
+                    add_glasses: 0,
+                    kbn_eisyahousiki: '00'
                 });
 
             },
@@ -119,7 +122,8 @@ describe('座席予約資産ファクトリー', () => {
                     dis_price: 123,
                     sale_price: 123,
                     mvtk_app_price: 0,
-                    add_glasses: 0
+                    add_glasses: 0,
+                    kbn_eisyahousiki: '00'
                 });
 
             },
@@ -151,7 +155,8 @@ describe('座席予約資産ファクトリー', () => {
                     dis_price: 123,
                     sale_price: 123,
                     mvtk_app_price: 0,
-                    add_glasses: 0
+                    add_glasses: 0,
+                    kbn_eisyahousiki: '00'
                 });
 
             },
@@ -183,7 +188,8 @@ describe('座席予約資産ファクトリー', () => {
                     dis_price: <any>'123',
                     sale_price: 123,
                     mvtk_app_price: 0,
-                    add_glasses: 0
+                    add_glasses: 0,
+                    kbn_eisyahousiki: '00'
                 });
 
             },
@@ -215,7 +221,8 @@ describe('座席予約資産ファクトリー', () => {
                     dis_price: 123,
                     sale_price: <any>'123',
                     mvtk_app_price: 0,
-                    add_glasses: 0
+                    add_glasses: 0,
+                    kbn_eisyahousiki: '00'
                 });
 
             },
@@ -247,7 +254,8 @@ describe('座席予約資産ファクトリー', () => {
                     dis_price: 123,
                     sale_price: 123,
                     mvtk_app_price: <any>'',
-                    add_glasses: 0
+                    add_glasses: 0,
+                    kbn_eisyahousiki: '00'
                 });
             },
             (err: any) => {
@@ -278,12 +286,45 @@ describe('座席予約資産ファクトリー', () => {
                     dis_price: 123,
                     sale_price: 123,
                     mvtk_app_price: 123,
-                    add_glasses: <any>''
+                    add_glasses: <any>'',
+                    kbn_eisyahousiki: '00'
                 });
             },
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'add_glasses');
+                return true;
+            }
+        );
+    });
+
+    it('ムビチケ映写方式区分が空なので作成できない', () => {
+        assert.throws(
+            () => {
+                SeatReservationAssetFactory.create({
+                    ownership: OwnershipFactory.create({
+                        owner: 'xxx',
+                        authenticated: false
+                    }),
+                    performance: 'xxx',
+                    section: 'xxx',
+                    seat_code: 'xxx',
+                    ticket_code: 'xxx',
+                    ticket_name_ja: 'xxx',
+                    ticket_name_en: 'xxx',
+                    ticket_name_kana: 'xxx',
+                    std_price: 123,
+                    add_price: 123,
+                    dis_price: 123,
+                    sale_price: 123,
+                    mvtk_app_price: 123,
+                    add_glasses: 0,
+                    kbn_eisyahousiki: ''
+                });
+            },
+            (err: any) => {
+                assert(err instanceof ArgumentNullError);
+                assert.equal((<ArgumentNullError>err).argumentName, 'kbn_eisyahousiki');
                 return true;
             }
         );

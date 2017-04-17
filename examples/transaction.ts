@@ -52,11 +52,11 @@ async function main() {
 
     // 空席なくなったら変更する
     const theaterCode = '118';
-    const dateJouei = '20170404';
-    const titleCode = '17165';
+    const dateJouei = '20170419';
+    const titleCode = '16250';
     const titleBranchNum = '0';
-    const timeBegin = '0950';
-    const screenCode = '60';
+    const timeBegin = '2130';
+    const screenCode = '90';
 
     // 販売可能チケット検索
     const salesTicketResult = await COA.ReserveService.salesTicket({
@@ -133,7 +133,8 @@ async function main() {
                 dis_price: 0,
                 sale_price: salesTicketResult[0].sale_price,
                 mvtk_app_price: 0,
-                add_glasses: 0
+                add_glasses: 0,
+                kbn_eisyahousiki: '00'
             });
         }),
         price: totalPrice

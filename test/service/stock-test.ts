@@ -54,6 +54,7 @@ describe('在庫サービス 座席予約資産移動', () => {
         const authorization: CoaSeatReservationAuthorizationFactory.ICOASeatReservationAuthorization = {
             assets: [
                 {
+                    kbn_eisyahousiki: '00',
                     add_glasses: 0,
                     mvtk_app_price: 0,
                     sale_price: 2800,
@@ -78,6 +79,7 @@ describe('在庫サービス 座席予約資産移動', () => {
                     id: '58e344b236a44424c0997daf'
                 },
                 {
+                    kbn_eisyahousiki: '00',
                     add_glasses: 0,
                     mvtk_app_price: 0,
                     sale_price: 2800,
