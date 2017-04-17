@@ -18,4 +18,4 @@ export declare function sendEmail(email: EmailNotificationFactory.IEmailNotifica
  * @param {string} content
  * @see https://notify-bot.line.me/doc/ja/
  */
-export declare function report2developers(subject: string, content: string): () => Promise<void>;
+export declare function report2developers(subject: string, content: string, imageThumbnail?: string, imageFullsize?: string): Operation<void>;

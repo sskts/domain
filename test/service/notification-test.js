@@ -17,6 +17,8 @@ const assert = require("assert");
 const EmailNotificationFactory = require("../../lib/factory/notification/email");
 const notificationGroup_1 = require("../../lib/factory/notificationGroup");
 const NotificationService = require("../../lib/service/notification");
+const argument_1 = require("../../lib/error/argument");
+const DUMMY_IMAGE_URL = 'https://dummyimage.com/200x200';
 describe('通知サービス Eメール通知', () => {
     it('成功', () => __awaiter(this, void 0, void 0, function* () {
         const notification = EmailNotificationFactory.create({
@@ -49,11 +51,11 @@ describe('通知サービス Eメール通知', () => {
 });
 describe('通知サービス 開発者への報告', () => {
     it('成功', () => __awaiter(this, void 0, void 0, function* () {
-        yield NotificationService.report2developers('sskts-domain:test:service:notification-test', 'sskts-domain:test:service:notification-test')();
+        yield NotificationService.report2developers('sskts-domain:test:service:notification-test', 'sskts-domain:test:service:notification-test', DUMMY_IMAGE_URL, DUMMY_IMAGE_URL)();
     }));
     it('アクセストークンが設定されていないと失敗', () => __awaiter(this, void 0, void 0, function* () {
         const accessToken = process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN;
-        process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN = undefined;
+        delete process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN;
         let report2developers;
         try {
             yield NotificationService.report2developers('sskts-domain:test:service:notification-test', 'sskts-domain:test:service:notification-test')();
@@ -63,5 +65,27 @@ describe('通知サービス 開発者への報告', () => {
         }
         assert(report2developers instanceof Error);
         process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN = accessToken;
+    }));
+    it('サムネイル画像URLが不適切だと失敗', () => __awaiter(this, void 0, void 0, function* () {
+        let report2developers;
+        try {
+            yield NotificationService.report2developers('sskts-domain:test:service:notification-test', 'sskts-domain:test:service:notification-test', 'xxx')();
+        }
+        catch (error) {
+            report2developers = error;
+        }
+        assert(report2developers instanceof argument_1.default);
+        assert(report2developers.argumentName, 'imageThumbnail');
+    }));
+    it('フル画像URLが不適切だと失敗', () => __awaiter(this, void 0, void 0, function* () {
+        let report2developers;
+        try {
+            yield NotificationService.report2developers('sskts-domain:test:service:notification-test', 'sskts-domain:test:service:notification-test', DUMMY_IMAGE_URL, 'xxx')();
+        }
+        catch (error) {
+            report2developers = error;
+        }
+        assert(report2developers instanceof argument_1.default);
+        assert(report2developers.argumentName, 'imageFullsize');
     }));
 });

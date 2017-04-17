@@ -8,12 +8,16 @@ import * as httpStatus from 'http-status';
 import * as request from 'request-promise-native';
 import * as sendgrid from 'sendgrid';
 import * as util from 'util';
+import * as validator from 'validator';
 
 import * as EmailNotificationFactory from '../factory/notification/email';
+
+import ArgumentError from '../error/argument';
 
 export type Operation<T> = () => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:notification');
+const LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify';
 
 /**
  * メール送信
@@ -71,7 +75,7 @@ export function sendEmail(email: EmailNotificationFactory.IEmailNotification): O
  * @param {string} content
  * @see https://notify-bot.line.me/doc/ja/
  */
-export function report2developers(subject: string, content: string) {
+export function report2developers(subject: string, content: string, imageThumbnail?: string, imageFullsize?: string): Operation<void> {
     return async () => {
         if (process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN === undefined) {
             throw new Error('access token for LINE Notify undefined');
@@ -86,15 +90,27 @@ ${content}`
             ;
 
         // LINE通知APIにPOST
+        const formData: any = { message: message };
+        if (imageThumbnail !== undefined) {
+            if (!validator.isURL(imageThumbnail)) {
+                throw new ArgumentError('imageThumbnail', 'imageThumbnail should be URL');
+            }
+
+            formData.imageThumbnail = imageThumbnail;
+        }
+        if (imageFullsize !== undefined) {
+            if (!validator.isURL(imageFullsize)) {
+                throw new ArgumentError('imageFullsize', 'imageFullsize should be URL');
+            }
+
+            formData.imageFullsize = imageFullsize;
+        }
+
         const response = await request.post(
             {
-                url: 'https://notify-api.line.me/api/notify',
+                url: LINE_NOTIFY_URL,
                 auth: { bearer: process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN },
-                form: {
-                    message: message
-                    // stickerPackageId: '1',
-                    // stickerId: '4'
-                },
+                form: formData,
                 json: true,
                 simple: false,
                 resolveWithFullResponse: true
