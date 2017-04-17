@@ -21,6 +21,7 @@ import OwnerAdapter from './adapter/owner';
 import PerformanceAdapter from './adapter/performance';
 import QueueAdapter from './adapter/queue';
 import ScreenAdapter from './adapter/screen';
+import SendGridEventAdapter from './adapter/sendGridEvent';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
 
@@ -77,6 +78,9 @@ export const adapter = {
     },
     screen: (connection: Connection) => {
         return new ScreenAdapter(connection);
+    },
+    sendGridEvent: (connection: Connection) => {
+        return new SendGridEventAdapter(connection);
     },
     theater: (connection: Connection) => {
         return new TheaterAdapter(connection);

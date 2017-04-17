@@ -20,6 +20,7 @@ import OwnerAdapter from './adapter/owner';
 import PerformanceAdapter from './adapter/performance';
 import QueueAdapter from './adapter/queue';
 import ScreenAdapter from './adapter/screen';
+import SendGridEventAdapter from './adapter/sendGridEvent';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
 import * as SeatReservationAssetFactory from './factory/asset/seatReservation';
@@ -61,6 +62,7 @@ export declare const adapter: {
     performance: (connection: Connection) => PerformanceAdapter;
     queue: (connection: Connection) => QueueAdapter;
     screen: (connection: Connection) => ScreenAdapter;
+    sendGridEvent: (connection: Connection) => SendGridEventAdapter;
     theater: (connection: Connection) => TheaterAdapter;
     transaction: (connection: Connection) => TransactionAdapter;
 };
