@@ -47,7 +47,7 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
         debug('counting ready transactions...');
         const numberOfTransactionsReady = await transactionAdapter.transactionModel.count({
             status: TransactionStatus.READY,
-            expires_at: { $gt: dateNowByUnitTime.toDate() }
+            expires_at: { $gt: moment().toDate() }
         }).exec();
 
         debug('counting underway transactions...');
@@ -96,7 +96,7 @@ export function transactionStatuses(): QueueAndTransactionOperation<IReportTrans
         debug('counting ready transactions...');
         const numberOfTransactionsReady = await transactionAdapter.transactionModel.count({
             status: TransactionStatus.READY,
-            expires_at: { $gt: new Date() }
+            expires_at: { $gt: moment().toDate() }
         }).exec();
 
         debug('counting underway transactions...');
