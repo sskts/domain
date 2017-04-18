@@ -3,6 +3,7 @@
  *
  * @ignore
  */
+
 import * as sskts from '../lib/index';
 
 const notification = sskts.factory.notification.email.create({

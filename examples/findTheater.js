@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * 劇場取得の例
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,11 +13,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * 劇場取得の例
- *
- * @ignore
- */
 const createDebug = require("debug");
 const mongoose = require("mongoose");
 const util = require("util");

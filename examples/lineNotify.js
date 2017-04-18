@@ -1,10 +1,10 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * LINE通知の例
  *
  * @see https://notify-bot.line.me/my/
  */
+Object.defineProperty(exports, "__esModule", { value: true });
 const request = require("request-promise-native");
 request.post({
     url: 'https://notify-api.line.me/api/notify',

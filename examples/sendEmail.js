@@ -1,10 +1,10 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * メールを送信する
  *
  * @ignore
  */
+Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("../lib/index");
 const notification = sskts.factory.notification.email.create({
     from: 'noreply@example.net',

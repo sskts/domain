@@ -22,7 +22,7 @@ export interface ITransactionInquiryKey {
 
 /**
  *
- * @returns {ITransactionInquiryKey} 
+ * @returns {ITransactionInquiryKey}
  * @memberof tobereplaced$
  */
 export function create(args: {

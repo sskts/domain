@@ -3,6 +3,7 @@
  *
  * @see https://notify-bot.line.me/my/
  */
+
 import * as request from 'request-promise-native';
 
 request.post(

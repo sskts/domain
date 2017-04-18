@@ -77,6 +77,7 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
         }
 
         const owner = <AnonymousOwnerFactory.IAnonymousOwner>ownerDoc.toObject();
+        debug('owner:', owner);
 
         // COA本予約
         // COA本予約は一度成功すると成功できない
