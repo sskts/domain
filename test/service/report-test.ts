@@ -9,6 +9,7 @@ import * as mongoose from 'mongoose';
 
 import GMONotificationAdapter from '../../lib/adapter/gmoNotification';
 import QueueAdapter from '../../lib/adapter/queue';
+import TelemetryAdapter from '../../lib/adapter/telemetry';
 import TransactionAdapter from '../../lib/adapter/transaction';
 
 import * as ReportService from '../../lib/service/report';
@@ -18,6 +19,16 @@ before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
     const gmoNotificationAdapter = new GMONotificationAdapter(connection);
     await gmoNotificationAdapter.gmoNotificationModel.remove({}).exec();
+});
+
+describe('レポートサービス 測定データ作成', () => {
+    it('ok', async () => {
+        await ReportService.createTelemetry()(
+            new QueueAdapter(connection),
+            new TelemetryAdapter(connection),
+            new TransactionAdapter(connection)
+        );
+    });
 });
 
 describe('レポートサービス 取引状態', () => {

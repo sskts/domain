@@ -18,6 +18,7 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const gmoNotification_1 = require("../../lib/adapter/gmoNotification");
 const queue_1 = require("../../lib/adapter/queue");
+const telemetry_1 = require("../../lib/adapter/telemetry");
 const transaction_1 = require("../../lib/adapter/transaction");
 const ReportService = require("../../lib/service/report");
 let connection;
@@ -26,6 +27,11 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     const gmoNotificationAdapter = new gmoNotification_1.default(connection);
     yield gmoNotificationAdapter.gmoNotificationModel.remove({}).exec();
 }));
+describe('レポートサービス 測定データ作成', () => {
+    it('ok', () => __awaiter(this, void 0, void 0, function* () {
+        yield ReportService.createTelemetry()(new queue_1.default(connection), new telemetry_1.default(connection), new transaction_1.default(connection));
+    }));
+});
 describe('レポートサービス 取引状態', () => {
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
         yield ReportService.transactionStatuses()(new queue_1.default(connection), new transaction_1.default(connection));
