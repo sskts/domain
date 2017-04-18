@@ -22,6 +22,7 @@ import PerformanceAdapter from './adapter/performance';
 import QueueAdapter from './adapter/queue';
 import ScreenAdapter from './adapter/screen';
 import SendGridEventAdapter from './adapter/sendGridEvent';
+import TelemetryAdapter from './adapter/telemetry';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
 
@@ -81,6 +82,9 @@ export const adapter = {
     },
     sendGridEvent: (connection: Connection) => {
         return new SendGridEventAdapter(connection);
+    },
+    telemetry: (connection: Connection) => {
+        return new TelemetryAdapter(connection);
     },
     theater: (connection: Connection) => {
         return new TheaterAdapter(connection);

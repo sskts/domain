@@ -21,6 +21,7 @@ import PerformanceAdapter from './adapter/performance';
 import QueueAdapter from './adapter/queue';
 import ScreenAdapter from './adapter/screen';
 import SendGridEventAdapter from './adapter/sendGridEvent';
+import TelemetryAdapter from './adapter/telemetry';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
 import * as SeatReservationAssetFactory from './factory/asset/seatReservation';
@@ -63,6 +64,7 @@ export declare const adapter: {
     queue: (connection: Connection) => QueueAdapter;
     screen: (connection: Connection) => ScreenAdapter;
     sendGridEvent: (connection: Connection) => SendGridEventAdapter;
+    telemetry: (connection: Connection) => TelemetryAdapter;
     theater: (connection: Connection) => TheaterAdapter;
     transaction: (connection: Connection) => TransactionAdapter;
 };
