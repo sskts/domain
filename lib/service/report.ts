@@ -2,8 +2,9 @@
  * レポートサービス
  * todo 実験的実装中
  *
- * @namespace ReportService
+ * @namespace service/report
  */
+
 import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
@@ -28,6 +29,11 @@ export interface IReportTransactionStatuses {
     numberOfQueuesUnexecuted: number;
 }
 
+/**
+ *
+ * @returns {QueueAndTransactionOperation<IReportTransactionStatuses>}
+ * @memberof service/report
+ */
 export function transactionStatuses(): QueueAndTransactionOperation<IReportTransactionStatuses> {
     return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
         debug('counting ready transactions...');
@@ -67,6 +73,7 @@ export function transactionStatuses(): QueueAndTransactionOperation<IReportTrans
 
 /**
  * GMO実売上検索
+ * @memberof service/report
  */
 export function searchGMOSales(dateFrom: Date, dateTo: Date) {
     return async (gmoNotificationAdapter: GMONotificationAdapter) => {

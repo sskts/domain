@@ -1,7 +1,7 @@
 /**
  * パフォーマンスファクトリー
  *
- * @namespace TheaterFactory
+ * @namespace factory/performance
  *
  * @param {string} id
  * @param {Theater} theater 劇場
@@ -16,11 +16,21 @@ import * as COA from '@motionpicture/coa-service';
 import * as FilmFactory from './film';
 import MultilingualString from './multilingualString';
 import * as ScreenFactory from './screen';
+/**
+ *
+ * @interface IReferences
+ * @memberof tobereplaced$
+ */
 export interface IReferences {
     theater: string;
     screen: string;
     film: string;
 }
+/**
+ *
+ * @interface IReferencesWithDetails
+ * @memberof tobereplaced$
+ */
 export interface IReferencesWithDetails {
     theater: {
         id: string;
@@ -39,6 +49,11 @@ export interface IReferencesWithDetails {
         minutes: number;
     };
 }
+/**
+ *
+ * @interface ICOAFields
+ * @memberof tobereplaced$
+ */
 export interface ICOAFields {
     coa_trailer_time: number;
     coa_kbn_service: string;
@@ -61,6 +76,11 @@ export interface ICOAFields {
      */
     coa_flg_early_booking: string;
 }
+/**
+ *
+ * @interface IPerformanceBase
+ * @memberof tobereplaced$
+ */
 export interface IPerformanceBase {
     id: string;
     day: string;
@@ -68,9 +88,19 @@ export interface IPerformanceBase {
     time_end: string;
     canceled: boolean;
 }
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export declare type IPerformance = IPerformanceBase & ICOAFields & IReferences;
 /**
  * 劇場、作品、スクリーンの詳細ありパフォーマンスインターフェース
+ * @memberof tobereplaced$
  */
 export declare type IPerformanceWithReferenceDetails = IPerformanceBase & ICOAFields & IReferencesWithDetails;
+/**
+ *
+ * @param {COA.MasterService.IScheduleResult} performanceFromCOA
+ * @memberof tobereplaced$
+ */
 export declare function createFromCOA(performanceFromCOA: COA.MasterService.IScheduleResult): (screen: ScreenFactory.IScreen, film: FilmFactory.IFilm) => IPerformance;

@@ -1,7 +1,7 @@
 /**
  * キューステータス
  *
- * @namespace QueueStatus
+ * @namespace factory/queueStatus
  */
 declare type QueueStatus = 'UNEXECUTED' | 'RUNNING' | 'EXECUTED' | 'ABORTED';
 declare namespace QueueStatus {

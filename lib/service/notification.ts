@@ -1,8 +1,9 @@
 /**
  * 通知サービス
  *
- * @namespace NotificationService
+ * @namespace service/notification
  */
+
 import * as createDebug from 'debug';
 import * as httpStatus from 'http-status';
 import * as request from 'request-promise-native';
@@ -27,7 +28,7 @@ const LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify';
  * @returns {Operation<void>}
  * @see https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
  *
- * @memberOf NotificationService
+ * @memberof service/notification
  */
 export function sendEmail(email: EmailNotificationFactory.IEmailNotification): Operation<void> {
     return async () => {
@@ -74,6 +75,7 @@ export function sendEmail(email: EmailNotificationFactory.IEmailNotification): O
  * @param {string} subject
  * @param {string} content
  * @see https://notify-bot.line.me/doc/ja/
+ * @memberof service/notification
  */
 export function report2developers(subject: string, content: string, imageThumbnail?: string, imageFullsize?: string): Operation<void> {
     return async () => {

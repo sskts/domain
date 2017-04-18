@@ -3,7 +3,7 @@ import * as util from 'util';
 /**
  * ArgumentNullError
  *
- * @class ArgumentError
+ * @class ArgumentNullError
  * @extends {Error}
  */
 export default class ArgumentNullError extends Error {

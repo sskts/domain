@@ -1,19 +1,30 @@
 /**
  * 取引照会キーファクトリー
  *
- * @namespace TransactionInquiryKeyFactory
+ * @namespace factory/transactionInquiryKey
  */
+
 import * as _ from 'underscore';
 
 import ArgumentError from '../error/argument';
 import ArgumentNullError from '../error/argumentNull';
 
+/**
+ *
+ * @interface ITransactionInquiryKey
+ * @memberof tobereplaced$
+ */
 export interface ITransactionInquiryKey {
     theater_code: string;
     reserve_num: number;
     tel: string;
 }
 
+/**
+ *
+ * @returns {ITransactionInquiryKey} 
+ * @memberof tobereplaced$
+ */
 export function create(args: {
     theater_code: string;
     reserve_num: number;

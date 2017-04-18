@@ -1,7 +1,7 @@
 /**
  * 取引イベントグループ
  *
- * @namespace TransactionEventGroup
+ * @namespace factory/transactionEventGroup
  */
 
 type TransactionEventGroup =

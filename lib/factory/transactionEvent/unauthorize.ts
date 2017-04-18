@@ -1,8 +1,9 @@
 /**
  * オーソリ削除取引イベントファクトリー
  *
- * @namespace UnauthorizeTransactionEventFactory
+ * @namespace factory/transactionEvent/unauthorize
  */
+
 import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
@@ -19,11 +20,16 @@ import TransactionEventGroup from '../transactionEventGroup';
  * @interface Unauthorize
  * @extends {TransactionEvent}
  * @param {Authorization} authorization
+ * @memberof tobereplaced$
  */
 export interface IUnauthorizeTransactionEvent extends TransactionEventFactory.ITransactionEvent {
     authorization: Authorization.IAuthorization;
 }
 
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export function create(args: {
     id?: string,
     transaction: string,

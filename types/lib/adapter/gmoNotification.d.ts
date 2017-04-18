@@ -4,7 +4,6 @@ import GMONotificationModel from './mongoose/model/gmoNotification';
 /**
  * GMO通知アダプター
  *
- * @export
  * @class GMONotificationAdapter
  */
 export default class GMONotificationAdapter {

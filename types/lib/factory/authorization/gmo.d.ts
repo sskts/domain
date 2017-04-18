@@ -10,6 +10,7 @@ import * as AuthorizationFactory from '../authorization';
  * @param {string} gmo_access_pass
  * @param {string} gmo_job_cd
  * @param {string} gmo_pay_type
+ * @memberof tobereplaced$
  */
 export interface IGMOAuthorization extends AuthorizationFactory.IAuthorization {
     gmo_shop_id: string;
@@ -21,6 +22,10 @@ export interface IGMOAuthorization extends AuthorizationFactory.IAuthorization {
     gmo_job_cd: string;
     gmo_pay_type: string;
 }
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export declare function create(args: {
     id?: string;
     price: number;

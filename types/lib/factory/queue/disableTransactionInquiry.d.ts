@@ -3,10 +3,15 @@ import * as Transaction from '../../factory/transaction';
 import QueueStatus from '../queueStatus';
 /**
  * 取引照会無効化キュー
+ * @memberof tobereplaced$
  */
 export interface IDisableTransactionInquiryQueue extends QueueFactory.IQueue {
     transaction: Transaction.ITransaction;
 }
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export declare function create(args: {
     id?: string;
     transaction: Transaction.ITransaction;

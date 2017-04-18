@@ -2,8 +2,9 @@
  * 所有権ファクトリー
  * 誰が、何を、所有するのか
  *
- * @namespace AssetFactory
+ * @namespace factory/ownership
  */
+
 import * as _ from 'underscore';
 
 import ArgumentNullError from '../error/argumentNull';
@@ -16,6 +17,7 @@ import ObjectId from './objectId';
  * @param {string} id
  * @param {string} owner 所有者
  * @param {boolean} authenticated 認証済みかどうか
+ * @memberof tobereplaced$
  */
 export interface IOwnership {
     id: string;
@@ -23,6 +25,10 @@ export interface IOwnership {
     authenticated: boolean;
 }
 
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export function create(args: {
     id?: string,
     owner: string,

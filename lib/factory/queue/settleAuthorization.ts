@@ -1,8 +1,9 @@
 /**
  * 資産移動キューファクトリー
  *
- * @namespace SettleAuthorizationQueueFactory
+ * @namespace factory/queue/settleAuthorization
  */
+
 import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
@@ -18,11 +19,16 @@ import QueueStatus from '../queueStatus';
  * 資産移動キュー
  *
  * @param {T} authorization
+ * @memberof tobereplaced$
  */
 export interface ISettleAuthorizationQueue<T extends Authorization.IAuthorization> extends QueueFactory.IQueue {
     authorization: T;
 }
 
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export function create<T extends Authorization.IAuthorization>(args: {
     id?: string,
     authorization: T,

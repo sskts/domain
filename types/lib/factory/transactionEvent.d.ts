@@ -1,7 +1,7 @@
 /**
  * 取引イベントファクトリー
  *
- * @namespace TransactionEventFactory
+ * @namespace factory/transactionEvent
  */
 import TransactionEventGroup from './transactionEventGroup';
 /**
@@ -11,6 +11,7 @@ import TransactionEventGroup from './transactionEventGroup';
  * @param {string} transaction 取引ID
  * @param {TransactionEventGroup} group 取引イベントグループ
  * @param {Date} occurred_at 発生日時
+ * @memberof tobereplaced$
  */
 export interface ITransactionEvent {
     id: string;

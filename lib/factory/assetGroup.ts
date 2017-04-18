@@ -1,7 +1,7 @@
 /**
  * 資産グループ
  *
- * @namespace AssetGroup
+ * @namespace factory/assetGroup
  */
 
 type AssetGroup =

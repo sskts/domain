@@ -1,7 +1,7 @@
 /**
  * 劇場ウェブサイトグループ
  *
- * @namespace TheaterWebsiteGroup
+ * @namespace factory/theaterWebsiteGroup
  */
 
 export type TheaterWebsiteGroup =

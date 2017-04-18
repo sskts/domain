@@ -1,8 +1,9 @@
 /**
  * 取引(ID指定)サービス
  *
- * @namespace TransactionWithIdService
+ * @namespace service/transactionWithId
  */
+
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as monapt from 'monapt';
@@ -42,7 +43,7 @@ const debug = createDebug('sskts-domain:service:transaction');
  * @param {string} id
  * @returns {TransactionOperation<monapt.Option<Transaction>>}
  *
- * @memberOf TransactionWithIdService
+ * @memberof service/transactionWithId
  */
 export function findById(id: string): TransactionOperation<monapt.Option<TransactionFactory.ITransaction>> {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -97,7 +98,7 @@ function addAuthorization(transactionId: string, authorization: AuthorizationFac
  * @param {GMOAuthorization} authorization
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionWithIdService
+ * @memberof service/transactionWithId
  */
 export function addGMOAuthorization(transactionId: string, authorization: GMOAuthorizationFactory.IGMOAuthorization) {
     return addAuthorization(transactionId, authorization);
@@ -110,7 +111,7 @@ export function addGMOAuthorization(transactionId: string, authorization: GMOAut
  * @param {COASeatReservationAuthorization} authorization
  * @returns {OwnerAndTransactionOperation<void>}
  *
- * @memberOf TransactionWithIdService
+ * @memberof service/transactionWithId
  */
 export function addCOASeatReservationAuthorization(
     transactionId: string,
@@ -126,7 +127,7 @@ export function addCOASeatReservationAuthorization(
  * @param {MvtkAuthorization.IMvtkAuthorization} authorization
  * @returns {OwnerAndTransactionOperation<void>}
  *
- * @memberOf TransactionWithIdService
+ * @memberof service/transactionWithId
  */
 export function addMvtkAuthorization(transactionId: string, authorization: MvtkAuthorizationFactory.IMvtkAuthorization) {
     return addAuthorization(transactionId, authorization);
@@ -139,7 +140,7 @@ export function addMvtkAuthorization(transactionId: string, authorization: MvtkA
  * @param {string} authorizationId
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionWithIdService
+ * @memberof service/transactionWithId
  */
 export function removeAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -176,7 +177,7 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
  * @param {EmailNotification} notification
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionWithIdService
+ * @memberof service/transactionWithId
  */
 export function addEmail(transactionId: string, notification: EmailNotificationFactory.IEmailNotification) {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -200,7 +201,7 @@ export function addEmail(transactionId: string, notification: EmailNotificationF
  * @param {string} notificationId
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionWithIdService
+ * @memberof service/transactionWithId
  */
 export function removeEmail(transactionId: string, notificationId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -234,7 +235,7 @@ export function removeEmail(transactionId: string, notificationId: string) {
  *
  * @returns {OwnerAndTransactionOperation<void>}
  *
- * @memberOf TransactionWithIdService
+ * @memberof service/transactionWithId
  */
 export function updateAnonymousOwner(args: {
     transaction_id: string,
@@ -282,7 +283,7 @@ export function updateAnonymousOwner(args: {
  * @param {TransactionInquiryKey} key
  * @returns {TransactionOperation<monapt.Option<Transaction>>}
  *
- * @memberOf TransactionWithIdService
+ * @memberof service/transactionWithId
  */
 export function enableInquiry(id: string, key: TransactionInquiryKeyFactory.ITransactionInquiryKey) {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -311,7 +312,7 @@ export function enableInquiry(id: string, key: TransactionInquiryKeyFactory.ITra
  * @param {string} transactionId
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionWithIdService
+ * @memberof service/transactionWithId
  */
 export function close(id: string) {
     return async (transactionAdapter: TransactionAdapter) => {

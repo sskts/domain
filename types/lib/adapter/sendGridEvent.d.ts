@@ -4,7 +4,6 @@ import SendGridEventModel from './mongoose/model/sendGridEvent';
 /**
  * SendGridイベントアダプター
  *
- * @export
  * @class SendGridEventAdapter
  */
 export default class SendGridEventAdapter {

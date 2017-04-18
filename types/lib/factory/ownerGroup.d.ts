@@ -1,7 +1,7 @@
 /**
  * 所有者グループ
  *
- * @namespace OwnerGroup
+ * @namespace factory/ownerGroup
  */
 declare type OwnerGroup = 'ANONYMOUS' | 'PROMOTER' | 'MEMBER';
 declare namespace OwnerGroup {

@@ -1,7 +1,7 @@
 /**
  * 取引ステータス
  *
- * @namespace TransactionStatus
+ * @namespace factory/transactionStatus
  */
 
 type TransactionStatus =

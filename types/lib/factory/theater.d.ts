@@ -1,7 +1,7 @@
 /**
  * 劇場ファクトリー
  *
- * @namespace TheaterFactory
+ * @namespace factory/theater
  */
 import * as COA from '@motionpicture/coa-service';
 import MultilingualString from './multilingualString';
@@ -11,6 +11,7 @@ import TheaterWebsiteGroup from './theaterWebsiteGroup';
  * COAからインポートされる想定
  *
  * @interface IRequiredFields
+ * @memberof tobereplaced$
  */
 export interface IRequiredFields {
     id: string;
@@ -21,6 +22,7 @@ export interface IRequiredFields {
  * GMO関連情報インターフェース
  *
  * @interface IGMO
+ * @memberof tobereplaced$
  */
 export interface IGMO {
     gmo: {
@@ -33,6 +35,7 @@ export interface IGMO {
  * ウェブサイト情報インターフェース
  *
  * @interface IWebsite
+ * @memberof tobereplaced$
  */
 export interface IWebsite {
     /**
@@ -52,6 +55,7 @@ export interface IWebsite {
  * 追加情報インターフェース
  *
  * @interface IOptionalFields
+ * @memberof tobereplaced$
  */
 export interface IOptionalFields {
     address: MultilingualString;
@@ -64,8 +68,8 @@ export declare type ITheater = IRequiredFields & IOptionalFields & IGMO;
 /**
  * COAの劇場抽出結果からTheaterオブジェクトを作成する
  *
- * @export
  * @param {COA.MasterService.TheaterResult} theaterFromCOA
  * @returns {ITheaterWithoutGMO}
+ * @memberof tobereplaced$
  */
 export declare function createFromCOA(theaterFromCOA: COA.MasterService.ITheaterResult): IRequiredFields;

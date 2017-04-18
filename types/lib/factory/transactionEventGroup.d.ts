@@ -1,7 +1,7 @@
 /**
  * 取引イベントグループ
  *
- * @namespace TransactionEventGroup
+ * @namespace factory/transactionEventGroup
  */
 declare type TransactionEventGroup = 'AUTHORIZE' | 'UNAUTHORIZE' | 'ADD_NOTIFICATION' | 'REMOVE_NOTIFICATION';
 declare namespace TransactionEventGroup {

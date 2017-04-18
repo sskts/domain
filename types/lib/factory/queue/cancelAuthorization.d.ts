@@ -5,10 +5,15 @@ import QueueStatus from '../queueStatus';
  * オーソリ解除キュー
  *
  * @param {T} authorization
+ * @memberof tobereplaced$
  */
 export interface ICancelAuthorizationQueue<T extends Authorization.IAuthorization> extends QueueFactory.IQueue {
     authorization: T;
 }
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export declare function create<T extends Authorization.IAuthorization>(args: {
     id?: string;
     authorization: T;

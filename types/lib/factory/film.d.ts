@@ -1,7 +1,7 @@
 /**
  * 作品ファクトリー
  *
- * @namespace TheaterFactory
+ * @namespace factory/film
  *
  * @param {string} id
  * @param {string} coa_title_code COA作品コード
@@ -22,6 +22,11 @@
 import * as COA from '@motionpicture/coa-service';
 import MultilingualString from './multilingualString';
 import * as TheaterFactory from './theater';
+/**
+ *
+ * @interface IFilm
+ * @memberof tobereplaced$
+ */
 export interface IFilm {
     id: string;
     coa_title_code: string;
@@ -53,7 +58,7 @@ export interface IFilm {
 /**
  * COAの作品抽出結果からFilmオブジェクトを作成する
  *
- * @export
  * @param {COA.MasterService.TitleResult} filmFromCOA
+ * @memberof tobereplaced$
  */
 export declare function createFromCOA(filmFromCOA: COA.MasterService.ITitleResult): (theater: TheaterFactory.ITheater) => IFilm;

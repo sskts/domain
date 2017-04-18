@@ -1,7 +1,7 @@
 /**
  * 取引ステータス
  *
- * @namespace TransactionStatus
+ * @namespace factory/transactionStatus
  */
 declare type TransactionStatus = 'READY' | 'UNDERWAY' | 'CLOSED' | 'EXPIRED';
 declare namespace TransactionStatus {

@@ -1,7 +1,7 @@
 /**
  * 通知グループ
  *
- * @namespace NotificationGroup
+ * @namespace factory/notificationGroup
  */
 declare type NotificationGroup = 'EMAIL';
 declare namespace NotificationGroup {

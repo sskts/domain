@@ -2,7 +2,7 @@
 /**
  * オブジェクトID
  *
- * @interface ObjectId
+ * @module factory/objectId
  */
 import * as mongoose from 'mongoose';
 declare type ObjectId = mongoose.Types.ObjectId;

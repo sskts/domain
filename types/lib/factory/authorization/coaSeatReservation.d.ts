@@ -11,6 +11,7 @@ import * as AuthorizationFactory from '../authorization';
  * @param {string} coa_time_begin
  * @param {string} coa_screen_code
  * @param {Asset.ISeatReservationAsset[]} assets 資産リスト(COA側では複数座席に対してひとつの仮予約番号が割り当てられるため)
+ * @memberof tobereplaced$
  */
 export interface ICOASeatReservationAuthorization extends AuthorizationFactory.IAuthorization {
     coa_tmp_reserve_num: number;
@@ -22,6 +23,10 @@ export interface ICOASeatReservationAuthorization extends AuthorizationFactory.I
     coa_screen_code: string;
     assets: SeatReservationAssetFactory.ISeatReservationAsset[];
 }
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export declare function create(args: {
     id?: string;
     price: number;

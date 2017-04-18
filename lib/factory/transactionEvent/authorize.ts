@@ -1,8 +1,9 @@
 /**
  * オーソリ追加取引イベントファクトリー
  *
- * @namespace AuthorizeTransactionEventFactory
+ * @namespace factory/transactionEvent/authorize
  */
+
 import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
@@ -19,11 +20,16 @@ import TransactionEventGroup from '../transactionEventGroup';
  * @interface AuthorizeTransactionEvent
  * @extends {TransactionEvent}
  * @param {Authorization} authorization
+ * @memberof tobereplaced$
  */
 export interface IAuthorizeTransactionEvent extends TransactionEventFactory.ITransactionEvent {
     authorization: Authorization.IAuthorization;
 }
 
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export function create(args: {
     id?: string,
     transaction: string,

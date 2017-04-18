@@ -1,13 +1,20 @@
 /**
  * 興行所有者ファクトリー
  *
- * @namespace PromoterOwnerFactory
+ * @namespace factory/owner/promoter
  */
+
 import MultilingualString from '../../factory/multilingualString';
 import ObjectId from '../objectId';
 import * as OwnerFactory from '../owner';
 import OwnerGroup from '../ownerGroup';
 
+/**
+ *
+ * @interface IPromoterOwner
+ * @extends {OwnerFactory.IOwner}
+ * @memberof tobereplaced$
+ */
 export interface IPromoterOwner extends OwnerFactory.IOwner {
     id: string;
     name: MultilingualString;
@@ -16,10 +23,10 @@ export interface IPromoterOwner extends OwnerFactory.IOwner {
 /**
  * 興行所有者オブジェクトを作成する
  *
- * @export
  * @param {string} [args.id]
  * @param {string} [args.name]
  * @returns {IPromoterOwner}
+ * @memberof tobereplaced$
  */
 export function create(args: {
     id?: string;

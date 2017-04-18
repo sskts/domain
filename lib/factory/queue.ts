@@ -2,15 +2,15 @@
  * キューファクトリー
  * キュー(実行日時つきのタスク)
  *
- * @namespace QueueFactory
+ * @namespace factory/queue
  */
+
 import QueueGroup from './queueGroup';
 import QueueStatus from './queueStatus';
 
 /**
  * キューインターフェース
  *
- * @export
  * @interface IQueue
  *
  * @param {string} id
@@ -21,6 +21,7 @@ import QueueStatus from './queueStatus';
  * @param {(Date | null)} last_tried_at 最終試行日時
  * @param {number} count_tried 試行回数
  * @param {Array<string>} results 実行結果リスト
+ * @memberof tobereplaced$
  */
 export interface IQueue {
     id: string;

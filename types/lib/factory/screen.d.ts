@@ -1,7 +1,7 @@
 /**
  * スクリーンファクトリー
  *
- * @namespace TheaterFactory
+ * @namespace factory/screen
  */
 import * as COA from '@motionpicture/coa-service';
 import MultilingualString from './multilingualString';
@@ -9,8 +9,8 @@ import * as TheaterFactory from './theater';
 /**
  * スクリーン座席
  *
- *
- * @interface Seat
+ * @interface ISeat
+ * @memberof factory/screen
  */
 export interface ISeat {
     /**
@@ -21,8 +21,8 @@ export interface ISeat {
 /**
  * スクリーンセクション
  *
- *
  * @interface Section
+ * @memberof factory/screen
  */
 export interface ISection {
     /**
@@ -38,6 +38,11 @@ export interface ISection {
      */
     seats: ISeat[];
 }
+/**
+ *
+ * @interface IScreen
+ * @memberof tobereplaced$
+ */
 export interface IScreen {
     id: string;
     theater: string;
@@ -48,7 +53,7 @@ export interface IScreen {
 /**
  * COAのスクリーン抽出結果からScreenオブジェクトを作成する
  *
- * @export
  * @param {COA.MasterService.ScreenResult} screenFromCOA
+ * @memberof factory/screen
  */
 export declare function createFromCOA(screenFromCOA: COA.MasterService.IScreenResult): (theater: TheaterFactory.ITheater) => IScreen;

@@ -1,7 +1,7 @@
 /**
  * キューステータス
  *
- * @namespace QueueStatus
+ * @namespace factory/queueStatus
  */
 
 type QueueStatus =

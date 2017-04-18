@@ -1,8 +1,9 @@
 /**
  * 座席予約資産ファクトリー
  *
- * @namespace SeatReservationAssetFactory
+ * @namespace factory/asset/seatReservation
  */
+
 import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
@@ -17,9 +18,9 @@ import * as OwnershipFactory from '../ownership';
 /**
  * 座席予約資産
  *
- * @export
  * @interface ISeatReservationAsset
  * @extends {IAsset}
+ * @memberof tobereplaced$
  */
 export interface ISeatReservationAsset extends AssetFactory.IAsset {
     ownership: OwnershipFactory.IOwnership;
@@ -85,6 +86,7 @@ export interface ISeatReservationAsset extends AssetFactory.IAsset {
  * 座席予約資産を作成する
  *
  * @returns {SeatReservationAsset}
+ * @memberof tobereplaced$
  */
 export function create(args: {
     id?: string,

@@ -1,8 +1,9 @@
 /**
  * 取引照会無効化キューファクトリー
  *
- * @namespace DisableTransactionInquiryQueueFactory
+ * @namespace factory/queue/disableTransactionInquiry
  */
+
 import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
@@ -16,11 +17,16 @@ import QueueStatus from '../queueStatus';
 
 /**
  * 取引照会無効化キュー
+ * @memberof tobereplaced$
  */
 export interface IDisableTransactionInquiryQueue extends QueueFactory.IQueue {
     transaction: Transaction.ITransaction;
 }
 
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export function create(args: {
     id?: string,
     transaction: Transaction.ITransaction,

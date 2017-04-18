@@ -1,8 +1,9 @@
 /**
  * プッシュ通知キューファクトリー
  *
- * @namespace PushNotificationQueueFactory
+ * @namespace factory/queue/pushNotification
  */
+
 import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
@@ -18,11 +19,16 @@ import QueueStatus from '../queueStatus';
  * プッシュ通知キュー
  *
  * @param {T} notification
+ * @memberof tobereplaced$
  */
 export interface IPushNotificationQueue<T extends Notification.INotification> extends QueueFactory.IQueue {
     notification: T;
 }
 
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export function create<T extends Notification.INotification>(args: {
     id?: string,
     notification: T,

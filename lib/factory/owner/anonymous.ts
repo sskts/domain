@@ -1,8 +1,9 @@
 /**
  * 一般所有者ファクトリー
  *
- * @namespace AnonymousOwnerFactory
+ * @namespace factory/owner/anonymous
  */
+
 import * as _ from 'underscore';
 import * as validator from 'validator';
 
@@ -12,6 +13,12 @@ import ObjectId from '../objectId';
 import * as OwnerFactory from '../owner';
 import OwnerGroup from '../ownerGroup';
 
+/**
+ *
+ * @interface IAnonymousOwner
+ * @extends {OwnerFactory.IOwner}
+ * @memberof tobereplaced$
+ */
 export interface IAnonymousOwner extends OwnerFactory.IOwner {
     id: string;
     name_first: string;
@@ -22,6 +29,7 @@ export interface IAnonymousOwner extends OwnerFactory.IOwner {
 
 /**
  * 一般所有者を作成する
+ * @memberof tobereplaced$
  */
 export function create(args: {
     id?: string;

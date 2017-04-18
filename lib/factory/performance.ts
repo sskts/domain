@@ -1,7 +1,7 @@
 /**
  * パフォーマンスファクトリー
  *
- * @namespace TheaterFactory
+ * @namespace factory/performance
  *
  * @param {string} id
  * @param {Theater} theater 劇場
@@ -12,17 +12,28 @@
  * @param {string} time_end 上映終了時刻
  * @param {boolean} canceled 上映中止フラグ
  */
+
 import * as COA from '@motionpicture/coa-service';
 import * as FilmFactory from './film';
 import MultilingualString from './multilingualString';
 import * as ScreenFactory from './screen';
 
+/**
+ *
+ * @interface IReferences
+ * @memberof tobereplaced$
+ */
 export interface IReferences {
     theater: string;
     screen: string;
     film: string;
 }
 
+/**
+ *
+ * @interface IReferencesWithDetails
+ * @memberof tobereplaced$
+ */
 export interface IReferencesWithDetails {
     theater: {
         id: string;
@@ -43,6 +54,11 @@ export interface IReferencesWithDetails {
     };
 }
 
+/**
+ *
+ * @interface ICOAFields
+ * @memberof tobereplaced$
+ */
 export interface ICOAFields {
     coa_trailer_time: number; // トレーラー時間(トレーラー含む本編以外の時間（分）)
     coa_kbn_service: string; // サービス区分(「通常興行」「レイトショー」など)
@@ -66,6 +82,11 @@ export interface ICOAFields {
     coa_flg_early_booking: string;
 }
 
+/**
+ *
+ * @interface IPerformanceBase
+ * @memberof tobereplaced$
+ */
 export interface IPerformanceBase {
     id: string;
     day: string; // 上映日(※日付は西暦8桁 "YYYYMMDD")
@@ -74,13 +95,23 @@ export interface IPerformanceBase {
     canceled: boolean; // 上映中止フラグ
 }
 
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export type IPerformance = IPerformanceBase & ICOAFields & IReferences;
 
 /**
  * 劇場、作品、スクリーンの詳細ありパフォーマンスインターフェース
+ * @memberof tobereplaced$
  */
 export type IPerformanceWithReferenceDetails = IPerformanceBase & ICOAFields & IReferencesWithDetails;
 
+/**
+ *
+ * @param {COA.MasterService.IScheduleResult} performanceFromCOA
+ * @memberof tobereplaced$
+ */
 export function createFromCOA(performanceFromCOA: COA.MasterService.IScheduleResult) {
     return (screen: ScreenFactory.IScreen, film: FilmFactory.IFilm): IPerformance => {
         const id = [

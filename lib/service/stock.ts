@@ -1,8 +1,9 @@
 /**
  * 在庫サービス
  *
- * @namespace StockService
+ * @namespace service/stock
  */
+
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import * as _ from 'underscore';
@@ -26,7 +27,7 @@ const debug = createDebug('sskts-domain:service:stock');
  *
  * @param {COASeatReservationAuthorization.ICOASeatReservationAuthorization} authorization
  *
- * @memberOf StockService
+ * @memberof service/stock
  */
 export function unauthorizeCOASeatReservation(authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization) {
     return async () => {
@@ -48,7 +49,7 @@ export function unauthorizeCOASeatReservation(authorization: COASeatReservationA
  * @param {COASeatReservationAuthorization} authorization
  * @returns {AssetOperation<void>}
  *
- * @memberOf StockService
+ * @memberof service/stock
  */
 export function transferCOASeatReservation(authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization) {
     return async (assetAdapter: AssetAdapter, ownertAdapter: OwnerAdapter) => {
@@ -129,7 +130,7 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
  * 取引照会を無効にする
  * COAのゴミ購入データを削除する
  *
- * @memberOf StockService
+ * @memberof service/stock
  */
 export function disableTransactionInquiry(transaction: TransactionFactory.ITransaction) {
     return async (transactionAdapter: TransactionAdapter) => {

@@ -1,8 +1,9 @@
 /**
  * マスタサービス
  *
- * @namespace MasterService
+ * @namespace service/master
  */
+
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
@@ -63,7 +64,7 @@ const debug = createDebug('sskts-domain:service:master');
  * @param {string} theaterCode
  * @returns {TheaterOperation<void>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export function importTheater(theaterCode: string): TheaterOperation<void> {
     return async (adapter: TheaterAdapter) => {
@@ -86,7 +87,7 @@ export function importTheater(theaterCode: string): TheaterOperation<void> {
  * @param {string} theaterCode
  * @returns {TheaterAndFilmOperation<void>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> {
     return async (theaterAdapter: TheaterAdapter, filmRepo: FilmAdapter) => {
@@ -118,7 +119,7 @@ export function importFilms(theaterCode: string): TheaterAndFilmOperation<void> 
  * @param {string} theaterCode
  * @returns {TheaterAndScreenOperation<void>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export function importScreens(theaterCode: string): TheaterAndScreenOperation<void> {
     return async (theaterAdapter: TheaterAdapter, screenRepo: ScreenAdapter) => {
@@ -152,7 +153,7 @@ export function importScreens(theaterCode: string): TheaterAndScreenOperation<vo
  * @param {string} dayEnd
  * @returns {FilmAndScreenAndPerformanceOperation<void>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export function importPerformances(theaterCode: string, dayStart: string, dayEnd: string):
     FilmAndScreenAndPerformanceOperation<void> {
@@ -210,7 +211,7 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
  * @param {SearchPerformancesConditions} conditions
  * @returns {PerformanceOperation<Array<SearchPerformancesResult>>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export function searchPerformances(searchConditions: ISearchPerformancesConditions):
     PerformanceOperation<ISearchPerformancesResult[]> {
@@ -266,7 +267,7 @@ export function searchPerformances(searchConditions: ISearchPerformancesConditio
  * @param {string} theaterId
  * @returns {TheaterOperation<monapt.Option<Theater>>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export function findTheater(theaterId: string): TheaterOperation<monapt.Option<TheaterFactory.ITheater>> {
     debug('finding a theater...', theaterId);
@@ -282,7 +283,7 @@ export function findTheater(theaterId: string): TheaterOperation<monapt.Option<T
  * @param {string} filmId
  * @returns {FilmOperation<monapt.Option<Film>>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export function findFilm(filmId: string): FilmOperation<monapt.Option<FilmFactory.IFilm>> {
     debug('finding a film...', filmId);
@@ -298,7 +299,7 @@ export function findFilm(filmId: string): FilmOperation<monapt.Option<FilmFactor
  * @param {string} screenId
  * @returns {ScreenOperation<monapt.Option<Screen>>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export function findScreen(screenId: string): ScreenOperation<monapt.Option<ScreenFactory.IScreen>> {
     debug('finding a screen...', screenId);
@@ -314,7 +315,7 @@ export function findScreen(screenId: string): ScreenOperation<monapt.Option<Scre
  * @param {string} performanceId
  * @returns {PerformanceOperation<monapt.Option<Performance>>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export function findPerformance(
     performanceId: string

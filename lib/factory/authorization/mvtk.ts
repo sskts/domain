@@ -1,8 +1,9 @@
 /**
  * ムビチケ着券情報ファクトリー
  *
- * @namespace MvtkAuthorizationFactory
+ * @namespace factory/authorization/mvtk
  */
+
 import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
@@ -15,6 +16,7 @@ import ObjectId from '../objectId';
 /**
  * 券種情報
  * @interface IKnshInfo
+ * @memberof tobereplaced$
  */
 export interface IKnshInfo {
     knsh_typ: string;
@@ -24,6 +26,7 @@ export interface IKnshInfo {
 /**
  * 購入管理番号情報
  * @interface IKnyknrNoInfo
+ * @memberof tobereplaced$
  */
 export interface IKnyknrNoInfo {
     knyknr_no: string;
@@ -34,6 +37,7 @@ export interface IKnyknrNoInfo {
 /**
  * 座席情報
  * @interface IZskInfo
+ * @memberof tobereplaced$
  */
 export interface IZskInfo {
     zsk_cd: string;
@@ -41,6 +45,7 @@ export interface IZskInfo {
 
 /**
  * ムビチケ着券情報
+ * @memberof tobereplaced$
  */
 export interface IMvtkAuthorization extends AuthorizationFactory.IAuthorization {
     kgygish_cd: string;
@@ -57,6 +62,10 @@ export interface IMvtkAuthorization extends AuthorizationFactory.IAuthorization 
     skhn_cd: string;
 }
 
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export function create(args: {
     id?: string;
     price: number;

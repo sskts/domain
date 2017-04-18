@@ -1,7 +1,7 @@
 /**
  * オブジェクトID
  *
- * @interface ObjectId
+ * @module factory/objectId
  */
 
 import * as mongoose from 'mongoose';

@@ -2,8 +2,9 @@
 /**
  * 通知削除取引イベントファクトリー
  *
- * @namespace RemoveNotificationTransactionEventFactory
+ * @namespace factory/transactionEvent/removeNotification
  */
+
 import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
@@ -22,12 +23,17 @@ import TransactionEventGroup from '../transactionEventGroup';
  * @template T
  *
  * @param {T} notification
+ * @memberof tobereplaced$
  */
 export interface IRemoveNotificationTransactionEvent<T extends Notification.INotification>
     extends TransactionEventFactory.ITransactionEvent {
     notification: T;
 }
 
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export function create<T extends Notification.INotification>(args: {
     id?: string,
     transaction: string,

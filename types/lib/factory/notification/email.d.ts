@@ -1,6 +1,7 @@
 import * as NotificationFactory from '../notification';
 /**
  * Eメール通知インターフェース
+ * @memberof tobereplaced$
  *
  * @param {string} id
  * @param {string} from
@@ -30,6 +31,10 @@ export interface IEmailNotification extends NotificationFactory.INotification {
      */
     send_at: Date;
 }
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export declare function create(args: {
     id?: string;
     from: string;

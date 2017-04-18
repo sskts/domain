@@ -1,8 +1,9 @@
 /**
  * 売上サービス
  *
- * @namespace SalesService
+ * @namespace service/sales
  */
+
 import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
 import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
@@ -12,6 +13,8 @@ const debug = createDebug('sskts-domain:service:sales');
 
 /**
  * GMOオーソリ取消
+ *
+ * @memberof service/sales
  */
 export function cancelGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthorization) {
     return async () => {
@@ -33,6 +36,8 @@ export function cancelGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthori
 
 /**
  * GMO売上確定
+ *
+ * @memberof service/sales
  */
 export function settleGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthorization) {
     return async () => {
@@ -67,6 +72,8 @@ export function settleGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthori
 
 /**
  * ムビチケ着券取消し
+ *
+ * @memberof service/sales
  */
 export function cancelMvtkAuthorization(__: MvtkAuthorizationFactory.IMvtkAuthorization) {
     return async () => {
@@ -76,6 +83,8 @@ export function cancelMvtkAuthorization(__: MvtkAuthorizationFactory.IMvtkAuthor
 
 /**
  * ムビチケ資産移動
+ *
+ * @memberof service/sales
  */
 export function settleMvtkAuthorization(__: MvtkAuthorizationFactory.IMvtkAuthorization) {
     return async () => {

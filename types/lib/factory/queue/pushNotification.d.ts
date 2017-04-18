@@ -5,10 +5,15 @@ import QueueStatus from '../queueStatus';
  * プッシュ通知キュー
  *
  * @param {T} notification
+ * @memberof tobereplaced$
  */
 export interface IPushNotificationQueue<T extends Notification.INotification> extends QueueFactory.IQueue {
     notification: T;
 }
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export declare function create<T extends Notification.INotification>(args: {
     id?: string;
     notification: T;

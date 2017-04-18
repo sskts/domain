@@ -4,7 +4,6 @@ import performanceModel from './mongoose/model/performance';
 /**
  * パフォーマンスアダプター
  *
- * @export
  * @class PerformanceAdapter
  */
 export default class PerformanceAdapter {

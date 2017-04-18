@@ -3,8 +3,9 @@
  * 取引一般に対する処理はここで定義する
  * 特定の取引(ID指定)に対する処理はtransactionWithIdサービスで定義
  *
- * @namespace TransactionService
+ * @namespace service/transaction
  */
+
 import * as clone from 'clone';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
@@ -42,9 +43,9 @@ const debug = createDebug('sskts-domain:service:transaction');
 /**
  * 開始準備のできた取引を用意する
  *
- * @export
  * @param {number} length 取引数
  * @param {number} expiresInSeconds 現在から何秒後に期限切れにするか
+ * @memberof service/transaction
  */
 export function prepare(length: number, expiresInSeconds: number) {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -69,8 +70,8 @@ export function prepare(length: number, expiresInSeconds: number) {
 /**
  * 取引を強制的に開始する
  *
- * @export
  * @param {Date} expiresAt
+ * @memberof service/transaction
  */
 export function startForcibly(expiresAt: Date) {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
@@ -110,7 +111,7 @@ export function startForcibly(expiresAt: Date) {
  * @param {Date} expiresAt
  * @returns {OwnerAndTransactionOperation<Promise<monapt.Option<Transaction.ITransaction>>>}
  *
- * @memberOf TransactionService
+ * @memberof service/transaction
  */
 export function startIfPossible(expiresAt: Date) {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
@@ -163,7 +164,7 @@ export function startIfPossible(expiresAt: Date) {
  * @param {TransactionInquiryKey} key
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionService
+ * @memberof service/transaction
  */
 export function makeInquiry(key: TransactionInquiryKeyFactory.ITransactionInquiryKey) {
     debug('finding a transaction...', key);
@@ -181,6 +182,7 @@ export function makeInquiry(key: TransactionInquiryKeyFactory.ITransactionInquir
 
 /**
  * 不要な取引を削除する
+ * @memberof service/transaction
  */
 export function clean() {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -196,6 +198,7 @@ export function clean() {
 
 /**
  * 取引を期限切れにする
+ * @memberof service/transaction
  */
 export function makeExpired() {
     return async (transactionAdapter: TransactionAdapter) => {
@@ -220,6 +223,7 @@ export function makeExpired() {
  * ひとつの取引のキューをエクスポートする
  *
  * @param {TransactionStatus} statu 取引ステータス
+ * @memberof service/transaction
  */
 export function exportQueues(status: TransactionStatus) {
     return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
@@ -264,7 +268,7 @@ export function exportQueues(status: TransactionStatus) {
  * @param {string} id
  * @returns {TransactionAndQueueOperation<void>}
  *
- * @memberOf TransactionService
+ * @memberof service/transaction
  */
 export function exportQueuesById(id: string) {
     // tslint:disable-next-line:max-func-body-length
@@ -351,8 +355,8 @@ export function exportQueuesById(id: string) {
  * キューエクスポートリトライ
  * todo updated_atを基準にしているが、キューエクスポートトライ日時を持たせた方が安全か？
  *
- * @export
  * @param {number} intervalInMinutes
+ * @memberof service/transaction
  */
 export function reexportQueues(intervalInMinutes: number) {
     return async (transactionAdapter: TransactionAdapter) => {

@@ -44,7 +44,7 @@ export interface ISearchPerformancesResult {
  * @param {string} theaterCode
  * @returns {TheaterOperation<void>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export declare function importTheater(theaterCode: string): TheaterOperation<void>;
 /**
@@ -53,7 +53,7 @@ export declare function importTheater(theaterCode: string): TheaterOperation<voi
  * @param {string} theaterCode
  * @returns {TheaterAndFilmOperation<void>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export declare function importFilms(theaterCode: string): TheaterAndFilmOperation<void>;
 /**
@@ -62,7 +62,7 @@ export declare function importFilms(theaterCode: string): TheaterAndFilmOperatio
  * @param {string} theaterCode
  * @returns {TheaterAndScreenOperation<void>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export declare function importScreens(theaterCode: string): TheaterAndScreenOperation<void>;
 /**
@@ -73,7 +73,7 @@ export declare function importScreens(theaterCode: string): TheaterAndScreenOper
  * @param {string} dayEnd
  * @returns {FilmAndScreenAndPerformanceOperation<void>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export declare function importPerformances(theaterCode: string, dayStart: string, dayEnd: string): FilmAndScreenAndPerformanceOperation<void>;
 /**
@@ -82,7 +82,7 @@ export declare function importPerformances(theaterCode: string, dayStart: string
  * @param {SearchPerformancesConditions} conditions
  * @returns {PerformanceOperation<Array<SearchPerformancesResult>>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export declare function searchPerformances(searchConditions: ISearchPerformancesConditions): PerformanceOperation<ISearchPerformancesResult[]>;
 /**
@@ -91,7 +91,7 @@ export declare function searchPerformances(searchConditions: ISearchPerformances
  * @param {string} theaterId
  * @returns {TheaterOperation<monapt.Option<Theater>>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export declare function findTheater(theaterId: string): TheaterOperation<monapt.Option<TheaterFactory.ITheater>>;
 /**
@@ -100,7 +100,7 @@ export declare function findTheater(theaterId: string): TheaterOperation<monapt.
  * @param {string} filmId
  * @returns {FilmOperation<monapt.Option<Film>>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export declare function findFilm(filmId: string): FilmOperation<monapt.Option<FilmFactory.IFilm>>;
 /**
@@ -109,7 +109,7 @@ export declare function findFilm(filmId: string): FilmOperation<monapt.Option<Fi
  * @param {string} screenId
  * @returns {ScreenOperation<monapt.Option<Screen>>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export declare function findScreen(screenId: string): ScreenOperation<monapt.Option<ScreenFactory.IScreen>>;
 /**
@@ -118,6 +118,6 @@ export declare function findScreen(screenId: string): ScreenOperation<monapt.Opt
  * @param {string} performanceId
  * @returns {PerformanceOperation<monapt.Option<Performance>>}
  *
- * @memberOf MasterService
+ * @memberof service/master
  */
 export declare function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<PerformanceFactory.IPerformanceWithReferenceDetails>>;

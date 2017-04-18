@@ -1,7 +1,7 @@
 /**
  * 取引ファクトリー
  *
- * @namespace TransactionFactory
+ * @namespace factory/transaction
  *
  * @param {string} id
  * @param {TransactionStatus} status
@@ -12,6 +12,7 @@
  * @param {string} inquiry_pass
  * @param {TransactionQueuesStatus} queues_status
  */
+
 import * as _ from 'underscore';
 
 import ArgumentError from '../error/argument';
@@ -23,6 +24,11 @@ import * as TransactionInquiryKeyFactory from './transactionInquiryKey';
 import TransactionQueuesStatus from './transactionQueuesStatus';
 import TransactionStatus from './transactionStatus';
 
+/**
+ *
+ * @interface ITransaction
+ * @memberof tobereplaced$
+ */
 export interface ITransaction {
     id: string;
     /**
@@ -63,6 +69,11 @@ export interface ITransaction {
     queues_status: TransactionQueuesStatus;
 }
 
+/**
+ *
+ * @returns {ITransaction}
+ * @memberof tobereplaced$
+ */
 export function create(args: {
     id?: string;
     status: TransactionStatus;

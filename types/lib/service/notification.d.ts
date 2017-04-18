@@ -8,7 +8,7 @@ export declare type Operation<T> = () => Promise<T>;
  * @returns {Operation<void>}
  * @see https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
  *
- * @memberOf NotificationService
+ * @memberof service/notification
  */
 export declare function sendEmail(email: EmailNotificationFactory.IEmailNotification): Operation<void>;
 /**
@@ -17,5 +17,6 @@ export declare function sendEmail(email: EmailNotificationFactory.IEmailNotifica
  * @param {string} subject
  * @param {string} content
  * @see https://notify-bot.line.me/doc/ja/
+ * @memberof service/notification
  */
 export declare function report2developers(subject: string, content: string, imageThumbnail?: string, imageFullsize?: string): Operation<void>;

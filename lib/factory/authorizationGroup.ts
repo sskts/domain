@@ -1,7 +1,7 @@
 /**
  * 承認グループ
  *
- * @namespace AuthorizationGroup
+ * @namespace factory/authorizationGroup
  */
 
 type AuthorizationGroup =

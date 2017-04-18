@@ -2,8 +2,9 @@
  * キューサービス
  * キューの種類ごとに、実行するファンクションをひとつずつ定義しています
  *
- * @namespace QueueService
+ * @namespace service/queue
  */
+
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
@@ -30,6 +31,8 @@ const debug = createDebug('sskts-domain:service:queue');
 
 /**
  * キュー実行時のソート条件
+ *
+ * @ignore
  */
 const sortOrder4executionOfQueues = {
     count_tried: 1, // 試行回数の少なさ優先
@@ -39,8 +42,8 @@ const sortOrder4executionOfQueues = {
 /**
  * メール送信キュー実行
  *
- * @memberOf QueueService
  * @returns {QueueOperation<void>}
+ * @memberof service/queue
  */
 export function executeSendEmailNotification(): QueueOperation<void> {
     return async (queueAdapter: QueueAdapter) => {
@@ -87,8 +90,8 @@ export function executeSendEmailNotification(): QueueOperation<void> {
 /**
  * COA仮予約キャンセルキュー実行
  *
- * @memberOf QueueService
  * @returns {QueueOperation<void>}
+ * @memberof service/queue
  */
 export function executeCancelCOASeatReservationAuthorization(): QueueOperation<void> {
     return async (queueAdapter: QueueAdapter) => {
@@ -135,8 +138,8 @@ export function executeCancelCOASeatReservationAuthorization(): QueueOperation<v
 /**
  * GMO仮売上取消キュー実行
  *
- * @memberOf QueueService
  * @returns {QueueOperation<void>}
+ * @memberof service/queue
  */
 export function executeCancelGMOAuthorization(): QueueOperation<void> {
     return async (queueAdapter: QueueAdapter) => {
@@ -183,8 +186,8 @@ export function executeCancelGMOAuthorization(): QueueOperation<void> {
 /**
  * ムビチケ着券取消キュー実行
  *
- * @memberOf QueueService
  * @returns {QueueOperation<void>}
+ * @memberof service/queue
  */
 export function executeCancelMvtkAuthorization(): QueueOperation<void> {
     return async (queueAdapter: QueueAdapter) => {
@@ -231,8 +234,8 @@ export function executeCancelMvtkAuthorization(): QueueOperation<void> {
 /**
  * 取引照会無効化キュー実行
  *
- * @memberOf QueueService
  * @returns {QueueAndTransactionOperation<void>}
+ * @memberof service/queue
  */
 export function executeDisableTransactionInquiry(): QueueAndTransactionOperation<void> {
     return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
@@ -277,8 +280,8 @@ export function executeDisableTransactionInquiry(): QueueAndTransactionOperation
 /**
  * COA本予約キュー実行
  *
- * @memberOf QueueService
  * @returns {AssetAndQueueOperation<void>}
+ * @memberof service/queue
  */
 export function executeSettleCOASeatReservationAuthorization(): AssetAndOwnerAndQueueOperation<void> {
     return async (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, queueAdapter: QueueAdapter) => {
@@ -325,8 +328,8 @@ export function executeSettleCOASeatReservationAuthorization(): AssetAndOwnerAnd
 /**
  * GMO実売上キュー実行
  *
- * @memberOf QueueService
  * @returns {QueueOperation<void>}
+ * @memberof service/queue
  */
 export function executeSettleGMOAuthorization(): QueueOperation<void> {
     return async (queueAdapter: QueueAdapter) => {
@@ -373,8 +376,8 @@ export function executeSettleGMOAuthorization(): QueueOperation<void> {
 /**
  * ムビチケ資産移動キュー実行
  *
- * @memberOf QueueService
  * @returns {QueueOperation<void>}
+ * @memberof service/queue
  */
 export function executeSettleMvtkAuthorization(): QueueOperation<void> {
     return async (queueAdapter: QueueAdapter) => {
@@ -421,9 +424,9 @@ export function executeSettleMvtkAuthorization(): QueueOperation<void> {
 /**
  * リトライ
  *
- * @memberOf QueueService
  * @param {number} intervalInMinutes 最終試行日時から何分経過したキューをリトライするか
  * @returns {QueueOperation<void>}
+ * @memberof service/queue
  */
 export function retry(intervalInMinutes: number): QueueOperation<void> {
     return async (queueAdapter: QueueAdapter) => {
@@ -445,9 +448,9 @@ export function retry(intervalInMinutes: number): QueueOperation<void> {
 /**
  * 実行中止
  *
- * @memberOf QueueService
  * @param {number} intervalInMinutes 最終試行日時から何分経過したキューを中止するか
  * @returns {QueueOperation<void>}
+ * @memberof service/queue
  */
 export function abort(intervalInMinutes: number): QueueOperation<void> {
     return async (queueAdapter: QueueAdapter) => {

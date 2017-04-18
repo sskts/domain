@@ -18,7 +18,6 @@ const debug = createDebug('sskts-domain:adapter:transaction');
  * todo ITransactionにIOwnerが結合しているために、デフォルトで.populate('owner')したりしている
  * Ownerをjoinするしないを必要に応じて使い分けられるようにする
  *
- * @export
  * @class TransactionAdapter
  */
 export default class TransactionAdapter {

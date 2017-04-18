@@ -1,7 +1,7 @@
 /**
  * 取引キューステータス
  *
- * @namespace TransactionQueuesStatus
+ * @namespace factory/transactionQueuesStatus
  */
 declare type TransactionQueuesStatus = 'UNEXPORTED' | 'EXPORTING' | 'EXPORTED';
 declare namespace TransactionQueuesStatus {

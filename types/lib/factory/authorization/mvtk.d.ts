@@ -2,6 +2,7 @@ import * as AuthorizationFactory from '../authorization';
 /**
  * 券種情報
  * @interface IKnshInfo
+ * @memberof tobereplaced$
  */
 export interface IKnshInfo {
     knsh_typ: string;
@@ -10,6 +11,7 @@ export interface IKnshInfo {
 /**
  * 購入管理番号情報
  * @interface IKnyknrNoInfo
+ * @memberof tobereplaced$
  */
 export interface IKnyknrNoInfo {
     knyknr_no: string;
@@ -19,12 +21,14 @@ export interface IKnyknrNoInfo {
 /**
  * 座席情報
  * @interface IZskInfo
+ * @memberof tobereplaced$
  */
 export interface IZskInfo {
     zsk_cd: string;
 }
 /**
  * ムビチケ着券情報
+ * @memberof tobereplaced$
  */
 export interface IMvtkAuthorization extends AuthorizationFactory.IAuthorization {
     kgygish_cd: string;
@@ -40,6 +44,10 @@ export interface IMvtkAuthorization extends AuthorizationFactory.IAuthorization 
     zsk_info: IZskInfo[];
     skhn_cd: string;
 }
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export declare function create(args: {
     id?: string;
     price: number;

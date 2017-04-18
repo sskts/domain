@@ -1,16 +1,16 @@
 /**
  * 所有者ファクトリー
  *
- * @namespace OwnerFactory
+ * @namespace factory/owner
  */
 import OwnerGroup from './ownerGroup';
 /**
  * 所有者インターフェース
  *
- * @export
  * @interface IOwner
  * @param {string} id
  * @param {OwnerGroup} group 所有者グループ
+ * @memberof tobereplaced$
  */
 export interface IOwner {
     id: string;

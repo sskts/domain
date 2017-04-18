@@ -1,7 +1,7 @@
 /**
  * 承認グループ
  *
- * @namespace AuthorizationGroup
+ * @namespace factory/authorizationGroup
  */
 declare type AuthorizationGroup = 'ASSET' | 'COA_SEAT_RESERVATION' | 'GMO' | 'MVTK';
 declare namespace AuthorizationGroup {

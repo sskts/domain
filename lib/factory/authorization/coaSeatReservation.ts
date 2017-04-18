@@ -1,8 +1,9 @@
 /**
  * COA座席仮予約ファクトリー
  *
- * @namespace COASeatReservationAuthorizationFactory
+ * @namespace factory/authorization/coaSeatReservation
  */
+
 import * as _ from 'underscore';
 
 import ArgumentError from '../../error/argument';
@@ -24,6 +25,7 @@ import ObjectId from '../objectId';
  * @param {string} coa_time_begin
  * @param {string} coa_screen_code
  * @param {Asset.ISeatReservationAsset[]} assets 資産リスト(COA側では複数座席に対してひとつの仮予約番号が割り当てられるため)
+ * @memberof tobereplaced$
  */
 export interface ICOASeatReservationAuthorization extends AuthorizationFactory.IAuthorization {
     coa_tmp_reserve_num: number;
@@ -36,6 +38,10 @@ export interface ICOASeatReservationAuthorization extends AuthorizationFactory.I
     assets: SeatReservationAssetFactory.ISeatReservationAsset[];
 }
 
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export function create(args: {
     id?: string;
     price: number;

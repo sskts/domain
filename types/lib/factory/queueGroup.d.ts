@@ -1,7 +1,7 @@
 /**
  * キューグループ
  *
- * @namespace QueueGroup
+ * @namespace factory/queueGroup
  */
 declare type QueueGroup = 'SETTLE_AUTHORIZATION' | 'CANCEL_AUTHORIZATION' | 'PUSH_NOTIFICATION' | 'DISABLE_TRANSACTION_INQUIRY';
 declare namespace QueueGroup {

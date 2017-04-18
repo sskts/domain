@@ -4,7 +4,6 @@ import queueModel from './mongoose/model/queue';
 /**
  * キューアダプター
  *
- * @export
  * @class QueueAdapter
  */
 export default class QueueAdapter {

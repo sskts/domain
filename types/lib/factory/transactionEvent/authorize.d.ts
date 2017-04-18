@@ -6,10 +6,15 @@ import * as TransactionEventFactory from '../transactionEvent';
  * @interface AuthorizeTransactionEvent
  * @extends {TransactionEvent}
  * @param {Authorization} authorization
+ * @memberof tobereplaced$
  */
 export interface IAuthorizeTransactionEvent extends TransactionEventFactory.ITransactionEvent {
     authorization: Authorization.IAuthorization;
 }
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export declare function create(args: {
     id?: string;
     transaction: string;

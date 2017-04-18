@@ -1,8 +1,9 @@
 /**
  * Eメール通知ファクトリー
  *
- * @namespace EmailNotificationFactory
+ * @namespace factory/notification/email
  */
+
 import * as _ from 'underscore';
 import * as validator from 'validator';
 
@@ -15,6 +16,7 @@ import ObjectId from '../objectId';
 
 /**
  * Eメール通知インターフェース
+ * @memberof tobereplaced$
  *
  * @param {string} id
  * @param {string} from
@@ -46,6 +48,10 @@ export interface IEmailNotification extends NotificationFactory.INotification {
     send_at: Date;
 }
 
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export function create(args: {
     id?: string,
     // tslint:disable-next-line:no-reserved-keywords

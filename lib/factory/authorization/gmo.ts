@@ -1,8 +1,9 @@
 /**
  * GMOオーソリファクトリー
  *
- * @namespace GMOAuthorizationFactory
+ * @namespace factory/authorization/gmo
  */
+
 import * as _ from 'underscore';
 
 import * as AuthorizationFactory from '../authorization';
@@ -24,6 +25,7 @@ import ObjectId from '../objectId';
  * @param {string} gmo_access_pass
  * @param {string} gmo_job_cd
  * @param {string} gmo_pay_type
+ * @memberof tobereplaced$
  */
 export interface IGMOAuthorization extends AuthorizationFactory.IAuthorization {
     gmo_shop_id: string;
@@ -36,6 +38,10 @@ export interface IGMOAuthorization extends AuthorizationFactory.IAuthorization {
     gmo_pay_type: string;
 }
 
+/**
+ *
+ * @memberof tobereplaced$
+ */
 export function create(args: {
     id?: string;
     price: number;

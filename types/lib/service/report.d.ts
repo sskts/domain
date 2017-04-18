@@ -9,9 +9,15 @@ export interface IReportTransactionStatuses {
     numberOfTransactionsExpiredWithQueuesUnexported: number;
     numberOfQueuesUnexecuted: number;
 }
+/**
+ *
+ * @returns {QueueAndTransactionOperation<IReportTransactionStatuses>}
+ * @memberof service/report
+ */
 export declare function transactionStatuses(): QueueAndTransactionOperation<IReportTransactionStatuses>;
 /**
  * GMO実売上検索
+ * @memberof service/report
  */
 export declare function searchGMOSales(dateFrom: Date, dateTo: Date): (gmoNotificationAdapter: GMONotificationAdapter) => Promise<{
     shop_id: string;

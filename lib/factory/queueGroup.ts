@@ -1,7 +1,7 @@
 /**
  * キューグループ
  *
- * @namespace QueueGroup
+ * @namespace factory/queueGroup
  */
 
 type QueueGroup =

@@ -4,7 +4,6 @@ import theaterModel from './mongoose/model/theater';
 /**
  * 劇場アダプター
  *
- * @export
  * @class TheaterAdapter
  */
 export default class TheaterAdapter {

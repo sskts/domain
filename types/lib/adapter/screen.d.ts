@@ -4,7 +4,6 @@ import screenModel from './mongoose/model/screen';
 /**
  * スクリーンアダプター
  *
- * @export
  * @class ScreenAdapter
  */
 export default class ScreenAdapter {

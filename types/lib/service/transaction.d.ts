@@ -11,16 +11,16 @@ export declare type TransactionOperation<T> = (transactionAdapter: TransactionAd
 /**
  * 開始準備のできた取引を用意する
  *
- * @export
  * @param {number} length 取引数
  * @param {number} expiresInSeconds 現在から何秒後に期限切れにするか
+ * @memberof service/transaction
  */
 export declare function prepare(length: number, expiresInSeconds: number): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 取引を強制的に開始する
  *
- * @export
  * @param {Date} expiresAt
+ * @memberof service/transaction
  */
 export declare function startForcibly(expiresAt: Date): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<TransactionFactory.ITransaction>;
 /**
@@ -29,7 +29,7 @@ export declare function startForcibly(expiresAt: Date): (ownerAdapter: OwnerAdap
  * @param {Date} expiresAt
  * @returns {OwnerAndTransactionOperation<Promise<monapt.Option<Transaction.ITransaction>>>}
  *
- * @memberOf TransactionService
+ * @memberof service/transaction
  */
 export declare function startIfPossible(expiresAt: Date): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<monapt.Option<TransactionFactory.ITransaction>>;
 /**
@@ -38,21 +38,24 @@ export declare function startIfPossible(expiresAt: Date): (ownerAdapter: OwnerAd
  * @param {TransactionInquiryKey} key
  * @returns {TransactionOperation<void>}
  *
- * @memberOf TransactionService
+ * @memberof service/transaction
  */
 export declare function makeInquiry(key: TransactionInquiryKeyFactory.ITransactionInquiryKey): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<TransactionFactory.ITransaction>>;
 /**
  * 不要な取引を削除する
+ * @memberof service/transaction
  */
 export declare function clean(): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 取引を期限切れにする
+ * @memberof service/transaction
  */
 export declare function makeExpired(): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * ひとつの取引のキューをエクスポートする
  *
  * @param {TransactionStatus} statu 取引ステータス
+ * @memberof service/transaction
  */
 export declare function exportQueues(status: TransactionStatus): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
@@ -61,14 +64,14 @@ export declare function exportQueues(status: TransactionStatus): (queueAdapter: 
  * @param {string} id
  * @returns {TransactionAndQueueOperation<void>}
  *
- * @memberOf TransactionService
+ * @memberof service/transaction
  */
 export declare function exportQueuesById(id: string): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * キューエクスポートリトライ
  * todo updated_atを基準にしているが、キューエクスポートトライ日時を持たせた方が安全か？
  *
- * @export
  * @param {number} intervalInMinutes
+ * @memberof service/transaction
  */
 export declare function reexportQueues(intervalInMinutes: number): (transactionAdapter: TransactionAdapter) => Promise<void>;
