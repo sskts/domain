@@ -12,16 +12,20 @@ import QueueAdapter from '../../lib/adapter/queue';
 import TelemetryAdapter from '../../lib/adapter/telemetry';
 import TransactionAdapter from '../../lib/adapter/transaction';
 
+import * as GMOAuthorizationFactory from '../../lib/factory/authorization/gmo';
+import * as TransactionFactory from '../../lib/factory/transaction';
+import * as AuthorizeTransactionEventFactory from '../../lib/factory/transactionEvent/authorize';
+import * as TransactionInquiryKeyFactory from '../../lib/factory/transactionInquiryKey';
+import TransactionStatus from '../../lib/factory/transactionStatus';
+
 import * as ReportService from '../../lib/service/report';
 
-let connection: mongoose.Connection;
-before(async () => {
-    connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-    const gmoNotificationAdapter = new GMONotificationAdapter(connection);
-    await gmoNotificationAdapter.gmoNotificationModel.remove({}).exec();
-});
-
 describe('レポートサービス 測定データ作成', () => {
+    let connection: mongoose.Connection;
+    before(async () => {
+        connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    });
+
     it('ok', async () => {
         await ReportService.createTelemetry()(
             new QueueAdapter(connection),
@@ -32,6 +36,11 @@ describe('レポートサービス 測定データ作成', () => {
 });
 
 describe('レポートサービス 取引状態', () => {
+    let connection: mongoose.Connection;
+    before(async () => {
+        connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    });
+
     it('ok', async () => {
         await ReportService.transactionStatuses()(
             new QueueAdapter(connection),
@@ -41,6 +50,13 @@ describe('レポートサービス 取引状態', () => {
 });
 
 describe('レポートサービス GMO実売上検索', () => {
+    let connection: mongoose.Connection;
+    before(async () => {
+        connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+        const gmoNotificationAdapter = new GMONotificationAdapter(connection);
+        await gmoNotificationAdapter.gmoNotificationModel.remove({}).exec();
+    });
+
     it('ok', async () => {
         // tslint:disable-next-line:no-magic-numbers
         const dateFrom = moment().add(-10, 'minutes').toDate();
@@ -99,5 +115,95 @@ describe('レポートサービス GMO実売上検索', () => {
             await notificationDoc.remove();
         });
         await Promise.all(promises);
+    });
+});
+
+describe('レポートサービス GMO実売上診察', () => {
+    let connection: mongoose.Connection;
+    before(async () => {
+        connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+        const gmoNotificationAdapter = new GMONotificationAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+        await gmoNotificationAdapter.gmoNotificationModel.remove({}).exec();
+        await transactionAdapter.transactionModel.remove({}).exec();
+        await transactionAdapter.transactionEventModel.remove({}).exec();
+    });
+
+    it('ok', async () => {
+        const reserveNum = 123;
+        const shopId = '123';
+        const orderId = '201704201180000012300';
+        const accessId = '12345';
+        const amount = 12345;
+
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テスト取引作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.CLOSED,
+            owners: [],
+            // tslint:disable-next-line:no-magic-numbers
+            expires_at: moment().add(15, 'minutes').toDate(),
+            started_at: moment().toDate(),
+            closed_at: moment().toDate(),
+            inquiry_key: TransactionInquiryKeyFactory.create({
+                theater_code: '118',
+                reserve_num: reserveNum,
+                tel: '09012345678'
+            })
+        });
+        // テスト取引イベント作成
+        const transactionEvent = AuthorizeTransactionEventFactory.create({
+            transaction: transaction.id,
+            occurred_at: moment().toDate(),
+            authorization: GMOAuthorizationFactory.create({
+                price: amount,
+                owner_from: 'xxx',
+                owner_to: 'xxx',
+                gmo_shop_id: shopId,
+                gmo_shop_pass: 'xxx',
+                gmo_order_id: orderId,
+                gmo_amount: amount,
+                gmo_access_id: accessId,
+                gmo_access_pass: 'xxx',
+                gmo_job_cd: 'AUTH',
+                gmo_pay_type: '0'
+            })
+        });
+        const transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
+            transaction.id,
+            transaction,
+            { new: true, upsert: true }
+        ).exec();
+        const transactionEventDoc = await transactionAdapter.transactionEventModel.findByIdAndUpdate(
+            transactionEvent.id,
+            transactionEvent,
+            { new: true, upsert: true }
+        ).exec();
+
+        const notification = {
+            shop_id: shopId,
+            access_id: accessId,
+            order_id: orderId,
+            status: 'SALES',
+            job_cd: 'SALES',
+            amount: amount.toString(),
+            tax: '0',
+            currency: 'JPN',
+            forward: 'xxx',
+            method: '1',
+            pay_times: '',
+            tran_id: 'xxx',
+            approve: 'xxx',
+            tran_date: 'xxx',
+            err_code: '',
+            err_info: '',
+            pay_type: '0'
+        };
+
+        await ReportService.examineGMOSales(notification)(transactionAdapter);
+
+        await transactionDoc.remove();
+        await transactionEventDoc.remove();
     });
 });
