@@ -57,11 +57,11 @@ function main() {
         const anonymousOwnerId = anonymousOwner.id;
         // 空席なくなったら変更する
         const theaterCode = '118';
-        const dateJouei = '20170419';
-        const titleCode = '16250';
+        const dateJouei = '20170519';
+        const titleCode = '99500';
         const titleBranchNum = '0';
-        const timeBegin = '2130';
-        const screenCode = '90';
+        const timeBegin = '0920';
+        const screenCode = '60';
         // 販売可能チケット検索
         const salesTicketResult = yield COA.ReserveService.salesTicket({
             theater_code: theaterCode,

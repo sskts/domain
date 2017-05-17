@@ -49,6 +49,7 @@ describe('在庫サービス 取引照会無効化', () => {
     }));
 });
 describe('在庫サービス 座席予約資産移動', () => {
+    // tslint:disable-next-line:max-func-body-length
     it('成功', () => __awaiter(this, void 0, void 0, function* () {
         const assetAdapter = new asset_1.default(connection);
         const ownerAdapter = new owner_1.default(connection);
@@ -136,11 +137,13 @@ describe('在庫サービス 座席予約資産移動', () => {
         // 資産の存在を確認
         const asset1Doc = yield assetAdapter.model.findById('58e344b236a44424c0997daf').exec();
         assert.notEqual(asset1Doc, null);
+        assert.equal(asset1Doc.get('mvtk_sales_price'), 0);
         assert.equal(asset1Doc.get('performance'), '001201701208513021010');
         assert.equal(asset1Doc.get('seat_code'), 'Ａ－３');
         assert.equal(asset1Doc.get('ownership').owner, '58e344ac36a44424c0997dad');
         const asset2Doc = yield assetAdapter.model.findById('58e344b236a44424c0997db1').exec();
         assert.notEqual(asset2Doc, null);
+        assert.equal(asset2Doc.get('mvtk_sales_price'), 0);
         assert.equal(asset2Doc.get('performance'), '001201701208513021010');
         assert.equal(asset2Doc.get('seat_code'), 'Ａ－４');
         assert.equal(asset2Doc.get('ownership').owner, '58e344ac36a44424c0997dad');

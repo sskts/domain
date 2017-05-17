@@ -105,6 +105,7 @@ export interface ISeatReservationAsset extends AssetFactory.IAsset {
  * @returns {SeatReservationAsset}
  * @memberof tobereplaced$
  */
+// tslint:disable-next-line:cyclomatic-complexity
 export function create(args: {
     id?: string,
     ownership: OwnershipFactory.IOwnership;
@@ -128,12 +129,15 @@ export function create(args: {
     mvtk_kbn_kensyu: string;
     mvtk_sales_price: number;
 }): ISeatReservationAsset {
-    if (_.isEmpty(args.ticket_name.en)) throw new ArgumentNullError('ticket_name.en');
-    if (_.isEmpty(args.ticket_name.ja)) throw new ArgumentNullError('ticket_name.ja');
+    if (!_.isString(args.section)) throw new ArgumentError('section', 'section should be string');
+    if (!_.isString(args.ticket_name_kana)) throw new ArgumentError('ticket_name_kana', 'ticket_name_kana should be string');
+    if (!_.isString(args.mvtk_num)) throw new ArgumentError('mvtk_num', 'mvtk_num should be string');
+    if (!_.isString(args.ticket_name.en)) throw new ArgumentError('ticket_name.en', 'ticket_name.en should be string');
 
     if (_.isEmpty(args.performance)) throw new ArgumentNullError('performance');
     if (_.isEmpty(args.seat_code)) throw new ArgumentNullError('seat_code');
     if (_.isEmpty(args.ticket_code)) throw new ArgumentNullError('ticket_code');
+    if (_.isEmpty(args.ticket_name.ja)) throw new ArgumentNullError('ticket_name.ja');
     if (_.isEmpty(args.kbn_eisyahousiki)) throw new ArgumentNullError('kbn_eisyahousiki');
     if (_.isEmpty(args.mvtk_kbn_denshiken)) throw new ArgumentNullError('mvtk_kbn_denshiken');
     if (_.isEmpty(args.mvtk_kbn_maeuriken)) throw new ArgumentNullError('mvtk_kbn_maeuriken');
