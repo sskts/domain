@@ -1,5 +1,8 @@
 import * as mongoose from 'mongoose';
+
 import theaterModel from './theater';
+
+import MultilingualStringSchemaType from '../schemaTypes/multilingualString';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
@@ -16,10 +19,7 @@ const schema = new mongoose.Schema(
             ref: theaterModel.modelName
         },
         coa_screen_code: String,
-        name: {
-            ja: String,
-            en: String
-        },
+        name: MultilingualStringSchemaType,
         seats_number: Number, // 座席合計数
         seats_numbers_by_seat_grade: [{ // 座席グレードごとの座席数
             _id: false,
@@ -30,20 +30,14 @@ const schema = new mongoose.Schema(
             {
                 _id: false,
                 code: String,
-                name: {
-                    ja: String,
-                    en: String
-                },
+                name: MultilingualStringSchemaType,
                 seats: [
                     {
                         _id: false,
                         code: String, // 座席コード
                         grade: {
                             code: String, // 座席グレードコード
-                            name: {
-                                ja: String, // 座席レベル名
-                                en: String // 座席レベル名(英語)
-                            },
+                            name: MultilingualStringSchemaType,
                             additional_charge: Number // 追加料金
                         }
                     }

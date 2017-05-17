@@ -1,5 +1,7 @@
 import * as mongoose from 'mongoose';
 
+import MultilingualStringSchemaType from '../schemaTypes/multilingualString';
+
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
 /**
@@ -10,15 +12,9 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 const schema = new mongoose.Schema(
     {
         _id: String,
-        name: {
-            ja: String,
-            en: String
-        },
+        name: MultilingualStringSchemaType,
         name_kana: String,
-        address: {
-            ja: String,
-            en: String
-        },
+        address: MultilingualStringSchemaType,
         gmo_site_id: String, // 劇場ごとにGMOショップが異なる可能性があるため
         gmo_shop_id: String, // 劇場ごとにGMOショップが異なる可能性があるため
         gmo_shop_pass: String // 劇場ごとにGMOショップが異なる可能性があるため

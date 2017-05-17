@@ -1,5 +1,8 @@
 import * as mongoose from 'mongoose';
+
 import theaterModel from './theater';
+
+import MultilingualStringSchemaType from '../schemaTypes/multilingualString';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
@@ -15,10 +18,7 @@ const schema = new mongoose.Schema(
             type: String,
             ref: theaterModel.modelName
         },
-        name: {
-            ja: String,
-            en: String
-        },
+        name: MultilingualStringSchemaType,
         name_kana: String, // 作品タイトル名（カナ）
         name_short: String, // 作品タイトル名省略
         name_original: String, // 原題

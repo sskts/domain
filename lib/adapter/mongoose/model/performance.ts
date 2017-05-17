@@ -1,7 +1,10 @@
 import * as mongoose from 'mongoose';
+
 import filmModel from './film';
 import screenModel from './screen';
 import theaterModel from './theater';
+
+import MultilingualStringSchemaType from '../schemaTypes/multilingualString';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
@@ -17,26 +20,17 @@ const schema = new mongoose.Schema(
             type: String,
             ref: theaterModel.modelName
         },
-        theater_name: {
-            ja: String,
-            en: String
-        },
+        theater_name: MultilingualStringSchemaType,
         screen: {
             type: String,
             ref: screenModel.modelName
         },
-        screen_name: {
-            ja: String,
-            en: String
-        },
+        screen_name: MultilingualStringSchemaType,
         film: {
             type: String,
             ref: filmModel.modelName
         },
-        film_name: {
-            ja: String,
-            en: String
-        },
+        film_name: MultilingualStringSchemaType,
         day: String, // 上映日(※日付は西暦8桁 "YYYYMMDD")
         // time_open: String, // 開演時刻
         time_start: String, // 上映開始時刻

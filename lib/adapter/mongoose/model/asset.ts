@@ -1,6 +1,9 @@
 import * as mongoose from 'mongoose';
+
 import ownerModel from './owner';
 import performanceModel from './performance';
+
+import MultilingualStringSchemaType from '../schemaTypes/multilingualString';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
@@ -32,10 +35,7 @@ const schema = new mongoose.Schema(
         section: String,
         seat_code: String,
         ticket_code: String,
-        ticket_name: {
-            ja: String,
-            en: String
-        },
+        ticket_name: MultilingualStringSchemaType,
         ticket_name_kana: String,
         std_price: Number,
         add_price: Number,

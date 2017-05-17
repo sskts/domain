@@ -1,5 +1,8 @@
 import * as mongoose from 'mongoose';
+
 import theaterModel from './theater';
+
+import MultilingualStringSchemaType from '../schemaTypes/multilingualString';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
@@ -20,12 +23,7 @@ const schema = new mongoose.Schema(
             required: true
         },
         code: String, // チケットコード
-        name: { // チケット名
-            type: {
-                ja: String,
-                en: String
-            }
-        },
+        name: MultilingualStringSchemaType,
         name_kana: String // チケット名(カナ)
     },
     {

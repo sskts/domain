@@ -1,5 +1,7 @@
 import * as mongoose from 'mongoose';
 
+import MultilingualStringSchemaType from '../schemaTypes/multilingualString';
+
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
 /**
@@ -10,16 +12,11 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 const schema = new mongoose.Schema(
     {
         group: String,
-
         name_first: String,
         name_last: String,
         email: String,
         tel: String,
-
-        name: {
-            ja: String,
-            en: String
-        }
+        name: MultilingualStringSchemaType
     },
     {
         collection: 'owners',
