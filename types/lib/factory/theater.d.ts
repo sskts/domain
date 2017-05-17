@@ -4,7 +4,7 @@
  * @namespace factory/theater
  */
 import * as COA from '@motionpicture/coa-service';
-import MultilingualString from './multilingualString';
+import IMultilingualString from './multilingualString';
 import TheaterWebsiteGroup from './theaterWebsiteGroup';
 /**
  * 必須フィールド
@@ -15,7 +15,7 @@ import TheaterWebsiteGroup from './theaterWebsiteGroup';
  */
 export interface IRequiredFields {
     id: string;
-    name: MultilingualString;
+    name: IMultilingualString;
     name_kana: string;
 }
 /**
@@ -45,7 +45,7 @@ export interface IWebsite {
     /**
      * ウェブサイト名
      */
-    name: MultilingualString;
+    name: IMultilingualString;
     /**
      * URL
      */
@@ -58,7 +58,7 @@ export interface IWebsite {
  * @memberof tobereplaced$
  */
 export interface IOptionalFields {
-    address: MultilingualString;
+    address: IMultilingualString;
     /**
      * ウェブサイト情報リスト
      */

@@ -15,7 +15,7 @@
 
 import * as COA from '@motionpicture/coa-service';
 import * as FilmFactory from './film';
-import MultilingualString from './multilingualString';
+import IMultilingualString from './multilingualString';
 import * as ScreenFactory from './screen';
 
 /**
@@ -37,16 +37,16 @@ export interface IReferences {
 export interface IReferencesWithDetails {
     theater: {
         id: string;
-        name: MultilingualString;
+        name: IMultilingualString;
     };
     screen: {
         id: string;
-        name: MultilingualString;
+        name: IMultilingualString;
 
     };
     film: {
         id: string;
-        name: MultilingualString;
+        name: IMultilingualString;
         name_kana: string;
         name_short: string;
         name_original: string;

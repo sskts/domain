@@ -54,6 +54,11 @@ describe('在庫サービス 座席予約資産移動', () => {
         const authorization: CoaSeatReservationAuthorizationFactory.ICOASeatReservationAuthorization = {
             assets: [
                 {
+                    mvtk_num: '',
+                    mvtk_kbn_denshiken: '00',
+                    mvtk_kbn_maeuriken: '00',
+                    mvtk_kbn_kensyu: '00',
+                    mvtk_sales_price: 0,
                     kbn_eisyahousiki: '00',
                     add_glasses: 0,
                     mvtk_app_price: 0,
@@ -62,8 +67,10 @@ describe('在庫サービス 座席予約資産移動', () => {
                     add_price: 1000,
                     std_price: 1800,
                     ticket_name_kana: 'トウジツイッパン',
-                    ticket_name_en: 'General Price',
-                    ticket_name_ja: '当日一般',
+                    ticket_name: {
+                        en: 'General Price',
+                        ja: '当日一般'
+                    },
                     ticket_code: '10',
                     seat_code: 'Ａ－３',
                     section: '   ',
@@ -79,6 +86,11 @@ describe('在庫サービス 座席予約資産移動', () => {
                     id: '58e344b236a44424c0997daf'
                 },
                 {
+                    mvtk_num: '',
+                    mvtk_kbn_denshiken: '00',
+                    mvtk_kbn_maeuriken: '00',
+                    mvtk_kbn_kensyu: '00',
+                    mvtk_sales_price: 0,
                     kbn_eisyahousiki: '00',
                     add_glasses: 0,
                     mvtk_app_price: 0,
@@ -87,8 +99,10 @@ describe('在庫サービス 座席予約資産移動', () => {
                     add_price: 1000,
                     std_price: 1800,
                     ticket_name_kana: 'トウジツイッパン',
-                    ticket_name_en: 'General Price',
-                    ticket_name_ja: '当日一般',
+                    ticket_name: {
+                        en: 'General Price',
+                        ja: '当日一般'
+                    },
                     ticket_code: '10',
                     seat_code: 'Ａ－４',
                     section: '   ',

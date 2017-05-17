@@ -1,6 +1,6 @@
 import * as monapt from 'monapt';
 import * as FilmFactory from '../factory/film';
-import MultilingualString from '../factory/multilingualString';
+import IMultilingualString from '../factory/multilingualString';
 import * as PerformanceFactory from '../factory/performance';
 import * as ScreenFactory from '../factory/screen';
 import * as TheaterFactory from '../factory/theater';
@@ -23,15 +23,15 @@ export interface ISearchPerformancesResult {
     id: string;
     theater: {
         id: string;
-        name: MultilingualString;
+        name: IMultilingualString;
     };
     screen: {
         id: string;
-        name: MultilingualString;
+        name: IMultilingualString;
     };
     film: {
         id: string;
-        name: MultilingualString;
+        name: IMultilingualString;
     };
     day: string;
     time_start: string;

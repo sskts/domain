@@ -58,6 +58,7 @@ export function prepare(length: number, expiresInSeconds: number) {
                 expires_at: expiresAt
             });
             (<any>transaction)._id = transaction.id;
+
             return transaction;
         });
 
@@ -153,6 +154,7 @@ export function startIfPossible(expiresAt: Date) {
         } else {
             const transaction = <TransactionFactory.ITransaction>transactionDoc.toObject();
             transaction.owners = [promoter, anonymousOwner];
+
             return monapt.Option(transaction);
         }
     };
@@ -168,6 +170,7 @@ export function startIfPossible(expiresAt: Date) {
  */
 export function makeInquiry(key: TransactionInquiryKeyFactory.ITransactionInquiryKey) {
     debug('finding a transaction...', key);
+
     return async (transactionAdapter: TransactionAdapter) => {
         const doc = await transactionAdapter.transactionModel.findOne({
             'inquiry_key.theater_code': key.theater_code,

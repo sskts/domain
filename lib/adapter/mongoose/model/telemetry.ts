@@ -1,5 +1,7 @@
 import * as mongoose from 'mongoose';
 
+const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
+
 /**
  * 測定スキーマ
  *
@@ -22,7 +24,7 @@ const schema = new mongoose.Schema(
         collection: 'telemetries',
         id: true,
         read: 'primaryPreferred',
-        safe: <any>{ j: 1, w: 'majority', wtimeout: 10000 },
+        safe: safe,
         timestamps: {
             createdAt: 'created_at',
             updatedAt: 'updated_at'

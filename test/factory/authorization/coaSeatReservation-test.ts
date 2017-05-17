@@ -23,8 +23,10 @@ describe('COA仮予約ファクトリー', () => {
                 section: 'xxx',
                 seat_code: 'xxx',
                 ticket_code: 'xxx',
-                ticket_name_ja: 'xxx',
-                ticket_name_en: 'xxx',
+                ticket_name: {
+                    en: 'xxx',
+                    ja: 'xxx'
+                },
                 ticket_name_kana: 'xxx',
                 std_price: 123,
                 add_price: 123,
@@ -32,7 +34,12 @@ describe('COA仮予約ファクトリー', () => {
                 sale_price: 123,
                 mvtk_app_price: 0,
                 add_glasses: 0,
-                kbn_eisyahousiki: '00'
+                kbn_eisyahousiki: '00',
+                mvtk_num: '',
+                mvtk_kbn_denshiken: '00',
+                mvtk_kbn_maeuriken: '00',
+                mvtk_kbn_kensyu: '00',
+                mvtk_sales_price: 0
             })
         ];
 
@@ -64,8 +71,10 @@ describe('COA仮予約ファクトリー', () => {
                 section: 'xxx',
                 seat_code: 'xxx',
                 ticket_code: 'xxx',
-                ticket_name_ja: 'xxx',
-                ticket_name_en: 'xxx',
+                ticket_name: {
+                    en: 'xxx',
+                    ja: 'xxx'
+                },
                 ticket_name_kana: 'xxx',
                 std_price: 123,
                 add_price: 123,
@@ -73,7 +82,12 @@ describe('COA仮予約ファクトリー', () => {
                 sale_price: 123,
                 mvtk_app_price: 0,
                 add_glasses: 0,
-                kbn_eisyahousiki: '00'
+                kbn_eisyahousiki: '00',
+                mvtk_num: '',
+                mvtk_kbn_denshiken: '00',
+                mvtk_kbn_maeuriken: '00',
+                mvtk_kbn_kensyu: '00',
+                mvtk_sales_price: 0
             })
         ];
 
@@ -112,8 +126,10 @@ describe('COA仮予約ファクトリー', () => {
                 section: 'xxx',
                 seat_code: 'xxx',
                 ticket_code: 'xxx',
-                ticket_name_ja: 'xxx',
-                ticket_name_en: 'xxx',
+                ticket_name: {
+                    en: 'xxx',
+                    ja: 'xxx'
+                },
                 ticket_name_kana: 'xxx',
                 std_price: 123,
                 add_price: 123,
@@ -121,7 +137,12 @@ describe('COA仮予約ファクトリー', () => {
                 sale_price: 123,
                 mvtk_app_price: 0,
                 add_glasses: 0,
-                kbn_eisyahousiki: '00'
+                kbn_eisyahousiki: '00',
+                mvtk_num: '',
+                mvtk_kbn_denshiken: '00',
+                mvtk_kbn_maeuriken: '00',
+                mvtk_kbn_kensyu: '00',
+                mvtk_sales_price: 0
             })
         ];
 
@@ -160,8 +181,10 @@ describe('COA仮予約ファクトリー', () => {
                 section: 'xxx',
                 seat_code: 'xxx',
                 ticket_code: 'xxx',
-                ticket_name_ja: 'xxx',
-                ticket_name_en: 'xxx',
+                ticket_name: {
+                    en: 'xxx',
+                    ja: 'xxx'
+                },
                 ticket_name_kana: 'xxx',
                 std_price: 123,
                 add_price: 123,
@@ -169,7 +192,12 @@ describe('COA仮予約ファクトリー', () => {
                 sale_price: 123,
                 mvtk_app_price: 0,
                 add_glasses: 0,
-                kbn_eisyahousiki: '00'
+                kbn_eisyahousiki: '00',
+                mvtk_num: '',
+                mvtk_kbn_denshiken: '00',
+                mvtk_kbn_maeuriken: '00',
+                mvtk_kbn_kensyu: '00',
+                mvtk_sales_price: 0
             })
         ];
 
@@ -208,8 +236,10 @@ describe('COA仮予約ファクトリー', () => {
                 section: 'xxx',
                 seat_code: 'xxx',
                 ticket_code: 'xxx',
-                ticket_name_ja: 'xxx',
-                ticket_name_en: 'xxx',
+                ticket_name: {
+                    en: 'xxx',
+                    ja: 'xxx'
+                },
                 ticket_name_kana: 'xxx',
                 std_price: 123,
                 add_price: 123,
@@ -217,7 +247,12 @@ describe('COA仮予約ファクトリー', () => {
                 sale_price: 123,
                 mvtk_app_price: 0,
                 add_glasses: 0,
-                kbn_eisyahousiki: '00'
+                kbn_eisyahousiki: '00',
+                mvtk_num: '',
+                mvtk_kbn_denshiken: '00',
+                mvtk_kbn_maeuriken: '00',
+                mvtk_kbn_kensyu: '00',
+                mvtk_sales_price: 0
             })
         ];
 

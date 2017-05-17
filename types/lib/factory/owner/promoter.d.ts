@@ -3,7 +3,7 @@
  *
  * @namespace factory/owner/promoter
  */
-import MultilingualString from '../../factory/multilingualString';
+import IMultilingualString from '../../factory/multilingualString';
 import * as OwnerFactory from '../owner';
 /**
  *
@@ -13,7 +13,7 @@ import * as OwnerFactory from '../owner';
  */
 export interface IPromoterOwner extends OwnerFactory.IOwner {
     id: string;
-    name: MultilingualString;
+    name: IMultilingualString;
 }
 /**
  * 興行所有者オブジェクトを作成する
@@ -25,5 +25,5 @@ export interface IPromoterOwner extends OwnerFactory.IOwner {
  */
 export declare function create(args: {
     id?: string;
-    name?: MultilingualString;
+    name?: IMultilingualString;
 }): IPromoterOwner;

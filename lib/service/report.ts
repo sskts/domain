@@ -192,7 +192,7 @@ export function examineGMOSales(notification: ICreditGMONotification) {
         }
 
         if (!_.isEmpty(notification.err_code)) {
-            throw new Error('err_code exists' + notification.err_code);
+            throw new Error(`err_code exists${notification.err_code}`);
         }
 
         // オーダーIDからCOA予約番号を取得

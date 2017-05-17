@@ -22,8 +22,10 @@ describe('座席予約資産ファクトリー', () => {
                 section: 'xxx',
                 seat_code: 'xxx',
                 ticket_code: 'xxx',
-                ticket_name_ja: 'xxx',
-                ticket_name_en: 'xxx',
+                ticket_name: {
+                    en: 'xxx',
+                    ja: 'xxx'
+                },
                 ticket_name_kana: 'xxx',
                 std_price: 123,
                 add_price: 123,
@@ -31,7 +33,12 @@ describe('座席予約資産ファクトリー', () => {
                 sale_price: 123,
                 mvtk_app_price: 0,
                 add_glasses: 0,
-                kbn_eisyahousiki: '00'
+                kbn_eisyahousiki: '00',
+                mvtk_num: '',
+                mvtk_kbn_denshiken: '00',
+                mvtk_kbn_maeuriken: '00',
+                mvtk_kbn_kensyu: '00',
+                mvtk_sales_price: 0
             });
         });
     });
@@ -48,8 +55,10 @@ describe('座席予約資産ファクトリー', () => {
                     section: 'xxx',
                     seat_code: 'xxx',
                     ticket_code: 'xxx',
-                    ticket_name_ja: 'xxx',
-                    ticket_name_en: 'xxx',
+                    ticket_name: {
+                        en: 'xxx',
+                        ja: 'xxx'
+                    },
                     ticket_name_kana: 'xxx',
                     std_price: 123,
                     add_price: 123,
@@ -57,7 +66,12 @@ describe('座席予約資産ファクトリー', () => {
                     sale_price: 123,
                     mvtk_app_price: 0,
                     add_glasses: 0,
-                    kbn_eisyahousiki: '00'
+                    kbn_eisyahousiki: '00',
+                    mvtk_num: '',
+                    mvtk_kbn_denshiken: '00',
+                    mvtk_kbn_maeuriken: '00',
+                    mvtk_kbn_kensyu: '00',
+                    mvtk_sales_price: 0
                 });
 
             },
@@ -81,8 +95,10 @@ describe('座席予約資産ファクトリー', () => {
                     section: 'xxx',
                     seat_code: '',
                     ticket_code: 'xxx',
-                    ticket_name_ja: 'xxx',
-                    ticket_name_en: 'xxx',
+                    ticket_name: {
+                        en: 'xxx',
+                        ja: 'xxx'
+                    },
                     ticket_name_kana: 'xxx',
                     std_price: 123,
                     add_price: 123,
@@ -90,7 +106,12 @@ describe('座席予約資産ファクトリー', () => {
                     sale_price: 123,
                     mvtk_app_price: 0,
                     add_glasses: 0,
-                    kbn_eisyahousiki: '00'
+                    kbn_eisyahousiki: '00',
+                    mvtk_num: '',
+                    mvtk_kbn_denshiken: '00',
+                    mvtk_kbn_maeuriken: '00',
+                    mvtk_kbn_kensyu: '00',
+                    mvtk_sales_price: 0
                 });
 
             },
@@ -114,8 +135,10 @@ describe('座席予約資産ファクトリー', () => {
                     section: 'xxx',
                     seat_code: 'xxx',
                     ticket_code: 'xxx',
-                    ticket_name_ja: 'xxx',
-                    ticket_name_en: 'xxx',
+                    ticket_name: {
+                        en: 'xxx',
+                        ja: 'xxx'
+                    },
                     ticket_name_kana: 'xxx',
                     std_price: <any>'123',
                     add_price: 123,
@@ -123,7 +146,12 @@ describe('座席予約資産ファクトリー', () => {
                     sale_price: 123,
                     mvtk_app_price: 0,
                     add_glasses: 0,
-                    kbn_eisyahousiki: '00'
+                    kbn_eisyahousiki: '00',
+                    mvtk_num: '',
+                    mvtk_kbn_denshiken: '00',
+                    mvtk_kbn_maeuriken: '00',
+                    mvtk_kbn_kensyu: '00',
+                    mvtk_sales_price: 0
                 });
 
             },
@@ -147,8 +175,10 @@ describe('座席予約資産ファクトリー', () => {
                     section: 'xxx',
                     seat_code: 'xxx',
                     ticket_code: 'xxx',
-                    ticket_name_ja: 'xxx',
-                    ticket_name_en: 'xxx',
+                    ticket_name: {
+                        en: 'xxx',
+                        ja: 'xxx'
+                    },
                     ticket_name_kana: 'xxx',
                     std_price: 123,
                     add_price: <any>'123',
@@ -156,7 +186,12 @@ describe('座席予約資産ファクトリー', () => {
                     sale_price: 123,
                     mvtk_app_price: 0,
                     add_glasses: 0,
-                    kbn_eisyahousiki: '00'
+                    kbn_eisyahousiki: '00',
+                    mvtk_num: '',
+                    mvtk_kbn_denshiken: '00',
+                    mvtk_kbn_maeuriken: '00',
+                    mvtk_kbn_kensyu: '00',
+                    mvtk_sales_price: 0
                 });
 
             },
@@ -180,8 +215,10 @@ describe('座席予約資産ファクトリー', () => {
                     section: 'xxx',
                     seat_code: 'xxx',
                     ticket_code: 'xxx',
-                    ticket_name_ja: 'xxx',
-                    ticket_name_en: 'xxx',
+                    ticket_name: {
+                        en: 'xxx',
+                        ja: 'xxx'
+                    },
                     ticket_name_kana: 'xxx',
                     std_price: 123,
                     add_price: 123,
@@ -189,7 +226,12 @@ describe('座席予約資産ファクトリー', () => {
                     sale_price: 123,
                     mvtk_app_price: 0,
                     add_glasses: 0,
-                    kbn_eisyahousiki: '00'
+                    kbn_eisyahousiki: '00',
+                    mvtk_num: '',
+                    mvtk_kbn_denshiken: '00',
+                    mvtk_kbn_maeuriken: '00',
+                    mvtk_kbn_kensyu: '00',
+                    mvtk_sales_price: 0
                 });
 
             },
@@ -213,8 +255,10 @@ describe('座席予約資産ファクトリー', () => {
                     section: 'xxx',
                     seat_code: 'xxx',
                     ticket_code: 'xxx',
-                    ticket_name_ja: 'xxx',
-                    ticket_name_en: 'xxx',
+                    ticket_name: {
+                        en: 'xxx',
+                        ja: 'xxx'
+                    },
                     ticket_name_kana: 'xxx',
                     std_price: 123,
                     add_price: 123,
@@ -222,7 +266,12 @@ describe('座席予約資産ファクトリー', () => {
                     sale_price: <any>'123',
                     mvtk_app_price: 0,
                     add_glasses: 0,
-                    kbn_eisyahousiki: '00'
+                    kbn_eisyahousiki: '00',
+                    mvtk_num: '',
+                    mvtk_kbn_denshiken: '00',
+                    mvtk_kbn_maeuriken: '00',
+                    mvtk_kbn_kensyu: '00',
+                    mvtk_sales_price: 0
                 });
 
             },
@@ -246,8 +295,10 @@ describe('座席予約資産ファクトリー', () => {
                     section: 'xxx',
                     seat_code: 'xxx',
                     ticket_code: 'xxx',
-                    ticket_name_ja: 'xxx',
-                    ticket_name_en: 'xxx',
+                    ticket_name: {
+                        en: 'xxx',
+                        ja: 'xxx'
+                    },
                     ticket_name_kana: 'xxx',
                     std_price: 123,
                     add_price: 123,
@@ -255,7 +306,12 @@ describe('座席予約資産ファクトリー', () => {
                     sale_price: 123,
                     mvtk_app_price: <any>'',
                     add_glasses: 0,
-                    kbn_eisyahousiki: '00'
+                    kbn_eisyahousiki: '00',
+                    mvtk_num: '',
+                    mvtk_kbn_denshiken: '00',
+                    mvtk_kbn_maeuriken: '00',
+                    mvtk_kbn_kensyu: '00',
+                    mvtk_sales_price: 0
                 });
             },
             (err: any) => {
@@ -278,8 +334,10 @@ describe('座席予約資産ファクトリー', () => {
                     section: 'xxx',
                     seat_code: 'xxx',
                     ticket_code: 'xxx',
-                    ticket_name_ja: 'xxx',
-                    ticket_name_en: 'xxx',
+                    ticket_name: {
+                        en: 'xxx',
+                        ja: 'xxx'
+                    },
                     ticket_name_kana: 'xxx',
                     std_price: 123,
                     add_price: 123,
@@ -287,7 +345,12 @@ describe('座席予約資産ファクトリー', () => {
                     sale_price: 123,
                     mvtk_app_price: 123,
                     add_glasses: <any>'',
-                    kbn_eisyahousiki: '00'
+                    kbn_eisyahousiki: '00',
+                    mvtk_num: '',
+                    mvtk_kbn_denshiken: '00',
+                    mvtk_kbn_maeuriken: '00',
+                    mvtk_kbn_kensyu: '00',
+                    mvtk_sales_price: 0
                 });
             },
             (err: any) => {
@@ -310,8 +373,10 @@ describe('座席予約資産ファクトリー', () => {
                     section: 'xxx',
                     seat_code: 'xxx',
                     ticket_code: 'xxx',
-                    ticket_name_ja: 'xxx',
-                    ticket_name_en: 'xxx',
+                    ticket_name: {
+                        en: 'xxx',
+                        ja: 'xxx'
+                    },
                     ticket_name_kana: 'xxx',
                     std_price: 123,
                     add_price: 123,
@@ -319,7 +384,12 @@ describe('座席予約資産ファクトリー', () => {
                     sale_price: 123,
                     mvtk_app_price: 123,
                     add_glasses: 0,
-                    kbn_eisyahousiki: ''
+                    kbn_eisyahousiki: '',
+                    mvtk_num: '',
+                    mvtk_kbn_denshiken: '00',
+                    mvtk_kbn_maeuriken: '00',
+                    mvtk_kbn_kensyu: '00',
+                    mvtk_sales_price: 0
                 });
             },
             (err: any) => {

@@ -12,6 +12,7 @@ import ArgumentNullError from '../../error/argumentNull';
 import * as AssetFactory from '../asset';
 import AssetGroup from '../assetGroup';
 import * as AuthorizationFactory from '../authorization';
+import IMultilingualString from '../multilingualString';
 import ObjectId from '../objectId';
 import * as OwnershipFactory from '../ownership';
 
@@ -43,11 +44,7 @@ export interface ISeatReservationAsset extends AssetFactory.IAsset {
     /**
      * 券種名
      */
-    ticket_name_ja: string;
-    /**
-     * 券種名(英)
-     */
-    ticket_name_en: string;
+    ticket_name: IMultilingualString;
     /**
      * 券種名(カナ)
      */
@@ -80,6 +77,26 @@ export interface ISeatReservationAsset extends AssetFactory.IAsset {
      * ムビチケ映写方式区分
      */
     kbn_eisyahousiki: string;
+    /**
+     * ムビチケ購入管理番号
+     */
+    mvtk_num: string;
+    /**
+     * ムビチケ電子券区分
+     */
+    mvtk_kbn_denshiken: string;
+    /**
+     * ムビチケ前売券区分
+     */
+    mvtk_kbn_maeuriken: string;
+    /**
+     * ムビチケ券種区分
+     */
+    mvtk_kbn_kensyu: string;
+    /**
+     * ムビチケ販売単価
+     */
+    mvtk_sales_price: number;
 }
 
 /**
@@ -96,8 +113,7 @@ export function create(args: {
     section: string;
     seat_code: string;
     ticket_code: string;
-    ticket_name_ja: string;
-    ticket_name_en: string;
+    ticket_name: IMultilingualString;
     ticket_name_kana: string;
     std_price: number;
     add_price: number;
@@ -106,12 +122,22 @@ export function create(args: {
     mvtk_app_price: number;
     add_glasses: number;
     kbn_eisyahousiki: string;
+    mvtk_num: string;
+    mvtk_kbn_denshiken: string;
+    mvtk_kbn_maeuriken: string;
+    mvtk_kbn_kensyu: string;
+    mvtk_sales_price: number;
 }): ISeatReservationAsset {
+    if (_.isEmpty(args.ticket_name.en)) throw new ArgumentNullError('ticket_name.en');
+    if (_.isEmpty(args.ticket_name.ja)) throw new ArgumentNullError('ticket_name.ja');
+
     if (_.isEmpty(args.performance)) throw new ArgumentNullError('performance');
     if (_.isEmpty(args.seat_code)) throw new ArgumentNullError('seat_code');
     if (_.isEmpty(args.ticket_code)) throw new ArgumentNullError('ticket_code');
-    if (_.isEmpty(args.ticket_name_ja)) throw new ArgumentNullError('ticket_name_ja');
     if (_.isEmpty(args.kbn_eisyahousiki)) throw new ArgumentNullError('kbn_eisyahousiki');
+    if (_.isEmpty(args.mvtk_kbn_denshiken)) throw new ArgumentNullError('mvtk_kbn_denshiken');
+    if (_.isEmpty(args.mvtk_kbn_maeuriken)) throw new ArgumentNullError('mvtk_kbn_maeuriken');
+    if (_.isEmpty(args.mvtk_kbn_kensyu)) throw new ArgumentNullError('mvtk_kbn_kensyu');
 
     if (!_.isNumber(args.std_price)) throw new ArgumentError('std_price', 'std_price should be number');
     if (!_.isNumber(args.add_price)) throw new ArgumentError('add_price', 'add_price should be number');
@@ -119,6 +145,7 @@ export function create(args: {
     if (!_.isNumber(args.sale_price)) throw new ArgumentError('sale_price', 'sale_price should be number');
     if (!_.isNumber(args.mvtk_app_price)) throw new ArgumentError('mvtk_app_price', 'mvtk_app_price should be number');
     if (!_.isNumber(args.add_glasses)) throw new ArgumentError('add_glasses', 'add_glasses should be number');
+    if (!_.isNumber(args.mvtk_sales_price)) throw new ArgumentError('mvtk_sales_price', 'mvtk_sales_price should be number');
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
@@ -130,8 +157,7 @@ export function create(args: {
         section: args.section,
         seat_code: args.seat_code,
         ticket_code: args.ticket_code,
-        ticket_name_ja: args.ticket_name_ja,
-        ticket_name_en: args.ticket_name_en,
+        ticket_name: args.ticket_name,
         ticket_name_kana: args.ticket_name_kana,
         std_price: args.std_price,
         add_price: args.add_price,
@@ -139,6 +165,11 @@ export function create(args: {
         sale_price: args.sale_price,
         mvtk_app_price: args.mvtk_app_price,
         add_glasses: args.add_glasses,
-        kbn_eisyahousiki: args.kbn_eisyahousiki
+        kbn_eisyahousiki: args.kbn_eisyahousiki,
+        mvtk_num: args.mvtk_num,
+        mvtk_kbn_denshiken: args.mvtk_kbn_denshiken,
+        mvtk_kbn_maeuriken: args.mvtk_kbn_maeuriken,
+        mvtk_kbn_kensyu: args.mvtk_kbn_kensyu,
+        mvtk_sales_price: args.mvtk_sales_price
     };
 }

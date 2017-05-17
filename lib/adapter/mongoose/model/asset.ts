@@ -2,6 +2,8 @@ import * as mongoose from 'mongoose';
 import ownerModel from './owner';
 import performanceModel from './performance';
 
+const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
+
 /**
  * 資産スキーマ
  *
@@ -30,8 +32,10 @@ const schema = new mongoose.Schema(
         section: String,
         seat_code: String,
         ticket_code: String,
-        ticket_name_ja: String,
-        ticket_name_en: String,
+        ticket_name: {
+            ja: String,
+            en: String
+        },
         ticket_name_kana: String,
         std_price: Number,
         add_price: Number,
@@ -45,7 +49,7 @@ const schema = new mongoose.Schema(
         collection: 'assets',
         id: true,
         read: 'primaryPreferred',
-        safe: <any>{ j: 1, w: 'majority', wtimeout: 10000 },
+        safe: safe,
         timestamps: {
             createdAt: 'created_at',
             updatedAt: 'updated_at'

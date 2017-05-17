@@ -1,5 +1,6 @@
 import * as AssetFactory from '../asset';
 import * as AuthorizationFactory from '../authorization';
+import IMultilingualString from '../multilingualString';
 import * as OwnershipFactory from '../ownership';
 /**
  * 座席予約資産
@@ -29,11 +30,7 @@ export interface ISeatReservationAsset extends AssetFactory.IAsset {
     /**
      * 券種名
      */
-    ticket_name_ja: string;
-    /**
-     * 券種名(英)
-     */
-    ticket_name_en: string;
+    ticket_name: IMultilingualString;
     /**
      * 券種名(カナ)
      */
@@ -66,6 +63,26 @@ export interface ISeatReservationAsset extends AssetFactory.IAsset {
      * ムビチケ映写方式区分
      */
     kbn_eisyahousiki: string;
+    /**
+     * ムビチケ購入管理番号
+     */
+    mvtk_num: string;
+    /**
+     * ムビチケ電子券区分
+     */
+    mvtk_kbn_denshiken: string;
+    /**
+     * ムビチケ前売券区分
+     */
+    mvtk_kbn_maeuriken: string;
+    /**
+     * ムビチケ券種区分
+     */
+    mvtk_kbn_kensyu: string;
+    /**
+     * ムビチケ販売単価
+     */
+    mvtk_sales_price: number;
 }
 /**
  * 座席予約資産を作成する
@@ -81,8 +98,7 @@ export declare function create(args: {
     section: string;
     seat_code: string;
     ticket_code: string;
-    ticket_name_ja: string;
-    ticket_name_en: string;
+    ticket_name: IMultilingualString;
     ticket_name_kana: string;
     std_price: number;
     add_price: number;
@@ -91,4 +107,9 @@ export declare function create(args: {
     mvtk_app_price: number;
     add_glasses: number;
     kbn_eisyahousiki: string;
+    mvtk_num: string;
+    mvtk_kbn_denshiken: string;
+    mvtk_kbn_maeuriken: string;
+    mvtk_kbn_kensyu: string;
+    mvtk_sales_price: number;
 }): ISeatReservationAsset;

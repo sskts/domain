@@ -1,5 +1,7 @@
 import * as mongoose from 'mongoose';
 
+const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
+
 /**
  * GMO通知スキーマ
  *
@@ -29,7 +31,7 @@ const schema = new mongoose.Schema(
         collection: 'gmo_notifications',
         id: true,
         read: 'primaryPreferred',
-        safe: <any>{ j: 1, w: 'majority', wtimeout: 10000 },
+        safe: safe,
         timestamps: {
             createdAt: 'created_at',
             updatedAt: 'updated_at'

@@ -4,7 +4,7 @@
  * @namespace factory/screen
  */
 import * as COA from '@motionpicture/coa-service';
-import MultilingualString from './multilingualString';
+import IMultilingualString from './multilingualString';
 import * as TheaterFactory from './theater';
 /**
  * スクリーン座席
@@ -32,7 +32,7 @@ export interface ISection {
     /**
      * セクション名称
      */
-    name: MultilingualString;
+    name: IMultilingualString;
     /**
      * 座席リスト
      */
@@ -47,7 +47,7 @@ export interface IScreen {
     id: string;
     theater: string;
     coa_screen_code: string;
-    name: MultilingualString;
+    name: IMultilingualString;
     sections: ISection[];
 }
 /**

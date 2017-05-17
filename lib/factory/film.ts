@@ -21,7 +21,7 @@
  */
 
 import * as COA from '@motionpicture/coa-service';
-import MultilingualString from './multilingualString';
+import IMultilingualString from './multilingualString';
 import * as TheaterFactory from './theater';
 
 /**
@@ -34,7 +34,7 @@ export interface IFilm {
     coa_title_code: string;
     coa_title_branch_num: string;
     theater: string;
-    name: MultilingualString;
+    name: IMultilingualString;
     name_kana: string; // 作品タイトル名（カナ）
     name_short: string; // 作品タイトル名省略
     name_original: string; // 原題

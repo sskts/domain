@@ -4,7 +4,7 @@
  * @namespace factory/owner/promoter
  */
 
-import MultilingualString from '../../factory/multilingualString';
+import IMultilingualString from '../../factory/multilingualString';
 import ObjectId from '../objectId';
 import * as OwnerFactory from '../owner';
 import OwnerGroup from '../ownerGroup';
@@ -17,7 +17,7 @@ import OwnerGroup from '../ownerGroup';
  */
 export interface IPromoterOwner extends OwnerFactory.IOwner {
     id: string;
-    name: MultilingualString;
+    name: IMultilingualString;
 }
 
 /**
@@ -30,7 +30,7 @@ export interface IPromoterOwner extends OwnerFactory.IOwner {
  */
 export function create(args: {
     id?: string;
-    name?: MultilingualString;
+    name?: IMultilingualString;
 }): IPromoterOwner {
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,

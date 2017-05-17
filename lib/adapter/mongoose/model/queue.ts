@@ -1,5 +1,7 @@
 import * as mongoose from 'mongoose';
 
+const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
+
 /**
  * キュースキーマ
  *
@@ -23,7 +25,7 @@ const schema = new mongoose.Schema(
         collection: 'queues',
         id: true,
         read: 'primaryPreferred',
-        safe: <any>{ j: 1, w: 'majority', wtimeout: 10000 },
+        safe: safe,
         timestamps: {
             createdAt: 'created_at',
             updatedAt: 'updated_at'

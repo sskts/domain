@@ -11,7 +11,7 @@ import * as monapt from 'monapt';
 import ArgumentError from '../error/argument';
 
 import * as FilmFactory from '../factory/film';
-import MultilingualString from '../factory/multilingualString';
+import IMultilingualString from '../factory/multilingualString';
 import * as PerformanceFactory from '../factory/performance';
 import * as ScreenFactory from '../factory/screen';
 import * as TheaterFactory from '../factory/theater';
@@ -40,15 +40,15 @@ export interface ISearchPerformancesResult {
     id: string;
     theater: {
         id: string;
-        name: MultilingualString;
+        name: IMultilingualString;
     };
     screen: {
         id: string;
-        name: MultilingualString;
+        name: IMultilingualString;
     };
     film: {
         id: string;
-        name: MultilingualString;
+        name: IMultilingualString;
     };
     day: string;
     time_start: string;
@@ -185,6 +185,7 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
             const screenOfPerformance = screens.find((screen) => (screen.id === screenId));
             if (screenOfPerformance === undefined) {
                 console.error('screen not found.', screenId);
+
                 return;
             }
 
@@ -192,6 +193,7 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
             const doc = await filmRepo.model.findById(filmId).exec();
             if (doc === null) {
                 console.error('film not found.', filmId);
+
                 return;
             }
             const film = <FilmFactory.IFilm>doc.toObject();
@@ -271,8 +273,10 @@ export function searchPerformances(searchConditions: ISearchPerformancesConditio
  */
 export function findTheater(theaterId: string): TheaterOperation<monapt.Option<TheaterFactory.ITheater>> {
     debug('finding a theater...', theaterId);
+
     return async (adapter: TheaterAdapter) => {
         const doc = await adapter.model.findById(theaterId).exec();
+
         return (doc === null) ? monapt.None : monapt.Option(<TheaterFactory.ITheater>doc.toObject());
     };
 }
@@ -287,8 +291,10 @@ export function findTheater(theaterId: string): TheaterOperation<monapt.Option<T
  */
 export function findFilm(filmId: string): FilmOperation<monapt.Option<FilmFactory.IFilm>> {
     debug('finding a film...', filmId);
+
     return async (adapter: FilmAdapter) => {
         const doc = await adapter.model.findById(filmId).exec();
+
         return (doc === null) ? monapt.None : monapt.Option(<FilmFactory.IFilm>doc.toObject());
     };
 }
@@ -303,8 +309,10 @@ export function findFilm(filmId: string): FilmOperation<monapt.Option<FilmFactor
  */
 export function findScreen(screenId: string): ScreenOperation<monapt.Option<ScreenFactory.IScreen>> {
     debug('finding a screen...', screenId);
+
     return async (adapter: ScreenAdapter) => {
         const doc = await adapter.model.findById(screenId).exec();
+
         return (doc === null) ? monapt.None : monapt.Option(<ScreenFactory.IScreen>doc.toObject());
     };
 }
@@ -321,12 +329,14 @@ export function findPerformance(
     performanceId: string
 ): PerformanceOperation<monapt.Option<PerformanceFactory.IPerformanceWithReferenceDetails>> {
     debug('finding a performance...', performanceId);
+
     return async (adapter: PerformanceAdapter) => {
         const doc = await adapter.model.findById(performanceId)
             .populate('film', '_id name name_kana name_short name_original minutes')
             .populate('theater', '_id name')
             .populate('screen', '_id name')
             .exec();
+
         return (doc === null) ? monapt.None : monapt.Option(<PerformanceFactory.IPerformanceWithReferenceDetails>doc.toObject());
     };
 }

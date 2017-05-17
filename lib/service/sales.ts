@@ -51,6 +51,7 @@ export function settleGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthori
         if (searchTradeResult.jobCd === GMO.Util.JOB_CD_SALES) {
             debug('already in SALES');
             // すでに実売上済み
+
             return;
         }
 

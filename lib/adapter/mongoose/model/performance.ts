@@ -3,6 +3,8 @@ import filmModel from './film';
 import screenModel from './screen';
 import theaterModel from './theater';
 
+const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
+
 /**
  * パフォーマンススキーマ
  *
@@ -53,7 +55,7 @@ const schema = new mongoose.Schema(
         collection: 'performances',
         id: true,
         read: 'primaryPreferred',
-        safe: <any>{ j: 1, w: 'majority', wtimeout: 10000 },
+        safe: safe,
         timestamps: {
             createdAt: 'created_at',
             updatedAt: 'updated_at'

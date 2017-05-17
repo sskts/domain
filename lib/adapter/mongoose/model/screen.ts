@@ -1,6 +1,8 @@
 import * as mongoose from 'mongoose';
 import theaterModel from './theater';
 
+const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
+
 /**
  * スクリーンスキーマ
  *
@@ -53,7 +55,7 @@ const schema = new mongoose.Schema(
         collection: 'screens',
         id: true,
         read: 'primaryPreferred',
-        safe: <any>{ j: 1, w: 'majority', wtimeout: 10000 },
+        safe: safe,
         timestamps: {
             createdAt: 'created_at',
             updatedAt: 'updated_at'

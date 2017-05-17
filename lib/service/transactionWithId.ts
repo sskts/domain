@@ -48,6 +48,7 @@ const debug = createDebug('sskts-domain:service:transaction');
 export function findById(id: string): TransactionOperation<monapt.Option<TransactionFactory.ITransaction>> {
     return async (transactionAdapter: TransactionAdapter) => {
         const doc = await transactionAdapter.transactionModel.findById(id).populate('owners').exec();
+
         return (doc === null) ? monapt.None : monapt.Option(<TransactionFactory.ITransaction>doc.toObject());
     };
 }
