@@ -12,6 +12,7 @@
     "@motionpicture/coa-service": "^3.0.0",
     "@motionpicture/gmo-service": "^3.1.0",
     "@types/mongoose": "^4.7.12",
+    "bcryptjs": "^2.4.3",
     "clone": "^2.1.1",
     "debug": "^2.6.7",
     "http-status": "^1.0.1",
@@ -28,6 +29,7 @@
   },
   "description": "SSKTS Domain Library for Node.js",
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.0",
     "@types/clone": "^0.1.30",
     "@types/debug": "0.0.29",
     "@types/http-status": "^0.2.29",
@@ -72,5 +74,5 @@
     "postversion": "git push origin --tags"
   },
   "types": "./types/lib/index.d.ts",
-  "version": "13.0.1"
+  "version": "13.0.2"
 }

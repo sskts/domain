@@ -5,6 +5,7 @@
  * @module
  */
 import { Connection } from 'mongoose';
+import * as clientService from './service/client';
 import * as masterService from './service/master';
 import * as notificationService from './service/notification';
 import * as queueService from './service/queue';
@@ -14,6 +15,7 @@ import * as stockService from './service/stock';
 import * as transactionService from './service/transaction';
 import * as transactionWithIdService from './service/transactionWithId';
 import AssetAdapter from './adapter/asset';
+import ClientAdapter from './adapter/client';
 import FilmAdapter from './adapter/film';
 import GMONotificationAdapter from './adapter/gmoNotification';
 import OwnerAdapter from './adapter/owner';
@@ -30,6 +32,8 @@ import * as CoaSeatReservationAuthorizationFactory from './factory/authorization
 import * as GmoAuthorizationFactory from './factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from './factory/authorization/mvtk';
 import AuthorizationGroup from './factory/authorizationGroup';
+import * as ClientFactory from './factory/client';
+import * as ClientEventFactory from './factory/clientEvent';
 import * as FilmFactory from './factory/film';
 import * as EmailNotificationFactory from './factory/notification/email';
 import NotificationGroup from './factory/notificationGroup';
@@ -57,6 +61,7 @@ import TransactionQueuesStatus from './factory/transactionQueuesStatus';
 import TransactionStatus from './factory/transactionStatus';
 export declare const adapter: {
     asset: (connection: Connection) => AssetAdapter;
+    client: (connection: Connection) => ClientAdapter;
     film: (connection: Connection) => FilmAdapter;
     gmoNotification: (connection: Connection) => GMONotificationAdapter;
     owner: (connection: Connection) => OwnerAdapter;
@@ -69,6 +74,7 @@ export declare const adapter: {
     transaction: (connection: Connection) => TransactionAdapter;
 };
 export declare const service: {
+    client: typeof clientService;
     master: typeof masterService;
     notification: typeof notificationService;
     queue: typeof queueService;
@@ -89,6 +95,8 @@ export declare const factory: {
         mvtk: typeof MvtkAuthorizationFactory;
     };
     authorizationGroup: typeof AuthorizationGroup;
+    client: typeof ClientFactory;
+    clientEvent: typeof ClientEventFactory;
     film: typeof FilmFactory;
     notification: {
         email: typeof EmailNotificationFactory;
