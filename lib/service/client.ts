@@ -86,7 +86,7 @@ export interface IPushEventArgs {
     transaction?: string;
 }
 
-export function pushEvent(args: IPushEventArgs): ClientOperation<void> {
+export function pushEvent(args: IPushEventArgs): ClientOperation<clientEventFactory.IClientEvent> {
     return async (clientAdapter: ClientAdapter) => {
         // クライアントの存在確認
         const clientDoc = await clientAdapter.clientModel.findById(args.client, '_id').exec();
@@ -99,6 +99,8 @@ export function pushEvent(args: IPushEventArgs): ClientOperation<void> {
         debug('creating a clientEvent...', clientEvent);
 
         // ドキュメント作成(idが既に存在していればユニーク制約ではじかれる)
-        await clientAdapter.clientEventModel.create(args);
+        await clientAdapter.clientEventModel.findByIdAndUpdate(clientEvent.id, clientEvent, { upsert: true }).exec();
+
+        return clientEvent;
     };
 }

@@ -1,4 +1,5 @@
 import ClientAdapter from '../adapter/client';
+import * as clientEventFactory from '../factory/clientEvent';
 import IMultilingualString from '../factory/multilingualString';
 export declare type ClientOperation<T> = (clientAdapter: ClientAdapter) => Promise<T>;
 export interface ICreateArgs {
@@ -47,4 +48,4 @@ export interface IPushEventArgs {
     location?: number[];
     transaction?: string;
 }
-export declare function pushEvent(args: IPushEventArgs): ClientOperation<void>;
+export declare function pushEvent(args: IPushEventArgs): ClientOperation<clientEventFactory.IClientEvent>;

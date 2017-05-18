@@ -8,21 +8,25 @@
  * @namespace factory/clientEvent
  */
 
+import ObjectId from './objectId';
+
 export interface IClientEvent {
+    id: string;
     client: string;
     occurred_at: Date;
-    url?: string;
+    url: string;
     label: string;
-    category?: string;
-    action?: string;
-    message?: string;
-    notes?: string;
-    useragent?: string;
-    location?: number[];
+    category: string;
+    action: string;
+    message: string;
+    notes: string;
+    useragent: string;
+    location: number[];
     transaction?: string;
 }
 
 export function create(args: {
+    id?: string;
     client: string;
     occurred_at: Date;
     url?: string;
@@ -37,17 +41,23 @@ export function create(args: {
 }): IClientEvent {
     // todo validation
 
-    return {
+    const event: IClientEvent = {
+        id: (args.id === undefined) ? ObjectId().toString() : args.id,
         client: args.client,
         occurred_at: args.occurred_at,
-        url: args.url,
+        url: (args.url !== undefined) ? args.url : '',
         label: args.label,
-        category: args.category,
-        action: args.action,
-        message: args.message,
-        notes: args.notes,
-        useragent: args.useragent,
-        location: args.location,
-        transaction: args.transaction
+        category: (args.category !== undefined) ? args.category : '',
+        action: (args.action !== undefined) ? args.action : '',
+        message: (args.message !== undefined) ? args.message : '',
+        notes: (args.notes !== undefined) ? args.notes : '',
+        useragent: (args.useragent !== undefined) ? args.useragent : '',
+        location: (args.location !== undefined) ? args.location : []
     };
+
+    if (args.transaction !== undefined) {
+        event.transaction = args.transaction;
+    }
+
+    return event;
 }

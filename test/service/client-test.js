@@ -85,16 +85,14 @@ describe('クライアントイベントサービス 作成', () => {
             occurred_at: new Date(),
             label: label
         };
-        yield clientService.pushEvent(pushEventArgs)(clientAdapter);
+        const clientEvent = yield clientService.pushEvent(pushEventArgs)(clientAdapter);
         // DBに存在することを確認
-        const clientEventDoc = yield clientAdapter.clientEventModel.findOne({
-            client: createArgs.id
-        }).sort({ updated_at: -1 }).exec();
+        const clientEventDoc = yield clientAdapter.clientEventModel.findById(clientEvent.id).exec();
         assert(clientEventDoc !== null);
         // ラベル確認
         assert.equal(clientEventDoc.get('label'), label);
         // テストデータ削除
         yield clientAdapter.clientModel.findByIdAndRemove(createArgs.id).exec();
-        yield clientAdapter.clientEventModel.findByIdAndRemove(clientEventDoc.get('id')).exec();
+        yield clientAdapter.clientEventModel.findByIdAndRemove(clientEvent.id).exec();
     }));
 });

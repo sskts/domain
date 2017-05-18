@@ -85,12 +85,10 @@ describe('クライアントイベントサービス 作成', () => {
             occurred_at: new Date(),
             label: label
         };
-        await clientService.pushEvent(pushEventArgs)(clientAdapter);
+        const clientEvent = await clientService.pushEvent(pushEventArgs)(clientAdapter);
 
         // DBに存在することを確認
-        const clientEventDoc = await clientAdapter.clientEventModel.findOne({
-            client: createArgs.id
-        }).sort({ updated_at: -1 }).exec();
+        const clientEventDoc = await clientAdapter.clientEventModel.findById(clientEvent.id).exec();
         assert(clientEventDoc !== null);
 
         // ラベル確認
@@ -98,6 +96,6 @@ describe('クライアントイベントサービス 作成', () => {
 
         // テストデータ削除
         await clientAdapter.clientModel.findByIdAndRemove(createArgs.id).exec();
-        await clientAdapter.clientEventModel.findByIdAndRemove(clientEventDoc.get('id')).exec();
+        await clientAdapter.clientEventModel.findByIdAndRemove(clientEvent.id).exec();
     });
 });
