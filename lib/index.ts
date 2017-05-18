@@ -5,6 +5,7 @@
  */
 import { Connection } from 'mongoose';
 
+import * as clientService from './service/client';
 import * as masterService from './service/master';
 import * as notificationService from './service/notification';
 import * as queueService from './service/queue';
@@ -15,6 +16,7 @@ import * as transactionService from './service/transaction';
 import * as transactionWithIdService from './service/transactionWithId';
 
 import AssetAdapter from './adapter/asset';
+import ClientAdapter from './adapter/client';
 import FilmAdapter from './adapter/film';
 import GMONotificationAdapter from './adapter/gmoNotification';
 import OwnerAdapter from './adapter/owner';
@@ -32,6 +34,8 @@ import * as CoaSeatReservationAuthorizationFactory from './factory/authorization
 import * as GmoAuthorizationFactory from './factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from './factory/authorization/mvtk';
 import AuthorizationGroup from './factory/authorizationGroup';
+import * as ClientFactory from './factory/client';
+import * as ClientEventFactory from './factory/clientEvent';
 import * as FilmFactory from './factory/film';
 import * as EmailNotificationFactory from './factory/notification/email';
 import NotificationGroup from './factory/notificationGroup';
@@ -61,6 +65,9 @@ import TransactionStatus from './factory/transactionStatus';
 export const adapter = {
     asset: (connection: Connection) => {
         return new AssetAdapter(connection);
+    },
+    client: (connection: Connection) => {
+        return new ClientAdapter(connection);
     },
     film: (connection: Connection) => {
         return new FilmAdapter(connection);
@@ -95,6 +102,7 @@ export const adapter = {
 };
 
 export const service = {
+    client: clientService,
     master: masterService,
     notification: notificationService,
     queue: queueService,
@@ -116,6 +124,8 @@ export const factory = {
         mvtk: MvtkAuthorizationFactory
     },
     authorizationGroup: AuthorizationGroup,
+    client: ClientFactory,
+    clientEvent: ClientEventFactory,
     film: FilmFactory,
     notification: {
         email: EmailNotificationFactory
