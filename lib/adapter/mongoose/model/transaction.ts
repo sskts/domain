@@ -1,6 +1,8 @@
 import * as mongoose from 'mongoose';
 import ownerModel from './owner';
 
+import TransactionInquiryKeySchemaType from '../schemaTypes/transactionInquiryKey';
+
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
 /**
@@ -16,12 +18,7 @@ const schema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: ownerModel.modelName
         }],
-        inquiry_key: {
-            _id: false,
-            theater_code: String, // 照会劇場コード
-            reserve_num: Number, // 照会ID
-            tel: String // 照会PASS
-        },
+        inquiry_key: TransactionInquiryKeySchemaType,
         queues_status: String,
         expired_at: Date, // 期限切れ日時
         started_at: Date, // 開始日時
