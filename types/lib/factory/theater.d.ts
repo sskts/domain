@@ -1,5 +1,6 @@
 /**
  * 劇場ファクトリー
+ * todo jsdoc
  *
  * @namespace factory/theater
  */
@@ -11,7 +12,7 @@ import TheaterWebsiteGroup from './theaterWebsiteGroup';
  * COAからインポートされる想定
  *
  * @interface IRequiredFields
- * @memberof tobereplaced$
+ * @memberof factory/theater
  */
 export interface IRequiredFields {
     id: string;
@@ -22,7 +23,7 @@ export interface IRequiredFields {
  * GMO関連情報インターフェース
  *
  * @interface IGMO
- * @memberof tobereplaced$
+ * @memberof factory/theater
  */
 export interface IGMO {
     gmo: {
@@ -35,7 +36,7 @@ export interface IGMO {
  * ウェブサイト情報インターフェース
  *
  * @interface IWebsite
- * @memberof tobereplaced$
+ * @memberof factory/theater
  */
 export interface IWebsite {
     /**
@@ -55,7 +56,7 @@ export interface IWebsite {
  * 追加情報インターフェース
  *
  * @interface IOptionalFields
- * @memberof tobereplaced$
+ * @memberof factory/theater
  */
 export interface IOptionalFields {
     address: IMultilingualString;
@@ -70,6 +71,7 @@ export declare type ITheater = IRequiredFields & IOptionalFields & IGMO;
  *
  * @param {COA.MasterService.TheaterResult} theaterFromCOA
  * @returns {ITheaterWithoutGMO}
- * @memberof tobereplaced$
+ * @memberof factory/theater
  */
 export declare function createFromCOA(theaterFromCOA: COA.MasterService.ITheaterResult): IRequiredFields;
+export declare function createInitialOptionalFields(): IOptionalFields & IGMO;

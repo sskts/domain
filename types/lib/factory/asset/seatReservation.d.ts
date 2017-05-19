@@ -2,101 +2,95 @@ import * as AssetFactory from '../asset';
 import * as AuthorizationFactory from '../authorization';
 import IMultilingualString from '../multilingualString';
 import * as OwnershipFactory from '../ownership';
+import * as TransactionInquiryKeyFactory from '../transactionInquiryKey';
+export interface IDetails {
+    theater: string;
+    screen: string;
+    film: string;
+    performance_day: string;
+    performance_time_start: string;
+    performance_time_end: string;
+    theater_name: IMultilingualString;
+    theater_name_kana: string;
+    theater_address: IMultilingualString;
+    screen_name: IMultilingualString;
+    film_name: IMultilingualString;
+    film_name_kana: string;
+    film_name_short: string;
+    film_name_original: string;
+    film_minutes: number;
+    film_kbn_eirin: string;
+    film_kbn_eizou: string;
+    film_kbn_joueihousiki: string;
+    film_kbn_jimakufukikae: string;
+    film_copyright: string;
+    transaction_inquiry_key: TransactionInquiryKeyFactory.ITransactionInquiryKey;
+}
+export interface IMvtkFields {
+    mvtk_app_price: number;
+    kbn_eisyahousiki: string;
+    mvtk_num: string;
+    mvtk_kbn_denshiken: string;
+    mvtk_kbn_maeuriken: string;
+    mvtk_kbn_kensyu: string;
+    mvtk_sales_price: number;
+}
+export interface ISeatReservationAssetBase extends AssetFactory.IAsset {
+    performance: string;
+    screen_section: string;
+    seat_code: string;
+    ticket_code: string;
+    ticket_name: IMultilingualString;
+    ticket_name_kana: string;
+    std_price: number;
+    add_price: number;
+    dis_price: number;
+    sale_price: number;
+    add_glasses: number;
+}
+export declare type ISeatReservationAssetWithoutDetails = ISeatReservationAssetBase & IMvtkFields;
 /**
  * 座席予約資産
  *
  * @interface ISeatReservationAsset
  * @extends {IAsset}
- * @memberof tobereplaced$
+ * @memberof factory/asset/seatReservation
  */
-export interface ISeatReservationAsset extends AssetFactory.IAsset {
-    ownership: OwnershipFactory.IOwnership;
-    /**
-     * パフォーマンス
-     */
-    performance: string;
-    /**
-     * スクリーンセクション
-     */
-    section: string;
-    /**
-     * 座席コード
-     */
-    seat_code: string;
-    /**
-     * 券種コード
-     */
-    ticket_code: string;
-    /**
-     * 券種名
-     */
-    ticket_name: IMultilingualString;
-    /**
-     * 券種名(カナ)
-     */
-    ticket_name_kana: string;
-    /**
-     * 標準単価
-     */
-    std_price: number;
-    /**
-     * 加算単価
-     */
-    add_price: number;
-    /**
-     * 割引額
-     */
-    dis_price: number;
-    /**
-     * 販売単価
-     */
-    sale_price: number;
-    /**
-     * ムビチケ計上単価
-     */
-    mvtk_app_price: number;
-    /**
-     * メガネ単価
-     */
-    add_glasses: number;
-    /**
-     * ムビチケ映写方式区分
-     */
-    kbn_eisyahousiki: string;
-    /**
-     * ムビチケ購入管理番号
-     */
-    mvtk_num: string;
-    /**
-     * ムビチケ電子券区分
-     */
-    mvtk_kbn_denshiken: string;
-    /**
-     * ムビチケ前売券区分
-     */
-    mvtk_kbn_maeuriken: string;
-    /**
-     * ムビチケ券種区分
-     */
-    mvtk_kbn_kensyu: string;
-    /**
-     * ムビチケ販売単価
-     */
-    mvtk_sales_price: number;
-}
+export declare type ISeatReservationAsset = ISeatReservationAssetWithoutDetails & IDetails;
 /**
  * 座席予約資産を作成する
  *
  * @returns {SeatReservationAsset}
- * @memberof tobereplaced$
+ * @memberof factory/asset/seatReservation
  */
 export declare function create(args: {
     id?: string;
     ownership: OwnershipFactory.IOwnership;
     authorizations?: AuthorizationFactory.IAuthorization[];
     performance: string;
-    section: string;
+    performance_day: string;
+    performance_time_start: string;
+    performance_time_end: string;
+    theater: string;
+    theater_name: IMultilingualString;
+    theater_name_kana: string;
+    theater_address: IMultilingualString;
+    screen: string;
+    screen_name: IMultilingualString;
+    screen_section: string;
     seat_code: string;
+    film: string;
+    film_name: IMultilingualString;
+    film_name_kana: string;
+    film_name_short: string;
+    film_name_original: string;
+    film_minutes: number;
+    film_kbn_eirin: string;
+    film_kbn_eizou: string;
+    film_kbn_joueihousiki: string;
+    film_kbn_jimakufukikae: string;
+    film_copyright: string;
+    transaction_inquiry_key: TransactionInquiryKeyFactory.ITransactionInquiryKey;
     ticket_code: string;
     ticket_name: IMultilingualString;
     ticket_name_kana: string;
@@ -113,3 +107,26 @@ export declare function create(args: {
     mvtk_kbn_kensyu: string;
     mvtk_sales_price: number;
 }): ISeatReservationAsset;
+export declare function createWithoutDetails(args: {
+    id?: string;
+    ownership: OwnershipFactory.IOwnership;
+    authorizations?: AuthorizationFactory.IAuthorization[];
+    performance: string;
+    screen_section: string;
+    seat_code: string;
+    ticket_code: string;
+    ticket_name: IMultilingualString;
+    ticket_name_kana: string;
+    std_price: number;
+    add_price: number;
+    dis_price: number;
+    sale_price: number;
+    mvtk_app_price: number;
+    add_glasses: number;
+    kbn_eisyahousiki: string;
+    mvtk_num: string;
+    mvtk_kbn_denshiken: string;
+    mvtk_kbn_maeuriken: string;
+    mvtk_kbn_kensyu: string;
+    mvtk_sales_price: number;
+}): ISeatReservationAssetWithoutDetails;

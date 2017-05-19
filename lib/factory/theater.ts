@@ -1,5 +1,6 @@
 /**
  * 劇場ファクトリー
+ * todo jsdoc
  *
  * @namespace factory/theater
  */
@@ -13,7 +14,7 @@ import TheaterWebsiteGroup from './theaterWebsiteGroup';
  * COAからインポートされる想定
  *
  * @interface IRequiredFields
- * @memberof tobereplaced$
+ * @memberof factory/theater
  */
 export interface IRequiredFields {
     id: string;
@@ -25,7 +26,7 @@ export interface IRequiredFields {
  * GMO関連情報インターフェース
  *
  * @interface IGMO
- * @memberof tobereplaced$
+ * @memberof factory/theater
  */
 export interface IGMO {
     gmo: {
@@ -39,7 +40,7 @@ export interface IGMO {
  * ウェブサイト情報インターフェース
  *
  * @interface IWebsite
- * @memberof tobereplaced$
+ * @memberof factory/theater
  */
 export interface IWebsite {
     /**
@@ -60,7 +61,7 @@ export interface IWebsite {
  * 追加情報インターフェース
  *
  * @interface IOptionalFields
- * @memberof tobereplaced$
+ * @memberof factory/theater
  */
 export interface IOptionalFields {
     address: IMultilingualString;
@@ -77,7 +78,7 @@ export type ITheater = IRequiredFields & IOptionalFields & IGMO;
  *
  * @param {COA.MasterService.TheaterResult} theaterFromCOA
  * @returns {ITheaterWithoutGMO}
- * @memberof tobereplaced$
+ * @memberof factory/theater
  */
 export function createFromCOA(theaterFromCOA: COA.MasterService.ITheaterResult): IRequiredFields {
     return {
@@ -87,5 +88,20 @@ export function createFromCOA(theaterFromCOA: COA.MasterService.ITheaterResult):
             en: theaterFromCOA.theater_name_eng
         },
         name_kana: theaterFromCOA.theater_name_kana
+    };
+}
+
+export function createInitialOptionalFields(): IOptionalFields & IGMO {
+    return {
+        address: {
+            en: '',
+            ja: ''
+        },
+        websites: [],
+        gmo: {
+            site_id: '',
+            shop_id: '',
+            shop_pass: ''
+        }
     };
 }

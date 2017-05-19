@@ -74,9 +74,17 @@ export function importTheater(theaterCode: string): TheaterOperation<void> {
         });
 
         // 永続化
-        const theater = TheaterFactory.createFromCOA(theaterFromCOA);
-        debug('storing theater...', theater);
-        await adapter.model.findByIdAndUpdate(theater.id, theater, { new: true, upsert: true }).exec();
+        const requiredFields = TheaterFactory.createFromCOA(theaterFromCOA);
+        const initialOptionalFields = TheaterFactory.createInitialOptionalFields();
+        debug('storing theater...', requiredFields, initialOptionalFields);
+        await adapter.model.findByIdAndUpdate(
+            requiredFields.id,
+            {
+                $set: requiredFields,
+                $setOnInsert: initialOptionalFields // insertの場合はオプショナルな値を初期値としてセット
+            },
+            { new: true, upsert: true }
+        ).exec();
         debug('theater stored.');
     };
 }
@@ -332,9 +340,9 @@ export function findPerformance(
 
     return async (adapter: PerformanceAdapter) => {
         const doc = await adapter.model.findById(performanceId)
-            .populate('film', '_id name name_kana name_short name_original minutes')
-            .populate('theater', '_id name')
-            .populate('screen', '_id name')
+            .populate('film')
+            .populate('theater', 'name name_kana address')
+            .populate('screen', 'name')
             .exec();
 
         return (doc === null) ? monapt.None : monapt.Option(<PerformanceFactory.IPerformanceWithReferenceDetails>doc.toObject());

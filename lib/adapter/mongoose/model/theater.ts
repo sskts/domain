@@ -15,9 +15,11 @@ const schema = new mongoose.Schema(
         name: MultilingualStringSchemaType,
         name_kana: String,
         address: MultilingualStringSchemaType,
-        gmo_site_id: String, // 劇場ごとにGMOショップが異なる可能性があるため
-        gmo_shop_id: String, // 劇場ごとにGMOショップが異なる可能性があるため
-        gmo_shop_pass: String // 劇場ごとにGMOショップが異なる可能性があるため
+        gmo: { // 劇場ごとにGMOショップが異なる可能性があるため
+            site_id: String,
+            shop_id: String,
+            shop_pass: String
+        }
     },
     {
         collection: 'theaters',

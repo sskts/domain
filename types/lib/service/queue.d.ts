@@ -1,8 +1,9 @@
 import AssetAdapter from '../adapter/asset';
 import OwnerAdapter from '../adapter/owner';
+import PerformanceAdapter from '../adapter/performance';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
-export declare type AssetAndOwnerAndQueueOperation<T> = (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, queueAdapter: QueueAdapter) => Promise<T>;
+export declare type AssetAndOwnerAndPerformanceAndQueueOperation<T> = (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, performanceAdapter: PerformanceAdapter, queueAdapter: QueueAdapter) => Promise<T>;
 export declare type QueueOperation<T> = (queueAdapter: QueueAdapter) => Promise<T>;
 export declare type QueueAndTransactionOperation<T> = (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 /**
@@ -46,7 +47,7 @@ export declare function executeDisableTransactionInquiry(): QueueAndTransactionO
  * @returns {AssetAndQueueOperation<void>}
  * @memberof service/queue
  */
-export declare function executeSettleCOASeatReservationAuthorization(): AssetAndOwnerAndQueueOperation<void>;
+export declare function executeSettleCOASeatReservationAuthorization(): AssetAndOwnerAndPerformanceAndQueueOperation<void>;
 /**
  * GMO実売上キュー実行
  *

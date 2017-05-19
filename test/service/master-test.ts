@@ -38,6 +38,7 @@ describe('マスターサービス 劇場インポート', () => {
             await MasterService.importTheater('000')(theaterAdapter);
         } catch (error) {
             assert(error instanceof Error);
+
             return;
         }
 
@@ -97,6 +98,7 @@ describe('マスターサービス 作品インポート', () => {
             await MasterService.importFilms('000')(theaterAdapter, filmAdapter);
         } catch (error) {
             assert(error instanceof Error);
+
             return;
         }
 
@@ -125,6 +127,7 @@ describe('マスターサービス パフォーマンスインポート', () => 
             );
         } catch (error) {
             assert(error instanceof Error);
+
             return;
         }
 
@@ -190,7 +193,7 @@ describe('マスターサービス パフォーマンス取得', () => {
         };
         const performanceDoc = await performanceAdapter.model.findByIdAndUpdate(performance.id, performance, { new: true, upsert: true });
 
-        const performanceOption = await MasterService.findPerformance('12345')(performanceAdapter)
+        const performanceOption = await MasterService.findPerformance('12345')(performanceAdapter);
         assert(performanceOption.isDefined);
         assert.equal(performanceOption.get().id, '12345');
 
@@ -203,7 +206,6 @@ describe('マスターサービス パフォーマンス取得', () => {
         assert(performanceOption.isEmpty);
     });
 });
-
 
 describe('マスターサービス パフォーマンス検索', () => {
     it('searchPerformances by theater ok', (done) => {

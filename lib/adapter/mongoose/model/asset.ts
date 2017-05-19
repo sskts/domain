@@ -31,7 +31,6 @@ const schema = new mongoose.Schema(
         authorizations: [mongoose.Schema.Types.Mixed], // 承認リスト
         group: String, // 資産グループ
         price: Number,
-        qr_str: String,
 
         // todo チケットホルダーで参照するのに十分な情報を追加する
         performance: {

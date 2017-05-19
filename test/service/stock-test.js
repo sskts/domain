@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * 在庫サービステスト
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,27 +13,36 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * 在庫サービステスト
- *
- * @ignore
- */
 const assert = require("assert");
 const mongoose = require("mongoose");
 const argument_1 = require("../../lib/error/argument");
 const asset_1 = require("../../lib/adapter/asset");
+const film_1 = require("../../lib/adapter/film");
 const owner_1 = require("../../lib/adapter/owner");
+const performance_1 = require("../../lib/adapter/performance");
+const screen_1 = require("../../lib/adapter/screen");
+const theater_1 = require("../../lib/adapter/theater");
 const transaction_1 = require("../../lib/adapter/transaction");
-// import AssetGroup from '../../lib/factory/assetGroup';
 const CoaSeatReservationAuthorizationFactory = require("../../lib/factory/authorization/coaSeatReservation");
-// import AuthorizationGroup from '../../lib/factory/authorizationGroup';
 const objectId_1 = require("../../lib/factory/objectId");
 const TransactionFactory = require("../../lib/factory/transaction");
+const MasterService = require("../../lib/service/master");
 const StockService = require("../../lib/service/stock");
 let connection;
-before(() => {
+let testPerformance;
+before(() => __awaiter(this, void 0, void 0, function* () {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-});
+    // テスト用のパフォーマンス情報を取得
+    const theaterAdapter = new theater_1.default(connection);
+    const screenAdapter = new screen_1.default(connection);
+    const filmAdapter = new film_1.default(connection);
+    const performanceAdapter = new performance_1.default(connection);
+    yield MasterService.importTheater('118')(theaterAdapter);
+    yield MasterService.importScreens('118')(theaterAdapter, screenAdapter);
+    yield MasterService.importFilms('118')(theaterAdapter, filmAdapter);
+    yield MasterService.importPerformances('118', '20170401', '20170401')(filmAdapter, screenAdapter, performanceAdapter);
+    testPerformance = yield performanceAdapter.model.findOne().exec();
+}));
 describe('在庫サービス 取引照会無効化', () => {
     it('照会キーがなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
         const transactionAdapter = new transaction_1.default(connection);
@@ -53,6 +67,7 @@ describe('在庫サービス 座席予約資産移動', () => {
     it('成功', () => __awaiter(this, void 0, void 0, function* () {
         const assetAdapter = new asset_1.default(connection);
         const ownerAdapter = new owner_1.default(connection);
+        const performanceAdapter = new performance_1.default(connection);
         const authorization = {
             assets: [
                 {
@@ -75,8 +90,8 @@ describe('在庫サービス 座席予約資産移動', () => {
                     },
                     ticket_code: '10',
                     seat_code: 'Ａ－３',
-                    section: '   ',
-                    performance: '001201701208513021010',
+                    screen_section: '   ',
+                    performance: testPerformance.get('_id'),
                     authorizations: [],
                     price: 2800,
                     group: 'SEAT_RESERVATION',
@@ -107,8 +122,8 @@ describe('在庫サービス 座席予約資産移動', () => {
                     },
                     ticket_code: '10',
                     seat_code: 'Ａ－４',
-                    section: '   ',
-                    performance: '001201701208513021010',
+                    screen_section: '   ',
+                    performance: testPerformance.get('_id'),
                     authorizations: [],
                     price: 2800,
                     group: 'SEAT_RESERVATION',
@@ -133,24 +148,25 @@ describe('在庫サービス 座席予約資産移動', () => {
             group: 'COA_SEAT_RESERVATION',
             id: '58e344b236a44424c0997db2'
         };
-        yield StockService.transferCOASeatReservation(authorization)(assetAdapter, ownerAdapter);
+        yield StockService.transferCOASeatReservation(authorization)(assetAdapter, ownerAdapter, performanceAdapter);
         // 資産の存在を確認
         const asset1Doc = yield assetAdapter.model.findById('58e344b236a44424c0997daf').exec();
         assert.notEqual(asset1Doc, null);
         assert.equal(asset1Doc.get('mvtk_sales_price'), 0);
-        assert.equal(asset1Doc.get('performance'), '001201701208513021010');
+        assert.equal(asset1Doc.get('performance'), testPerformance.get('_id'));
         assert.equal(asset1Doc.get('seat_code'), 'Ａ－３');
         assert.equal(asset1Doc.get('ownership').owner, '58e344ac36a44424c0997dad');
         const asset2Doc = yield assetAdapter.model.findById('58e344b236a44424c0997db1').exec();
         assert.notEqual(asset2Doc, null);
         assert.equal(asset2Doc.get('mvtk_sales_price'), 0);
-        assert.equal(asset2Doc.get('performance'), '001201701208513021010');
+        assert.equal(asset2Doc.get('performance'), testPerformance.get('_id'));
         assert.equal(asset2Doc.get('seat_code'), 'Ａ－４');
         assert.equal(asset2Doc.get('ownership').owner, '58e344ac36a44424c0997dad');
     }));
     it('所有者が存在しないので座席予約資産移動失敗', () => __awaiter(this, void 0, void 0, function* () {
         const assetAdapter = new asset_1.default(connection);
         const ownerAdapter = new owner_1.default(connection);
+        const performanceAdapter = new performance_1.default(connection);
         const authorization = CoaSeatReservationAuthorizationFactory.create({
             price: 4000,
             owner_from: '5868e16789cc75249cdbfa4b',
@@ -165,7 +181,7 @@ describe('在庫サービス 座席予約資産移動', () => {
             assets: []
         });
         try {
-            yield StockService.transferCOASeatReservation(authorization)(assetAdapter, ownerAdapter);
+            yield StockService.transferCOASeatReservation(authorization)(assetAdapter, ownerAdapter, performanceAdapter);
         }
         catch (error) {
             assert(error instanceof argument_1.default);
@@ -177,6 +193,7 @@ describe('在庫サービス 座席予約資産移動', () => {
     it('所有者が一般所有者ではないので座席予約資産移動失敗', () => __awaiter(this, void 0, void 0, function* () {
         const assetAdapter = new asset_1.default(connection);
         const ownerAdapter = new owner_1.default(connection);
+        const performanceAdapter = new performance_1.default(connection);
         // テストデータ作成
         const ownerDoc = yield ownerAdapter.model.create({ group: 'xxx' });
         const authorization = CoaSeatReservationAuthorizationFactory.create({
@@ -194,7 +211,7 @@ describe('在庫サービス 座席予約資産移動', () => {
         });
         let transferCOASeatReservationError;
         try {
-            yield StockService.transferCOASeatReservation(authorization)(assetAdapter, ownerAdapter);
+            yield StockService.transferCOASeatReservation(authorization)(assetAdapter, ownerAdapter, performanceAdapter);
         }
         catch (error) {
             transferCOASeatReservationError = error;

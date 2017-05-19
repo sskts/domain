@@ -38,11 +38,12 @@ export interface IReferencesWithDetails {
     theater: {
         id: string;
         name: IMultilingualString;
+        name_kana: string;
+        address: IMultilingualString;
     };
     screen: {
         id: string;
         name: IMultilingualString;
-
     };
     film: {
         id: string;
@@ -51,6 +52,11 @@ export interface IReferencesWithDetails {
         name_short: string;
         name_original: string;
         minutes: number;
+        kbn_eirin: string;
+        kbn_eizou: string;
+        kbn_joueihousiki: string;
+        kbn_jimakufukikae: string;
+        copyright: string;
     };
 }
 

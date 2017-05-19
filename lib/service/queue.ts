@@ -10,6 +10,7 @@ import * as moment from 'moment';
 
 import AssetAdapter from '../adapter/asset';
 import OwnerAdapter from '../adapter/owner';
+import PerformanceAdapter from '../adapter/performance';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
 
@@ -22,8 +23,9 @@ import * as notificationService from './notification';
 import * as salesService from './sales';
 import * as stockService from './stock';
 
-export type AssetAndOwnerAndQueueOperation<T> =
-    (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, queueAdapter: QueueAdapter) => Promise<T>;
+export type AssetAndOwnerAndPerformanceAndQueueOperation<T> =
+    // tslint:disable-next-line:max-line-length
+    (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, performanceAdapter: PerformanceAdapter, queueAdapter: QueueAdapter) => Promise<T>;
 export type QueueOperation<T> = (queueAdapter: QueueAdapter) => Promise<T>;
 export type QueueAndTransactionOperation<T> = (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 
@@ -283,8 +285,9 @@ export function executeDisableTransactionInquiry(): QueueAndTransactionOperation
  * @returns {AssetAndQueueOperation<void>}
  * @memberof service/queue
  */
-export function executeSettleCOASeatReservationAuthorization(): AssetAndOwnerAndQueueOperation<void> {
-    return async (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, queueAdapter: QueueAdapter) => {
+export function executeSettleCOASeatReservationAuthorization(): AssetAndOwnerAndPerformanceAndQueueOperation<void> {
+    // tslint:disable-next-line:max-line-length
+    return async (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, performanceAdapter: PerformanceAdapter, queueAdapter: QueueAdapter) => {
         // 未実行のCOA資産移動キューを取得
         const queueDoc = await queueAdapter.model.findOneAndUpdate(
             {
@@ -308,7 +311,7 @@ export function executeSettleCOASeatReservationAuthorization(): AssetAndOwnerAnd
 
         try {
             // 失敗してもここでは戻さない(RUNNINGのまま待機)
-            await stockService.transferCOASeatReservation(queueDoc.get('authorization'))(assetAdapter, ownerAdapter);
+            await stockService.transferCOASeatReservation(queueDoc.get('authorization'))(assetAdapter, ownerAdapter, performanceAdapter);
             await queueAdapter.model.findByIdAndUpdate(
                 queueDoc.get('id'),
                 { status: QueueStatus.EXECUTED },

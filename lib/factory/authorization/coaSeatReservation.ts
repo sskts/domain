@@ -1,5 +1,6 @@
 /**
  * COA座席仮予約ファクトリー
+ * todo jsdoc
  *
  * @namespace factory/authorization/coaSeatReservation
  */
@@ -15,6 +16,11 @@ import AuthorizationGroup from '../authorizationGroup';
 import ObjectId from '../objectId';
 
 /**
+ * 座席予約承認に必要な資産インターフェース
+ */
+export type IAsset = SeatReservationAssetFactory.ISeatReservationAssetWithoutDetails;
+
+/**
  * COA座席仮予約
  *
  * @param {number} coa_tmp_reserve_num
@@ -24,8 +30,8 @@ import ObjectId from '../objectId';
  * @param {string} coa_title_branch_num
  * @param {string} coa_time_begin
  * @param {string} coa_screen_code
- * @param {Asset.ISeatReservationAsset[]} assets 資産リスト(COA側では複数座席に対してひとつの仮予約番号が割り当てられるため)
- * @memberof tobereplaced$
+ * @param {IAsset[]} assets 資産リスト(COA側では複数座席に対してひとつの仮予約番号が割り当てられるため)
+ * @memberof factory/authorization/coaSeatReservation
  */
 export interface ICOASeatReservationAuthorization extends AuthorizationFactory.IAuthorization {
     coa_tmp_reserve_num: number;
@@ -35,12 +41,12 @@ export interface ICOASeatReservationAuthorization extends AuthorizationFactory.I
     coa_title_branch_num: string;
     coa_time_begin: string;
     coa_screen_code: string;
-    assets: SeatReservationAssetFactory.ISeatReservationAsset[];
+    assets: IAsset[];
 }
 
 /**
  *
- * @memberof tobereplaced$
+ * @memberof factory/authorization/coaSeatReservation
  */
 export function create(args: {
     id?: string;
@@ -54,7 +60,7 @@ export function create(args: {
     coa_title_branch_num: string;
     coa_time_begin: string;
     coa_screen_code: string;
-    assets: SeatReservationAssetFactory.ISeatReservationAsset[];
+    assets: IAsset[];
 }): ICOASeatReservationAuthorization {
     if (_.isEmpty(args.owner_from)) throw new ArgumentNullError('owner_from');
     if (_.isEmpty(args.owner_to)) throw new ArgumentNullError('owner_to');

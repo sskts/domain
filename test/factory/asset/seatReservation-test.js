@@ -10,6 +10,8 @@ const argument_1 = require("../../../lib/error/argument");
 const argumentNull_1 = require("../../../lib/error/argumentNull");
 const SeatReservationAssetFactory = require("../../../lib/factory/asset/seatReservation");
 const OwnershipFactory = require("../../../lib/factory/ownership");
+const TransactionInquiryKeyFactory = require("../../../lib/factory/transactionInquiryKey");
+// 座席予約資産作成の有効な有効なパラメータをテストデータとして用意
 let validCreateSeatReservationAssetArgs;
 before(() => {
     validCreateSeatReservationAssetArgs = {
@@ -18,8 +20,42 @@ before(() => {
             authenticated: false
         }),
         performance: 'xxx',
-        section: 'xxx',
+        performance_day: 'xxx',
+        performance_time_start: 'xxx',
+        performance_time_end: 'xxx',
+        theater: 'xxx',
+        theater_name: {
+            en: 'xxx',
+            ja: 'xxx'
+        },
+        theater_name_kana: 'xxx',
+        theater_address: 'xxx',
+        screen: 'xxx',
+        screen_name: {
+            en: 'xxx',
+            ja: 'xxx'
+        },
+        screen_section: 'xxx',
         seat_code: 'xxx',
+        film: 'xxx',
+        film_name: {
+            en: 'xxx',
+            ja: 'xxx'
+        },
+        film_name_kana: 'xxx',
+        film_name_short: 'xxx',
+        film_name_original: 'xxx',
+        film_minutes: 'xxx',
+        film_kbn_eirin: 'xxx',
+        film_kbn_eizou: 'xxx',
+        film_kbn_joueihousiki: 'xxx',
+        film_kbn_jimakufukikae: 'xxx',
+        film_copyright: 'xxx',
+        transaction_inquiry_key: TransactionInquiryKeyFactory.create({
+            theater_code: 'xxx',
+            reserve_num: 123,
+            tel: '09012345678'
+        }),
         ticket_code: 'xxx',
         ticket_name: {
             en: 'xxx',
@@ -147,12 +183,12 @@ describe('座席予約資産ファクトリー', () => {
     });
     it('セクションがstringでないので作成できない', () => {
         const args = Object.assign({}, validCreateSeatReservationAssetArgs);
-        args.section = null;
+        args.screen_section = null;
         assert.throws(() => {
             SeatReservationAssetFactory.create(args);
         }, (err) => {
             assert(err instanceof argument_1.default);
-            assert.equal(err.argumentName, 'section');
+            assert.equal(err.argumentName, 'screen_section');
             return true;
         });
     });

@@ -116,14 +116,14 @@ async function main() {
         coa_time_begin: timeBegin,
         coa_screen_code: screenCode,
         assets: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
-            return sskts.factory.asset.seatReservation.create({
+            return sskts.factory.asset.seatReservation.createWithoutDetails({
                 ownership: sskts.factory.ownership.create({
                     owner: anonymousOwnerId,
                     authenticated: false
                 }),
                 authorizations: [],
                 performance: '001201701208513021010',
-                section: tmpReserve.seat_section,
+                screen_section: tmpReserve.seat_section,
                 seat_code: tmpReserve.seat_num,
                 ticket_code: salesTicketResult[0].ticket_code,
                 ticket_name: {

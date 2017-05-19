@@ -1,5 +1,6 @@
 /**
  * 座席予約資産ファクトリー
+ * todo jsdoc整備
  *
  * @namespace factory/asset/seatReservation
  */
@@ -15,104 +16,102 @@ import * as AuthorizationFactory from '../authorization';
 import IMultilingualString from '../multilingualString';
 import ObjectId from '../objectId';
 import * as OwnershipFactory from '../ownership';
+import * as TransactionInquiryKeyFactory from '../transactionInquiryKey';
+
+export interface IDetails {
+    theater: string;
+    screen: string;
+    film: string;
+    performance_day: string;
+    performance_time_start: string;
+    performance_time_end: string;
+    theater_name: IMultilingualString;
+    theater_name_kana: string;
+    theater_address: IMultilingualString;
+    screen_name: IMultilingualString;
+    film_name: IMultilingualString;
+    film_name_kana: string;
+    film_name_short: string;
+    film_name_original: string;
+    film_minutes: number;
+    film_kbn_eirin: string;
+    film_kbn_eizou: string;
+    film_kbn_joueihousiki: string;
+    film_kbn_jimakufukikae: string;
+    film_copyright: string;
+    transaction_inquiry_key: TransactionInquiryKeyFactory.ITransactionInquiryKey;
+}
+
+export interface IMvtkFields {
+    mvtk_app_price: number;
+    kbn_eisyahousiki: string;
+    mvtk_num: string;
+    mvtk_kbn_denshiken: string;
+    mvtk_kbn_maeuriken: string;
+    mvtk_kbn_kensyu: string;
+    mvtk_sales_price: number;
+}
+
+export interface ISeatReservationAssetBase extends AssetFactory.IAsset {
+    performance: string;
+    screen_section: string;
+    seat_code: string;
+    ticket_code: string;
+    ticket_name: IMultilingualString;
+    ticket_name_kana: string;
+    std_price: number;
+    add_price: number;
+    dis_price: number;
+    sale_price: number;
+    add_glasses: number;
+}
+
+export type ISeatReservationAssetWithoutDetails = ISeatReservationAssetBase & IMvtkFields;
 
 /**
  * 座席予約資産
  *
  * @interface ISeatReservationAsset
  * @extends {IAsset}
- * @memberof tobereplaced$
+ * @memberof factory/asset/seatReservation
  */
-export interface ISeatReservationAsset extends AssetFactory.IAsset {
-    ownership: OwnershipFactory.IOwnership;
-    /**
-     * パフォーマンス
-     */
-    performance: string;
-    /**
-     * スクリーンセクション
-     */
-    section: string;
-    /**
-     * 座席コード
-     */
-    seat_code: string;
-    /**
-     * 券種コード
-     */
-    ticket_code: string;
-    /**
-     * 券種名
-     */
-    ticket_name: IMultilingualString;
-    /**
-     * 券種名(カナ)
-     */
-    ticket_name_kana: string;
-    /**
-     * 標準単価
-     */
-    std_price: number;
-    /**
-     * 加算単価
-     */
-    add_price: number;
-    /**
-     * 割引額
-     */
-    dis_price: number;
-    /**
-     * 販売単価
-     */
-    sale_price: number;
-    /**
-     * ムビチケ計上単価
-     */
-    mvtk_app_price: number;
-    /**
-     * メガネ単価
-     */
-    add_glasses: number;
-    /**
-     * ムビチケ映写方式区分
-     */
-    kbn_eisyahousiki: string;
-    /**
-     * ムビチケ購入管理番号
-     */
-    mvtk_num: string;
-    /**
-     * ムビチケ電子券区分
-     */
-    mvtk_kbn_denshiken: string;
-    /**
-     * ムビチケ前売券区分
-     */
-    mvtk_kbn_maeuriken: string;
-    /**
-     * ムビチケ券種区分
-     */
-    mvtk_kbn_kensyu: string;
-    /**
-     * ムビチケ販売単価
-     */
-    mvtk_sales_price: number;
-}
+export type ISeatReservationAsset = ISeatReservationAssetWithoutDetails & IDetails;
 
 /**
  * 座席予約資産を作成する
  *
  * @returns {SeatReservationAsset}
- * @memberof tobereplaced$
+ * @memberof factory/asset/seatReservation
  */
 // tslint:disable-next-line:cyclomatic-complexity
 export function create(args: {
-    id?: string,
+    id?: string;
     ownership: OwnershipFactory.IOwnership;
     authorizations?: AuthorizationFactory.IAuthorization[];
     performance: string;
-    section: string;
+    performance_day: string;
+    performance_time_start: string;
+    performance_time_end: string;
+    theater: string;
+    theater_name: IMultilingualString;
+    theater_name_kana: string;
+    theater_address: IMultilingualString;
+    screen: string;
+    screen_name: IMultilingualString;
+    screen_section: string;
     seat_code: string;
+    film: string;
+    film_name: IMultilingualString;
+    film_name_kana: string;
+    film_name_short: string;
+    film_name_original: string;
+    film_minutes: number;
+    film_kbn_eirin: string;
+    film_kbn_eizou: string;
+    film_kbn_joueihousiki: string;
+    film_kbn_jimakufukikae: string;
+    film_copyright: string;
+    transaction_inquiry_key: TransactionInquiryKeyFactory.ITransactionInquiryKey;
     ticket_code: string;
     ticket_name: IMultilingualString;
     ticket_name_kana: string;
@@ -129,7 +128,60 @@ export function create(args: {
     mvtk_kbn_kensyu: string;
     mvtk_sales_price: number;
 }): ISeatReservationAsset {
-    if (!_.isString(args.section)) throw new ArgumentError('section', 'section should be string');
+    const seatReservationAssetWithoutDetails = createWithoutDetails(args);
+
+    // todo validation
+
+    return Object.assign(seatReservationAssetWithoutDetails, {
+        performance_day: args.performance_day,
+        performance_time_start: args.performance_time_start,
+        performance_time_end: args.performance_time_end,
+        theater: args.theater,
+        theater_name: args.theater_name,
+        theater_name_kana: args.theater_name_kana,
+        theater_address: args.theater_address,
+        screen: args.screen,
+        screen_name: args.screen_name,
+        film: args.film,
+        film_name: args.film_name,
+        film_name_kana: args.film_name_kana,
+        film_name_short: args.film_name_short,
+        film_name_original: args.film_name_original,
+        film_minutes: args.film_minutes,
+        film_kbn_eirin: args.film_kbn_eirin,
+        film_kbn_eizou: args.film_kbn_eizou,
+        film_kbn_joueihousiki: args.film_kbn_joueihousiki,
+        film_kbn_jimakufukikae: args.film_kbn_jimakufukikae,
+        film_copyright: args.film_copyright,
+        transaction_inquiry_key: args.transaction_inquiry_key
+    });
+}
+
+// tslint:disable-next-line:cyclomatic-complexity
+export function createWithoutDetails(args: {
+    id?: string;
+    ownership: OwnershipFactory.IOwnership;
+    authorizations?: AuthorizationFactory.IAuthorization[];
+    performance: string;
+    screen_section: string;
+    seat_code: string;
+    ticket_code: string;
+    ticket_name: IMultilingualString;
+    ticket_name_kana: string;
+    std_price: number;
+    add_price: number;
+    dis_price: number;
+    sale_price: number;
+    mvtk_app_price: number;
+    add_glasses: number;
+    kbn_eisyahousiki: string;
+    mvtk_num: string;
+    mvtk_kbn_denshiken: string;
+    mvtk_kbn_maeuriken: string;
+    mvtk_kbn_kensyu: string;
+    mvtk_sales_price: number;
+}): ISeatReservationAssetWithoutDetails {
+    if (!_.isString(args.screen_section)) throw new ArgumentError('screen_section', 'screen_section should be string');
     if (!_.isString(args.ticket_name_kana)) throw new ArgumentError('ticket_name_kana', 'ticket_name_kana should be string');
     if (!_.isString(args.mvtk_num)) throw new ArgumentError('mvtk_num', 'mvtk_num should be string');
     if (!_.isString(args.ticket_name.en)) throw new ArgumentError('ticket_name.en', 'ticket_name.en should be string');
@@ -158,7 +210,7 @@ export function create(args: {
         price: args.sale_price,
         authorizations: (args.authorizations === undefined) ? [] : args.authorizations,
         performance: args.performance,
-        section: args.section,
+        screen_section: args.screen_section,
         seat_code: args.seat_code,
         ticket_code: args.ticket_code,
         ticket_name: args.ticket_name,

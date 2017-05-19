@@ -16,7 +16,7 @@ function main() {
         try {
             mongoose.Promise = global.Promise;
             const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-            const performance = yield sskts.service.master.findPerformance('11820170325162210101720')(sskts.adapter.performance(connection));
+            const performance = yield sskts.service.master.findPerformance('11820170401162210101000')(sskts.adapter.performance(connection));
             console.log(performance);
         }
         catch (error) {

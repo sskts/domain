@@ -10,14 +10,17 @@ import * as _ from 'underscore';
 
 import ArgumentError from '../error/argument';
 
+import * as SeatReservationAssetFactory from '../factory/asset/seatReservation';
 import * as COASeatReservationAuthorizationFactory from '../factory/authorization/coaSeatReservation';
 import * as AnonymousOwnerFactory from '../factory/owner/anonymous';
 import OwnerGroup from '../factory/ownerGroup';
+import * as PerformanceFactory from '../factory/performance';
 import * as TransactionFactory from '../factory/transaction';
 import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
 
 import AssetAdapter from '../adapter/asset';
 import OwnerAdapter from '../adapter/owner';
+import PerformanceAdapter from '../adapter/performance';
 import TransactionAdapter from '../adapter/transaction';
 
 const debug = createDebug('sskts-domain:service:stock');
@@ -52,19 +55,10 @@ export function unauthorizeCOASeatReservation(authorization: COASeatReservationA
  * @memberof service/stock
  */
 export function transferCOASeatReservation(authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization) {
-    return async (assetAdapter: AssetAdapter, ownertAdapter: OwnerAdapter) => {
-        const promises = authorization.assets.map(async (asset) => {
-            // 資産永続化
-            debug('storing asset...', asset);
-            await assetAdapter.model.findByIdAndUpdate(asset.id, asset, { new: true, upsert: true }).exec();
-            debug('asset stored.');
-        });
-
-        // 資産永続化は成功後もリトライできるのでCOA本予約の先に行う
-        await Promise.all(promises);
-
+    // tslint:disable-next-line:max-func-body-length
+    return async (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, performanceAdapter: PerformanceAdapter) => {
         // 所有者情報を取得
-        const ownerDoc = await ownertAdapter.model.findById(authorization.owner_to).exec();
+        const ownerDoc = await ownerAdapter.model.findById(authorization.owner_to).exec();
 
         if (ownerDoc === null) {
             throw new ArgumentError('authorization.owner_to', 'owner not found');
@@ -79,8 +73,19 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
         const owner = <AnonymousOwnerFactory.IAnonymousOwner>ownerDoc.toObject();
         debug('owner:', owner);
 
-        // COA本予約
-        // COA本予約は一度成功すると成功できない
+        // パフォーマンス情報詳細を取得
+        const performanceDoc = await performanceAdapter.model.findById(authorization.assets[0].performance)
+            .populate('theater')
+            .populate('screen')
+            .populate('film')
+            .exec();
+
+        if (performanceDoc === null) {
+            throw new ArgumentError('authorization.assets[0].performance', 'performance not found');
+        }
+
+        const performance = <PerformanceFactory.IPerformanceWithReferenceDetails>performanceDoc.toObject();
+
         // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
         // すでに本予約済みかどうか確認
         const stateReserveResult = await COA.ReserveService.stateReserve({
@@ -89,46 +94,100 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
             tel_num: owner.tel
         });
 
-        if (stateReserveResult !== null) {
-            // すでに本予約済み
-            return;
+        // COA本予約
+        // 未本予約であれば実行(COA本予約は一度成功すると成功できない)
+        let updReserveResult: COA.ReserveService.IUpdReserveResult;
+        if (stateReserveResult === null) {
+            updReserveResult = await COA.ReserveService.updReserve({
+                theater_code: authorization.coa_theater_code,
+                date_jouei: authorization.coa_date_jouei,
+                title_code: authorization.coa_title_code,
+                title_branch_num: authorization.coa_title_branch_num,
+                time_begin: authorization.coa_time_begin,
+                tmp_reserve_num: authorization.coa_tmp_reserve_num,
+                reserve_name: `${owner.name_last}　${owner.name_first}`,
+                reserve_name_jkana: `${owner.name_last}　${owner.name_first}`,
+                tel_num: owner.tel,
+                mail_addr: owner.email,
+                reserve_amount: authorization.assets.reduce(
+                    (a, b) => a + b.sale_price,
+                    0
+                ),
+                list_ticket: authorization.assets.map((asset) => {
+                    return {
+                        ticket_code: asset.ticket_code,
+                        std_price: asset.std_price,
+                        add_price: asset.add_price,
+                        dis_price: 0,
+                        sale_price: (asset.std_price + asset.add_price),
+                        ticket_count: 1,
+                        mvtk_app_price: asset.mvtk_app_price,
+                        seat_num: asset.seat_code,
+                        add_glasses: asset.add_glasses,
+                        kbn_eisyahousiki: asset.kbn_eisyahousiki,
+                        mvtk_num: asset.mvtk_num,
+                        mvtk_kbn_denshiken: asset.mvtk_kbn_denshiken,
+                        mvtk_kbn_maeuriken: asset.mvtk_kbn_maeuriken,
+                        mvtk_kbn_kensyu: asset.mvtk_kbn_kensyu,
+                        mvtk_sales_price: asset.mvtk_sales_price
+                    };
+                })
+            });
         }
 
-        await COA.ReserveService.updReserve({
-            theater_code: authorization.coa_theater_code,
-            date_jouei: authorization.coa_date_jouei,
-            title_code: authorization.coa_title_code,
-            title_branch_num: authorization.coa_title_branch_num,
-            time_begin: authorization.coa_time_begin,
-            tmp_reserve_num: authorization.coa_tmp_reserve_num,
-            reserve_name: `${owner.name_last}　${owner.name_first}`,
-            reserve_name_jkana: `${owner.name_last}　${owner.name_first}`,
-            tel_num: owner.tel,
-            mail_addr: owner.email,
-            reserve_amount: authorization.assets.reduce(
-                (a, b) => a + b.sale_price,
-                0
-            ),
-            list_ticket: authorization.assets.map((asset) => {
-                return {
-                    ticket_code: asset.ticket_code,
-                    std_price: asset.std_price,
-                    add_price: asset.add_price,
-                    dis_price: 0,
-                    sale_price: (asset.std_price + asset.add_price),
-                    ticket_count: 1,
-                    mvtk_app_price: asset.mvtk_app_price,
-                    seat_num: asset.seat_code,
-                    add_glasses: asset.add_glasses,
-                    kbn_eisyahousiki: asset.kbn_eisyahousiki,
-                    mvtk_num: asset.mvtk_num,
-                    mvtk_kbn_denshiken: asset.mvtk_kbn_denshiken,
-                    mvtk_kbn_maeuriken: asset.mvtk_kbn_maeuriken,
-                    mvtk_kbn_kensyu: asset.mvtk_kbn_kensyu,
-                    mvtk_sales_price: asset.mvtk_sales_price
-                };
-            })
-        });
+        // 資産永続化(リトライできるように)
+        await Promise.all(authorization.assets.map(async (asset) => {
+            // 座席予約資産に詳細情報を追加
+            // 本来この時点でownershop.idは決定しているはずだが、COAとの連携の場合本予約で初めてQR文字列を取得できるので、ここで置き換える
+            // 具体的には、本予約結果もしくは購入チケット内容抽出結果から該当座席コードのQR文字列を取り出す
+            let qr: string;
+            if (stateReserveResult !== null) {
+                // tslint:disable-next-line:max-line-length
+                qr = (<COA.ReserveService.IStateReserveTicket>stateReserveResult.list_ticket.find((stateReserveTicket) => (stateReserveTicket.seat_num === asset.seat_code))).seat_qrcode;
+            } else {
+                // tslint:disable-next-line:max-line-length
+                qr = (<COA.ReserveService.IUpdReserveQR>updReserveResult.list_qr.find((updReserveQR) => (updReserveQR.seat_num === asset.seat_code))).seat_qrcode;
+            }
+
+            const args = Object.assign(asset, {
+                ownership: {
+                    id: qr,
+                    owner: owner.id,
+                    authenticated: false
+                },
+                performance_day: performance.day,
+                performance_time_start: performance.time_start,
+                performance_time_end: performance.time_end,
+                theater: performance.theater.id,
+                theater_name: performance.theater.name,
+                theater_name_kana: performance.theater.name_kana,
+                theater_address: performance.theater.address,
+                screen: performance.screen.id,
+                screen_name: performance.screen.name,
+                film: performance.film.id,
+                film_name: performance.film.name,
+                film_name_kana: performance.film.name_kana,
+                film_name_short: performance.film.name_short,
+                film_name_original: performance.film.name_original,
+                film_minutes: performance.film.minutes,
+                film_kbn_eirin: performance.film.kbn_eirin,
+                film_kbn_eizou: performance.film.kbn_eizou,
+                film_kbn_joueihousiki: performance.film.kbn_joueihousiki,
+                film_kbn_jimakufukikae: performance.film.kbn_jimakufukikae,
+                film_copyright: performance.film.copyright,
+                transaction_inquiry_key: TransactionInquiryKeyFactory.create({
+                    theater_code: performance.theater.id,
+                    reserve_num: authorization.coa_tmp_reserve_num,
+                    tel: owner.tel
+                })
+            });
+            const seatReservationAsset = SeatReservationAssetFactory.create(args);
+
+            // 資産永続化
+            debug('storing asset...', asset);
+            await assetAdapter.model.findByIdAndUpdate(seatReservationAsset.id, seatReservationAsset, { new: true, upsert: true }).exec();
+            debug('asset stored.');
+        }));
     };
 }
 

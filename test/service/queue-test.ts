@@ -7,7 +7,13 @@ import * as assert from 'assert';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-import * as SeatReservationAssetFactory from '../../lib/factory/asset/seatReservation';
+import AssetAdapter from '../../lib/adapter/asset';
+import OwnerAdapter from '../../lib/adapter/owner';
+import PerformanceAdapter from '../../lib/adapter/performance';
+import QueueAdapter from '../../lib/adapter/queue';
+import TransactionAdapter from '../../lib/adapter/transaction';
+
+import AssetGroup from '../../lib/factory/assetGroup';
 import * as CoaSeatReservationAuthorizationFactory from '../../lib/factory/authorization/coaSeatReservation';
 import * as GmoAuthorizationFactory from '../../lib/factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from '../../lib/factory/authorization/mvtk';
@@ -23,21 +29,21 @@ import QueueStatus from '../../lib/factory/queueStatus';
 import * as TransactionFactory from '../../lib/factory/transaction';
 import TransactionStatus from '../../lib/factory/transactionStatus';
 
-import * as sskts from '../../lib/index';
+import * as QueueService from '../../lib/service/queue';
 
 let connection: mongoose.Connection;
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 
     // 全て削除してからテスト開始
-    const queueAdapter = sskts.adapter.queue(connection);
+    const queueAdapter = new QueueAdapter(connection);
     await queueAdapter.model.remove({}).exec();
 });
 
 describe('キューサービス', () => {
     it('Eメール送信キューがなければ何もしない', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
-        await sskts.service.queue.executeSendEmailNotification()(queueAdapter);
+        const queueAdapter = new QueueAdapter(connection);
+        await QueueService.executeSendEmailNotification()(queueAdapter);
 
         // 実行済みのキューはないはず
         const queueDoc = await queueAdapter.model.findOne({
@@ -48,8 +54,8 @@ describe('キューサービス', () => {
     });
 
     it('COA仮予約キャンセルキューがなければ何もしない', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
-        await sskts.service.queue.executeCancelCOASeatReservationAuthorization()(queueAdapter);
+        const queueAdapter = new QueueAdapter(connection);
+        await QueueService.executeCancelCOASeatReservationAuthorization()(queueAdapter);
 
         // 実行済みのキューはないはず
         const queueDoc = await queueAdapter.model.findOne({
@@ -60,8 +66,8 @@ describe('キューサービス', () => {
     });
 
     it('GMO仮売上取消キューがなければ何もしない', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
-        await sskts.service.queue.executeCancelGMOAuthorization()(queueAdapter);
+        const queueAdapter = new QueueAdapter(connection);
+        await QueueService.executeCancelGMOAuthorization()(queueAdapter);
 
         // 実行済みのキューはないはず
         const queueDoc = await queueAdapter.model.findOne({
@@ -72,9 +78,9 @@ describe('キューサービス', () => {
     });
 
     it('取引照会無効化キューがなければ何もしない', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        await sskts.service.queue.executeDisableTransactionInquiry()(queueAdapter, transactionAdapter);
+        const queueAdapter = new QueueAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+        await QueueService.executeDisableTransactionInquiry()(queueAdapter, transactionAdapter);
 
         // 実行済みのキューはないはず
         const queueDoc = await queueAdapter.model.findOne({
@@ -85,10 +91,12 @@ describe('キューサービス', () => {
     });
 
     it('COA本予約キューがなければ何もしない', async () => {
-        const assetAdapter = sskts.adapter.asset(connection);
-        const ownerAdapter = sskts.adapter.owner(connection);
-        const queueAdapter = sskts.adapter.queue(connection);
-        await sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, ownerAdapter, queueAdapter);
+        const assetAdapter = new AssetAdapter(connection);
+        const ownerAdapter = new OwnerAdapter(connection);
+        const performanceAdapter = new PerformanceAdapter(connection);
+        const queueAdapter = new QueueAdapter(connection);
+        // tslint:disable-next-line:max-line-length
+        await QueueService.executeSettleCOASeatReservationAuthorization()(assetAdapter, ownerAdapter, performanceAdapter, queueAdapter);
 
         // 実行済みのキューはないはず
         const queueDoc = await queueAdapter.model.findOne({
@@ -99,8 +107,8 @@ describe('キューサービス', () => {
     });
 
     it('GMO実売上キューがなければ何もしない', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
-        await sskts.service.queue.executeSettleGMOAuthorization()(queueAdapter);
+        const queueAdapter = new QueueAdapter(connection);
+        await QueueService.executeSettleGMOAuthorization()(queueAdapter);
 
         // 実行済みのキューはないはず
         const queueDoc = await queueAdapter.model.findOne({
@@ -111,8 +119,8 @@ describe('キューサービス', () => {
     });
 
     it('ムビチケ資産移動キューがなければ何もしない', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
-        await sskts.service.queue.executeSettleMvtkAuthorization()(queueAdapter);
+        const queueAdapter = new QueueAdapter(connection);
+        await QueueService.executeSettleMvtkAuthorization()(queueAdapter);
 
         // 実行済みのキューはないはず
         const queueDoc = await queueAdapter.model.findOne({
@@ -123,7 +131,7 @@ describe('キューサービス', () => {
     });
 
     it('実行日時の早さよりも試行回数の少なさを優先する', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const queueAdapter = new QueueAdapter(connection);
 
         // test data
         // 20分前
@@ -161,7 +169,7 @@ describe('キューサービス', () => {
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
         await queueAdapter.model.findByIdAndUpdate(queue2.id, queue2, { new: true, upsert: true }).exec();
 
-        await sskts.service.queue.executeSendEmailNotification()(queueAdapter);
+        await QueueService.executeSendEmailNotification()(queueAdapter);
 
         // 試行回数の少ない方が優先されるはず
         const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
@@ -175,7 +183,7 @@ describe('キューサービス', () => {
     });
 
     it('Eメール通知成功', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const queueAdapter = new QueueAdapter(connection);
 
         // test data
         const queue = PushNotificationQueueFactory.create({
@@ -194,7 +202,7 @@ describe('キューサービス', () => {
         });
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
-        await sskts.service.queue.executeSendEmailNotification()(queueAdapter);
+        await QueueService.executeSendEmailNotification()(queueAdapter);
 
         const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.EXECUTED);
@@ -204,9 +212,10 @@ describe('キューサービス', () => {
     });
 
     it('COA仮予約承認が不適切なので資産移動失敗', async () => {
-        const assetAdapter = sskts.adapter.asset(connection);
-        const ownerAdapter = sskts.adapter.owner(connection);
-        const queueAdapter = sskts.adapter.queue(connection);
+        const assetAdapter = new AssetAdapter(connection);
+        const ownerAdapter = new OwnerAdapter(connection);
+        const performanceAdapter = new PerformanceAdapter(connection);
+        const queueAdapter = new QueueAdapter(connection);
 
         // test data
         const queue = SettleAuthorizationQueueFactory.create({
@@ -222,14 +231,17 @@ describe('キューサービス', () => {
                 coa_time_begin: '000',
                 coa_screen_code: '000',
                 assets: [
-                    SeatReservationAssetFactory.create({
+                    {
                         id: 'xxx',
+                        group: AssetGroup.SEAT_RESERVATION,
+                        price: 0,
+                        authorizations: [],
                         ownership: OwnershipFactory.create({
                             owner: 'xxx',
                             authenticated: false
                         }),
                         performance: 'xxx',
-                        section: '',
+                        screen_section: '',
                         seat_code: 'xxx',
                         ticket_code: 'xxx',
                         ticket_name: {
@@ -249,7 +261,7 @@ describe('キューサービス', () => {
                         mvtk_kbn_maeuriken: '00',
                         mvtk_kbn_kensyu: '00',
                         mvtk_sales_price: 0
-                    })
+                    }
                 ]
             }),
             status: QueueStatus.UNEXECUTED,
@@ -261,7 +273,8 @@ describe('キューサービス', () => {
         });
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
-        await sskts.service.queue.executeSettleCOASeatReservationAuthorization()(assetAdapter, ownerAdapter, queueAdapter);
+        // tslint:disable-next-line:max-line-length
+        await QueueService.executeSettleCOASeatReservationAuthorization()(assetAdapter, ownerAdapter, performanceAdapter, queueAdapter);
 
         const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
@@ -271,7 +284,7 @@ describe('キューサービス', () => {
     });
 
     it('GMOオーソリが不適切なので実売上失敗', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const queueAdapter = new QueueAdapter(connection);
 
         // test data
         const queue = SettleAuthorizationQueueFactory.create({
@@ -298,7 +311,7 @@ describe('キューサービス', () => {
         });
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
-        await sskts.service.queue.executeSettleGMOAuthorization()(queueAdapter);
+        await QueueService.executeSettleGMOAuthorization()(queueAdapter);
 
         const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
@@ -308,8 +321,8 @@ describe('キューサービス', () => {
     });
 
     it('照会キーがないので取引照会無効化失敗', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
+        const queueAdapter = new QueueAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
 
         // test data
         const queue = DisableTransactionInquiryQueueFactory.create({
@@ -327,7 +340,7 @@ describe('キューサービス', () => {
         });
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
-        await sskts.service.queue.executeDisableTransactionInquiry()(queueAdapter, transactionAdapter);
+        await QueueService.executeDisableTransactionInquiry()(queueAdapter, transactionAdapter);
 
         const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
@@ -339,7 +352,7 @@ describe('キューサービス', () => {
 
 describe('キューサービス 中止', () => {
     it('最大試行回数に達すると中止する', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const queueAdapter = new QueueAdapter(connection);
 
         // test data
         const queue = PushNotificationQueueFactory.create({
@@ -358,7 +371,7 @@ describe('キューサービス 中止', () => {
         });
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
-        await sskts.service.queue.abort(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
+        await QueueService.abort(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
 
         // ステータスが変更されているかどうか確認
         const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
@@ -371,7 +384,7 @@ describe('キューサービス 中止', () => {
 
 describe('キューサービス リトライ', () => {
     it('最大試行回数に達していなければリトライする', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const queueAdapter = new QueueAdapter(connection);
 
         // test data
         const queue = PushNotificationQueueFactory.create({
@@ -390,7 +403,7 @@ describe('キューサービス リトライ', () => {
         });
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
-        await sskts.service.queue.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
+        await QueueService.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
 
         // ステータスが変更されているかどうか確認
         const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
@@ -401,7 +414,7 @@ describe('キューサービス リトライ', () => {
     });
 
     it('最大試行回数に達するとリトライしない', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const queueAdapter = new QueueAdapter(connection);
 
         // test data
         const queue = PushNotificationQueueFactory.create({
@@ -420,7 +433,7 @@ describe('キューサービス リトライ', () => {
         });
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
-        await sskts.service.queue.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
+        await QueueService.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
 
         // ステータスが変更されているかどうか確認
         const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
@@ -431,7 +444,7 @@ describe('キューサービス リトライ', () => {
     });
 
     it('最終試行日時から指定インターバル経過していなければリトライしない', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const queueAdapter = new QueueAdapter(connection);
 
         // test data
         const queue = PushNotificationQueueFactory.create({
@@ -451,7 +464,7 @@ describe('キューサービス リトライ', () => {
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
         // 9分前に最終試行に対して、10分のインターバルでリトライ
-        await sskts.service.queue.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
+        await QueueService.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
 
         // ステータスが変更されているかどうか確認
         const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
@@ -464,8 +477,8 @@ describe('キューサービス リトライ', () => {
 
 describe('キューサービス ムビチケ着券取消キュー実行', () => {
     it('ムビチケ着券取消キューがなければ何もしない', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
-        await sskts.service.queue.executeCancelMvtkAuthorization()(queueAdapter);
+        const queueAdapter = new QueueAdapter(connection);
+        await QueueService.executeCancelMvtkAuthorization()(queueAdapter);
 
         // 実行済みのキューはないはず
         const queueDoc = await queueAdapter.model.findOne({
@@ -477,7 +490,7 @@ describe('キューサービス ムビチケ着券取消キュー実行', () => 
     });
 
     it('OK', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const queueAdapter = new QueueAdapter(connection);
 
         // test data
         const queue = CancelAuthorizationQueueFactory.create({
@@ -516,7 +529,7 @@ describe('キューサービス ムビチケ着券取消キュー実行', () => 
         });
         await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
 
-        await sskts.service.queue.executeCancelMvtkAuthorization()(queueAdapter);
+        await QueueService.executeCancelMvtkAuthorization()(queueAdapter);
 
         // ステータスが変更されているかどうか確認
         const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
