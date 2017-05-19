@@ -9,17 +9,16 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/coa-service": "^3.0.0",
+    "@motionpicture/coa-service": "^3.0.1",
     "@motionpicture/gmo-service": "^3.1.0",
-    "@types/mongoose": "^4.7.12",
+    "@types/mongoose": "^4.7.13",
     "bcryptjs": "^2.4.3",
     "clone": "^2.1.1",
-    "debug": "^2.6.7",
+    "debug": "^2.6.8",
     "http-status": "^1.0.1",
-    "i18n": "^0.8.3",
     "moment": "^2.18.1",
     "monapt": "^0.7.1",
-    "mongoose": "^4.9.9",
+    "mongoose": "^4.10.0",
     "redis": "^2.7.1",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4",
@@ -74,5 +73,5 @@
     "postversion": "git push origin --tags"
   },
   "types": "./types/lib/index.d.ts",
-  "version": "13.0.2"
+  "version": "13.0.4"
 }
