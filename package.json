@@ -73,5 +73,5 @@
     "postversion": "git push origin --tags"
   },
   "types": "./types/lib/index.d.ts",
-  "version": "13.0.4"
+  "version": "14.0.0"
 }
