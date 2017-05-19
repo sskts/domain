@@ -76,6 +76,7 @@ describe('ムビチケ着券情報ファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'knyknr_no_info');
+
                 return true;
             }
         );
@@ -117,6 +118,7 @@ describe('ムビチケ着券情報ファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'zsk_info');
+
                 return true;
             }
         );
@@ -161,6 +163,7 @@ describe('ムビチケ着券情報ファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'price');
+
                 return true;
             }
         );

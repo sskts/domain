@@ -15,7 +15,7 @@ describe('取引照会キーファクトリー', () => {
             TransactionInquiryKeyFactory.create({
                 theater_code: 'xxx',
                 reserve_num: 123,
-                tel: 'xxx',
+                tel: 'xxx'
             });
         });
     });
@@ -24,7 +24,7 @@ describe('取引照会キーファクトリー', () => {
             TransactionInquiryKeyFactory.create({
                 theater_code: '',
                 reserve_num: 123,
-                tel: 'xxx',
+                tel: 'xxx'
             });
         }, (err) => {
             assert(err instanceof argumentNull_1.default);
@@ -37,7 +37,7 @@ describe('取引照会キーファクトリー', () => {
             TransactionInquiryKeyFactory.create({
                 theater_code: 'xxx',
                 reserve_num: '123',
-                tel: 'xxx',
+                tel: 'xxx'
             });
         }, (err) => {
             assert(err instanceof argument_1.default);

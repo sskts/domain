@@ -34,6 +34,7 @@ describe('Eメール通知ファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'subject');
+
                 return true;
             }
         );
@@ -52,6 +53,7 @@ describe('Eメール通知ファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'from');
+
                 return true;
             }
         );
@@ -70,6 +72,7 @@ describe('Eメール通知ファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'to');
+
                 return true;
             }
         );

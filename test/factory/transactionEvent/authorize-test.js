@@ -86,11 +86,12 @@ describe('承認取引イベントファクトリー', () => {
         });
     });
     it('承認が空なので作成できない', () => {
+        const authorization = {};
         assert.throws(() => {
             AuthorizeTransactionEventFactory.create({
                 transaction: 'xxx',
                 occurred_at: new Date(),
-                authorization: {}
+                authorization: authorization
             });
         }, (err) => {
             assert(err instanceof argumentNull_1.default);

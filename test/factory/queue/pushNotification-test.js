@@ -32,9 +32,10 @@ describe('プッシュ通知キューファクトリー', () => {
         });
     });
     it('通知が空なので作成できない', () => {
+        const notification = {};
         assert.throws(() => {
             PushNotificationQueueFactory.create({
-                notification: {},
+                notification: notification,
                 status: queueStatus_1.default.UNEXECUTED,
                 run_at: new Date(),
                 max_count_try: 10,
@@ -124,13 +125,14 @@ describe('プッシュ通知キューファクトリー', () => {
             subject: 'xxx',
             content: 'xxx'
         });
+        const lastTriedAt = {};
         assert.throws(() => {
             PushNotificationQueueFactory.create({
                 notification: notification,
                 status: queueStatus_1.default.UNEXECUTED,
                 run_at: new Date(),
                 max_count_try: 10,
-                last_tried_at: {},
+                last_tried_at: lastTriedAt,
                 count_tried: 0,
                 results: []
             });
@@ -170,6 +172,7 @@ describe('プッシュ通知キューファクトリー', () => {
             subject: 'xxx',
             content: 'xxx'
         });
+        const results = {};
         assert.throws(() => {
             PushNotificationQueueFactory.create({
                 notification: notification,
@@ -178,7 +181,7 @@ describe('プッシュ通知キューファクトリー', () => {
                 max_count_try: 10,
                 last_tried_at: null,
                 count_tried: 0,
-                results: {}
+                results: results
             });
         }, (err) => {
             assert(err instanceof argument_1.default);

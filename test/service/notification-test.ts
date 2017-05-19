@@ -39,6 +39,7 @@ describe('通知サービス Eメール通知', () => {
         } catch (error) {
             assert(error instanceof Error);
             assert.equal(error.constructor.name, 'SendGridError');
+
             return;
         }
 

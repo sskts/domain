@@ -34,10 +34,11 @@ describe('プッシュ通知キューファクトリー', () => {
     });
 
     it('通知が空なので作成できない', () => {
+        const notification: any = {};
         assert.throws(
             () => {
                 PushNotificationQueueFactory.create({
-                    notification: <any>{},
+                    notification: notification,
                     status: QueueStatus.UNEXECUTED,
                     run_at: new Date(),
                     max_count_try: 10,
@@ -49,6 +50,7 @@ describe('プッシュ通知キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'notification');
+
                 return true;
             }
         );
@@ -77,6 +79,7 @@ describe('プッシュ通知キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'status');
+
                 return true;
             }
         );
@@ -105,6 +108,7 @@ describe('プッシュ通知キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'run_at');
+
                 return true;
             }
         );
@@ -133,6 +137,7 @@ describe('プッシュ通知キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'max_count_try');
+
                 return true;
             }
         );
@@ -145,6 +150,7 @@ describe('プッシュ通知キューファクトリー', () => {
             subject: 'xxx',
             content: 'xxx'
         });
+        const lastTriedAt: any = {};
 
         assert.throws(
             () => {
@@ -153,7 +159,7 @@ describe('プッシュ通知キューファクトリー', () => {
                     status: QueueStatus.UNEXECUTED,
                     run_at: new Date(),
                     max_count_try: 10,
-                    last_tried_at: <any>{},
+                    last_tried_at: lastTriedAt,
                     count_tried: 0,
                     results: []
                 });
@@ -161,6 +167,7 @@ describe('プッシュ通知キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'last_tried_at');
+
                 return true;
             }
         );
@@ -189,6 +196,7 @@ describe('プッシュ通知キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'count_tried');
+
                 return true;
             }
         );
@@ -201,6 +209,7 @@ describe('プッシュ通知キューファクトリー', () => {
             subject: 'xxx',
             content: 'xxx'
         });
+        const results: any = {};
 
         assert.throws(
             () => {
@@ -211,12 +220,13 @@ describe('プッシュ通知キューファクトリー', () => {
                     max_count_try: 10,
                     last_tried_at: null,
                     count_tried: 0,
-                    results: <any>{}
+                    results: results
                 });
             },
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'results');
+
                 return true;
             }
         );

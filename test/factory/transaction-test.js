@@ -34,10 +34,11 @@ describe('取引ファクトリー', () => {
         });
     });
     it('所有者リストが配列でないので作成できない', () => {
+        const owners = {};
         assert.throws(() => {
             TransactionFactory.create({
                 status: transactionStatus_1.default.CLOSED,
-                owners: {},
+                owners: owners,
                 expires_at: new Date()
             });
         }, (err) => {
@@ -47,11 +48,12 @@ describe('取引ファクトリー', () => {
         });
     });
     it('期限が不適切なので作成できない', () => {
+        const expiresAt = {};
         assert.throws(() => {
             TransactionFactory.create({
                 status: transactionStatus_1.default.CLOSED,
                 owners: [],
-                expires_at: {}
+                expires_at: expiresAt
             });
         }, (err) => {
             assert(err instanceof argument_1.default);

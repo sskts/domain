@@ -26,6 +26,7 @@ describe('一般所有者ファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'email');
+
                 return true;
             }
         );

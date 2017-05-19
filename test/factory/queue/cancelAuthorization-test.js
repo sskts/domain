@@ -39,9 +39,10 @@ describe('承認取消キューファクトリー', () => {
         });
     });
     it('承認が空なので作成できない', () => {
+        const authorization = {};
         assert.throws(() => {
             CancelAuthorizationQueueFactory.create({
-                authorization: {},
+                authorization: authorization,
                 status: queueStatus_1.default.UNEXECUTED,
                 run_at: new Date(),
                 max_count_try: 10,
@@ -159,13 +160,14 @@ describe('承認取消キューファクトリー', () => {
             gmo_job_cd: 'xxx',
             gmo_pay_type: 'xxx'
         });
+        const lastTriedAt = {};
         assert.throws(() => {
             CancelAuthorizationQueueFactory.create({
                 authorization: authorization,
                 status: queueStatus_1.default.UNEXECUTED,
                 run_at: new Date(),
                 max_count_try: 10,
-                last_tried_at: {},
+                last_tried_at: lastTriedAt,
                 count_tried: 0,
                 results: []
             });
@@ -219,6 +221,7 @@ describe('承認取消キューファクトリー', () => {
             gmo_job_cd: 'xxx',
             gmo_pay_type: 'xxx'
         });
+        const results = {};
         assert.throws(() => {
             CancelAuthorizationQueueFactory.create({
                 authorization: authorization,
@@ -227,7 +230,7 @@ describe('承認取消キューファクトリー', () => {
                 max_count_try: 10,
                 last_tried_at: null,
                 count_tried: 0,
-                results: {}
+                results: results
             });
         }, (err) => {
             assert(err instanceof argument_1.default);

@@ -178,8 +178,8 @@ describe('キューサービス', () => {
         assert.equal(queue2Doc.get('status'), QueueStatus.EXECUTED);
 
         // テストデータ削除
-        queueDoc.remove();
-        queue2Doc.remove();
+        await queueDoc.remove();
+        await queue2Doc.remove();
     });
 
     it('Eメール通知成功', async () => {
@@ -208,7 +208,7 @@ describe('キューサービス', () => {
         assert.equal(queueDoc.get('status'), QueueStatus.EXECUTED);
 
         // テストデータ削除
-        queueDoc.remove();
+        await queueDoc.remove();
     });
 
     it('COA仮予約承認が不適切なので資産移動失敗', async () => {
@@ -280,7 +280,7 @@ describe('キューサービス', () => {
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
 
         // テストデータ削除
-        queueDoc.remove();
+        await queueDoc.remove();
     });
 
     it('GMOオーソリが不適切なので実売上失敗', async () => {
@@ -317,7 +317,7 @@ describe('キューサービス', () => {
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
 
         // テストデータ削除
-        queueDoc.remove();
+        await queueDoc.remove();
     });
 
     it('照会キーがないので取引照会無効化失敗', async () => {
@@ -346,7 +346,7 @@ describe('キューサービス', () => {
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
 
         // テストデータ削除
-        queueDoc.remove();
+        await queueDoc.remove();
     });
 });
 
@@ -378,7 +378,7 @@ describe('キューサービス 中止', () => {
         assert.equal(queueDoc.get('status'), QueueStatus.ABORTED);
 
         // テストデータ削除
-        queueDoc.remove();
+        await queueDoc.remove();
     });
 });
 
@@ -410,7 +410,7 @@ describe('キューサービス リトライ', () => {
         assert.equal(queueDoc.get('status'), QueueStatus.UNEXECUTED);
 
         // テストデータ削除
-        queueDoc.remove();
+        await queueDoc.remove();
     });
 
     it('最大試行回数に達するとリトライしない', async () => {
@@ -440,7 +440,7 @@ describe('キューサービス リトライ', () => {
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
 
         // テストデータ削除
-        queueDoc.remove();
+        await queueDoc.remove();
     });
 
     it('最終試行日時から指定インターバル経過していなければリトライしない', async () => {
@@ -471,7 +471,7 @@ describe('キューサービス リトライ', () => {
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
 
         // テストデータ削除
-        queueDoc.remove();
+        await queueDoc.remove();
     });
 });
 
@@ -536,6 +536,6 @@ describe('キューサービス ムビチケ着券取消キュー実行', () => 
         assert.equal(queueDoc.get('status'), QueueStatus.EXECUTED);
 
         // テストデータ削除
-        queueDoc.remove();
+        await queueDoc.remove();
     });
 });

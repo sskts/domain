@@ -217,7 +217,7 @@ describe('在庫サービス 座席予約資産移動', () => {
             transferCOASeatReservationError = error;
         }
         // テストデータ削除
-        ownerDoc.remove();
+        yield ownerDoc.remove();
         assert(transferCOASeatReservationError instanceof Error);
     }));
 });

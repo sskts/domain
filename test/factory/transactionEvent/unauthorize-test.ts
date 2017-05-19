@@ -61,6 +61,7 @@ describe('承認取消取引イベントファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'occurred_at');
+
                 return true;
             }
         );
@@ -92,23 +93,26 @@ describe('承認取消取引イベントファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'transaction');
+
                 return true;
             }
         );
     });
 
     it('承認が空なので作成できない', () => {
+        const authorization: any = {};
         assert.throws(
             () => {
                 UnauthorizeTransactionEventFactory.create({
                     transaction: 'xxx',
                     occurred_at: new Date(),
-                    authorization: <any>{}
+                    authorization: authorization
                 });
             },
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'authorization');
+
                 return true;
             }
         );

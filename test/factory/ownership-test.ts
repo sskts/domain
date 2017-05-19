@@ -29,6 +29,7 @@ describe('所有権ファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'owner');
+
                 return true;
             }
         );

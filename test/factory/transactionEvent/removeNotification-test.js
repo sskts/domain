@@ -65,11 +65,12 @@ describe('通知追加取引イベントファクトリー', () => {
         });
     });
     it('通知が空なので作成できない', () => {
+        const notification = {};
         assert.throws(() => {
             RemoveNotificationTransactionEventFactory.create({
                 transaction: 'xxx',
                 occurred_at: new Date(),
-                notification: {}
+                notification: notification
             });
         }, (err) => {
             assert(err instanceof argumentNull_1.default);

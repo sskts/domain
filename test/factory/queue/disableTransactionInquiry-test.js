@@ -32,9 +32,10 @@ describe('取引照会無効化キューファクトリー', () => {
         });
     });
     it('取引が空なので作成できない', () => {
+        const transaction = {};
         assert.throws(() => {
             DisableTransactionInquiryQueueFactory.create({
-                transaction: {},
+                transaction: transaction,
                 status: queueStatus_1.default.UNEXECUTED,
                 run_at: new Date(),
                 max_count_try: 10,
@@ -120,13 +121,14 @@ describe('取引照会無効化キューファクトリー', () => {
             owners: [],
             expires_at: new Date()
         });
+        const lastTriedAt = {};
         assert.throws(() => {
             DisableTransactionInquiryQueueFactory.create({
                 transaction: transaction,
                 status: queueStatus_1.default.UNEXECUTED,
                 run_at: new Date(),
                 max_count_try: 10,
-                last_tried_at: {},
+                last_tried_at: lastTriedAt,
                 count_tried: 0,
                 results: []
             });
@@ -164,6 +166,7 @@ describe('取引照会無効化キューファクトリー', () => {
             owners: [],
             expires_at: new Date()
         });
+        const results = {};
         assert.throws(() => {
             DisableTransactionInquiryQueueFactory.create({
                 transaction: transaction,
@@ -172,7 +175,7 @@ describe('取引照会無効化キューファクトリー', () => {
                 max_count_try: 10,
                 last_tried_at: null,
                 count_tried: 0,
-                results: {}
+                results: results
             });
         }, (err) => {
             assert(err instanceof argument_1.default);

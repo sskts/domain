@@ -45,47 +45,34 @@ describe('マスターサービス 劇場インポート', () => {
         throw new Error('should not be passed');
     });
 
-    it('成功', (done) => {
+    it('成功', async () => {
         const theaterAdapter = new TheaterAdapter(connection);
-        MasterService.importTheater('118')(theaterAdapter)
-            .then(() => {
-                done();
-            })
-            .catch((err) => {
-                done(err);
-            });
+        await MasterService.importTheater('118')(theaterAdapter);
     });
 });
 
 describe('マスターサービス スクリーンインポート', () => {
-    it('劇場が存在しないので失敗', (done) => {
+    it('劇場が存在しないので失敗', async () => {
         const theaterAdapter = new TheaterAdapter(connection);
         const screenAdapter = new ScreenAdapter(connection);
-        MasterService.importScreens('000')(
-            theaterAdapter,
-            screenAdapter
-        )
-            .then(() => {
-                done(new Error('thenable.'));
-            })
-            .catch(() => {
-                done();
-            });
+        try {
+            await MasterService.importScreens('000')(
+                theaterAdapter,
+                screenAdapter
+            );
+        } catch (error) {
+            assert(error instanceof Error);
+
+            return;
+        }
+
+        throw new Error('thenable');
     });
 
-    it('成功', (done) => {
+    it('成功', async () => {
         const theaterAdapter = new TheaterAdapter(connection);
         const screenAdapter = new ScreenAdapter(connection);
-        MasterService.importScreens('118')(
-            theaterAdapter,
-            screenAdapter
-        )
-            .then(() => {
-                done();
-            })
-            .catch((err) => {
-                done(err);
-            });
+        await MasterService.importScreens('118')(theaterAdapter, screenAdapter);
     });
 });
 
@@ -191,7 +178,8 @@ describe('マスターサービス パフォーマンス取得', () => {
             time_end: '1100',
             canceled: false
         };
-        const performanceDoc = await performanceAdapter.model.findByIdAndUpdate(performance.id, performance, { new: true, upsert: true });
+        // tslint:disable-next-line:max-line-length
+        const performanceDoc = await performanceAdapter.model.findByIdAndUpdate(performance.id, performance, { new: true, upsert: true }).exec();
 
         const performanceOption = await MasterService.findPerformance('12345')(performanceAdapter);
         assert(performanceOption.isDefined);
@@ -208,33 +196,19 @@ describe('マスターサービス パフォーマンス取得', () => {
 });
 
 describe('マスターサービス パフォーマンス検索', () => {
-    it('searchPerformances by theater ok', (done) => {
+    it('searchPerformances by theater ok', async () => {
         const performanceAdapter = new PerformanceAdapter(connection);
-        MasterService.searchPerformances({ theater: '118' })(performanceAdapter)
-            .then((performances) => {
-                performances.map((performance) => {
-                    assert.equal(performance.theater.id, '118');
-                });
-
-                done();
-            })
-            .catch((err) => {
-                done(err);
-            });
+        const performances = await MasterService.searchPerformances({ theater: '118' })(performanceAdapter);
+        performances.map((performance) => {
+            assert.equal(performance.theater.id, '118');
+        });
     });
 
-    it('searchPerformances by day ok', (done) => {
+    it('searchPerformances by day ok', async () => {
         const performanceAdapter = new PerformanceAdapter(connection);
-        MasterService.searchPerformances({ day: '20170301' })(performanceAdapter)
-            .then((performances) => {
-                performances.map((performance) => {
-                    assert.equal(performance.day, '20170301');
-                });
-
-                done();
-            })
-            .catch((err) => {
-                done(err);
-            });
+        const performances = await MasterService.searchPerformances({ day: '20170301' })(performanceAdapter);
+        performances.map((performance) => {
+            assert.equal(performance.day, '20170301');
+        });
     });
 });

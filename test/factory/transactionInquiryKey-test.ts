@@ -15,7 +15,7 @@ describe('取引照会キーファクトリー', () => {
             TransactionInquiryKeyFactory.create({
                 theater_code: 'xxx',
                 reserve_num: 123,
-                tel: 'xxx',
+                tel: 'xxx'
             });
         });
     });
@@ -26,12 +26,13 @@ describe('取引照会キーファクトリー', () => {
                 TransactionInquiryKeyFactory.create({
                     theater_code: '',
                     reserve_num: 123,
-                    tel: 'xxx',
+                    tel: 'xxx'
                 });
             },
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'theater_code');
+
                 return true;
             }
         );
@@ -43,12 +44,13 @@ describe('取引照会キーファクトリー', () => {
                 TransactionInquiryKeyFactory.create({
                     theater_code: 'xxx',
                     reserve_num: <any>'123',
-                    tel: 'xxx',
+                    tel: 'xxx'
                 });
             },
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'reserve_num');
+
                 return true;
             }
         );

@@ -47,6 +47,7 @@ describe('通知追加取引イベントファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'occurred_at');
+
                 return true;
             }
         );
@@ -71,23 +72,26 @@ describe('通知追加取引イベントファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'transaction');
+
                 return true;
             }
         );
     });
 
     it('通知が空なので作成できない', () => {
+        const notification: any = {};
         assert.throws(
             () => {
                 AddNotificationTransactionEventFactory.create({
                     transaction: 'xxx',
                     occurred_at: new Date(),
-                    notification: <any>{}
+                    notification: notification
                 });
             },
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'notification');
+
                 return true;
             }
         );

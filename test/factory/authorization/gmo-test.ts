@@ -48,6 +48,7 @@ describe('GMOオーソリファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'gmo_shop_id');
+
                 return true;
             }
         );
@@ -73,6 +74,7 @@ describe('GMOオーソリファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'gmo_amount');
+
                 return true;
             }
         );
@@ -98,6 +100,7 @@ describe('GMOオーソリファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'price');
+
                 return true;
             }
         );

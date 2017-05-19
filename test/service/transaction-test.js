@@ -32,66 +32,32 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     yield transactionAdapter.transactionModel.remove({}).exec();
 }));
 describe('取引サービス', () => {
-    it('startIfPossible fail', (done) => {
+    it('startIfPossible fail', () => __awaiter(this, void 0, void 0, function* () {
         const ownerAdapter = sskts.adapter.owner(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         const expiresAt = moment().add(30, 'minutes').toDate(); // tslint:disable-line:no-magic-numbers
-        sskts.service.transaction.startIfPossible(expiresAt)(ownerAdapter, transactionAdapter)
-            .then((transactionOption) => {
-            assert(transactionOption.isEmpty);
-            done();
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
-    it('prepare ok', (done) => {
-        sskts.service.transaction.prepare(3, 60)(sskts.adapter.transaction(connection)) // tslint:disable-line:no-magic-numbers
-            .then(() => {
-            done();
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
-    it('makeExpired ok', (done) => {
+        const transactionOption = yield sskts.service.transaction.startIfPossible(expiresAt)(ownerAdapter, transactionAdapter);
+        assert(transactionOption.isEmpty);
+    }));
+    it('prepare ok', () => __awaiter(this, void 0, void 0, function* () {
+        yield sskts.service.transaction.prepare(3, 60)(sskts.adapter.transaction(connection)); // tslint:disable-line:no-magic-numbers
+    }));
+    it('makeExpired ok', () => __awaiter(this, void 0, void 0, function* () {
         const transactionAdapter = sskts.adapter.transaction(connection);
         // 期限切れの取引を作成
-        sskts.service.transaction.prepare(3, -60)(transactionAdapter) // tslint:disable-line:no-magic-numbers
-            .then(() => {
-            sskts.service.transaction.makeExpired()(transactionAdapter)
-                .then(() => {
-                done();
-            })
-                .catch((err) => {
-                done(err);
-            });
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
-    it('startIfPossible ok', (done) => {
+        yield sskts.service.transaction.prepare(3, -60)(transactionAdapter); // tslint:disable-line:no-magic-numbers
+        yield sskts.service.transaction.makeExpired()(transactionAdapter);
+    }));
+    it('startIfPossible ok', () => __awaiter(this, void 0, void 0, function* () {
         const ownerAdapter = sskts.adapter.owner(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
-        sskts.service.transaction.prepare(1, 60)(transactionAdapter) // tslint:disable-line:no-magic-numbers
-            .then(() => {
-            const expiresAt = moment().add(30, 'minutes').toDate(); // tslint:disable-line:no-magic-numbers
-            sskts.service.transaction.startIfPossible(expiresAt)(ownerAdapter, transactionAdapter)
-                .then((transactionOption) => {
-                assert(transactionOption.isDefined);
-                assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
-                assert.equal(transactionOption.get().expires_at.valueOf(), expiresAt.valueOf());
-                done();
-            })
-                .catch((err) => {
-                done(err);
-            });
-        })
-            .catch((err) => {
-            done(err);
-        });
-    });
+        yield sskts.service.transaction.prepare(1, 60)(transactionAdapter); // tslint:disable-line:no-magic-numbers
+        const expiresAt = moment().add(30, 'minutes').toDate(); // tslint:disable-line:no-magic-numbers
+        const transactionOption = yield sskts.service.transaction.startIfPossible(expiresAt)(ownerAdapter, transactionAdapter);
+        assert(transactionOption.isDefined);
+        assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
+        assert.equal(transactionOption.get().expires_at.valueOf(), expiresAt.valueOf());
+    }));
     it('clean should be removed', () => __awaiter(this, void 0, void 0, function* () {
         // test data
         const transactionAdapter = sskts.adapter.transaction(connection);

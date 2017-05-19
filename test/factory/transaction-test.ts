@@ -34,40 +34,45 @@ describe('取引ファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'status');
+
                 return true;
             }
         );
     });
 
     it('所有者リストが配列でないので作成できない', () => {
+        const owners: any = {};
         assert.throws(
             () => {
                 TransactionFactory.create({
                     status: TransactionStatus.CLOSED,
-                    owners: <any>{},
+                    owners: owners,
                     expires_at: new Date()
                 });
             },
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'owners');
+
                 return true;
             }
         );
     });
 
     it('期限が不適切なので作成できない', () => {
+        const expiresAt: any = {};
         assert.throws(
             () => {
                 TransactionFactory.create({
                     status: TransactionStatus.CLOSED,
                     owners: [],
-                    expires_at: <any>{}
+                    expires_at: expiresAt
                 });
             },
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'expires_at');
+
                 return true;
             }
         );

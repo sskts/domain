@@ -41,10 +41,11 @@ describe('資産移動キューファクトリー', () => {
     });
 
     it('承認が空なので作成できない', () => {
+        const authorization: any = {};
         assert.throws(
             () => {
                 SettleAuthorizationQueueFactory.create({
-                    authorization: <any>{},
+                    authorization: authorization,
                     status: QueueStatus.UNEXECUTED,
                     run_at: new Date(),
                     max_count_try: 10,
@@ -56,6 +57,7 @@ describe('資産移動キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'authorization');
+
                 return true;
             }
         );
@@ -91,6 +93,7 @@ describe('資産移動キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'status');
+
                 return true;
             }
         );
@@ -126,6 +129,7 @@ describe('資産移動キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'run_at');
+
                 return true;
             }
         );
@@ -161,6 +165,7 @@ describe('資産移動キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'max_count_try');
+
                 return true;
             }
         );
@@ -180,6 +185,7 @@ describe('資産移動キューファクトリー', () => {
             gmo_job_cd: 'xxx',
             gmo_pay_type: 'xxx'
         });
+        const lastTriedAt: any = {};
 
         assert.throws(
             () => {
@@ -188,7 +194,7 @@ describe('資産移動キューファクトリー', () => {
                     status: QueueStatus.UNEXECUTED,
                     run_at: new Date(),
                     max_count_try: 10,
-                    last_tried_at: <any>{},
+                    last_tried_at: lastTriedAt,
                     count_tried: 0,
                     results: []
                 });
@@ -196,6 +202,7 @@ describe('資産移動キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'last_tried_at');
+
                 return true;
             }
         );
@@ -231,6 +238,7 @@ describe('資産移動キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'count_tried');
+
                 return true;
             }
         );
@@ -250,6 +258,7 @@ describe('資産移動キューファクトリー', () => {
             gmo_job_cd: 'xxx',
             gmo_pay_type: 'xxx'
         });
+        const results: any = {};
 
         assert.throws(
             () => {
@@ -260,12 +269,13 @@ describe('資産移動キューファクトリー', () => {
                     max_count_try: 10,
                     last_tried_at: null,
                     count_tried: 0,
-                    results: <any>{}
+                    results: results
                 });
             },
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'results');
+
                 return true;
             }
         );

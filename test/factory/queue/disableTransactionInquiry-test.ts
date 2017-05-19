@@ -34,10 +34,11 @@ describe('取引照会無効化キューファクトリー', () => {
     });
 
     it('取引が空なので作成できない', () => {
+        const transaction: any = {};
         assert.throws(
             () => {
                 DisableTransactionInquiryQueueFactory.create({
-                    transaction: <any>{},
+                    transaction: transaction,
                     status: QueueStatus.UNEXECUTED,
                     run_at: new Date(),
                     max_count_try: 10,
@@ -49,6 +50,7 @@ describe('取引照会無効化キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'transaction');
+
                 return true;
             }
         );
@@ -76,6 +78,7 @@ describe('取引照会無効化キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentNullError);
                 assert.equal((<ArgumentNullError>err).argumentName, 'status');
+
                 return true;
             }
         );
@@ -103,6 +106,7 @@ describe('取引照会無効化キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'run_at');
+
                 return true;
             }
         );
@@ -130,6 +134,7 @@ describe('取引照会無効化キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'max_count_try');
+
                 return true;
             }
         );
@@ -141,6 +146,7 @@ describe('取引照会無効化キューファクトリー', () => {
             owners: [],
             expires_at: new Date()
         });
+        const lastTriedAt: any = {};
 
         assert.throws(
             () => {
@@ -149,7 +155,7 @@ describe('取引照会無効化キューファクトリー', () => {
                     status: QueueStatus.UNEXECUTED,
                     run_at: new Date(),
                     max_count_try: 10,
-                    last_tried_at: <any>{},
+                    last_tried_at: lastTriedAt,
                     count_tried: 0,
                     results: []
                 });
@@ -157,6 +163,7 @@ describe('取引照会無効化キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'last_tried_at');
+
                 return true;
             }
         );
@@ -184,6 +191,7 @@ describe('取引照会無効化キューファクトリー', () => {
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'count_tried');
+
                 return true;
             }
         );
@@ -195,6 +203,7 @@ describe('取引照会無効化キューファクトリー', () => {
             owners: [],
             expires_at: new Date()
         });
+        const results: any = {};
 
         assert.throws(
             () => {
@@ -205,12 +214,13 @@ describe('取引照会無効化キューファクトリー', () => {
                     max_count_try: 10,
                     last_tried_at: null,
                     count_tried: 0,
-                    results: <any>{}
+                    results: results
                 });
             },
             (err: any) => {
                 assert(err instanceof ArgumentError);
                 assert.equal((<ArgumentError>err).argumentName, 'results');
+
                 return true;
             }
         );

@@ -164,8 +164,8 @@ describe('キューサービス', () => {
         assert.equal(queueDoc.get('status'), queueStatus_1.default.UNEXECUTED);
         assert.equal(queue2Doc.get('status'), queueStatus_1.default.EXECUTED);
         // テストデータ削除
-        queueDoc.remove();
-        queue2Doc.remove();
+        yield queueDoc.remove();
+        yield queue2Doc.remove();
     }));
     it('Eメール通知成功', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = new queue_1.default(connection);
@@ -189,7 +189,7 @@ describe('キューサービス', () => {
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.EXECUTED);
         // テストデータ削除
-        queueDoc.remove();
+        yield queueDoc.remove();
     }));
     it('COA仮予約承認が不適切なので資産移動失敗', () => __awaiter(this, void 0, void 0, function* () {
         const assetAdapter = new asset_1.default(connection);
@@ -256,7 +256,7 @@ describe('キューサービス', () => {
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
         // テストデータ削除
-        queueDoc.remove();
+        yield queueDoc.remove();
     }));
     it('GMOオーソリが不適切なので実売上失敗', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = new queue_1.default(connection);
@@ -288,7 +288,7 @@ describe('キューサービス', () => {
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
         // テストデータ削除
-        queueDoc.remove();
+        yield queueDoc.remove();
     }));
     it('照会キーがないので取引照会無効化失敗', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = new queue_1.default(connection);
@@ -312,7 +312,7 @@ describe('キューサービス', () => {
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
         // テストデータ削除
-        queueDoc.remove();
+        yield queueDoc.remove();
     }));
 });
 describe('キューサービス 中止', () => {
@@ -339,7 +339,7 @@ describe('キューサービス 中止', () => {
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.ABORTED);
         // テストデータ削除
-        queueDoc.remove();
+        yield queueDoc.remove();
     }));
 });
 describe('キューサービス リトライ', () => {
@@ -366,7 +366,7 @@ describe('キューサービス リトライ', () => {
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.UNEXECUTED);
         // テストデータ削除
-        queueDoc.remove();
+        yield queueDoc.remove();
     }));
     it('最大試行回数に達するとリトライしない', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = new queue_1.default(connection);
@@ -391,7 +391,7 @@ describe('キューサービス リトライ', () => {
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
         // テストデータ削除
-        queueDoc.remove();
+        yield queueDoc.remove();
     }));
     it('最終試行日時から指定インターバル経過していなければリトライしない', () => __awaiter(this, void 0, void 0, function* () {
         const queueAdapter = new queue_1.default(connection);
@@ -417,7 +417,7 @@ describe('キューサービス リトライ', () => {
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.RUNNING);
         // テストデータ削除
-        queueDoc.remove();
+        yield queueDoc.remove();
     }));
 });
 describe('キューサービス ムビチケ着券取消キュー実行', () => {
@@ -475,6 +475,6 @@ describe('キューサービス ムビチケ着券取消キュー実行', () => 
         const queueDoc = yield queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), queueStatus_1.default.EXECUTED);
         // テストデータ削除
-        queueDoc.remove();
+        yield queueDoc.remove();
     }));
 });

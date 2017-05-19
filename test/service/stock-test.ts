@@ -229,7 +229,7 @@ describe('在庫サービス 座席予約資産移動', () => {
         }
 
         // テストデータ削除
-        ownerDoc.remove();
+        await ownerDoc.remove();
 
         assert(transferCOASeatReservationError instanceof Error);
     });
