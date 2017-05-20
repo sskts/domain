@@ -237,8 +237,7 @@ describe('キューサービス', () => {
                         price: 0,
                         authorizations: [],
                         ownership: OwnershipFactory.create({
-                            owner: 'xxx',
-                            authenticated: false
+                            owner: 'xxx'
                         }),
                         performance: 'xxx',
                         screen_section: '',

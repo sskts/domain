@@ -21,8 +21,7 @@ before(async () => {
         price: 123,
         authorizations: [],
         ownership: OwnershipFactory.create({
-            owner: 'xxx',
-            authenticated: false
+            owner: 'xxx'
         }),
         performance: 'xxx',
         screen_section: 'xxx',

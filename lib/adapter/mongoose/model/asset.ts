@@ -26,7 +26,16 @@ const schema = new mongoose.Schema(
                 type: mongoose.Schema.Types.ObjectId,
                 ref: ownerModel.modelName
             },
-            authenticated: Boolean
+            authentication_records: { // 認証記録
+                type: [{
+                    _id: false,
+                    when: Date, // いつ
+                    where: String, // どこで
+                    why: String, // 何のために
+                    how: String // どうやって
+                }],
+                default: []
+            }
         },
         authorizations: [mongoose.Schema.Types.Mixed], // 承認リスト
         group: String, // 資産グループ

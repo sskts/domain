@@ -12,16 +12,14 @@ describe('所有権ファクトリー', () => {
     it('作成できる', () => {
         assert.doesNotThrow(() => {
             OwnershipFactory.create({
-                owner: 'xxx',
-                authenticated: false
+                owner: 'xxx'
             });
         });
     });
     it('所有者空なので作成できない', () => {
         assert.throws(() => {
             OwnershipFactory.create({
-                owner: '',
-                authenticated: false
+                owner: ''
             });
         }, (err) => {
             assert(err instanceof argumentNull_1.default);

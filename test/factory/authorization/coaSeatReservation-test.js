@@ -27,8 +27,7 @@ before(() => __awaiter(this, void 0, void 0, function* () {
         price: 123,
         authorizations: [],
         ownership: OwnershipFactory.create({
-            owner: 'xxx',
-            authenticated: false
+            owner: 'xxx'
         }),
         performance: 'xxx',
         screen_section: 'xxx',

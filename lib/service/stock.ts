@@ -14,6 +14,7 @@ import * as SeatReservationAssetFactory from '../factory/asset/seatReservation';
 import * as COASeatReservationAuthorizationFactory from '../factory/authorization/coaSeatReservation';
 import * as AnonymousOwnerFactory from '../factory/owner/anonymous';
 import OwnerGroup from '../factory/ownerGroup';
+import * as OwnershipFactory from '../factory/ownership';
 import * as PerformanceFactory from '../factory/performance';
 import * as TransactionFactory from '../factory/transaction';
 import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
@@ -150,11 +151,10 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
             }
 
             const args = Object.assign(asset, {
-                ownership: {
+                ownership: OwnershipFactory.create({
                     id: qr,
-                    owner: owner.id,
-                    authenticated: false
-                },
+                    owner: owner.id
+                }),
                 performance_day: performance.day,
                 performance_time_start: performance.time_start,
                 performance_time_end: performance.time_end,

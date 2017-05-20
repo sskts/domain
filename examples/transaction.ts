@@ -118,8 +118,7 @@ async function main() {
         assets: reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve) => {
             return sskts.factory.asset.seatReservation.createWithoutDetails({
                 ownership: sskts.factory.ownership.create({
-                    owner: anonymousOwnerId,
-                    authenticated: false
+                    owner: anonymousOwnerId
                 }),
                 authorizations: [],
                 performance: '001201701208513021010',

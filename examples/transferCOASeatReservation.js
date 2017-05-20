@@ -43,7 +43,7 @@ function main() {
                     ownership: {
                         id: '58f59462a6abf8213892d9eb',
                         owner: '58f59451a6abf8213892d9d8',
-                        authenticated: false
+                        authentication_records: []
                     },
                     group: 'SEAT_RESERVATION',
                     price: 1100,
@@ -52,8 +52,10 @@ function main() {
                     screen_section: '   ',
                     seat_code: 'Ｉ－１０',
                     ticket_code: '1000051',
-                    ticket_name_ja: 'ｼﾆｱ',
-                    ticket_name_en: '',
+                    ticket_name: {
+                        ja: 'ｼﾆｱ',
+                        en: ''
+                    },
                     ticket_name_kana: 'ｼﾆｱ',
                     std_price: 1100,
                     add_price: 0,

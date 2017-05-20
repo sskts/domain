@@ -12,8 +12,7 @@ describe('所有権ファクトリー', () => {
     it('作成できる', () => {
         assert.doesNotThrow(() => {
             OwnershipFactory.create({
-                owner: 'xxx',
-                authenticated: false
+                owner: 'xxx'
             });
         });
     });
@@ -22,8 +21,7 @@ describe('所有権ファクトリー', () => {
         assert.throws(
             () => {
                 OwnershipFactory.create({
-                    owner: '',
-                    authenticated: false
+                    owner: ''
                 });
             },
             (err: any) => {

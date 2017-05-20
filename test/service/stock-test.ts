@@ -98,7 +98,7 @@ describe('在庫サービス 座席予約資産移動', () => {
                     price: 2800,
                     group: 'SEAT_RESERVATION',
                     ownership: {
-                        authenticated: false,
+                        authentication_records: [],
                         owner: '58e344ac36a44424c0997dad',
                         id: '58e344b236a44424c0997dae'
                     },
@@ -130,7 +130,7 @@ describe('在庫サービス 座席予約資産移動', () => {
                     price: 2800,
                     group: 'SEAT_RESERVATION',
                     ownership: {
-                        authenticated: false,
+                        authentication_records: [],
                         owner: '58e344ac36a44424c0997dad',
                         id: '58e344b236a44424c0997db0'
                     },

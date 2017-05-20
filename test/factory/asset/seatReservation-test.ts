@@ -16,8 +16,7 @@ let validCreateSeatReservationAssetArgs: any;
 before(() => {
     validCreateSeatReservationAssetArgs = {
         ownership: OwnershipFactory.create({
-            owner: 'xxx',
-            authenticated: false
+            owner: 'xxx'
         }),
         performance: 'xxx',
         performance_day: 'xxx',
