@@ -8,22 +8,32 @@ import * as assert from 'assert';
 
 import PerformanceAvailabilityAdapter from '../../lib/adapter/performanceAvailability';
 
-const REDIS_URL = 'redis://devsskts.redis.cache.windows.net:6380?password=W/yjVruvypTFz3nl8teXxBYfunq6teXnyvIN5xuVLWU=';
+const TEST_PERFORMANCE_DAY = '20170428';
+const TEST_PERFORMANCE_ID = '1234567890';
 
 before(async () => {
-    // 全て削除してからテスト開始el.remove({}).exec();
+    if (typeof process.env.TEST_REDIS_URL !== 'string') {
+        throw new Error('environment variable TEST_REDIS_URL required');
+    }
+
+    // 全て削除してからテスト開始
+    const adapter = new PerformanceAvailabilityAdapter(process.env.TEST_REDIS_URL);
+    await adapter.removeByPerformaceDay(TEST_PERFORMANCE_DAY);
 });
 
-describe('パフォーマンス空席状況アダプター 劇場で検索', () => {
+describe('パフォーマンス空席状況アダプター パフォーマンスIDで保管', () => {
     it('ok', async () => {
-        const adapter = new PerformanceAvailabilityAdapter(REDIS_URL);
+        const adapter = new PerformanceAvailabilityAdapter(process.env.TEST_REDIS_URL);
+
+        let availabilityFromRedis: string;
+        availabilityFromRedis = await adapter.findByPerformance(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID);
+        assert.equal(availabilityFromRedis, '');
 
         // テストデータ生成
-        const performanceId = 'xxx';
         const availability = '○';
-        await adapter.saveByPerformance(performanceId, availability);
+        await adapter.saveByPerformance(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, availability);
 
-        const availabilityFromRedis = await adapter.findByPerformance('118001');
+        availabilityFromRedis = await adapter.findByPerformance(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID);
         assert.equal(availabilityFromRedis, availability);
     });
 });

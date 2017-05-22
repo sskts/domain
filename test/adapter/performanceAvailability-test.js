@@ -15,18 +15,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
 const performanceAvailability_1 = require("../../lib/adapter/performanceAvailability");
-const REDIS_URL = 'redis://devsskts.redis.cache.windows.net:6380?password=W/yjVruvypTFz3nl8teXxBYfunq6teXnyvIN5xuVLWU=';
+const TEST_PERFORMANCE_DAY = '20170428';
+const TEST_PERFORMANCE_ID = '1234567890';
 before(() => __awaiter(this, void 0, void 0, function* () {
-    // 全て削除してからテスト開始el.remove({}).exec();
+    if (typeof process.env.TEST_REDIS_URL !== 'string') {
+        throw new Error('environment variable TEST_REDIS_URL required');
+    }
+    // 全て削除してからテスト開始
+    const adapter = new performanceAvailability_1.default(process.env.TEST_REDIS_URL);
+    yield adapter.removeByPerformaceDay(TEST_PERFORMANCE_DAY);
 }));
-describe('パフォーマンス空席状況アダプター 劇場で検索', () => {
+describe('パフォーマンス空席状況アダプター パフォーマンスIDで保管', () => {
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
-        const adapter = new performanceAvailability_1.default(REDIS_URL);
+        const adapter = new performanceAvailability_1.default(process.env.TEST_REDIS_URL);
+        let availabilityFromRedis;
+        availabilityFromRedis = yield adapter.findByPerformance(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID);
+        assert.equal(availabilityFromRedis, '');
         // テストデータ生成
-        const performanceId = 'xxx';
         const availability = '○';
-        yield adapter.saveByPerformance(performanceId, availability);
-        const availabilityFromRedis = yield adapter.findByPerformance('118001');
+        yield adapter.saveByPerformance(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, availability);
+        availabilityFromRedis = yield adapter.findByPerformance(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID);
         assert.equal(availabilityFromRedis, availability);
     }));
 });

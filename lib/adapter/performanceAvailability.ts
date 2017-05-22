@@ -3,12 +3,8 @@ import * as redis from 'redis';
 import * as url from 'url';
 
 const debug = createDebug('sskts-domain:adapter:performanceAvailability');
-const REDIS_KEY = 'sskts-performance-avalilabilities';
-// const TIMEOUT_IN_SECONDS = 300;
-
-export interface IAvailabilitiesByPerformanceId {
-    [performanceId: string]: string;
-}
+const REDIS_KEY_PREFIX = 'sskts-performance-avalilabilities';
+const TIMEOUT_IN_SECONDS = 864000;
 
 /**
  * パフォーマンス空席状況アダプター
@@ -22,9 +18,9 @@ export default class PerformanceAvailabilityAdapter {
         const parsedUrl = url.parse(redisUrl);
         const options: redis.ClientOpts = {
             url: redisUrl,
-            tls: false,
             return_buffers: false
         };
+        // SSL対応の場合
         if (parsedUrl.port === '6380') {
             options.tls = { servername: parsedUrl.hostname };
         }
@@ -32,40 +28,76 @@ export default class PerformanceAvailabilityAdapter {
         this.redisClient = redis.createClient(options);
     }
 
-    public async findByPerformance(performanceId: string): Promise<string> {
+    public async findByPerformance(performanceDay: string, performanceId: string): Promise<string> {
+        const key = `${REDIS_KEY_PREFIX}:${performanceDay}`;
+
         return new Promise<string>((resolve, reject) => {
             // 劇場のパフォーマンス空席状況を取得
-            this.redisClient.hget([REDIS_KEY, performanceId], (err, reply) => {
+            this.redisClient.hget([key, performanceId], (err, res) => {
+                debug('reply:', res);
                 if (err instanceof Error) {
                     reject(err);
 
                     return;
                 }
 
-                if (reply === null) {
-                    reject(new Error('not found'));
-
-                    return;
-                }
-                debug('reply:', reply);
-
-                resolve(reply);
+                resolve((res === null) ? '' : res);
             });
         });
     }
 
-    public async saveByPerformance(performanceId: string, availability: string): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            // this.redisClient.expire([REDIS_KEY, TIMEOUT_IN_SECONDS], () => {
-            this.redisClient.hset([REDIS_KEY, performanceId, availability], (err) => {
-                console.error(err);
+    public async saveByPerformance(performanceDay: string, performanceId: string, availability: string): Promise<void> {
+        const key = `${REDIS_KEY_PREFIX}:${performanceDay}`;
+
+        return new Promise<void>(async (resolve, reject) => {
+            this.redisClient.hset([key, performanceId, availability], (err) => {
                 if (err instanceof Error) {
                     reject(err);
                 } else {
                     resolve();
                 }
             });
-            // });
+        });
+    }
+
+    public async removeByPerformaceDay(performanceDay: string): Promise<void> {
+        const key = `${REDIS_KEY_PREFIX}:${performanceDay}`;
+
+        return new Promise<void>(async (resolve, reject) => {
+            this.redisClient.del([key], (err) => {
+                if (err instanceof Error) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+        });
+    }
+
+    public async setTTLIfNotExist(key: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.redisClient.ttl([key], (err, ttl) => {
+                debug('ttl:', ttl);
+                if (err instanceof Error) {
+                    reject(err);
+
+                    return;
+                }
+
+                // 存在していれば何もしない
+                if (ttl > -1) {
+                    resolve();
+
+                    return;
+                }
+
+                // 値を初期化して、期限セット
+                // 初期化のための値は、パフォーマンス情報に影響がなければ、実際なんでもいい
+                debug('expire...');
+                this.redisClient.expire([key, TIMEOUT_IN_SECONDS], () => {
+                    resolve();
+                });
+            });
         });
     }
 }

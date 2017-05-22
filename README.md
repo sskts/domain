@@ -23,6 +23,11 @@ set SSKTS_DEVELOPER_EMAIL=**********本apiで使用される開発者メール�
 set SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN=**********開発者へのLINE通知に必要なアクセストークン**********
 ```
 
+only for test  
+```shell
+set TEST_REDIS_URL=**********テスト時に使用するredis url**********
+```
+
 ## Usage
 
 ```Javascript
