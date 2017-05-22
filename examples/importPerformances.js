@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /* tslint:disable */
+const moment = require("moment");
 const mongoose = require("mongoose");
 const sskts = require("../lib/index");
 function main() {
@@ -20,7 +21,7 @@ function main() {
             const screenAdapter = sskts.adapter.screen(connection);
             const performanceAdapter = sskts.adapter.performance(connection);
             yield performanceAdapter.model.remove({}).exec();
-            yield sskts.service.master.importPerformances('118', '20170325', '20170401')(filmAdapter, screenAdapter, performanceAdapter);
+            yield sskts.service.master.importPerformances('118', moment().format('YYYYMMDD'), moment().add(7, 'days').format('YYYYMMDD'))(filmAdapter, screenAdapter, performanceAdapter);
         }
         catch (error) {
             console.error(error);

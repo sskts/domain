@@ -3,15 +3,18 @@ import * as FilmFactory from '../factory/film';
 import IMultilingualString from '../factory/multilingualString';
 import * as PerformanceFactory from '../factory/performance';
 import * as ScreenFactory from '../factory/screen';
+import * as PerformanceStockStatusFactory from '../factory/stockStatus/performance';
 import * as TheaterFactory from '../factory/theater';
 import FilmAdapter from '../adapter/film';
 import PerformanceAdapter from '../adapter/performance';
 import ScreenAdapter from '../adapter/screen';
+import PerformanceStockStatusAdapter from '../adapter/stockStatus/performance';
 import TheaterAdapter from '../adapter/theater';
 export declare type TheaterOperation<T> = (adapter: TheaterAdapter) => Promise<T>;
 export declare type FilmOperation<T> = (adapter: FilmAdapter) => Promise<T>;
 export declare type ScreenOperation<T> = (adapter: ScreenAdapter) => Promise<T>;
 export declare type PerformanceOperation<T> = (adapter: PerformanceAdapter) => Promise<T>;
+export declare type PerformanceAndPerformanceAvailabilityOperation<T> = (performanceAdapter: PerformanceAdapter, performanceStockStatusAdapter: PerformanceStockStatusAdapter) => Promise<T>;
 export declare type TheaterAndScreenOperation<T> = (theaterRepo: TheaterAdapter, screenRepo: ScreenAdapter) => Promise<T>;
 export declare type TheaterAndFilmOperation<T> = (theaterRepo: TheaterAdapter, filmRepo: FilmAdapter) => Promise<T>;
 export declare type FilmAndScreenAndPerformanceOperation<T> = (filmRepo: FilmAdapter, screenRepo: ScreenAdapter, performanceRepo: PerformanceAdapter) => Promise<T>;
@@ -37,6 +40,7 @@ export interface ISearchPerformancesResult {
     time_start: string;
     time_end: string;
     canceled: boolean;
+    stock_status: PerformanceStockStatusFactory.IPerformanceStockStatus | null;
 }
 /**
  * 劇場インポート
@@ -80,11 +84,11 @@ export declare function importPerformances(theaterCode: string, dayStart: string
  * パフォーマンス検索
  *
  * @param {SearchPerformancesConditions} conditions
- * @returns {PerformanceOperation<Array<SearchPerformancesResult>>}
+ * @returns {PerformanceAndPerformanceAvailabilityOperation<ISearchPerformancesResult[]>}
  *
  * @memberof service/master
  */
-export declare function searchPerformances(searchConditions: ISearchPerformancesConditions): PerformanceOperation<ISearchPerformancesResult[]>;
+export declare function searchPerformances(searchConditions: ISearchPerformancesConditions): PerformanceAndPerformanceAvailabilityOperation<ISearchPerformancesResult[]>;
 /**
  * IDで劇場検索
  *

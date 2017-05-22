@@ -18,6 +18,7 @@ const mongoose = require("mongoose");
 const film_1 = require("../../lib/adapter/film");
 const performance_1 = require("../../lib/adapter/performance");
 const screen_1 = require("../../lib/adapter/screen");
+const performance_2 = require("../../lib/adapter/stockStatus/performance");
 const theater_1 = require("../../lib/adapter/theater");
 const MasterService = require("../../lib/service/master");
 let connection;
@@ -161,14 +162,16 @@ describe('マスターサービス パフォーマンス取得', () => {
 describe('マスターサービス パフォーマンス検索', () => {
     it('searchPerformances by theater ok', () => __awaiter(this, void 0, void 0, function* () {
         const performanceAdapter = new performance_1.default(connection);
-        const performances = yield MasterService.searchPerformances({ theater: '118' })(performanceAdapter);
+        const performanceStockStatusAdapter = new performance_2.default(process.env.TEST_REDIS_URL);
+        const performances = yield MasterService.searchPerformances({ theater: '118' })(performanceAdapter, performanceStockStatusAdapter);
         performances.map((performance) => {
             assert.equal(performance.theater.id, '118');
         });
     }));
     it('searchPerformances by day ok', () => __awaiter(this, void 0, void 0, function* () {
         const performanceAdapter = new performance_1.default(connection);
-        const performances = yield MasterService.searchPerformances({ day: '20170301' })(performanceAdapter);
+        const performanceStockStatusAdapter = new performance_2.default(process.env.TEST_REDIS_URL);
+        const performances = yield MasterService.searchPerformances({ day: '20170301' })(performanceAdapter, performanceStockStatusAdapter);
         performances.map((performance) => {
             assert.equal(performance.day, '20170301');
         });

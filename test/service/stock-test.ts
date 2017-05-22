@@ -14,6 +14,7 @@ import FilmAdapter from '../../lib/adapter/film';
 import OwnerAdapter from '../../lib/adapter/owner';
 import PerformanceAdapter from '../../lib/adapter/performance';
 import ScreenAdapter from '../../lib/adapter/screen';
+import PerformanceStockStatusAdapter from '../../lib/adapter/stockStatus/performance';
 import TheaterAdapter from '../../lib/adapter/theater';
 import TransactionAdapter from '../../lib/adapter/transaction';
 
@@ -232,5 +233,21 @@ describe('在庫サービス 座席予約資産移動', () => {
         await ownerDoc.remove();
 
         assert(transferCOASeatReservationError instanceof Error);
+    });
+});
+
+describe('在庫サービス パフォーマンス空席状況更新', () => {
+    it('ok', async () => {
+        const performanceStockStatusAdapter = new PerformanceStockStatusAdapter(process.env.TEST_REDIS_URL);
+
+        await StockService.updatePerformanceAvailability(
+            '118',
+            '20170501',
+            '20170502'
+        )(performanceStockStatusAdapter);
+
+        // todo テストコードがCOAのテストデータ依存
+        const availability = await performanceStockStatusAdapter.findByPerformance('20170501', '11820170501164250702120');
+        assert.notEqual(availability, null);
     });
 });

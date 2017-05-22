@@ -1,6 +1,6 @@
 "use strict";
 /**
- * パフォーマンス空席状況アダプターテスト
+ * パフォーマンス在庫状況アダプターテスト
  *
  * @ignore
  */
@@ -14,7 +14,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
-const performanceAvailability_1 = require("../../lib/adapter/performanceAvailability");
+const performance_1 = require("../../../lib/adapter/stockStatus/performance");
 const TEST_PERFORMANCE_DAY = '20170428';
 const TEST_PERFORMANCE_ID = '1234567890';
 before(() => __awaiter(this, void 0, void 0, function* () {
@@ -22,15 +22,15 @@ before(() => __awaiter(this, void 0, void 0, function* () {
         throw new Error('environment variable TEST_REDIS_URL required');
     }
     // 全て削除してからテスト開始
-    const adapter = new performanceAvailability_1.default(process.env.TEST_REDIS_URL);
+    const adapter = new performance_1.default(process.env.TEST_REDIS_URL);
     yield adapter.removeByPerformaceDay(TEST_PERFORMANCE_DAY);
 }));
 describe('パフォーマンス空席状況アダプター パフォーマンスIDで保管', () => {
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
-        const adapter = new performanceAvailability_1.default(process.env.TEST_REDIS_URL);
+        const adapter = new performance_1.default(process.env.TEST_REDIS_URL);
         let availabilityFromRedis;
         availabilityFromRedis = yield adapter.findByPerformance(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID);
-        assert.equal(availabilityFromRedis, '');
+        assert.equal(availabilityFromRedis, null);
         // テストデータ生成
         const availability = '○';
         yield adapter.saveByPerformance(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, availability);

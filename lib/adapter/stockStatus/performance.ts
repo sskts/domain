@@ -2,19 +2,20 @@ import * as createDebug from 'debug';
 import * as redis from 'redis';
 import * as url from 'url';
 
-import * as PerformanceAvailabilityFactory from '../factory/performanceAvailability';
+import * as PerformanceStockStatusFactory from '../../factory/stockStatus/performance';
 
 const debug = createDebug('sskts-domain:adapter:performanceAvailability');
 const REDIS_KEY_PREFIX = 'sskts-performance-avalilabilities';
 const TIMEOUT_IN_SECONDS = 864000;
 
 /**
- * パフォーマンス空席状況アダプター
+ * パフォーマンス在庫状況アダプター
  * todo jsdoc
+ * todo IStockStatusAdapterをimplements
  *
- * @class PerformanceAvailabilityAdapter
+ * @class PerformanceStockStatusAdapter
  */
-export default class PerformanceAvailabilityAdapter {
+export default class PerformanceStockStatusAdapter {
     public readonly redisClient: redis.RedisClient;
 
     constructor(redisUrl: string) {
@@ -31,10 +32,11 @@ export default class PerformanceAvailabilityAdapter {
         this.redisClient = redis.createClient(options);
     }
 
-    public async findByPerformance(performanceDay: string, performanceId: string): Promise<string> {
+    public async findByPerformance(performanceDay: string, performanceId: string):
+        Promise<PerformanceStockStatusFactory.IPerformanceStockStatus | null> {
         const key = `${REDIS_KEY_PREFIX}:${performanceDay}`;
 
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<PerformanceStockStatusFactory.IPerformanceStockStatus | null>((resolve, reject) => {
             // 劇場のパフォーマンス空席状況を取得
             this.redisClient.hget([key, performanceId], (err, res) => {
                 debug('reply:', res);
@@ -44,7 +46,7 @@ export default class PerformanceAvailabilityAdapter {
                     return;
                 }
 
-                resolve((res === null) ? '' : res);
+                resolve(res);
             });
         });
     }
@@ -52,7 +54,7 @@ export default class PerformanceAvailabilityAdapter {
     public async saveByPerformance(
         performanceDay: string,
         performanceId: string,
-        availability: PerformanceAvailabilityFactory.Availability
+        availability: PerformanceStockStatusFactory.IPerformanceStockStatus
     ): Promise<void> {
         const key = `${REDIS_KEY_PREFIX}:${performanceDay}`;
 

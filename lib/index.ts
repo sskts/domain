@@ -3,6 +3,7 @@
  *
  * @module
  */
+
 import { Connection } from 'mongoose';
 
 import * as clientService from './service/client';
@@ -24,6 +25,7 @@ import PerformanceAdapter from './adapter/performance';
 import QueueAdapter from './adapter/queue';
 import ScreenAdapter from './adapter/screen';
 import SendGridEventAdapter from './adapter/sendGridEvent';
+import PerformanceStockStatusAdapter from './adapter/stockStatus/performance';
 import TelemetryAdapter from './adapter/telemetry';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
@@ -51,6 +53,7 @@ import * as SettleAuthorizationQueueFactory from './factory/queue/settleAuthoriz
 import QueueGroup from './factory/queueGroup';
 import QueueStatus from './factory/queueStatus';
 import * as ScreenFactory from './factory/screen';
+import * as PerformanceStockStatusFactory from './factory/stockStatus/performance';
 import * as TheaterFactory from './factory/theater';
 import * as TransactionFactory from './factory/transaction';
 import * as AddNotificationTransactionEventFactory from './factory/transactionEvent/addNotification';
@@ -80,6 +83,11 @@ export const adapter = {
     },
     performance: (connection: Connection) => {
         return new PerformanceAdapter(connection);
+    },
+    stockStatus: {
+        performance: (redisUrl: string) => {
+            return new PerformanceStockStatusAdapter(redisUrl);
+        }
     },
     queue: (connection: Connection) => {
         return new QueueAdapter(connection);
@@ -147,6 +155,9 @@ export const factory = {
     queueGroup: QueueGroup,
     queueStatus: QueueStatus,
     screen: ScreenFactory,
+    stockStatus: {
+        performance: PerformanceStockStatusFactory
+    },
     theater: TheaterFactory,
     transaction: TransactionFactory,
     transactionEvent: {

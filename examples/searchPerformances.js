@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /* tslint:disable */
+const moment = require("moment");
 const mongoose = require("mongoose");
 const sskts = require("../lib/index");
 function main() {
@@ -17,9 +18,9 @@ function main() {
             mongoose.Promise = global.Promise;
             const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
             const performances = yield sskts.service.master.searchPerformances({
-                day: '20170328',
+                day: moment().format('YYYYMMDD'),
                 theater: '118'
-            })(sskts.adapter.performance(connection));
+            })(sskts.adapter.performance(connection), sskts.adapter.stockStatus.performance(process.env.TEST_REDIS_URL));
             console.log(performances);
         }
         catch (error) {

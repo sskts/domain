@@ -120,14 +120,14 @@ export type IPerformanceWithReferenceDetails = IPerformanceBase & ICOAFields & I
  */
 export function createFromCOA(performanceFromCOA: COA.MasterService.IScheduleResult) {
     return (screen: ScreenFactory.IScreen, film: FilmFactory.IFilm): IPerformance => {
-        const id = [
-            screen.theater,
-            performanceFromCOA.date_jouei,
-            performanceFromCOA.title_code,
-            performanceFromCOA.title_branch_num,
-            performanceFromCOA.screen_code,
-            performanceFromCOA.time_begin
-        ].join('');
+        const id = createIdFromCOA({
+            theater_code: screen.theater,
+            date_jouei: performanceFromCOA.date_jouei,
+            title_code: performanceFromCOA.title_code,
+            title_branch_num: performanceFromCOA.title_branch_num,
+            screen_code: performanceFromCOA.screen_code,
+            time_begin: performanceFromCOA.time_begin
+        });
 
         return {
             id: id,
@@ -148,4 +148,27 @@ export function createFromCOA(performanceFromCOA: COA.MasterService.IScheduleRes
             coa_flg_early_booking: performanceFromCOA.flg_early_booking
         };
     };
+}
+
+/**
+ * COA情報からパフォーマンスIDを生成する
+ *
+ * @memberof factory/performance
+ */
+export function createIdFromCOA(args: {
+    theater_code: string;
+    date_jouei: string;
+    title_code: string;
+    title_branch_num: string;
+    screen_code: string;
+    time_begin: string;
+}): string {
+    return [
+        args.theater_code,
+        args.date_jouei,
+        args.title_code,
+        args.title_branch_num,
+        args.screen_code,
+        args.time_begin
+    ].join('');
 }

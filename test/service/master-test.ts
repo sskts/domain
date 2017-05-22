@@ -9,6 +9,7 @@ import * as mongoose from 'mongoose';
 import FilmAdapter from '../../lib/adapter/film';
 import PerformanceAdapter from '../../lib/adapter/performance';
 import ScreenAdapter from '../../lib/adapter/screen';
+import PerformanceStockStatusAdapter from '../../lib/adapter/stockStatus/performance';
 import TheaterAdapter from '../../lib/adapter/theater';
 
 import * as PerformanceFactory from '../../lib/factory/performance';
@@ -198,7 +199,8 @@ describe('マスターサービス パフォーマンス取得', () => {
 describe('マスターサービス パフォーマンス検索', () => {
     it('searchPerformances by theater ok', async () => {
         const performanceAdapter = new PerformanceAdapter(connection);
-        const performances = await MasterService.searchPerformances({ theater: '118' })(performanceAdapter);
+        const performanceStockStatusAdapter = new PerformanceStockStatusAdapter(process.env.TEST_REDIS_URL);
+        const performances = await MasterService.searchPerformances({ theater: '118' })(performanceAdapter, performanceStockStatusAdapter);
         performances.map((performance) => {
             assert.equal(performance.theater.id, '118');
         });
@@ -206,7 +208,11 @@ describe('マスターサービス パフォーマンス検索', () => {
 
     it('searchPerformances by day ok', async () => {
         const performanceAdapter = new PerformanceAdapter(connection);
-        const performances = await MasterService.searchPerformances({ day: '20170301' })(performanceAdapter);
+        const performanceStockStatusAdapter = new PerformanceStockStatusAdapter(process.env.TEST_REDIS_URL);
+        const performances = await MasterService.searchPerformances({ day: '20170301' })(
+            performanceAdapter,
+            performanceStockStatusAdapter
+        );
         performances.map((performance) => {
             assert.equal(performance.day, '20170301');
         });

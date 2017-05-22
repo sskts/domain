@@ -21,6 +21,7 @@ const film_1 = require("../../lib/adapter/film");
 const owner_1 = require("../../lib/adapter/owner");
 const performance_1 = require("../../lib/adapter/performance");
 const screen_1 = require("../../lib/adapter/screen");
+const performance_2 = require("../../lib/adapter/stockStatus/performance");
 const theater_1 = require("../../lib/adapter/theater");
 const transaction_1 = require("../../lib/adapter/transaction");
 const CoaSeatReservationAuthorizationFactory = require("../../lib/factory/authorization/coaSeatReservation");
@@ -219,5 +220,14 @@ describe('在庫サービス 座席予約資産移動', () => {
         // テストデータ削除
         yield ownerDoc.remove();
         assert(transferCOASeatReservationError instanceof Error);
+    }));
+});
+describe('在庫サービス パフォーマンス空席状況更新', () => {
+    it('ok', () => __awaiter(this, void 0, void 0, function* () {
+        const performanceStockStatusAdapter = new performance_2.default(process.env.TEST_REDIS_URL);
+        yield StockService.updatePerformanceAvailability('118', '20170501', '20170502')(performanceStockStatusAdapter);
+        // todo テストコードがCOAのテストデータ依存
+        const availability = yield performanceStockStatusAdapter.findByPerformance('20170501', '11820170501164250702120');
+        assert.notEqual(availability, null);
     }));
 });

@@ -111,3 +111,16 @@ export declare type IPerformanceWithReferenceDetails = IPerformanceBase & ICOAFi
  * @memberof tobereplaced$
  */
 export declare function createFromCOA(performanceFromCOA: COA.MasterService.IScheduleResult): (screen: ScreenFactory.IScreen, film: FilmFactory.IFilm) => IPerformance;
+/**
+ * COA情報からパフォーマンスIDを生成する
+ *
+ * @memberof factory/performance
+ */
+export declare function createIdFromCOA(args: {
+    theater_code: string;
+    date_jouei: string;
+    title_code: string;
+    title_branch_num: string;
+    screen_code: string;
+    time_begin: string;
+}): string;

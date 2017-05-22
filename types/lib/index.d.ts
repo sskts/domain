@@ -23,6 +23,7 @@ import PerformanceAdapter from './adapter/performance';
 import QueueAdapter from './adapter/queue';
 import ScreenAdapter from './adapter/screen';
 import SendGridEventAdapter from './adapter/sendGridEvent';
+import PerformanceStockStatusAdapter from './adapter/stockStatus/performance';
 import TelemetryAdapter from './adapter/telemetry';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
@@ -49,6 +50,7 @@ import * as SettleAuthorizationQueueFactory from './factory/queue/settleAuthoriz
 import QueueGroup from './factory/queueGroup';
 import QueueStatus from './factory/queueStatus';
 import * as ScreenFactory from './factory/screen';
+import * as PerformanceStockStatusFactory from './factory/stockStatus/performance';
 import * as TheaterFactory from './factory/theater';
 import * as TransactionFactory from './factory/transaction';
 import * as AddNotificationTransactionEventFactory from './factory/transactionEvent/addNotification';
@@ -66,6 +68,9 @@ export declare const adapter: {
     gmoNotification: (connection: Connection) => GMONotificationAdapter;
     owner: (connection: Connection) => OwnerAdapter;
     performance: (connection: Connection) => PerformanceAdapter;
+    stockStatus: {
+        performance: (redisUrl: string) => PerformanceStockStatusAdapter;
+    };
     queue: (connection: Connection) => QueueAdapter;
     screen: (connection: Connection) => ScreenAdapter;
     sendGridEvent: (connection: Connection) => SendGridEventAdapter;
@@ -118,6 +123,9 @@ export declare const factory: {
     queueGroup: typeof QueueGroup;
     queueStatus: typeof QueueStatus;
     screen: typeof ScreenFactory;
+    stockStatus: {
+        performance: typeof PerformanceStockStatusFactory;
+    };
     theater: typeof TheaterFactory;
     transaction: typeof TransactionFactory;
     transactionEvent: {

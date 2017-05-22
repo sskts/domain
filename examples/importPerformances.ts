@@ -1,4 +1,5 @@
 /* tslint:disable */
+import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import * as sskts from '../lib/index';
 
@@ -11,7 +12,7 @@ async function main() {
         const performanceAdapter = sskts.adapter.performance(connection);
 
         await performanceAdapter.model.remove({}).exec();
-        await sskts.service.master.importPerformances('118', '20170325', '20170401')(
+        await sskts.service.master.importPerformances('118', moment().format('YYYYMMDD'), moment().add(7, 'days').format('YYYYMMDD'))(
             filmAdapter,
             screenAdapter,
             performanceAdapter
