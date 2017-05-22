@@ -2,12 +2,15 @@ import * as createDebug from 'debug';
 import * as redis from 'redis';
 import * as url from 'url';
 
+import * as PerformanceAvailabilityFactory from '../factory/performanceAvailability';
+
 const debug = createDebug('sskts-domain:adapter:performanceAvailability');
 const REDIS_KEY_PREFIX = 'sskts-performance-avalilabilities';
 const TIMEOUT_IN_SECONDS = 864000;
 
 /**
  * パフォーマンス空席状況アダプター
+ * todo jsdoc
  *
  * @class PerformanceAvailabilityAdapter
  */
@@ -46,7 +49,11 @@ export default class PerformanceAvailabilityAdapter {
         });
     }
 
-    public async saveByPerformance(performanceDay: string, performanceId: string, availability: string): Promise<void> {
+    public async saveByPerformance(
+        performanceDay: string,
+        performanceId: string,
+        availability: PerformanceAvailabilityFactory.Availability
+    ): Promise<void> {
         const key = `${REDIS_KEY_PREFIX}:${performanceDay}`;
 
         return new Promise<void>(async (resolve, reject) => {
