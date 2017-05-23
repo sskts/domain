@@ -16,14 +16,12 @@ import * as AnonymousOwnerFactory from '../factory/owner/anonymous';
 import OwnerGroup from '../factory/ownerGroup';
 import * as OwnershipFactory from '../factory/ownership';
 import * as PerformanceFactory from '../factory/performance';
-import * as PerformanceStockStatusFactory from '../factory/stockStatus/performance';
 import * as TransactionFactory from '../factory/transaction';
 import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
 
 import AssetAdapter from '../adapter/asset';
 import OwnerAdapter from '../adapter/owner';
 import PerformanceAdapter from '../adapter/performance';
-import PerformanceStockStatusAdapter from '../adapter/stockStatus/performance';
 import TransactionAdapter from '../adapter/transaction';
 
 const debug = createDebug('sskts-domain:service:stock');
@@ -237,49 +235,5 @@ export function disableTransactionInquiry(transaction: TransactionFactory.ITrans
             },
             { $unset: { inquiry_key: '' } } // 照会キーフィールドを削除する
         ).exec();
-    };
-}
-
-export function updatePerformanceAvailability(theaterCode: string, dayStart: string, dayEnd: string) {
-    return async (performanceStockStatusAdapter: PerformanceStockStatusAdapter) => {
-        // COAから空席状況取得
-        const countFreeSeatResult = await COA.ReserveService.countFreeSeat({
-            theater_code: theaterCode,
-            begin: dayStart,
-            end: dayEnd
-        });
-
-        // 上映日ごとに
-        await Promise.all(countFreeSeatResult.list_date.map(async (countFreeSeatDate) => {
-            debug('saving performance availability... day:', countFreeSeatDate.date_jouei);
-            // パフォーマンスごとに空席状況を生成して保管
-            await Promise.all(
-                countFreeSeatDate.list_performance.map(async (countFreeSeatPerformance) => {
-                    const performanceId = PerformanceFactory.createIdFromCOA({
-                        theater_code: countFreeSeatResult.theater_code,
-                        date_jouei: countFreeSeatDate.date_jouei,
-                        title_code: countFreeSeatPerformance.title_code,
-                        title_branch_num: countFreeSeatPerformance.title_branch_num,
-                        screen_code: countFreeSeatPerformance.screen_code,
-                        time_begin: countFreeSeatPerformance.time_begin
-                    });
-
-                    const availability = PerformanceStockStatusFactory.create(
-                        countFreeSeatDate.date_jouei,
-                        countFreeSeatPerformance.cnt_reserve_free,
-                        countFreeSeatPerformance.cnt_reserve_max
-                    );
-
-                    // 永続化
-                    debug('saving performance availability... id:', performanceId);
-                    await performanceStockStatusAdapter.saveByPerformance(
-                        countFreeSeatDate.date_jouei,
-                        performanceId,
-                        availability
-                    );
-                    debug('performance availability saved');
-                })
-            );
-        }));
     };
 }

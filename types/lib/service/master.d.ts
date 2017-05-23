@@ -14,7 +14,7 @@ export declare type TheaterOperation<T> = (adapter: TheaterAdapter) => Promise<T
 export declare type FilmOperation<T> = (adapter: FilmAdapter) => Promise<T>;
 export declare type ScreenOperation<T> = (adapter: ScreenAdapter) => Promise<T>;
 export declare type PerformanceOperation<T> = (adapter: PerformanceAdapter) => Promise<T>;
-export declare type PerformanceAndPerformanceAvailabilityOperation<T> = (performanceAdapter: PerformanceAdapter, performanceStockStatusAdapter: PerformanceStockStatusAdapter) => Promise<T>;
+export declare type PerformanceAndPerformanceStockStatusOperation<T> = (performanceAdapter: PerformanceAdapter, performanceStockStatusAdapter: PerformanceStockStatusAdapter) => Promise<T>;
 export declare type TheaterAndScreenOperation<T> = (theaterRepo: TheaterAdapter, screenRepo: ScreenAdapter) => Promise<T>;
 export declare type TheaterAndFilmOperation<T> = (theaterRepo: TheaterAdapter, filmRepo: FilmAdapter) => Promise<T>;
 export declare type FilmAndScreenAndPerformanceOperation<T> = (filmRepo: FilmAdapter, screenRepo: ScreenAdapter, performanceRepo: PerformanceAdapter) => Promise<T>;
@@ -40,7 +40,7 @@ export interface ISearchPerformancesResult {
     time_start: string;
     time_end: string;
     canceled: boolean;
-    stock_status: PerformanceStockStatusFactory.IPerformanceStockStatus | null;
+    stock_status: PerformanceStockStatusFactory.Expression | null;
 }
 /**
  * 劇場インポート
@@ -84,11 +84,11 @@ export declare function importPerformances(theaterCode: string, dayStart: string
  * パフォーマンス検索
  *
  * @param {SearchPerformancesConditions} conditions
- * @returns {PerformanceAndPerformanceAvailabilityOperation<ISearchPerformancesResult[]>}
+ * @returns {PerformanceAndPerformanceStockStatusOperation<ISearchPerformancesResult[]>}
  *
  * @memberof service/master
  */
-export declare function searchPerformances(searchConditions: ISearchPerformancesConditions): PerformanceAndPerformanceAvailabilityOperation<ISearchPerformancesResult[]>;
+export declare function searchPerformances(searchConditions: ISearchPerformancesConditions): PerformanceAndPerformanceStockStatusOperation<ISearchPerformancesResult[]>;
 /**
  * IDで劇場検索
  *

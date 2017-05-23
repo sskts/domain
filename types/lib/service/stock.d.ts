@@ -3,7 +3,6 @@ import * as TransactionFactory from '../factory/transaction';
 import AssetAdapter from '../adapter/asset';
 import OwnerAdapter from '../adapter/owner';
 import PerformanceAdapter from '../adapter/performance';
-import PerformanceStockStatusAdapter from '../adapter/stockStatus/performance';
 import TransactionAdapter from '../adapter/transaction';
 /**
  * 資産承認解除(COA座席予約)
@@ -29,4 +28,3 @@ export declare function transferCOASeatReservation(authorization: COASeatReserva
  * @memberof service/stock
  */
 export declare function disableTransactionInquiry(transaction: TransactionFactory.ITransaction): (transactionAdapter: TransactionAdapter) => Promise<void>;
-export declare function updatePerformanceAvailability(theaterCode: string, dayStart: string, dayEnd: string): (performanceStockStatusAdapter: PerformanceStockStatusAdapter) => Promise<void>;

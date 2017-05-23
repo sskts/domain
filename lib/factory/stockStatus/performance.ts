@@ -6,37 +6,74 @@
  */
 
 import * as moment from 'moment';
+import * as StockStatusFactory from '../stockStatus';
+import StockStatusGroup from '../stockStatusGroup';
 
-export type IPerformanceStockStatus =
+/**
+ * パフォーマンス在庫状況インターフェース
+ *
+ * @interface IPerformanceStockStatus
+ * @extends {StockStatusFactory.IStockStatus}
+ */
+export interface IPerformanceStockStatus extends StockStatusFactory.IStockStatus {
+    expression: Expression;
+}
+
+/**
+ * パフォーマンス在庫状況表現インターフェース
+ */
+export type Expression =
     '○'
     | '△'
     | '×'
     | '-'
     ;
 
-export namespace IPerformanceStockStatus {
-    export const MANY = '○';
-    export const FEW = '△';
+/**
+ * パフォーマンス在庫状況表現
+ */
+export namespace Expression {
+    export const AVAILABLE_MANY = '○';
+    export const AVAILABLE_FEW = '△';
     export const UNAVAILABLE = '×';
     export const EXPIRED = '-';
 }
 
-export function create(day: string, numberOfAvailableSeats: number, numberOfAllSeats: number): IPerformanceStockStatus {
+/**
+ * 座席数から在庫状況表現を生成する
+ *
+ * @param {string} day 上映日
+ * @param {number} numberOfAvailableSeats 空席数
+ * @param {number} numberOfAllSeats 全座席数
+ * @returns {Expression} 在庫状況表現
+ */
+export function createExpression(day: string, numberOfAvailableSeats: number, numberOfAllSeats: number): Expression {
     // 上映日当日過ぎていれば期限切れ
     // tslint:disable-next-line:no-magic-numbers
     if (parseInt(day, 10) < parseInt(moment().format('YYYYMMDD'), 10)) {
-        return IPerformanceStockStatus.EXPIRED;
+        return Expression.EXPIRED;
     }
 
     // 残席数よりステータスを算出
     // tslint:disable-next-line:no-magic-numbers
     if (30 * numberOfAllSeats < 100 * numberOfAvailableSeats) {
-        return IPerformanceStockStatus.MANY;
+        return Expression.AVAILABLE_MANY;
     }
     if (0 < numberOfAvailableSeats) {
-        return IPerformanceStockStatus.FEW;
+        return Expression.AVAILABLE_FEW;
     }
 
     // 残席0以下なら問答無用に×
-    return IPerformanceStockStatus.UNAVAILABLE;
+    return Expression.UNAVAILABLE;
+}
+
+export function create(args: {
+    performaceId: string;
+    expression: Expression;
+}): IPerformanceStockStatus {
+    return {
+        id: `${StockStatusGroup.PERFORMANCE}${args.performaceId}`,
+        group: StockStatusGroup.PERFORMANCE,
+        expression: args.expression
+    };
 }

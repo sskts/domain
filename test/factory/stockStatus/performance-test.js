@@ -12,29 +12,29 @@ describe('パフォーマンス空席状況ファクトリー 生成', () => {
     it('期限切れ', () => {
         assert.doesNotThrow(() => {
             // tslint:disable-next-line:no-magic-numbers
-            const availability = PerformanceStockStatusFactory.create(moment().add(-1, 'days').format('YYYYMMDD'), 50, 100);
-            assert.equal(availability, PerformanceStockStatusFactory.IPerformanceStockStatus.EXPIRED);
+            const expression = PerformanceStockStatusFactory.createExpression(moment().add(-1, 'days').format('YYYYMMDD'), 50, 100);
+            assert.equal(expression, PerformanceStockStatusFactory.Expression.EXPIRED);
         });
     });
     it('○', () => {
         assert.doesNotThrow(() => {
             // tslint:disable-next-line:no-magic-numbers
-            const availability = PerformanceStockStatusFactory.create(moment().add(1, 'days').format('YYYYMMDD'), 50, 100);
-            assert.equal(availability, PerformanceStockStatusFactory.IPerformanceStockStatus.MANY);
+            const expression = PerformanceStockStatusFactory.createExpression(moment().add(1, 'days').format('YYYYMMDD'), 50, 100);
+            assert.equal(expression, PerformanceStockStatusFactory.Expression.AVAILABLE_MANY);
         });
     });
     it('△', () => {
         assert.doesNotThrow(() => {
             // tslint:disable-next-line:no-magic-numbers
-            const availability = PerformanceStockStatusFactory.create(moment().add(1, 'days').format('YYYYMMDD'), 1, 100);
-            assert.equal(availability, PerformanceStockStatusFactory.IPerformanceStockStatus.FEW);
+            const expression = PerformanceStockStatusFactory.createExpression(moment().add(1, 'days').format('YYYYMMDD'), 1, 100);
+            assert.equal(expression, PerformanceStockStatusFactory.Expression.AVAILABLE_FEW);
         });
     });
     it('×', () => {
         assert.doesNotThrow(() => {
             // tslint:disable-next-line:no-magic-numbers
-            const availability = PerformanceStockStatusFactory.create(moment().add(1, 'days').format('YYYYMMDD'), 0, 100);
-            assert.equal(availability, PerformanceStockStatusFactory.IPerformanceStockStatus.UNAVAILABLE);
+            const expression = PerformanceStockStatusFactory.createExpression(moment().add(1, 'days').format('YYYYMMDD'), 0, 100);
+            assert.equal(expression, PerformanceStockStatusFactory.Expression.UNAVAILABLE);
         });
     });
 });

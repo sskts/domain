@@ -27,7 +27,7 @@ export type TheaterOperation<T> = (adapter: TheaterAdapter) => Promise<T>;
 export type FilmOperation<T> = (adapter: FilmAdapter) => Promise<T>;
 export type ScreenOperation<T> = (adapter: ScreenAdapter) => Promise<T>;
 export type PerformanceOperation<T> = (adapter: PerformanceAdapter) => Promise<T>;
-export type PerformanceAndPerformanceAvailabilityOperation<T> =
+export type PerformanceAndPerformanceStockStatusOperation<T> =
     (performanceAdapter: PerformanceAdapter, performanceStockStatusAdapter: PerformanceStockStatusAdapter) => Promise<T>;
 export type TheaterAndScreenOperation<T> =
     (theaterRepo: TheaterAdapter, screenRepo: ScreenAdapter) => Promise<T>;
@@ -58,7 +58,7 @@ export interface ISearchPerformancesResult {
     time_start: string;
     time_end: string;
     canceled: boolean;
-    stock_status: PerformanceStockStatusFactory.IPerformanceStockStatus | null;
+    stock_status: PerformanceStockStatusFactory.Expression | null;
 }
 
 const debug = createDebug('sskts-domain:service:master');
@@ -224,12 +224,12 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
  * パフォーマンス検索
  *
  * @param {SearchPerformancesConditions} conditions
- * @returns {PerformanceAndPerformanceAvailabilityOperation<ISearchPerformancesResult[]>}
+ * @returns {PerformanceAndPerformanceStockStatusOperation<ISearchPerformancesResult[]>}
  *
  * @memberof service/master
  */
 export function searchPerformances(searchConditions: ISearchPerformancesConditions):
-    PerformanceAndPerformanceAvailabilityOperation<ISearchPerformancesResult[]> {
+    PerformanceAndPerformanceStockStatusOperation<ISearchPerformancesResult[]> {
     return async (
         performanceRepo: PerformanceAdapter,
         performanceStockStatusAdapter: PerformanceStockStatusAdapter
@@ -256,7 +256,7 @@ export function searchPerformances(searchConditions: ISearchPerformancesConditio
         const performances: ISearchPerformancesResult[] = [];
         await Promise.all(docs.map(async (doc) => {
             // todo 空席状況を追加
-            const stockStatus = await performanceStockStatusAdapter.findByPerformance(doc.get('day'), doc.get('id'));
+            const stockStatus = await performanceStockStatusAdapter.findOne(doc.get('day'), doc.get('id'));
             debug('stockStatus:', stockStatus);
 
             performances.push({
@@ -277,7 +277,7 @@ export function searchPerformances(searchConditions: ISearchPerformancesConditio
                 time_start: doc.get('time_start'),
                 time_end: doc.get('time_end'),
                 canceled: doc.get('canceled'),
-                stock_status: stockStatus
+                stock_status: (stockStatus === null) ? null : stockStatus.expression
             });
         }));
 
