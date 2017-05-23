@@ -43,6 +43,13 @@ var sskts = require('@motionpicture/sskts-domain');
 
 `npm run jsdoc`でjsdocを作成できます。./docsに出力されます。
 
+## Test
+
+`npm test`
+
+[mocha](https://mochajs.org/)
+[istanbul](https://istanbul.js.org/)
+
 
 # License
 UNLICENSED
