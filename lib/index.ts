@@ -13,6 +13,7 @@ import * as queueService from './service/queue';
 import * as reportService from './service/report';
 import * as salesService from './service/sales';
 import * as stockService from './service/stock';
+import * as stockStatusService from './service/stockStatus';
 import * as transactionService from './service/transaction';
 import * as transactionWithIdService from './service/transactionWithId';
 
@@ -117,6 +118,7 @@ export const service = {
     report: reportService,
     sales: salesService,
     stock: stockService,
+    stockStatus: stockStatusService,
     transaction: transactionService,
     transactionWithId: transactionWithIdService
 };

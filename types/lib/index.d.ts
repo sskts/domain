@@ -12,6 +12,7 @@ import * as queueService from './service/queue';
 import * as reportService from './service/report';
 import * as salesService from './service/sales';
 import * as stockService from './service/stock';
+import * as stockStatusService from './service/stockStatus';
 import * as transactionService from './service/transaction';
 import * as transactionWithIdService from './service/transactionWithId';
 import AssetAdapter from './adapter/asset';
@@ -86,6 +87,7 @@ export declare const service: {
     report: typeof reportService;
     sales: typeof salesService;
     stock: typeof stockService;
+    stockStatus: typeof stockStatusService;
     transaction: typeof transactionService;
     transactionWithId: typeof transactionWithIdService;
 };
