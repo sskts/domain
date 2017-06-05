@@ -14,7 +14,7 @@ export declare type TheaterOperation<T> = (adapter: TheaterAdapter) => Promise<T
 export declare type FilmOperation<T> = (adapter: FilmAdapter) => Promise<T>;
 export declare type ScreenOperation<T> = (adapter: ScreenAdapter) => Promise<T>;
 export declare type PerformanceOperation<T> = (adapter: PerformanceAdapter) => Promise<T>;
-export declare type PerformanceAndPerformanceStockStatusOperation<T> = (performanceAdapter: PerformanceAdapter, performanceStockStatusAdapter: PerformanceStockStatusAdapter) => Promise<T>;
+export declare type PerformanceAndPerformanceStockStatusOperation<T> = (performanceAdapter: PerformanceAdapter, performanceStockStatusAdapter?: PerformanceStockStatusAdapter) => Promise<T>;
 export declare type TheaterAndScreenOperation<T> = (theaterRepo: TheaterAdapter, screenRepo: ScreenAdapter) => Promise<T>;
 export declare type TheaterAndFilmOperation<T> = (theaterRepo: TheaterAdapter, filmRepo: FilmAdapter) => Promise<T>;
 export declare type FilmAndScreenAndPerformanceOperation<T> = (filmRepo: FilmAdapter, screenRepo: ScreenAdapter, performanceRepo: PerformanceAdapter) => Promise<T>;
@@ -82,6 +82,8 @@ export declare function importScreens(theaterCode: string): TheaterAndScreenOper
 export declare function importPerformances(theaterCode: string, dayStart: string, dayEnd: string): FilmAndScreenAndPerformanceOperation<void>;
 /**
  * パフォーマンス検索
+ * 空席状況情報がなかったバージョンに対して互換性を保つために
+ * performanceStockStatusAdapterはundefinedでも使えるようになっている
  *
  * @param {SearchPerformancesConditions} conditions
  * @returns {PerformanceAndPerformanceStockStatusOperation<ISearchPerformancesResult[]>}

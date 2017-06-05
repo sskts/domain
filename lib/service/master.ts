@@ -28,7 +28,7 @@ export type FilmOperation<T> = (adapter: FilmAdapter) => Promise<T>;
 export type ScreenOperation<T> = (adapter: ScreenAdapter) => Promise<T>;
 export type PerformanceOperation<T> = (adapter: PerformanceAdapter) => Promise<T>;
 export type PerformanceAndPerformanceStockStatusOperation<T> =
-    (performanceAdapter: PerformanceAdapter, performanceStockStatusAdapter: PerformanceStockStatusAdapter) => Promise<T>;
+    (performanceAdapter: PerformanceAdapter, performanceStockStatusAdapter?: PerformanceStockStatusAdapter) => Promise<T>;
 export type TheaterAndScreenOperation<T> =
     (theaterRepo: TheaterAdapter, screenRepo: ScreenAdapter) => Promise<T>;
 export type TheaterAndFilmOperation<T> =
@@ -222,6 +222,8 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
 
 /**
  * パフォーマンス検索
+ * 空席状況情報がなかったバージョンに対して互換性を保つために
+ * performanceStockStatusAdapterはundefinedでも使えるようになっている
  *
  * @param {SearchPerformancesConditions} conditions
  * @returns {PerformanceAndPerformanceStockStatusOperation<ISearchPerformancesResult[]>}
@@ -232,7 +234,7 @@ export function searchPerformances(searchConditions: ISearchPerformancesConditio
     PerformanceAndPerformanceStockStatusOperation<ISearchPerformancesResult[]> {
     return async (
         performanceRepo: PerformanceAdapter,
-        performanceStockStatusAdapter: PerformanceStockStatusAdapter
+        performanceStockStatusAdapter?: PerformanceStockStatusAdapter
     ): Promise<ISearchPerformancesResult[]> => {
         // 検索条件を作成
         const conditions: any = {};
@@ -255,9 +257,12 @@ export function searchPerformances(searchConditions: ISearchPerformancesConditio
 
         const performances: ISearchPerformancesResult[] = [];
         await Promise.all(docs.map(async (doc) => {
-            // todo 空席状況を追加
-            const stockStatus = await performanceStockStatusAdapter.findOne(doc.get('day'), doc.get('id'));
-            debug('stockStatus:', stockStatus);
+            // 空席状況を追加
+            let stockStatus = null;
+            if (performanceStockStatusAdapter !== undefined) {
+                stockStatus = await performanceStockStatusAdapter.findOne(doc.get('day'), doc.get('id'));
+                debug('stockStatus:', stockStatus);
+            }
 
             performances.push({
                 id: doc.get('id'),
