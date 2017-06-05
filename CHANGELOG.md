@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+## v15.1.1 - 2017-06-05
+### Changed
+- パッケージを最新にアップデート
+- [tslint@^5.4.2](https://github.com/palantir/tslint)に対応
+
 ## v15.1.0 - 2017-06-05
 ### Added
 - パフォーマンス空席状況の概念を導入。
