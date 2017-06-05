@@ -5,6 +5,7 @@
  */
 import * as assert from 'assert';
 import * as mongoose from 'mongoose';
+import * as redis from 'redis';
 
 import FilmAdapter from '../../lib/adapter/film';
 import PerformanceAdapter from '../../lib/adapter/performance';
@@ -17,8 +18,16 @@ import * as PerformanceFactory from '../../lib/factory/performance';
 import * as MasterService from '../../lib/service/master';
 
 let connection: mongoose.Connection;
+let redisClient: redis.RedisClient;
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+
+    redisClient = redis.createClient({
+        host: process.env.TEST_REDIS_HOST,
+        port: process.env.TEST_REDIS_PORT,
+        password: process.env.TEST_REDIS_KEY,
+        tls: { servername: process.env.TEST_REDIS_HOST }
+    });
 
     // 全て削除してからテスト開始
     const theaterAdapter = new TheaterAdapter(connection);
@@ -199,7 +208,7 @@ describe('マスターサービス パフォーマンス取得', () => {
 describe('マスターサービス パフォーマンス検索', () => {
     it('searchPerformances by theater ok', async () => {
         const performanceAdapter = new PerformanceAdapter(connection);
-        const performanceStockStatusAdapter = new PerformanceStockStatusAdapter(process.env.TEST_REDIS_URL);
+        const performanceStockStatusAdapter = new PerformanceStockStatusAdapter(redisClient);
         const performances = await MasterService.searchPerformances({ theater: '118' })(performanceAdapter, performanceStockStatusAdapter);
         performances.map((performance) => {
             assert.equal(performance.theater.id, '118');
@@ -208,7 +217,7 @@ describe('マスターサービス パフォーマンス検索', () => {
 
     it('searchPerformances by day ok', async () => {
         const performanceAdapter = new PerformanceAdapter(connection);
-        const performanceStockStatusAdapter = new PerformanceStockStatusAdapter(process.env.TEST_REDIS_URL);
+        const performanceStockStatusAdapter = new PerformanceStockStatusAdapter(redisClient);
         const performances = await MasterService.searchPerformances({ day: '20170301' })(
             performanceAdapter,
             performanceStockStatusAdapter

@@ -1,35 +1,23 @@
 import * as createDebug from 'debug';
 import * as redis from 'redis';
-import * as url from 'url';
-
 import * as PerformanceStockStatusFactory from '../../factory/stockStatus/performance';
 
 const debug = createDebug('sskts-domain:adapter:stockStatus:performance');
 const REDIS_KEY_PREFIX = 'sskts-domain:stockStatus:performance';
-const TIMEOUT_IN_SECONDS = 864000;
+const TIMEOUT_IN_SECONDS = 864000; // todo 調整？
 
 /**
  * パフォーマンス在庫状況アダプター
  * todo jsdoc
- * todo IStockStatusAdapterをimplements
+ * todo IStockStatusAdapterをimplements?
  *
  * @class PerformanceStockStatusAdapter
  */
 export default class PerformanceStockStatusAdapter {
     public readonly redisClient: redis.RedisClient;
 
-    constructor(redisUrl: string) {
-        const parsedUrl = url.parse(redisUrl);
-        const options: redis.ClientOpts = {
-            url: redisUrl,
-            return_buffers: false
-        };
-        // SSL対応の場合
-        if (parsedUrl.port === '6380') {
-            options.tls = { servername: parsedUrl.hostname };
-        }
-
-        this.redisClient = redis.createClient(options);
+    constructor(redisClient: redis.RedisClient) {
+        this.redisClient = redisClient;
     }
 
     /**
@@ -61,7 +49,7 @@ export default class PerformanceStockStatusAdapter {
         return new Promise<PerformanceStockStatusFactory.IPerformanceStockStatus | null>((resolve, reject) => {
             // 劇場のパフォーマンス空席状況を取得
             this.redisClient.hget([key, performanceId], (err, res) => {
-                debug('reply:', res);
+                debug('hget processed.', err, res);
                 if (err instanceof Error) {
                     reject(err);
 
@@ -75,9 +63,10 @@ export default class PerformanceStockStatusAdapter {
                     return;
                 }
 
+                const expression = (res instanceof Buffer) ? res.toString() : res;
                 const stockStatus = PerformanceStockStatusFactory.create({
                     performaceId: performanceId,
-                    expression: res
+                    expression: expression
                 });
                 resolve(stockStatus);
             });
@@ -103,6 +92,7 @@ export default class PerformanceStockStatusAdapter {
 
         return new Promise<void>(async (resolve, reject) => {
             this.redisClient.hset([key, performanceId, expression], (err) => {
+                debug('hset processed.', err);
                 if (err instanceof Error) {
                     reject(err);
                 } else {
@@ -125,6 +115,7 @@ export default class PerformanceStockStatusAdapter {
 
         return new Promise<void>(async (resolve, reject) => {
             this.redisClient.del([key], (err) => {
+                debug('del processed.', err);
                 if (err instanceof Error) {
                     reject(err);
                 } else {

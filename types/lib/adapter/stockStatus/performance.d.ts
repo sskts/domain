@@ -3,13 +3,13 @@ import * as PerformanceStockStatusFactory from '../../factory/stockStatus/perfor
 /**
  * パフォーマンス在庫状況アダプター
  * todo jsdoc
- * todo IStockStatusAdapterをimplements
+ * todo IStockStatusAdapterをimplements?
  *
  * @class PerformanceStockStatusAdapter
  */
 export default class PerformanceStockStatusAdapter {
     readonly redisClient: redis.RedisClient;
-    constructor(redisUrl: string);
+    constructor(redisClient: redis.RedisClient);
     /**
      * パフォーマンス上映日からredisキーを生成する
      *

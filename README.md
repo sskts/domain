@@ -25,7 +25,9 @@ set SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN=**********開発者へのLINE通知
 
 only for test  
 ```shell
-set TEST_REDIS_URL=**********テスト時に使用するredis url**********
+set TEST_REDIS_HOST=**********テスト時に使用するredis情報**********
+set TEST_REDIS_PORT=**********テスト時に使用するredis情報**********
+set TEST_REDIS_KEY=**********テスト時に使用するredis情報**********
 ```
 
 ## Usage

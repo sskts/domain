@@ -5,6 +5,7 @@
  * @module
  */
 import { Connection } from 'mongoose';
+import { RedisClient } from 'redis';
 import * as clientService from './service/client';
 import * as masterService from './service/master';
 import * as notificationService from './service/notification';
@@ -70,7 +71,7 @@ export declare const adapter: {
     owner: (connection: Connection) => OwnerAdapter;
     performance: (connection: Connection) => PerformanceAdapter;
     stockStatus: {
-        performance: (redisUrl: string) => PerformanceStockStatusAdapter;
+        performance: (redisClient: RedisClient) => PerformanceStockStatusAdapter;
     };
     queue: (connection: Connection) => QueueAdapter;
     screen: (connection: Connection) => ScreenAdapter;

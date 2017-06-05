@@ -5,6 +5,7 @@
  */
 
 import { Connection } from 'mongoose';
+import { RedisClient } from 'redis';
 
 import * as clientService from './service/client';
 import * as masterService from './service/master';
@@ -86,8 +87,8 @@ export const adapter = {
         return new PerformanceAdapter(connection);
     },
     stockStatus: {
-        performance: (redisUrl: string) => {
-            return new PerformanceStockStatusAdapter(redisUrl);
+        performance: (redisClient: RedisClient) => {
+            return new PerformanceStockStatusAdapter(redisClient);
         }
     },
     queue: (connection: Connection) => {

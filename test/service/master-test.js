@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const assert = require("assert");
 const mongoose = require("mongoose");
+const redis = require("redis");
 const film_1 = require("../../lib/adapter/film");
 const performance_1 = require("../../lib/adapter/performance");
 const screen_1 = require("../../lib/adapter/screen");
@@ -22,8 +23,15 @@ const performance_2 = require("../../lib/adapter/stockStatus/performance");
 const theater_1 = require("../../lib/adapter/theater");
 const MasterService = require("../../lib/service/master");
 let connection;
+let redisClient;
 before(() => __awaiter(this, void 0, void 0, function* () {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    redisClient = redis.createClient({
+        host: process.env.TEST_REDIS_HOST,
+        port: process.env.TEST_REDIS_PORT,
+        password: process.env.TEST_REDIS_KEY,
+        tls: { servername: process.env.TEST_REDIS_HOST }
+    });
     // 全て削除してからテスト開始
     const theaterAdapter = new theater_1.default(connection);
     const screenAdapter = new screen_1.default(connection);
@@ -162,7 +170,7 @@ describe('マスターサービス パフォーマンス取得', () => {
 describe('マスターサービス パフォーマンス検索', () => {
     it('searchPerformances by theater ok', () => __awaiter(this, void 0, void 0, function* () {
         const performanceAdapter = new performance_1.default(connection);
-        const performanceStockStatusAdapter = new performance_2.default(process.env.TEST_REDIS_URL);
+        const performanceStockStatusAdapter = new performance_2.default(redisClient);
         const performances = yield MasterService.searchPerformances({ theater: '118' })(performanceAdapter, performanceStockStatusAdapter);
         performances.map((performance) => {
             assert.equal(performance.theater.id, '118');
@@ -170,7 +178,7 @@ describe('マスターサービス パフォーマンス検索', () => {
     }));
     it('searchPerformances by day ok', () => __awaiter(this, void 0, void 0, function* () {
         const performanceAdapter = new performance_1.default(connection);
-        const performanceStockStatusAdapter = new performance_2.default(process.env.TEST_REDIS_URL);
+        const performanceStockStatusAdapter = new performance_2.default(redisClient);
         const performances = yield MasterService.searchPerformances({ day: '20170301' })(performanceAdapter, performanceStockStatusAdapter);
         performances.map((performance) => {
             assert.equal(performance.day, '20170301');
