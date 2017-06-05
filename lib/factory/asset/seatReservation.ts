@@ -132,29 +132,32 @@ export function create(args: {
 
     // todo validation
 
-    return Object.assign(seatReservationAssetWithoutDetails, {
-        performance_day: args.performance_day,
-        performance_time_start: args.performance_time_start,
-        performance_time_end: args.performance_time_end,
-        theater: args.theater,
-        theater_name: args.theater_name,
-        theater_name_kana: args.theater_name_kana,
-        theater_address: args.theater_address,
-        screen: args.screen,
-        screen_name: args.screen_name,
-        film: args.film,
-        film_name: args.film_name,
-        film_name_kana: args.film_name_kana,
-        film_name_short: args.film_name_short,
-        film_name_original: args.film_name_original,
-        film_minutes: args.film_minutes,
-        film_kbn_eirin: args.film_kbn_eirin,
-        film_kbn_eizou: args.film_kbn_eizou,
-        film_kbn_joueihousiki: args.film_kbn_joueihousiki,
-        film_kbn_jimakufukikae: args.film_kbn_jimakufukikae,
-        film_copyright: args.film_copyright,
-        transaction_inquiry_key: args.transaction_inquiry_key
-    });
+    return {
+        ...seatReservationAssetWithoutDetails,
+        ...{
+            performance_day: args.performance_day,
+            performance_time_start: args.performance_time_start,
+            performance_time_end: args.performance_time_end,
+            theater: args.theater,
+            theater_name: args.theater_name,
+            theater_name_kana: args.theater_name_kana,
+            theater_address: args.theater_address,
+            screen: args.screen,
+            screen_name: args.screen_name,
+            film: args.film,
+            film_name: args.film_name,
+            film_name_kana: args.film_name_kana,
+            film_name_short: args.film_name_short,
+            film_name_original: args.film_name_original,
+            film_minutes: args.film_minutes,
+            film_kbn_eirin: args.film_kbn_eirin,
+            film_kbn_eizou: args.film_kbn_eizou,
+            film_kbn_joueihousiki: args.film_kbn_joueihousiki,
+            film_kbn_jimakufukikae: args.film_kbn_jimakufukikae,
+            film_copyright: args.film_copyright,
+            transaction_inquiry_key: args.transaction_inquiry_key
+        }
+    };
 }
 
 // tslint:disable-next-line:cyclomatic-complexity

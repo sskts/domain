@@ -1,4 +1,4 @@
-declare var _default: {
+declare const _default: {
     _id: boolean;
     theater_code: StringConstructor;
     reserve_num: NumberConstructor;

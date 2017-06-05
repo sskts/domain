@@ -31,7 +31,7 @@ describe('所有権認証記録ファクトリー', () => {
     });
 
     it('「いつ」がDateでないので作成できない', () => {
-        const args = Object.assign({}, validCreateOwnershipAuthenticationRecordArgs);
+        const args = { ...validCreateOwnershipAuthenticationRecordArgs };
         const when: any = '2017-05-20T06:24:32.910Z';
         args.when = when;
 
@@ -49,7 +49,7 @@ describe('所有権認証記録ファクトリー', () => {
     });
 
     it('「どこで」が空なので作成できない', () => {
-        const args = Object.assign({}, validCreateOwnershipAuthenticationRecordArgs);
+        const args = { ...validCreateOwnershipAuthenticationRecordArgs };
         args.where = '';
 
         assert.throws(
@@ -66,7 +66,7 @@ describe('所有権認証記録ファクトリー', () => {
     });
 
     it('「何のために」が空なので作成できない', () => {
-        const args = Object.assign({}, validCreateOwnershipAuthenticationRecordArgs);
+        const args = { ...validCreateOwnershipAuthenticationRecordArgs };
         args.why = '';
 
         assert.throws(
@@ -83,7 +83,7 @@ describe('所有権認証記録ファクトリー', () => {
     });
 
     it('「どうやって」が空なので作成できない', () => {
-        const args = Object.assign({}, validCreateOwnershipAuthenticationRecordArgs);
+        const args = { ...validCreateOwnershipAuthenticationRecordArgs };
         args.how = '';
 
         assert.throws(

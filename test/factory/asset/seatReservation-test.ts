@@ -84,7 +84,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('パフォーマンス空なので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.performance = '';
 
         assert.throws(
@@ -101,7 +101,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('座席コード空なので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.seat_code = '';
 
         assert.throws(
@@ -118,7 +118,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('標準単価が数字でないので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.std_price = '123';
 
         assert.throws(
@@ -135,7 +135,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('加算単価が数字でないので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.add_price = '123';
 
         assert.throws(
@@ -152,7 +152,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('割引額が数字でないので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.dis_price = '123';
 
         assert.throws(
@@ -169,7 +169,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('販売単価が数字でないので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.sale_price = '123';
 
         assert.throws(
@@ -186,7 +186,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('ムビチケ計上単価が数字でないので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.mvtk_app_price = '123';
 
         assert.throws(
@@ -203,7 +203,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('メガネ単価が数字でないので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.add_glasses = '123';
 
         assert.throws(
@@ -220,7 +220,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('ムビチケ映写方式区分が空なので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.kbn_eisyahousiki = '';
 
         assert.throws(
@@ -237,7 +237,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('セクションがstringでないので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.screen_section = null;
 
         assert.throws(
@@ -254,7 +254,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('券種名(カナ)がstringでないので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.ticket_name_kana = null;
 
         assert.throws(
@@ -271,7 +271,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('ムビチケ購入管理番号がstringでないので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.mvtk_num = null;
 
         assert.throws(
@@ -288,7 +288,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('券種名(ja)が空なので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.ticket_name.ja = '';
 
         assert.throws(
@@ -305,7 +305,7 @@ describe('座席予約資産ファクトリー', () => {
     });
 
     it('券種名(en)がstringでないので作成できない', () => {
-        const args = Object.assign({}, validCreateSeatReservationAssetArgs);
+        const args = { ...validCreateSeatReservationAssetArgs };
         args.ticket_name.en = null;
 
         assert.throws(

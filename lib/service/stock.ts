@@ -141,46 +141,46 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
             // 座席予約資産に詳細情報を追加
             // 本来この時点でownershop.idは決定しているはずだが、COAとの連携の場合本予約で初めてQR文字列を取得できるので、ここで置き換える
             // 具体的には、本予約結果もしくは購入チケット内容抽出結果から該当座席コードのQR文字列を取り出す
-            let qr: string;
-            if (stateReserveResult !== null) {
+            // let qr: string;
+            const qr = (stateReserveResult !== null)
                 // tslint:disable-next-line:max-line-length
-                qr = (<COA.ReserveService.IStateReserveTicket>stateReserveResult.list_ticket.find((stateReserveTicket) => (stateReserveTicket.seat_num === asset.seat_code))).seat_qrcode;
-            } else {
+                ? (<COA.ReserveService.IStateReserveTicket>stateReserveResult.list_ticket.find((stateReserveTicket) => (stateReserveTicket.seat_num === asset.seat_code))).seat_qrcode
                 // tslint:disable-next-line:max-line-length
-                qr = (<COA.ReserveService.IUpdReserveQR>updReserveResult.list_qr.find((updReserveQR) => (updReserveQR.seat_num === asset.seat_code))).seat_qrcode;
-            }
+                : (<COA.ReserveService.IUpdReserveQR>updReserveResult.list_qr.find((updReserveQR) => (updReserveQR.seat_num === asset.seat_code))).seat_qrcode;
 
-            const args = Object.assign(asset, {
-                ownership: OwnershipFactory.create({
-                    id: qr,
-                    owner: owner.id
-                }),
-                performance_day: performance.day,
-                performance_time_start: performance.time_start,
-                performance_time_end: performance.time_end,
-                theater: performance.theater.id,
-                theater_name: performance.theater.name,
-                theater_name_kana: performance.theater.name_kana,
-                theater_address: performance.theater.address,
-                screen: performance.screen.id,
-                screen_name: performance.screen.name,
-                film: performance.film.id,
-                film_name: performance.film.name,
-                film_name_kana: performance.film.name_kana,
-                film_name_short: performance.film.name_short,
-                film_name_original: performance.film.name_original,
-                film_minutes: performance.film.minutes,
-                film_kbn_eirin: performance.film.kbn_eirin,
-                film_kbn_eizou: performance.film.kbn_eizou,
-                film_kbn_joueihousiki: performance.film.kbn_joueihousiki,
-                film_kbn_jimakufukikae: performance.film.kbn_jimakufukikae,
-                film_copyright: performance.film.copyright,
-                transaction_inquiry_key: TransactionInquiryKeyFactory.create({
-                    theater_code: performance.theater.id,
-                    reserve_num: authorization.coa_tmp_reserve_num,
-                    tel: owner.tel
-                })
-            });
+            const args = {
+                ...asset, ...{
+                    ownership: OwnershipFactory.create({
+                        id: qr,
+                        owner: owner.id
+                    }),
+                    performance_day: performance.day,
+                    performance_time_start: performance.time_start,
+                    performance_time_end: performance.time_end,
+                    theater: performance.theater.id,
+                    theater_name: performance.theater.name,
+                    theater_name_kana: performance.theater.name_kana,
+                    theater_address: performance.theater.address,
+                    screen: performance.screen.id,
+                    screen_name: performance.screen.name,
+                    film: performance.film.id,
+                    film_name: performance.film.name,
+                    film_name_kana: performance.film.name_kana,
+                    film_name_short: performance.film.name_short,
+                    film_name_original: performance.film.name_original,
+                    film_minutes: performance.film.minutes,
+                    film_kbn_eirin: performance.film.kbn_eirin,
+                    film_kbn_eizou: performance.film.kbn_eizou,
+                    film_kbn_joueihousiki: performance.film.kbn_joueihousiki,
+                    film_kbn_jimakufukikae: performance.film.kbn_jimakufukikae,
+                    film_copyright: performance.film.copyright,
+                    transaction_inquiry_key: TransactionInquiryKeyFactory.create({
+                        theater_code: performance.theater.id,
+                        reserve_num: authorization.coa_tmp_reserve_num,
+                        tel: owner.tel
+                    })
+                }
+            };
             const seatReservationAsset = SeatReservationAssetFactory.create(args);
 
             // 資産永続化
