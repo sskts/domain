@@ -3,6 +3,7 @@
  *
  * @ignore
  */
+
 import * as assert from 'assert';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -231,6 +232,28 @@ describe('マスターサービス パフォーマンス検索', () => {
         );
         performances.map((performance) => {
             assert.equal(performance.day, TEST_PERFORMANCE_DAY);
+        });
+    });
+});
+
+describe('マスターサービス 劇場検索', () => {
+    before(async () => {
+        const theaterAdapter = new TheaterAdapter(connection);
+        await MasterService.importTheater(TEST_VALID_THEATER_ID)(theaterAdapter);
+    });
+
+    it('検索結果が適切な型', async () => {
+        const theaterAdapter = new TheaterAdapter(connection);
+        const theaters = await MasterService.searchTheaters({})(theaterAdapter);
+
+        assert(Array.isArray(theaters));
+        assert(theaters.length > 0);
+        theaters.map((theater) => {
+            assert.equal(typeof theater.id, 'string');
+            assert.equal(typeof theater.name, 'object');
+            assert.equal(typeof theater.name_kana, 'string');
+            assert.equal(typeof theater.address, 'object');
+            assert(Array.isArray(theater.websites));
         });
     });
 });

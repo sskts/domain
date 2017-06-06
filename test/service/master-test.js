@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * マスターサービステスト
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,11 +13,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * マスターサービステスト
- *
- * @ignore
- */
 const assert = require("assert");
 const moment = require("moment");
 const mongoose = require("mongoose");
@@ -186,6 +186,25 @@ describe('マスターサービス パフォーマンス検索', () => {
         const performances = yield MasterService.searchPerformances({ day: TEST_PERFORMANCE_DAY })(performanceAdapter, performanceStockStatusAdapter);
         performances.map((performance) => {
             assert.equal(performance.day, TEST_PERFORMANCE_DAY);
+        });
+    }));
+});
+describe('マスターサービス 劇場検索', () => {
+    before(() => __awaiter(this, void 0, void 0, function* () {
+        const theaterAdapter = new theater_1.default(connection);
+        yield MasterService.importTheater(TEST_VALID_THEATER_ID)(theaterAdapter);
+    }));
+    it('検索結果が適切な型', () => __awaiter(this, void 0, void 0, function* () {
+        const theaterAdapter = new theater_1.default(connection);
+        const theaters = yield MasterService.searchTheaters({})(theaterAdapter);
+        assert(Array.isArray(theaters));
+        assert(theaters.length > 0);
+        theaters.map((theater) => {
+            assert.equal(typeof theater.id, 'string');
+            assert.equal(typeof theater.name, 'object');
+            assert.equal(typeof theater.name_kana, 'string');
+            assert.equal(typeof theater.address, 'object');
+            assert(Array.isArray(theater.websites));
         });
     }));
 });
