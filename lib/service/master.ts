@@ -36,6 +36,11 @@ export type TheaterAndFilmOperation<T> =
 export type FilmAndScreenAndPerformanceOperation<T> =
     (filmRepo: FilmAdapter, screenRepo: ScreenAdapter, performanceRepo: PerformanceAdapter) => Promise<T>;
 
+export interface ISearchTheatersConditions {
+    name?: string;
+}
+export type ISearchTheatersResult = TheaterFactory.IRequiredFields & TheaterFactory.IOptionalFields;
+
 export interface ISearchPerformancesConditions {
     day?: string;
     theater?: string;
@@ -218,6 +223,42 @@ export function importPerformances(theaterCode: string, dayStart: string, dayEnd
             await performanceRepo.model.findByIdAndUpdate(performance.id, performance, { new: true, upsert: true }).exec();
             debug('performance stored.');
         }));
+    };
+}
+
+/**
+ * 劇場検索
+ *
+ * @param {ISearchTheatersConditions} searchConditions
+ * @returns {TheaterOperation<ISearchTheatersResult[]>}
+ *
+ * @memberof service/master
+ */
+export function searchTheaters(searchConditions: ISearchTheatersConditions): TheaterOperation<ISearchTheatersResult[]> {
+    return async (theaterAdapter: TheaterAdapter): Promise<ISearchTheatersResult[]> => {
+        // 検索条件を作成
+        const conditions: any = {};
+        debug('searchConditions:', searchConditions);
+
+        // todo 検索条件を指定できるように改修
+
+        debug('finding performances...', conditions);
+        const docs = await theaterAdapter.model.find(conditions, 'id name name_kana address websites')
+            .setOptions({ maxTimeMS: 10000 })
+            .exec();
+
+        const theaters: ISearchTheatersResult[] = [];
+        await Promise.all(docs.map(async (doc) => {
+            theaters.push({
+                id: doc.get('id'),
+                name: doc.get('name'),
+                name_kana: doc.get('name_kana'),
+                address: doc.get('address'),
+                websites: doc.get('websites')
+            });
+        }));
+
+        return theaters;
     };
 }
 

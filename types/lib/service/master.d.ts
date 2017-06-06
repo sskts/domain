@@ -18,6 +18,10 @@ export declare type PerformanceAndPerformanceStockStatusOperation<T> = (performa
 export declare type TheaterAndScreenOperation<T> = (theaterRepo: TheaterAdapter, screenRepo: ScreenAdapter) => Promise<T>;
 export declare type TheaterAndFilmOperation<T> = (theaterRepo: TheaterAdapter, filmRepo: FilmAdapter) => Promise<T>;
 export declare type FilmAndScreenAndPerformanceOperation<T> = (filmRepo: FilmAdapter, screenRepo: ScreenAdapter, performanceRepo: PerformanceAdapter) => Promise<T>;
+export interface ISearchTheatersConditions {
+    name?: string;
+}
+export declare type ISearchTheatersResult = TheaterFactory.IRequiredFields & TheaterFactory.IOptionalFields;
 export interface ISearchPerformancesConditions {
     day?: string;
     theater?: string;
@@ -81,6 +85,15 @@ export declare function importScreens(theaterCode: string): TheaterAndScreenOper
  * @memberof service/master
  */
 export declare function importPerformances(theaterCode: string, dayStart: string, dayEnd: string): FilmAndScreenAndPerformanceOperation<void>;
+/**
+ * 劇場検索
+ *
+ * @param {ISearchTheatersConditions} searchConditions
+ * @returns {TheaterOperation<ISearchTheatersResult[]>}
+ *
+ * @memberof service/master
+ */
+export declare function searchTheaters(searchConditions: ISearchTheatersConditions): TheaterOperation<ISearchTheatersResult[]>;
 /**
  * パフォーマンス検索
  * 空席状況情報がなかったバージョンに対して互換性を保つために

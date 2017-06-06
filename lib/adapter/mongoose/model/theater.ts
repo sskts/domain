@@ -19,7 +19,12 @@ const schema = new mongoose.Schema(
             site_id: String,
             shop_id: String,
             shop_pass: String
-        }
+        },
+        websites: [{
+            group: String,
+            name: MultilingualStringSchemaType,
+            url: String
+        }]
     },
     {
         collection: 'theaters',

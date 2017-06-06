@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+## v15.3.0 - 2017-06-06
+### Added
+- 劇場検索サービスを追加(検索条件は未実装)。
+
+### Fixed
+- 劇場mongooseモデルにwebsitesフィールドが不足していたので追加。
+
 ## v15.2.0 - 2017-06-06
 ### Added
 - パフォーマンス検索サービスの結果に作品上映時間フィールドを追加。
