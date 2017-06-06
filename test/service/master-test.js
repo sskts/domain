@@ -14,6 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @ignore
  */
 const assert = require("assert");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const redis = require("redis");
 const film_1 = require("../../lib/adapter/film");
@@ -22,6 +23,9 @@ const screen_1 = require("../../lib/adapter/screen");
 const performance_2 = require("../../lib/adapter/stockStatus/performance");
 const theater_1 = require("../../lib/adapter/theater");
 const MasterService = require("../../lib/service/master");
+const TEST_INVALID_THEATER_ID = '000';
+const TEST_VALID_THEATER_ID = '118';
+const TEST_PERFORMANCE_DAY = moment().format('YYYYMMDD');
 let connection;
 let redisClient;
 before(() => __awaiter(this, void 0, void 0, function* () {
@@ -46,7 +50,7 @@ describe('マスターサービス 劇場インポート', () => {
     it('存在しない劇場コードで失敗', () => __awaiter(this, void 0, void 0, function* () {
         const theaterAdapter = new theater_1.default(connection);
         try {
-            yield MasterService.importTheater('000')(theaterAdapter);
+            yield MasterService.importTheater(TEST_INVALID_THEATER_ID)(theaterAdapter);
         }
         catch (error) {
             assert(error instanceof Error);
@@ -56,7 +60,7 @@ describe('マスターサービス 劇場インポート', () => {
     }));
     it('成功', () => __awaiter(this, void 0, void 0, function* () {
         const theaterAdapter = new theater_1.default(connection);
-        yield MasterService.importTheater('118')(theaterAdapter);
+        yield MasterService.importTheater(TEST_VALID_THEATER_ID)(theaterAdapter);
     }));
 });
 describe('マスターサービス スクリーンインポート', () => {
@@ -64,7 +68,7 @@ describe('マスターサービス スクリーンインポート', () => {
         const theaterAdapter = new theater_1.default(connection);
         const screenAdapter = new screen_1.default(connection);
         try {
-            yield MasterService.importScreens('000')(theaterAdapter, screenAdapter);
+            yield MasterService.importScreens(TEST_INVALID_THEATER_ID)(theaterAdapter, screenAdapter);
         }
         catch (error) {
             assert(error instanceof Error);
@@ -75,7 +79,7 @@ describe('マスターサービス スクリーンインポート', () => {
     it('成功', () => __awaiter(this, void 0, void 0, function* () {
         const theaterAdapter = new theater_1.default(connection);
         const screenAdapter = new screen_1.default(connection);
-        yield MasterService.importScreens('118')(theaterAdapter, screenAdapter);
+        yield MasterService.importScreens(TEST_VALID_THEATER_ID)(theaterAdapter, screenAdapter);
     }));
 });
 describe('マスターサービス 作品インポート', () => {
@@ -83,7 +87,7 @@ describe('マスターサービス 作品インポート', () => {
         const theaterAdapter = new theater_1.default(connection);
         const filmAdapter = new film_1.default(connection);
         try {
-            yield MasterService.importFilms('000')(theaterAdapter, filmAdapter);
+            yield MasterService.importFilms(TEST_INVALID_THEATER_ID)(theaterAdapter, filmAdapter);
         }
         catch (error) {
             assert(error instanceof Error);
@@ -94,7 +98,7 @@ describe('マスターサービス 作品インポート', () => {
     it('成功', () => __awaiter(this, void 0, void 0, function* () {
         const theaterAdapter = new theater_1.default(connection);
         const filmAdapter = new film_1.default(connection);
-        yield MasterService.importFilms('118')(theaterAdapter, filmAdapter);
+        yield MasterService.importFilms(TEST_VALID_THEATER_ID)(theaterAdapter, filmAdapter);
     }));
 });
 describe('マスターサービス パフォーマンスインポート', () => {
@@ -103,7 +107,7 @@ describe('マスターサービス パフォーマンスインポート', () => 
         const screenAdapter = new screen_1.default(connection);
         const performanceAdapter = new performance_1.default(connection);
         try {
-            yield MasterService.importPerformances('000', '20170401', '20170401')(filmAdapter, screenAdapter, performanceAdapter);
+            yield MasterService.importPerformances(TEST_INVALID_THEATER_ID, TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_DAY)(filmAdapter, screenAdapter, performanceAdapter);
         }
         catch (error) {
             assert(error instanceof Error);
@@ -115,19 +119,19 @@ describe('マスターサービス パフォーマンスインポート', () => 
         const filmAdapter = new film_1.default(connection);
         const screenAdapter = new screen_1.default(connection);
         const performanceAdapter = new performance_1.default(connection);
-        yield MasterService.importPerformances('118', '20170401', '20170401')(filmAdapter, screenAdapter, performanceAdapter);
+        yield MasterService.importPerformances(TEST_VALID_THEATER_ID, TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_DAY)(filmAdapter, screenAdapter, performanceAdapter);
     }));
 });
 describe('マスターサービス 劇場取得', () => {
     it('存在する', () => __awaiter(this, void 0, void 0, function* () {
         const theaterAdapter = new theater_1.default(connection);
-        const theaterOption = yield MasterService.findTheater('118')(theaterAdapter);
+        const theaterOption = yield MasterService.findTheater(TEST_VALID_THEATER_ID)(theaterAdapter);
         assert(theaterOption.isDefined);
-        assert.equal(theaterOption.get().id, '118');
+        assert.equal(theaterOption.get().id, TEST_VALID_THEATER_ID);
     }));
     it('存在しない', () => __awaiter(this, void 0, void 0, function* () {
         const theaterAdapter = new theater_1.default(connection);
-        const theaterOption = yield MasterService.findTheater('000')(theaterAdapter);
+        const theaterOption = yield MasterService.findTheater(TEST_INVALID_THEATER_ID)(theaterAdapter);
         assert(theaterOption.isEmpty);
     }));
 });
@@ -149,7 +153,7 @@ describe('マスターサービス パフォーマンス取得', () => {
         const performanceAdapter = new performance_1.default(connection);
         const performance = {
             id: '12345',
-            day: '20170401',
+            day: TEST_PERFORMANCE_DAY,
             time_start: '0900',
             time_end: '1100',
             canceled: false
@@ -163,25 +167,25 @@ describe('マスターサービス パフォーマンス取得', () => {
     }));
     it('存在しない', () => __awaiter(this, void 0, void 0, function* () {
         const performanceAdapter = new performance_1.default(connection);
-        const performanceOption = yield MasterService.findPerformance('000')(performanceAdapter);
+        const performanceOption = yield MasterService.findPerformance(TEST_INVALID_THEATER_ID)(performanceAdapter);
         assert(performanceOption.isEmpty);
     }));
 });
 describe('マスターサービス パフォーマンス検索', () => {
-    it('searchPerformances by theater ok', () => __awaiter(this, void 0, void 0, function* () {
+    it('劇場で検索できる', () => __awaiter(this, void 0, void 0, function* () {
         const performanceAdapter = new performance_1.default(connection);
         const performanceStockStatusAdapter = new performance_2.default(redisClient);
-        const performances = yield MasterService.searchPerformances({ theater: '118' })(performanceAdapter, performanceStockStatusAdapter);
+        const performances = yield MasterService.searchPerformances({ theater: TEST_VALID_THEATER_ID })(performanceAdapter, performanceStockStatusAdapter);
         performances.map((performance) => {
-            assert.equal(performance.theater.id, '118');
+            assert.equal(performance.theater.id, TEST_VALID_THEATER_ID);
         });
     }));
-    it('searchPerformances by day ok', () => __awaiter(this, void 0, void 0, function* () {
+    it('上映日で検索できる', () => __awaiter(this, void 0, void 0, function* () {
         const performanceAdapter = new performance_1.default(connection);
         const performanceStockStatusAdapter = new performance_2.default(redisClient);
-        const performances = yield MasterService.searchPerformances({ day: '20170301' })(performanceAdapter, performanceStockStatusAdapter);
+        const performances = yield MasterService.searchPerformances({ day: TEST_PERFORMANCE_DAY })(performanceAdapter, performanceStockStatusAdapter);
         performances.map((performance) => {
-            assert.equal(performance.day, '20170301');
+            assert.equal(performance.day, TEST_PERFORMANCE_DAY);
         });
     }));
 });

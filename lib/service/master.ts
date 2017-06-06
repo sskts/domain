@@ -53,6 +53,7 @@ export interface ISearchPerformancesResult {
     film: {
         id: string;
         name: IMultilingualString;
+        minutes: number;
     };
     day: string;
     time_start: string;
@@ -250,7 +251,7 @@ export function searchPerformances(searchConditions: ISearchPerformancesConditio
         debug('finding performances...', conditions);
         const docs = await performanceRepo.model.find(conditions)
             .setOptions({ maxTimeMS: 10000 })
-            .populate('film', '_id name')
+            .populate('film', '_id name minutes')
             .populate('theater', '_id name')
             .populate('screen', '_id name')
             .exec();
@@ -276,7 +277,8 @@ export function searchPerformances(searchConditions: ISearchPerformancesConditio
                 },
                 film: {
                     id: doc.get('film').id,
-                    name: doc.get('film').name
+                    name: doc.get('film').name,
+                    minutes: doc.get('film').minutes
                 },
                 day: doc.get('day'),
                 time_start: doc.get('time_start'),

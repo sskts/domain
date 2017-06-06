@@ -35,6 +35,7 @@ export interface ISearchPerformancesResult {
     film: {
         id: string;
         name: IMultilingualString;
+        minutes: number;
     };
     day: string;
     time_start: string;
