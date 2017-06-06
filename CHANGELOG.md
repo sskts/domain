@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+## v15.2.0 - 2017-06-06
+### Added
+- パフォーマンス検索サービスの結果に作品上映時間フィールドを追加。
+
 ## v15.1.1 - 2017-06-05
 ### Changed
 - パッケージを最新にアップデート
