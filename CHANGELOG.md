@@ -8,6 +8,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v15.3.1 - 2017-06-07
+### Security
+- npm@^5.0.0の導入に伴い、package-lock.jsonを追加。
+
 ## v15.3.0 - 2017-06-06
 ### Added
 - 劇場検索サービスを追加(検索条件は未実装)。
