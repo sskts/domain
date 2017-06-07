@@ -6,6 +6,7 @@
 import * as assert from 'assert';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
+import * as redis from 'redis';
 import * as sskts from '../../lib/index';
 
 import * as EmailNotificationFactory from '../../lib/factory/notification/email';
@@ -256,5 +257,101 @@ describe('取引サービス 取引IDからキュー出力する', () => {
         await transactionDoc.remove();
         await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
         await queueDoc4pushNotification.remove();
+    });
+});
+
+describe('取引サービス 利用可能かどうか', () => {
+    let redisClient: redis.RedisClient;
+    before(async () => {
+        if (typeof process.env.TEST_REDIS_HOST !== 'string') {
+            throw new Error('environment variable TEST_REDIS_HOST required');
+        }
+
+        if (typeof process.env.TEST_REDIS_PORT !== 'string') {
+            throw new Error('environment variable TEST_REDIS_PORT required');
+        }
+
+        if (typeof process.env.TEST_REDIS_KEY !== 'string') {
+            throw new Error('environment variable TEST_REDIS_KEY required');
+        }
+
+        redisClient = redis.createClient({
+            host: process.env.TEST_REDIS_HOST,
+            port: process.env.TEST_REDIS_PORT,
+            password: process.env.TEST_REDIS_KEY,
+            tls: { servername: process.env.TEST_REDIS_HOST }
+        });
+    });
+
+    it('最大数に達していないので利用可能', async () => {
+        const transactionCountAdapter = sskts.adapter.transactionCount(redisClient);
+
+        // test data
+        const scope = moment().valueOf().toString();
+        const COUNT_UNIT = 60;
+        const MAX_COUNT_PER_UNIT = 999999; // 十分に大きな数字
+
+        const isAvailable = await sskts.service.transaction.isAvailable(
+            scope, COUNT_UNIT, MAX_COUNT_PER_UNIT
+        )(transactionCountAdapter);
+        assert(isAvailable);
+    });
+
+    it('最大数を超過しているので利用できない', async () => {
+        const transactionCountAdapter = sskts.adapter.transactionCount(redisClient);
+
+        // test data
+        const scope = moment().valueOf().toString();
+        const COUNT_UNIT = 60;
+        const MAX_COUNT_PER_UNIT = 0;
+
+        const isAvailable = await sskts.service.transaction.isAvailable(
+            scope, COUNT_UNIT, MAX_COUNT_PER_UNIT
+        )(transactionCountAdapter);
+        assert(!isAvailable);
+    });
+
+    it('連続利用で結果が適切に変わる', async () => {
+        const transactionCountAdapter = sskts.adapter.transactionCount(redisClient);
+
+        // test data
+        const scope = moment().valueOf().toString();
+        const COUNT_UNIT = 5;
+        const MAX_COUNT_PER_UNIT = 1;
+
+        // 初回は利用可能なはず
+        const isAvailable = await sskts.service.transaction.isAvailable(
+            scope, COUNT_UNIT, MAX_COUNT_PER_UNIT
+        )(transactionCountAdapter);
+        assert(isAvailable);
+
+        // 2回目は利用不可能なはず
+        const isAvailable2 = await sskts.service.transaction.isAvailable(
+            scope, COUNT_UNIT, MAX_COUNT_PER_UNIT
+        )(transactionCountAdapter);
+        assert(!isAvailable2);
+
+        // {COUNT_UNIT}秒後にはまた利用可能なはず
+        return new Promise((resolve, reject) => {
+            setTimeout(
+                async () => {
+                    try {
+                        const isAvailable3 = await sskts.service.transaction.isAvailable(
+                            scope, COUNT_UNIT, MAX_COUNT_PER_UNIT
+                        )(transactionCountAdapter);
+
+                        if (isAvailable3) {
+                            resolve();
+                        } else {
+                            reject(new Error('should be available'));
+                        }
+                    } catch (error) {
+                        reject(error);
+                    }
+                },
+                // tslint:disable-next-line:no-magic-numbers
+                COUNT_UNIT * 1000
+            );
+        });
     });
 });

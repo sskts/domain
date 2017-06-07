@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 取引数をカウントアダプターをRedisCacheで実装。
+- RedisCacheを使用して取引が利用可能かどうかを確認するサービスを追加。
 
 ### Changed
 

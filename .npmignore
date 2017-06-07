@@ -4,8 +4,10 @@
 .env*
 npm-debug.log*
 
+.vscode/**/*.*
 docs/**/*.*
 test/**/*.*
-.vscode/**/*.*
+coverage/**/*.*
+.nyc_output/**/*.*
 
 !**/*.d.ts

@@ -5,9 +5,18 @@ import TransactionStatus from '../factory/transactionStatus';
 import OwnerAdapter from '../adapter/owner';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
+import TransactionCountAdapter from '../adapter/transactionCount';
 export declare type TransactionAndQueueOperation<T> = (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => Promise<T>;
 export declare type OwnerAndTransactionOperation<T> = (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 export declare type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) => Promise<T>;
+/**
+ * スコープ指定で取引が利用可能かどうかを取得する
+ *
+ * @param {string} scope 取引のスコープ
+ * @param {number} unitOfCountInSeconds 取引数カウント単位時間(秒)
+ * @param {number} maxCountPerUnit カウント単位あたりの取引最大数
+ */
+export declare function isAvailable(scope: string, unitOfCountInSeconds: number, maxCountPerUnit: number): (transactionCountAdapter: TransactionCountAdapter) => Promise<boolean>;
 /**
  * 開始準備のできた取引を用意する
  *

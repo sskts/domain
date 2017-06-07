@@ -31,6 +31,7 @@ import PerformanceStockStatusAdapter from './adapter/stockStatus/performance';
 import TelemetryAdapter from './adapter/telemetry';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
+import TransactionCountAdapter from './adapter/transactionCount';
 
 import * as SeatReservationAssetFactory from './factory/asset/seatReservation';
 import AssetGroup from './factory/assetGroup';
@@ -108,6 +109,9 @@ export const adapter = {
     },
     transaction: (connection: Connection) => {
         return new TransactionAdapter(connection);
+    },
+    transactionCount: (redisClient: RedisClient) => {
+        return new TransactionCountAdapter(redisClient);
     }
 };
 

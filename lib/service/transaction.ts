@@ -31,6 +31,7 @@ import TransactionStatus from '../factory/transactionStatus';
 import OwnerAdapter from '../adapter/owner';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
+import TransactionCountAdapter from '../adapter/transactionCount';
 
 export type TransactionAndQueueOperation<T> =
     (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => Promise<T>;
@@ -39,6 +40,42 @@ export type OwnerAndTransactionOperation<T> =
 export type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:transaction');
+
+/**
+ * スコープ指定で取引が利用可能かどうかを取得する
+ *
+ * @param {string} scope 取引のスコープ
+ * @param {number} unitOfCountInSeconds 取引数カウント単位時間(秒)
+ * @param {number} maxCountPerUnit カウント単位あたりの取引最大数
+ */
+export function isAvailable(scope: string, unitOfCountInSeconds: number, maxCountPerUnit: number) {
+    return async (transactionCountAdapter: TransactionCountAdapter) => {
+        const dateNow = moment();
+        const unitStr = (dateNow.unix() - dateNow.unix() % unitOfCountInSeconds).toString();
+        const redisKey = `${TransactionCountAdapter.KEY_PREFIX}:${scope}:${unitStr}`;
+        const ttl = unitOfCountInSeconds;
+
+        return new Promise<boolean>((resolve, reject) => {
+            // redisでカウントアップ
+            const multi = transactionCountAdapter.redisClient.multi();
+            multi.incr(redisKey, debug)
+                .expire(redisKey, ttl, debug)
+                .exec(async (err, replies) => {
+                    if (err instanceof Error) {
+                        reject(err);
+
+                        return;
+                    }
+                    debug('replies:', replies);
+
+                    // カウント単位あたりの取引最大数を超過しているかどうか
+                    // tslint:disable-next-line:no-magic-numbers
+                    const numberOfTransactions = parseInt(replies[0], 10);
+                    resolve((numberOfTransactions <= maxCountPerUnit));
+                });
+        });
+    };
+}
 
 /**
  * 開始準備のできた取引を用意する
