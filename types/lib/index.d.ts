@@ -29,6 +29,7 @@ import PerformanceStockStatusAdapter from './adapter/stockStatus/performance';
 import TelemetryAdapter from './adapter/telemetry';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
+import TransactionCountAdapter from './adapter/transactionCount';
 import * as SeatReservationAssetFactory from './factory/asset/seatReservation';
 import AssetGroup from './factory/assetGroup';
 import * as CoaSeatReservationAuthorizationFactory from './factory/authorization/coaSeatReservation';
@@ -79,6 +80,7 @@ export declare const adapter: {
     telemetry: (connection: Connection) => TelemetryAdapter;
     theater: (connection: Connection) => TheaterAdapter;
     transaction: (connection: Connection) => TransactionAdapter;
+    transactionCount: (redisClient: RedisClient) => TransactionCountAdapter;
 };
 export declare const service: {
     client: typeof clientService;

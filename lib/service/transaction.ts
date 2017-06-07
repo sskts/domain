@@ -6,7 +6,6 @@
  * @namespace service/transaction
  */
 
-import * as clone from 'clone';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as monapt from 'monapt';
@@ -31,14 +30,51 @@ import TransactionStatus from '../factory/transactionStatus';
 import OwnerAdapter from '../adapter/owner';
 import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
+import TransactionCountAdapter from '../adapter/transactionCount';
 
 export type TransactionAndQueueOperation<T> =
     (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => Promise<T>;
-export type OwnerAndTransactionOperation<T> =
-    (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
+export type OwnerAndTransactionAndTransactionCountOperation<T> =
+    (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => Promise<T>;
 export type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:transaction');
+
+/**
+ * スコープ指定で取引が利用可能かどうかを取得する
+ *
+ * @param {string} scope 取引のスコープ
+ * @param {number} unitOfCountInSeconds 取引数カウント単位時間(秒)
+ * @param {number} maxCountPerUnit カウント単位あたりの取引最大数
+ */
+export function isAvailable(scope: string, unitOfCountInSeconds: number, maxCountPerUnit: number) {
+    return async (transactionCountAdapter: TransactionCountAdapter) => {
+        const dateNow = moment();
+        const unitStr = (dateNow.unix() - dateNow.unix() % unitOfCountInSeconds).toString();
+        const redisKey = `${TransactionCountAdapter.KEY_PREFIX}:${scope}:${unitStr}`;
+        const ttl = unitOfCountInSeconds;
+
+        return new Promise<boolean>((resolve, reject) => {
+            // redisでカウントアップ
+            const multi = transactionCountAdapter.redisClient.multi();
+            multi.incr(redisKey, debug)
+                .expire(redisKey, ttl, debug)
+                .exec(async (err, replies) => {
+                    if (err instanceof Error) {
+                        reject(err);
+
+                        return;
+                    }
+                    debug('replies:', replies);
+
+                    // カウント単位あたりの取引最大数を超過しているかどうか
+                    // tslint:disable-next-line:no-magic-numbers
+                    const numberOfTransactions = parseInt(replies[0], 10);
+                    resolve((numberOfTransactions <= maxCountPerUnit));
+                });
+        });
+    };
+}
 
 /**
  * 開始準備のできた取引を用意する
@@ -69,53 +105,26 @@ export function prepare(length: number, expiresInSeconds: number) {
 }
 
 /**
- * 取引を強制的に開始する
- *
- * @param {Date} expiresAt
- * @memberof service/transaction
- */
-export function startForcibly(expiresAt: Date) {
-    return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
-        // 一般所有者作成
-        const anonymousOwner = AnonymousOwnerFactory.create({});
-
-        // 興行主取得
-        const ownerDoc = await ownerAdapter.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
-        if (ownerDoc === null) {
-            throw new Error('promoter not found');
-        }
-        const promoter = <PromoterOwnerFactory.IPromoterOwner>ownerDoc.toObject();
-
-        const transaction = TransactionFactory.create({
-            status: TransactionStatus.UNDERWAY,
-            owners: [promoter, anonymousOwner],
-            expires_at: expiresAt,
-            started_at: moment().toDate()
-        });
-
-        // 所有者永続化
-        debug('storing anonymous owner...', anonymousOwner);
-        await ownerAdapter.model.findByIdAndUpdate(anonymousOwner.id, anonymousOwner, { new: true, upsert: true }).exec();
-
-        // ステータスを変更&しつつ、期限も延長する
-        debug('updating transaction...');
-        const update = Object.assign(clone(transaction), { owners: [promoter.id, anonymousOwner.id] });
-        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, update, { new: true, upsert: true }).exec();
-
-        return transaction;
-    };
-}
-
-/**
  * 可能であれば取引開始する
  *
- * @param {Date} expiresAt
- * @returns {OwnerAndTransactionOperation<Promise<monapt.Option<Transaction.ITransaction>>>}
+ * @param {Date} expiresAt 期限切れ予定日時
+ * @param {number} unitOfCountInSeconds 取引数制限単位期間
+ * @param {number} maxCountPerUnit 単位期間あたりの最大取引数
+ * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
  *
  * @memberof service/transaction
  */
-export function startIfPossible(expiresAt: Date) {
-    return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
+export function startIfPossible(expiresAt: Date, unitOfCountInSeconds: number, maxCountPerUnit: number):
+    OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>> {
+    return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => {
+        // 利用可能かどうか
+        const scope = 'all';
+        const available = await isAvailable(scope, unitOfCountInSeconds, maxCountPerUnit)(transactionCountAdapter);
+        if (!available) {
+            return monapt.None;
+        }
+
+        // 利用可能であれば、取引作成&匿名所有者作成
         // 一般所有者作成
         const anonymousOwner = AnonymousOwnerFactory.create({});
 
@@ -126,37 +135,25 @@ export function startIfPossible(expiresAt: Date) {
         }
         const promoter = <PromoterOwnerFactory.IPromoterOwner>ownerDoc.toObject();
 
-        // 所有者永続化
-        debug('storing anonymous owner...', anonymousOwner);
-        await ownerAdapter.model.findByIdAndUpdate(anonymousOwner.id, anonymousOwner, { new: true, upsert: true }).exec();
-
-        // ステータスを変更&しつつ、期限も延長する
-        debug('updating transaction...');
-        const transactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
-            {
-                status: TransactionStatus.READY,
-                expires_at: { $gt: new Date() }
-            },
+        debug('creating transaction...');
+        const transactionDoc = await transactionAdapter.transactionModel.create(
             {
                 status: TransactionStatus.UNDERWAY,
                 owners: [promoter.id, anonymousOwner.id],
                 expires_at: expiresAt,
                 started_at: moment().toDate()
-            },
-            {
-                new: true,
-                upsert: false
             }
-        ).exec();
+        );
+        debug('transaction created', transactionDoc);
 
-        if (transactionDoc === null) {
-            return monapt.None;
-        } else {
-            const transaction = <TransactionFactory.ITransaction>transactionDoc.toObject();
-            transaction.owners = [promoter, anonymousOwner];
+        // 所有者永続化
+        debug('storing anonymous owner...', anonymousOwner);
+        await ownerAdapter.model.findByIdAndUpdate(anonymousOwner.id, anonymousOwner, { new: true, upsert: true }).exec();
 
-            return monapt.Option(transaction);
-        }
+        const transaction = <TransactionFactory.ITransaction>transactionDoc.toObject();
+        transaction.owners = [promoter, anonymousOwner];
+
+        return monapt.Option(transaction);
     };
 }
 

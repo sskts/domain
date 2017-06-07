@@ -16,6 +16,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v16.0.0 - 2017-06-07
+### Added
+- 取引数をカウントアダプターをRedisCacheで実装。
+- RedisCacheを使用して取引が利用可能かどうかを確認するサービスを追加。
+
+### Changed
+- 取引開始サービスを、redisで取引数制限をチェックする仕様に変更。
+
+### Removed
+- 強制取引開始サービスは不要なので削除。
+
 ## v15.3.1 - 2017-06-07
 ### Security
 - npm@^5.0.0の導入に伴い、package-lock.jsonを追加。
