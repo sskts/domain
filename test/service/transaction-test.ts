@@ -17,8 +17,30 @@ import * as TransactionInquiryKeyFactory from '../../lib/factory/transactionInqu
 import TransactionQueuesStatus from '../../lib/factory/transactionQueuesStatus';
 import TransactionStatus from '../../lib/factory/transactionStatus';
 
+import TransactionCountAdapter from '../../lib/adapter/transactionCount';
+
+let redisClient: redis.RedisClient;
 let connection: mongoose.Connection;
 before(async () => {
+    if (typeof process.env.TEST_REDIS_HOST !== 'string') {
+        throw new Error('environment variable TEST_REDIS_HOST required');
+    }
+
+    if (typeof process.env.TEST_REDIS_PORT !== 'string') {
+        throw new Error('environment variable TEST_REDIS_PORT required');
+    }
+
+    if (typeof process.env.TEST_REDIS_KEY !== 'string') {
+        throw new Error('environment variable TEST_REDIS_KEY required');
+    }
+
+    redisClient = redis.createClient({
+        host: process.env.TEST_REDIS_HOST,
+        port: process.env.TEST_REDIS_PORT,
+        password: process.env.TEST_REDIS_KEY,
+        tls: { servername: process.env.TEST_REDIS_HOST }
+    });
+
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 
     // 全て削除してからテスト開始
@@ -26,15 +48,42 @@ before(async () => {
     await transactionAdapter.transactionModel.remove({}).exec();
 });
 
-describe('取引サービス', () => {
-    it('startIfPossible fail', async () => {
+describe('取引サービス 可能であれば開始する', () => {
+    it('取引数制限を越えているため開始できない', async () => {
         const ownerAdapter = sskts.adapter.owner(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
-        const expiresAt = moment().add(30, 'minutes').toDate(); // tslint:disable-line:no-magic-numbers
-        const transactionOption = await sskts.service.transaction.startIfPossible(expiresAt)(ownerAdapter, transactionAdapter);
+        const transactionCountAdapter = new TransactionCountAdapter(redisClient);
+
+        // tslint:disable-next-line:no-magic-numbers
+        const expiresAt = moment().add(30, 'minutes').toDate();
+        const unitOfCountInSeconds = 60;
+        const maxCountPerUnit = 0;
+        const transactionOption = await sskts.service.transaction.startIfPossible(
+            expiresAt, unitOfCountInSeconds, maxCountPerUnit
+        )(ownerAdapter, transactionAdapter, transactionCountAdapter);
         assert(transactionOption.isEmpty);
     });
 
+    it('開始できる', async () => {
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const transactionCountAdapter = new TransactionCountAdapter(redisClient);
+
+        // tslint:disable-next-line:no-magic-numbers
+        const expiresAt = moment().add(30, 'minutes').toDate();
+        const unitOfCountInSeconds = 60;
+        const maxCountPerUnit = 999;
+        const transactionOption = await sskts.service.transaction.startIfPossible(
+            expiresAt, unitOfCountInSeconds, maxCountPerUnit
+        )(ownerAdapter, transactionAdapter, transactionCountAdapter);
+
+        assert(transactionOption.isDefined);
+        assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
+        assert.equal(transactionOption.get().expires_at.valueOf(), expiresAt.valueOf());
+    });
+});
+
+describe('取引サービス', () => {
     it('prepare ok', async () => {
         await sskts.service.transaction.prepare(3, 60)(sskts.adapter.transaction(connection)); // tslint:disable-line:no-magic-numbers
     });
@@ -44,18 +93,6 @@ describe('取引サービス', () => {
         // 期限切れの取引を作成
         await sskts.service.transaction.prepare(3, -60)(transactionAdapter); // tslint:disable-line:no-magic-numbers
         await sskts.service.transaction.makeExpired()(transactionAdapter);
-    });
-
-    it('startIfPossible ok', async () => {
-        const ownerAdapter = sskts.adapter.owner(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        await sskts.service.transaction.prepare(1, 60)(transactionAdapter); // tslint:disable-line:no-magic-numbers
-
-        const expiresAt = moment().add(30, 'minutes').toDate(); // tslint:disable-line:no-magic-numbers
-        const transactionOption = await sskts.service.transaction.startIfPossible(expiresAt)(ownerAdapter, transactionAdapter);
-        assert(transactionOption.isDefined);
-        assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
-        assert.equal(transactionOption.get().expires_at.valueOf(), expiresAt.valueOf());
     });
 
     it('clean should be removed', async () => {
@@ -129,19 +166,6 @@ describe('取引サービス 再エクスポート', () => {
 
         // テストデータ削除
         await retriedTransaction.remove();
-    });
-});
-
-describe('取引サービス 強制的に開始', () => {
-    it('ok', async () => {
-        const ownerAdapter = sskts.adapter.owner(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        const expiresAt = moment().add(30, 'minutes').toDate(); // tslint:disable-line:no-magic-numbers
-
-        const transaction = await sskts.service.transaction.startForcibly(expiresAt)(ownerAdapter, transactionAdapter);
-        assert.equal(transaction.expires_at.valueOf(), expiresAt.valueOf());
-
-        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
     });
 });
 
@@ -261,28 +285,6 @@ describe('取引サービス 取引IDからキュー出力する', () => {
 });
 
 describe('取引サービス 利用可能かどうか', () => {
-    let redisClient: redis.RedisClient;
-    before(async () => {
-        if (typeof process.env.TEST_REDIS_HOST !== 'string') {
-            throw new Error('environment variable TEST_REDIS_HOST required');
-        }
-
-        if (typeof process.env.TEST_REDIS_PORT !== 'string') {
-            throw new Error('environment variable TEST_REDIS_PORT required');
-        }
-
-        if (typeof process.env.TEST_REDIS_KEY !== 'string') {
-            throw new Error('environment variable TEST_REDIS_KEY required');
-        }
-
-        redisClient = redis.createClient({
-            host: process.env.TEST_REDIS_HOST,
-            port: process.env.TEST_REDIS_PORT,
-            password: process.env.TEST_REDIS_KEY,
-            tls: { servername: process.env.TEST_REDIS_HOST }
-        });
-    });
-
     it('最大数に達していないので利用可能', async () => {
         const transactionCountAdapter = sskts.adapter.transactionCount(redisClient);
 

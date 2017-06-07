@@ -9,10 +9,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - RedisCacheを使用して取引が利用可能かどうかを確認するサービスを追加。
 
 ### Changed
+- 取引開始サービスを、redisで取引数制限をチェックする仕様に変更。
 
 ### Deprecated
 
 ### Removed
+- 強制取引開始サービスは不要なので削除。
 
 ### Fixed
 

@@ -7,7 +7,7 @@ import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
 import TransactionCountAdapter from '../adapter/transactionCount';
 export declare type TransactionAndQueueOperation<T> = (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => Promise<T>;
-export declare type OwnerAndTransactionOperation<T> = (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
+export declare type OwnerAndTransactionAndTransactionCountOperation<T> = (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => Promise<T>;
 export declare type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) => Promise<T>;
 /**
  * スコープ指定で取引が利用可能かどうかを取得する
@@ -26,21 +26,16 @@ export declare function isAvailable(scope: string, unitOfCountInSeconds: number,
  */
 export declare function prepare(length: number, expiresInSeconds: number): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
- * 取引を強制的に開始する
- *
- * @param {Date} expiresAt
- * @memberof service/transaction
- */
-export declare function startForcibly(expiresAt: Date): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<TransactionFactory.ITransaction>;
-/**
  * 可能であれば取引開始する
  *
- * @param {Date} expiresAt
- * @returns {OwnerAndTransactionOperation<Promise<monapt.Option<Transaction.ITransaction>>>}
+ * @param {Date} expiresAt 期限切れ予定日時
+ * @param {number} unitOfCountInSeconds 取引数制限単位期間
+ * @param {number} maxCountPerUnit 単位期間あたりの最大取引数
+ * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
  *
  * @memberof service/transaction
  */
-export declare function startIfPossible(expiresAt: Date): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<monapt.Option<TransactionFactory.ITransaction>>;
+export declare function startIfPossible(expiresAt: Date, unitOfCountInSeconds: number, maxCountPerUnit: number): OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>;
 /**
  * 照会する
  *

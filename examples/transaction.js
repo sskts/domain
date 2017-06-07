@@ -18,6 +18,7 @@ const GMO = require("@motionpicture/gmo-service");
 const createDebug = require("debug");
 const moment = require("moment");
 const mongoose = require("mongoose");
+const redis = require("redis");
 const sskts = require("../lib/index");
 const debug = createDebug('sskts-domain:example:transaction');
 // tslint:disable-next-line:max-func-body-length
@@ -25,18 +26,26 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         mongoose.Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+        const redisClient = redis.createClient({
+            host: process.env.TEST_REDIS_HOST,
+            port: process.env.TEST_REDIS_PORT,
+            password: process.env.TEST_REDIS_KEY,
+            tls: { servername: process.env.TEST_REDIS_HOST }
+        });
         const gmoShopId = 'tshop00026096';
         const gmoShopPass = 'xbxmkaa6';
         const transactionService = sskts.service.transaction;
         const ownerAdapter = sskts.adapter.owner(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
+        const transactionCountAdapter = sskts.adapter.transactionCount(redisClient);
         // 取引開始
         // 30分後のunix timestampを送信する場合
         // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
         // tslint:disable-next-line:no-console
         debug('starting transaction...');
-        // tslint:disable-next-line:no-magic-numbers max-line-length
-        const transactionOption = yield sskts.service.transaction.startIfPossible(moment().add(30, 'minutes').toDate())(ownerAdapter, transactionAdapter);
+        const transactionOption = yield sskts.service.transaction.startIfPossible(
+        // tslint:disable-next-line:no-magic-numbers
+        moment().add(30, 'minutes').toDate(), 60, 120)(ownerAdapter, transactionAdapter, transactionCountAdapter);
         if (transactionOption.isEmpty) {
             throw new Error('no ready transaction');
         }
@@ -57,11 +66,11 @@ function main() {
         const anonymousOwnerId = anonymousOwner.id;
         // 空席なくなったら変更する
         const theaterCode = '118';
-        const dateJouei = '20170519';
-        const titleCode = '99500';
+        const dateJouei = '20170608';
+        const titleCode = '99300';
         const titleBranchNum = '0';
-        const timeBegin = '0920';
-        const screenCode = '60';
+        const timeBegin = '1000';
+        const screenCode = '40';
         // 販売可能チケット検索
         const salesTicketResult = yield COA.ReserveService.salesTicket({
             theater_code: theaterCode,
@@ -242,6 +251,7 @@ http://www.cinemasunshine.co.jp/\n
         // 照会してみる
         const inquiryResult = yield transactionService.makeInquiry(key)(transactionAdapter);
         debug('makeInquiry result:', inquiryResult);
+        redisClient.quit();
         mongoose.disconnect();
     });
 }
