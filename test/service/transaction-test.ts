@@ -80,6 +80,7 @@ describe('取引サービス 可能であれば開始する', () => {
         assert(transactionOption.isDefined);
         assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
         assert.equal(transactionOption.get().expires_at.valueOf(), expiresAt.valueOf());
+        assert.equal(transactionOption.get().queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
     });
 });
 

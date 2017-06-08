@@ -136,14 +136,16 @@ export function startIfPossible(expiresAt: Date, unitOfCountInSeconds: number, m
         const promoter = <PromoterOwnerFactory.IPromoterOwner>ownerDoc.toObject();
 
         debug('creating transaction...');
-        const transactionDoc = await transactionAdapter.transactionModel.create(
-            {
-                status: TransactionStatus.UNDERWAY,
-                owners: [promoter.id, anonymousOwner.id],
-                expires_at: expiresAt,
-                started_at: moment().toDate()
-            }
-        );
+        // 取引ファクトリーで新しい進行中取引オブジェクトを作成
+        const newTransaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: expiresAt,
+            started_at: moment().toDate()
+        });
+        // mongoDBに追加するために_idとowners属性を拡張
+        const newTransactionDoc = { ...newTransaction, ...{ _id: newTransaction.id, owners: [promoter.id, anonymousOwner.id] } };
+        const transactionDoc = await transactionAdapter.transactionModel.create(newTransactionDoc);
         debug('transaction created', transactionDoc);
 
         // 所有者永続化
