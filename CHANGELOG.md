@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v16.0.1 - 2017-06-08
+### Fixed
+- 取引にキューエクスポートステータスフィールドが入らないバグ対応。
+
 ## v16.0.0 - 2017-06-07
 ### Added
 - 取引数をカウントアダプターをRedisCacheで実装。
