@@ -16,6 +16,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v17.0.0 - 2017-06-09
+### Added
+- 匿名所有者として取引を開始するサービスを追加。
+- 取引スコープの概念を導入。
+
+### Removed
+- 取引開始サービス第一世代(startIfPossible)を削除。
+
 ## v16.0.1 - 2017-06-08
 ### Fixed
 - 取引にキューエクスポートステータスフィールドが入らないバグ対応。

@@ -25,6 +25,10 @@ export interface IAnonymousOwner extends OwnerFactory.IOwner {
     name_last: string;
     email: string;
     tel: string;
+    /**
+     * 状態(クライアント側のセッションIDなど、匿名とはいえ何かしら人を特定するためのもの)
+     */
+    state: string;
 }
 
 /**
@@ -37,6 +41,7 @@ export function create(args: {
     name_last?: string;
     email?: string;
     tel?: string;
+    state?: string;
 }): IAnonymousOwner {
     if (!_.isEmpty(args.email) && !validator.isEmail(<string>args.email)) throw new ArgumentError('email', 'invalid email');
 
@@ -46,6 +51,7 @@ export function create(args: {
         name_first: (args.name_first === undefined) ? '' : args.name_first,
         name_last: (args.name_last === undefined) ? '' : args.name_last,
         email: (args.email === undefined) ? '' : args.email,
-        tel: (args.tel === undefined) ? '' : args.tel
+        tel: (args.tel === undefined) ? '' : args.tel,
+        state: (args.state === undefined) ? '' : args.state
     };
 }

@@ -25,6 +25,7 @@ import QueueStatus from '../factory/queueStatus';
 import * as TransactionFactory from '../factory/transaction';
 import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
 import TransactionQueuesStatus from '../factory/transactionQueuesStatus';
+import * as TransactionScopeFactory from '../factory/transactionScope';
 import TransactionStatus from '../factory/transactionStatus';
 
 import OwnerAdapter from '../adapter/owner';
@@ -47,11 +48,12 @@ const debug = createDebug('sskts-domain:service:transaction');
  * @param {number} unitOfCountInSeconds 取引数カウント単位時間(秒)
  * @param {number} maxCountPerUnit カウント単位あたりの取引最大数
  */
-export function isAvailable(scope: string, unitOfCountInSeconds: number, maxCountPerUnit: number) {
+export function isAvailable(scope: TransactionScopeFactory.ITransactionScope, unitOfCountInSeconds: number, maxCountPerUnit: number) {
     return async (transactionCountAdapter: TransactionCountAdapter) => {
+        const scopeStr = TransactionScopeFactory.scope2String(scope);
         const dateNow = moment();
         const unitStr = (dateNow.unix() - dateNow.unix() % unitOfCountInSeconds).toString();
-        const redisKey = `${TransactionCountAdapter.KEY_PREFIX}:${scope}:${unitStr}`;
+        const redisKey = `${TransactionCountAdapter.KEY_PREFIX}:${scopeStr}:${unitStr}`;
         const ttl = unitOfCountInSeconds;
 
         return new Promise<boolean>((resolve, reject) => {
@@ -105,28 +107,34 @@ export function prepare(length: number, expiresInSeconds: number) {
 }
 
 /**
- * 可能であれば取引開始する
+ * 匿名所有者として取引開始する
  *
- * @param {Date} expiresAt 期限切れ予定日時
- * @param {number} unitOfCountInSeconds 取引数制限単位期間
- * @param {number} maxCountPerUnit 単位期間あたりの最大取引数
+ * @param {Date} args.expiresAt 期限切れ予定日時
+ * @param {number} args.unitOfCountInSeconds 取引数制限単位期間
+ * @param {number} args.maxCountPerUnit 単位期間あたりの最大取引数
  * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
  *
  * @memberof service/transaction
  */
-export function startIfPossible(expiresAt: Date, unitOfCountInSeconds: number, maxCountPerUnit: number):
-    OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>> {
+export function startAsAnonymous(args: {
+    expiresAt: Date;
+    unitOfCountInSeconds: number;
+    maxCountPerUnit: number;
+    state: string;
+    scope: TransactionScopeFactory.ITransactionScope;
+}): OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>> {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => {
         // 利用可能かどうか
-        const scope = 'all';
-        const available = await isAvailable(scope, unitOfCountInSeconds, maxCountPerUnit)(transactionCountAdapter);
+        const available = await isAvailable(args.scope, args.unitOfCountInSeconds, args.maxCountPerUnit)(transactionCountAdapter);
         if (!available) {
             return monapt.None;
         }
 
         // 利用可能であれば、取引作成&匿名所有者作成
-        // 一般所有者作成
-        const anonymousOwner = AnonymousOwnerFactory.create({});
+        // 一般所有者作成(後で取引の所有者が適切かどうかを確認するために、状態を持たせる)
+        const anonymousOwner = AnonymousOwnerFactory.create({
+            state: args.state
+        });
 
         // 興行主取得
         const ownerDoc = await ownerAdapter.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
@@ -140,7 +148,7 @@ export function startIfPossible(expiresAt: Date, unitOfCountInSeconds: number, m
         const newTransaction = TransactionFactory.create({
             status: TransactionStatus.UNDERWAY,
             owners: [],
-            expires_at: expiresAt,
+            expires_at: args.expiresAt,
             started_at: moment().toDate()
         });
         // mongoDBに追加するために_idとowners属性を拡張

@@ -16,7 +16,8 @@ const schema = new mongoose.Schema(
         name_last: String,
         email: String,
         tel: String,
-        name: MultilingualStringSchemaType
+        name: MultilingualStringSchemaType,
+        state: String
     },
     {
         collection: 'owners',

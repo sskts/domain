@@ -1,6 +1,7 @@
 import * as monapt from 'monapt';
 import * as TransactionFactory from '../factory/transaction';
 import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
+import * as TransactionScopeFactory from '../factory/transactionScope';
 import TransactionStatus from '../factory/transactionStatus';
 import OwnerAdapter from '../adapter/owner';
 import QueueAdapter from '../adapter/queue';
@@ -16,7 +17,7 @@ export declare type TransactionOperation<T> = (transactionAdapter: TransactionAd
  * @param {number} unitOfCountInSeconds 取引数カウント単位時間(秒)
  * @param {number} maxCountPerUnit カウント単位あたりの取引最大数
  */
-export declare function isAvailable(scope: string, unitOfCountInSeconds: number, maxCountPerUnit: number): (transactionCountAdapter: TransactionCountAdapter) => Promise<boolean>;
+export declare function isAvailable(scope: TransactionScopeFactory.ITransactionScope, unitOfCountInSeconds: number, maxCountPerUnit: number): (transactionCountAdapter: TransactionCountAdapter) => Promise<boolean>;
 /**
  * 開始準備のできた取引を用意する
  *
@@ -26,16 +27,22 @@ export declare function isAvailable(scope: string, unitOfCountInSeconds: number,
  */
 export declare function prepare(length: number, expiresInSeconds: number): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
- * 可能であれば取引開始する
+ * 匿名所有者として取引開始する
  *
- * @param {Date} expiresAt 期限切れ予定日時
- * @param {number} unitOfCountInSeconds 取引数制限単位期間
- * @param {number} maxCountPerUnit 単位期間あたりの最大取引数
+ * @param {Date} args.expiresAt 期限切れ予定日時
+ * @param {number} args.unitOfCountInSeconds 取引数制限単位期間
+ * @param {number} args.maxCountPerUnit 単位期間あたりの最大取引数
  * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
  *
  * @memberof service/transaction
  */
-export declare function startIfPossible(expiresAt: Date, unitOfCountInSeconds: number, maxCountPerUnit: number): OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>;
+export declare function startAsAnonymous(args: {
+    expiresAt: Date;
+    unitOfCountInSeconds: number;
+    maxCountPerUnit: number;
+    state: string;
+    scope: TransactionScopeFactory.ITransactionScope;
+}): OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>;
 /**
  * 照会する
  *
