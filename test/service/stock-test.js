@@ -25,6 +25,7 @@ const theater_1 = require("../../lib/adapter/theater");
 const transaction_1 = require("../../lib/adapter/transaction");
 const CoaSeatReservationAuthorizationFactory = require("../../lib/factory/authorization/coaSeatReservation");
 const objectId_1 = require("../../lib/factory/objectId");
+const AnonymousOwnerFactory = require("../../lib/factory/owner/anonymous");
 const TransactionFactory = require("../../lib/factory/transaction");
 const MasterService = require("../../lib/service/master");
 const StockService = require("../../lib/service/stock");
@@ -68,6 +69,13 @@ describe('在庫サービス 座席予約資産移動', () => {
         const assetAdapter = new asset_1.default(connection);
         const ownerAdapter = new owner_1.default(connection);
         const performanceAdapter = new performance_1.default(connection);
+        const ownerTo = AnonymousOwnerFactory.create({
+            id: '58e344ac36a44424c0997dad',
+            name_first: 'てすと',
+            name_last: 'てすと',
+            email: 'test@example.com',
+            tel: '09012345678'
+        });
         const authorization = {
             assets: [
                 {
@@ -135,7 +143,7 @@ describe('在庫サービス 座席予約資産移動', () => {
                     id: '58e344b236a44424c0997db1'
                 }
             ],
-            owner_to: '58e344ac36a44424c0997dad',
+            owner_to: ownerTo.id,
             owner_from: '5868e16789cc75249cdbfa4b',
             price: 5600,
             coa_screen_code: '60',
@@ -148,6 +156,7 @@ describe('在庫サービス 座席予約資産移動', () => {
             group: 'COA_SEAT_RESERVATION',
             id: '58e344b236a44424c0997db2'
         };
+        yield ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
         yield StockService.transferCOASeatReservation(authorization)(assetAdapter, ownerAdapter, performanceAdapter);
         // 資産の存在を確認
         const asset1Doc = yield assetAdapter.model.findById('58e344b236a44424c0997daf').exec();
