@@ -19,6 +19,7 @@ import TransactionAdapter from '../../lib/adapter/transaction';
 
 import * as CoaSeatReservationAuthorizationFactory from '../../lib/factory/authorization/coaSeatReservation';
 import ObjectId from '../../lib/factory/objectId';
+import * as AnonymousOwnerFactory from '../../lib/factory/owner/anonymous';
 import * as TransactionFactory from '../../lib/factory/transaction';
 
 import * as MasterService from '../../lib/service/master';
@@ -70,6 +71,13 @@ describe('在庫サービス 座席予約資産移動', () => {
         const ownerAdapter = new OwnerAdapter(connection);
         const performanceAdapter = new PerformanceAdapter(connection);
 
+        const ownerTo = AnonymousOwnerFactory.create({
+            id: '58e344ac36a44424c0997dad',
+            name_first: 'てすと',
+            name_last: 'てすと',
+            email: 'test@example.com',
+            tel: '09012345678'
+        });
         const authorization: CoaSeatReservationAuthorizationFactory.ICOASeatReservationAuthorization = {
             assets: [
                 {
@@ -137,7 +145,7 @@ describe('在庫サービス 座席予約資産移動', () => {
                     id: '58e344b236a44424c0997db1'
                 }
             ],
-            owner_to: '58e344ac36a44424c0997dad',
+            owner_to: ownerTo.id,
             owner_from: '5868e16789cc75249cdbfa4b',
             price: 5600,
             coa_screen_code: '60',
@@ -150,6 +158,7 @@ describe('在庫サービス 座席予約資産移動', () => {
             group: 'COA_SEAT_RESERVATION',
             id: '58e344b236a44424c0997db2'
         };
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
 
         await StockService.transferCOASeatReservation(authorization)(assetAdapter, ownerAdapter, performanceAdapter);
 

@@ -10,6 +10,7 @@ import * as redis from 'redis';
 import * as sskts from '../../lib/index';
 
 import * as EmailNotificationFactory from '../../lib/factory/notification/email';
+import OwnerGroup from '../../lib/factory/ownerGroup';
 import QueueGroup from '../../lib/factory/queueGroup';
 import * as TransactionFactory from '../../lib/factory/transaction';
 import * as AddNotificationTransactionEventFactory from '../../lib/factory/transactionEvent/addNotification';
@@ -44,7 +45,9 @@ before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 
     // 全て削除してからテスト開始
+    const ownerAdapter = sskts.adapter.owner(connection);
     const transactionAdapter = sskts.adapter.transaction(connection);
+    await ownerAdapter.model.remove({ group: OwnerGroup.ANONYMOUS }).exec();
     await transactionAdapter.transactionModel.remove({}).exec();
 });
 
@@ -58,9 +61,13 @@ describe('取引サービス 可能であれば開始する', () => {
         const expiresAt = moment().add(30, 'minutes').toDate();
         const unitOfCountInSeconds = 60;
         const maxCountPerUnit = 0;
-        const transactionOption = await sskts.service.transaction.startIfPossible(
-            expiresAt, unitOfCountInSeconds, maxCountPerUnit
-        )(ownerAdapter, transactionAdapter, transactionCountAdapter);
+        const transactionOption = await sskts.service.transaction.startAsAnonymous({
+            expiresAt: expiresAt,
+            unitOfCountInSeconds: unitOfCountInSeconds,
+            maxCountPerUnit: maxCountPerUnit,
+            state: '',
+            scope: {}
+        })(ownerAdapter, transactionAdapter, transactionCountAdapter);
         assert(transactionOption.isEmpty);
     });
 
@@ -73,9 +80,13 @@ describe('取引サービス 可能であれば開始する', () => {
         const expiresAt = moment().add(30, 'minutes').toDate();
         const unitOfCountInSeconds = 60;
         const maxCountPerUnit = 999;
-        const transactionOption = await sskts.service.transaction.startIfPossible(
-            expiresAt, unitOfCountInSeconds, maxCountPerUnit
-        )(ownerAdapter, transactionAdapter, transactionCountAdapter);
+        const transactionOption = await sskts.service.transaction.startAsAnonymous({
+            expiresAt: expiresAt,
+            unitOfCountInSeconds: unitOfCountInSeconds,
+            maxCountPerUnit: maxCountPerUnit,
+            state: '',
+            scope: {}
+        })(ownerAdapter, transactionAdapter, transactionCountAdapter);
 
         assert(transactionOption.isDefined);
         assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);

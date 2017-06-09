@@ -41,11 +41,15 @@ function main() {
         // 取引開始
         // 30分後のunix timestampを送信する場合
         // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
-        // tslint:disable-next-line:no-console
         debug('starting transaction...');
-        const transactionOption = yield sskts.service.transaction.startIfPossible(
-        // tslint:disable-next-line:no-magic-numbers
-        moment().add(30, 'minutes').toDate(), 60, 120)(ownerAdapter, transactionAdapter, transactionCountAdapter);
+        const transactionOption = yield sskts.service.transaction.startAsAnonymous({
+            // tslint:disable-next-line:no-magic-numbers
+            expiresAt: moment().add(30, 'minutes').toDate(),
+            unitOfCountInSeconds: 60,
+            maxCountPerUnit: 120,
+            state: moment().valueOf().toString(),
+            scope: {}
+        })(ownerAdapter, transactionAdapter, transactionCountAdapter);
         if (transactionOption.isEmpty) {
             throw new Error('no ready transaction');
         }
@@ -66,10 +70,10 @@ function main() {
         const anonymousOwnerId = anonymousOwner.id;
         // 空席なくなったら変更する
         const theaterCode = '118';
-        const dateJouei = '20170608';
+        const dateJouei = '20170610';
         const titleCode = '99300';
         const titleBranchNum = '0';
-        const timeBegin = '1000';
+        const timeBegin = '1240';
         const screenCode = '40';
         // 販売可能チケット検索
         const salesTicketResult = yield COA.ReserveService.salesTicket({
@@ -250,7 +254,7 @@ http://www.cinemasunshine.co.jp/\n
         debug('closed.');
         // 照会してみる
         const inquiryResult = yield transactionService.makeInquiry(key)(transactionAdapter);
-        debug('makeInquiry result:', inquiryResult);
+        debug('makeInquiry result:', inquiryResult.get());
         redisClient.quit();
         mongoose.disconnect();
     });

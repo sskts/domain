@@ -5,12 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 匿名所有者として取引を開始するサービスを追加。
+- 取引スコープの概念を導入。
 
 ### Changed
 
 ### Deprecated
 
 ### Removed
+- 取引開始サービス第一世代(startIfPossible)を削除。
 
 ### Fixed
 

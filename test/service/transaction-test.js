@@ -19,6 +19,7 @@ const mongoose = require("mongoose");
 const redis = require("redis");
 const sskts = require("../../lib/index");
 const EmailNotificationFactory = require("../../lib/factory/notification/email");
+const ownerGroup_1 = require("../../lib/factory/ownerGroup");
 const queueGroup_1 = require("../../lib/factory/queueGroup");
 const TransactionFactory = require("../../lib/factory/transaction");
 const AddNotificationTransactionEventFactory = require("../../lib/factory/transactionEvent/addNotification");
@@ -46,7 +47,9 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     });
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
     // 全て削除してからテスト開始
+    const ownerAdapter = sskts.adapter.owner(connection);
     const transactionAdapter = sskts.adapter.transaction(connection);
+    yield ownerAdapter.model.remove({ group: ownerGroup_1.default.ANONYMOUS }).exec();
     yield transactionAdapter.transactionModel.remove({}).exec();
 }));
 describe('取引サービス 可能であれば開始する', () => {
@@ -58,7 +61,13 @@ describe('取引サービス 可能であれば開始する', () => {
         const expiresAt = moment().add(30, 'minutes').toDate();
         const unitOfCountInSeconds = 60;
         const maxCountPerUnit = 0;
-        const transactionOption = yield sskts.service.transaction.startIfPossible(expiresAt, unitOfCountInSeconds, maxCountPerUnit)(ownerAdapter, transactionAdapter, transactionCountAdapter);
+        const transactionOption = yield sskts.service.transaction.startAsAnonymous({
+            expiresAt: expiresAt,
+            unitOfCountInSeconds: unitOfCountInSeconds,
+            maxCountPerUnit: maxCountPerUnit,
+            state: '',
+            scope: {}
+        })(ownerAdapter, transactionAdapter, transactionCountAdapter);
         assert(transactionOption.isEmpty);
     }));
     it('開始できる', () => __awaiter(this, void 0, void 0, function* () {
@@ -69,7 +78,13 @@ describe('取引サービス 可能であれば開始する', () => {
         const expiresAt = moment().add(30, 'minutes').toDate();
         const unitOfCountInSeconds = 60;
         const maxCountPerUnit = 999;
-        const transactionOption = yield sskts.service.transaction.startIfPossible(expiresAt, unitOfCountInSeconds, maxCountPerUnit)(ownerAdapter, transactionAdapter, transactionCountAdapter);
+        const transactionOption = yield sskts.service.transaction.startAsAnonymous({
+            expiresAt: expiresAt,
+            unitOfCountInSeconds: unitOfCountInSeconds,
+            maxCountPerUnit: maxCountPerUnit,
+            state: '',
+            scope: {}
+        })(ownerAdapter, transactionAdapter, transactionCountAdapter);
         assert(transactionOption.isDefined);
         assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
         assert.equal(transactionOption.get().expires_at.valueOf(), expiresAt.valueOf());
