@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- レポートサービスにおいて、取引在庫数の算出にredisを使用するように変更。
 
 ### Deprecated
 
