@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v18.0.0 - 2017-06-11
+### Changed
+- レポートサービスにおいて、取引在庫数の算出にredisを使用するように変更。
+
 ## v17.0.0 - 2017-06-09
 ### Added
 - 匿名所有者として取引を開始するサービスを追加。

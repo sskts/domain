@@ -2,8 +2,10 @@ import GMONotificationAdapter from '../adapter/gmoNotification';
 import QueueAdapter from '../adapter/queue';
 import TelemetryAdapter from '../adapter/telemetry';
 import TransactionAdapter from '../adapter/transaction';
+import TransactionCountAdapter from '../adapter/transactionCount';
+import * as TransactionScopeFactory from '../factory/transactionScope';
 export declare type QueueAndTransactionOperation<T> = (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
-export declare type QueueAndTelemetryAndTransactionOperation<T> = (queueAdapter: QueueAdapter, telemetryAdapter: TelemetryAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
+export declare type QueueAndTelemetryAndTransactionAndTransactionCountOperation<T> = (queueAdapter: QueueAdapter, telemetryAdapter: TelemetryAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => Promise<T>;
 export declare type GMONotificationOperation<T> = (gmoNotificationAdapter: GMONotificationAdapter) => Promise<T>;
 export interface IReportTransactionStatuses {
     numberOfTransactionsReady: number;
@@ -18,7 +20,7 @@ export interface IReportTransactionStatuses {
  * @returns {QueueAndTransactionOperation<IReportTransactionStatuses>}
  * @memberof service/report
  */
-export declare function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void>;
+export declare function createTelemetry(scope: TransactionScopeFactory.ITransactionScope, unitOfCountInSeconds: number, maxCountPerUnit: number): QueueAndTelemetryAndTransactionAndTransactionCountOperation<void>;
 /**
  *
  * @returns {QueueAndTransactionOperation<IReportTransactionStatuses>}
