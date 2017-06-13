@@ -137,33 +137,32 @@ export function startAsAnonymous(args: {
         });
 
         // 興行主取得
-        const ownerDoc = await ownerAdapter.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
-        if (ownerDoc === null) {
+        const promoterOwnerDoc = await ownerAdapter.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
+        if (promoterOwnerDoc === null) {
             throw new Error('promoter not found');
         }
-        const promoter = <PromoterOwnerFactory.IPromoterOwner>ownerDoc.toObject();
+        const promoter = <PromoterOwnerFactory.IPromoterOwner>promoterOwnerDoc.toObject();
 
-        debug('creating transaction...');
         // 取引ファクトリーで新しい進行中取引オブジェクトを作成
         const newTransaction = TransactionFactory.create({
             status: TransactionStatus.UNDERWAY,
-            owners: [],
+            owners: [promoter, anonymousOwner],
             expires_at: args.expiresAt,
             started_at: moment().toDate()
         });
-        // mongoDBに追加するために_idとowners属性を拡張
-        const newTransactionDoc = { ...newTransaction, ...{ _id: newTransaction.id, owners: [promoter.id, anonymousOwner.id] } };
-        const transactionDoc = await transactionAdapter.transactionModel.create(newTransactionDoc);
-        debug('transaction created', transactionDoc);
 
         // 所有者永続化
-        debug('storing anonymous owner...', anonymousOwner);
-        await ownerAdapter.model.findByIdAndUpdate(anonymousOwner.id, anonymousOwner, { new: true, upsert: true }).exec();
+        // createコマンドで作成すること(ありえないはずだが、万が一所有者IDが重複するようなバグがあっても、ユニークインデックスではじかれる)
+        debug('creating anonymous owner...', anonymousOwner);
+        const anonymousOwnerDoc = { ...anonymousOwner, ...{ _id: anonymousOwner.id } };
+        await ownerAdapter.model.create(anonymousOwnerDoc);
 
-        const transaction = <TransactionFactory.ITransaction>transactionDoc.toObject();
-        transaction.owners = [promoter, anonymousOwner];
+        debug('creating transaction...');
+        // mongoDBに追加するために_idとowners属性を拡張
+        const newTransactionDoc = { ...newTransaction, ...{ _id: newTransaction.id, owners: [promoter.id, anonymousOwner.id] } };
+        await transactionAdapter.transactionModel.create(newTransactionDoc);
 
-        return monapt.Option(transaction);
+        return monapt.Option(newTransaction);
     };
 }
 

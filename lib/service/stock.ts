@@ -12,12 +12,14 @@ import ArgumentError from '../error/argument';
 
 import * as SeatReservationAssetFactory from '../factory/asset/seatReservation';
 import * as COASeatReservationAuthorizationFactory from '../factory/authorization/coaSeatReservation';
+import AuthorizationGroup from '../factory/authorizationGroup';
 import * as AnonymousOwnerFactory from '../factory/owner/anonymous';
 import OwnerGroup from '../factory/ownerGroup';
 import * as OwnershipFactory from '../factory/ownership';
 import * as PerformanceFactory from '../factory/performance';
 import * as TransactionFactory from '../factory/transaction';
 import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
+import TransactionStatus from '../factory/transactionStatus';
 
 import AssetAdapter from '../adapter/asset';
 import OwnerAdapter from '../adapter/owner';
@@ -25,6 +27,10 @@ import PerformanceAdapter from '../adapter/performance';
 import TransactionAdapter from '../adapter/transaction';
 
 const debug = createDebug('sskts-domain:service:stock');
+export type ICOASeatReservationAuthorization = COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization;
+export type AssetAndOwnerAndPerformanceAndTransactionOperation<T> =
+    // tslint:disable-next-line:max-line-length
+    (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, performanceAdapter: PerformanceAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 
 /**
  * 資産承認解除(COA座席予約)
@@ -55,7 +61,7 @@ export function unauthorizeCOASeatReservation(authorization: COASeatReservationA
  *
  * @memberof service/stock
  */
-export function transferCOASeatReservation(authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization) {
+export function transferCOASeatReservation(authorization: ICOASeatReservationAuthorization) {
     // tslint:disable-next-line:max-func-body-length
     return async (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, performanceAdapter: PerformanceAdapter) => {
         // 所有者情報を取得
@@ -188,6 +194,45 @@ export function transferCOASeatReservation(authorization: COASeatReservationAuth
             await assetAdapter.model.findByIdAndUpdate(seatReservationAsset.id, seatReservationAsset, { new: true, upsert: true }).exec();
             debug('asset stored.');
         }));
+    };
+}
+
+/**
+ * 取引IDからCOA座席予約資産移動を実行する
+ *
+ * @param transactionId 取引ID
+ * @return {AssetAndOwnerAndPerformanceAndTransactionOperation<void>}
+ */
+export function transferCOASeatReservationByTransactionId(
+    transactionId: string
+): AssetAndOwnerAndPerformanceAndTransactionOperation<void> {
+    // tslint:disable-next-line:max-line-length
+    return async (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, performanceAdapter: PerformanceAdapter, transactionAdapter: TransactionAdapter) => {
+        // 取引検索
+        const transactionDoc = await transactionAdapter.transactionModel.findById(transactionId, 'status').exec();
+        if (transactionDoc === null) {
+            throw new ArgumentError('transactionId', 'transaction not found');
+        }
+        if (transactionDoc.get('status') !== TransactionStatus.CLOSED) {
+            throw new ArgumentError('transactionId', 'transaction not closed');
+        }
+
+        // 取引の承認を取得
+        const authorizations = await transactionAdapter.findAuthorizationsById(transactionId);
+        debug('authorizations:', authorizations);
+        if (authorizations.length === 0) {
+            throw new ArgumentError('transactionId', 'transaction has no authorizations');
+        }
+
+        // COA座席予約承認を取り出す
+        const coaSeatReservationAuthorization =
+            authorizations.find((authorization) => authorization.group === AuthorizationGroup.COA_SEAT_RESERVATION);
+        if (coaSeatReservationAuthorization === undefined) {
+            throw new ArgumentError('transactionId', 'transaction has no coaSeatReservationAuthorization');
+        }
+
+        // tslint:disable-next-line:max-line-length
+        await transferCOASeatReservation(<ICOASeatReservationAuthorization>coaSeatReservationAuthorization)(assetAdapter, ownerAdapter, performanceAdapter);
     };
 }
 
