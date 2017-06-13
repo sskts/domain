@@ -122,7 +122,7 @@ export function create(args: {
     });
 
     args.zsk_info.forEach((zskInfo) => {
-        if (_.isEmpty(zskInfo.zsk_cd)) throw new ArgumentNullError('knyknr_no_info.knyknr_no');
+        if (_.isEmpty(zskInfo.zsk_cd)) throw new ArgumentNullError('zsk_info.zsk_cd');
     });
 
     return {
