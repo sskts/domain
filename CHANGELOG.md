@@ -5,11 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
-- 取引IDから座席予約資産移動を実行するサービスを追加。
-- ファクトリーのテストコードを強化。
 
 ### Changed
-- 匿名所有者として取引を開始する際の所有者作成方法をcreateコマンドに変更。万が一の所有者上書きをユニークインデックスで未然に防ぐため。
 
 ### Deprecated
 
@@ -18,6 +15,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v18.1.0 - 2017-06-13
+### Added
+- 取引IDから座席予約資産移動を実行するサービスを追加。
+- ファクトリーのテストコードを強化。
+
+### Changed
+- 匿名所有者として取引を開始する際の所有者作成方法をcreateコマンドに変更。万が一の所有者上書きをユニークインデックスで未然に防ぐため。
 
 ## v18.0.0 - 2017-06-11
 ### Changed
