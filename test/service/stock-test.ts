@@ -18,6 +18,7 @@ import TheaterAdapter from '../../lib/adapter/theater';
 import TransactionAdapter from '../../lib/adapter/transaction';
 
 import * as CoaSeatReservationAuthorizationFactory from '../../lib/factory/authorization/coaSeatReservation';
+import * as GMOAuthorizationFactory from '../../lib/factory/authorization/gmo';
 import ObjectId from '../../lib/factory/objectId';
 import * as AnonymousOwnerFactory from '../../lib/factory/owner/anonymous';
 import * as TransactionFactory from '../../lib/factory/transaction';
@@ -30,6 +31,7 @@ import * as StockService from '../../lib/service/stock';
 
 let TEST_ANOYMOUS_OWNER: AnonymousOwnerFactory.IAnonymousOwner;
 let TEST_COA_SEAT_RESERVATION_AUTHORIZATION: CoaSeatReservationAuthorizationFactory.ICOASeatReservationAuthorization;
+let TEST_GMO_AUTHORIZATION: GMOAuthorizationFactory.IGMOAuthorization;
 let connection: mongoose.Connection;
 // tslint:disable-next-line:max-func-body-length
 before(async () => {
@@ -135,6 +137,20 @@ before(async () => {
         group: 'COA_SEAT_RESERVATION',
         id: '58e344b236a44424c0997db2'
     };
+
+    TEST_GMO_AUTHORIZATION = GMOAuthorizationFactory.create({
+        price: 123,
+        owner_to: TEST_ANOYMOUS_OWNER.id,
+        owner_from: '5868e16789cc75249cdbfa4b',
+        gmo_shop_id: 'xxx',
+        gmo_shop_pass: 'xxx',
+        gmo_order_id: 'xxx',
+        gmo_amount: 123,
+        gmo_access_id: 'xxx',
+        gmo_access_pass: 'xxx',
+        gmo_job_cd: 'xxx',
+        gmo_pay_type: 'xxx'
+    });
 });
 
 describe('在庫サービス 取引照会無効化', () => {
@@ -162,8 +178,9 @@ describe('在庫サービス 座席予約資産移動', () => {
         const ownerAdapter = new OwnerAdapter(connection);
         const performanceAdapter = new PerformanceAdapter(connection);
 
-        // tslint:disable-next-line:max-line-length
-        const ownerDoc = await ownerAdapter.model.findByIdAndUpdate(TEST_ANOYMOUS_OWNER.id, TEST_ANOYMOUS_OWNER, { new: true, upsert: true }).exec();
+        const ownerDoc = await ownerAdapter.model.findByIdAndUpdate(
+            TEST_ANOYMOUS_OWNER.id, TEST_ANOYMOUS_OWNER, { new: true, upsert: true }
+        ).exec();
 
         await StockService.transferCOASeatReservation(
             TEST_COA_SEAT_RESERVATION_AUTHORIZATION
@@ -270,7 +287,123 @@ describe('在庫サービス 取引IDから座席予約資産移動', () => {
         assert.equal(asset2Doc.get('ownership').owner, '58e344ac36a44424c0997dad');
 
         // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
         await transactionDoc.remove();
         await ownerDoc.remove();
+    });
+
+    it('取引が存在しなければArgumentError', async () => {
+        const assetAdapter = new AssetAdapter(connection);
+        const ownerAdapter = new OwnerAdapter(connection);
+        const performanceAdapter = new PerformanceAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // 存在しない取引なのでエラーになるはず
+        const transferError = await StockService.transferCOASeatReservationByTransactionId(
+            ObjectId().toString()
+        )(assetAdapter, ownerAdapter, performanceAdapter, transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+
+        assert(transferError instanceof ArgumentError);
+        assert.equal((<ArgumentError>transferError).argumentName, 'transactionId');
+    });
+
+    it('成立取引でなければArgumentError', async () => {
+        const assetAdapter = new AssetAdapter(connection);
+        const ownerAdapter = new OwnerAdapter(connection);
+        const performanceAdapter = new PerformanceAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // 進行中取引をテストデータとして用意する
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+        const transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
+            transaction.id, transaction, { new: true, upsert: true }
+        ).exec();
+
+        const transferError = await StockService.transferCOASeatReservationByTransactionId(
+            transaction.id
+        )(assetAdapter, ownerAdapter, performanceAdapter, transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+
+        assert(transferError instanceof ArgumentError);
+        assert.equal((<ArgumentError>transferError).argumentName, 'transactionId');
+
+        // テストデータ削除
+        await transactionDoc.remove();
+    });
+
+    it('承認がなければArgumentError', async () => {
+        const assetAdapter = new AssetAdapter(connection);
+        const ownerAdapter = new OwnerAdapter(connection);
+        const performanceAdapter = new PerformanceAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // 承認のない成立取引をテストデータとして用意する
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.CLOSED,
+            owners: [],
+            expires_at: new Date()
+        });
+        const transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
+            transaction.id, transaction, { new: true, upsert: true }
+        ).exec();
+
+        const transferError = await StockService.transferCOASeatReservationByTransactionId(
+            transaction.id
+        )(assetAdapter, ownerAdapter, performanceAdapter, transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+
+        assert(transferError instanceof ArgumentError);
+        assert.equal((<ArgumentError>transferError).argumentName, 'transactionId');
+
+        // テストデータ削除
+        await transactionDoc.remove();
+    });
+
+    it('座席予約承認がなければArgumentError', async () => {
+        const assetAdapter = new AssetAdapter(connection);
+        const ownerAdapter = new OwnerAdapter(connection);
+        const performanceAdapter = new PerformanceAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // GMO承認だけ追加された成立取引をテストデータとして用意する
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.CLOSED,
+            owners: [],
+            expires_at: new Date()
+        });
+        const event = AuthorizeTransactionEventFactory.create({
+            transaction: transaction.id,
+            occurred_at: new Date(),
+            authorization: TEST_GMO_AUTHORIZATION
+        });
+        const transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
+            transaction.id, transaction, { new: true, upsert: true }
+        ).exec();
+        await transactionAdapter.addEvent(event);
+
+        const transferError = await StockService.transferCOASeatReservationByTransactionId(
+            transaction.id
+        )(assetAdapter, ownerAdapter, performanceAdapter, transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+
+        assert(transferError instanceof ArgumentError);
+        assert.equal((<ArgumentError>transferError).argumentName, 'transactionId');
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionDoc.remove();
     });
 });

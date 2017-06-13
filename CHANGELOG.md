@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 取引IDから座席予約資産移動を実行するサービスを追加。
 
 ### Changed
 
