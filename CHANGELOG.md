@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 匿名所有者として取引を開始する際の所有者作成方法をcreateコマンドに変更。万が一の所有者上書きをユニークインデックスで未然に防ぐため。
 
 ### Deprecated
 
