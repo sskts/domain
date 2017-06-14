@@ -5,8 +5,11 @@
  */
 
 import * as moment from 'moment';
+import * as _ from 'underscore';
 
 import OwnerGroup from './ownerGroup';
+
+import ArgumentError from '../error/argument';
 
 /**
  * 取引スコープインターフェース
@@ -66,7 +69,13 @@ export function create(args: {
     theater?: string;
     owner_group?: OwnerGroup;
 }): ITransactionScope {
-    // todo validation nullチェック、型チェック、fromとuntilの比較など
+    if (!_.isDate(args.ready_from)) throw new ArgumentError('ready_from', 'ready_from should be Date');
+    if (!_.isDate(args.ready_until)) throw new ArgumentError('ready_until', 'ready_until should be Date');
+
+    // untilはfromより遅くなければならない
+    if (args.ready_until.getTime() <= args.ready_from.getTime()) {
+        throw new ArgumentError('ready_until', 'ready_until must be later than ready_from');
+    }
 
     return {
         ready_from: args.ready_from,

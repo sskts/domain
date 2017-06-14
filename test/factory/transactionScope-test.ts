@@ -10,6 +10,8 @@ import * as moment from 'moment';
 import OwnerGroup from '../../lib/factory/ownerGroup';
 import * as TransactionScopeFactory from '../../lib/factory/transactionScope';
 
+import ArgumentError from '../../lib/error/argument';
+
 const TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS = 60;
 let TEST_CREATE_SCOPE_ARGS: any;
 
@@ -31,6 +33,56 @@ describe('取引スコープファクトリー 作成', () => {
         assert.doesNotThrow(() => {
             TransactionScopeFactory.create(TEST_CREATE_SCOPE_ARGS);
         });
+    });
+
+    it('開始準備fromがDateでなければエラー', () => {
+        assert.throws(
+            () => {
+                const args = { ...TEST_CREATE_SCOPE_ARGS, ...{ ready_from: moment().toISOString() } };
+                TransactionScopeFactory.create(args);
+            },
+            (error: any) => {
+                assert(error instanceof ArgumentError);
+                assert.equal((<ArgumentError>error).argumentName, 'ready_from');
+
+                return true;
+            }
+        );
+    });
+
+    it('開始準備untilがDateでなければエラー', () => {
+        assert.throws(
+            () => {
+                const args = { ...TEST_CREATE_SCOPE_ARGS, ...{ ready_until: moment().toISOString() } };
+                TransactionScopeFactory.create(args);
+            },
+            (error: any) => {
+                assert(error instanceof ArgumentError);
+                assert.equal((<ArgumentError>error).argumentName, 'ready_until');
+
+                return true;
+            }
+        );
+    });
+
+    it('開始準備untilがfromより遅くなければエラー', () => {
+        assert.throws(
+            () => {
+                const args = {
+                    ...TEST_CREATE_SCOPE_ARGS,
+                    ...{
+                        ready_until: moment(TEST_CREATE_SCOPE_ARGS.ready_from).add(-1, 'second').toDate()
+                    }
+                };
+                TransactionScopeFactory.create(args);
+            },
+            (error: any) => {
+                assert(error instanceof ArgumentError);
+                assert.equal((<ArgumentError>error).argumentName, 'ready_until');
+
+                return true;
+            }
+        );
     });
 });
 

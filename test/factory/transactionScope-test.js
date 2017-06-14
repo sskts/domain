@@ -9,6 +9,7 @@ const assert = require("assert");
 const moment = require("moment");
 const ownerGroup_1 = require("../../lib/factory/ownerGroup");
 const TransactionScopeFactory = require("../../lib/factory/transactionScope");
+const argument_1 = require("../../lib/error/argument");
 const TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS = 60;
 let TEST_CREATE_SCOPE_ARGS;
 before(() => {
@@ -26,6 +27,38 @@ describe('取引スコープファクトリー 作成', () => {
     it('作成できる', () => {
         assert.doesNotThrow(() => {
             TransactionScopeFactory.create(TEST_CREATE_SCOPE_ARGS);
+        });
+    });
+    it('開始準備fromがDateでなければエラー', () => {
+        assert.throws(() => {
+            const args = Object.assign({}, TEST_CREATE_SCOPE_ARGS, { ready_from: moment().toISOString() });
+            TransactionScopeFactory.create(args);
+        }, (error) => {
+            assert(error instanceof argument_1.default);
+            assert.equal(error.argumentName, 'ready_from');
+            return true;
+        });
+    });
+    it('開始準備untilがDateでなければエラー', () => {
+        assert.throws(() => {
+            const args = Object.assign({}, TEST_CREATE_SCOPE_ARGS, { ready_until: moment().toISOString() });
+            TransactionScopeFactory.create(args);
+        }, (error) => {
+            assert(error instanceof argument_1.default);
+            assert.equal(error.argumentName, 'ready_until');
+            return true;
+        });
+    });
+    it('開始準備untilがfromより遅くなければエラー', () => {
+        assert.throws(() => {
+            const args = Object.assign({}, TEST_CREATE_SCOPE_ARGS, {
+                ready_until: moment(TEST_CREATE_SCOPE_ARGS.ready_from).add(-1, 'second').toDate()
+            });
+            TransactionScopeFactory.create(args);
+        }, (error) => {
+            assert(error instanceof argument_1.default);
+            assert.equal(error.argumentName, 'ready_until');
+            return true;
         });
     });
 });
