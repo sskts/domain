@@ -53,7 +53,7 @@ export function findById(id: string): TransactionOperation<monapt.Option<Transac
     };
 }
 
-function addAuthorization(transactionId: string, authorization: AuthorizationFactory.IAuthorization) {
+export function addAuthorization(transactionId: string, authorization: AuthorizationFactory.IAuthorization) {
     return async (transactionAdapter: TransactionAdapter) => {
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
