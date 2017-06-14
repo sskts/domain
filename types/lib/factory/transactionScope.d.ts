@@ -1,8 +1,3 @@
-/**
- * 取引スコープファクトリー
- *
- * @namespace factory/transactionScope
- */
 import OwnerGroup from './ownerGroup';
 /**
  * 取引スコープインターフェース
@@ -12,8 +7,40 @@ import OwnerGroup from './ownerGroup';
  * @memberof factory/transactionScope
  */
 export interface ITransactionScope {
+    /**
+     * いつから開始準備状態か
+     *
+     * @type {Date}
+     * @memberof ITransactionScope
+     */
+    ready_from: Date;
+    /**
+     * いつまで開始準備状態か
+     *
+     * @type {Date}
+     * @memberof ITransactionScope
+     */
+    ready_until: Date;
+    /**
+     * どのクライアントでやりとりされる取引なのか
+     *
+     * @type {string}
+     * @memberof ITransactionScope
+     */
     client?: string;
+    /**
+     * どの劇場における取引なのか
+     *
+     * @type {string}
+     * @memberof ITransactionScope
+     */
     theater?: string;
+    /**
+     * どのグループの所有者の取引なのか
+     *
+     * @type {OwnerGroup}
+     * @memberof ITransactionScope
+     */
     owner_group?: OwnerGroup;
 }
 /**
@@ -23,6 +50,8 @@ export interface ITransactionScope {
  * @memberof factory/transactionScope
  */
 export declare function create(args: {
+    ready_from: Date;
+    ready_until: Date;
     client?: string;
     theater?: string;
     owner_group?: OwnerGroup;

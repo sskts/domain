@@ -3,6 +3,7 @@
  *
  * @ignore
  */
+
 import * as assert from 'assert';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -16,9 +17,12 @@ import * as TransactionFactory from '../../lib/factory/transaction';
 import * as AddNotificationTransactionEventFactory from '../../lib/factory/transactionEvent/addNotification';
 import * as TransactionInquiryKeyFactory from '../../lib/factory/transactionInquiryKey';
 import TransactionQueuesStatus from '../../lib/factory/transactionQueuesStatus';
+import * as TransactionScopeFactory from '../../lib/factory/transactionScope';
 import TransactionStatus from '../../lib/factory/transactionStatus';
 
 import TransactionCountAdapter from '../../lib/adapter/transactionCount';
+
+const TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS = 60;
 
 let redisClient: redis.RedisClient;
 let connection: mongoose.Connection;
@@ -59,14 +63,21 @@ describe('取引サービス 可能であれば開始する', () => {
 
         // tslint:disable-next-line:no-magic-numbers
         const expiresAt = moment().add(30, 'minutes').toDate();
-        const unitOfCountInSeconds = 60;
+
+        const dateNow = moment();
+        const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS);
+        const readyUntil = moment(readyFrom).add(TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS, 'seconds');
+        const scope = TransactionScopeFactory.create({
+            ready_from: readyFrom.toDate(),
+            ready_until: readyUntil.toDate()
+        });
+
         const maxCountPerUnit = 0;
         const transactionOption = await sskts.service.transaction.startAsAnonymous({
             expiresAt: expiresAt,
-            unitOfCountInSeconds: unitOfCountInSeconds,
             maxCountPerUnit: maxCountPerUnit,
             state: '',
-            scope: {}
+            scope: scope
         })(ownerAdapter, transactionAdapter, transactionCountAdapter);
         assert(transactionOption.isEmpty);
     });
@@ -78,14 +89,21 @@ describe('取引サービス 可能であれば開始する', () => {
 
         // tslint:disable-next-line:no-magic-numbers
         const expiresAt = moment().add(30, 'minutes').toDate();
-        const unitOfCountInSeconds = 60;
+
+        const dateNow = moment();
+        const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS);
+        const readyUntil = moment(readyFrom).add(TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS, 'seconds');
+        const scope = TransactionScopeFactory.create({
+            ready_from: readyFrom.toDate(),
+            ready_until: readyUntil.toDate()
+        });
+
         const maxCountPerUnit = 999;
         const transactionOption = await sskts.service.transaction.startAsAnonymous({
             expiresAt: expiresAt,
-            unitOfCountInSeconds: unitOfCountInSeconds,
             maxCountPerUnit: maxCountPerUnit,
             state: '',
-            scope: {}
+            scope: scope
         })(ownerAdapter, transactionAdapter, transactionCountAdapter);
 
         assert(transactionOption.isDefined);
@@ -293,79 +311,5 @@ describe('取引サービス 取引IDからキュー出力する', () => {
         await transactionDoc.remove();
         await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
         await queueDoc4pushNotification.remove();
-    });
-});
-
-describe('取引サービス 利用可能かどうか', () => {
-    it('最大数に達していないので利用可能', async () => {
-        const transactionCountAdapter = sskts.adapter.transactionCount(redisClient);
-
-        // test data
-        const scope = moment().valueOf().toString();
-        const COUNT_UNIT = 60;
-        const MAX_COUNT_PER_UNIT = 999999; // 十分に大きな数字
-
-        const isAvailable = await sskts.service.transaction.isAvailable(
-            scope, COUNT_UNIT, MAX_COUNT_PER_UNIT
-        )(transactionCountAdapter);
-        assert(isAvailable);
-    });
-
-    it('最大数を超過しているので利用できない', async () => {
-        const transactionCountAdapter = sskts.adapter.transactionCount(redisClient);
-
-        // test data
-        const scope = moment().valueOf().toString();
-        const COUNT_UNIT = 60;
-        const MAX_COUNT_PER_UNIT = 0;
-
-        const isAvailable = await sskts.service.transaction.isAvailable(
-            scope, COUNT_UNIT, MAX_COUNT_PER_UNIT
-        )(transactionCountAdapter);
-        assert(!isAvailable);
-    });
-
-    it('連続利用で結果が適切に変わる', async () => {
-        const transactionCountAdapter = sskts.adapter.transactionCount(redisClient);
-
-        // test data
-        const scope = moment().valueOf().toString();
-        const COUNT_UNIT = 5;
-        const MAX_COUNT_PER_UNIT = 1;
-
-        // 初回は利用可能なはず
-        const isAvailable = await sskts.service.transaction.isAvailable(
-            scope, COUNT_UNIT, MAX_COUNT_PER_UNIT
-        )(transactionCountAdapter);
-        assert(isAvailable);
-
-        // 2回目は利用不可能なはず
-        const isAvailable2 = await sskts.service.transaction.isAvailable(
-            scope, COUNT_UNIT, MAX_COUNT_PER_UNIT
-        )(transactionCountAdapter);
-        assert(!isAvailable2);
-
-        // {COUNT_UNIT}秒後にはまた利用可能なはず
-        return new Promise((resolve, reject) => {
-            setTimeout(
-                async () => {
-                    try {
-                        const isAvailable3 = await sskts.service.transaction.isAvailable(
-                            scope, COUNT_UNIT, MAX_COUNT_PER_UNIT
-                        )(transactionCountAdapter);
-
-                        if (isAvailable3) {
-                            resolve();
-                        } else {
-                            reject(new Error('should be available'));
-                        }
-                    } catch (error) {
-                        reject(error);
-                    }
-                },
-                // tslint:disable-next-line:no-magic-numbers
-                COUNT_UNIT * 1000
-            );
-        });
     });
 });

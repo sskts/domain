@@ -42,13 +42,19 @@ function main() {
         // 30分後のunix timestampを送信する場合
         // https://ja.wikipedia.org/wiki/UNIX%E6%99%82%E9%96%93
         debug('starting transaction...');
+        const readyFrom = moment();
+        // tslint:disable-next-line:no-magic-numbers
+        const readyUntil = moment(readyFrom).add(60, 'seconds');
+        const scope = sskts.factory.transactionScope.create({
+            ready_from: readyFrom.toDate(),
+            ready_until: readyUntil.toDate()
+        });
         const transactionOption = yield sskts.service.transaction.startAsAnonymous({
             // tslint:disable-next-line:no-magic-numbers
             expiresAt: moment().add(30, 'minutes').toDate(),
-            unitOfCountInSeconds: 60,
             maxCountPerUnit: 120,
             state: moment().valueOf().toString(),
-            scope: {}
+            scope: scope
         })(ownerAdapter, transactionAdapter, transactionCountAdapter);
         if (transactionOption.isEmpty) {
             throw new Error('no ready transaction');

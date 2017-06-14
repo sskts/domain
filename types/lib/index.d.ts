@@ -63,6 +63,7 @@ import * as UnauthorizeTransactionEventFactory from './factory/transactionEvent/
 import TransactionEventGroup from './factory/transactionEventGroup';
 import * as TransactionInquiryKeyFactory from './factory/transactionInquiryKey';
 import TransactionQueuesStatus from './factory/transactionQueuesStatus';
+import * as TransactionScopeFactory from './factory/transactionScope';
 import TransactionStatus from './factory/transactionStatus';
 export declare const adapter: {
     asset: (connection: Connection) => AssetAdapter;
@@ -142,5 +143,6 @@ export declare const factory: {
     transactionEventGroup: typeof TransactionEventGroup;
     transactionInquiryKey: typeof TransactionInquiryKeyFactory;
     transactionQueuesStatus: typeof TransactionQueuesStatus;
+    transactionScope: typeof TransactionScopeFactory;
     transactionStatus: typeof TransactionStatus;
 };
