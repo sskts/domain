@@ -6,7 +6,6 @@ import * as TransactionScopeFactory from '../factory/transactionScope';
  * @class TransactionCountAdapter
  */
 export default class TransactionCountAdapter {
-    static readonly KEY_PREFIX: string;
     readonly redisClient: redis.RedisClient;
     constructor(redisClient: redis.RedisClient);
     static SCOPE2KEY(scope: TransactionScopeFactory.ITransactionScope): string;
