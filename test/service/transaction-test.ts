@@ -23,9 +23,17 @@ import TransactionStatus from '../../lib/factory/transactionStatus';
 import TransactionCountAdapter from '../../lib/adapter/transactionCount';
 
 const TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS = 60;
+let TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS: any;
+const TEST_PROMOTER_OWNER = {
+    name: {
+        ja: '佐々木興業株式会社',
+        en: 'Cinema Sunshine Co., Ltd.'
+    }
+};
 
 let redisClient: redis.RedisClient;
 let connection: mongoose.Connection;
+
 before(async () => {
     if (typeof process.env.TEST_REDIS_HOST !== 'string') {
         throw new Error('environment variable TEST_REDIS_HOST required');
@@ -53,33 +61,60 @@ before(async () => {
     const transactionAdapter = sskts.adapter.transaction(connection);
     await ownerAdapter.model.remove({ group: OwnerGroup.ANONYMOUS }).exec();
     await transactionAdapter.transactionModel.remove({}).exec();
+
+    // tslint:disable-next-line:no-magic-numbers
+    const expiresAt = moment().add(30, 'minutes').toDate();
+    const dateNow = moment();
+    const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS);
+    const readyUntil = moment(readyFrom).add(TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS, 'seconds');
+    const scope = TransactionScopeFactory.create({
+        ready_from: readyFrom.toDate(),
+        ready_until: readyUntil.toDate()
+    });
+    TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS = {
+        expiresAt: expiresAt,
+        maxCountPerUnit: 999,
+        state: 'xxx',
+        scope: scope
+    };
 });
 
-describe('取引サービス 可能であれば開始する', () => {
+describe('取引サービス 匿名所有者として取引開始する', () => {
+    beforeEach(async () => {
+        // 興行所有者を準備
+        const ownerAdapter = sskts.adapter.owner(connection);
+        await ownerAdapter.model.findOneAndUpdate(
+            { group: OwnerGroup.PROMOTER },
+            TEST_PROMOTER_OWNER,
+            { upsert: true }
+        ).exec();
+    });
+
     it('取引数制限を越えているため開始できない', async () => {
         const ownerAdapter = sskts.adapter.owner(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         const transactionCountAdapter = new TransactionCountAdapter(redisClient);
 
-        // tslint:disable-next-line:no-magic-numbers
-        const expiresAt = moment().add(30, 'minutes').toDate();
-
-        const dateNow = moment();
-        const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS);
-        const readyUntil = moment(readyFrom).add(TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS, 'seconds');
-        const scope = TransactionScopeFactory.create({
-            ready_from: readyFrom.toDate(),
-            ready_until: readyUntil.toDate()
-        });
-
-        const maxCountPerUnit = 0;
-        const transactionOption = await sskts.service.transaction.startAsAnonymous({
-            expiresAt: expiresAt,
-            maxCountPerUnit: maxCountPerUnit,
-            state: '',
-            scope: scope
-        })(ownerAdapter, transactionAdapter, transactionCountAdapter);
+        const args = { ...TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS, ...{ maxCountPerUnit: 0 } };
+        const transactionOption = await sskts.service.transaction.startAsAnonymous(args)(
+            ownerAdapter, transactionAdapter, transactionCountAdapter
+        );
         assert(transactionOption.isEmpty);
+    });
+
+    it('興行所有者が存在しなければ開始できない', async () => {
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const transactionCountAdapter = new TransactionCountAdapter(redisClient);
+
+        await ownerAdapter.model.remove({ group: OwnerGroup.PROMOTER }).exec();
+
+        const startError = await sskts.service.transaction.startAsAnonymous(TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS)(
+            ownerAdapter, transactionAdapter, transactionCountAdapter
+        ).catch((error) => {
+            return error;
+        });
+        assert(startError instanceof Error);
     });
 
     it('開始できる', async () => {
@@ -87,28 +122,13 @@ describe('取引サービス 可能であれば開始する', () => {
         const transactionAdapter = sskts.adapter.transaction(connection);
         const transactionCountAdapter = new TransactionCountAdapter(redisClient);
 
-        // tslint:disable-next-line:no-magic-numbers
-        const expiresAt = moment().add(30, 'minutes').toDate();
-
-        const dateNow = moment();
-        const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS);
-        const readyUntil = moment(readyFrom).add(TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS, 'seconds');
-        const scope = TransactionScopeFactory.create({
-            ready_from: readyFrom.toDate(),
-            ready_until: readyUntil.toDate()
-        });
-
-        const maxCountPerUnit = 999;
-        const transactionOption = await sskts.service.transaction.startAsAnonymous({
-            expiresAt: expiresAt,
-            maxCountPerUnit: maxCountPerUnit,
-            state: '',
-            scope: scope
-        })(ownerAdapter, transactionAdapter, transactionCountAdapter);
+        const transactionOption = await sskts.service.transaction.startAsAnonymous(TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS)(
+            ownerAdapter, transactionAdapter, transactionCountAdapter
+        );
 
         assert(transactionOption.isDefined);
         assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
-        assert.equal(transactionOption.get().expires_at.valueOf(), expiresAt.valueOf());
+        assert.equal(transactionOption.get().expires_at.valueOf(), TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS.expiresAt.valueOf());
         assert.equal(transactionOption.get().queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
     });
 });

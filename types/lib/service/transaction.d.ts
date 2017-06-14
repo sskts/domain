@@ -22,8 +22,9 @@ export declare function prepare(length: number, expiresInSeconds: number): (tran
  * 匿名所有者として取引開始する
  *
  * @param {Date} args.expiresAt 期限切れ予定日時
- * @param {number} args.unitOfCountInSeconds 取引数制限単位期間
  * @param {number} args.maxCountPerUnit 単位期間あたりの最大取引数
+ * @param {string} args.state 所有者状態
+ * @param {TransactionScopeFactory.ITransactionScope} args.scope 取引スコープ
  * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
  *
  * @memberof service/transaction

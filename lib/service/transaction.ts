@@ -73,8 +73,9 @@ export function prepare(length: number, expiresInSeconds: number) {
  * 匿名所有者として取引開始する
  *
  * @param {Date} args.expiresAt 期限切れ予定日時
- * @param {number} args.unitOfCountInSeconds 取引数制限単位期間
  * @param {number} args.maxCountPerUnit 単位期間あたりの最大取引数
+ * @param {string} args.state 所有者状態
+ * @param {TransactionScopeFactory.ITransactionScope} args.scope 取引スコープ
  * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
  *
  * @memberof service/transaction
@@ -86,8 +87,6 @@ export function startAsAnonymous(args: {
     scope: TransactionScopeFactory.ITransactionScope;
 }): OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>> {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => {
-        // todo スコープのready_fromが未来であればはじく？
-
         // 利用可能かどうか
         const nextCount = await transactionCountAdapter.incr(args.scope);
         if (nextCount > args.maxCountPerUnit) {
