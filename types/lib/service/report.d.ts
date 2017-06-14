@@ -20,7 +20,7 @@ export interface IReportTransactionStatuses {
  * @returns {QueueAndTransactionOperation<IReportTransactionStatuses>}
  * @memberof service/report
  */
-export declare function createTelemetry(scope: TransactionScopeFactory.ITransactionScope, unitOfCountInSeconds: number, maxCountPerUnit: number): QueueAndTelemetryAndTransactionAndTransactionCountOperation<void>;
+export declare function createTelemetry(scope: TransactionScopeFactory.ITransactionScope, maxCountPerUnit: number): QueueAndTelemetryAndTransactionAndTransactionCountOperation<void>;
 /**
  *
  * @returns {QueueAndTransactionOperation<IReportTransactionStatuses>}

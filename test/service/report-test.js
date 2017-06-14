@@ -26,9 +26,9 @@ const GMOAuthorizationFactory = require("../../lib/factory/authorization/gmo");
 const TransactionFactory = require("../../lib/factory/transaction");
 const AuthorizeTransactionEventFactory = require("../../lib/factory/transactionEvent/authorize");
 const TransactionInquiryKeyFactory = require("../../lib/factory/transactionInquiryKey");
+const TransactionScopeFactory = require("../../lib/factory/transactionScope");
 const transactionStatus_1 = require("../../lib/factory/transactionStatus");
 const ReportService = require("../../lib/service/report");
-const TransactionService = require("../../lib/service/transaction");
 const TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS = 60;
 const TEST_MAX_NUMBER_OF_TRANSACTIONS_PER_UNIT = 120;
 describe('レポートサービス 測定データ作成', () => {
@@ -53,8 +53,14 @@ describe('レポートサービス 測定データ作成', () => {
         });
     }));
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
-        yield TransactionService.isAvailable({}, TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS, TEST_MAX_NUMBER_OF_TRANSACTIONS_PER_UNIT)(new transactionCount_1.default(redisClient));
-        yield ReportService.createTelemetry({}, TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS, TEST_MAX_NUMBER_OF_TRANSACTIONS_PER_UNIT)(new queue_1.default(connection), new telemetry_1.default(connection), new transaction_1.default(connection), new transactionCount_1.default(redisClient));
+        const dateNow = moment();
+        const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS);
+        const readyUntil = moment(readyFrom).add(TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS, 'seconds');
+        const scope = TransactionScopeFactory.create({
+            ready_from: readyFrom.toDate(),
+            ready_until: readyUntil.toDate()
+        });
+        yield ReportService.createTelemetry(scope, TEST_MAX_NUMBER_OF_TRANSACTIONS_PER_UNIT)(new queue_1.default(connection), new telemetry_1.default(connection), new transaction_1.default(connection), new transactionCount_1.default(redisClient));
     }));
 });
 describe('レポートサービス 取引状態', () => {

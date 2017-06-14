@@ -18,10 +18,10 @@ import * as GMOAuthorizationFactory from '../../lib/factory/authorization/gmo';
 import * as TransactionFactory from '../../lib/factory/transaction';
 import * as AuthorizeTransactionEventFactory from '../../lib/factory/transactionEvent/authorize';
 import * as TransactionInquiryKeyFactory from '../../lib/factory/transactionInquiryKey';
+import * as TransactionScopeFactory from '../../lib/factory/transactionScope';
 import TransactionStatus from '../../lib/factory/transactionStatus';
 
 import * as ReportService from '../../lib/service/report';
-import * as TransactionService from '../../lib/service/transaction';
 
 const TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS: number = 60;
 const TEST_MAX_NUMBER_OF_TRANSACTIONS_PER_UNIT: number = 120;
@@ -52,11 +52,15 @@ describe('レポートサービス 測定データ作成', () => {
     });
 
     it('ok', async () => {
-        await TransactionService.isAvailable({}, TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS, TEST_MAX_NUMBER_OF_TRANSACTIONS_PER_UNIT)(
-            new TransactionCountAdapter(redisClient)
-        );
+        const dateNow = moment();
+        const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS);
+        const readyUntil = moment(readyFrom).add(TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS, 'seconds');
+        const scope = TransactionScopeFactory.create({
+            ready_from: readyFrom.toDate(),
+            ready_until: readyUntil.toDate()
+        });
 
-        await ReportService.createTelemetry({}, TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS, TEST_MAX_NUMBER_OF_TRANSACTIONS_PER_UNIT)(
+        await ReportService.createTelemetry(scope, TEST_MAX_NUMBER_OF_TRANSACTIONS_PER_UNIT)(
             new QueueAdapter(connection),
             new TelemetryAdapter(connection),
             new TransactionAdapter(connection),

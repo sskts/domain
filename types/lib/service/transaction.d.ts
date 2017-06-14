@@ -11,14 +11,6 @@ export declare type TransactionAndQueueOperation<T> = (transactionAdapter: Trans
 export declare type OwnerAndTransactionAndTransactionCountOperation<T> = (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => Promise<T>;
 export declare type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) => Promise<T>;
 /**
- * スコープ指定で取引が利用可能かどうかを取得する
- *
- * @param {string} scope 取引のスコープ
- * @param {number} unitOfCountInSeconds 取引数カウント単位時間(秒)
- * @param {number} maxCountPerUnit カウント単位あたりの取引最大数
- */
-export declare function isAvailable(scope: TransactionScopeFactory.ITransactionScope, unitOfCountInSeconds: number, maxCountPerUnit: number): (transactionCountAdapter: TransactionCountAdapter) => Promise<boolean>;
-/**
  * 開始準備のできた取引を用意する
  *
  * @param {number} length 取引数
@@ -30,15 +22,15 @@ export declare function prepare(length: number, expiresInSeconds: number): (tran
  * 匿名所有者として取引開始する
  *
  * @param {Date} args.expiresAt 期限切れ予定日時
- * @param {number} args.unitOfCountInSeconds 取引数制限単位期間
  * @param {number} args.maxCountPerUnit 単位期間あたりの最大取引数
+ * @param {string} args.state 所有者状態
+ * @param {TransactionScopeFactory.ITransactionScope} args.scope 取引スコープ
  * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
  *
  * @memberof service/transaction
  */
 export declare function startAsAnonymous(args: {
     expiresAt: Date;
-    unitOfCountInSeconds: number;
     maxCountPerUnit: number;
     state: string;
     scope: TransactionScopeFactory.ITransactionScope;

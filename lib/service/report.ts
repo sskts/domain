@@ -52,7 +52,7 @@ export interface IReportTransactionStatuses {
  * @returns {QueueAndTransactionOperation<IReportTransactionStatuses>}
  * @memberof service/report
  */
-export function createTelemetry(scope: TransactionScopeFactory.ITransactionScope, unitOfCountInSeconds: number, maxCountPerUnit: number):
+export function createTelemetry(scope: TransactionScopeFactory.ITransactionScope, maxCountPerUnit: number):
     QueueAndTelemetryAndTransactionAndTransactionCountOperation<void> {
     return async (
         queueAdapter: QueueAdapter,
@@ -60,65 +60,47 @@ export function createTelemetry(scope: TransactionScopeFactory.ITransactionScope
         transactionAdapter: TransactionAdapter,
         transactionCountAdapter: TransactionCountAdapter
     ) => {
-        const scopeStr = TransactionScopeFactory.scope2String(scope);
         const dateNow = moment();
-        const unitStr = (dateNow.unix() - dateNow.unix() % unitOfCountInSeconds).toString();
-        const redisKey = `${TransactionCountAdapter.KEY_PREFIX}:${scopeStr}:${unitStr}`;
+        const dateNowByUnitTime = moment.unix((dateNow.unix() - (dateNow.unix() % TELEMETRY_UNIT_TIME_IN_SECONDS)));
 
-        return new Promise<void>((resolve, reject) => {
-            transactionCountAdapter.redisClient.get(redisKey, async (err, replies) => {
-                if (err instanceof Error) {
-                    reject(err);
+        debug('counting ready transactions...');
+        const numberOfTransactions = await transactionCountAdapter.getByScope(scope);
+        const numberOfTransactionsReady = maxCountPerUnit - numberOfTransactions;
 
-                    return;
-                }
-                debug('replies:', replies);
+        debug('counting underway transactions...');
+        const numberOfTransactionsUnderway = await transactionAdapter.transactionModel.count({
+            status: TransactionStatus.UNDERWAY
+        }).exec();
 
-                const dateNowByUnitTime = moment.unix((dateNow.unix() - (dateNow.unix() % TELEMETRY_UNIT_TIME_IN_SECONDS)));
+        const numberOfTransactionsClosedWithQueuesUnexported = await transactionAdapter.transactionModel.count({
+            status: TransactionStatus.CLOSED,
+            queues_status: TransactionQueuesStatus.UNEXPORTED
+        }).exec();
 
-                debug('counting ready transactions...');
-                // tslint:disable-next-line:no-magic-numbers
-                const numberOfTransactions = (replies !== null) ? parseInt(replies[0], 10) : 0;
-                const numberOfTransactionsReady = maxCountPerUnit - numberOfTransactions;
+        const numberOfTransactionsExpiredWithQueuesUnexported = await transactionAdapter.transactionModel.count({
+            status: TransactionStatus.EXPIRED,
+            queues_status: TransactionQueuesStatus.UNEXPORTED
+        }).exec();
 
-                debug('counting underway transactions...');
-                const numberOfTransactionsUnderway = await transactionAdapter.transactionModel.count({
-                    status: TransactionStatus.UNDERWAY
-                }).exec();
+        const numberOfQueuesUnexecuted = await queueAdapter.model.count({
+            status: QueueStatus.UNEXECUTED
+        }).exec();
 
-                const numberOfTransactionsClosedWithQueuesUnexported = await transactionAdapter.transactionModel.count({
-                    status: TransactionStatus.CLOSED,
-                    queues_status: TransactionQueuesStatus.UNEXPORTED
-                }).exec();
-
-                const numberOfTransactionsExpiredWithQueuesUnexported = await transactionAdapter.transactionModel.count({
-                    status: TransactionStatus.EXPIRED,
-                    queues_status: TransactionQueuesStatus.UNEXPORTED
-                }).exec();
-
-                const numberOfQueuesUnexecuted = await queueAdapter.model.count({
-                    status: QueueStatus.UNEXECUTED
-                }).exec();
-
-                const telemetry = await telemetryAdapter.telemetryModel.create(
-                    {
-                        transactions: {
-                            numberOfReady: numberOfTransactionsReady,
-                            numberOfUnderway: numberOfTransactionsUnderway,
-                            numberOfClosedWithQueuesUnexported: numberOfTransactionsClosedWithQueuesUnexported,
-                            numberOfExpiredWithQueuesUnexported: numberOfTransactionsExpiredWithQueuesUnexported
-                        },
-                        queues: {
-                            numberOfUnexecuted: numberOfQueuesUnexecuted
-                        },
-                        executed_at: dateNowByUnitTime.toDate()
-                    }
-                );
-                debug('telemetry created', telemetry);
-
-                resolve();
-            });
-        });
+        const telemetry = await telemetryAdapter.telemetryModel.create(
+            {
+                transactions: {
+                    numberOfReady: numberOfTransactionsReady,
+                    numberOfUnderway: numberOfTransactionsUnderway,
+                    numberOfClosedWithQueuesUnexported: numberOfTransactionsClosedWithQueuesUnexported,
+                    numberOfExpiredWithQueuesUnexported: numberOfTransactionsExpiredWithQueuesUnexported
+                },
+                queues: {
+                    numberOfUnexecuted: numberOfQueuesUnexecuted
+                },
+                executed_at: dateNowByUnitTime.toDate()
+            }
+        );
+        debug('telemetry created', telemetry);
     };
 }
 
