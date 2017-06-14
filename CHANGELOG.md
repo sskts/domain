@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 取引スコープを拡張。開始fromと開始untilフィールドを追加。
+- 取引開始の際に、取引数カウント単位を指定する代わりに、取引スコープに期間を指定するように変更。
 
 ### Deprecated
 
