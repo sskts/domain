@@ -25,6 +25,7 @@ const MvtkAuthorizationFactory = require("../../lib/factory/authorization/mvtk")
 const EmailNotificationFactory = require("../../lib/factory/notification/email");
 const objectId_1 = require("../../lib/factory/objectId");
 const AnonymousOwnerFactory = require("../../lib/factory/owner/anonymous");
+const ownerGroup_1 = require("../../lib/factory/ownerGroup");
 const OwnershipFactory = require("../../lib/factory/ownership");
 const TransactionFactory = require("../../lib/factory/transaction");
 const AddNotificationTransactionEventFactory = require("../../lib/factory/transactionEvent/addNotification");
@@ -38,14 +39,25 @@ let TEST_GMO_AUTHORIZATION;
 let TEST_MVTK_AUTHORIZATION;
 let TEST_EMAIL_NOTIFICATION;
 let TEST_TRANSACTION_INQUIRY_KEY;
+let TEST_PROMOTER_OWNER;
 let connection;
 // tslint:disable-next-line:max-func-body-length
 before(() => __awaiter(this, void 0, void 0, function* () {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-    // 全て削除してからテスト開始
+    const ownerAdapter = new owner_1.default(connection);
     const transactionAdapter = new transaction_1.default(connection);
+    // 全て削除してからテスト開始
+    yield ownerAdapter.model.remove({}).exec();
     yield transactionAdapter.transactionModel.remove({}).exec();
     yield transactionAdapter.transactionEventModel.remove({}).exec();
+    // 興行所有者を準備
+    const promoterOwnerDoc = yield ownerAdapter.model.findOneAndUpdate({ group: ownerGroup_1.default.PROMOTER }, {
+        name: {
+            ja: '佐々木興業株式会社',
+            en: 'Cinema Sunshine Co., Ltd.'
+        }
+    }, { new: true, upsert: true }).exec();
+    TEST_PROMOTER_OWNER = promoterOwnerDoc.toObject();
     TEST_GMO_AUTHORIZATION = GMOAuthorizationFactory.create({
         price: 123,
         owner_from: 'xxx',
@@ -268,6 +280,8 @@ describe('取引成立', () => {
         // テストデータ削除
         yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
         yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerFrom.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
     }));
 });
 describe('GMO資産承認追加', () => {
@@ -583,6 +597,147 @@ describe('通知削除', () => {
         });
         assert(removeNotificationError instanceof argument_1.default);
         assert.equal(removeNotificationError.argumentName, 'notificationId');
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    }));
+});
+describe('匿名所有者更新', () => {
+    it('更新できる', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        yield ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = Object.assign({}, transaction, { owners: transaction.owners.map((owner) => owner.id) });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        const update = {
+            name_first: 'xxx',
+            name_last: 'xxx',
+            email: 'xxx',
+            tel: 'xxx'
+        };
+        const args = Object.assign({ transaction_id: transaction.id }, update);
+        yield TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter);
+        // 所有者を検索して情報の一致を確認
+        const anonymousOwnerDoc = yield ownerAdapter.model.findById(ownerTo.id).exec();
+        assert.equal(anonymousOwnerDoc.get('name_first'), update.name_first);
+        assert.equal(anonymousOwnerDoc.get('name_last'), update.name_first);
+        assert.equal(anonymousOwnerDoc.get('email'), update.name_first);
+        assert.equal(anonymousOwnerDoc.get('tel'), update.name_first);
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    }));
+    it('取引が存在しなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        const update = {
+            name_first: 'xxx',
+            name_last: 'xxx',
+            email: 'xxx',
+            tel: 'xxx'
+        };
+        const args = Object.assign({ transaction_id: transaction.id }, update);
+        const updateError = yield TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter)
+            .catch((error) => {
+            return error;
+        });
+        assert(updateError instanceof argument_1.default);
+        assert.equal(updateError.argumentName, 'args.transaction_id');
+    }));
+    it('匿名所有者が取引内に存在しなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        ownerTo.group = 'invalidgroup';
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        yield ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = Object.assign({}, transaction, { owners: transaction.owners.map((owner) => owner.id) });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        const update = {
+            name_first: 'xxx',
+            name_last: 'xxx',
+            email: 'xxx',
+            tel: 'xxx'
+        };
+        const args = Object.assign({ transaction_id: transaction.id }, update);
+        const updateError = yield TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter)
+            .catch((error) => {
+            return error;
+        });
+        assert(updateError instanceof argument_1.default);
+        assert.equal(updateError.argumentName, 'args.transaction_id');
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    }));
+});
+describe('照合を可能にする', () => {
+    it('成功', () => __awaiter(this, void 0, void 0, function* () {
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
+        yield TransactionWithIdService.enableInquiry(transaction.id, TEST_TRANSACTION_INQUIRY_KEY)(transactionAdapter);
+        // 取引を検索して照会キーの一致を確認
+        const transactionDoc = yield transactionAdapter.transactionModel.findById(transaction.id).exec();
+        assert(transactionDoc !== null);
+        assert.deepEqual(transactionDoc.get('inquiry_key'), TEST_TRANSACTION_INQUIRY_KEY);
+        // テストデータ削除
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    }));
+    it('取引が存在しなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+        const enableInquiryError = yield TransactionWithIdService.enableInquiry(transaction.id, TEST_TRANSACTION_INQUIRY_KEY)(transactionAdapter).catch((error) => {
+            return error;
+        });
+        assert(enableInquiryError instanceof Error);
+    }));
+    it('取引が進行中でなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.EXPIRED,
+            owners: [],
+            expires_at: new Date()
+        });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
+        const enableInquiryError = yield TransactionWithIdService.enableInquiry(transaction.id, TEST_TRANSACTION_INQUIRY_KEY)(transactionAdapter).catch((error) => {
+            return error;
+        });
+        assert(enableInquiryError instanceof Error);
+        // テストデータ削除
         yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
     }));
 });

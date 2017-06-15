@@ -271,6 +271,8 @@ export function updateAnonymousOwner(args: {
                 tel: args.tel
             }
         ).exec();
+
+        // ロジック上nullチェックするが、実際にはまずありえない挙動(なのでテストコードで網羅できない)
         if (ownerDoc === null) {
             throw new ArgumentError('args.transaction_id', 'owner not found');
         }

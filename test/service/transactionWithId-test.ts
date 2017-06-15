@@ -19,6 +19,8 @@ import * as MvtkAuthorizationFactory from '../../lib/factory/authorization/mvtk'
 import * as EmailNotificationFactory from '../../lib/factory/notification/email';
 import ObjectId from '../../lib/factory/objectId';
 import * as AnonymousOwnerFactory from '../../lib/factory/owner/anonymous';
+import * as PromoterOwnerFactory from '../../lib/factory/owner/promoter';
+import OwnerGroup from '../../lib/factory/ownerGroup';
 import * as OwnershipFactory from '../../lib/factory/ownership';
 import * as TransactionFactory from '../../lib/factory/transaction';
 import * as AddNotificationTransactionEventFactory from '../../lib/factory/transactionEvent/addNotification';
@@ -34,16 +36,33 @@ let TEST_GMO_AUTHORIZATION: GMOAuthorizationFactory.IGMOAuthorization;
 let TEST_MVTK_AUTHORIZATION: MvtkAuthorizationFactory.IMvtkAuthorization;
 let TEST_EMAIL_NOTIFICATION: EmailNotificationFactory.IEmailNotification;
 let TEST_TRANSACTION_INQUIRY_KEY: TransactionInquiryKeyFactory.ITransactionInquiryKey;
+let TEST_PROMOTER_OWNER: PromoterOwnerFactory.IPromoterOwner;
 let connection: mongoose.Connection;
 
 // tslint:disable-next-line:max-func-body-length
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 
-    // 全て削除してからテスト開始
+    const ownerAdapter = new OwnerAdapter(connection);
     const transactionAdapter = new TransactionAdapter(connection);
+
+    // 全て削除してからテスト開始
+    await ownerAdapter.model.remove({}).exec();
     await transactionAdapter.transactionModel.remove({}).exec();
     await transactionAdapter.transactionEventModel.remove({}).exec();
+
+    // 興行所有者を準備
+    const promoterOwnerDoc = await ownerAdapter.model.findOneAndUpdate(
+        { group: OwnerGroup.PROMOTER },
+        {
+            name: {
+                ja: '佐々木興業株式会社',
+                en: 'Cinema Sunshine Co., Ltd.'
+            }
+        },
+        { new: true, upsert: true }
+    ).exec();
+    TEST_PROMOTER_OWNER = <any>promoterOwnerDoc.toObject();
 
     TEST_GMO_AUTHORIZATION = GMOAuthorizationFactory.create({
         price: 123,
@@ -300,6 +319,8 @@ describe('取引成立', () => {
         // テストデータ削除
         await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
         await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerFrom.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
     });
 });
 
@@ -718,4 +739,178 @@ describe('通知削除', () => {
 
         await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
     });
+});
+
+describe('匿名所有者更新', () => {
+    it('更新できる', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        const update = {
+            name_first: 'xxx',
+            name_last: 'xxx',
+            email: 'xxx',
+            tel: 'xxx'
+        };
+        const args = { ...{ transaction_id: transaction.id }, ...update };
+        await TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter);
+
+        // 所有者を検索して情報の一致を確認
+        const anonymousOwnerDoc = await ownerAdapter.model.findById(ownerTo.id).exec();
+        assert.equal(anonymousOwnerDoc.get('name_first'), update.name_first);
+        assert.equal(anonymousOwnerDoc.get('name_last'), update.name_first);
+        assert.equal(anonymousOwnerDoc.get('email'), update.name_first);
+        assert.equal(anonymousOwnerDoc.get('tel'), update.name_first);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    });
+
+    it('取引が存在しなければ失敗', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+
+        const update = {
+            name_first: 'xxx',
+            name_last: 'xxx',
+            email: 'xxx',
+            tel: 'xxx'
+        };
+        const args = { ...{ transaction_id: transaction.id }, ...update };
+        const updateError = await TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+        assert(updateError instanceof ArgumentError);
+        assert.equal((<ArgumentError>updateError).argumentName, 'args.transaction_id');
+    });
+
+    it('匿名所有者が取引内に存在しなければ失敗', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        ownerTo.group = <any>'invalidgroup';
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        const update = {
+            name_first: 'xxx',
+            name_last: 'xxx',
+            email: 'xxx',
+            tel: 'xxx'
+        };
+        const args = { ...{ transaction_id: transaction.id }, ...update };
+        const updateError = await TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+        assert(updateError instanceof ArgumentError);
+        assert.equal((<ArgumentError>updateError).argumentName, 'args.transaction_id');
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    });
+});
+
+describe('照合を可能にする', () => {
+    it('成功', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
+
+        await TransactionWithIdService.enableInquiry(transaction.id, TEST_TRANSACTION_INQUIRY_KEY)(transactionAdapter);
+
+        // 取引を検索して照会キーの一致を確認
+        const transactionDoc = await transactionAdapter.transactionModel.findById(transaction.id).exec();
+        assert(transactionDoc !== null);
+        assert.deepEqual(transactionDoc.get('inquiry_key'), TEST_TRANSACTION_INQUIRY_KEY);
+
+        // テストデータ削除
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+
+    it('取引が存在しなければ失敗', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        const enableInquiryError = await TransactionWithIdService.enableInquiry(transaction.id, TEST_TRANSACTION_INQUIRY_KEY)(
+            transactionAdapter
+        ).catch((error) => {
+            return error;
+        });
+        assert(enableInquiryError instanceof Error);
+    });
+
+    it('取引が進行中でなければ失敗', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.EXPIRED,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
+
+        const enableInquiryError = await TransactionWithIdService.enableInquiry(transaction.id, TEST_TRANSACTION_INQUIRY_KEY)(
+            transactionAdapter
+        ).catch((error) => {
+            return error;
+        });
+        assert(enableInquiryError instanceof Error);
+
+        // テストデータ削除
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+
 });
