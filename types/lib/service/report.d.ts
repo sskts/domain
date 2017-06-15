@@ -2,13 +2,34 @@ import GMONotificationAdapter from '../adapter/gmoNotification';
 import QueueAdapter from '../adapter/queue';
 import TelemetryAdapter from '../adapter/telemetry';
 import TransactionAdapter from '../adapter/transaction';
-import TransactionCountAdapter from '../adapter/transactionCount';
-import * as TransactionScopeFactory from '../factory/transactionScope';
 export declare type QueueAndTransactionOperation<T> = (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
-export declare type QueueAndTelemetryAndTransactionAndTransactionCountOperation<T> = (queueAdapter: QueueAdapter, telemetryAdapter: TelemetryAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => Promise<T>;
+export declare type QueueAndTelemetryAndTransactionOperation<T> = (queueAdapter: QueueAdapter, telemetryAdapter: TelemetryAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 export declare type GMONotificationOperation<T> = (gmoNotificationAdapter: GMONotificationAdapter) => Promise<T>;
+export interface ITelemetry {
+    transactions: {
+        /**
+         * 集計期間中に開始された取引数
+         */
+        numberOfStarted: number;
+        /**
+         * 集計期間中に成立した取引数
+         */
+        numberOfClosed: number;
+        /**
+         * 集計期間中に期限切れになった取引数
+         */
+        numberOfExpired: number;
+    };
+    queues: {
+        /**
+         * 集計期間中に作成されたキュー数
+         */
+        numberOfCreated: number;
+    };
+    aggregated_from: Date;
+    aggregated_to: Date;
+}
 export interface IReportTransactionStatuses {
-    numberOfTransactionsReady: number;
     numberOfTransactionsUnderway: number;
     numberOfTransactionsClosedWithQueuesUnexported: number;
     numberOfTransactionsExpiredWithQueuesUnexported: number;
@@ -17,11 +38,12 @@ export interface IReportTransactionStatuses {
 /**
  * 測定データを作成する
  *
- * @returns {QueueAndTransactionOperation<IReportTransactionStatuses>}
+ * @returns {QueueAndTelemetryAndTransactionOperation<void>}
  * @memberof service/report
  */
-export declare function createTelemetry(scope: TransactionScopeFactory.ITransactionScope, maxCountPerUnit: number): QueueAndTelemetryAndTransactionAndTransactionCountOperation<void>;
+export declare function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void>;
 /**
+ * 状態ごとの取引数を算出する
  *
  * @returns {QueueAndTransactionOperation<IReportTransactionStatuses>}
  * @memberof service/report

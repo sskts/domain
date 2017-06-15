@@ -3,68 +3,39 @@
  *
  * @ignore
  */
+
 import * as assert from 'assert';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
-import * as redis from 'redis';
 
 import GMONotificationAdapter from '../../lib/adapter/gmoNotification';
 import QueueAdapter from '../../lib/adapter/queue';
 import TelemetryAdapter from '../../lib/adapter/telemetry';
 import TransactionAdapter from '../../lib/adapter/transaction';
-import TransactionCountAdapter from '../../lib/adapter/transactionCount';
 
 import * as GMOAuthorizationFactory from '../../lib/factory/authorization/gmo';
 import * as TransactionFactory from '../../lib/factory/transaction';
 import * as AuthorizeTransactionEventFactory from '../../lib/factory/transactionEvent/authorize';
 import * as TransactionInquiryKeyFactory from '../../lib/factory/transactionInquiryKey';
-import * as TransactionScopeFactory from '../../lib/factory/transactionScope';
 import TransactionStatus from '../../lib/factory/transactionStatus';
 
 import * as ReportService from '../../lib/service/report';
 
-const TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS: number = 60;
-const TEST_MAX_NUMBER_OF_TRANSACTIONS_PER_UNIT: number = 120;
-
 describe('レポートサービス 測定データ作成', () => {
     let connection: mongoose.Connection;
-    let redisClient: redis.RedisClient;
-    before(async () => {
-        if (typeof process.env.TEST_REDIS_HOST !== 'string') {
-            throw new Error('environment variable TEST_REDIS_HOST required');
-        }
-
-        if (typeof process.env.TEST_REDIS_PORT !== 'string') {
-            throw new Error('environment variable TEST_REDIS_PORT required');
-        }
-
-        if (typeof process.env.TEST_REDIS_KEY !== 'string') {
-            throw new Error('environment variable TEST_REDIS_KEY required');
-        }
-
+    beforeEach(async () => {
         connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        redisClient = redis.createClient({
-            host: process.env.TEST_REDIS_HOST,
-            port: process.env.TEST_REDIS_PORT,
-            password: process.env.TEST_REDIS_KEY,
-            tls: { servername: process.env.TEST_REDIS_HOST }
-        });
+
+        // 全て削除
+        const telemetryAdapter = new TelemetryAdapter(connection);
+        await telemetryAdapter.telemetryModel.remove({}).exec();
     });
 
     it('ok', async () => {
-        const dateNow = moment();
-        const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS);
-        const readyUntil = moment(readyFrom).add(TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS, 'seconds');
-        const scope = TransactionScopeFactory.create({
-            ready_from: readyFrom.toDate(),
-            ready_until: readyUntil.toDate()
-        });
-
-        await ReportService.createTelemetry(scope, TEST_MAX_NUMBER_OF_TRANSACTIONS_PER_UNIT)(
+        await ReportService.createTelemetry()(
             new QueueAdapter(connection),
             new TelemetryAdapter(connection),
-            new TransactionAdapter(connection),
-            new TransactionCountAdapter(redisClient)
+            new TransactionAdapter(connection)
         );
     });
 });

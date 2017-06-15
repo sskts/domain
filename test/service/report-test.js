@@ -1,4 +1,9 @@
 "use strict";
+/**
+ * レポートサービステスト
+ *
+ * @ignore
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -8,59 +13,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * レポートサービステスト
- *
- * @ignore
- */
 const assert = require("assert");
 const moment = require("moment");
 const mongoose = require("mongoose");
-const redis = require("redis");
 const gmoNotification_1 = require("../../lib/adapter/gmoNotification");
 const queue_1 = require("../../lib/adapter/queue");
 const telemetry_1 = require("../../lib/adapter/telemetry");
 const transaction_1 = require("../../lib/adapter/transaction");
-const transactionCount_1 = require("../../lib/adapter/transactionCount");
 const GMOAuthorizationFactory = require("../../lib/factory/authorization/gmo");
 const TransactionFactory = require("../../lib/factory/transaction");
 const AuthorizeTransactionEventFactory = require("../../lib/factory/transactionEvent/authorize");
 const TransactionInquiryKeyFactory = require("../../lib/factory/transactionInquiryKey");
-const TransactionScopeFactory = require("../../lib/factory/transactionScope");
 const transactionStatus_1 = require("../../lib/factory/transactionStatus");
 const ReportService = require("../../lib/service/report");
-const TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS = 60;
-const TEST_MAX_NUMBER_OF_TRANSACTIONS_PER_UNIT = 120;
 describe('レポートサービス 測定データ作成', () => {
     let connection;
-    let redisClient;
-    before(() => __awaiter(this, void 0, void 0, function* () {
-        if (typeof process.env.TEST_REDIS_HOST !== 'string') {
-            throw new Error('environment variable TEST_REDIS_HOST required');
-        }
-        if (typeof process.env.TEST_REDIS_PORT !== 'string') {
-            throw new Error('environment variable TEST_REDIS_PORT required');
-        }
-        if (typeof process.env.TEST_REDIS_KEY !== 'string') {
-            throw new Error('environment variable TEST_REDIS_KEY required');
-        }
+    beforeEach(() => __awaiter(this, void 0, void 0, function* () {
         connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        redisClient = redis.createClient({
-            host: process.env.TEST_REDIS_HOST,
-            port: process.env.TEST_REDIS_PORT,
-            password: process.env.TEST_REDIS_KEY,
-            tls: { servername: process.env.TEST_REDIS_HOST }
-        });
+        // 全て削除
+        const telemetryAdapter = new telemetry_1.default(connection);
+        yield telemetryAdapter.telemetryModel.remove({}).exec();
     }));
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
-        const dateNow = moment();
-        const readyFrom = moment.unix(dateNow.unix() - dateNow.unix() % TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS);
-        const readyUntil = moment(readyFrom).add(TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS, 'seconds');
-        const scope = TransactionScopeFactory.create({
-            ready_from: readyFrom.toDate(),
-            ready_until: readyUntil.toDate()
-        });
-        yield ReportService.createTelemetry(scope, TEST_MAX_NUMBER_OF_TRANSACTIONS_PER_UNIT)(new queue_1.default(connection), new telemetry_1.default(connection), new transaction_1.default(connection), new transactionCount_1.default(redisClient));
+        yield ReportService.createTelemetry()(new queue_1.default(connection), new telemetry_1.default(connection), new transaction_1.default(connection));
     }));
 });
 describe('レポートサービス 取引状態', () => {

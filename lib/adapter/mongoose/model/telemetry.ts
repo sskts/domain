@@ -10,15 +10,15 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 const schema = new mongoose.Schema(
     {
         transactions: {
-            numberOfReady: Number,
-            numberOfUnderway: Number,
-            numberOfClosedWithQueuesUnexported: Number,
-            numberOfExpiredWithQueuesUnexported: Number
+            numberOfStarted: Number,
+            numberOfClosed: Number,
+            numberOfExpired: Number
         },
         queues: {
-            numberOfUnexecuted: Number
+            numberOfCreated: Number
         },
-        executed_at: Date
+        aggregated_from: Date,
+        aggregated_to: Date
     },
     {
         collection: 'telemetries',
