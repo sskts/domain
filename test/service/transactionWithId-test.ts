@@ -16,12 +16,15 @@ import AssetGroup from '../../lib/factory/assetGroup';
 import * as COASeatReservationAuthorizationFactory from '../../lib/factory/authorization/coaSeatReservation';
 import * as GMOAuthorizationFactory from '../../lib/factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from '../../lib/factory/authorization/mvtk';
+import * as EmailNotificationFactory from '../../lib/factory/notification/email';
 import ObjectId from '../../lib/factory/objectId';
 import * as AnonymousOwnerFactory from '../../lib/factory/owner/anonymous';
 import * as OwnershipFactory from '../../lib/factory/ownership';
 import * as TransactionFactory from '../../lib/factory/transaction';
+import * as AddNotificationTransactionEventFactory from '../../lib/factory/transactionEvent/addNotification';
 import * as AuthorizeTransactionEventFactory from '../../lib/factory/transactionEvent/authorize';
 import TransactionEventGroup from '../../lib/factory/transactionEventGroup';
+import * as TransactionInquiryKeyFactory from '../../lib/factory/transactionInquiryKey';
 import TransactionStatus from '../../lib/factory/transactionStatus';
 
 import ArgumentError from '../../lib/error/argument';
@@ -29,8 +32,11 @@ import ArgumentError from '../../lib/error/argument';
 let TEST_COA_SEAT_RESERVATION_AUTHORIZATION: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization;
 let TEST_GMO_AUTHORIZATION: GMOAuthorizationFactory.IGMOAuthorization;
 let TEST_MVTK_AUTHORIZATION: MvtkAuthorizationFactory.IMvtkAuthorization;
+let TEST_EMAIL_NOTIFICATION: EmailNotificationFactory.IEmailNotification;
+let TEST_TRANSACTION_INQUIRY_KEY: TransactionInquiryKeyFactory.ITransactionInquiryKey;
 let connection: mongoose.Connection;
 
+// tslint:disable-next-line:max-func-body-length
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 
@@ -130,6 +136,19 @@ before(async () => {
         ],
         skhn_cd: '0000000000'
     });
+
+    TEST_EMAIL_NOTIFICATION = EmailNotificationFactory.create({
+        from: 'noreply@example.com',
+        to: 'noreply@example.com',
+        subject: 'xxx',
+        content: 'xxx'
+    });
+
+    TEST_TRANSACTION_INQUIRY_KEY = TransactionInquiryKeyFactory.create({
+        theater_code: 'xxx',
+        reserve_num: 123,
+        tel: 'xxx'
+    });
 });
 
 describe('取引サービス IDで取得', () => {
@@ -166,7 +185,67 @@ describe('取引サービス IDで取得', () => {
 });
 
 describe('取引成立', () => {
-    // todo テストコード
+    it('成立できる', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date(),
+            inquiry_key: TEST_TRANSACTION_INQUIRY_KEY
+        });
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
+
+        await TransactionWithIdService.close(transaction.id)(transactionAdapter);
+
+        const transactionDoc = await transactionAdapter.transactionModel.findById(transaction.id).exec();
+        assert(transactionDoc !== null);
+        assert.equal(transactionDoc.get('status'), TransactionStatus.CLOSED);
+
+        // テストデータ削除
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+
+    it('取引が存在しなければ失敗', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成するが、DBには保管しない
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        const closeError = await TransactionWithIdService.close(transaction.id)(transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+        assert(closeError instanceof Error);
+    });
+
+    it('進行中ステータスでなければ失敗', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.EXPIRED,
+            owners: [],
+            expires_at: new Date(),
+            inquiry_key: TEST_TRANSACTION_INQUIRY_KEY
+        });
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
+
+        const closeError = await TransactionWithIdService.close(transaction.id)(transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+        assert(closeError instanceof Error);
+
+        // テストデータ削除
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+
     it('照会可能になっていなければ失敗', async () => {
         const transactionAdapter = new TransactionAdapter(connection);
 
@@ -176,18 +255,50 @@ describe('取引成立', () => {
             owners: [],
             expires_at: new Date()
         });
-        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
 
-        let closeError: any;
-        try {
-            await TransactionWithIdService.close(transaction.id)(transactionAdapter);
-        } catch (error) {
-            closeError = error;
-        }
-
+        const closeError = await TransactionWithIdService.close(transaction.id)(transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
         assert(closeError instanceof Error);
 
         // テストデータ削除
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+
+    it('条件が対等でなければ失敗', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = AnonymousOwnerFactory.create({});
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date(),
+            inquiry_key: TEST_TRANSACTION_INQUIRY_KEY
+        });
+
+        await ownerAdapter.model.findByIdAndUpdate(ownerFrom.id, ownerFrom, { new: true, upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { new: true, upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        // 片方の所有者だけ承認を追加する
+        const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        await TransactionWithIdService.addGMOAuthorization(transaction.id, authorization)(transactionAdapter);
+
+        // 承認金額のバランスが合わないので失敗するはず
+        const closeError = await TransactionWithIdService.close(transaction.id)(transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+        assert(closeError instanceof Error);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
         await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
     });
 });
@@ -492,5 +603,119 @@ describe('承認削除', () => {
         await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
         await ownerAdapter.model.findByIdAndRemove(ownerFrom.id).exec();
         await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    });
+});
+
+describe('Eメール通知追加', () => {
+    it('追加できる', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        await TransactionWithIdService.addEmail(transaction.id, TEST_EMAIL_NOTIFICATION)(transactionAdapter);
+
+        // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
+        const transactionEvent = await transactionAdapter.transactionEventModel.findOne(
+            { 'notification.id': TEST_EMAIL_NOTIFICATION.id }
+        ).exec();
+        assert(transactionEvent !== null);
+        assert.equal(transactionEvent.get('transaction'), transaction.id);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+});
+
+describe('通知削除', () => {
+    it('削除できる', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+        const transactionEvent = AddNotificationTransactionEventFactory.create({
+            transaction: transaction.id,
+            occurred_at: new Date(),
+            notification: TEST_EMAIL_NOTIFICATION
+        });
+
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        await transactionAdapter.transactionEventModel.findByIdAndUpdate(transactionEvent.id, transactionEvent, { upsert: true }).exec();
+
+        await TransactionWithIdService.removeEmail(transaction.id, TEST_EMAIL_NOTIFICATION.id)(
+            transactionAdapter
+        );
+
+        // 承認削除取引イベントが作成されているはず
+        const removeNotificationTransactionEventDocs = await transactionAdapter.transactionEventModel.findOne(
+            {
+                'notification.id': TEST_EMAIL_NOTIFICATION.id,
+                group: TransactionEventGroup.REMOVE_NOTIFICATION
+            }
+        ).exec();
+        assert(removeNotificationTransactionEventDocs !== null);
+        assert(removeNotificationTransactionEventDocs.get('transaction'), transaction.id);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+
+    it('取引が存在しなければ失敗', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        const removeNotificationError = await TransactionWithIdService.removeEmail(transaction.id, TEST_EMAIL_NOTIFICATION.id)(
+            transactionAdapter
+        ).catch((error) => {
+            return error;
+        });
+
+        assert(removeNotificationError instanceof ArgumentError);
+        assert.equal((<ArgumentError>removeNotificationError).argumentName, 'transactionId');
+    });
+
+    it('通知が存在しなければ失敗', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        const removeNotificationError = await TransactionWithIdService.removeEmail(transaction.id, TEST_EMAIL_NOTIFICATION.id)(
+            transactionAdapter
+        ).catch((error) => {
+            return error;
+        });
+
+        assert(removeNotificationError instanceof ArgumentError);
+        assert.equal((<ArgumentError>removeNotificationError).argumentName, 'notificationId');
+
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
     });
 });
