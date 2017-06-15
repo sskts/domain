@@ -3,334 +3,914 @@
  *
  * @ignore
  */
+
 import * as assert from 'assert';
-import * as clone from 'clone';
 import * as mongoose from 'mongoose';
 
-import ArgumentError from '../../lib/error/argument';
-import * as sskts from '../../lib/index';
+import * as TransactionWithIdService from '../../lib/service/transactionWithId';
 
+import OwnerAdapter from '../../lib/adapter/owner';
+import TransactionAdapter from '../../lib/adapter/transaction';
+
+import AssetGroup from '../../lib/factory/assetGroup';
+import * as COASeatReservationAuthorizationFactory from '../../lib/factory/authorization/coaSeatReservation';
+import * as GMOAuthorizationFactory from '../../lib/factory/authorization/gmo';
+import * as MvtkAuthorizationFactory from '../../lib/factory/authorization/mvtk';
+import * as EmailNotificationFactory from '../../lib/factory/notification/email';
+import ObjectId from '../../lib/factory/objectId';
+import * as AnonymousOwnerFactory from '../../lib/factory/owner/anonymous';
+import * as PromoterOwnerFactory from '../../lib/factory/owner/promoter';
+import OwnerGroup from '../../lib/factory/ownerGroup';
+import * as OwnershipFactory from '../../lib/factory/ownership';
+import * as TransactionFactory from '../../lib/factory/transaction';
+import * as AddNotificationTransactionEventFactory from '../../lib/factory/transactionEvent/addNotification';
+import * as AuthorizeTransactionEventFactory from '../../lib/factory/transactionEvent/authorize';
+import TransactionEventGroup from '../../lib/factory/transactionEventGroup';
+import * as TransactionInquiryKeyFactory from '../../lib/factory/transactionInquiryKey';
+import TransactionStatus from '../../lib/factory/transactionStatus';
+
+import ArgumentError from '../../lib/error/argument';
+
+let TEST_COA_SEAT_RESERVATION_AUTHORIZATION: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization;
+let TEST_GMO_AUTHORIZATION: GMOAuthorizationFactory.IGMOAuthorization;
+let TEST_MVTK_AUTHORIZATION: MvtkAuthorizationFactory.IMvtkAuthorization;
+let TEST_EMAIL_NOTIFICATION: EmailNotificationFactory.IEmailNotification;
+let TEST_TRANSACTION_INQUIRY_KEY: TransactionInquiryKeyFactory.ITransactionInquiryKey;
+let TEST_PROMOTER_OWNER: PromoterOwnerFactory.IPromoterOwner;
 let connection: mongoose.Connection;
+
+// tslint:disable-next-line:max-func-body-length
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 
+    const ownerAdapter = new OwnerAdapter(connection);
+    const transactionAdapter = new TransactionAdapter(connection);
+
     // 全て削除してからテスト開始
-    const transactionAdapter = sskts.adapter.transaction(connection);
+    await ownerAdapter.model.remove({}).exec();
     await transactionAdapter.transactionModel.remove({}).exec();
     await transactionAdapter.transactionEventModel.remove({}).exec();
+
+    // 興行所有者を準備
+    const promoterOwnerDoc = await ownerAdapter.model.findOneAndUpdate(
+        { group: OwnerGroup.PROMOTER },
+        {
+            name: {
+                ja: '佐々木興業株式会社',
+                en: 'Cinema Sunshine Co., Ltd.'
+            }
+        },
+        { new: true, upsert: true }
+    ).exec();
+    TEST_PROMOTER_OWNER = <any>promoterOwnerDoc.toObject();
+
+    TEST_GMO_AUTHORIZATION = GMOAuthorizationFactory.create({
+        price: 123,
+        owner_from: 'xxx',
+        owner_to: 'xxx',
+        gmo_shop_id: 'xxx',
+        gmo_shop_pass: 'xxx',
+        gmo_order_id: 'xxx',
+        gmo_amount: 123,
+        gmo_access_id: 'xxx',
+        gmo_access_pass: 'xxx',
+        gmo_job_cd: 'xxx',
+        gmo_pay_type: 'xxx'
+    });
+
+    TEST_COA_SEAT_RESERVATION_AUTHORIZATION = COASeatReservationAuthorizationFactory.create({
+        price: 123,
+        owner_from: 'xxx',
+        owner_to: 'xxx',
+        coa_tmp_reserve_num: 123,
+        coa_theater_code: 'xxx',
+        coa_date_jouei: 'xxx',
+        coa_title_code: 'xxx',
+        coa_title_branch_num: 'xxx',
+        coa_time_begin: 'xxx',
+        coa_screen_code: 'xxx',
+        assets: [
+            {
+                id: 'xxx',
+                group: AssetGroup.SEAT_RESERVATION,
+                price: 123,
+                authorizations: [],
+                ownership: OwnershipFactory.create({
+                    owner: 'xxx'
+                }),
+                performance: 'xxx',
+                screen_section: 'xxx',
+                seat_code: 'xxx',
+                ticket_code: 'xxx',
+                ticket_name: {
+                    en: 'xxx',
+                    ja: 'xxx'
+                },
+                ticket_name_kana: 'xxx',
+                std_price: 123,
+                add_price: 123,
+                dis_price: 123,
+                sale_price: 123,
+                mvtk_app_price: 0,
+                add_glasses: 0,
+                kbn_eisyahousiki: '00',
+                mvtk_num: '',
+                mvtk_kbn_denshiken: '00',
+                mvtk_kbn_maeuriken: '00',
+                mvtk_kbn_kensyu: '00',
+                mvtk_sales_price: 0
+            }
+        ]
+    });
+
+    TEST_MVTK_AUTHORIZATION = MvtkAuthorizationFactory.create({
+        price: 1234,
+        owner_from: 'xxx',
+        owner_to: 'xxx',
+        kgygish_cd: '000000',
+        yyk_dvc_typ: '00',
+        trksh_flg: '0',
+        kgygish_sstm_zskyyk_no: 'xxx',
+        kgygish_usr_zskyyk_no: 'xxx',
+        jei_dt: '2012/02/01 25:45:00',
+        kij_ymd: '2012/02/01',
+        st_cd: '0000000000',
+        scren_cd: '0000000000',
+        knyknr_no_info: [
+            {
+                knyknr_no: '0000000000',
+                pin_cd: '0000',
+                knsh_info: [
+                    {
+                        knsh_typ: '01',
+                        mi_num: '1'
+                    }
+                ]
+            }
+        ],
+        zsk_info: [
+            {
+                zsk_cd: 'Ａ－２'
+            }
+        ],
+        skhn_cd: '0000000000'
+    });
+
+    TEST_EMAIL_NOTIFICATION = EmailNotificationFactory.create({
+        from: 'noreply@example.com',
+        to: 'noreply@example.com',
+        subject: 'xxx',
+        content: 'xxx'
+    });
+
+    TEST_TRANSACTION_INQUIRY_KEY = TransactionInquiryKeyFactory.create({
+        theater_code: 'xxx',
+        reserve_num: 123,
+        tel: 'xxx'
+    });
 });
 
-describe('取引成立', () => {
-    // todo テストコード
-    it('照会可能になっていなければ失敗', async () => {
-        const transactionAdapter = sskts.adapter.transaction(connection);
+describe('取引サービス IDで取得', () => {
+    beforeEach(async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+        await transactionAdapter.transactionModel.remove({}).exec();
+    });
 
-        // 照会キーのないテストデータ作成
-        const transaction = sskts.factory.transaction.create({
-            status: sskts.factory.transactionStatus.UNDERWAY,
+    it('存在しなければmonapt.None', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        const transactionOption = await TransactionWithIdService.findById(ObjectId().toString())(transactionAdapter);
+        assert(transactionOption.isEmpty);
+    });
+
+    it('取引存在すればmonapt.Some', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
             owners: [],
             expires_at: new Date()
         });
-        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
 
-        let closeError: any;
-        try {
-            await sskts.service.transactionWithId.close(transaction.id)(transactionAdapter);
-        } catch (error) {
-            closeError = error;
-        }
-
-        assert(closeError instanceof Error);
+        const transactionOption = await TransactionWithIdService.findById(transaction.id)(transactionAdapter);
+        assert(transactionOption.isDefined);
+        assert.equal(transactionOption.get().id, transaction.id);
 
         // テストデータ削除
         await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
     });
 });
 
-describe('ムビチケ着券承認追加', () => {
-    // todo テストコードをかく
+describe('取引成立', () => {
+    it('成立できる', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
 
-    it('成功', async () => {
-        const ownerAdapter = sskts.adapter.owner(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date(),
+            inquiry_key: TEST_TRANSACTION_INQUIRY_KEY
+        });
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
 
-        // test data
-        const owner1 = sskts.factory.owner.anonymous.create({});
-        const owner2 = sskts.factory.owner.anonymous.create({});
+        await TransactionWithIdService.close(transaction.id)(transactionAdapter);
 
-        const transaction = sskts.factory.transaction.create({
-            status: sskts.factory.transactionStatus.UNDERWAY,
-            owners: [owner1, owner2],
+        const transactionDoc = await transactionAdapter.transactionModel.findById(transaction.id).exec();
+        assert(transactionDoc !== null);
+        assert.equal(transactionDoc.get('status'), TransactionStatus.CLOSED);
+
+        // テストデータ削除
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+
+    it('取引が存在しなければ失敗', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成するが、DBには保管しない
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
             expires_at: new Date()
         });
 
-        const authorization = sskts.factory.authorization.mvtk.create({
-            price: 1234,
-            owner_from: owner1.id,
-            owner_to: owner2.id,
-            kgygish_cd: '000000',
-            yyk_dvc_typ: '00',
-            trksh_flg: '0',
-            kgygish_sstm_zskyyk_no: 'xxx',
-            kgygish_usr_zskyyk_no: 'xxx',
-            jei_dt: '2012/02/01 25:45:00',
-            kij_ymd: '2012/02/01',
-            st_cd: '0000000000',
-            scren_cd: '0000000000',
-            knyknr_no_info: [
-                {
-                    knyknr_no: '0000000000',
-                    pin_cd: '0000',
-                    knsh_info: [
-                        {
-                            knsh_typ: '01',
-                            mi_num: '1'
-                        }
-                    ]
-                }
-            ],
-            zsk_info: [
-                {
-                    zsk_cd: 'Ａ－２'
-                }
-            ],
-            skhn_cd: '0000000000'
+        const closeError = await TransactionWithIdService.close(transaction.id)(transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+        assert(closeError instanceof Error);
+    });
+
+    it('進行中ステータスでなければ失敗', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.EXPIRED,
+            owners: [],
+            expires_at: new Date(),
+            inquiry_key: TEST_TRANSACTION_INQUIRY_KEY
+        });
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
+
+        const closeError = await TransactionWithIdService.close(transaction.id)(transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+        assert(closeError instanceof Error);
+
+        // テストデータ削除
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+
+    it('照会可能になっていなければ失敗', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // 照会キーのないテストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
+
+        const closeError = await TransactionWithIdService.close(transaction.id)(transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+        assert(closeError instanceof Error);
+
+        // テストデータ削除
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+
+    it('条件が対等でなければ失敗', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = AnonymousOwnerFactory.create({});
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date(),
+            inquiry_key: TEST_TRANSACTION_INQUIRY_KEY
         });
 
-        await ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
-        await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
-        const update = Object.assign(clone(transaction), { owners: transaction.owners.map((owner) => owner.id) });
-        await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(ownerFrom.id, ownerFrom, { new: true, upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { new: true, upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
 
-        await sskts.service.transactionWithId.addMvtkAuthorization(transaction.id, authorization)(transactionAdapter);
+        // 片方の所有者だけ承認を追加する
+        const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        await TransactionWithIdService.addGMOAuthorization(transaction.id, authorization)(transactionAdapter);
+
+        // 承認金額のバランスが合わないので失敗するはず
+        const closeError = await TransactionWithIdService.close(transaction.id)(transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+        assert(closeError instanceof Error);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerFrom.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    });
+});
+
+describe('GMO資産承認追加', () => {
+    it('成功', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = AnonymousOwnerFactory.create({});
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+
+        await ownerAdapter.model.findByIdAndUpdate(ownerFrom.id, ownerFrom, { new: true, upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { new: true, upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        await TransactionWithIdService.addGMOAuthorization(transaction.id, authorization)(transactionAdapter);
 
         // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
         const transactionEvent = await transactionAdapter.transactionEventModel.findOne(
-            {
-                'authorization.id': authorization.id
-            }
+            { 'authorization.id': authorization.id }
+        ).exec();
+        assert.equal(transactionEvent.get('transaction'), transaction.id);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerFrom.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    });
+});
+
+describe('COA資産承認追加', () => {
+    it('成功', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = AnonymousOwnerFactory.create({});
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+
+        await ownerAdapter.model.findByIdAndUpdate(ownerFrom.id, ownerFrom, { upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        const authorization = { ...TEST_COA_SEAT_RESERVATION_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        await TransactionWithIdService.addCOASeatReservationAuthorization(transaction.id, authorization)(transactionAdapter);
+
+        // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
+        const transactionEvent = await transactionAdapter.transactionEventModel.findOne(
+            { 'authorization.id': authorization.id }
+        ).exec();
+        assert.equal(transactionEvent.get('transaction'), transaction.id);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerFrom.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    });
+});
+
+describe('ムビチケ着券承認追加', () => {
+    it('成功', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = AnonymousOwnerFactory.create({});
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+
+        await ownerAdapter.model.findByIdAndUpdate(ownerFrom.id, ownerFrom, { upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        const authorization = { ...TEST_MVTK_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        await TransactionWithIdService.addMvtkAuthorization(transaction.id, authorization)(transactionAdapter);
+
+        // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
+        const transactionEvent = await transactionAdapter.transactionEventModel.findOne(
+            { 'authorization.id': authorization.id }
         ).exec();
         assert.equal(transactionEvent.get('transaction'), transaction.id);
 
         await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
         await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
-        await ownerAdapter.model.findByIdAndRemove(owner1.id).exec();
-        await ownerAdapter.model.findByIdAndRemove(owner2.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerFrom.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
     });
+});
 
+describe('承認追加', () => {
     it('取引が存在しなければ失敗', async () => {
-        const transactionAdapter = sskts.adapter.transaction(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
 
-        // test data
-        const owner1 = sskts.factory.owner.anonymous.create({});
-        const owner2 = sskts.factory.owner.anonymous.create({});
-
-        const transaction = sskts.factory.transaction.create({
-            status: sskts.factory.transactionStatus.UNDERWAY,
-            owners: [owner1, owner2],
+        // テストデータ作成
+        const ownerFrom = AnonymousOwnerFactory.create({});
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
             expires_at: new Date()
         });
 
-        const authorization = sskts.factory.authorization.mvtk.create({
-            price: 1234,
-            owner_from: owner1.id,
-            owner_to: owner2.id,
-            kgygish_cd: '000000',
-            yyk_dvc_typ: '00',
-            trksh_flg: '0',
-            kgygish_sstm_zskyyk_no: 'xxx',
-            kgygish_usr_zskyyk_no: 'xxx',
-            jei_dt: '2012/02/01 25:45:00',
-            kij_ymd: '2012/02/01',
-            st_cd: '0000000000',
-            scren_cd: '0000000000',
-            knyknr_no_info: [
-                {
-                    knyknr_no: '0000000000',
-                    pin_cd: '0000',
-                    knsh_info: [
-                        {
-                            knsh_typ: '01',
-                            mi_num: '1'
-                        }
-                    ]
-                }
-            ],
-            zsk_info: [
-                {
-                    zsk_cd: 'Ａ－２'
-                }
-            ],
-            skhn_cd: '0000000000'
+        const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        const addAuthorizationError = await TransactionWithIdService.addAuthorization(transaction.id, authorization)(
+            transactionAdapter
+        ).catch((error) => {
+            return error;
         });
-
-        let addMvtkAuthorizationError: any;
-        try {
-            await sskts.service.transactionWithId.addMvtkAuthorization(transaction.id, authorization)(
-                transactionAdapter
-            );
-        } catch (error) {
-            addMvtkAuthorizationError = error;
-        }
-
-        assert(addMvtkAuthorizationError instanceof ArgumentError);
-        assert.equal((<ArgumentError>addMvtkAuthorizationError).argumentName, 'transactionId');
+        assert(addAuthorizationError instanceof ArgumentError);
+        assert.equal((<ArgumentError>addAuthorizationError).argumentName, 'transactionId');
     });
 
-    it('所有者が存在しなければ失敗', async () => {
-        const ownerAdapter = sskts.adapter.owner(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
+    it('所有者fromが存在しなければ失敗', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
 
-        // test data
-        const owner1 = sskts.factory.owner.anonymous.create({});
-        const owner2 = sskts.factory.owner.anonymous.create({});
-
-        const transaction = sskts.factory.transaction.create({
-            status: sskts.factory.transactionStatus.UNDERWAY,
-            owners: [],
+        // テストデータ作成
+        const ownerFrom = AnonymousOwnerFactory.create({});
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerTo],
             expires_at: new Date()
         });
 
-        const authorization = sskts.factory.authorization.mvtk.create({
-            price: 1234,
-            owner_from: owner1.id,
-            owner_to: 'xxx', // 取引に存在しない所有者を設定
-            kgygish_cd: '000000',
-            yyk_dvc_typ: '00',
-            trksh_flg: '0',
-            kgygish_sstm_zskyyk_no: 'xxx',
-            kgygish_usr_zskyyk_no: 'xxx',
-            jei_dt: '2012/02/01 25:45:00',
-            kij_ymd: '2012/02/01',
-            st_cd: '0000000000',
-            scren_cd: '0000000000',
-            knyknr_no_info: [
-                {
-                    knyknr_no: '0000000000',
-                    pin_cd: '0000',
-                    knsh_info: [
-                        {
-                            knsh_typ: '01',
-                            mi_num: '1'
-                        }
-                    ]
-                }
-            ],
-            zsk_info: [
-                {
-                    zsk_cd: 'Ａ－２'
-                }
-            ],
-            skhn_cd: '0000000000'
+        await ownerAdapter.model.findByIdAndUpdate(ownerFrom.id, ownerFrom, { upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        const addAuthorizationError = await TransactionWithIdService.addAuthorization(transaction.id, authorization)(
+            transactionAdapter
+        ).catch((error) => {
+            return error;
         });
 
-        await ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
-        await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
-        const update = Object.assign(clone(transaction), { owners: transaction.owners.map((owner) => owner.id) });
-        await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
+        assert(addAuthorizationError instanceof ArgumentError);
+        assert.equal((<ArgumentError>addAuthorizationError).argumentName, 'authorization.owner_from');
 
-        let addMvtkAuthorizationError: any;
-        try {
-            await sskts.service.transactionWithId.addMvtkAuthorization(transaction.id, authorization)(
-                transactionAdapter
-            );
-        } catch (error) {
-            addMvtkAuthorizationError = error;
-        }
-
-        assert(addMvtkAuthorizationError instanceof ArgumentError);
-        assert.equal((<ArgumentError>addMvtkAuthorizationError).argumentName, 'authorization.owner_from');
-
+        // テストデータ削除
         await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
-        await ownerAdapter.model.findByIdAndRemove(owner1.id).exec();
-        await ownerAdapter.model.findByIdAndRemove(owner2.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerFrom.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    });
+
+    it('所有者toが存在しなければ失敗', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = AnonymousOwnerFactory.create({});
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom],
+            expires_at: new Date()
+        });
+
+        await ownerAdapter.model.findByIdAndUpdate(ownerFrom.id, ownerFrom, { upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        const addAuthorizationError = await TransactionWithIdService.addAuthorization(transaction.id, authorization)(
+            transactionAdapter
+        ).catch((error) => {
+            return error;
+        });
+
+        assert(addAuthorizationError instanceof ArgumentError);
+        assert.equal((<ArgumentError>addAuthorizationError).argumentName, 'authorization.owner_to');
+
+        // テストデータ削除
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerFrom.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
     });
 });
 
 describe('承認削除', () => {
+    it('削除できる', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = AnonymousOwnerFactory.create({});
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        const authorizeEvent = AuthorizeTransactionEventFactory.create({
+            transaction: transaction.id,
+            occurred_at: new Date(),
+            authorization: authorization
+        });
+
+        await ownerAdapter.model.findByIdAndUpdate(ownerFrom.id, ownerFrom, { upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        await transactionAdapter.transactionEventModel.findByIdAndUpdate(authorizeEvent.id, authorizeEvent, { upsert: true }).exec();
+
+        await TransactionWithIdService.removeAuthorization(transaction.id, authorization.id)(
+            transactionAdapter
+        );
+
+        // 承認削除取引イベントが作成されているはず
+        const unauthorizeTransactionEventDocs = await transactionAdapter.transactionEventModel.findOne(
+            {
+                'authorization.id': authorization.id,
+                group: TransactionEventGroup.UNAUTHORIZE
+            }
+        ).exec();
+        assert(unauthorizeTransactionEventDocs !== null);
+        assert(unauthorizeTransactionEventDocs.get('transaction'), transaction.id);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerFrom.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    });
+
     it('取引が存在しなければ失敗', async () => {
-        const transactionAdapter = sskts.adapter.transaction(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
 
-        // test data
-        const owner1 = sskts.factory.owner.anonymous.create({});
-        const owner2 = sskts.factory.owner.anonymous.create({});
-
-        const transaction = sskts.factory.transaction.create({
-            status: sskts.factory.transactionStatus.UNDERWAY,
-            owners: [owner1, owner2],
+        // テストデータ作成
+        const ownerFrom = AnonymousOwnerFactory.create({});
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
             expires_at: new Date()
         });
 
-        const authorization = sskts.factory.authorization.gmo.create({
-            price: 1234,
-            owner_from: 'xxx',
-            owner_to: 'xxx',
-            gmo_shop_id: 'xxx',
-            gmo_shop_pass: 'xxx',
-            gmo_order_id: 'xxx',
-            gmo_amount: 1234,
-            gmo_access_id: 'xxx',
-            gmo_access_pass: 'xxx',
-            gmo_job_cd: 'xxx',
-            gmo_pay_type: 'xxx'
+        const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        const removeAuthorizationError = await TransactionWithIdService.removeAuthorization(transaction.id, authorization.id)(
+            transactionAdapter
+        ).catch((error) => {
+            return error;
         });
-
-        let removeAuthorizationError: any;
-        try {
-            await sskts.service.transactionWithId.removeAuthorization(transaction.id, authorization.id)(transactionAdapter);
-        } catch (error) {
-            removeAuthorizationError = error;
-        }
 
         assert(removeAuthorizationError instanceof ArgumentError);
         assert.equal((<ArgumentError>removeAuthorizationError).argumentName, 'transactionId');
     });
 
     it('承認が存在しなければ失敗', async () => {
-        const ownerAdapter = sskts.adapter.owner(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
 
-        // test data
-        const owner1 = sskts.factory.owner.anonymous.create({});
-        const owner2 = sskts.factory.owner.anonymous.create({});
-
-        const transaction = sskts.factory.transaction.create({
-            status: sskts.factory.transactionStatus.UNDERWAY,
-            owners: [owner1, owner2],
+        // テストデータ作成
+        const ownerFrom = AnonymousOwnerFactory.create({});
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
             expires_at: new Date()
         });
 
-        const authorization = sskts.factory.authorization.gmo.create({
-            price: 1234,
-            owner_from: 'xxx',
-            owner_to: 'xxx',
-            gmo_shop_id: 'xxx',
-            gmo_shop_pass: 'xxx',
-            gmo_order_id: 'xxx',
-            gmo_amount: 1234,
-            gmo_access_id: 'xxx',
-            gmo_access_pass: 'xxx',
-            gmo_job_cd: 'xxx',
-            gmo_pay_type: 'xxx'
+        await ownerAdapter.model.findByIdAndUpdate(ownerFrom.id, ownerFrom, { upsert: true }).exec();
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        const removeAuthorizationError = await TransactionWithIdService.removeAuthorization(transaction.id, authorization.id)(
+            transactionAdapter
+        ).catch((error) => {
+            return error;
         });
-
-        await ownerAdapter.model.findByIdAndUpdate(owner1.id, owner1, { new: true, upsert: true }).exec();
-        await ownerAdapter.model.findByIdAndUpdate(owner2.id, owner2, { new: true, upsert: true }).exec();
-        const update = Object.assign(clone(transaction), { owners: transaction.owners.map((owner) => owner.id) });
-        await transactionAdapter.transactionModel.findByIdAndUpdate(update.id, update, { new: true, upsert: true }).exec();
-
-        let removeAuthorizationError: ArgumentError | undefined;
-        try {
-            await sskts.service.transactionWithId.removeAuthorization(transaction.id, authorization.id)(transactionAdapter);
-        } catch (error) {
-            removeAuthorizationError = error;
-        }
 
         assert(removeAuthorizationError instanceof ArgumentError);
         assert.equal((<ArgumentError>removeAuthorizationError).argumentName, 'authorizationId');
 
         await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
-        await ownerAdapter.model.findByIdAndRemove(owner1.id).exec();
-        await ownerAdapter.model.findByIdAndRemove(owner2.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerFrom.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
     });
+});
+
+describe('Eメール通知追加', () => {
+    it('追加できる', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        await TransactionWithIdService.addEmail(transaction.id, TEST_EMAIL_NOTIFICATION)(transactionAdapter);
+
+        // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
+        const transactionEvent = await transactionAdapter.transactionEventModel.findOne(
+            { 'notification.id': TEST_EMAIL_NOTIFICATION.id }
+        ).exec();
+        assert(transactionEvent !== null);
+        assert.equal(transactionEvent.get('transaction'), transaction.id);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+});
+
+describe('通知削除', () => {
+    it('削除できる', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+        const transactionEvent = AddNotificationTransactionEventFactory.create({
+            transaction: transaction.id,
+            occurred_at: new Date(),
+            notification: TEST_EMAIL_NOTIFICATION
+        });
+
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        await transactionAdapter.transactionEventModel.findByIdAndUpdate(transactionEvent.id, transactionEvent, { upsert: true }).exec();
+
+        await TransactionWithIdService.removeEmail(transaction.id, TEST_EMAIL_NOTIFICATION.id)(
+            transactionAdapter
+        );
+
+        // 承認削除取引イベントが作成されているはず
+        const removeNotificationTransactionEventDocs = await transactionAdapter.transactionEventModel.findOne(
+            {
+                'notification.id': TEST_EMAIL_NOTIFICATION.id,
+                group: TransactionEventGroup.REMOVE_NOTIFICATION
+            }
+        ).exec();
+        assert(removeNotificationTransactionEventDocs !== null);
+        assert(removeNotificationTransactionEventDocs.get('transaction'), transaction.id);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+
+    it('取引が存在しなければ失敗', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        const removeNotificationError = await TransactionWithIdService.removeEmail(transaction.id, TEST_EMAIL_NOTIFICATION.id)(
+            transactionAdapter
+        ).catch((error) => {
+            return error;
+        });
+
+        assert(removeNotificationError instanceof ArgumentError);
+        assert.equal((<ArgumentError>removeNotificationError).argumentName, 'transactionId');
+    });
+
+    it('通知が存在しなければ失敗', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        const removeNotificationError = await TransactionWithIdService.removeEmail(transaction.id, TEST_EMAIL_NOTIFICATION.id)(
+            transactionAdapter
+        ).catch((error) => {
+            return error;
+        });
+
+        assert(removeNotificationError instanceof ArgumentError);
+        assert.equal((<ArgumentError>removeNotificationError).argumentName, 'notificationId');
+
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+});
+
+describe('匿名所有者更新', () => {
+    it('更新できる', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        const update = {
+            name_first: 'xxx',
+            name_last: 'xxx',
+            email: 'xxx',
+            tel: 'xxx'
+        };
+        const args = { ...{ transaction_id: transaction.id }, ...update };
+        await TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter);
+
+        // 所有者を検索して情報の一致を確認
+        const anonymousOwnerDoc = await ownerAdapter.model.findById(ownerTo.id).exec();
+        assert.equal(anonymousOwnerDoc.get('name_first'), update.name_first);
+        assert.equal(anonymousOwnerDoc.get('name_last'), update.name_first);
+        assert.equal(anonymousOwnerDoc.get('email'), update.name_first);
+        assert.equal(anonymousOwnerDoc.get('tel'), update.name_first);
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    });
+
+    it('取引が存在しなければ失敗', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+
+        const update = {
+            name_first: 'xxx',
+            name_last: 'xxx',
+            email: 'xxx',
+            tel: 'xxx'
+        };
+        const args = { ...{ transaction_id: transaction.id }, ...update };
+        const updateError = await TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+        assert(updateError instanceof ArgumentError);
+        assert.equal((<ArgumentError>updateError).argumentName, 'args.transaction_id');
+    });
+
+    it('匿名所有者が取引内に存在しなければ失敗', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        ownerTo.group = <any>'invalidgroup';
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        const update = {
+            name_first: 'xxx',
+            name_last: 'xxx',
+            email: 'xxx',
+            tel: 'xxx'
+        };
+        const args = { ...{ transaction_id: transaction.id }, ...update };
+        const updateError = await TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter)
+            .catch((error) => {
+                return error;
+            });
+        assert(updateError instanceof ArgumentError);
+        assert.equal((<ArgumentError>updateError).argumentName, 'args.transaction_id');
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    });
+});
+
+describe('照合を可能にする', () => {
+    it('成功', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
+
+        await TransactionWithIdService.enableInquiry(transaction.id, TEST_TRANSACTION_INQUIRY_KEY)(transactionAdapter);
+
+        // 取引を検索して照会キーの一致を確認
+        const transactionDoc = await transactionAdapter.transactionModel.findById(transaction.id).exec();
+        assert(transactionDoc !== null);
+        assert.deepEqual(transactionDoc.get('inquiry_key'), TEST_TRANSACTION_INQUIRY_KEY);
+
+        // テストデータ削除
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+
+    it('取引が存在しなければ失敗', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        const enableInquiryError = await TransactionWithIdService.enableInquiry(transaction.id, TEST_TRANSACTION_INQUIRY_KEY)(
+            transactionAdapter
+        ).catch((error) => {
+            return error;
+        });
+        assert(enableInquiryError instanceof Error);
+    });
+
+    it('取引が進行中でなければ失敗', async () => {
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.EXPIRED,
+            owners: [],
+            expires_at: new Date()
+        });
+
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { upsert: true }).exec();
+
+        const enableInquiryError = await TransactionWithIdService.enableInquiry(transaction.id, TEST_TRANSACTION_INQUIRY_KEY)(
+            transactionAdapter
+        ).catch((error) => {
+            return error;
+        });
+        assert(enableInquiryError instanceof Error);
+
+        // テストデータ削除
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    });
+
 });
