@@ -116,4 +116,22 @@ export default class TransactionAdapter {
 
         return Object.keys(pricesByOwner).every((ownerId) => (pricesByOwner[ownerId] === 0));
     }
+
+    /**
+     * 取引IDから取引金額を算出する
+     *
+     * @returns {Promies<number>}
+     */
+    public async calculateAmountById(id: string) {
+        // 承認イベントリストから、特定の所有者からの承認のみを取り出して金額を算出する
+        const authorizations = await this.findAuthorizationsById(id);
+        const ownerFromId = authorizations[0].owner_from;
+
+        return authorizations.reduce(
+            (a, b) => {
+                return a + ((b.owner_from === ownerFromId) ? b.price : 0);
+            },
+            0
+        );
+    }
 }

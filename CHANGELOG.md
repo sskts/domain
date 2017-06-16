@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v19.1.0 - 2017-06-16
+### Changed
+- 計測データに取引所要時間と金額のデータを追加。
+
 ## v19.0.0 - 2017-06-16
 ### Changed
 - 取引スコープを拡張。開始fromと開始untilフィールドを追加。

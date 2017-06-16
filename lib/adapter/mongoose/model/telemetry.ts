@@ -10,25 +10,15 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 const schema = new mongoose.Schema(
     {
         flow: {
-            transactions: {
-                numberOfStarted: Number,
-                numberOfClosed: Number,
-                numberOfExpired: Number
-            },
-            queues: {
-                numberOfCreated: Number
-            },
+            transactions: mongoose.Schema.Types.Mixed,
+            queues: mongoose.Schema.Types.Mixed,
             measured_from: Date,
             measured_to: Date
 
         },
         stock: {
-            transactions: {
-                numberOfUnderway: Number
-            },
-            queues: {
-                numberOfUnexecuted: Number
-            },
+            transactions: mongoose.Schema.Types.Mixed,
+            queues: mongoose.Schema.Types.Mixed,
             measured_at: Date
         }
     },
