@@ -9,16 +9,28 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
  */
 const schema = new mongoose.Schema(
     {
-        transactions: {
-            numberOfStarted: Number,
-            numberOfClosed: Number,
-            numberOfExpired: Number
+        flow: {
+            transactions: {
+                numberOfStarted: Number,
+                numberOfClosed: Number,
+                numberOfExpired: Number
+            },
+            queues: {
+                numberOfCreated: Number
+            },
+            measured_from: Date,
+            measured_to: Date
+
         },
-        queues: {
-            numberOfCreated: Number
-        },
-        aggregated_from: Date,
-        aggregated_to: Date
+        stock: {
+            transactions: {
+                numberOfUnderway: Number
+            },
+            queues: {
+                numberOfUnexecuted: Number
+            },
+            measured_at: Date
+        }
     },
     {
         collection: 'telemetries',

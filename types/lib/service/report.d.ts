@@ -5,7 +5,13 @@ import TransactionAdapter from '../adapter/transaction';
 export declare type QueueAndTransactionOperation<T> = (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 export declare type QueueAndTelemetryAndTransactionOperation<T> = (queueAdapter: QueueAdapter, telemetryAdapter: TelemetryAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 export declare type GMONotificationOperation<T> = (gmoNotificationAdapter: GMONotificationAdapter) => Promise<T>;
-export interface ITelemetry {
+/**
+ * フローデータ
+ *
+ * @interface IFlow
+ * @see https://en.wikipedia.org/wiki/Stock_and_flow
+ */
+export interface IFlow {
     transactions: {
         /**
          * 集計期間中に開始された取引数
@@ -26,8 +32,27 @@ export interface ITelemetry {
          */
         numberOfCreated: number;
     };
-    aggregated_from: Date;
-    aggregated_to: Date;
+    measured_from: Date;
+    measured_to: Date;
+}
+/**
+ * ストックデータ
+ *
+ * @interface IStock
+ * @see https://en.wikipedia.org/wiki/Stock_and_flow
+ */
+export interface IStock {
+    transactions: {
+        numberOfUnderway: number;
+    };
+    queues: {
+        numberOfUnexecuted: number;
+    };
+    measured_at: Date;
+}
+export interface ITelemetry {
+    flow: IFlow;
+    stock: IStock;
 }
 export interface IReportTransactionStatuses {
     numberOfTransactionsUnderway: number;
