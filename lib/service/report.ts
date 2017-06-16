@@ -51,6 +51,30 @@ export interface IFlow {
          * 集計期間中に期限切れになった取引数
          */
         numberOfExpired: number;
+        /**
+         * 取引の合計所要時間(ミリ秒)
+         */
+        totalRequiredTimeInMilliseconds: number;
+        /**
+         * 取引の最大所要時間(ミリ秒)
+         */
+        maxRequiredTimeInMilliseconds: number;
+        /**
+         * 取引の最小所要時間(ミリ秒)
+         */
+        minRequiredTimeInMilliseconds: number;
+        /**
+         * 取引の合計金額(yen)
+         */
+        totalAmount: number;
+        /**
+         * 取引の合計金額(yen)
+         */
+        maxAmount: number;
+        /**
+         * 取引の合計金額(yen)
+         */
+        minAmount: number;
     };
     queues: {
         /**
@@ -117,12 +141,31 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
             }
         }).exec();
 
-        const numberOfTransactionsClosed = await transactionAdapter.transactionModel.count({
-            closed_at: {
-                $gte: measuredFrom.toDate(),
-                $lt: measuredTo.toDate()
-            }
-        }).exec();
+        // 平均所要時間算出(期間の成立取引リストを取得し、開始時刻と成立時刻の差を所要時間とする)
+        const closedTransactions = await transactionAdapter.transactionModel.find(
+            {
+                closed_at: {
+                    $gte: measuredFrom.toDate(),
+                    $lt: measuredTo.toDate()
+                }
+            },
+            'started_at closed_at'
+        ).exec();
+        const numberOfTransactionsClosed = closedTransactions.length;
+        const requiredTimes = closedTransactions.map(
+            (transaction) => moment(transaction.get('closed_at')).diff(moment(transaction.get('started_at'), 'milliseconds'))
+        );
+        const totalRequiredTimeInMilliseconds = requiredTimes.reduce((a, b) => a + b, 0);
+        const maxRequiredTimeInMilliseconds = requiredTimes.reduce((a, b) => Math.max(a, b), 0);
+        const minRequiredTimeInMilliseconds =
+            requiredTimes.reduce((a, b) => Math.min(a, b), (numberOfTransactionsClosed > 0) ? requiredTimes[0] : 0);
+
+        const amounts = await Promise.all(
+            closedTransactions.map(async (transaction) => await transactionAdapter.calculateAmountById(transaction.get('id')))
+        );
+        const totalAmount = amounts.reduce((a, b) => a + b, 0);
+        const maxAmount = amounts.reduce((a, b) => Math.max(a, b), 0);
+        const minAmount = amounts.reduce((a, b) => Math.min(a, b), (numberOfTransactionsClosed > 0) ? amounts[0] : 0);
 
         const numberOfTransactionsExpired = await transactionAdapter.transactionModel.count({
             expired_at: {
@@ -198,7 +241,13 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
                 transactions: {
                     numberOfStarted: numberOfTransactionsStarted,
                     numberOfClosed: numberOfTransactionsClosed,
-                    numberOfExpired: numberOfTransactionsExpired
+                    numberOfExpired: numberOfTransactionsExpired,
+                    totalRequiredTimeInMilliseconds: totalRequiredTimeInMilliseconds,
+                    maxRequiredTimeInMilliseconds: maxRequiredTimeInMilliseconds,
+                    minRequiredTimeInMilliseconds: minRequiredTimeInMilliseconds,
+                    totalAmount: totalAmount,
+                    maxAmount: maxAmount,
+                    minAmount: minAmount
                 },
                 queues: {
                     numberOfCreated: numberOfQueuesCreated

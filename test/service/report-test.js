@@ -113,10 +113,10 @@ describe('レポートサービス GMO実売上診察', () => {
     before(() => __awaiter(this, void 0, void 0, function* () {
         connection = mongoose.createConnection(process.env.MONGOLAB_URI);
         const gmoNotificationAdapter = new gmoNotification_1.default(connection);
-        const transactionAdapter = new transaction_1.default(connection);
+        // const transactionAdapter = new TransactionAdapter(connection);
         yield gmoNotificationAdapter.gmoNotificationModel.remove({}).exec();
-        yield transactionAdapter.transactionModel.remove({}).exec();
-        yield transactionAdapter.transactionEventModel.remove({}).exec();
+        // await transactionAdapter.transactionModel.remove({}).exec();
+        // await transactionAdapter.transactionEventModel.remove({}).exec();
     }));
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
         const reserveNum = 123;

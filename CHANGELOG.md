@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 計測データに取引所要時間と金額のデータを追加。
 
 ### Deprecated
 

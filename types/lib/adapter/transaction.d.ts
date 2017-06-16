@@ -26,4 +26,10 @@ export default class TransactionAdapter {
      * @returns {Promies<boolean>}
      */
     canBeClosed(id: string): Promise<boolean>;
+    /**
+     * 取引IDから取引金額を算出する
+     *
+     * @returns {Promies<number>}
+     */
+    calculateAmountById(id: string): Promise<number>;
 }

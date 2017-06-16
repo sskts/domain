@@ -25,6 +25,30 @@ export interface IFlow {
          * 集計期間中に期限切れになった取引数
          */
         numberOfExpired: number;
+        /**
+         * 取引の合計所要時間(ミリ秒)
+         */
+        totalRequiredTimeInMilliseconds: number;
+        /**
+         * 取引の最大所要時間(ミリ秒)
+         */
+        maxRequiredTimeInMilliseconds: number;
+        /**
+         * 取引の最小所要時間(ミリ秒)
+         */
+        minRequiredTimeInMilliseconds: number;
+        /**
+         * 取引の合計金額(yen)
+         */
+        totalAmount: number;
+        /**
+         * 取引の合計金額(yen)
+         */
+        maxAmount: number;
+        /**
+         * 取引の合計金額(yen)
+         */
+        minAmount: number;
     };
     queues: {
         /**
