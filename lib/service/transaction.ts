@@ -42,43 +42,6 @@ export type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) =
 const debug = createDebug('sskts-domain:service:transaction');
 
 /**
- * スコープ指定で取引が利用可能かどうかを取得する
- *
- * @param {string} scope 取引のスコープ
- * @param {number} unitOfCountInSeconds 取引数カウント単位時間(秒)
- * @param {number} maxCountPerUnit カウント単位あたりの取引最大数
- */
-export function isAvailable(scope: TransactionScopeFactory.ITransactionScope, unitOfCountInSeconds: number, maxCountPerUnit: number) {
-    return async (transactionCountAdapter: TransactionCountAdapter) => {
-        const scopeStr = TransactionScopeFactory.scope2String(scope);
-        const dateNow = moment();
-        const unitStr = (dateNow.unix() - dateNow.unix() % unitOfCountInSeconds).toString();
-        const redisKey = `${TransactionCountAdapter.KEY_PREFIX}:${scopeStr}:${unitStr}`;
-        const ttl = unitOfCountInSeconds;
-
-        return new Promise<boolean>((resolve, reject) => {
-            // redisでカウントアップ
-            const multi = transactionCountAdapter.redisClient.multi();
-            multi.incr(redisKey, debug)
-                .expire(redisKey, ttl, debug)
-                .exec(async (err, replies) => {
-                    if (err instanceof Error) {
-                        reject(err);
-
-                        return;
-                    }
-                    debug('replies:', replies);
-
-                    // カウント単位あたりの取引最大数を超過しているかどうか
-                    // tslint:disable-next-line:no-magic-numbers
-                    const numberOfTransactions = parseInt(replies[0], 10);
-                    resolve((numberOfTransactions <= maxCountPerUnit));
-                });
-        });
-    };
-}
-
-/**
  * 開始準備のできた取引を用意する
  *
  * @param {number} length 取引数
@@ -110,23 +73,23 @@ export function prepare(length: number, expiresInSeconds: number) {
  * 匿名所有者として取引開始する
  *
  * @param {Date} args.expiresAt 期限切れ予定日時
- * @param {number} args.unitOfCountInSeconds 取引数制限単位期間
  * @param {number} args.maxCountPerUnit 単位期間あたりの最大取引数
+ * @param {string} args.state 所有者状態
+ * @param {TransactionScopeFactory.ITransactionScope} args.scope 取引スコープ
  * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
  *
  * @memberof service/transaction
  */
 export function startAsAnonymous(args: {
     expiresAt: Date;
-    unitOfCountInSeconds: number;
     maxCountPerUnit: number;
     state: string;
     scope: TransactionScopeFactory.ITransactionScope;
 }): OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>> {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => {
         // 利用可能かどうか
-        const available = await isAvailable(args.scope, args.unitOfCountInSeconds, args.maxCountPerUnit)(transactionCountAdapter);
-        if (!available) {
+        const nextCount = await transactionCountAdapter.incr(args.scope);
+        if (nextCount > args.maxCountPerUnit) {
             return monapt.None;
         }
 

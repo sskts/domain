@@ -66,6 +66,7 @@ import * as UnauthorizeTransactionEventFactory from './factory/transactionEvent/
 import TransactionEventGroup from './factory/transactionEventGroup';
 import * as TransactionInquiryKeyFactory from './factory/transactionInquiryKey';
 import TransactionQueuesStatus from './factory/transactionQueuesStatus';
+import * as TransactionScopeFactory from './factory/transactionScope';
 import TransactionStatus from './factory/transactionStatus';
 
 export const adapter = {
@@ -176,5 +177,6 @@ export const factory = {
     transactionEventGroup: TransactionEventGroup,
     transactionInquiryKey: TransactionInquiryKeyFactory,
     transactionQueuesStatus: TransactionQueuesStatus,
+    transactionScope: TransactionScopeFactory,
     transactionStatus: TransactionStatus
 };

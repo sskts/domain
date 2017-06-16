@@ -1,4 +1,5 @@
 import * as monapt from 'monapt';
+import * as AuthorizationFactory from '../factory/authorization';
 import * as COASeatReservationAuthorizationFactory from '../factory/authorization/coaSeatReservation';
 import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from '../factory/authorization/mvtk';
@@ -20,6 +21,7 @@ export declare type TransactionOperation<T> = (transactionAdapter: TransactionAd
  * @memberof service/transactionWithId
  */
 export declare function findById(id: string): TransactionOperation<monapt.Option<TransactionFactory.ITransaction>>;
+export declare function addAuthorization(transactionId: string, authorization: AuthorizationFactory.IAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * GMO資産承認
  *

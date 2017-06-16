@@ -436,7 +436,7 @@ export function retry(intervalInMinutes: number): QueueOperation<void> {
         await queueAdapter.model.update(
             {
                 status: QueueStatus.RUNNING,
-                last_tried_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() }, // tslint:disable-line:no-magic-numbers
+                last_tried_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() },
                 // tslint:disable-next-line:no-invalid-this space-before-function-paren
                 $where: function (this: any) { return (this.max_count_try > this.count_tried); }
             },
@@ -460,7 +460,7 @@ export function abort(intervalInMinutes: number): QueueOperation<void> {
         const abortedQueueDoc = await queueAdapter.model.findOneAndUpdate(
             {
                 status: QueueStatus.RUNNING,
-                last_tried_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() }, // tslint:disable-line:no-magic-numbers
+                last_tried_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() },
                 // tslint:disable-next-line:no-invalid-this space-before-function-paren
                 $where: function (this: any) { return (this.max_count_try === this.count_tried); }
             },
