@@ -42,11 +42,11 @@ export interface IFlow {
          */
         totalAmount: number;
         /**
-         * 取引の合計金額(yen)
+         * 最大金額
          */
         maxAmount: number;
         /**
-         * 取引の合計金額(yen)
+         * 最小金額
          */
         minAmount: number;
     };
@@ -55,6 +55,38 @@ export interface IFlow {
          * 集計期間中に作成されたキュー数
          */
         numberOfCreated: number;
+        /**
+         * 集計期間中に実行されたキュー数
+         */
+        numberOfExecuted: number;
+        /**
+         * 集計期間中に中止されたキュー数
+         */
+        numberOfAborted: number;
+        /**
+         * 合計待ち時間
+         */
+        totalLatencyInMilliseconds: number;
+        /**
+         * 最大待ち時間
+         */
+        maxLatencyInMilliseconds: number;
+        /**
+         * 最小待ち時間
+         */
+        minLatencyInMilliseconds: number;
+        /**
+         * 合計試行回数
+         */
+        totalNumberOfTrials: number;
+        /**
+         * 最大試行回数
+         */
+        maxNumberOfTrials: number;
+        /**
+         * 最小試行回数
+         */
+        minNumberOfTrials: number;
     };
     measured_from: Date;
     measured_to: Date;
