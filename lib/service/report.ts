@@ -68,11 +68,11 @@ export interface IFlow {
          */
         totalAmount: number;
         /**
-         * 取引の合計金額(yen)
+         * 最大金額
          */
         maxAmount: number;
         /**
-         * 取引の合計金額(yen)
+         * 最小金額
          */
         minAmount: number;
     };
@@ -81,6 +81,38 @@ export interface IFlow {
          * 集計期間中に作成されたキュー数
          */
         numberOfCreated: number;
+        /**
+         * 集計期間中に実行されたキュー数
+         */
+        numberOfExecuted: number;
+        /**
+         * 集計期間中に中止されたキュー数
+         */
+        numberOfAborted: number;
+        /**
+         * 合計待ち時間
+         */
+        totalLatencyInMilliseconds: number;
+        /**
+         * 最大待ち時間
+         */
+        maxLatencyInMilliseconds: number;
+        /**
+         * 最小待ち時間
+         */
+        minLatencyInMilliseconds: number;
+        /**
+         * 合計試行回数
+         */
+        totalNumberOfTrials: number;
+        /**
+         * 最大試行回数
+         */
+        maxNumberOfTrials: number;
+        /**
+         * 最小試行回数
+         */
+        minNumberOfTrials: number;
     };
     measured_from: Date;
     measured_to: Date;
@@ -181,6 +213,42 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
             }
         }).exec();
 
+        // 実行中止ステータスで、最終試行日時が範囲にあるものを実行キュー数とする
+        const numberOfQueuesAborted = await queueAdapter.model.count({
+            last_tried_at: {
+                $gte: measuredFrom.toDate(),
+                $lt: measuredTo.toDate()
+            },
+            status: QueueStatus.EXECUTED
+        }).exec();
+
+        // 実行済みステータスで、最終試行日時が範囲にあるものを実行キュー数とする
+        const executedQueues = await queueAdapter.model.find(
+            {
+                last_tried_at: {
+                    $gte: measuredFrom.toDate(),
+                    $lt: measuredTo.toDate()
+                },
+                status: QueueStatus.ABORTED
+            },
+            'run_at last_tried_at count_tried'
+        ).exec();
+        const numberOfQueuesExecuted = executedQueues.length;
+
+        const latencies = await Promise.all(
+            executedQueues.map(
+                (queue) => moment(queue.get('last_tried_at')).diff(moment(queue.get('run_at'), 'milliseconds'))
+            )
+        );
+        const totalLatency = latencies.reduce((a, b) => a + b, 0);
+        const maxLatency = latencies.reduce((a, b) => Math.max(a, b), 0);
+        const minLatency = latencies.reduce((a, b) => Math.min(a, b), (numberOfQueuesExecuted > 0) ? latencies[0] : 0);
+
+        const numbersOfTrials = await Promise.all(executedQueues.map((queue) => <number>queue.get('count_tried')));
+        const totalNumberOfTrials = numbersOfTrials.reduce((a, b) => a + b, 0);
+        const maxNumberOfTrials = numbersOfTrials.reduce((a, b) => Math.max(a, b), 0);
+        const minNumberOfTrials = numbersOfTrials.reduce((a, b) => Math.min(a, b), (numberOfQueuesExecuted > 0) ? numbersOfTrials[0] : 0);
+
         const numberOfTransactionsUnderway = await transactionAdapter.transactionModel.count({
             $or: [
                 // {measuredAt}以前に開始し、{measuredAt}以後に成立あるいは期限切れした取引
@@ -250,7 +318,15 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
                     minAmount: minAmount
                 },
                 queues: {
-                    numberOfCreated: numberOfQueuesCreated
+                    numberOfCreated: numberOfQueuesCreated,
+                    numberOfExecuted: numberOfQueuesExecuted,
+                    numberOfAborted: numberOfQueuesAborted,
+                    totalLatencyInMilliseconds: totalLatency,
+                    maxLatencyInMilliseconds: maxLatency,
+                    minLatencyInMilliseconds: minLatency,
+                    totalNumberOfTrials: totalNumberOfTrials,
+                    maxNumberOfTrials: maxNumberOfTrials,
+                    minNumberOfTrials: minNumberOfTrials
                 },
                 measured_from: measuredFrom.toDate(),
                 measured_to: measuredTo.toDate()

@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 計測データにキューに関するフローデータを追加。
 
 ### Deprecated
 
