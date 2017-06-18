@@ -83,5 +83,5 @@
     "prepublish": "npm run clean && npm run build && npm test"
   },
   "types": "./types/lib/index.d.ts",
-  "version": "19.2.0"
+  "version": "19.2.1"
 }
