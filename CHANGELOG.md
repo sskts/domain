@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v19.2.1 - 2017-06-18
+### Fixed
+- キューに関するフロー計測で、実行済みと中止ステータスが逆になっているバグを修正。
+
 ## v19.2.0 - 2017-06-17
 ### Changed
 - 計測データにキューに関するフローデータを追加。

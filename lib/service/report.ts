@@ -116,7 +116,6 @@ export interface IFlow {
     };
     measured_from: Date;
     measured_to: Date;
-
 }
 
 /**
@@ -154,7 +153,6 @@ export interface IReportTransactionStatuses {
  * @memberof service/report
  */
 export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void> {
-    // tslint:disable-next-line:max-func-body-length
     return async (
         queueAdapter: QueueAdapter,
         telemetryAdapter: TelemetryAdapter,
@@ -165,11 +163,36 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
         const measuredFrom = moment(measuredTo).add(-TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS, 'seconds');
         const measuredAt = moment(measuredTo);
 
+        const flowData = await createFlowTelemetry(measuredFrom.toDate(), measuredTo.toDate())(queueAdapter, transactionAdapter);
+        const stockData = await createStockTelemetry(measuredAt.toDate())(queueAdapter, transactionAdapter);
+
+        const telemetry: ITelemetry = {
+            flow: flowData,
+            stock: stockData
+        };
+        await telemetryAdapter.telemetryModel.create(telemetry);
+        debug('telemetry created', telemetry);
+    };
+}
+
+/**
+ * フロー計測データーを作成する
+ *
+ * @param {Date} measuredFrom 計測開始日時
+ * @param {Date} measuredTo 計測終了日時
+ * @returns {QueueAndTransactionOperation<IFlow>}
+ */
+export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): QueueAndTransactionOperation<IFlow> {
+    // tslint:disable-next-line:max-func-body-length
+    return async (
+        queueAdapter: QueueAdapter,
+        transactionAdapter: TransactionAdapter
+    ) => {
         // 直近{TELEMETRY_UNIT_TIME_IN_SECONDS}秒に開始された取引数を算出する
         const numberOfTransactionsStarted = await transactionAdapter.transactionModel.count({
             started_at: {
-                $gte: measuredFrom.toDate(),
-                $lt: measuredTo.toDate()
+                $gte: measuredFrom,
+                $lt: measuredTo
             }
         }).exec();
 
@@ -177,8 +200,8 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
         const closedTransactions = await transactionAdapter.transactionModel.find(
             {
                 closed_at: {
-                    $gte: measuredFrom.toDate(),
-                    $lt: measuredTo.toDate()
+                    $gte: measuredFrom,
+                    $lt: measuredTo
                 }
             },
             'started_at closed_at'
@@ -201,35 +224,35 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
 
         const numberOfTransactionsExpired = await transactionAdapter.transactionModel.count({
             expired_at: {
-                $gte: measuredFrom.toDate(),
-                $lt: measuredTo.toDate()
+                $gte: measuredFrom,
+                $lt: measuredTo
             }
         }).exec();
 
         const numberOfQueuesCreated = await queueAdapter.model.count({
             created_at: {
-                $gte: measuredFrom.toDate(),
-                $lt: measuredTo.toDate()
+                $gte: measuredFrom,
+                $lt: measuredTo
             }
         }).exec();
 
         // 実行中止ステータスで、最終試行日時が範囲にあるものを実行キュー数とする
         const numberOfQueuesAborted = await queueAdapter.model.count({
             last_tried_at: {
-                $gte: measuredFrom.toDate(),
-                $lt: measuredTo.toDate()
+                $gte: measuredFrom,
+                $lt: measuredTo
             },
-            status: QueueStatus.EXECUTED
+            status: QueueStatus.ABORTED
         }).exec();
 
         // 実行済みステータスで、最終試行日時が範囲にあるものを実行キュー数とする
         const executedQueues = await queueAdapter.model.find(
             {
                 last_tried_at: {
-                    $gte: measuredFrom.toDate(),
-                    $lt: measuredTo.toDate()
+                    $gte: measuredFrom,
+                    $lt: measuredTo
                 },
-                status: QueueStatus.ABORTED
+                status: QueueStatus.EXECUTED
             },
             'run_at last_tried_at count_tried'
         ).exec();
@@ -249,22 +272,63 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
         const maxNumberOfTrials = numbersOfTrials.reduce((a, b) => Math.max(a, b), 0);
         const minNumberOfTrials = numbersOfTrials.reduce((a, b) => Math.min(a, b), (numberOfQueuesExecuted > 0) ? numbersOfTrials[0] : 0);
 
+        return {
+            transactions: {
+                numberOfStarted: numberOfTransactionsStarted,
+                numberOfClosed: numberOfTransactionsClosed,
+                numberOfExpired: numberOfTransactionsExpired,
+                totalRequiredTimeInMilliseconds: totalRequiredTimeInMilliseconds,
+                maxRequiredTimeInMilliseconds: maxRequiredTimeInMilliseconds,
+                minRequiredTimeInMilliseconds: minRequiredTimeInMilliseconds,
+                totalAmount: totalAmount,
+                maxAmount: maxAmount,
+                minAmount: minAmount
+            },
+            queues: {
+                numberOfCreated: numberOfQueuesCreated,
+                numberOfExecuted: numberOfQueuesExecuted,
+                numberOfAborted: numberOfQueuesAborted,
+                totalLatencyInMilliseconds: totalLatency,
+                maxLatencyInMilliseconds: maxLatency,
+                minLatencyInMilliseconds: minLatency,
+                totalNumberOfTrials: totalNumberOfTrials,
+                maxNumberOfTrials: maxNumberOfTrials,
+                minNumberOfTrials: minNumberOfTrials
+            },
+            measured_from: measuredFrom,
+            measured_to: measuredTo
+        };
+    };
+}
+
+/**
+ * ストック計測データを作成する
+ *
+ * @param {Date} measuredAt 計測日時
+ * @returns {QueueAndTransactionOperation<IStock>}
+ */
+export function createStockTelemetry(measuredAt: Date): QueueAndTransactionOperation<IStock> {
+    // tslint:disable-next-line:max-func-body-length
+    return async (
+        queueAdapter: QueueAdapter,
+        transactionAdapter: TransactionAdapter
+    ) => {
         const numberOfTransactionsUnderway = await transactionAdapter.transactionModel.count({
             $or: [
                 // {measuredAt}以前に開始し、{measuredAt}以後に成立あるいは期限切れした取引
                 {
                     started_at: {
-                        $lte: measuredAt.toDate()
+                        $lte: measuredAt
                     },
                     $or: [
                         {
                             closed_at: {
-                                $gt: measuredAt.toDate()
+                                $gt: measuredAt
                             }
                         },
                         {
                             expired_at: {
-                                $gt: measuredAt.toDate()
+                                $gt: measuredAt
                             }
                         }
                     ]
@@ -272,7 +336,7 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
                 // {measuredAt}以前に開始し、いまだに進行中の取引
                 {
                     started_at: {
-                        $lte: measuredAt.toDate()
+                        $lte: measuredAt
                     },
                     status: TransactionStatus.UNDERWAY
                 }
@@ -284,12 +348,12 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
                 // {measuredAt}以前に作成され、{measuredAt}以後に実行試行されたキュー
                 {
                     created_at: {
-                        $lte: measuredAt.toDate()
+                        $lte: measuredAt
                     },
                     $or: [
                         {
                             last_tried_at: {
-                                $gt: measuredAt.toDate()
+                                $gt: measuredAt
                             }
                         }
                     ]
@@ -297,53 +361,24 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
                 // {measuredAt}以前に作成され、いまだに未実行のキュー
                 {
                     created_at: {
-                        $lte: measuredAt.toDate()
+                        $lte: measuredAt
                     },
                     status: QueueStatus.UNEXECUTED
                 }
             ]
         }).exec();
 
-        const telemetry: ITelemetry = {
-            flow: {
-                transactions: {
-                    numberOfStarted: numberOfTransactionsStarted,
-                    numberOfClosed: numberOfTransactionsClosed,
-                    numberOfExpired: numberOfTransactionsExpired,
-                    totalRequiredTimeInMilliseconds: totalRequiredTimeInMilliseconds,
-                    maxRequiredTimeInMilliseconds: maxRequiredTimeInMilliseconds,
-                    minRequiredTimeInMilliseconds: minRequiredTimeInMilliseconds,
-                    totalAmount: totalAmount,
-                    maxAmount: maxAmount,
-                    minAmount: minAmount
-                },
-                queues: {
-                    numberOfCreated: numberOfQueuesCreated,
-                    numberOfExecuted: numberOfQueuesExecuted,
-                    numberOfAborted: numberOfQueuesAborted,
-                    totalLatencyInMilliseconds: totalLatency,
-                    maxLatencyInMilliseconds: maxLatency,
-                    minLatencyInMilliseconds: minLatency,
-                    totalNumberOfTrials: totalNumberOfTrials,
-                    maxNumberOfTrials: maxNumberOfTrials,
-                    minNumberOfTrials: minNumberOfTrials
-                },
-                measured_from: measuredFrom.toDate(),
-                measured_to: measuredTo.toDate()
+        return {
+            transactions: {
+                numberOfUnderway: numberOfTransactionsUnderway
             },
-            stock: {
-                transactions: {
-                    numberOfUnderway: numberOfTransactionsUnderway
-                },
-                queues: {
-                    numberOfUnexecuted: numberOfQueuesUnexecuted
-                },
-                measured_at: measuredAt.toDate()
-            }
+            queues: {
+                numberOfUnexecuted: numberOfQueuesUnexecuted
+            },
+            measured_at: measuredAt
         };
-        await telemetryAdapter.telemetryModel.create(telemetry);
-        debug('telemetry created', telemetry);
     };
+
 }
 
 /**
