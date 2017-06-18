@@ -124,6 +124,21 @@ export interface IReportTransactionStatuses {
  */
 export declare function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void>;
 /**
+ * フロー計測データーを作成する
+ *
+ * @param {Date} measuredFrom 計測開始日時
+ * @param {Date} measuredTo 計測終了日時
+ * @returns {QueueAndTransactionOperation<IFlow>}
+ */
+export declare function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): QueueAndTransactionOperation<IFlow>;
+/**
+ * ストック計測データを作成する
+ *
+ * @param {Date} measuredAt 計測日時
+ * @returns {QueueAndTransactionOperation<IStock>}
+ */
+export declare function createStockTelemetry(measuredAt: Date): QueueAndTransactionOperation<IStock>;
+/**
  * 状態ごとの取引数を算出する
  *
  * @returns {QueueAndTransactionOperation<IReportTransactionStatuses>}

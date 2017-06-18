@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 ### Fixed
+- キューに関するフロー計測で、実行済みと中止ステータスが逆になっているバグを修正。
 
 ### Security
 
