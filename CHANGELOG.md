@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 ### Fixed
+- COAのアクセストークンの有効期限切れエラーが出る問題に対して、coa-service側での対応を反映。 ([@motionpicture/coa-service@3.1.2](https://www.npmjs.com/package/@motionpicture/coa-service))
 
 ### Security
 
