@@ -30,8 +30,11 @@ const schema = new mongoose.Schema(
         useragent: String, // The user agent responsible for the event
         url: String,
         url_offset: {
-            index: Number,
-            type: String
+            type: {
+                _id: false,
+                index: Number,
+                type: String
+            }
         },
         response: String,
         send_at: Number

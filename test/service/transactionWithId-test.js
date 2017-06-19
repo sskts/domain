@@ -625,6 +625,7 @@ describe('匿名所有者更新', () => {
         yield TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter);
         // 所有者を検索して情報の一致を確認
         const anonymousOwnerDoc = yield ownerAdapter.model.findById(ownerTo.id).exec();
+        assert(anonymousOwnerDoc !== null);
         assert.equal(anonymousOwnerDoc.get('name_first'), update.name_first);
         assert.equal(anonymousOwnerDoc.get('name_last'), update.name_first);
         assert.equal(anonymousOwnerDoc.get('email'), update.name_first);

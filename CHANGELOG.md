@@ -14,8 +14,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 - COAのアクセストークンの有効期限切れエラーが出る問題に対して、coa-service側での対応を反映。 ([@motionpicture/coa-service@3.1.2](https://www.npmjs.com/package/@motionpicture/coa-service))
+- npm@5.0.0の仕様に合わせて、スクリプトprepublishをprepareへ変更。
 
 ### Security
+- [mongoose@^4.10.7](https://github.com/Automattic/mongoose)
+- [typescript@^2.4.0](https://github.com/Microsoft/TypeScript)
 
 ## v19.2.1 - 2017-06-18
 ### Fixed

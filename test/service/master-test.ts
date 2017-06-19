@@ -195,7 +195,7 @@ describe('マスターサービス パフォーマンス取得', () => {
             canceled: false
         };
         // tslint:disable-next-line:max-line-length
-        const performanceDoc = await performanceAdapter.model.findByIdAndUpdate(performance.id, performance, { new: true, upsert: true }).exec();
+        const performanceDoc = <mongoose.Document>await performanceAdapter.model.findByIdAndUpdate(performance.id, performance, { new: true, upsert: true }).exec();
 
         const performanceOption = await MasterService.findPerformance('12345')(performanceAdapter);
         assert(performanceOption.isDefined);

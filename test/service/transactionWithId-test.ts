@@ -52,7 +52,7 @@ before(async () => {
     await transactionAdapter.transactionEventModel.remove({}).exec();
 
     // 興行所有者を準備
-    const promoterOwnerDoc = await ownerAdapter.model.findOneAndUpdate(
+    const promoterOwnerDoc = <mongoose.Document>await ownerAdapter.model.findOneAndUpdate(
         { group: OwnerGroup.PROMOTER },
         {
             name: {
@@ -62,7 +62,7 @@ before(async () => {
         },
         { new: true, upsert: true }
     ).exec();
-    TEST_PROMOTER_OWNER = <any>promoterOwnerDoc.toObject();
+    TEST_PROMOTER_OWNER = <PromoterOwnerFactory.IPromoterOwner>promoterOwnerDoc.toObject();
 
     TEST_GMO_AUTHORIZATION = GMOAuthorizationFactory.create({
         price: 123,
@@ -218,7 +218,7 @@ describe('取引成立', () => {
 
         await TransactionWithIdService.close(transaction.id)(transactionAdapter);
 
-        const transactionDoc = await transactionAdapter.transactionModel.findById(transaction.id).exec();
+        const transactionDoc = <mongoose.Document>await transactionAdapter.transactionModel.findById(transaction.id).exec();
         assert(transactionDoc !== null);
         assert.equal(transactionDoc.get('status'), TransactionStatus.CLOSED);
 
@@ -347,7 +347,7 @@ describe('GMO資産承認追加', () => {
         await TransactionWithIdService.addGMOAuthorization(transaction.id, authorization)(transactionAdapter);
 
         // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
-        const transactionEvent = await transactionAdapter.transactionEventModel.findOne(
+        const transactionEvent = <mongoose.Document>await transactionAdapter.transactionEventModel.findOne(
             { 'authorization.id': authorization.id }
         ).exec();
         assert.equal(transactionEvent.get('transaction'), transaction.id);
@@ -383,7 +383,7 @@ describe('COA資産承認追加', () => {
         await TransactionWithIdService.addCOASeatReservationAuthorization(transaction.id, authorization)(transactionAdapter);
 
         // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
-        const transactionEvent = await transactionAdapter.transactionEventModel.findOne(
+        const transactionEvent = <mongoose.Document>await transactionAdapter.transactionEventModel.findOne(
             { 'authorization.id': authorization.id }
         ).exec();
         assert.equal(transactionEvent.get('transaction'), transaction.id);
@@ -419,7 +419,7 @@ describe('ムビチケ着券承認追加', () => {
         await TransactionWithIdService.addMvtkAuthorization(transaction.id, authorization)(transactionAdapter);
 
         // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
-        const transactionEvent = await transactionAdapter.transactionEventModel.findOne(
+        const transactionEvent = <mongoose.Document>await transactionAdapter.transactionEventModel.findOne(
             { 'authorization.id': authorization.id }
         ).exec();
         assert.equal(transactionEvent.get('transaction'), transaction.id);
@@ -447,7 +447,7 @@ describe('承認追加', () => {
         const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
         const addAuthorizationError = await TransactionWithIdService.addAuthorization(transaction.id, authorization)(
             transactionAdapter
-        ).catch((error) => {
+        ).catch((error: any) => {
             return error;
         });
         assert(addAuthorizationError instanceof ArgumentError);
@@ -475,7 +475,7 @@ describe('承認追加', () => {
         const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
         const addAuthorizationError = await TransactionWithIdService.addAuthorization(transaction.id, authorization)(
             transactionAdapter
-        ).catch((error) => {
+        ).catch((error: any) => {
             return error;
         });
 
@@ -509,7 +509,7 @@ describe('承認追加', () => {
         const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
         const addAuthorizationError = await TransactionWithIdService.addAuthorization(transaction.id, authorization)(
             transactionAdapter
-        ).catch((error) => {
+        ).catch((error: any) => {
             return error;
         });
 
@@ -554,7 +554,7 @@ describe('承認削除', () => {
         );
 
         // 承認削除取引イベントが作成されているはず
-        const unauthorizeTransactionEventDocs = await transactionAdapter.transactionEventModel.findOne(
+        const unauthorizeTransactionEventDocs = <mongoose.Document>await transactionAdapter.transactionEventModel.findOne(
             {
                 'authorization.id': authorization.id,
                 group: TransactionEventGroup.UNAUTHORIZE
@@ -644,7 +644,7 @@ describe('Eメール通知追加', () => {
         await TransactionWithIdService.addEmail(transaction.id, TEST_EMAIL_NOTIFICATION)(transactionAdapter);
 
         // 取引イベントからオーソリIDで検索して、取引IDの一致を確認
-        const transactionEvent = await transactionAdapter.transactionEventModel.findOne(
+        const transactionEvent = <mongoose.Document>await transactionAdapter.transactionEventModel.findOne(
             { 'notification.id': TEST_EMAIL_NOTIFICATION.id }
         ).exec();
         assert(transactionEvent !== null);
@@ -681,7 +681,7 @@ describe('通知削除', () => {
         );
 
         // 承認削除取引イベントが作成されているはず
-        const removeNotificationTransactionEventDocs = await transactionAdapter.transactionEventModel.findOne(
+        const removeNotificationTransactionEventDocs = <mongoose.Document>await transactionAdapter.transactionEventModel.findOne(
             {
                 'notification.id': TEST_EMAIL_NOTIFICATION.id,
                 group: TransactionEventGroup.REMOVE_NOTIFICATION
@@ -769,7 +769,9 @@ describe('匿名所有者更新', () => {
         await TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter);
 
         // 所有者を検索して情報の一致を確認
-        const anonymousOwnerDoc = await ownerAdapter.model.findById(ownerTo.id).exec();
+        const anonymousOwnerDoc = <mongoose.Document>await ownerAdapter.model.findById(ownerTo.id).exec();
+        assert(anonymousOwnerDoc !== null);
+
         assert.equal(anonymousOwnerDoc.get('name_first'), update.name_first);
         assert.equal(anonymousOwnerDoc.get('name_last'), update.name_first);
         assert.equal(anonymousOwnerDoc.get('email'), update.name_first);
@@ -864,7 +866,7 @@ describe('照合を可能にする', () => {
         await TransactionWithIdService.enableInquiry(transaction.id, TEST_TRANSACTION_INQUIRY_KEY)(transactionAdapter);
 
         // 取引を検索して照会キーの一致を確認
-        const transactionDoc = await transactionAdapter.transactionModel.findById(transaction.id).exec();
+        const transactionDoc = <mongoose.Document>await transactionAdapter.transactionModel.findById(transaction.id).exec();
         assert(transactionDoc !== null);
         assert.deepEqual(transactionDoc.get('inquiry_key'), TEST_TRANSACTION_INQUIRY_KEY);
 

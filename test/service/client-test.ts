@@ -44,7 +44,7 @@ describe('クライアントサービス 作成', () => {
         await clientService.create(args)(clientAdapter);
 
         // DBに存在することを確認
-        const clientDoc = await clientAdapter.clientModel.findById(args.id).exec();
+        const clientDoc = <mongoose.Document>await clientAdapter.clientModel.findById(args.id).exec();
         assert(clientDoc !== null);
 
         // パスワードが正しいことを確認
@@ -88,7 +88,7 @@ describe('クライアントイベントサービス 作成', () => {
         const clientEvent = await clientService.pushEvent(pushEventArgs)(clientAdapter);
 
         // DBに存在することを確認
-        const clientEventDoc = await clientAdapter.clientEventModel.findById(clientEvent.id).exec();
+        const clientEventDoc = <mongoose.Document>await clientAdapter.clientEventModel.findById(clientEvent.id).exec();
         assert(clientEventDoc !== null);
 
         // ラベル確認
