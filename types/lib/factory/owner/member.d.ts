@@ -3,14 +3,14 @@
  *
  * @namespace factory/owner/member
  */
-import * as GMOMemberAccount from '../account/gmoMember';
 import IMultilingualString from '../multilingualString';
 import * as OwnerFactory from '../owner';
+import * as GMOMemberPaymentMethodFactory from '../paymentMethod/gmoMember';
 /**
- * 会員で利用可能な口座インターフェース
- * GMO会員以外の口座を持つようになれば、ここを拡張する
+ * 会員で利用可能な決済方法インターフェース
+ * GMO会員以外の決済方法を持つようになれば、ここを拡張する
  */
-export declare type IAvailableAccount = GMOMemberAccount.IGMOMemberAccount;
+export declare type IAvailablePaymentMethod = GMOMemberPaymentMethodFactory.IGMOMemberPaymentMethod;
 /**
  * 会員所有者インターフェース
  *
@@ -52,10 +52,10 @@ export interface IMemberOwner extends OwnerFactory.IOwner {
      */
     notes: IMultilingualString;
     /**
-     * 口座リスト
+     * 決済方法リスト
      *
-     * @type {IAvailableAccount[]}
+     * @type {IAvailablePaymentMethod[]}
      * @memberof IMemberOwner
      */
-    accounts: IAvailableAccount[];
+    paymentMethods: IAvailablePaymentMethod[];
 }
