@@ -1,18 +1,20 @@
 /**
- * GMO会員決済方法ファクトリー
+ * GMO決済代行会社会員ファクトリー
  *
- * @namespace factory/account/gmoMember
+ * @namespace factory/paymentAgencyMember/gmo
  */
-import * as PaymentMethodFactory from '../paymentMethod';
+import * as PaymentAgencyMemberFactory from '../paymentAgencyMember';
 /**
- * GMO会員決済方法インターフェース
+ * GMO決済代行会社会員インターフェース
  * GMO会員情報を参照するために十分な情報を持つ必要がある
  * 要するに、この情報を使用してクレジットカードを使用できればよい
  *
- * @interface IGMOMemberPaymentMethod
- * @extends {PaymentMethodFactory.IPaymentMethod}
+ * todo gmo-service側での定義と対応するはずなのでgmo-service側の改修が済んだら調整
+ *
+ * @interface IGMOPaymentAgencyMember
+ * @extends {PaymentAgencyMemberFactory.IPaymentAgencyMember}
  */
-export interface IGMOMemberPaymentMethod extends PaymentMethodFactory.IPaymentMethod {
+export interface IGMOPaymentAgencyMember extends PaymentAgencyMemberFactory.IPaymentAgencyMember {
     /**
      * サイトID GMOが発行する値を設定します。
      *

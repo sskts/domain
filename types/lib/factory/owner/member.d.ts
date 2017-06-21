@@ -5,12 +5,12 @@
  */
 import IMultilingualString from '../multilingualString';
 import * as OwnerFactory from '../owner';
-import * as GMOMemberPaymentMethodFactory from '../paymentMethod/gmoMember';
+import * as GMOPaymentAgencyMemberFactory from '../paymentAgencyMember/gmo';
 /**
- * 会員で利用可能な決済方法インターフェース
- * GMO会員以外の決済方法を持つようになれば、ここを拡張する
+ * 会員で利用可能な決済代行会社会員インターフェース
+ * GMO会員以外を持つようになれば、ここを拡張する
  */
-export declare type IAvailablePaymentMethod = GMOMemberPaymentMethodFactory.IGMOMemberPaymentMethod;
+export declare type IAvailablePaymentAgencyMember = GMOPaymentAgencyMemberFactory.IGMOPaymentAgencyMember;
 /**
  * 会員所有者インターフェース
  *
@@ -28,11 +28,11 @@ export interface IMemberOwner extends OwnerFactory.IOwner {
      */
     password_hash: string;
     /**
-     * パスワードハッシュ
+     * 名
      */
     name_first: string;
     /**
-     * パスワードハッシュ
+     * 姓
      */
     name_last: string;
     /**
@@ -52,10 +52,10 @@ export interface IMemberOwner extends OwnerFactory.IOwner {
      */
     notes: IMultilingualString;
     /**
-     * 決済方法リスト
+     * 決済代行会社会員リスト
      *
-     * @type {IAvailablePaymentMethod[]}
+     * @type {IAvailablePaymentAgencyMember[]}
      * @memberof IMemberOwner
      */
-    paymentMethods: IAvailablePaymentMethod[];
+    paymentAgencyMembers: IAvailablePaymentAgencyMember[];
 }
