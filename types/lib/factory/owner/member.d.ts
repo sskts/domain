@@ -1,8 +1,3 @@
-/**
- * 会員所有者ファクトリー
- *
- * @namespace factory/owner/member
- */
 import IMultilingualString from '../multilingualString';
 import * as OwnerFactory from '../owner';
 import * as GMOPaymentAgencyMemberFactory from '../paymentAgencyMember/gmo';
@@ -57,5 +52,17 @@ export interface IMemberOwner extends OwnerFactory.IOwner {
      * @type {IAvailablePaymentAgencyMember[]}
      * @memberof IMemberOwner
      */
-    paymentAgencyMembers: IAvailablePaymentAgencyMember[];
+    payment_agency_members: IAvailablePaymentAgencyMember[];
 }
+export declare function create(args: {
+    id?: string;
+    username: string;
+    password_hash: string;
+    name_first: string;
+    name_last: string;
+    email: string;
+    tel?: string;
+    description?: IMultilingualString;
+    notes?: IMultilingualString;
+    payment_agency_members: IAvailablePaymentAgencyMember[];
+}): IMemberOwner;
