@@ -808,7 +808,7 @@ describe('匿名所有者更新', () => {
                 return error;
             });
         assert(updateError instanceof ArgumentError);
-        assert.equal((<ArgumentError>updateError).argumentName, 'args.transaction_id');
+        assert.equal((<ArgumentError>updateError).argumentName, 'transactionId');
     });
 
     it('匿名所有者が取引内に存在しなければ失敗', async () => {
@@ -841,7 +841,7 @@ describe('匿名所有者更新', () => {
                 return error;
             });
         assert(updateError instanceof ArgumentError);
-        assert.equal((<ArgumentError>updateError).argumentName, 'args.transaction_id');
+        assert.equal((<ArgumentError>updateError).argumentName, 'transactionId');
 
         // テストデータ削除
         await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();

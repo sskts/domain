@@ -4,10 +4,12 @@
  * @namespace service/transactionWithId
  */
 
+import * as bcrypt from 'bcryptjs';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as monapt from 'monapt';
 import * as _ from 'underscore';
+import * as util from 'util';
 
 import ArgumentError from '../error/argument';
 
@@ -235,8 +237,8 @@ export function removeEmail(transactionId: string, notificationId: string) {
  * 匿名所有者更新
  *
  * @returns {OwnerAndTransactionOperation<void>}
- *
  * @memberof service/transactionWithId
+ * @deprecated use setAnonymousOwnerProfile instead
  */
 export function updateAnonymousOwner(args: {
     transaction_id: string,
@@ -245,37 +247,82 @@ export function updateAnonymousOwner(args: {
     email?: string,
     tel?: string
 }) {
+    return setAnonymousOwnerProfile(args.transaction_id, {
+        name_first: (args.name_first !== undefined) ? args.name_first : '',
+        name_last: (args.name_last !== undefined) ? args.name_last : '',
+        email: (args.email !== undefined) ? args.email : '',
+        tel: (args.tel !== undefined) ? args.tel : '',
+        group: OwnerGroup.ANONYMOUS
+    });
+}
+exports.updateAnonymousOwner = util.deprecate(
+    updateAnonymousOwner, 'updateAnonymousOwner is deprecated, use setAnonymousOwnerProfile instead'
+);
+
+export function setAnonymousOwnerProfile(transactionId: string, profile: {
+    username?: string;
+    password?: string;
+    name_first: string,
+    name_last: string,
+    email: string,
+    tel: string,
+    /**
+     * カードトークン
+     */
+    token?: string,
+    group: OwnerGroup
+}) {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
         // 取引取得
-        const doc = await transactionAdapter.transactionModel.findById(args.transaction_id).populate('owners').exec();
+        const doc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
         if (doc === null) {
-            throw new ArgumentError('args.transaction_id', `transaction[${args.transaction_id}] not found.`);
+            throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
         }
         const transaction = <TransactionFactory.ITransaction>doc.toObject();
 
+        // todo 今は、興行主⇔匿名or会員の取引しかないので、これで問題ないが、もっと分かりやすい仕様にすること
         const anonymousOwner = transaction.owners.find((owner) => {
-            return (owner.group === OwnerGroup.ANONYMOUS);
+            return (owner.group === OwnerGroup.ANONYMOUS || owner.group === OwnerGroup.MEMBER);
         });
         if (anonymousOwner === undefined) {
-            throw new ArgumentError('args.transaction_id', 'anonymous owner not found');
+            throw new ArgumentError('transactionId', 'anonymous owner not found');
         }
+
+        switch (profile.group) {
+            case OwnerGroup.ANONYMOUS:
+                break;
+
+            case OwnerGroup.MEMBER:
+                // GMO会員登録
+
+                // GMOカード登録
+
+                // GMO決済代行会社会員作成
+
+                break;
+
+            default:
+                throw new Error('owner group not implemented');
+        }
+
+        // パスワードをハッシュ化
+        const SALT_LENGTH = 8;
+        const passwordHash = (profile.password !== undefined) ? await bcrypt.hash(profile.password, SALT_LENGTH) : undefined;
 
         // 永続化
         debug('updating anonymous owner...');
-        const ownerDoc = await ownerAdapter.model.findByIdAndUpdate(
+        await ownerAdapter.model.findByIdAndUpdate(
             anonymousOwner.id,
             {
-                name_first: args.name_first,
-                name_last: args.name_last,
-                email: args.email,
-                tel: args.tel
+                username: profile.username,
+                password_hash: passwordHash,
+                name_first: profile.name_first,
+                name_last: profile.name_last,
+                email: profile.email,
+                tel: profile.tel,
+                group: profile.group
             }
         ).exec();
-
-        // ロジック上nullチェックするが、実際にはまずありえない挙動(なのでテストコードで網羅できない)
-        if (ownerDoc === null) {
-            throw new ArgumentError('args.transaction_id', 'owner not found');
-        }
     };
 }
 

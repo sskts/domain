@@ -4,7 +4,7 @@
  * @namespace factory/account
  */
 
-import AcountStatus from './accountStatus';
+import AccountStatus from './accountStatus';
 
 /**
  * 口座インターフェース
@@ -23,8 +23,8 @@ export interface IAccount {
     /**
      * 口座ステータス
      *
-     * @type {AcountStatus}
+     * @type {AccountStatus}
      * @memberof IAccount
      */
-    status: AcountStatus;
+    status: AccountStatus;
 }

@@ -4,6 +4,7 @@ import * as COASeatReservationAuthorizationFactory from '../factory/authorizatio
 import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from '../factory/authorization/mvtk';
 import * as EmailNotificationFactory from '../factory/notification/email';
+import OwnerGroup from '../factory/ownerGroup';
 import * as TransactionFactory from '../factory/transaction';
 import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
 import OwnerAdapter from '../adapter/owner';
@@ -86,8 +87,8 @@ export declare function removeEmail(transactionId: string, notificationId: strin
  * 匿名所有者更新
  *
  * @returns {OwnerAndTransactionOperation<void>}
- *
  * @memberof service/transactionWithId
+ * @deprecated use setAnonymousOwnerProfile instead
  */
 export declare function updateAnonymousOwner(args: {
     transaction_id: string;
@@ -95,6 +96,19 @@ export declare function updateAnonymousOwner(args: {
     name_last?: string;
     email?: string;
     tel?: string;
+}): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function setAnonymousOwnerProfile(transactionId: string, profile: {
+    username?: string;
+    password?: string;
+    name_first: string;
+    name_last: string;
+    email: string;
+    tel: string;
+    /**
+     * カードトークン
+     */
+    token?: string;
+    group: OwnerGroup;
 }): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 照合を可能にする

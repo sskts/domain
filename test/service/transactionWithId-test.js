@@ -658,7 +658,7 @@ describe('匿名所有者更新', () => {
             return error;
         });
         assert(updateError instanceof argument_1.default);
-        assert.equal(updateError.argumentName, 'args.transaction_id');
+        assert.equal(updateError.argumentName, 'transactionId');
     }));
     it('匿名所有者が取引内に存在しなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
         const ownerAdapter = new owner_1.default(connection);
@@ -687,7 +687,7 @@ describe('匿名所有者更新', () => {
             return error;
         });
         assert(updateError instanceof argument_1.default);
-        assert.equal(updateError.argumentName, 'args.transaction_id');
+        assert.equal(updateError.argumentName, 'transactionId');
         // テストデータ削除
         yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
         yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
