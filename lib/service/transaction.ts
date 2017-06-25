@@ -10,10 +10,13 @@ import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as monapt from 'monapt';
 import * as _ from 'underscore';
+import * as util from 'util';
 
 import ArgumentError from '../error/argument';
 
+import * as OwnerFactor from '../factory/owner';
 import * as AnonymousOwnerFactory from '../factory/owner/anonymous';
+import * as MemberOwnerFactory from '../factory/owner/member';
 import * as PromoterOwnerFactory from '../factory/owner/promoter';
 import OwnerGroup from '../factory/ownerGroup';
 import * as QueueFactory from '../factory/queue';
@@ -66,6 +69,73 @@ export function prepare(length: number, expiresInSeconds: number) {
         // 永続化
         debug('creating transactions...', transactions);
         await transactionAdapter.transactionModel.create(transactions);
+    };
+}
+
+export function start(args: {
+    expiresAt: Date;
+    maxCountPerUnit: number;
+    state: string;
+    scope: TransactionScopeFactory.ITransactionScope;
+    /**
+     * 所有者ID
+     * 会員などとして開始する場合は指定
+     * 指定がない場合は匿名所有者としての開始
+     */
+    ownerId?: string;
+}): OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>> {
+    return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => {
+        // 利用可能かどうか
+        const nextCount = await transactionCountAdapter.incr(args.scope);
+        if (nextCount > args.maxCountPerUnit) {
+            return monapt.None;
+        }
+
+        // 利用可能であれば、取引作成&匿名所有者作成
+        let owner: OwnerFactor.IOwner;
+        if (args.ownerId === undefined) {
+            // 一般所有者作成(後で取引の所有者が適切かどうかを確認するために、状態を持たせる)
+            owner = AnonymousOwnerFactory.create({
+                state: args.state
+            });
+        } else {
+            // 所有者指定であれば存在確認
+            const ownerDoc = await ownerAdapter.model.findById(args.ownerId).exec();
+            if (ownerDoc === null) {
+                throw new ArgumentError('ownerId', `owner[id:${args.ownerId}] not found`);
+            }
+            owner = <MemberOwnerFactory.IMemberOwner>ownerDoc.toObject();
+        }
+
+        // 興行主取得
+        const promoterOwnerDoc = await ownerAdapter.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
+        if (promoterOwnerDoc === null) {
+            throw new Error('promoter not found');
+        }
+        const promoter = <PromoterOwnerFactory.IPromoterOwner>promoterOwnerDoc.toObject();
+
+        // 取引ファクトリーで新しい進行中取引オブジェクトを作成
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [promoter, owner],
+            expires_at: args.expiresAt,
+            started_at: moment().toDate()
+        });
+
+        // 所有者永続化
+        // createコマンドで作成すること(ありえないはずだが、万が一所有者IDが重複するようなバグがあっても、ユニークインデックスではじかれる)
+        if (owner.group === OwnerGroup.ANONYMOUS) {
+            debug('creating anonymous owner...', owner);
+            const anonymousOwnerDoc = { ...owner, ...{ _id: owner.id } };
+            await ownerAdapter.model.create(anonymousOwnerDoc);
+        }
+
+        debug('creating transaction...');
+        // mongoDBに追加するために_idとowners属性を拡張
+        const transactionDoc = { ...transaction, ...{ _id: transaction.id, owners: [promoter.id, owner.id] } };
+        await transactionAdapter.transactionModel.create(transactionDoc);
+
+        return monapt.Option(transaction);
     };
 }
 
@@ -128,6 +198,10 @@ export function startAsAnonymous(args: {
         return monapt.Option(newTransaction);
     };
 }
+exports.updateAnonymousOwner = util.deprecate(
+    startAsAnonymous,
+    'sskts-domain: service.transaction.startAsAnonymous is deprecated, use service.transaction.start instead'
+);
 
 /**
  * 照会する

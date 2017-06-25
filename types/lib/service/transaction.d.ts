@@ -18,6 +18,18 @@ export declare type TransactionOperation<T> = (transactionAdapter: TransactionAd
  * @memberof service/transaction
  */
 export declare function prepare(length: number, expiresInSeconds: number): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function start(args: {
+    expiresAt: Date;
+    maxCountPerUnit: number;
+    state: string;
+    scope: TransactionScopeFactory.ITransactionScope;
+    /**
+     * 所有者ID
+     * 会員などとして開始する場合は指定
+     * 指定がない場合は匿名所有者としての開始
+     */
+    ownerId?: string;
+}): OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>;
 /**
  * 匿名所有者として取引開始する
  *
