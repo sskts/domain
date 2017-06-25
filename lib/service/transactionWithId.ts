@@ -4,10 +4,12 @@
  * @namespace service/transactionWithId
  */
 
+import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as monapt from 'monapt';
 import * as _ from 'underscore';
+import * as util from 'util';
 
 import ArgumentError from '../error/argument';
 
@@ -15,7 +17,10 @@ import * as AuthorizationFactory from '../factory/authorization';
 import * as COASeatReservationAuthorizationFactory from '../factory/authorization/coaSeatReservation';
 import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from '../factory/authorization/mvtk';
+import * as GMOCardFactory from '../factory/card/gmo';
 import * as EmailNotificationFactory from '../factory/notification/email';
+import * as AnonymousOwnerFactory from '../factory/owner/anonymous';
+import * as MemberOwnerFactory from '../factory/owner/member';
 import OwnerGroup from '../factory/ownerGroup';
 import * as TransactionFactory from '../factory/transaction';
 import * as AddNotificationTransactionEventFactory from '../factory/transactionEvent/addNotification';
@@ -235,8 +240,8 @@ export function removeEmail(transactionId: string, notificationId: string) {
  * 匿名所有者更新
  *
  * @returns {OwnerAndTransactionOperation<void>}
- *
  * @memberof service/transactionWithId
+ * @deprecated use setAnonymousOwnerProfile instead
  */
 export function updateAnonymousOwner(args: {
     transaction_id: string,
@@ -249,33 +254,195 @@ export function updateAnonymousOwner(args: {
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(args.transaction_id).populate('owners').exec();
         if (doc === null) {
-            throw new ArgumentError('args.transaction_id', `transaction[${args.transaction_id}] not found.`);
+            throw new ArgumentError('transaction_id', `transaction[id:${args.transaction_id}] not found.`);
         }
         const transaction = <TransactionFactory.ITransaction>doc.toObject();
 
-        const anonymousOwner = transaction.owners.find((owner) => {
-            return (owner.group === OwnerGroup.ANONYMOUS);
+        // 取引から、更新対象の所有者を取り出す
+        const anonymousOwnerInTransaction = <AnonymousOwnerFactory.IAnonymousOwner>transaction.owners.find((ownerInTransaction) => {
+            return (ownerInTransaction.group === OwnerGroup.ANONYMOUS);
         });
-        if (anonymousOwner === undefined) {
-            throw new ArgumentError('args.transaction_id', 'anonymous owner not found');
+        if (anonymousOwnerInTransaction === undefined) {
+            throw new ArgumentError('transaction_id', 'anonymous owner not found');
+        }
+
+        const anonymousOwner = AnonymousOwnerFactory.create({
+            id: anonymousOwnerInTransaction.id,
+            name_first: args.name_first,
+            name_last: args.name_last,
+            email: args.email,
+            tel: args.tel,
+            state: anonymousOwnerInTransaction.state
+        });
+
+        return setOwnerProfile(args.transaction_id, anonymousOwner)(ownerAdapter, transactionAdapter);
+    };
+}
+exports.updateAnonymousOwner = util.deprecate(
+    updateAnonymousOwner,
+    'sskts-domain: service.transactionWithId.updateAnonymousOwner is deprecated, use service.transactionWithId.setOwnerProfile instead'
+);
+
+/**
+ * 取引中の所有者プロフィールを変更する
+ * 匿名所有者として開始した場合のみ想定(匿名か会員に変更可能)
+ *
+ * @export
+ * @param {string} transactionId 取引ID
+ * @param {(AnonymousOwnerFactory.IAnonymousOwner | MemberOwnerFactory.IMemberOwner)} owner 所有者
+ * @returns {OwnerAndTransactionOperation<void>} 所有者と取引に対する操作
+ */
+export function setOwnerProfile(
+    transactionId: string,
+    owner: AnonymousOwnerFactory.IAnonymousOwner | MemberOwnerFactory.IMemberOwner
+): OwnerAndTransactionOperation<void> {
+    return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
+        // 取引取得
+        const transaction = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec()
+            .then((doc) => {
+                if (doc === null) {
+                    throw new ArgumentError('transactionId', `transaction[id:${transactionId}] not found.`);
+                }
+
+                return <TransactionFactory.ITransaction>doc.toObject();
+            });
+
+        // 取引から、更新対象の所有者を取り出す
+        const existingOwner = transaction.owners.find((ownerInTransaction) => ownerInTransaction.id === owner.id);
+        if (existingOwner === undefined) {
+            throw new ArgumentError('owner', `owner[id:${owner.id}] not found`);
+        }
+
+        if (owner.group === OwnerGroup.MEMBER) {
+            // 会員に更新の場合、まずGMO会員登録
+            await saveGMOMember(<MemberOwnerFactory.IMemberOwner>owner);
         }
 
         // 永続化
-        debug('updating anonymous owner...');
-        const ownerDoc = await ownerAdapter.model.findByIdAndUpdate(
-            anonymousOwner.id,
-            {
-                name_first: args.name_first,
-                name_last: args.name_last,
-                email: args.email,
-                tel: args.tel
-            }
+        // 上書きすることがポイント(匿名になったり会員になったりするので)
+        debug('setting owner profile...');
+        const result = await ownerAdapter.model.update(
+            { _id: owner.id },
+            owner,
+            { overwrite: true }
         ).exec();
+        debug('owner updated', result);
 
-        // ロジック上nullチェックするが、実際にはまずありえない挙動(なのでテストコードで網羅できない)
-        if (ownerDoc === null) {
-            throw new ArgumentError('args.transaction_id', 'owner not found');
+        if (result.ok !== 1 || result.nModified !== 1) {
+            console.error('fail in updating owner', result);
+            throw new Error('fail in updating owner');
         }
+    };
+}
+
+/**
+ * 会員情報をGMO会員として保管する
+ *
+ * @param {MemberOwnerFactory.IMemberOwner} memberOwner 会員所有者
+ */
+async function saveGMOMember(memberOwner: MemberOwnerFactory.IMemberOwner) {
+    // GMO会員登録
+    // GMOサイト情報は環境変数に持たせる(1システムにつき1サイト)
+    // 2回目かもしれないので、存在チェック
+    const searchMemberResult = await GMO.services.card.searchMember({
+        siteId: process.env.GMO_SITE_ID,
+        sitePass: process.env.GMO_SITE_PASS,
+        memberId: memberOwner.id
+    });
+    debug('GMO searchMember processed', searchMemberResult);
+
+    if (searchMemberResult !== null) {
+        // 存在していれば変更
+        const updateMemberResult = await GMO.services.card.updateMember({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: memberOwner.id,
+            memberName: `${memberOwner.name_last} ${memberOwner.name_first}`
+        });
+        debug('GMO updateMember processed', updateMemberResult);
+    } else {
+        const saveMemberResult = await GMO.services.card.saveMember({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: memberOwner.id,
+            memberName: `${memberOwner.name_last} ${memberOwner.name_first}`
+        });
+        debug('GMO saveMember processed', saveMemberResult);
+    }
+}
+
+/**
+ * 取引中の所有者に対してカード情報を保管する
+ *
+ * @export
+ * @param {string} transactionId 取引ID
+ * @param {string} ownerId 所有者ID
+ * @param {(GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized)} gmoCard GMOカード情報
+ * @returns {TransactionOperation<void>} 取引に対する操作
+ */
+export function saveCard(
+    transactionId: string,
+    ownerId: string,
+    gmoCard: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized
+): TransactionOperation<void> {
+    return async (transactionAdapter: TransactionAdapter) => {
+        // 取引取得
+        const transaction = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec()
+            .then((doc) => {
+                if (doc === null) {
+                    throw new ArgumentError('transactionId', `transaction[id:${transactionId}] not found.`);
+                }
+
+                return <TransactionFactory.ITransaction>doc.toObject();
+            });
+
+        // 取引から、更新対象の所有者を取り出す
+        const existingOwner = transaction.owners.find((ownerInTransaction) => ownerInTransaction.id === ownerId);
+        if (existingOwner === undefined) {
+            throw new ArgumentError('ownerId', `owner[id:${ownerId}] not found`);
+        }
+        // 万が一会員所有者でなければ不適切な操作
+        if (existingOwner.group !== OwnerGroup.MEMBER) {
+            throw new ArgumentError('ownerId', `owner[id:${ownerId}] is not a member`);
+        }
+
+        // 登録済みのカードがあれば削除
+        // もし会員未登録でこのサービスを使えば、この時点でGMOエラー
+        const searchCardResults = await GMO.services.card.searchCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: ownerId,
+            seqMode: GMO.utils.util.SEQ_MODE_PHYSICS
+        });
+        debug('GMO searchCard processed', searchCardResults);
+
+        await Promise.all(searchCardResults.map(async (searchCardResult) => {
+            // 未削除であれば削除
+            if (searchCardResult.deleteFlag !== '1') {
+                const deleteCardResult = await GMO.services.card.deleteCard({
+                    siteId: process.env.GMO_SITE_ID,
+                    sitePass: process.env.GMO_SITE_PASS,
+                    memberId: ownerId,
+                    seqMode: GMO.utils.util.SEQ_MODE_PHYSICS,
+                    cardSeq: searchCardResult.cardSeq
+                });
+                debug('GMO deleteCard processed', deleteCardResult);
+            }
+        }));
+
+        // GMOカード登録
+        const saveCardResult = await GMO.services.card.saveCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: ownerId,
+            seqMode: GMO.utils.util.SEQ_MODE_PHYSICS,
+            cardNo: (<GMOCardFactory.IGMOCardRaw>gmoCard).cardNo,
+            cardPass: (<GMOCardFactory.IGMOCardRaw>gmoCard).cardPass,
+            expire: (<GMOCardFactory.IGMOCardRaw>gmoCard).expire,
+            holderName: (<GMOCardFactory.IGMOCardRaw>gmoCard).holderName,
+            token: (<GMOCardFactory.IGMOCardTokenized>gmoCard).token
+        });
+        debug('GMO saveCard processed', saveCardResult);
     };
 }
 

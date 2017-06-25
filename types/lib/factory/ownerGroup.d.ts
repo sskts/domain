@@ -3,19 +3,18 @@
  *
  * @namespace factory/ownerGroup
  */
-declare type OwnerGroup = 'ANONYMOUS' | 'PROMOTER' | 'MEMBER';
-declare namespace OwnerGroup {
+declare enum OwnerGroup {
     /**
      * 匿名
      */
-    const ANONYMOUS = "ANONYMOUS";
+    ANONYMOUS = "ANONYMOUS",
     /**
      * 興行主
      */
-    const PROMOTER = "PROMOTER";
+    PROMOTER = "PROMOTER",
     /**
      * 会員
      */
-    const MEMBER = "MEMBER";
+    MEMBER = "MEMBER",
 }
 export default OwnerGroup;

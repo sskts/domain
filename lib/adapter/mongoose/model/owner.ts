@@ -17,6 +17,10 @@ const schema = new mongoose.Schema(
         email: String,
         tel: String,
         name: MultilingualStringSchemaType,
+        description: MultilingualStringSchemaType,
+        notes: MultilingualStringSchemaType,
+        username: String,
+        password_hash: String,
         state: String
     },
     {

@@ -5,16 +5,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 会員インターフェースを追加。
+- 口座インターフェースを追加。
+- カードインターフェースを追加。
 
 ### Changed
+- ID指定取引サービスに所有者プロフィール変更メソッドを追加して、匿名所有者プロフィール更新メソッドを拡張。
+- ID指定取引サービスに、カード情報保管メソッドを追加。
 
 ### Deprecated
+- ID指定取引サービスの匿名所有者プロフィール更新メソッドを非推奨指定。
 
 ### Removed
 
 ### Fixed
 - COAのアクセストークンの有効期限切れエラーが出る問題に対して、coa-service側での対応を反映。 ([@motionpicture/coa-service@3.1.2](https://www.npmjs.com/package/@motionpicture/coa-service))
-- npm@5.0.0の仕様に合わせて、スクリプトprepublishをprepareへ変更。
+- npm@5.0.0の仕様に合わせて、スクリプトprepublishをprepublishOnlyへ変更。
 
 ### Security
 - [mongoose@^4.10.7](https://github.com/Automattic/mongoose)
