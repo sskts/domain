@@ -1,19 +1,13 @@
 import IMultilingualString from '../multilingualString';
-import * as OwnerFactory from '../owner';
-import * as GMOPaymentAgencyMemberFactory from '../paymentAgencyMember/gmo';
-/**
- * 会員で利用可能な決済代行会社会員インターフェース
- * GMO会員以外を持つようになれば、ここを拡張する
- */
-export declare type IAvailablePaymentAgencyMember = GMOPaymentAgencyMemberFactory.IGMOPaymentAgencyMember;
+import * as AnonymousOwnerFactory from '../owner/anonymous';
 /**
  * 会員所有者インターフェース
  *
  * @interface IMemberOwner
- * @extends {OwnerFactory.IOwner}
+ * @extends {AnonymousOwnerFactory.IAnonymousOwner}
  * @memberof factory/owner/member
  */
-export interface IMemberOwner extends OwnerFactory.IOwner {
+export interface IMemberOwner extends AnonymousOwnerFactory.IAnonymousOwner {
     /**
      * ユーザーネーム
      */
@@ -46,23 +40,16 @@ export interface IMemberOwner extends OwnerFactory.IOwner {
      * 備考
      */
     notes: IMultilingualString;
-    /**
-     * 決済代行会社会員リスト
-     *
-     * @type {IAvailablePaymentAgencyMember[]}
-     * @memberof IMemberOwner
-     */
-    payment_agency_members: IAvailablePaymentAgencyMember[];
 }
 export declare function create(args: {
     id?: string;
     username: string;
-    password_hash: string;
+    password: string;
     name_first: string;
     name_last: string;
     email: string;
     tel?: string;
+    state?: string;
     description?: IMultilingualString;
     notes?: IMultilingualString;
-    payment_agency_members: IAvailablePaymentAgencyMember[];
-}): IMemberOwner;
+}): Promise<IMemberOwner>;

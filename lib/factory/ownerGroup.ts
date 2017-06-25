@@ -4,25 +4,19 @@
  * @namespace factory/ownerGroup
  */
 
-type OwnerGroup =
-    'ANONYMOUS'
-    | 'PROMOTER'
-    | 'MEMBER'
-    ;
-
-namespace OwnerGroup {
+enum OwnerGroup {
     /**
      * 匿名
      */
-    export const ANONYMOUS = 'ANONYMOUS';
+    ANONYMOUS = 'ANONYMOUS',
     /**
      * 興行主
      */
-    export const PROMOTER = 'PROMOTER';
+    PROMOTER = 'PROMOTER',
     /**
      * 会員
      */
-    export const MEMBER = 'MEMBER';
+    MEMBER = 'MEMBER'
 }
 
 export default OwnerGroup;

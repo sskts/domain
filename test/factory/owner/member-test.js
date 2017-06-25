@@ -4,91 +4,65 @@
  *
  * @ignore
  */
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
 const argument_1 = require("../../../lib/error/argument");
 const argumentNull_1 = require("../../../lib/error/argumentNull");
 const MemberOwnerFactory = require("../../../lib/factory/owner/member");
-const paymentAgencyMemberGroup_1 = require("../../../lib/factory/paymentAgencyMemberGroup");
 const TEST_CREATE_MEMBER_ARGS = {
     username: 'xxx',
-    password_hash: 'xxx',
+    password: 'xxx',
     name_first: 'xxx',
     name_last: 'xxx',
-    email: 'noreply@example.com',
-    payment_agency_members: [
-        {
-            group: paymentAgencyMemberGroup_1.default.GMO,
-            site_id: 'xxx',
-            site_pass: 'xxx',
-            member_id: 'xxx'
-        }
-    ]
+    email: 'noreply@example.com'
 };
 describe('会員所有者ファクトリー', () => {
-    it('作成できる', () => {
-        assert.doesNotThrow(() => {
-            MemberOwnerFactory.create(TEST_CREATE_MEMBER_ARGS);
-        });
-    });
-    it('ユーザーネームが空で作成できない', () => {
+    it('作成できる', () => __awaiter(this, void 0, void 0, function* () {
+        const memberOwner = yield MemberOwnerFactory.create(TEST_CREATE_MEMBER_ARGS);
+        assert.equal(typeof memberOwner.id, 'string');
+    }));
+    it('ユーザーネームが空で作成できない', () => __awaiter(this, void 0, void 0, function* () {
         const args = Object.assign({}, TEST_CREATE_MEMBER_ARGS, { username: '' });
-        assert.throws(() => {
-            MemberOwnerFactory.create(args);
-        }, (err) => {
-            assert(err instanceof argumentNull_1.default);
-            assert.equal(err.argumentName, 'username');
-            return true;
-        });
-    });
-    it('パスワードが空で作成できない', () => {
-        const args = Object.assign({}, TEST_CREATE_MEMBER_ARGS, { password_hash: '' });
-        assert.throws(() => {
-            MemberOwnerFactory.create(args);
-        }, (err) => {
-            assert(err instanceof argumentNull_1.default);
-            assert.equal(err.argumentName, 'password_hash');
-            return true;
-        });
-    });
-    it('名が空で作成できない', () => {
+        const createError = yield MemberOwnerFactory.create(args).catch((error) => error);
+        assert(createError instanceof argumentNull_1.default);
+        assert.equal(createError.argumentName, 'username');
+    }));
+    it('パスワードが空で作成できない', () => __awaiter(this, void 0, void 0, function* () {
+        const args = Object.assign({}, TEST_CREATE_MEMBER_ARGS, { password: '' });
+        const createError = yield MemberOwnerFactory.create(args).catch((error) => error);
+        assert(createError instanceof argumentNull_1.default);
+        assert.equal(createError.argumentName, 'password');
+    }));
+    it('名が空で作成できない', () => __awaiter(this, void 0, void 0, function* () {
         const args = Object.assign({}, TEST_CREATE_MEMBER_ARGS, { name_first: '' });
-        assert.throws(() => {
-            MemberOwnerFactory.create(args);
-        }, (err) => {
-            assert(err instanceof argumentNull_1.default);
-            assert.equal(err.argumentName, 'name_first');
-            return true;
-        });
-    });
-    it('姓が空で作成できない', () => {
+        const createError = yield MemberOwnerFactory.create(args).catch((error) => error);
+        assert(createError instanceof argumentNull_1.default);
+        assert.equal(createError.argumentName, 'name_first');
+    }));
+    it('姓が空で作成できない', () => __awaiter(this, void 0, void 0, function* () {
         const args = Object.assign({}, TEST_CREATE_MEMBER_ARGS, { name_last: '' });
-        assert.throws(() => {
-            MemberOwnerFactory.create(args);
-        }, (err) => {
-            assert(err instanceof argumentNull_1.default);
-            assert.equal(err.argumentName, 'name_last');
-            return true;
-        });
-    });
-    it('メールアドレスが空で作成できない', () => {
+        const createError = yield MemberOwnerFactory.create(args).catch((error) => error);
+        assert(createError instanceof argumentNull_1.default);
+        assert.equal(createError.argumentName, 'name_last');
+    }));
+    it('メールアドレスが空で作成できない', () => __awaiter(this, void 0, void 0, function* () {
         const args = Object.assign({}, TEST_CREATE_MEMBER_ARGS, { email: '' });
-        assert.throws(() => {
-            MemberOwnerFactory.create(args);
-        }, (err) => {
-            assert(err instanceof argumentNull_1.default);
-            assert.equal(err.argumentName, 'email');
-            return true;
-        });
-    });
-    it('メールアドレスが不適切なので作成できない', () => {
+        const createError = yield MemberOwnerFactory.create(args).catch((error) => error);
+        assert(createError instanceof argumentNull_1.default);
+        assert.equal(createError.argumentName, 'email');
+    }));
+    it('メールアドレスが不適切なので作成できない', () => __awaiter(this, void 0, void 0, function* () {
         const args = Object.assign({}, TEST_CREATE_MEMBER_ARGS, { email: 'xxx' });
-        assert.throws(() => {
-            MemberOwnerFactory.create(args);
-        }, (err) => {
-            assert(err instanceof argument_1.default);
-            assert.equal(err.argumentName, 'email');
-            return true;
-        });
-    });
+        const createError = yield MemberOwnerFactory.create(args).catch((error) => error);
+        assert(createError instanceof argument_1.default);
+        assert.equal(createError.argumentName, 'email');
+    }));
 });

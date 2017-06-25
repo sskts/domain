@@ -14,6 +14,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
+const bcrypt = require("bcryptjs");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const TransactionWithIdService = require("../../lib/service/transactionWithId");
 const owner_1 = require("../../lib/adapter/owner");
@@ -22,9 +24,11 @@ const assetGroup_1 = require("../../lib/factory/assetGroup");
 const COASeatReservationAuthorizationFactory = require("../../lib/factory/authorization/coaSeatReservation");
 const GMOAuthorizationFactory = require("../../lib/factory/authorization/gmo");
 const MvtkAuthorizationFactory = require("../../lib/factory/authorization/mvtk");
+const cardGroup_1 = require("../../lib/factory/cardGroup");
 const EmailNotificationFactory = require("../../lib/factory/notification/email");
 const objectId_1 = require("../../lib/factory/objectId");
 const AnonymousOwnerFactory = require("../../lib/factory/owner/anonymous");
+const MemberOwnerFactory = require("../../lib/factory/owner/member");
 const ownerGroup_1 = require("../../lib/factory/ownerGroup");
 const OwnershipFactory = require("../../lib/factory/ownership");
 const TransactionFactory = require("../../lib/factory/transaction");
@@ -40,6 +44,13 @@ let TEST_MVTK_AUTHORIZATION;
 let TEST_EMAIL_NOTIFICATION;
 let TEST_TRANSACTION_INQUIRY_KEY;
 let TEST_PROMOTER_OWNER;
+const TEST_GMO_CARD = {
+    cardNo: '4111111111111111',
+    cardPass: '111',
+    expire: '1812',
+    holderName: 'AA BB',
+    group: cardGroup_1.default.GMO
+};
 let connection;
 // tslint:disable-next-line:max-func-body-length
 before(() => __awaiter(this, void 0, void 0, function* () {
@@ -159,6 +170,60 @@ before(() => __awaiter(this, void 0, void 0, function* () {
         tel: 'xxx'
     });
 }));
+function assertSetAnonymousOwner(transactionId, ownerId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        const anonymousOwner = AnonymousOwnerFactory.create({
+            id: ownerId,
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: 'noreply@example.com',
+            tel: '09012345678',
+            state: 'state'
+        });
+        yield TransactionWithIdService.setOwnerProfile(transactionId, anonymousOwner)(ownerAdapter, transactionAdapter);
+        // 所有者を検索して情報の一致を確認
+        const anonymousOwnerDoc = yield ownerAdapter.model.findById(ownerId).exec();
+        assert(anonymousOwnerDoc !== null);
+        assert.equal(anonymousOwnerDoc.get('name_first'), anonymousOwner.name_first);
+        assert.equal(anonymousOwnerDoc.get('name_last'), anonymousOwner.name_last);
+        assert.equal(anonymousOwnerDoc.get('email'), anonymousOwner.email);
+        assert.equal(anonymousOwnerDoc.get('tel'), anonymousOwner.tel);
+        assert.equal(anonymousOwnerDoc.get('state'), anonymousOwner.state);
+        assert.equal(anonymousOwnerDoc.get('group'), anonymousOwner.group);
+    });
+}
+function assertSetMemberOwner(transactionId, ownerId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        const password = 'password';
+        const memberOwner = yield MemberOwnerFactory.create({
+            id: ownerId,
+            username: `sskts-domain:test:service:transactionWithId-test:username:${moment().valueOf()}`,
+            password: password,
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: 'noreply@example.com',
+            tel: '09012345678',
+            state: 'state'
+        });
+        yield TransactionWithIdService.setOwnerProfile(transactionId, memberOwner)(ownerAdapter, transactionAdapter);
+        // 所有者を検索して情報の一致を確認
+        const ownerDoc = yield ownerAdapter.model.findById(ownerId).exec();
+        assert(ownerDoc !== null);
+        assert.equal(ownerDoc.get('username'), memberOwner.username);
+        assert(yield bcrypt.compare(password, ownerDoc.get('password_hash')));
+        assert.equal(ownerDoc.get('name_first'), memberOwner.name_first);
+        assert.equal(ownerDoc.get('name_first'), memberOwner.name_first);
+        assert.equal(ownerDoc.get('name_last'), memberOwner.name_last);
+        assert.equal(ownerDoc.get('email'), memberOwner.email);
+        assert.equal(ownerDoc.get('tel'), memberOwner.tel);
+        assert.equal(ownerDoc.get('state'), memberOwner.state);
+        assert.equal(ownerDoc.get('group'), memberOwner.group);
+    });
+}
 describe('取引サービス IDで取得', () => {
     beforeEach(() => __awaiter(this, void 0, void 0, function* () {
         const transactionAdapter = new transaction_1.default(connection);
@@ -615,21 +680,108 @@ describe('匿名所有者更新', () => {
         yield ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
         const transactionDoc = Object.assign({}, transaction, { owners: transaction.owners.map((owner) => owner.id) });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
-        const update = {
-            name_first: 'xxx',
-            name_last: 'xxx',
-            email: 'xxx',
-            tel: 'xxx'
+        const profile = {
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: 'noreply@example.com',
+            tel: '09012345678'
         };
-        const args = Object.assign({ transaction_id: transaction.id }, update);
+        const args = Object.assign({}, profile, { transaction_id: transaction.id });
         yield TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter);
         // 所有者を検索して情報の一致を確認
         const anonymousOwnerDoc = yield ownerAdapter.model.findById(ownerTo.id).exec();
         assert(anonymousOwnerDoc !== null);
-        assert.equal(anonymousOwnerDoc.get('name_first'), update.name_first);
-        assert.equal(anonymousOwnerDoc.get('name_last'), update.name_first);
-        assert.equal(anonymousOwnerDoc.get('email'), update.name_first);
-        assert.equal(anonymousOwnerDoc.get('tel'), update.name_first);
+        assert.equal(anonymousOwnerDoc.get('name_first'), profile.name_first);
+        assert.equal(anonymousOwnerDoc.get('name_last'), profile.name_last);
+        assert.equal(anonymousOwnerDoc.get('email'), profile.email);
+        assert.equal(anonymousOwnerDoc.get('tel'), profile.tel);
+        assert.equal(anonymousOwnerDoc.get('group'), ownerGroup_1.default.ANONYMOUS);
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    }));
+});
+describe('所有者プロフィールセット', () => {
+    it('匿名所有者として更新できる', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        yield ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = Object.assign({}, transaction, { owners: transaction.owners.map((owner) => owner.id) });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        yield assertSetAnonymousOwner(transaction.id, ownerTo.id);
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    }));
+    it('会員所有者として更新できる', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        yield ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = Object.assign({}, transaction, { owners: transaction.owners.map((owner) => owner.id) });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        yield assertSetMemberOwner(transaction.id, ownerTo.id);
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    }));
+    it('会員所有者として更新後、匿名所有者に戻す', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        yield ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = Object.assign({}, transaction, { owners: transaction.owners.map((owner) => owner.id) });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        yield assertSetMemberOwner(transaction.id, ownerTo.id);
+        yield assertSetAnonymousOwner(transaction.id, ownerTo.id);
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    }));
+    it('会員所有者として繰り返し更新できる', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        yield ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = Object.assign({}, transaction, { owners: transaction.owners.map((owner) => owner.id) });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        yield assertSetMemberOwner(transaction.id, ownerTo.id);
+        yield assertSetMemberOwner(transaction.id, ownerTo.id);
+        yield assertSetMemberOwner(transaction.id, ownerTo.id);
+        yield assertSetMemberOwner(transaction.id, ownerTo.id);
         // テストデータ削除
         yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
         yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
@@ -646,19 +798,17 @@ describe('匿名所有者更新', () => {
             owners: [ownerFrom, ownerTo],
             expires_at: new Date()
         });
-        const update = {
-            name_first: 'xxx',
-            name_last: 'xxx',
-            email: 'xxx',
-            tel: 'xxx'
-        };
-        const args = Object.assign({ transaction_id: transaction.id }, update);
-        const updateError = yield TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter)
-            .catch((error) => {
-            return error;
+        const anonymousOwner = AnonymousOwnerFactory.create({
+            id: ownerTo.id,
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: 'noreply@example.com',
+            tel: '09012345678',
+            state: 'state'
         });
-        assert(updateError instanceof argument_1.default);
-        assert.equal(updateError.argumentName, 'transactionId');
+        const setOwnerProfileError = yield TransactionWithIdService.setOwnerProfile(transaction.id, anonymousOwner)(ownerAdapter, transactionAdapter).catch((error) => error);
+        assert(setOwnerProfileError instanceof argument_1.default);
+        assert.equal(setOwnerProfileError.argumentName, 'transactionId');
     }));
     it('匿名所有者が取引内に存在しなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
         const ownerAdapter = new owner_1.default(connection);
@@ -666,7 +816,6 @@ describe('匿名所有者更新', () => {
         // テストデータ作成
         const ownerFrom = TEST_PROMOTER_OWNER;
         const ownerTo = AnonymousOwnerFactory.create({});
-        ownerTo.group = 'invalidgroup';
         const transaction = TransactionFactory.create({
             status: transactionStatus_1.default.UNDERWAY,
             owners: [ownerFrom, ownerTo],
@@ -675,19 +824,132 @@ describe('匿名所有者更新', () => {
         yield ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
         const transactionDoc = Object.assign({}, transaction, { owners: transaction.owners.map((owner) => owner.id) });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
-        const update = {
-            name_first: 'xxx',
-            name_last: 'xxx',
-            email: 'xxx',
-            tel: 'xxx'
-        };
-        const args = Object.assign({ transaction_id: transaction.id }, update);
-        const updateError = yield TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter)
-            .catch((error) => {
-            return error;
+        const anonymousOwner = AnonymousOwnerFactory.create({
+            // id: ownerTo.id, // あえて新しいIDの所有者を作成する
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: 'noreply@example.com',
+            tel: '09012345678',
+            state: 'state'
         });
-        assert(updateError instanceof argument_1.default);
-        assert.equal(updateError.argumentName, 'transactionId');
+        const setOwnerProfileError = yield TransactionWithIdService.setOwnerProfile(transaction.id, anonymousOwner)(ownerAdapter, transactionAdapter).catch((error) => error);
+        assert(setOwnerProfileError instanceof argument_1.default);
+        assert.equal(setOwnerProfileError.argumentName, 'owner');
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    }));
+});
+describe('カード保管', () => {
+    it('取引が存在しなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        const setOwnerProfileError = yield TransactionWithIdService.saveCard(transaction.id, ownerTo.id, TEST_GMO_CARD)(transactionAdapter).catch((error) => error);
+        assert(setOwnerProfileError instanceof argument_1.default);
+        assert.equal(setOwnerProfileError.argumentName, 'transactionId');
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    }));
+    it('所有者が存在しなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        const transactionDoc = Object.assign({}, transaction, { owners: transaction.owners.map((owner) => owner.id) });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        const setOwnerProfileError = yield TransactionWithIdService.saveCard(transaction.id, ownerTo.id, TEST_GMO_CARD)(transactionAdapter).catch((error) => error);
+        assert(setOwnerProfileError instanceof argument_1.default);
+        assert.equal(setOwnerProfileError.argumentName, 'ownerId');
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    }));
+    it('会員未登録であれば失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        yield ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = Object.assign({}, transaction, { owners: transaction.owners.map((owner) => owner.id) });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        // 会員未登録なのでエラーになるはず
+        const setOwnerProfileError = yield TransactionWithIdService.saveCard(transaction.id, ownerTo.id, TEST_GMO_CARD)(transactionAdapter).catch((error) => error);
+        assert(setOwnerProfileError instanceof argument_1.default);
+        assert.equal(setOwnerProfileError.argumentName, 'ownerId');
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    }));
+    it('会員登録済みであれば成功する', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        yield ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = Object.assign({}, transaction, { owners: transaction.owners.map((owner) => owner.id) });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        // 取引に会員セット(この中でGMO会員登録される)
+        yield assertSetMemberOwner(transaction.id, ownerTo.id);
+        // GMO会員登録済みなのでカード登録できるはず
+        yield TransactionWithIdService.saveCard(transaction.id, ownerTo.id, TEST_GMO_CARD)(transactionAdapter);
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    }));
+    it('会員登録+カード保存を繰り返しても成功する', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        yield ownerAdapter.model.findByIdAndUpdate(ownerTo.id, ownerTo, { upsert: true }).exec();
+        const transactionDoc = Object.assign({}, transaction, { owners: transaction.owners.map((owner) => owner.id) });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        // 取引に会員セット(この中でGMO会員登録される)
+        // GMO会員登録済みなのでカード登録できるはず
+        yield assertSetMemberOwner(transaction.id, ownerTo.id);
+        yield TransactionWithIdService.saveCard(transaction.id, ownerTo.id, TEST_GMO_CARD)(transactionAdapter);
+        yield assertSetMemberOwner(transaction.id, ownerTo.id);
+        yield TransactionWithIdService.saveCard(transaction.id, ownerTo.id, TEST_GMO_CARD)(transactionAdapter);
+        yield assertSetMemberOwner(transaction.id, ownerTo.id);
+        yield TransactionWithIdService.saveCard(transaction.id, ownerTo.id, TEST_GMO_CARD)(transactionAdapter);
         // テストデータ削除
         yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
         yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();

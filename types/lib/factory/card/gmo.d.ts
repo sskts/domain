@@ -5,16 +5,25 @@
  */
 import * as CardFactory from '../card';
 /**
- * GMOカードインターフェース
+ * 生GMOカードインターフェース
  *
  * todo gmo-serviceの定義に合わせる
  *
- * @interface IGMOCard
+ * @interface IGMOCardRaw
  * @extends {CardFactory.ICard}
  */
-export interface IGMOCard extends CardFactory.ICard {
-    card_name: string;
-    card_no: string;
+export interface IGMOCardRaw extends CardFactory.ICard {
+    cardNo: string;
+    cardPass: string;
     expire: string;
-    holder_name: string;
+    holderName: string;
+}
+/**
+ * トークン化GMOカードインターフェース
+ *
+ * @interface IGMOCardTokenized
+ * @extends {CardFactory.ICard}
+ */
+export interface IGMOCardTokenized extends CardFactory.ICard {
+    token: string;
 }

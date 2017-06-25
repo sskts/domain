@@ -4,6 +4,7 @@
  * @namespace factory/owner/member
  */
 
+import * as bcrypt from 'bcryptjs';
 import * as _ from 'underscore';
 import * as validator from 'validator';
 
@@ -12,24 +13,17 @@ import ArgumentNullError from '../../error/argumentNull';
 
 import IMultilingualString from '../multilingualString';
 import ObjectId from '../objectId';
-import * as OwnerFactory from '../owner';
+import * as AnonymousOwnerFactory from '../owner/anonymous';
 import OwnerGroup from '../ownerGroup';
-import * as GMOPaymentAgencyMemberFactory from '../paymentAgencyMember/gmo';
-
-/**
- * 会員で利用可能な決済代行会社会員インターフェース
- * GMO会員以外を持つようになれば、ここを拡張する
- */
-export type IAvailablePaymentAgencyMember = GMOPaymentAgencyMemberFactory.IGMOPaymentAgencyMember;
 
 /**
  * 会員所有者インターフェース
  *
  * @interface IMemberOwner
- * @extends {OwnerFactory.IOwner}
+ * @extends {AnonymousOwnerFactory.IAnonymousOwner}
  * @memberof factory/owner/member
  */
-export interface IMemberOwner extends OwnerFactory.IOwner {
+export interface IMemberOwner extends AnonymousOwnerFactory.IAnonymousOwner {
     /**
      * ユーザーネーム
      */
@@ -62,29 +56,22 @@ export interface IMemberOwner extends OwnerFactory.IOwner {
      * 備考
      */
     notes: IMultilingualString;
-    /**
-     * 決済代行会社会員リスト
-     *
-     * @type {IAvailablePaymentAgencyMember[]}
-     * @memberof IMemberOwner
-     */
-    payment_agency_members: IAvailablePaymentAgencyMember[];
 }
 
-export function create(args: {
+export async function create(args: {
     id?: string;
     username: string;
-    password_hash: string;
+    password: string;
     name_first: string;
     name_last: string;
     email: string;
     tel?: string;
+    state?: string;
     description?: IMultilingualString;
     notes?: IMultilingualString;
-    payment_agency_members: IAvailablePaymentAgencyMember[];
-}): IMemberOwner {
+}): Promise<IMemberOwner> {
     if (_.isEmpty(args.username)) throw new ArgumentNullError('username');
-    if (_.isEmpty(args.password_hash)) throw new ArgumentNullError('password_hash');
+    if (_.isEmpty(args.password)) throw new ArgumentNullError('password');
     if (_.isEmpty(args.name_first)) throw new ArgumentNullError('name_first');
     if (_.isEmpty(args.name_last)) throw new ArgumentNullError('name_last');
     if (_.isEmpty(args.email)) throw new ArgumentNullError('email');
@@ -93,25 +80,22 @@ export function create(args: {
         throw new ArgumentError('email', 'invalid email');
     }
 
-    if (!_.isArray(args.payment_agency_members)) {
-        throw new ArgumentError('payment_agency_members', 'payment_agency_members should be array');
-    }
-
-    if (args.payment_agency_members.length === 0) {
-        throw new ArgumentError('payment_agency_members', 'payment_agency_members should not be empty');
-    }
+    // パスワードハッシュ化
+    // todo ハッシュ化文字列をインターフェースとして用意し、ハッシュプロセスをどこかへ移動する
+    const SALT_LENGTH = 8;
+    const passwordHash = await bcrypt.hash(args.password, SALT_LENGTH);
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: OwnerGroup.MEMBER,
         username: args.username,
-        password_hash: args.password_hash,
+        password_hash: passwordHash,
         name_first: args.name_first,
         name_last: args.name_last,
         email: args.email,
         tel: (args.tel === undefined) ? '' : args.tel,
+        state: (args.state === undefined) ? '' : args.state,
         description: (args.description === undefined) ? { en: '', ja: '' } : args.description,
-        notes: (args.notes === undefined) ? { en: '', ja: '' } : args.notes,
-        payment_agency_members: args.payment_agency_members
+        notes: (args.notes === undefined) ? { en: '', ja: '' } : args.notes
     };
 }
