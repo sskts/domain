@@ -12,7 +12,7 @@ import OwnerGroup from './ownerGroup';
  * @interface IOwner
  * @param {string} id
  * @param {OwnerGroup} group 所有者グループ
- * @memberof tobereplaced$
+ * @memberof factory/owner
  */
 export interface IOwner {
     id: string;

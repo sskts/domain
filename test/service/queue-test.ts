@@ -172,8 +172,8 @@ describe('キューサービス', () => {
         await QueueService.executeSendEmailNotification()(queueAdapter);
 
         // 試行回数の少ない方が優先されるはず
-        const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
-        const queue2Doc = await queueAdapter.model.findById(queue2.id, 'status').exec();
+        const queueDoc = <mongoose.Document>await queueAdapter.model.findById(queue.id, 'status').exec();
+        const queue2Doc = <mongoose.Document>await queueAdapter.model.findById(queue2.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.UNEXECUTED);
         assert.equal(queue2Doc.get('status'), QueueStatus.EXECUTED);
 
@@ -204,7 +204,7 @@ describe('キューサービス', () => {
 
         await QueueService.executeSendEmailNotification()(queueAdapter);
 
-        const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
+        const queueDoc = <mongoose.Document>await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.EXECUTED);
 
         // テストデータ削除
@@ -275,7 +275,7 @@ describe('キューサービス', () => {
         // tslint:disable-next-line:max-line-length
         await QueueService.executeSettleCOASeatReservationAuthorization()(assetAdapter, ownerAdapter, performanceAdapter, queueAdapter);
 
-        const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
+        const queueDoc = <mongoose.Document>await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
 
         // テストデータ削除
@@ -312,7 +312,7 @@ describe('キューサービス', () => {
 
         await QueueService.executeSettleGMOAuthorization()(queueAdapter);
 
-        const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
+        const queueDoc = <mongoose.Document>await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
 
         // テストデータ削除
@@ -341,7 +341,7 @@ describe('キューサービス', () => {
 
         await QueueService.executeDisableTransactionInquiry()(queueAdapter, transactionAdapter);
 
-        const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
+        const queueDoc = <mongoose.Document>await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
 
         // テストデータ削除
@@ -373,7 +373,7 @@ describe('キューサービス 中止', () => {
         await QueueService.abort(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
 
         // ステータスが変更されているかどうか確認
-        const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
+        const queueDoc = <mongoose.Document>await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.ABORTED);
 
         // テストデータ削除
@@ -405,7 +405,7 @@ describe('キューサービス リトライ', () => {
         await QueueService.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
 
         // ステータスが変更されているかどうか確認
-        const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
+        const queueDoc = <mongoose.Document>await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.UNEXECUTED);
 
         // テストデータ削除
@@ -435,7 +435,7 @@ describe('キューサービス リトライ', () => {
         await QueueService.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
 
         // ステータスが変更されているかどうか確認
-        const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
+        const queueDoc = <mongoose.Document>await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
 
         // テストデータ削除
@@ -466,7 +466,7 @@ describe('キューサービス リトライ', () => {
         await QueueService.retry(10)(queueAdapter); // tslint:disable-line:no-magic-numbers
 
         // ステータスが変更されているかどうか確認
-        const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
+        const queueDoc = <mongoose.Document>await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.RUNNING);
 
         // テストデータ削除
@@ -531,7 +531,7 @@ describe('キューサービス ムビチケ着券取消キュー実行', () => 
         await QueueService.executeCancelMvtkAuthorization()(queueAdapter);
 
         // ステータスが変更されているかどうか確認
-        const queueDoc = await queueAdapter.model.findById(queue.id, 'status').exec();
+        const queueDoc = <mongoose.Document>await queueAdapter.model.findById(queue.id, 'status').exec();
         assert.equal(queueDoc.get('status'), QueueStatus.EXECUTED);
 
         // テストデータ削除

@@ -175,12 +175,12 @@ describe('レポートサービス GMO実売上診察', () => {
                 gmo_pay_type: '0'
             })
         });
-        const transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
+        const transactionDoc = <mongoose.Document>await transactionAdapter.transactionModel.findByIdAndUpdate(
             transaction.id,
             transaction,
             { new: true, upsert: true }
         ).exec();
-        const transactionEventDoc = await transactionAdapter.transactionEventModel.findByIdAndUpdate(
+        const transactionEventDoc = <mongoose.Document>await transactionAdapter.transactionEventModel.findByIdAndUpdate(
             transactionEvent.id,
             transactionEvent,
             { new: true, upsert: true }

@@ -211,7 +211,7 @@ describe('取引サービス 再エクスポート', () => {
         await sskts.service.transaction.reexportQueues(0)(transactionAdapter); // tslint:disable-line:no-magic-numbers
 
         // ステータスが変更されているかどうか確認
-        const retriedTransaction = await transactionAdapter.transactionModel.findById(transaction.id).exec();
+        const retriedTransaction = <mongoose.Document>await transactionAdapter.transactionModel.findById(transaction.id).exec();
         assert.equal(retriedTransaction.get('queues_status'), TransactionQueuesStatus.UNEXPORTED);
 
         // テストデータ削除
@@ -245,7 +245,7 @@ describe('取引サービス キューエクスポート', () => {
         await sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
 
         // 取引のキューエクスポートステータスを確認
-        const transactionDoc = await transactionAdapter.transactionModel.findById(transaction.id).exec();
+        const transactionDoc = <mongoose.Document>await transactionAdapter.transactionModel.findById(transaction.id).exec();
         assert.equal(transactionDoc.get('queues_status'), TransactionQueuesStatus.EXPORTED);
 
         // テストデータ削除
@@ -313,13 +313,13 @@ describe('取引サービス 取引IDからキュー出力する', () => {
             })
         });
 
-        const transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
+        const transactionDoc = <mongoose.Document>await transactionAdapter.transactionModel.findByIdAndUpdate(
             transaction.id, transaction, { new: true, upsert: true }
         ).exec();
         await transactionAdapter.addEvent(event);
 
         await sskts.service.transaction.exportQueuesById(transaction.id)(queueAdapter, transactionAdapter);
-        const queueDoc4pushNotification = await queueAdapter.model.findOne(
+        const queueDoc4pushNotification = <mongoose.Document>await queueAdapter.model.findOne(
             {
                 group: QueueGroup.PUSH_NOTIFICATION,
                 'notification.id': event.notification.id

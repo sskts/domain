@@ -47,7 +47,7 @@ before(async () => {
     await MasterService.importScreens('118')(theaterAdapter, screenAdapter);
     await MasterService.importFilms('118')(theaterAdapter, filmAdapter);
     await MasterService.importPerformances('118', '20170401', '20170401')(filmAdapter, screenAdapter, performanceAdapter);
-    const perforamnce = await performanceAdapter.model.findOne().exec();
+    const perforamnce = <mongoose.Document>await performanceAdapter.model.findOne().exec();
 
     TEST_ANOYMOUS_OWNER = AnonymousOwnerFactory.create({
         id: '58e344ac36a44424c0997dad',
@@ -178,7 +178,7 @@ describe('在庫サービス 座席予約資産移動', () => {
         const ownerAdapter = new OwnerAdapter(connection);
         const performanceAdapter = new PerformanceAdapter(connection);
 
-        const ownerDoc = await ownerAdapter.model.findByIdAndUpdate(
+        const ownerDoc = <mongoose.Document>await ownerAdapter.model.findByIdAndUpdate(
             TEST_ANOYMOUS_OWNER.id, TEST_ANOYMOUS_OWNER, { new: true, upsert: true }
         ).exec();
 
@@ -187,13 +187,13 @@ describe('在庫サービス 座席予約資産移動', () => {
         )(assetAdapter, ownerAdapter, performanceAdapter);
 
         // 資産の存在を確認
-        const asset1Doc = await assetAdapter.model.findById('58e344b236a44424c0997daf').exec();
+        const asset1Doc = <mongoose.Document>await assetAdapter.model.findById('58e344b236a44424c0997daf').exec();
         assert.notEqual(asset1Doc, null);
         assert.equal(asset1Doc.get('mvtk_sales_price'), 0);
         assert.equal(asset1Doc.get('performance'), TEST_COA_SEAT_RESERVATION_AUTHORIZATION.assets[0].performance);
         assert.equal(asset1Doc.get('seat_code'), 'Ａ－３');
         assert.equal(asset1Doc.get('ownership').owner, '58e344ac36a44424c0997dad');
-        const asset2Doc = await assetAdapter.model.findById('58e344b236a44424c0997db1').exec();
+        const asset2Doc = <mongoose.Document>await assetAdapter.model.findById('58e344b236a44424c0997db1').exec();
         assert.notEqual(asset2Doc, null);
         assert.equal(asset2Doc.get('mvtk_sales_price'), 0);
         assert.equal(asset2Doc.get('performance'), TEST_COA_SEAT_RESERVATION_AUTHORIZATION.assets[0].performance);
@@ -262,8 +262,10 @@ describe('在庫サービス 取引IDから座席予約資産移動', () => {
             authorization: TEST_COA_SEAT_RESERVATION_AUTHORIZATION
         });
         // tslint:disable-next-line:max-line-length
-        const ownerDoc = await ownerAdapter.model.findByIdAndUpdate(TEST_ANOYMOUS_OWNER.id, TEST_ANOYMOUS_OWNER, { new: true, upsert: true }).exec();
-        const transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
+        const ownerDoc = <mongoose.Document>await ownerAdapter.model.findByIdAndUpdate(
+            TEST_ANOYMOUS_OWNER.id, TEST_ANOYMOUS_OWNER, { new: true, upsert: true }
+        ).exec();
+        const transactionDoc = <mongoose.Document>await transactionAdapter.transactionModel.findByIdAndUpdate(
             transaction.id, transaction, { new: true, upsert: true }
         ).exec();
         await transactionAdapter.addEvent(event);
@@ -273,13 +275,13 @@ describe('在庫サービス 取引IDから座席予約資産移動', () => {
         )(assetAdapter, ownerAdapter, performanceAdapter, transactionAdapter);
 
         // 資産の存在を確認
-        const asset1Doc = await assetAdapter.model.findById('58e344b236a44424c0997daf').exec();
+        const asset1Doc = <mongoose.Document>await assetAdapter.model.findById('58e344b236a44424c0997daf').exec();
         assert.notEqual(asset1Doc, null);
         assert.equal(asset1Doc.get('mvtk_sales_price'), 0);
         assert.equal(asset1Doc.get('performance'), TEST_COA_SEAT_RESERVATION_AUTHORIZATION.assets[0].performance);
         assert.equal(asset1Doc.get('seat_code'), 'Ａ－３');
         assert.equal(asset1Doc.get('ownership').owner, '58e344ac36a44424c0997dad');
-        const asset2Doc = await assetAdapter.model.findById('58e344b236a44424c0997db1').exec();
+        const asset2Doc = <mongoose.Document>await assetAdapter.model.findById('58e344b236a44424c0997db1').exec();
         assert.notEqual(asset2Doc, null);
         assert.equal(asset2Doc.get('mvtk_sales_price'), 0);
         assert.equal(asset2Doc.get('performance'), TEST_COA_SEAT_RESERVATION_AUTHORIZATION.assets[0].performance);
@@ -322,7 +324,7 @@ describe('在庫サービス 取引IDから座席予約資産移動', () => {
             owners: [],
             expires_at: new Date()
         });
-        const transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
+        const transactionDoc = <mongoose.Document>await transactionAdapter.transactionModel.findByIdAndUpdate(
             transaction.id, transaction, { new: true, upsert: true }
         ).exec();
 
@@ -352,7 +354,7 @@ describe('在庫サービス 取引IDから座席予約資産移動', () => {
             owners: [],
             expires_at: new Date()
         });
-        const transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
+        const transactionDoc = <mongoose.Document>await transactionAdapter.transactionModel.findByIdAndUpdate(
             transaction.id, transaction, { new: true, upsert: true }
         ).exec();
 
@@ -387,7 +389,7 @@ describe('在庫サービス 取引IDから座席予約資産移動', () => {
             occurred_at: new Date(),
             authorization: TEST_GMO_AUTHORIZATION
         });
-        const transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
+        const transactionDoc = <mongoose.Document>await transactionAdapter.transactionModel.findByIdAndUpdate(
             transaction.id, transaction, { new: true, upsert: true }
         ).exec();
         await transactionAdapter.addEvent(event);

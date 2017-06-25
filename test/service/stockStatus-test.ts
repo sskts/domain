@@ -73,7 +73,7 @@ describe('在庫状況サービス パフォーマンス在庫状況更新', () 
         );
 
         // パフォーマンスをひとつ取得
-        const performanceDoc = await performanceAdapter.model.findOne({ day: performanceDayStart }).exec();
+        const performanceDoc = <mongoose.Document>await performanceAdapter.model.findOne({ day: performanceDayStart }).exec();
         assert(performanceDoc !== null);
 
         // まずは在庫状況存在しないはず

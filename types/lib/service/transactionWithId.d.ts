@@ -3,7 +3,10 @@ import * as AuthorizationFactory from '../factory/authorization';
 import * as COASeatReservationAuthorizationFactory from '../factory/authorization/coaSeatReservation';
 import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from '../factory/authorization/mvtk';
+import * as GMOCardFactory from '../factory/card/gmo';
 import * as EmailNotificationFactory from '../factory/notification/email';
+import * as AnonymousOwnerFactory from '../factory/owner/anonymous';
+import * as MemberOwnerFactory from '../factory/owner/member';
 import * as TransactionFactory from '../factory/transaction';
 import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
 import OwnerAdapter from '../adapter/owner';
@@ -86,8 +89,8 @@ export declare function removeEmail(transactionId: string, notificationId: strin
  * 匿名所有者更新
  *
  * @returns {OwnerAndTransactionOperation<void>}
- *
  * @memberof service/transactionWithId
+ * @deprecated use setAnonymousOwnerProfile instead
  */
 export declare function updateAnonymousOwner(args: {
     transaction_id: string;
@@ -96,6 +99,26 @@ export declare function updateAnonymousOwner(args: {
     email?: string;
     tel?: string;
 }): (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<void>;
+/**
+ * 取引中の所有者プロフィールを変更する
+ * 匿名所有者として開始した場合のみ想定(匿名か会員に変更可能)
+ *
+ * @export
+ * @param {string} transactionId 取引ID
+ * @param {(AnonymousOwnerFactory.IAnonymousOwner | MemberOwnerFactory.IMemberOwner)} owner 所有者
+ * @returns {OwnerAndTransactionOperation<void>} 所有者と取引に対する操作
+ */
+export declare function setOwnerProfile(transactionId: string, owner: AnonymousOwnerFactory.IAnonymousOwner | MemberOwnerFactory.IMemberOwner): OwnerAndTransactionOperation<void>;
+/**
+ * 取引中の所有者に対してカード情報を保管する
+ *
+ * @export
+ * @param {string} transactionId 取引ID
+ * @param {string} ownerId 所有者ID
+ * @param {(GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized)} gmoCard GMOカード情報
+ * @returns {TransactionOperation<void>} 取引に対する操作
+ */
+export declare function saveCard(transactionId: string, ownerId: string, gmoCard: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized): TransactionOperation<void>;
 /**
  * 照合を可能にする
  *
