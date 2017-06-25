@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v19.3.0 - 2017-06-25
+### Added
 - 会員インターフェースを追加。
 - 口座インターフェースを追加。
 - カードインターフェースを追加。
@@ -15,8 +28,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Deprecated
 - ID指定取引サービスの匿名所有者プロフィール更新メソッドを非推奨指定。
-
-### Removed
 
 ### Fixed
 - COAのアクセストークンの有効期限切れエラーが出る問題に対して、coa-service側での対応を反映。 ([@motionpicture/coa-service@3.1.2](https://www.npmjs.com/package/@motionpicture/coa-service))
