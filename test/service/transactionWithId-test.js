@@ -701,6 +701,58 @@ describe('匿名所有者更新', () => {
         yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
         yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
     }));
+    it('取引が存在しなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        const profile = {
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: 'noreply@example.com',
+            tel: '09012345678'
+        };
+        const args = Object.assign({}, profile, { transaction_id: transaction.id });
+        const updateAnonymousOwnerError = yield TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter).catch((error) => error);
+        assert(updateAnonymousOwnerError instanceof argument_1.default);
+        assert.equal(updateAnonymousOwnerError.argumentName, 'transaction_id');
+    }));
+    it('匿名所有者が取引内に存在しなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const transactionAdapter = new transaction_1.default(connection);
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+        // あえて匿名所有者ではないグループの所有者を作成
+        yield ownerAdapter.model.findByIdAndUpdate(ownerTo.id, Object.assign({}, ownerTo, { group: 'invalidgroup' }), { upsert: true }).exec();
+        const transactionDoc = Object.assign({}, transaction, { owners: transaction.owners.map((owner) => owner.id) });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+        const profile = {
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: 'noreply@example.com',
+            tel: '09012345678'
+        };
+        const args = Object.assign({}, profile, { transaction_id: transaction.id });
+        const updateAnonymousOwnerError = yield TransactionWithIdService.updateAnonymousOwner(args)(ownerAdapter, transactionAdapter).catch((error) => error);
+        assert(updateAnonymousOwnerError instanceof argument_1.default);
+        assert.equal(updateAnonymousOwnerError.argumentName, 'transaction_id');
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        yield ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    }));
 });
 describe('所有者プロフィールセット', () => {
     it('匿名所有者として更新できる', () => __awaiter(this, void 0, void 0, function* () {

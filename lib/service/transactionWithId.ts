@@ -254,7 +254,7 @@ export function updateAnonymousOwner(args: {
         // 取引取得
         const doc = await transactionAdapter.transactionModel.findById(args.transaction_id).populate('owners').exec();
         if (doc === null) {
-            throw new ArgumentError('transactionId', `transaction[id:${args.transaction_id}] not found.`);
+            throw new ArgumentError('transaction_id', `transaction[id:${args.transaction_id}] not found.`);
         }
         const transaction = <TransactionFactory.ITransaction>doc.toObject();
 
@@ -263,7 +263,7 @@ export function updateAnonymousOwner(args: {
             return (ownerInTransaction.group === OwnerGroup.ANONYMOUS);
         });
         if (anonymousOwnerInTransaction === undefined) {
-            throw new ArgumentError('owner', 'anonymous owner not found');
+            throw new ArgumentError('transaction_id', 'anonymous owner not found');
         }
 
         const anonymousOwner = AnonymousOwnerFactory.create({

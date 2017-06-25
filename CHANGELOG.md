@@ -5,10 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 会員インターフェースを追加。
+- 口座インターフェースを追加。
+- カードインターフェースを追加。
 
 ### Changed
+- ID指定取引サービスに所有者プロフィール変更メソッドを追加して、匿名所有者プロフィール更新メソッドを拡張。
+- ID指定取引サービスに、カード情報保管メソッドを追加。
 
 ### Deprecated
+- ID指定取引サービスの匿名所有者プロフィール更新メソッドを非推奨指定。
 
 ### Removed
 

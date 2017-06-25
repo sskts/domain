@@ -849,6 +849,70 @@ describe('匿名所有者更新', () => {
         await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
         await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
     });
+
+    it('取引が存在しなければ失敗', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+
+        const profile = {
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: 'noreply@example.com',
+            tel: '09012345678'
+        };
+        const args = { ...profile, ...{ transaction_id: transaction.id } };
+        const updateAnonymousOwnerError = await TransactionWithIdService.updateAnonymousOwner(args)(
+            ownerAdapter, transactionAdapter
+        ).catch((error) => error);
+        assert(updateAnonymousOwnerError instanceof ArgumentError);
+        assert.equal((<ArgumentError>updateAnonymousOwnerError).argumentName, 'transaction_id');
+    });
+
+    it('匿名所有者が取引内に存在しなければ失敗', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const transactionAdapter = new TransactionAdapter(connection);
+
+        // テストデータ作成
+        const ownerFrom = TEST_PROMOTER_OWNER;
+        const ownerTo = AnonymousOwnerFactory.create({});
+        const transaction = TransactionFactory.create({
+            status: TransactionStatus.UNDERWAY,
+            owners: [ownerFrom, ownerTo],
+            expires_at: new Date()
+        });
+
+        // あえて匿名所有者ではないグループの所有者を作成
+        await ownerAdapter.model.findByIdAndUpdate(ownerTo.id, { ...ownerTo, ...{ group: 'invalidgroup' } }, { upsert: true }).exec();
+        const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
+        await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
+
+        const profile = {
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: 'noreply@example.com',
+            tel: '09012345678'
+        };
+        const args = { ...profile, ...{ transaction_id: transaction.id } };
+        const updateAnonymousOwnerError = await TransactionWithIdService.updateAnonymousOwner(args)(
+            ownerAdapter, transactionAdapter
+        ).catch((error) => error);
+        assert(updateAnonymousOwnerError instanceof ArgumentError);
+        assert.equal((<ArgumentError>updateAnonymousOwnerError).argumentName, 'transaction_id');
+
+        // テストデータ削除
+        await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+        await ownerAdapter.model.findByIdAndRemove(ownerTo.id).exec();
+    });
 });
 
 describe('所有者プロフィールセット', () => {
