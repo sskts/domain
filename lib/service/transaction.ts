@@ -72,6 +72,18 @@ export function prepare(length: number, expiresInSeconds: number) {
     };
 }
 
+/**
+ * 取引を開始する
+ *
+ * @export
+ * @param {Date} args.expiresAt 期限切れ予定日時
+ * @param {number} args.maxCountPerUnit 単位期間あたりの最大取引数
+ * @param {string} args.state 所有者状態
+ * @param {TransactionScopeFactory.ITransactionScope} args.scope 取引スコープ
+ * @param {TransactionScopeFactory.ITransactionScope} [args.ownerId] 所有者ID
+ * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
+ * @memberof service/transaction
+ */
 export function start(args: {
     expiresAt: Date;
     maxCountPerUnit: number;
@@ -147,8 +159,8 @@ export function start(args: {
  * @param {string} args.state 所有者状態
  * @param {TransactionScopeFactory.ITransactionScope} args.scope 取引スコープ
  * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
- *
  * @memberof service/transaction
+ * @deprecated use start instead
  */
 export function startAsAnonymous(args: {
     expiresAt: Date;
@@ -156,49 +168,9 @@ export function startAsAnonymous(args: {
     state: string;
     scope: TransactionScopeFactory.ITransactionScope;
 }): OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>> {
-    return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => {
-        // 利用可能かどうか
-        const nextCount = await transactionCountAdapter.incr(args.scope);
-        if (nextCount > args.maxCountPerUnit) {
-            return monapt.None;
-        }
-
-        // 利用可能であれば、取引作成&匿名所有者作成
-        // 一般所有者作成(後で取引の所有者が適切かどうかを確認するために、状態を持たせる)
-        const anonymousOwner = AnonymousOwnerFactory.create({
-            state: args.state
-        });
-
-        // 興行主取得
-        const promoterOwnerDoc = await ownerAdapter.model.findOne({ group: OwnerGroup.PROMOTER }).exec();
-        if (promoterOwnerDoc === null) {
-            throw new Error('promoter not found');
-        }
-        const promoter = <PromoterOwnerFactory.IPromoterOwner>promoterOwnerDoc.toObject();
-
-        // 取引ファクトリーで新しい進行中取引オブジェクトを作成
-        const newTransaction = TransactionFactory.create({
-            status: TransactionStatus.UNDERWAY,
-            owners: [promoter, anonymousOwner],
-            expires_at: args.expiresAt,
-            started_at: moment().toDate()
-        });
-
-        // 所有者永続化
-        // createコマンドで作成すること(ありえないはずだが、万が一所有者IDが重複するようなバグがあっても、ユニークインデックスではじかれる)
-        debug('creating anonymous owner...', anonymousOwner);
-        const anonymousOwnerDoc = { ...anonymousOwner, ...{ _id: anonymousOwner.id } };
-        await ownerAdapter.model.create(anonymousOwnerDoc);
-
-        debug('creating transaction...');
-        // mongoDBに追加するために_idとowners属性を拡張
-        const newTransactionDoc = { ...newTransaction, ...{ _id: newTransaction.id, owners: [promoter.id, anonymousOwner.id] } };
-        await transactionAdapter.transactionModel.create(newTransactionDoc);
-
-        return monapt.Option(newTransaction);
-    };
+    return start(args);
 }
-exports.updateAnonymousOwner = util.deprecate(
+exports.startAsAnonymous = util.deprecate(
     startAsAnonymous,
     'sskts-domain: service.transaction.startAsAnonymous is deprecated, use service.transaction.start instead'
 );
