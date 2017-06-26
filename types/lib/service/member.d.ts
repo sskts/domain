@@ -31,6 +31,15 @@ export declare function login(username: string, password: string): IOwnerOperati
  * @memberof service/member
  */
 export declare function updateProfile(ownerId: string, update: MemberOwnerFactory.IVariableFields): IOwnerOperation<void>;
-export declare function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized): IOwnerOperation<void>;
+/**
+ * カードを追加する
+ *
+ * @export
+ * @param {string} ownerId 所有者ID
+ * @param {(GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized)} card GMOカードオブジェクト
+ * @returns {IOwnerOperation<string>} 所有者に対する操作
+ * @memberof service/member
+ */
+export declare function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized): IOwnerOperation<string>;
 export declare function removeCard(ownerId: string, cardSeq: string): IOwnerOperation<void>;
 export declare function findSeatReservationAssets(ownerId: string): IAssetAndOwnerOperation<SeatReservationAssetFactory.ISeatReservationAsset[]>;

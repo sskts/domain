@@ -13,15 +13,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const GMO = require("@motionpicture/gmo-service");
 const assert = require("assert");
 const mongoose = require("mongoose");
 const sskts = require("../../lib/index");
-// import ArgumentError from '../../lib/error/argument';
+const argument_1 = require("../../lib/error/argument");
+const cardGroup_1 = require("../../lib/factory/cardGroup");
 const MemberOwnerFactory = require("../../lib/factory/owner/member");
 const ownerGroup_1 = require("../../lib/factory/ownerGroup");
 const TEST_PASSWORD = 'password';
 let TEST_MEMBER_OWNER;
 let TEST_MEMBER_VARIABLE_FIELDS;
+const TEST_GMO_CARD = {
+    cardNo: '4111111111111111',
+    cardPass: '111',
+    expire: '1812',
+    holderName: 'AA BB',
+    group: cardGroup_1.default.GMO
+};
 const MemberService = require("../../lib/service/member");
 let connection;
 before(() => __awaiter(this, void 0, void 0, function* () {
@@ -35,6 +44,13 @@ before(() => __awaiter(this, void 0, void 0, function* () {
         name_first: 'name_first',
         name_last: 'name_last',
         email: 'noreplay@example.com'
+    });
+    // GMO会員登録
+    yield GMO.services.card.saveMember({
+        siteId: process.env.GMO_SITE_ID,
+        sitePass: process.env.GMO_SITE_PASS,
+        memberId: TEST_MEMBER_OWNER.id,
+        memberName: `${TEST_MEMBER_OWNER.name_last} ${TEST_MEMBER_OWNER.name_first}`
     });
     TEST_MEMBER_VARIABLE_FIELDS = {
         name_first: 'new first name',
@@ -93,7 +109,8 @@ describe('会員サービス プロフィール更新', () => {
         });
         const updateProfileError = yield MemberService.updateProfile(memberOwner.id, TEST_MEMBER_VARIABLE_FIELDS)(ownerAdapter)
             .catch((error) => error);
-        assert(updateProfileError instanceof Error);
+        assert(updateProfileError instanceof argument_1.default);
+        assert.equal(updateProfileError.argumentName, 'ownerId');
     }));
     it('正しく更新できる', () => __awaiter(this, void 0, void 0, function* () {
         const ownerAdapter = sskts.adapter.owner(connection);
@@ -106,5 +123,39 @@ describe('会員サービス プロフィール更新', () => {
         assert.equal(memberOwner.tel, TEST_MEMBER_VARIABLE_FIELDS.tel);
         assert.deepEqual(memberOwner.description, TEST_MEMBER_VARIABLE_FIELDS.description);
         assert.deepEqual(memberOwner.notes, TEST_MEMBER_VARIABLE_FIELDS.notes);
+    }));
+});
+describe('会員サービス カード追加', () => {
+    beforeEach(() => __awaiter(this, void 0, void 0, function* () {
+        // テスト会員情報を初期化
+        const ownerAdapter = sskts.adapter.owner(connection);
+        yield ownerAdapter.model.findByIdAndUpdate(TEST_MEMBER_OWNER.id, TEST_MEMBER_OWNER, { upsert: true }).exec();
+    }));
+    it('会員が存在しなければエラー', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const memberOwner = yield MemberOwnerFactory.create({
+            username: TEST_MEMBER_OWNER.username,
+            password: TEST_PASSWORD,
+            name_first: TEST_MEMBER_OWNER.name_first,
+            name_last: TEST_MEMBER_OWNER.name_last,
+            email: TEST_MEMBER_OWNER.email
+        });
+        const addCardError = yield MemberService.addCard(memberOwner.id, TEST_GMO_CARD)(ownerAdapter)
+            .catch((error) => error);
+        assert(addCardError instanceof argument_1.default);
+        assert.equal(addCardError.argumentName, 'ownerId');
+    }));
+    it('正しく追加できる', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = sskts.adapter.owner(connection);
+        // GMOに確かにカードが登録されていることを確認
+        const newCardSeq = yield MemberService.addCard(TEST_MEMBER_OWNER.id, TEST_GMO_CARD)(ownerAdapter);
+        const searchCardResults = yield GMO.services.card.searchCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: TEST_MEMBER_OWNER.id,
+            seqMode: GMO.Util.SEQ_MODE_PHYSICS,
+            cardSeq: newCardSeq
+        });
+        assert.equal(searchCardResults.length, 1);
     }));
 });

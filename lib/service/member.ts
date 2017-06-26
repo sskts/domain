@@ -4,6 +4,7 @@
  * @namespace service/member
  */
 
+import * as GMO from '@motionpicture/gmo-service';
 import * as bcrypt from 'bcryptjs';
 import * as createDebug from 'debug';
 import * as monapt from 'monapt';
@@ -99,14 +100,40 @@ export function updateProfile(ownerId: string, update: MemberOwnerFactory.IVaria
     };
 }
 
-export function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized): IOwnerOperation<void> {
+/**
+ * カードを追加する
+ *
+ * @export
+ * @param {string} ownerId 所有者ID
+ * @param {(GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized)} card GMOカードオブジェクト
+ * @returns {IOwnerOperation<string>} 所有者に対する操作
+ * @memberof service/member
+ */
+export function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized): IOwnerOperation<string> {
     return async (ownerAdapter: OwnerAdapter) => {
         // 会員存在確認
         const memberOwnerDoc = await ownerAdapter.model.findById(ownerId, '_id').exec();
         debug('member owner doc found', memberOwnerDoc);
+        if (memberOwnerDoc === null) {
+            throw new ArgumentError('ownerId', `owner[id:${ownerId}] not found`);
+        }
 
         // GMOカード登録
         debug('saving a card to GMO...', card);
+        const saveCardResult = await GMO.services.card.saveCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: ownerId,
+            seqMode: GMO.utils.util.SEQ_MODE_PHYSICS,
+            cardNo: (<GMOCardFactory.IGMOCardRaw>card).cardNo,
+            cardPass: (<GMOCardFactory.IGMOCardRaw>card).cardPass,
+            expire: (<GMOCardFactory.IGMOCardRaw>card).expire,
+            holderName: (<GMOCardFactory.IGMOCardRaw>card).holderName,
+            token: (<GMOCardFactory.IGMOCardTokenized>card).token
+        });
+        debug('card saved', saveCardResult);
+
+        return saveCardResult.cardSeq;
     };
 }
 
