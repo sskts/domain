@@ -49,7 +49,6 @@ export function updatePerformanceStockStatuses(theaterCode: string, dayStart: st
                     });
 
                     const stockStatusExpression = PerformanceStockStatusFactory.createExpression(
-                        countFreeSeatDate.date_jouei,
                         countFreeSeatPerformance.cnt_reserve_free,
                         countFreeSeatPerformance.cnt_reserve_max
                     );

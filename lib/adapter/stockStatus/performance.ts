@@ -63,11 +63,13 @@ export default class PerformanceStockStatusAdapter {
                     return;
                 }
 
-                const expression = (res instanceof Buffer) ? res.toString() : res;
+                // tslint:disable-next-line:no-magic-numbers
+                const expression = parseInt((res instanceof Buffer) ? res.toString() : res, 10);
                 const stockStatus = PerformanceStockStatusFactory.create({
                     performaceId: performanceId,
                     expression: expression
                 });
+
                 resolve(stockStatus);
             });
         });

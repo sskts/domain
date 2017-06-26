@@ -16,6 +16,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v19.4.0 - 2017-06-26
+### Changed
+- パフォーマンス在庫状況表現を空席率(%)に変更。
+- package-lock.json再作成。
+
 ## v19.3.0 - 2017-06-25
 ### Added
 - 会員インターフェースを追加。
