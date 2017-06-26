@@ -4,6 +4,7 @@ import OwnerAdapter from '../adapter/owner';
 import * as SeatReservationAssetFactory from '../factory/asset/seatReservation';
 import * as GMOCardFactory from '../factory/card/gmo';
 import * as MemberOwnerFactory from '../factory/owner/member';
+export declare type IOperation<T> = () => Promise<T>;
 export declare type IOwnerOperation<T> = (ownerAdapter: OwnerAdapter) => Promise<T>;
 export declare type IAssetAndOwnerOperation<T> = (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter) => Promise<T>;
 export interface ILoginResult {
@@ -37,9 +38,18 @@ export declare function updateProfile(ownerId: string, update: MemberOwnerFactor
  * @export
  * @param {string} ownerId 所有者ID
  * @param {(GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized)} card GMOカードオブジェクト
- * @returns {IOwnerOperation<string>} 所有者に対する操作
+ * @returns {IOperation<string>} 操作
  * @memberof service/member
  */
-export declare function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized): IOwnerOperation<string>;
-export declare function removeCard(ownerId: string, cardSeq: string): IOwnerOperation<void>;
+export declare function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized): IOperation<string>;
+/**
+ * カード削除
+ *
+ * @export
+ * @param {string} ownerId 所有者ID
+ * @param {string} cardSeq GMO側のカード登録連番
+ * @returns {IOperation<void>} 操作
+ * @memberof service/member
+ */
+export declare function removeCard(ownerId: string, cardSeq: string): IOperation<void>;
 export declare function findSeatReservationAssets(ownerId: string): IAssetAndOwnerOperation<SeatReservationAssetFactory.ISeatReservationAsset[]>;

@@ -22,6 +22,7 @@ import OwnerGroup from '../factory/ownerGroup';
 
 const debug = createDebug('sskts-domain:service:member');
 
+export type IOperation<T> = () => Promise<T>;
 export type IOwnerOperation<T> = (ownerAdapter: OwnerAdapter) => Promise<T>;
 export type IAssetAndOwnerOperation<T> = (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter) => Promise<T>;
 export interface ILoginResult {
@@ -106,18 +107,11 @@ export function updateProfile(ownerId: string, update: MemberOwnerFactory.IVaria
  * @export
  * @param {string} ownerId 所有者ID
  * @param {(GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized)} card GMOカードオブジェクト
- * @returns {IOwnerOperation<string>} 所有者に対する操作
+ * @returns {IOperation<string>} 操作
  * @memberof service/member
  */
-export function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized): IOwnerOperation<string> {
-    return async (ownerAdapter: OwnerAdapter) => {
-        // 会員存在確認
-        const memberOwnerDoc = await ownerAdapter.model.findById(ownerId, '_id').exec();
-        debug('member owner doc found', memberOwnerDoc);
-        if (memberOwnerDoc === null) {
-            throw new ArgumentError('ownerId', `owner[id:${ownerId}] not found`);
-        }
-
+export function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized): IOperation<string> {
+    return async () => {
         // GMOカード登録
         debug('saving a card to GMO...', card);
         const saveCardResult = await GMO.services.card.saveCard({
@@ -137,14 +131,27 @@ export function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRaw | GMOC
     };
 }
 
-export function removeCard(ownerId: string, cardSeq: string): IOwnerOperation<void> {
-    return async (ownerAdapter: OwnerAdapter) => {
-        // 会員存在確認
-        const memberOwnerDoc = await ownerAdapter.model.findById(ownerId, '_id').exec();
-        debug('member owner doc found', memberOwnerDoc);
-
-        // GMOカード登録
+/**
+ * カード削除
+ *
+ * @export
+ * @param {string} ownerId 所有者ID
+ * @param {string} cardSeq GMO側のカード登録連番
+ * @returns {IOperation<void>} 操作
+ * @memberof service/member
+ */
+export function removeCard(ownerId: string, cardSeq: string): IOperation<void> {
+    return async () => {
+        // GMOカード削除
         debug('removing a card from GMO...cardSeq:', cardSeq);
+        const deleteCardResult = await GMO.services.card.deleteCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: ownerId,
+            seqMode: GMO.utils.util.SEQ_MODE_PHYSICS,
+            cardSeq: cardSeq
+        });
+        debug('card deleted', deleteCardResult);
     };
 }
 
