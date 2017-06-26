@@ -18,6 +18,7 @@ const redis = require("redis");
 const performance_1 = require("../../../lib/adapter/stockStatus/performance");
 const TEST_PERFORMANCE_DAY = '20170428';
 const TEST_PERFORMANCE_ID = '1234567890';
+const TEST_PERFORMANCE_STOCK_STATUS_EXPRESSION = 33;
 let redisClient;
 before(() => __awaiter(this, void 0, void 0, function* () {
     if (typeof process.env.TEST_REDIS_HOST !== 'string') {
@@ -32,7 +33,6 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     redisClient = redis.createClient({
         host: process.env.TEST_REDIS_HOST,
         port: process.env.TEST_REDIS_PORT,
-        // port: 6379,
         password: process.env.TEST_REDIS_KEY,
         tls: { servername: process.env.TEST_REDIS_HOST }
     });
@@ -74,10 +74,9 @@ describe('パフォーマンス空席状況アダプター パフォーマンス
         stockStatusFromRedis = yield adapter.findOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID);
         assert.equal(stockStatusFromRedis, null);
         // テストデータ生成
-        const expression = '○';
-        yield adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, expression);
+        yield adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, TEST_PERFORMANCE_STOCK_STATUS_EXPRESSION);
         stockStatusFromRedis = yield adapter.findOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID);
-        assert.equal(stockStatusFromRedis.expression, expression);
+        assert.equal(stockStatusFromRedis.expression, TEST_PERFORMANCE_STOCK_STATUS_EXPRESSION);
     }));
     it('redis接続されたらエラー', () => __awaiter(this, void 0, void 0, function* () {
         const client = redisClient.duplicate();
@@ -86,9 +85,8 @@ describe('パフォーマンス空席状況アダプター パフォーマンス
             // 接続切断後に更新しようとしてもエラーになるはず
             client.quit(() => __awaiter(this, void 0, void 0, function* () {
                 // テストデータ生成
-                const expression = '○';
                 try {
-                    yield adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, expression);
+                    yield adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, TEST_PERFORMANCE_STOCK_STATUS_EXPRESSION);
                 }
                 catch (error) {
                     resolve();
@@ -120,8 +118,7 @@ describe('パフォーマンス空席状況アダプター 上映日から期限
                 try {
                     assert(ttlBefore < 0);
                     // テストデータ生成
-                    const expression = '○';
-                    yield adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, expression);
+                    yield adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, TEST_PERFORMANCE_STOCK_STATUS_EXPRESSION);
                     // 期限セット
                     yield adapter.setTTLIfNotExist(TEST_PERFORMANCE_DAY);
                     // 期限セットされているはず
@@ -170,8 +167,7 @@ describe('パフォーマンス空席状況アダプター 上映日から期限
         assert.equal(stockStatusFromRedis, null);
         const key = performance_1.default.CREATE_REDIS_KEY(TEST_PERFORMANCE_DAY);
         // テストデータ生成
-        const expression = '○';
-        yield adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, expression);
+        yield adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, TEST_PERFORMANCE_STOCK_STATUS_EXPRESSION);
         yield new Promise((resolve, reject) => {
             adapter.redisClient.expire([key, TIMEOUT_IN_SECONDS], () => __awaiter(this, void 0, void 0, function* () {
                 try {

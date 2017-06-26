@@ -12,6 +12,7 @@ import * as PerformanceStockStatusFactory from '../../../lib/factory/stockStatus
 
 const TEST_PERFORMANCE_DAY = '20170428';
 const TEST_PERFORMANCE_ID = '1234567890';
+const TEST_PERFORMANCE_STOCK_STATUS_EXPRESSION = 33;
 
 let redisClient: redis.RedisClient;
 before(async () => {
@@ -30,7 +31,6 @@ before(async () => {
     redisClient = redis.createClient({
         host: process.env.TEST_REDIS_HOST,
         port: process.env.TEST_REDIS_PORT,
-        // port: 6379,
         password: process.env.TEST_REDIS_KEY,
         tls: { servername: process.env.TEST_REDIS_HOST }
     });
@@ -80,11 +80,13 @@ describe('パフォーマンス空席状況アダプター パフォーマンス
         assert.equal(stockStatusFromRedis, null);
 
         // テストデータ生成
-        const expression = '○';
-        await adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, expression);
+        await adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, TEST_PERFORMANCE_STOCK_STATUS_EXPRESSION);
 
         stockStatusFromRedis = await adapter.findOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID);
-        assert.equal((<PerformanceStockStatusFactory.IPerformanceStockStatus>stockStatusFromRedis).expression, expression);
+        assert.equal(
+            (<PerformanceStockStatusFactory.IPerformanceStockStatus>stockStatusFromRedis).expression,
+            TEST_PERFORMANCE_STOCK_STATUS_EXPRESSION
+        );
     });
 
     it('redis接続されたらエラー', async () => {
@@ -95,9 +97,8 @@ describe('パフォーマンス空席状況アダプター パフォーマンス
             // 接続切断後に更新しようとしてもエラーになるはず
             client.quit(async () => {
                 // テストデータ生成
-                const expression = '○';
                 try {
-                    await adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, expression);
+                    await adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, TEST_PERFORMANCE_STOCK_STATUS_EXPRESSION);
                 } catch (error) {
                     resolve();
 
@@ -137,8 +138,7 @@ describe('パフォーマンス空席状況アダプター 上映日から期限
                     assert(ttlBefore < 0);
 
                     // テストデータ生成
-                    const expression = '○';
-                    await adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, expression);
+                    await adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, TEST_PERFORMANCE_STOCK_STATUS_EXPRESSION);
 
                     // 期限セット
                     await adapter.setTTLIfNotExist(TEST_PERFORMANCE_DAY);
@@ -196,8 +196,7 @@ describe('パフォーマンス空席状況アダプター 上映日から期限
         const key = PerformanceStockStatusAdapter.CREATE_REDIS_KEY(TEST_PERFORMANCE_DAY);
 
         // テストデータ生成
-        const expression = '○';
-        await adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, expression);
+        await adapter.updateOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID, TEST_PERFORMANCE_STOCK_STATUS_EXPRESSION);
 
         await new Promise((resolve, reject) => {
             adapter.redisClient.expire([key, TIMEOUT_IN_SECONDS], async () => {
