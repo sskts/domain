@@ -23,14 +23,30 @@ const debug = createDebug('sskts-domain:service:member');
 
 export type IOwnerOperation<T> = (ownerAdapter: OwnerAdapter) => Promise<T>;
 export type IAssetAndOwnerOperation<T> = (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter) => Promise<T>;
+export interface ILoginResult {
+    id: string;
+    username: string;
+}
 
-export function login(username: string, password: string): IOwnerOperation<monapt.Option<MemberOwnerFactory.IUnhashedFields>> {
+/**
+ * ログイン
+ *
+ * @export
+ * @param {string} username ユーザーネーム
+ * @param {string} password パスワード
+ * @returns {IOwnerOperation<monapt.Option<MemberOwnerFactory.IUnhashedFields>>} 所有者に対する操作
+ * @memberof service/member
+ */
+export function login(username: string, password: string): IOwnerOperation<monapt.Option<ILoginResult>> {
     return async (ownerAdapter: OwnerAdapter) => {
         // ユーザーネームで検索
-        const memberOwnerDoc = await ownerAdapter.model.findOne({
-            username: username,
-            group: OwnerGroup.MEMBER
-        }).exec();
+        const memberOwnerDoc = await ownerAdapter.model.findOne(
+            {
+                username: username,
+                group: OwnerGroup.MEMBER
+            },
+            'username password_hash'
+        ).exec();
         debug('member owner doc found', memberOwnerDoc);
 
         if (memberOwnerDoc === null) {
@@ -43,11 +59,11 @@ export function login(username: string, password: string): IOwnerOperation<monap
             return monapt.None;
         }
 
-        const memberOwner = <MemberOwnerFactory.IMemberOwner>memberOwnerDoc.toObject();
         // ハッシュ化パスワードは返さない
-        delete memberOwner.password_hash;
-
-        return monapt.Option(memberOwner);
+        return monapt.Option({
+            id: memberOwnerDoc.get('id'),
+            username: memberOwnerDoc.get('username')
+        });
     };
 }
 
