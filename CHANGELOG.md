@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 - パフォーマンス在庫状況表現を空席率(%)に変更。
+- package-lock.json再作成。
 
 ### Deprecated
 
