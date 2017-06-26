@@ -67,9 +67,32 @@ export function login(username: string, password: string): IOwnerOperation<monap
     };
 }
 
+/**
+ * プロフィール更新
+ * 更新フィールドを全て上書きするので注意
+ *
+ * @export
+ * @param {string} ownerId 所有者ID
+ * @param {MemberOwnerFactory.IVariableFields} update 更新フィールド
+ * @returns {IOwnerOperation<void>} 所有者に対する操作
+ * @memberof service/member
+ */
 export function updateProfile(ownerId: string, update: MemberOwnerFactory.IVariableFields): IOwnerOperation<void> {
     return async (ownerAdapter: OwnerAdapter) => {
-        const memberOwnerDoc = await ownerAdapter.model.findByIdAndUpdate(ownerId, update).exec();
+        // バリデーション
+        MemberOwnerFactory.validateVariableFields(update);
+
+        const memberOwnerDoc = await ownerAdapter.model.findByIdAndUpdate(
+            ownerId,
+            {
+                name_first: update.name_first,
+                name_last: update.name_last,
+                email: update.email,
+                tel: update.tel,
+                description: update.description,
+                notes: update.notes
+            }
+        ).exec();
         if (memberOwnerDoc === null) {
             throw new ArgumentError('ownerId', `owner[id:${ownerId}] not found`);
         }

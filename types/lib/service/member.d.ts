@@ -20,6 +20,16 @@ export interface ILoginResult {
  * @memberof service/member
  */
 export declare function login(username: string, password: string): IOwnerOperation<monapt.Option<ILoginResult>>;
+/**
+ * プロフィール更新
+ * 更新フィールドを全て上書きするので注意
+ *
+ * @export
+ * @param {string} ownerId 所有者ID
+ * @param {MemberOwnerFactory.IVariableFields} update 更新フィールド
+ * @returns {IOwnerOperation<void>} 所有者に対する操作
+ * @memberof service/member
+ */
 export declare function updateProfile(ownerId: string, update: MemberOwnerFactory.IVariableFields): IOwnerOperation<void>;
 export declare function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized): IOwnerOperation<void>;
 export declare function removeCard(ownerId: string, cardSeq: string): IOwnerOperation<void>;

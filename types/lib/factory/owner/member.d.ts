@@ -21,7 +21,7 @@ export interface IImmutableFields {
  * @extends {AnonymousOwnerFactory.IAnonymousOwner}
  * @memberof factory/owner/member
  */
-export interface IVariableFields extends AnonymousOwnerFactory.IAnonymousOwner {
+export interface IVariableFields {
     /**
      * 名
      */
@@ -75,7 +75,7 @@ export declare type IUnhashedFields = IImmutableFields & IVariableFields;
  * @interface IMemberOwner
  * @memberof factory/owner/member
  */
-export declare type IMemberOwner = IUnhashedFields & IHashedFields;
+export declare type IMemberOwner = AnonymousOwnerFactory.IAnonymousOwner & IUnhashedFields & IHashedFields;
 export declare function create(args: {
     id?: string;
     username: string;
@@ -88,3 +88,4 @@ export declare function create(args: {
     description?: IMultilingualString;
     notes?: IMultilingualString;
 }): Promise<IMemberOwner>;
+export declare function validateVariableFields(variableFields: IVariableFields): void;
