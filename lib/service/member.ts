@@ -161,12 +161,12 @@ export function findSeatReservationAssets(ownerId: string): IAssetAndOwnerOperat
         const memberOwnerDoc = await ownerAdapter.model.findById(ownerId, '_id').exec();
         debug('member owner doc found', memberOwnerDoc);
 
-        // 資産検索
-        const assets = await assetAdapter.model.find({
+        // 資産全検索
+        // todo add limit
+        return await assetAdapter.model.find({
             group: AssetGroup.SEAT_RESERVATION,
-            owner: ownerId
-        }).lean().exec();
-
-        return <SeatReservationAssetFactory.ISeatReservationAsset[]>assets;
+            'ownership.owner': ownerId
+        }).exec()
+            .then((docs) => docs.map((doc) => <SeatReservationAssetFactory.ISeatReservationAsset>doc.toObject()));
     };
 }
