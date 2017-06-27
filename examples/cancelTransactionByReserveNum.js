@@ -27,9 +27,9 @@ function main() {
         const assetAdapter = sskts.adapter.asset(connection);
         // まず照会
         const inquiryKey = {
-            theater_code: '018',
-            reserve_num: 170,
-            tel: '0362778824'
+            theater_code: '112',
+            reserve_num: 346,
+            tel: '09096793896'
         };
         const originalTransactionOption = yield sskts.service.transaction.makeInquiry(inquiryKey)(transactionAdapter);
         if (originalTransactionOption.isEmpty) {
@@ -41,8 +41,47 @@ function main() {
         debug('authorizations found', authorizations);
         // 所有者から興行へ座席返却のオーソリ
         const originalCOASeatReservationAuthorization = sskts.factory.authorization.coaSeatReservation.create(authorizations.find((authorization) => authorization.group === sskts.factory.authorizationGroup.COA_SEAT_RESERVATION));
+        debug('originalCOASeatReservationAuthorization.assets:', originalCOASeatReservationAuthorization.assets);
+        // 取引でやりとりされた座席予約資産の状態を確認
+        const assets = yield assetAdapter.model.find({
+            _id: { $in: originalCOASeatReservationAuthorization.assets.map((asset) => asset.id) }
+        }).exec()
+            .then((docs) => {
+            return docs.map((doc) => sskts.factory.asset.seatReservation.create(doc.toObject()));
+        });
+        debug('assets found', assets);
+        // 数の一致を確認
+        if (assets.length !== originalCOASeatReservationAuthorization.assets.length) {
+            throw new Error(`assets length not matched ${assets.length} !== ${originalCOASeatReservationAuthorization.assets.length}`);
+        }
+        // 返品可能な条件
+        // 取引照会キーの一致、現在承認中ではないかどうか、すでに認証済みでないかどうか、を確認
+        const isReturnable = assets.every((asset) => {
+            return (asset.transaction_inquiry_key.theater_code === inquiryKey.theater_code
+                && asset.transaction_inquiry_key.reserve_num === inquiryKey.reserve_num
+                && asset.authorizations.length === 0
+                && asset.ownership.authentication_records.length === 0);
+        });
+        debug('isReturnable:', isReturnable);
+        if (!isReturnable) {
+            throw new Error('not returnable');
+        }
+        // GMO承認を取り出す
         const originalGMOAuthorization = sskts.factory.authorization.gmo.create(authorizations.find((authorization) => authorization.group === sskts.factory.authorizationGroup.GMO));
-        const anonymousOwner = sskts.factory.owner.anonymous.create(originalTransaction.owners.find((owner) => owner.group === sskts.factory.ownerGroup.ANONYMOUS));
+        // 購入者を取り出す
+        const purchaserInTransaction = originalTransaction.owners.find((owner) => owner.id === originalGMOAuthorization.owner_from);
+        if (purchaserInTransaction === undefined) {
+            throw new Error('purchaserInTransaction undefined');
+        }
+        let purchaser;
+        switch (purchaserInTransaction.group) {
+            case sskts.factory.ownerGroup.ANONYMOUS:
+                purchaser = sskts.factory.owner.anonymous.create(purchaserInTransaction);
+            // case sskts.factory.ownerGroup.MEMBER:
+            //     return sskts.factory.owner.member.create(owner);
+            default:
+                break;
+        }
         // 取引開始
         const transaction = sskts.factory.transaction.create({
             status: sskts.factory.transactionStatus.UNDERWAY,
@@ -74,9 +113,9 @@ function main() {
         // 通知を追加
         const emailNotification = sskts.factory.notification.email.create({
             from: 'noreply@ticket-cinemasunshine.com',
-            to: anonymousOwner.email,
+            to: purchaser.email,
             subject: '予約取消完了',
-            content: `${anonymousOwner.name_last} ${anonymousOwner.name_first} 様
+            content: `${purchaser.name_last} ${purchaser.name_first} 様
 
 
 
@@ -145,25 +184,14 @@ http://www.cinemasunshine.co.jp/
         // 非同期でGMO金額変更実行
         // 手数料がかかるのであれば、ChangeTran、かからないのであれば、AlterTran
         // const SERVICE_CHARGE = 100;
-        try {
-            const alterTranResult = yield GMO.CreditService.alterTran({
-                shopId: originalGMOAuthorization.gmo_shop_id,
-                shopPass: originalGMOAuthorization.gmo_shop_pass,
-                accessId: originalGMOAuthorization.gmo_access_id,
-                accessPass: originalGMOAuthorization.gmo_access_pass,
-                jobCd: GMO.Util.JOB_CD_VOID
-            });
-            debug('GMO alterTran processed', alterTranResult);
-        }
-        catch (error) {
-            console.error('GMO alterTran processed', error);
-        }
-        // もとの取引を照会不可能にする
-        yield transactionAdapter.transactionModel.findOneAndUpdate({
-            _id: originalTransaction.id
-        }, { $unset: { inquiry_key: '' } } // 照会キーフィールドを削除する
-        ).exec();
-        debug('inquiryKey disabled');
+        const alterTranResult = yield GMO.CreditService.alterTran({
+            shopId: originalGMOAuthorization.gmo_shop_id,
+            shopPass: originalGMOAuthorization.gmo_shop_pass,
+            accessId: originalGMOAuthorization.gmo_access_id,
+            accessPass: originalGMOAuthorization.gmo_access_pass,
+            jobCd: GMO.Util.JOB_CD_VOID
+        });
+        debug('GMO alterTran processed', alterTranResult);
         // 非同期で通知送信
         mongoose.disconnect();
     });
