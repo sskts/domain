@@ -71,6 +71,24 @@ export function login(username: string, password: string): IOwnerOperation<monap
 }
 
 /**
+ * プロフィール取得
+ *
+ * @export
+ * @param {string} ownerId 所有者ID
+ * @returns {IOwnerOperation<monapt.Option<MemberOwnerFactory.IUnhashedFields>>} 会員のハッシュ化されていないフィールドを取得するための、所有者に対する操作
+ */
+export function getProfile(ownerId: string): IOwnerOperation<monapt.Option<MemberOwnerFactory.IUnhashedFields>> {
+    return async (ownerAdapter: OwnerAdapter) => {
+        const memberOwnerDoc = await ownerAdapter.model.findById(ownerId).exec();
+        if (memberOwnerDoc === null) {
+            return monapt.None;
+        }
+
+        return monapt.Option(MemberOwnerFactory.createUnhashedFields(<any>memberOwnerDoc.toObject()));
+    };
+}
+
+/**
  * プロフィール更新
  * 更新フィールドを全て上書きするので注意
  *
@@ -83,18 +101,10 @@ export function login(username: string, password: string): IOwnerOperation<monap
 export function updateProfile(ownerId: string, update: MemberOwnerFactory.IVariableFields): IOwnerOperation<void> {
     return async (ownerAdapter: OwnerAdapter) => {
         // バリデーション
-        MemberOwnerFactory.validateVariableFields(update);
-
+        const variableFields = MemberOwnerFactory.createVariableFields(update);
         const memberOwnerDoc = await ownerAdapter.model.findByIdAndUpdate(
             ownerId,
-            {
-                name_first: update.name_first,
-                name_last: update.name_last,
-                email: update.email,
-                tel: update.tel,
-                description: update.description,
-                notes: update.notes
-            }
+            variableFields
         ).exec();
         if (memberOwnerDoc === null) {
             throw new ArgumentError('ownerId', `owner[id:${ownerId}] not found`);

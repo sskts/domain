@@ -88,4 +88,20 @@ export declare function create(args: {
     description?: IMultilingualString;
     notes?: IMultilingualString;
 }): Promise<IMemberOwner>;
-export declare function validateVariableFields(variableFields: IVariableFields): void;
+export declare function createUnhashedFields(args: {
+    username: string;
+    name_first: string;
+    name_last: string;
+    email: string;
+    tel?: string;
+    description?: IMultilingualString;
+    notes?: IMultilingualString;
+}): IUnhashedFields;
+export declare function createVariableFields(args: {
+    name_first: string;
+    name_last: string;
+    email: string;
+    tel?: string;
+    description?: IMultilingualString;
+    notes?: IMultilingualString;
+}): IVariableFields;

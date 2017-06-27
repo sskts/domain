@@ -23,6 +23,14 @@ export interface ILoginResult {
  */
 export declare function login(username: string, password: string): IOwnerOperation<monapt.Option<ILoginResult>>;
 /**
+ * プロフィール取得
+ *
+ * @export
+ * @param {string} ownerId 所有者ID
+ * @returns {IOwnerOperation<monapt.Option<MemberOwnerFactory.IUnhashedFields>>} 会員のハッシュ化されていないフィールドを取得するための、所有者に対する操作
+ */
+export declare function getProfile(ownerId: string): IOwnerOperation<monapt.Option<MemberOwnerFactory.IUnhashedFields>>;
+/**
  * プロフィール更新
  * 更新フィールドを全て上書きするので注意
  *

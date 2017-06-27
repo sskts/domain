@@ -160,6 +160,32 @@ describe('会員サービス ログイン', () => {
         assert.equal(memberOwner.username, TEST_MEMBER_OWNER.username);
     }));
 });
+describe('会員サービス プロフィール取得', () => {
+    beforeEach(() => __awaiter(this, void 0, void 0, function* () {
+        // テスト会員情報を初期化
+        const ownerAdapter = new owner_1.default(connection);
+        yield ownerAdapter.model.findByIdAndUpdate(TEST_MEMBER_OWNER.id, TEST_MEMBER_OWNER, { upsert: true }).exec();
+    }));
+    it('会員が存在しなければNone', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const memberOwner = yield MemberOwnerFactory.create({
+            username: TEST_MEMBER_OWNER.username,
+            password: TEST_PASSWORD,
+            name_first: TEST_MEMBER_OWNER.name_first,
+            name_last: TEST_MEMBER_OWNER.name_last,
+            email: TEST_MEMBER_OWNER.email
+        });
+        const memberOwnerOption = yield MemberService.getProfile(memberOwner.id)(ownerAdapter);
+        assert(memberOwnerOption.isEmpty);
+    }));
+    it('正しく取得できる', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const memberOwnerOption = yield MemberService.getProfile(TEST_MEMBER_OWNER.id)(ownerAdapter);
+        assert(memberOwnerOption.isDefined);
+        const memberOwner = memberOwnerOption.get();
+        assert.equal(memberOwner.username, TEST_MEMBER_OWNER.username);
+    }));
+});
 describe('会員サービス プロフィール更新', () => {
     beforeEach(() => __awaiter(this, void 0, void 0, function* () {
         // テスト会員情報を初期化

@@ -172,6 +172,35 @@ describe('会員サービス ログイン', () => {
     });
 });
 
+describe('会員サービス プロフィール取得', () => {
+    beforeEach(async () => {
+        // テスト会員情報を初期化
+        const ownerAdapter = new OwnerAdapter(connection);
+        await ownerAdapter.model.findByIdAndUpdate(TEST_MEMBER_OWNER.id, TEST_MEMBER_OWNER, { upsert: true }).exec();
+    });
+
+    it('会員が存在しなければNone', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const memberOwner = await MemberOwnerFactory.create({
+            username: TEST_MEMBER_OWNER.username,
+            password: TEST_PASSWORD,
+            name_first: TEST_MEMBER_OWNER.name_first,
+            name_last: TEST_MEMBER_OWNER.name_last,
+            email: TEST_MEMBER_OWNER.email
+        });
+        const memberOwnerOption = await MemberService.getProfile(memberOwner.id)(ownerAdapter);
+        assert(memberOwnerOption.isEmpty);
+    });
+
+    it('正しく取得できる', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const memberOwnerOption = await MemberService.getProfile(TEST_MEMBER_OWNER.id)(ownerAdapter);
+        assert(memberOwnerOption.isDefined);
+        const memberOwner = memberOwnerOption.get();
+        assert.equal(memberOwner.username, TEST_MEMBER_OWNER.username);
+    });
+});
+
 describe('会員サービス プロフィール更新', () => {
     beforeEach(async () => {
         // テスト会員情報を初期化

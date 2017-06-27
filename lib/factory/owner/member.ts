@@ -109,20 +109,9 @@ export async function create(args: {
     description?: IMultilingualString;
     notes?: IMultilingualString;
 }): Promise<IMemberOwner> {
-    if (_.isEmpty(args.username)) throw new ArgumentNullError('username');
     if (_.isEmpty(args.password)) throw new ArgumentNullError('password');
 
-    // 可変フィールドのバリデーション
-    const variableFields = {
-        name_first: args.name_first,
-        name_last: args.name_last,
-        email: args.email,
-        tel: (args.tel === undefined) ? '' : args.tel,
-        state: (args.state === undefined) ? '' : args.state,
-        description: (args.description === undefined) ? { en: '', ja: '' } : args.description,
-        notes: (args.notes === undefined) ? { en: '', ja: '' } : args.notes
-    };
-    validateVariableFields(variableFields);
+    const unhashedFields = createUnhashedFields(args);
 
     // パスワードハッシュ化
     // todo ハッシュ化文字列をインターフェースとして用意し、ハッシュプロセスをどこかへ移動する
@@ -130,36 +119,54 @@ export async function create(args: {
     const passwordHash = await bcrypt.hash(args.password, SALT_LENGTH);
 
     return {
-        id: (args.id === undefined) ? ObjectId().toString() : args.id,
-        group: OwnerGroup.MEMBER,
-        username: args.username,
-        password_hash: passwordHash,
-        name_first: args.name_first,
-        name_last: args.name_last,
-        email: args.email,
-        tel: variableFields.tel,
-        state: variableFields.state,
-        description: variableFields.description,
-        notes: variableFields.notes
+        ...unhashedFields,
+        ...{
+            id: (args.id === undefined) ? ObjectId().toString() : args.id,
+            group: OwnerGroup.MEMBER,
+            password_hash: passwordHash,
+            state: (args.state === undefined) ? '' : args.state
+        }
     };
 }
 
-export function validateVariableFields(variableFields: IVariableFields) {
-    if (_.isEmpty(variableFields.name_first)) throw new ArgumentNullError('name_first');
-    if (_.isEmpty(variableFields.name_last)) throw new ArgumentNullError('name_last');
-    if (_.isEmpty(variableFields.email)) throw new ArgumentNullError('email');
+export function createUnhashedFields(args: {
+    username: string;
+    name_first: string;
+    name_last: string;
+    email: string;
+    tel?: string;
+    description?: IMultilingualString;
+    notes?: IMultilingualString;
+}): IUnhashedFields {
+    if (_.isEmpty(args.username)) throw new ArgumentNullError('username');
 
-    if (!validator.isEmail(variableFields.email)) {
+    const variableFields = createVariableFields(args);
+
+    return { ...variableFields, ...{ username: args.username } };
+}
+
+export function createVariableFields(args: {
+    name_first: string;
+    name_last: string;
+    email: string;
+    tel?: string;
+    description?: IMultilingualString;
+    notes?: IMultilingualString;
+}): IVariableFields {
+    if (_.isEmpty(args.name_first)) throw new ArgumentNullError('name_first');
+    if (_.isEmpty(args.name_last)) throw new ArgumentNullError('name_last');
+    if (_.isEmpty(args.email)) throw new ArgumentNullError('email');
+
+    if (!validator.isEmail(args.email)) {
         throw new ArgumentError('email', 'invalid email');
     }
 
-    if (_.isUndefined(variableFields.description)) {
-        throw new ArgumentError('description', 'description should be defined');
-    }
-    if (_.isUndefined(variableFields.tel)) {
-        throw new ArgumentError('tel', 'tel should be defined');
-    }
-    if (_.isUndefined(variableFields.notes)) {
-        throw new ArgumentError('notes', 'notes should be defined');
-    }
+    return {
+        name_first: args.name_first,
+        name_last: args.name_last,
+        email: args.email,
+        tel: (args.tel === undefined) ? '' : args.tel,
+        description: (args.description === undefined) ? { en: '', ja: '' } : args.description,
+        notes: (args.notes === undefined) ? { en: '', ja: '' } : args.notes
+    };
 }
