@@ -19,6 +19,30 @@ export declare type TransactionOperation<T> = (transactionAdapter: TransactionAd
  */
 export declare function prepare(length: number, expiresInSeconds: number): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
+ * 取引を開始する
+ *
+ * @export
+ * @param {Date} args.expiresAt 期限切れ予定日時
+ * @param {number} args.maxCountPerUnit 単位期間あたりの最大取引数
+ * @param {string} args.state 所有者状態
+ * @param {TransactionScopeFactory.ITransactionScope} args.scope 取引スコープ
+ * @param {TransactionScopeFactory.ITransactionScope} [args.ownerId] 所有者ID
+ * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
+ * @memberof service/transaction
+ */
+export declare function start(args: {
+    expiresAt: Date;
+    maxCountPerUnit: number;
+    state: string;
+    scope: TransactionScopeFactory.ITransactionScope;
+    /**
+     * 所有者ID
+     * 会員などとして開始する場合は指定
+     * 指定がない場合は匿名所有者としての開始
+     */
+    ownerId?: string;
+}): OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>;
+/**
  * 匿名所有者として取引開始する
  *
  * @param {Date} args.expiresAt 期限切れ予定日時
@@ -26,8 +50,8 @@ export declare function prepare(length: number, expiresInSeconds: number): (tran
  * @param {string} args.state 所有者状態
  * @param {TransactionScopeFactory.ITransactionScope} args.scope 取引スコープ
  * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
- *
  * @memberof service/transaction
+ * @deprecated use start instead
  */
 export declare function startAsAnonymous(args: {
     expiresAt: Date;

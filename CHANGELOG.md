@@ -5,10 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 取引サービスに、所有者を指定できる開始メソッドを追加。
+- 会員サービスを追加。
 
 ### Changed
+- 会員所有者インターフェースを細分化。
 
 ### Deprecated
+- 取引サービスから、匿名所有者として取引開始するメソッドを非推奨に変更。
 
 ### Removed
 
