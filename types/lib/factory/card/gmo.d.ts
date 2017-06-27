@@ -3,27 +3,51 @@
  *
  * @namespace factory/card/gmo
  */
+import * as GMO from '@motionpicture/gmo-service';
 import * as CardFactory from '../card';
+export interface ICheckedCard extends CardFactory.ICard {
+    /**
+     * カード登録連番
+     */
+    card_seq: string;
+    /**
+     * カード会社略称
+     */
+    card_name: string;
+    /**
+     * カード番号
+     */
+    card_no: string;
+    /**
+     * 有効期限
+     */
+    expire: string;
+    /**
+     * 名義人
+     */
+    holder_name: string;
+}
 /**
- * 生GMOカードインターフェース
+ * 生の有効性確認前GMOカードインターフェース
  *
  * todo gmo-serviceの定義に合わせる
  *
- * @interface IGMOCardRaw
+ * @interface IUncheckedCardRaw
  * @extends {CardFactory.ICard}
  */
-export interface IGMOCardRaw extends CardFactory.ICard {
-    cardNo: string;
-    cardPass: string;
+export interface IUncheckedCardRaw extends CardFactory.ICard {
+    card_no: string;
+    card_pass: string;
     expire: string;
-    holderName: string;
+    holder_name: string;
 }
 /**
- * トークン化GMOカードインターフェース
+ * トークン化有効性確認前GMOカードインターフェース
  *
- * @interface IGMOCardTokenized
+ * @interface IUncheckedCardTokenized
  * @extends {CardFactory.ICard}
  */
-export interface IGMOCardTokenized extends CardFactory.ICard {
+export interface IUncheckedCardTokenized extends CardFactory.ICard {
     token: string;
 }
+export declare function createCheckedCardFromGMOSearchCardResult(args: GMO.services.card.ISearchCardResult): ICheckedCard;

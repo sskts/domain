@@ -118,7 +118,7 @@ export declare function setOwnerProfile(transactionId: string, owner: AnonymousO
  * @param {(GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized)} gmoCard GMOカード情報
  * @returns {TransactionOperation<void>} 取引に対する操作
  */
-export declare function saveCard(transactionId: string, ownerId: string, gmoCard: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized): TransactionOperation<void>;
+export declare function saveCard(transactionId: string, ownerId: string, gmoCard: GMOCardFactory.IUncheckedCardRaw | GMOCardFactory.IUncheckedCardTokenized): TransactionOperation<void>;
 /**
  * 照合を可能にする
  *

@@ -10,7 +10,10 @@ import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 import * as sskts from '../../lib/index';
 
+import ArgumentError from '../../lib/error/argument';
+
 import * as EmailNotificationFactory from '../../lib/factory/notification/email';
+import * as MemberOwnerFactory from '../../lib/factory/owner/member';
 import OwnerGroup from '../../lib/factory/ownerGroup';
 import QueueGroup from '../../lib/factory/queueGroup';
 import * as TransactionFactory from '../../lib/factory/transaction';
@@ -24,12 +27,14 @@ import TransactionCountAdapter from '../../lib/adapter/transactionCount';
 
 const TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS = 60;
 let TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS: any;
+let TEST_START_TRANSACTION_AS_MEMBER_ARGS: any;
 const TEST_PROMOTER_OWNER = {
     name: {
         ja: '佐々木興業株式会社',
         en: 'Cinema Sunshine Co., Ltd.'
     }
 };
+let TEST_MEMBER_OWNER: MemberOwnerFactory.IMemberOwner;
 
 let redisClient: redis.RedisClient;
 let connection: mongoose.Connection;
@@ -77,46 +82,18 @@ before(async () => {
         state: 'xxx',
         scope: scope
     };
+
+    TEST_MEMBER_OWNER = await MemberOwnerFactory.create({
+        username: 'xxx',
+        password: 'xxx',
+        name_first: 'xxx',
+        name_last: 'xxx',
+        email: 'noreplay@example.com'
+    });
+    TEST_START_TRANSACTION_AS_MEMBER_ARGS = { ...TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS, ...{ ownerId: TEST_MEMBER_OWNER.id } };
 });
 
 describe('取引サービス 匿名所有者として取引開始する', () => {
-    beforeEach(async () => {
-        // 興行所有者を準備
-        const ownerAdapter = sskts.adapter.owner(connection);
-        await ownerAdapter.model.findOneAndUpdate(
-            { group: OwnerGroup.PROMOTER },
-            TEST_PROMOTER_OWNER,
-            { upsert: true }
-        ).exec();
-    });
-
-    it('取引数制限を越えているため開始できない', async () => {
-        const ownerAdapter = sskts.adapter.owner(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        const transactionCountAdapter = new TransactionCountAdapter(redisClient);
-
-        const args = { ...TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS, ...{ maxCountPerUnit: 0 } };
-        const transactionOption = await sskts.service.transaction.startAsAnonymous(args)(
-            ownerAdapter, transactionAdapter, transactionCountAdapter
-        );
-        assert(transactionOption.isEmpty);
-    });
-
-    it('興行所有者が存在しなければ開始できない', async () => {
-        const ownerAdapter = sskts.adapter.owner(connection);
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        const transactionCountAdapter = new TransactionCountAdapter(redisClient);
-
-        await ownerAdapter.model.remove({ group: OwnerGroup.PROMOTER }).exec();
-
-        const startError = await sskts.service.transaction.startAsAnonymous(TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS)(
-            ownerAdapter, transactionAdapter, transactionCountAdapter
-        ).catch((error) => {
-            return error;
-        });
-        assert(startError instanceof Error);
-    });
-
     it('開始できる', async () => {
         const ownerAdapter = sskts.adapter.owner(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
@@ -130,6 +107,102 @@ describe('取引サービス 匿名所有者として取引開始する', () => 
         assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
         assert.equal(transactionOption.get().expires_at.valueOf(), TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS.expiresAt.valueOf());
         assert.equal(transactionOption.get().queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
+    });
+});
+
+describe('取引サービス 取引開始する', () => {
+    beforeEach(async () => {
+        // 興行所有者を準備
+        const ownerAdapter = sskts.adapter.owner(connection);
+        await ownerAdapter.model.findOneAndUpdate(
+            { group: OwnerGroup.PROMOTER },
+            TEST_PROMOTER_OWNER,
+            { upsert: true }
+        ).exec();
+
+        // テスト会員削除
+        await ownerAdapter.model.findByIdAndRemove(TEST_MEMBER_OWNER.id).exec();
+    });
+
+    it('取引数制限を越えているため開始できない', async () => {
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const transactionCountAdapter = new TransactionCountAdapter(redisClient);
+
+        const args = { ...TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS, ...{ maxCountPerUnit: 0 } };
+        const transactionOption = await sskts.service.transaction.start(args)(
+            ownerAdapter, transactionAdapter, transactionCountAdapter
+        );
+        assert(transactionOption.isEmpty);
+    });
+
+    it('興行所有者が存在しなければ開始できない', async () => {
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const transactionCountAdapter = new TransactionCountAdapter(redisClient);
+
+        await ownerAdapter.model.remove({ group: OwnerGroup.PROMOTER }).exec();
+
+        const startError = await sskts.service.transaction.start(TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS)(
+            ownerAdapter, transactionAdapter, transactionCountAdapter
+        ).catch((error) => {
+            return error;
+        });
+        assert(startError instanceof Error);
+    });
+
+    it('匿名所有者として開始できる', async () => {
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const transactionCountAdapter = new TransactionCountAdapter(redisClient);
+
+        const transactionOption = await sskts.service.transaction.start(TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS)(
+            ownerAdapter, transactionAdapter, transactionCountAdapter
+        );
+
+        assert(transactionOption.isDefined);
+        assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
+        assert.equal(transactionOption.get().expires_at.valueOf(), TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS.expiresAt.valueOf());
+        assert.equal(transactionOption.get().queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
+    });
+
+    it('会員が存在しなければ開始できない', async () => {
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const transactionCountAdapter = new TransactionCountAdapter(redisClient);
+
+        // 会員は存在しないのでエラーになるはず
+        const startError = await sskts.service.transaction.start(TEST_START_TRANSACTION_AS_MEMBER_ARGS)(
+            ownerAdapter, transactionAdapter, transactionCountAdapter
+        ).catch((error) => error);
+        assert(startError instanceof ArgumentError);
+        assert.equal((<ArgumentError>startError).argumentName, 'ownerId');
+    });
+
+    it('会員として開始できる', async () => {
+        const ownerAdapter = sskts.adapter.owner(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
+        const transactionCountAdapter = new TransactionCountAdapter(redisClient);
+
+        // テスト会員作成
+        await ownerAdapter.model.findByIdAndUpdate(TEST_MEMBER_OWNER.id, TEST_MEMBER_OWNER, { upsert: true }).exec();
+
+        // 取引を開始できて、ステータスや所有者が正しいことを確認
+        const transactionOption = await sskts.service.transaction.start(TEST_START_TRANSACTION_AS_MEMBER_ARGS)(
+            ownerAdapter, transactionAdapter, transactionCountAdapter
+        );
+
+        assert(transactionOption.isDefined);
+        const transaction = transactionOption.get();
+        assert.equal(transaction.status, sskts.factory.transactionStatus.UNDERWAY);
+        assert.equal(transaction.expires_at.valueOf(), TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS.expiresAt.valueOf());
+        assert.equal(transaction.queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
+        const memberOwnerInTransaction = transaction.owners.find((owner) => owner.group === OwnerGroup.MEMBER);
+        assert.notEqual(memberOwnerInTransaction, null);
+        assert.equal((<MemberOwnerFactory.IMemberOwner>memberOwnerInTransaction).id, TEST_MEMBER_OWNER.id);
+
+        // テスト会員削除
+        await ownerAdapter.model.findByIdAndRemove(TEST_MEMBER_OWNER.id).exec();
     });
 });
 

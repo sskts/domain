@@ -16,6 +16,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v19.5.0 - 2017-06-27
+### Added
+- 取引サービスに、所有者を指定できる開始メソッドを追加。
+- 会員サービスを追加。
+
+### Changed
+- 会員所有者インターフェースを細分化。
+- interfaceをエクスポートするように、indexモジュールでのエクスポート方法を変更。
+
+### Deprecated
+- 取引サービスから、匿名所有者として取引開始するメソッドを非推奨に変更。
+
 ## v19.4.0 - 2017-06-26
 ### Changed
 - パフォーマンス在庫状況表現を空席率(%)に変更。

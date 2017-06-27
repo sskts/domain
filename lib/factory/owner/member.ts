@@ -17,21 +17,28 @@ import * as AnonymousOwnerFactory from '../owner/anonymous';
 import OwnerGroup from '../ownerGroup';
 
 /**
- * 会員所有者インターフェース
+ * 会員属性中で不変のフィールド
  *
- * @interface IMemberOwner
- * @extends {AnonymousOwnerFactory.IAnonymousOwner}
+ * @export
+ * @interface IImmutableFields
  * @memberof factory/owner/member
  */
-export interface IMemberOwner extends AnonymousOwnerFactory.IAnonymousOwner {
+export interface IImmutableFields {
     /**
      * ユーザーネーム
      */
     username: string;
-    /**
-     * パスワードハッシュ
-     */
-    password_hash: string;
+}
+
+/**
+ * 会員属性中で可変のフィールド
+ *
+ * @export
+ * @interface IVariableFields
+ * @extends {AnonymousOwnerFactory.IAnonymousOwner}
+ * @memberof factory/owner/member
+ */
+export interface IVariableFields {
     /**
      * 名
      */
@@ -58,6 +65,38 @@ export interface IMemberOwner extends AnonymousOwnerFactory.IAnonymousOwner {
     notes: IMultilingualString;
 }
 
+/**
+ * 会員属性中でハッシュ化されたフィールド
+ *
+ * @export
+ * @interface IHashedFields
+ * @memberof factory/owner/member
+ */
+export interface IHashedFields {
+    /**
+     * パスワードハッシュ
+     */
+    password_hash: string;
+}
+
+/**
+ * 会員属性中でハッシュ化されていないフィールド
+ *
+ * @export
+ * @interface IUnhashedFields
+ * @memberof factory/owner/member
+ */
+export type IUnhashedFields = IImmutableFields & IVariableFields;
+
+/**
+ * 会員所有者インターフェース
+ *
+ * @export
+ * @interface IMemberOwner
+ * @memberof factory/owner/member
+ */
+export type IMemberOwner = AnonymousOwnerFactory.IAnonymousOwner & IUnhashedFields & IHashedFields;
+
 export async function create(args: {
     id?: string;
     username: string;
@@ -70,8 +109,50 @@ export async function create(args: {
     description?: IMultilingualString;
     notes?: IMultilingualString;
 }): Promise<IMemberOwner> {
-    if (_.isEmpty(args.username)) throw new ArgumentNullError('username');
     if (_.isEmpty(args.password)) throw new ArgumentNullError('password');
+
+    const unhashedFields = createUnhashedFields(args);
+
+    // パスワードハッシュ化
+    // todo ハッシュ化文字列をインターフェースとして用意し、ハッシュプロセスをどこかへ移動する
+    const SALT_LENGTH = 8;
+    const passwordHash = await bcrypt.hash(args.password, SALT_LENGTH);
+
+    return {
+        ...unhashedFields,
+        ...{
+            id: (args.id === undefined) ? ObjectId().toString() : args.id,
+            group: OwnerGroup.MEMBER,
+            password_hash: passwordHash,
+            state: (args.state === undefined) ? '' : args.state
+        }
+    };
+}
+
+export function createUnhashedFields(args: {
+    username: string;
+    name_first: string;
+    name_last: string;
+    email: string;
+    tel?: string;
+    description?: IMultilingualString;
+    notes?: IMultilingualString;
+}): IUnhashedFields {
+    if (_.isEmpty(args.username)) throw new ArgumentNullError('username');
+
+    const variableFields = createVariableFields(args);
+
+    return { ...variableFields, ...{ username: args.username } };
+}
+
+export function createVariableFields(args: {
+    name_first: string;
+    name_last: string;
+    email: string;
+    tel?: string;
+    description?: IMultilingualString;
+    notes?: IMultilingualString;
+}): IVariableFields {
     if (_.isEmpty(args.name_first)) throw new ArgumentNullError('name_first');
     if (_.isEmpty(args.name_last)) throw new ArgumentNullError('name_last');
     if (_.isEmpty(args.email)) throw new ArgumentNullError('email');
@@ -80,21 +161,11 @@ export async function create(args: {
         throw new ArgumentError('email', 'invalid email');
     }
 
-    // パスワードハッシュ化
-    // todo ハッシュ化文字列をインターフェースとして用意し、ハッシュプロセスをどこかへ移動する
-    const SALT_LENGTH = 8;
-    const passwordHash = await bcrypt.hash(args.password, SALT_LENGTH);
-
     return {
-        id: (args.id === undefined) ? ObjectId().toString() : args.id,
-        group: OwnerGroup.MEMBER,
-        username: args.username,
-        password_hash: passwordHash,
         name_first: args.name_first,
         name_last: args.name_last,
         email: args.email,
         tel: (args.tel === undefined) ? '' : args.tel,
-        state: (args.state === undefined) ? '' : args.state,
         description: (args.description === undefined) ? { en: '', ja: '' } : args.description,
         notes: (args.notes === undefined) ? { en: '', ja: '' } : args.notes
     };
