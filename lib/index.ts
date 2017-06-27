@@ -9,6 +9,7 @@ import { RedisClient } from 'redis';
 
 import * as clientService from './service/client';
 import * as masterService from './service/master';
+import * as memberService from './service/member';
 import * as notificationService from './service/notification';
 import * as queueService from './service/queue';
 import * as reportService from './service/report';
@@ -39,12 +40,15 @@ import * as CoaSeatReservationAuthorizationFactory from './factory/authorization
 import * as GmoAuthorizationFactory from './factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from './factory/authorization/mvtk';
 import AuthorizationGroup from './factory/authorizationGroup';
+import * as GMOCardFactory from './factory/card/gmo';
+import CardGroup from './factory/cardGroup';
 import * as ClientFactory from './factory/client';
 import * as ClientEventFactory from './factory/clientEvent';
 import * as FilmFactory from './factory/film';
 import * as EmailNotificationFactory from './factory/notification/email';
 import NotificationGroup from './factory/notificationGroup';
 import * as AnonymousOwnerFactory from './factory/owner/anonymous';
+import * as MemberOwnerFactory from './factory/owner/member';
 import * as PromoterOwnerFactory from './factory/owner/promoter';
 import OwnerGroup from './factory/ownerGroup';
 import * as OwnershipFactory from './factory/ownership';
@@ -119,6 +123,7 @@ export const adapter = {
 export const service = {
     client: clientService,
     master: masterService,
+    member: memberService,
     notification: notificationService,
     queue: queueService,
     report: reportService,
@@ -140,6 +145,10 @@ export const factory = {
         mvtk: MvtkAuthorizationFactory
     },
     authorizationGroup: AuthorizationGroup,
+    card: {
+        gmo: GMOCardFactory
+    },
+    cardGroup: CardGroup,
     client: ClientFactory,
     clientEvent: ClientEventFactory,
     film: FilmFactory,
@@ -149,6 +158,7 @@ export const factory = {
     notificationGroup: NotificationGroup,
     owner: {
         anonymous: AnonymousOwnerFactory,
+        member: MemberOwnerFactory,
         promoter: PromoterOwnerFactory
     },
     ownerGroup: OwnerGroup,

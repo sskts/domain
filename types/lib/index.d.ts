@@ -8,6 +8,7 @@ import { Connection } from 'mongoose';
 import { RedisClient } from 'redis';
 import * as clientService from './service/client';
 import * as masterService from './service/master';
+import * as memberService from './service/member';
 import * as notificationService from './service/notification';
 import * as queueService from './service/queue';
 import * as reportService from './service/report';
@@ -36,12 +37,15 @@ import * as CoaSeatReservationAuthorizationFactory from './factory/authorization
 import * as GmoAuthorizationFactory from './factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from './factory/authorization/mvtk';
 import AuthorizationGroup from './factory/authorizationGroup';
+import * as GMOCardFactory from './factory/card/gmo';
+import CardGroup from './factory/cardGroup';
 import * as ClientFactory from './factory/client';
 import * as ClientEventFactory from './factory/clientEvent';
 import * as FilmFactory from './factory/film';
 import * as EmailNotificationFactory from './factory/notification/email';
 import NotificationGroup from './factory/notificationGroup';
 import * as AnonymousOwnerFactory from './factory/owner/anonymous';
+import * as MemberOwnerFactory from './factory/owner/member';
 import * as PromoterOwnerFactory from './factory/owner/promoter';
 import OwnerGroup from './factory/ownerGroup';
 import * as OwnershipFactory from './factory/ownership';
@@ -86,6 +90,7 @@ export declare const adapter: {
 export declare const service: {
     client: typeof clientService;
     master: typeof masterService;
+    member: typeof memberService;
     notification: typeof notificationService;
     queue: typeof queueService;
     report: typeof reportService;
@@ -106,6 +111,10 @@ export declare const factory: {
         mvtk: typeof MvtkAuthorizationFactory;
     };
     authorizationGroup: typeof AuthorizationGroup;
+    card: {
+        gmo: typeof GMOCardFactory;
+    };
+    cardGroup: typeof CardGroup;
     client: typeof ClientFactory;
     clientEvent: typeof ClientEventFactory;
     film: typeof FilmFactory;
@@ -115,6 +124,7 @@ export declare const factory: {
     notificationGroup: typeof NotificationGroup;
     owner: {
         anonymous: typeof AnonymousOwnerFactory;
+        member: typeof MemberOwnerFactory;
         promoter: typeof PromoterOwnerFactory;
     };
     ownerGroup: typeof OwnerGroup;
