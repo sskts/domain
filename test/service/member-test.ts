@@ -26,11 +26,11 @@ import * as MemberService from '../../lib/service/member';
 const TEST_PASSWORD = 'password';
 let TEST_MEMBER_OWNER: MemberOwnerFactory.IMemberOwner;
 let TEST_MEMBER_VARIABLE_FIELDS: MemberOwnerFactory.IVariableFields;
-const TEST_GMO_CARD: GMOCardFactory.IGMOCardRaw = {
-    cardNo: '4111111111111111',
-    cardPass: '111',
+const TEST_GMO_CARD: GMOCardFactory.IUncheckedCardRaw = {
+    card_no: '4111111111111111',
+    card_pass: '111',
     expire: '1812',
-    holderName: 'AA BB',
+    holder_name: 'AA BB',
     group: CardGroup.GMO
 };
 let TEST_SEAT_RESERVATION_ASSET: SeatReservationAssetFactory.ISeatReservationAsset;
@@ -244,6 +244,15 @@ describe('会員サービス カード追加', () => {
             cardSeq: newCardSeq
         });
         assert.equal(searchCardResults.length, 1);
+
+        // テストカード削除
+        await GMO.services.card.deleteCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: TEST_MEMBER_OWNER.id,
+            seqMode: GMO.Util.SEQ_MODE_PHYSICS,
+            cardSeq: newCardSeq
+        });
     });
 });
 
@@ -256,19 +265,69 @@ describe('会員サービス カード削除', () => {
 
     it('正しく削除できる', async () => {
         // テストカード登録
+        const saveCardResult = await GMO.services.card.saveCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: TEST_MEMBER_OWNER.id,
+            seqMode: GMO.Util.SEQ_MODE_PHYSICS,
+            cardNo: TEST_GMO_CARD.card_no,
+            cardPass: TEST_GMO_CARD.card_pass,
+            expire: TEST_GMO_CARD.expire,
+            holderName: TEST_GMO_CARD.holder_name
+        });
+
+        // GMOに確かにカードが削除されていることを確認
+        await MemberService.removeCard(TEST_MEMBER_OWNER.id, saveCardResult.cardSeq)();
+        const searchCardResults = await GMO.services.card.searchCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: TEST_MEMBER_OWNER.id,
+            seqMode: GMO.Util.SEQ_MODE_PHYSICS,
+            cardSeq: saveCardResult.cardSeq
+        });
+        assert.equal(searchCardResults.length, 1);
+        assert.equal(searchCardResults[0].deleteFlag, 1);
+    });
+});
+
+describe('会員サービス カード検索', () => {
+    beforeEach(async () => {
+        // テスト会員情報を初期化
+        const ownerAdapter = new OwnerAdapter(connection);
+        await ownerAdapter.model.findByIdAndUpdate(TEST_MEMBER_OWNER.id, TEST_MEMBER_OWNER, { upsert: true }).exec();
+    });
+
+    it('会員が存在しなければ空', async () => {
+        const memberOwner = await MemberOwnerFactory.create({
+            username: TEST_MEMBER_OWNER.username,
+            password: TEST_PASSWORD,
+            name_first: TEST_MEMBER_OWNER.name_first,
+            name_last: TEST_MEMBER_OWNER.name_last,
+            email: TEST_MEMBER_OWNER.email
+        });
+        const findCardError = await MemberService.findCards(memberOwner.id)()
+            .catch((error) => error);
+        assert(findCardError instanceof Error);
+        assert(/^GMOService/.test((<Error>findCardError).name));
+    });
+
+    it('正しく検索できる', async () => {
+        // テストカード登録
         const newCardSeq = await MemberService.addCard(TEST_MEMBER_OWNER.id, TEST_GMO_CARD)();
 
         // GMOに確かにカードが削除されていることを確認
-        await MemberService.removeCard(TEST_MEMBER_OWNER.id, newCardSeq)();
-        const searchCardResults = await GMO.services.card.searchCard({
+        const cards = await MemberService.findCards(TEST_MEMBER_OWNER.id)();
+        assert.equal(cards.length, 1);
+        assert.equal(cards[0].card_seq, newCardSeq);
+
+        // テストカード削除
+        await GMO.services.card.deleteCard({
             siteId: process.env.GMO_SITE_ID,
             sitePass: process.env.GMO_SITE_PASS,
             memberId: TEST_MEMBER_OWNER.id,
             seqMode: GMO.Util.SEQ_MODE_PHYSICS,
             cardSeq: newCardSeq
         });
-        assert.equal(searchCardResults.length, 1);
-        assert.equal(searchCardResults[0].deleteFlag, 1);
     });
 });
 

@@ -111,7 +111,10 @@ export function updateProfile(ownerId: string, update: MemberOwnerFactory.IVaria
  * @returns {IOperation<string>} 操作
  * @memberof service/member
  */
-export function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized): IOperation<string> {
+export function addCard(
+    ownerId: string,
+    card: GMOCardFactory.IUncheckedCardRaw | GMOCardFactory.IUncheckedCardTokenized
+): IOperation<string> {
     return async () => {
         // GMOカード登録
         debug('saving a card to GMO...', card);
@@ -120,11 +123,11 @@ export function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRaw | GMOC
             sitePass: process.env.GMO_SITE_PASS,
             memberId: ownerId,
             seqMode: GMO.utils.util.SEQ_MODE_PHYSICS,
-            cardNo: (<GMOCardFactory.IGMOCardRaw>card).cardNo,
-            cardPass: (<GMOCardFactory.IGMOCardRaw>card).cardPass,
-            expire: (<GMOCardFactory.IGMOCardRaw>card).expire,
-            holderName: (<GMOCardFactory.IGMOCardRaw>card).holderName,
-            token: (<GMOCardFactory.IGMOCardTokenized>card).token
+            cardNo: (<GMOCardFactory.IUncheckedCardRaw>card).card_no,
+            cardPass: (<GMOCardFactory.IUncheckedCardRaw>card).card_pass,
+            expire: (<GMOCardFactory.IUncheckedCardRaw>card).expire,
+            holderName: (<GMOCardFactory.IUncheckedCardRaw>card).holder_name,
+            token: (<GMOCardFactory.IUncheckedCardTokenized>card).token
         });
         debug('card saved', saveCardResult);
 
@@ -153,6 +156,31 @@ export function removeCard(ownerId: string, cardSeq: string): IOperation<void> {
             cardSeq: cardSeq
         });
         debug('card deleted', deleteCardResult);
+    };
+}
+
+/**
+ * 会員カード検索
+ *
+ * @export
+ * @param {string} ownerId 所有者ID
+ * @returns {IOperation<GMOCardFactory.ICheckedCard[]>} カードリストを取得する操作
+ * @memberof service/member
+ */
+export function findCards(ownerId: string): IOperation<GMOCardFactory.ICheckedCard[]> {
+    return async () => {
+        // GMOカード検索
+        return await GMO.services.card.searchCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: ownerId,
+            seqMode: GMO.utils.util.SEQ_MODE_PHYSICS
+        }).then((searchCardResults) => {
+            return searchCardResults
+                // 未削除のものに絞り込む
+                .filter((searchCardResult) => searchCardResult.deleteFlag === '0')
+                .map(GMOCardFactory.createCheckedCardFromGMOSearchCardResult);
+        });
     };
 }
 

@@ -42,7 +42,7 @@ export declare function updateProfile(ownerId: string, update: MemberOwnerFactor
  * @returns {IOperation<string>} 操作
  * @memberof service/member
  */
-export declare function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized): IOperation<string>;
+export declare function addCard(ownerId: string, card: GMOCardFactory.IUncheckedCardRaw | GMOCardFactory.IUncheckedCardTokenized): IOperation<string>;
 /**
  * カード削除
  *
@@ -53,6 +53,15 @@ export declare function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRa
  * @memberof service/member
  */
 export declare function removeCard(ownerId: string, cardSeq: string): IOperation<void>;
+/**
+ * 会員カード検索
+ *
+ * @export
+ * @param {string} ownerId 所有者ID
+ * @returns {IOperation<GMOCardFactory.ICheckedCard[]>} カードリストを取得する操作
+ * @memberof service/member
+ */
+export declare function findCards(ownerId: string): IOperation<GMOCardFactory.ICheckedCard[]>;
 /**
  * 会員の座席予約資産を検索する
  *

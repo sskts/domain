@@ -18,6 +18,7 @@ import AssetGroup from '../../lib/factory/assetGroup';
 import * as COASeatReservationAuthorizationFactory from '../../lib/factory/authorization/coaSeatReservation';
 import * as GMOAuthorizationFactory from '../../lib/factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from '../../lib/factory/authorization/mvtk';
+import * as GMOCardFactory from '../../lib/factory/card/gmo';
 import CardGroup from '../../lib/factory/cardGroup';
 import * as EmailNotificationFactory from '../../lib/factory/notification/email';
 import ObjectId from '../../lib/factory/objectId';
@@ -41,11 +42,11 @@ let TEST_MVTK_AUTHORIZATION: MvtkAuthorizationFactory.IMvtkAuthorization;
 let TEST_EMAIL_NOTIFICATION: EmailNotificationFactory.IEmailNotification;
 let TEST_TRANSACTION_INQUIRY_KEY: TransactionInquiryKeyFactory.ITransactionInquiryKey;
 let TEST_PROMOTER_OWNER: PromoterOwnerFactory.IPromoterOwner;
-const TEST_GMO_CARD = {
-    cardNo: '4111111111111111',
-    cardPass: '111',
+const TEST_GMO_CARD: GMOCardFactory.IUncheckedCardRaw = {
+    card_no: '4111111111111111',
+    card_pass: '111',
     expire: '1812',
-    holderName: 'AA BB',
+    holder_name: 'AA BB',
     group: CardGroup.GMO
 };
 let connection: mongoose.Connection;

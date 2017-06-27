@@ -45,10 +45,10 @@ let TEST_EMAIL_NOTIFICATION;
 let TEST_TRANSACTION_INQUIRY_KEY;
 let TEST_PROMOTER_OWNER;
 const TEST_GMO_CARD = {
-    cardNo: '4111111111111111',
-    cardPass: '111',
+    card_no: '4111111111111111',
+    card_pass: '111',
     expire: '1812',
-    holderName: 'AA BB',
+    holder_name: 'AA BB',
     group: cardGroup_1.default.GMO
 };
 let connection;

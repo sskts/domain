@@ -383,7 +383,7 @@ async function saveGMOMember(memberOwner: MemberOwnerFactory.IMemberOwner) {
 export function saveCard(
     transactionId: string,
     ownerId: string,
-    gmoCard: GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized
+    gmoCard: GMOCardFactory.IUncheckedCardRaw | GMOCardFactory.IUncheckedCardTokenized
 ): TransactionOperation<void> {
     return async (transactionAdapter: TransactionAdapter) => {
         // 取引取得
@@ -436,11 +436,11 @@ export function saveCard(
             sitePass: process.env.GMO_SITE_PASS,
             memberId: ownerId,
             seqMode: GMO.utils.util.SEQ_MODE_PHYSICS,
-            cardNo: (<GMOCardFactory.IGMOCardRaw>gmoCard).cardNo,
-            cardPass: (<GMOCardFactory.IGMOCardRaw>gmoCard).cardPass,
-            expire: (<GMOCardFactory.IGMOCardRaw>gmoCard).expire,
-            holderName: (<GMOCardFactory.IGMOCardRaw>gmoCard).holderName,
-            token: (<GMOCardFactory.IGMOCardTokenized>gmoCard).token
+            cardNo: (<GMOCardFactory.IUncheckedCardRaw>gmoCard).card_no,
+            cardPass: (<GMOCardFactory.IUncheckedCardRaw>gmoCard).card_pass,
+            expire: (<GMOCardFactory.IUncheckedCardRaw>gmoCard).expire,
+            holderName: (<GMOCardFactory.IUncheckedCardRaw>gmoCard).holder_name,
+            token: (<GMOCardFactory.IUncheckedCardTokenized>gmoCard).token
         });
         debug('GMO saveCard processed', saveCardResult);
     };
