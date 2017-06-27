@@ -5,6 +5,7 @@ import * as SeatReservationAssetFactory from '../factory/asset/seatReservation';
 import * as GMOCardFactory from '../factory/card/gmo';
 import * as MemberOwnerFactory from '../factory/owner/member';
 export declare type IOperation<T> = () => Promise<T>;
+export declare type IAssetOperation<T> = (assetAdapter: AssetAdapter) => Promise<T>;
 export declare type IOwnerOperation<T> = (ownerAdapter: OwnerAdapter) => Promise<T>;
 export declare type IAssetAndOwnerOperation<T> = (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter) => Promise<T>;
 export interface ILoginResult {
@@ -52,4 +53,12 @@ export declare function addCard(ownerId: string, card: GMOCardFactory.IGMOCardRa
  * @memberof service/member
  */
 export declare function removeCard(ownerId: string, cardSeq: string): IOperation<void>;
-export declare function findSeatReservationAssets(ownerId: string): IAssetAndOwnerOperation<SeatReservationAssetFactory.ISeatReservationAsset[]>;
+/**
+ * 会員の座席予約資産を検索する
+ *
+ * @export
+ * @param {string} ownerId 所有者ID
+ * @returns {IAssetOperation<SeatReservationAssetFactory.ISeatReservationAsset[]>} 資産に対する操作
+ * @memberof service/member
+ */
+export declare function findSeatReservationAssets(ownerId: string): IAssetOperation<SeatReservationAssetFactory.ISeatReservationAsset[]>;

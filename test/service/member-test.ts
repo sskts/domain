@@ -281,7 +281,6 @@ describe('会員サービス 資産検索', () => {
 
     it('正しく検索できる', async () => {
         const assetAdapter = new AssetAdapter(connection);
-        const ownerAdapter = new OwnerAdapter(connection);
 
         // テスト資産作成
         const assets = [
@@ -292,7 +291,7 @@ describe('会員サービス 資産検索', () => {
         }));
 
         // GMOに確かにカードが削除されていることを確認
-        const assetsOfMember = await MemberService.findSeatReservationAssets(TEST_MEMBER_OWNER.id)(assetAdapter, ownerAdapter);
+        const assetsOfMember = await MemberService.findSeatReservationAssets(TEST_MEMBER_OWNER.id)(assetAdapter);
         assert.equal(assetsOfMember.length, 1);
         assert.equal(assetsOfMember[0].id, TEST_SEAT_RESERVATION_ASSET.id);
 

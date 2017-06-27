@@ -255,7 +255,6 @@ describe('会員サービス 資産検索', () => {
     }));
     it('正しく検索できる', () => __awaiter(this, void 0, void 0, function* () {
         const assetAdapter = new asset_1.default(connection);
-        const ownerAdapter = new owner_1.default(connection);
         // テスト資産作成
         const assets = [
             TEST_SEAT_RESERVATION_ASSET
@@ -264,7 +263,7 @@ describe('会員サービス 資産検索', () => {
             yield assetAdapter.model.findByIdAndUpdate(asset.id, asset, { upsert: true }).exec();
         })));
         // GMOに確かにカードが削除されていることを確認
-        const assetsOfMember = yield MemberService.findSeatReservationAssets(TEST_MEMBER_OWNER.id)(assetAdapter, ownerAdapter);
+        const assetsOfMember = yield MemberService.findSeatReservationAssets(TEST_MEMBER_OWNER.id)(assetAdapter);
         assert.equal(assetsOfMember.length, 1);
         assert.equal(assetsOfMember[0].id, TEST_SEAT_RESERVATION_ASSET.id);
         yield assetAdapter.model.findByIdAndRemove(TEST_SEAT_RESERVATION_ASSET.id).exec();

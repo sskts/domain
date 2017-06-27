@@ -23,6 +23,7 @@ import OwnerGroup from '../factory/ownerGroup';
 const debug = createDebug('sskts-domain:service:member');
 
 export type IOperation<T> = () => Promise<T>;
+export type IAssetOperation<T> = (assetAdapter: AssetAdapter) => Promise<T>;
 export type IOwnerOperation<T> = (ownerAdapter: OwnerAdapter) => Promise<T>;
 export type IAssetAndOwnerOperation<T> = (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter) => Promise<T>;
 export interface ILoginResult {
@@ -155,18 +156,23 @@ export function removeCard(ownerId: string, cardSeq: string): IOperation<void> {
     };
 }
 
-export function findSeatReservationAssets(ownerId: string): IAssetAndOwnerOperation<SeatReservationAssetFactory.ISeatReservationAsset[]> {
-    return async (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter) => {
-        // 会員存在確認
-        const memberOwnerDoc = await ownerAdapter.model.findById(ownerId, '_id').exec();
-        debug('member owner doc found', memberOwnerDoc);
-
+/**
+ * 会員の座席予約資産を検索する
+ *
+ * @export
+ * @param {string} ownerId 所有者ID
+ * @returns {IAssetOperation<SeatReservationAssetFactory.ISeatReservationAsset[]>} 資産に対する操作
+ * @memberof service/member
+ */
+export function findSeatReservationAssets(ownerId: string): IAssetOperation<SeatReservationAssetFactory.ISeatReservationAsset[]> {
+    return async (assetAdapter: AssetAdapter) => {
         // 資産全検索
         // todo add limit
         return await assetAdapter.model.find({
             group: AssetGroup.SEAT_RESERVATION,
             'ownership.owner': ownerId
-        }).exec()
+        }).sort({ created_at: 1 })
+            .exec()
             .then((docs) => docs.map((doc) => <SeatReservationAssetFactory.ISeatReservationAsset>doc.toObject()));
     };
 }
