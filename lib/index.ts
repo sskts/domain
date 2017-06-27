@@ -7,17 +7,17 @@
 import { Connection } from 'mongoose';
 import { RedisClient } from 'redis';
 
-import * as clientService from './service/client';
-import * as masterService from './service/master';
-import * as memberService from './service/member';
-import * as notificationService from './service/notification';
-import * as queueService from './service/queue';
-import * as reportService from './service/report';
-import * as salesService from './service/sales';
-import * as stockService from './service/stock';
-import * as stockStatusService from './service/stockStatus';
-import * as transactionService from './service/transaction';
-import * as transactionWithIdService from './service/transactionWithId';
+import * as ClientService from './service/client';
+import * as MasterService from './service/master';
+import * as MemberService from './service/member';
+import * as NotificationService from './service/notification';
+import * as QueueService from './service/queue';
+import * as ReportService from './service/report';
+import * as SalesService from './service/sales';
+import * as StockService from './service/stock';
+import * as StockStatusService from './service/stockStatus';
+import * as TransactionService from './service/transaction';
+import * as TransactionWithIdService from './service/transactionWithId';
 
 import AssetAdapter from './adapter/asset';
 import ClientAdapter from './adapter/client';
@@ -73,120 +73,120 @@ import TransactionQueuesStatus from './factory/transactionQueuesStatus';
 import * as TransactionScopeFactory from './factory/transactionScope';
 import TransactionStatus from './factory/transactionStatus';
 
-export const adapter = {
-    asset: (connection: Connection) => {
+export namespace adapter {
+    export function asset(connection: Connection) {
         return new AssetAdapter(connection);
-    },
-    client: (connection: Connection) => {
+    }
+    export function client(connection: Connection) {
         return new ClientAdapter(connection);
-    },
-    film: (connection: Connection) => {
+    }
+    export function film(connection: Connection) {
         return new FilmAdapter(connection);
-    },
-    gmoNotification: (connection: Connection) => {
+    }
+    export function gmoNotification(connection: Connection) {
         return new GMONotificationAdapter(connection);
-    },
-    owner: (connection: Connection) => {
+    }
+    export function owner(connection: Connection) {
         return new OwnerAdapter(connection);
-    },
-    performance: (connection: Connection) => {
+    }
+    export function performance(connection: Connection) {
         return new PerformanceAdapter(connection);
-    },
-    stockStatus: {
-        performance: (redisClient: RedisClient) => {
+    }
+    export namespace stockStatus {
+        export function performance(redisClient: RedisClient) {
             return new PerformanceStockStatusAdapter(redisClient);
         }
-    },
-    queue: (connection: Connection) => {
+    }
+    export function queue(connection: Connection) {
         return new QueueAdapter(connection);
-    },
-    screen: (connection: Connection) => {
+    }
+    export function screen(connection: Connection) {
         return new ScreenAdapter(connection);
-    },
-    sendGridEvent: (connection: Connection) => {
+    }
+    export function sendGridEvent(connection: Connection) {
         return new SendGridEventAdapter(connection);
-    },
-    telemetry: (connection: Connection) => {
+    }
+    export function telemetry(connection: Connection) {
         return new TelemetryAdapter(connection);
-    },
-    theater: (connection: Connection) => {
+    }
+    export function theater(connection: Connection) {
         return new TheaterAdapter(connection);
-    },
-    transaction: (connection: Connection) => {
+    }
+    export function transaction(connection: Connection) {
         return new TransactionAdapter(connection);
-    },
-    transactionCount: (redisClient: RedisClient) => {
+    }
+    export function transactionCount(redisClient: RedisClient) {
         return new TransactionCountAdapter(redisClient);
     }
-};
+}
 
-export const service = {
-    client: clientService,
-    master: masterService,
-    member: memberService,
-    notification: notificationService,
-    queue: queueService,
-    report: reportService,
-    sales: salesService,
-    stock: stockService,
-    stockStatus: stockStatusService,
-    transaction: transactionService,
-    transactionWithId: transactionWithIdService
-};
+export namespace service {
+    export import client = ClientService;
+    export import master = MasterService;
+    export import member = MemberService;
+    export import notification = NotificationService;
+    export import queue = QueueService;
+    export import report = ReportService;
+    export import sales = SalesService;
+    export import stock = StockService;
+    export import stockStatus = StockStatusService;
+    export import transaction = TransactionService;
+    export import transactionWithId = TransactionWithIdService;
+}
 
-export const factory = {
-    asset: {
-        seatReservation: SeatReservationAssetFactory
-    },
-    assetGroup: AssetGroup,
-    authorization: {
-        coaSeatReservation: CoaSeatReservationAuthorizationFactory,
-        gmo: GmoAuthorizationFactory,
-        mvtk: MvtkAuthorizationFactory
-    },
-    authorizationGroup: AuthorizationGroup,
-    card: {
-        gmo: GMOCardFactory
-    },
-    cardGroup: CardGroup,
-    client: ClientFactory,
-    clientEvent: ClientEventFactory,
-    film: FilmFactory,
-    notification: {
-        email: EmailNotificationFactory
-    },
-    notificationGroup: NotificationGroup,
-    owner: {
-        anonymous: AnonymousOwnerFactory,
-        member: MemberOwnerFactory,
-        promoter: PromoterOwnerFactory
-    },
-    ownerGroup: OwnerGroup,
-    ownership: OwnershipFactory,
-    performance: PerformanceFactory,
-    queue: {
-        cancelAuthorization: CancelAuthorizationQueueFactory,
-        disableTransactionInquiry: DisableTransactionInquiryQueueFactory,
-        pushNotification: PushNotificationQueueFactory,
-        settleAuthorization: SettleAuthorizationQueueFactory
-    },
-    queueGroup: QueueGroup,
-    queueStatus: QueueStatus,
-    screen: ScreenFactory,
-    stockStatus: {
-        performance: PerformanceStockStatusFactory
-    },
-    theater: TheaterFactory,
-    transaction: TransactionFactory,
-    transactionEvent: {
-        addNotification: AddNotificationTransactionEventFactory,
-        authorize: AuthorizeTransactionEventFactory,
-        removeNotification: RemoveNotificationTransactionEventFactory,
-        unauthorize: UnauthorizeTransactionEventFactory
-    },
-    transactionEventGroup: TransactionEventGroup,
-    transactionInquiryKey: TransactionInquiryKeyFactory,
-    transactionQueuesStatus: TransactionQueuesStatus,
-    transactionScope: TransactionScopeFactory,
-    transactionStatus: TransactionStatus
-};
+export namespace factory {
+    export namespace asset {
+        export import seatReservation = SeatReservationAssetFactory;
+    }
+    export import assetGroup = AssetGroup;
+    export namespace authorization {
+        export import coaSeatReservation = CoaSeatReservationAuthorizationFactory;
+        export import gmo = GmoAuthorizationFactory;
+        export import mvtk = MvtkAuthorizationFactory;
+    }
+    export import authorizationGroup = AuthorizationGroup;
+    export namespace card {
+        export import gmo = GMOCardFactory;
+    }
+    export import cardGroup = CardGroup;
+    export import client = ClientFactory;
+    export import clientEvent = ClientEventFactory;
+    export import film = FilmFactory;
+    export namespace notification {
+        export import email = EmailNotificationFactory;
+    }
+    export import notificationGroup = NotificationGroup;
+    export namespace owner {
+        export import anonymous = AnonymousOwnerFactory;
+        export import member = MemberOwnerFactory;
+        export import promoter = PromoterOwnerFactory;
+    }
+    export import ownerGroup = OwnerGroup;
+    export import ownership = OwnershipFactory;
+    export import performance = PerformanceFactory;
+    export namespace queue {
+        export import cancelAuthorization = CancelAuthorizationQueueFactory;
+        export import disableTransactionInquiry = DisableTransactionInquiryQueueFactory;
+        export import pushNotification = PushNotificationQueueFactory;
+        export import settleAuthorization = SettleAuthorizationQueueFactory;
+    }
+    export import queueGroup = QueueGroup;
+    export import queueStatus = QueueStatus;
+    export import screen = ScreenFactory;
+    export namespace stockStatus {
+        export import performance = PerformanceStockStatusFactory;
+    }
+    export import theater = TheaterFactory;
+    export import transaction = TransactionFactory;
+    export namespace transactionEvent {
+        export import addNotification = AddNotificationTransactionEventFactory;
+        export import authorize = AuthorizeTransactionEventFactory;
+        export import removeNotification = RemoveNotificationTransactionEventFactory;
+        export import unauthorize = UnauthorizeTransactionEventFactory;
+    }
+    export import transactionEventGroup = TransactionEventGroup;
+    export import transactionInquiryKey = TransactionInquiryKeyFactory;
+    export import transactionQueuesStatus = TransactionQueuesStatus;
+    export import transactionScope = TransactionScopeFactory;
+    export import transactionStatus = TransactionStatus;
+}

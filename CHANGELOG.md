@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 - 会員所有者インターフェースを細分化。
+- interfaceをエクスポートするように、indexモジュールでのエクスポート方法を変更。
 
 ### Deprecated
 - 取引サービスから、匿名所有者として取引開始するメソッドを非推奨に変更。
