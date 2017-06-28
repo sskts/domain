@@ -1,12 +1,15 @@
 import * as util from 'util';
 
+import SSKTSError from '../error';
+import ErrorCode from '../errorCode';
+
 /**
  * ArgumentError
  *
  * @class ArgumentError
- * @extends {Error}
+ * @extends {SSKTSError}
  */
-export default class ArgumentError extends Error {
+export default class ArgumentError extends SSKTSError {
     public readonly argumentName: string;
 
     constructor(argumentName: string, message?: string) {
@@ -14,9 +17,8 @@ export default class ArgumentError extends Error {
             message = util.format('Invalid or missing argument supplied: %s', argumentName);
         }
 
-        super(message);
+        super(ErrorCode.Argument, message);
 
-        this.name = this.constructor.name;
         this.argumentName = argumentName;
 
         // Set the prototype explicitly.
