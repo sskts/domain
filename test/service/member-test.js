@@ -16,8 +16,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const GMO = require("@motionpicture/gmo-service");
 const assert = require("assert");
 const mongoose = require("mongoose");
+const alreadyInUse_1 = require("../../lib/error/alreadyInUse");
 const argument_1 = require("../../lib/error/argument");
-const duplicateKey_1 = require("../../lib/error/duplicateKey");
 const asset_1 = require("../../lib/adapter/asset");
 const owner_1 = require("../../lib/adapter/owner");
 const SeatReservationAssetFactory = require("../../lib/factory/asset/seatReservation");
@@ -157,8 +157,9 @@ describe('会員サービス 新規登録', () => {
         });
         const signUpError = yield MemberService.signUp(memberOwner2)(ownerAdapter)
             .catch((error) => error);
-        assert(signUpError instanceof duplicateKey_1.default);
-        assert.equal(signUpError.key, 'username');
+        console.error(signUpError);
+        assert(signUpError instanceof alreadyInUse_1.default);
+        assert.equal(signUpError.entityName, 'owners');
         // テスト会員削除
         yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     }));

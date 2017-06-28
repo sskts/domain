@@ -4,8 +4,8 @@
  * @module errorCode
  */
 declare enum ErrorCode {
-    Argument = 11,
-    ArgumentNull = 12,
-    DuplicateKey = 13,
+    AlreadyInUse = "AlreadyInUse",
+    Argument = "Argument",
+    ArgumentNull = "ArgumentNull",
 }
 export default ErrorCode;

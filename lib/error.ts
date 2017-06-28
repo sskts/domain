@@ -5,9 +5,9 @@
  * @extends {Error}
  */
 export default class SSKTSError extends Error {
-    public readonly code: number;
+    public readonly code: string;
 
-    constructor(code: number, message?: string) {
+    constructor(code: string, message?: string) {
         super(message);
 
         this.name = 'SSKTSError';
