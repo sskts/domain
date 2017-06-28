@@ -8,6 +8,7 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as assert from 'assert';
 import * as mongoose from 'mongoose';
 
+import AlreadyInUseError from '../../lib/error/alreadyInUse';
 import ArgumentError from '../../lib/error/argument';
 
 import AssetAdapter from '../../lib/adapter/asset';
@@ -45,11 +46,11 @@ before(async () => {
     await ownerAdapter.model.remove({ group: OwnerGroup.ANONYMOUS }).exec();
 
     TEST_MEMBER_OWNER = await MemberOwnerFactory.create({
-        username: 'username',
+        username: `sskts-domain:test:service:member-test:${Date.now().toString()}`,
         password: TEST_PASSWORD,
         name_first: 'name_first',
         name_last: 'name_last',
-        email: 'noreplay@example.com'
+        email: process.env.SSKTS_DEVELOPER_EMAIL
     });
     // GMO会員登録
     await GMO.services.card.saveMember({
@@ -62,7 +63,7 @@ before(async () => {
     TEST_MEMBER_VARIABLE_FIELDS = {
         name_first: 'new first name',
         name_last: 'new last name',
-        email: 'new@example.com',
+        email: process.env.SSKTS_DEVELOPER_EMAIL,
         tel: '09012345678',
         description: { en: 'new description en', ja: 'new description ja' },
         notes: { en: 'new notes en', ja: 'new notes ja' }
@@ -137,6 +138,60 @@ after(async () => {
     // テスト会員削除
     const ownerAdapter = new OwnerAdapter(connection);
     await ownerAdapter.model.findByIdAndRemove(TEST_MEMBER_OWNER.id).exec();
+});
+
+describe('会員サービス 新規登録', () => {
+    it('ユーザーネームが重複すればエラー', async () => {
+        // まず登録
+        const ownerAdapter = new OwnerAdapter(connection);
+        const memberOwner = await MemberOwnerFactory.create({
+            username: `sskts-domain:test:service:member-test:${Date.now().toString()}`,
+            password: TEST_PASSWORD,
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: process.env.SSKTS_DEVELOPER_EMAIL
+        });
+
+        await MemberService.signUp(memberOwner)(ownerAdapter);
+
+        // 同じユーザーネームで登録
+        const memberOwner2 = await MemberOwnerFactory.create({
+            username: memberOwner.username,
+            password: TEST_PASSWORD,
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: process.env.SSKTS_DEVELOPER_EMAIL
+        });
+
+        const signUpError = await MemberService.signUp(memberOwner2)(ownerAdapter)
+            .catch((error) => error);
+        console.error(signUpError);
+        assert(signUpError instanceof AlreadyInUseError);
+        assert.equal((<AlreadyInUseError>signUpError).entityName, 'owners');
+
+        // テスト会員削除
+        await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
+    });
+
+    it('登録できる', async () => {
+        const ownerAdapter = new OwnerAdapter(connection);
+        const memberOwner = await MemberOwnerFactory.create({
+            username: `sskts-domain:test:service:member-test:${Date.now().toString()}`,
+            password: TEST_PASSWORD,
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: process.env.SSKTS_DEVELOPER_EMAIL
+        });
+
+        await MemberService.signUp(memberOwner)(ownerAdapter);
+
+        const ownerDoc = await ownerAdapter.model.findById(memberOwner.id).exec();
+        assert(ownerDoc !== null);
+        assert.equal((<mongoose.Document>ownerDoc).get('username'), memberOwner.username);
+
+        // テスト会員削除
+        await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
+    });
 });
 
 describe('会員サービス ログイン', () => {

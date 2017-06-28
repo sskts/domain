@@ -16,6 +16,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v19.6.0 - 2017-06-27
+### Added
+- エラーコードモジュールを追加し、indexからエクスポート。
+- AlreadyInUseErrorをカスタムエラークラスとして追加。
+- 会員新規登録サービスを追加。
+
+### Changed
+- 内部でハンドリングされたエラーを全てSSKTSErrorとして投げるように変更。
+
 ## v19.5.0 - 2017-06-27
 ### Added
 - 取引サービスに、所有者を指定できる開始メソッドを追加。
@@ -24,6 +33,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 - 会員所有者インターフェースを細分化。
 - interfaceをエクスポートするように、indexモジュールでのエクスポート方法を変更。
+- 匿名所有者インターフェースを、会員所有者インターフェースに近づけるように拡張。
 
 ### Deprecated
 - 取引サービスから、匿名所有者として取引開始するメソッドを非推奨に変更。

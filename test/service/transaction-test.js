@@ -143,6 +143,8 @@ describe('取引サービス 取引開始する', () => {
         // 会員は存在しないのでエラーになるはず
         const startError = yield sskts.service.transaction.start(TEST_START_TRANSACTION_AS_MEMBER_ARGS)(ownerAdapter, transactionAdapter, transactionCountAdapter).catch((error) => error);
         assert(startError instanceof argument_1.default);
+        console.error(startError);
+        console.error(startError.name);
         assert.equal(startError.argumentName, 'ownerId');
     }));
     it('会員として開始できる', () => __awaiter(this, void 0, void 0, function* () {

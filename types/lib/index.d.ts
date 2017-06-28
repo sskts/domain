@@ -69,6 +69,7 @@ import * as TransactionInquiryKeyFactory from './factory/transactionInquiryKey';
 import TransactionQueuesStatus from './factory/transactionQueuesStatus';
 import * as TransactionScopeFactory from './factory/transactionScope';
 import TransactionStatus from './factory/transactionStatus';
+import ErrorCode from './errorCode';
 export declare namespace adapter {
     function asset(connection: Connection): AssetAdapter;
     function client(connection: Connection): ClientAdapter;
@@ -156,3 +157,4 @@ export declare namespace factory {
     export import transactionScope = TransactionScopeFactory;
     export import transactionStatus = TransactionStatus;
 }
+export import errorCode = ErrorCode;

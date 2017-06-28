@@ -42,4 +42,7 @@ schema.index(
     { group: 1 }
 );
 
+// 会員のユーザーネームはユニークに
+schema.index({ group: 1, username: 1 }, { unique: true });
+
 export default mongoose.model('Owner', schema);
