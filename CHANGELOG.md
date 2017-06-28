@@ -5,11 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
-- エラーコードモジュールを追加し、indexからエクスポート。
-- AlreadyInUseErrorをカスタムエラークラスとして追加。
 
 ### Changed
-- 内部でハンドリングされたエラーを全てSSKTSErrorとして投げるように変更。
 
 ### Deprecated
 
@@ -18,6 +15,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v19.6.0 - 2017-06-27
+### Added
+- エラーコードモジュールを追加し、indexからエクスポート。
+- AlreadyInUseErrorをカスタムエラークラスとして追加。
+- 会員新規登録サービスを追加。
+
+### Changed
+- 内部でハンドリングされたエラーを全てSSKTSErrorとして投げるように変更。
 
 ## v19.5.0 - 2017-06-27
 ### Added
