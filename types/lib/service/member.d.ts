@@ -13,6 +13,14 @@ export interface ILoginResult {
     username: string;
 }
 /**
+ * 新規登録
+ *
+ * @export
+ * @param {MemberOwnerFactory.IMemberOwner} owner 会員所有者
+ * @returns {IOwnerOperation<void>} 結果を取得する操作
+ */
+export declare function signUp(owner: MemberOwnerFactory.IMemberOwner): IOwnerOperation<void>;
+/**
  * ログイン
  *
  * @export

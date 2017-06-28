@@ -32,6 +32,40 @@ export interface ILoginResult {
 }
 
 /**
+ * 新規登録
+ *
+ * @export
+ * @param {MemberOwnerFactory.IMemberOwner} owner 会員所有者
+ * @returns {IOwnerOperation<void>} 結果を取得する操作
+ */
+export function signUp(owner: MemberOwnerFactory.IMemberOwner): IOwnerOperation<void> {
+    return async (ownerAdapter: OwnerAdapter) => {
+        // まずGMO会員登録
+        const saveMemberResult = await GMO.services.card.saveMember({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: owner.id,
+            memberName: `${owner.name_last} ${owner.name_first}`
+        });
+        debug('GMO saveMember processed', saveMemberResult);
+
+        // 永続化
+        try {
+            const ownerDoc = await ownerAdapter.model.create({ ...owner, ...{ _id: owner.id } });
+            debug('owner created', ownerDoc);
+        } catch (error) {
+            // todo エラーコード管理を整理する
+            // tslint:disable-next-line:no-magic-numbers
+            if (error.name === 'MongoError' && error.code === 11000) {
+                throw new Error('username already exsits');
+            }
+
+            throw error;
+        }
+    };
+}
+
+/**
  * ログイン
  *
  * @export

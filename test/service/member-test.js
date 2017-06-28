@@ -44,11 +44,11 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     const ownerAdapter = new owner_1.default(connection);
     yield ownerAdapter.model.remove({ group: ownerGroup_1.default.ANONYMOUS }).exec();
     TEST_MEMBER_OWNER = yield MemberOwnerFactory.create({
-        username: 'username',
+        username: `sskts-domain:test:service:member-test:${Date.now().toString()}`,
         password: TEST_PASSWORD,
         name_first: 'name_first',
         name_last: 'name_last',
-        email: 'noreplay@example.com'
+        email: process.env.SSKTS_DEVELOPER_EMAIL
     });
     // GMO会員登録
     yield GMO.services.card.saveMember({
@@ -60,7 +60,7 @@ before(() => __awaiter(this, void 0, void 0, function* () {
     TEST_MEMBER_VARIABLE_FIELDS = {
         name_first: 'new first name',
         name_last: 'new last name',
-        email: 'new@example.com',
+        email: process.env.SSKTS_DEVELOPER_EMAIL,
         tel: '09012345678',
         description: { en: 'new description en', ja: 'new description ja' },
         notes: { en: 'new notes en', ja: 'new notes ja' }
@@ -134,6 +134,49 @@ after(() => __awaiter(this, void 0, void 0, function* () {
     const ownerAdapter = new owner_1.default(connection);
     yield ownerAdapter.model.findByIdAndRemove(TEST_MEMBER_OWNER.id).exec();
 }));
+describe('会員サービス 新規登録', () => {
+    it('ユーザーネームが重複すればエラー', () => __awaiter(this, void 0, void 0, function* () {
+        // まず登録
+        const ownerAdapter = new owner_1.default(connection);
+        const memberOwner = yield MemberOwnerFactory.create({
+            username: `sskts-domain:test:service:member-test:${Date.now().toString()}`,
+            password: TEST_PASSWORD,
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: process.env.SSKTS_DEVELOPER_EMAIL
+        });
+        yield MemberService.signUp(memberOwner)(ownerAdapter);
+        // 同じユーザーネームで登録
+        const memberOwner2 = yield MemberOwnerFactory.create({
+            username: memberOwner.username,
+            password: TEST_PASSWORD,
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: process.env.SSKTS_DEVELOPER_EMAIL
+        });
+        const signUpError = yield MemberService.signUp(memberOwner2)(ownerAdapter)
+            .catch((error) => error);
+        assert(signUpError instanceof Error);
+        // テスト会員削除
+        yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
+    }));
+    it('登録できる', () => __awaiter(this, void 0, void 0, function* () {
+        const ownerAdapter = new owner_1.default(connection);
+        const memberOwner = yield MemberOwnerFactory.create({
+            username: `sskts-domain:test:service:member-test:${Date.now().toString()}`,
+            password: TEST_PASSWORD,
+            name_first: 'name_first',
+            name_last: 'name_last',
+            email: process.env.SSKTS_DEVELOPER_EMAIL
+        });
+        yield MemberService.signUp(memberOwner)(ownerAdapter);
+        const ownerDoc = yield ownerAdapter.model.findById(memberOwner.id).exec();
+        assert(ownerDoc !== null);
+        assert.equal(ownerDoc.get('username'), memberOwner.username);
+        // テスト会員削除
+        yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
+    }));
+});
 describe('会員サービス ログイン', () => {
     beforeEach(() => __awaiter(this, void 0, void 0, function* () {
         // テスト会員情報を初期化

@@ -7,12 +7,7 @@ import * as AnonymousOwnerFactory from '../owner/anonymous';
  * @interface IImmutableFields
  * @memberof factory/owner/member
  */
-export interface IImmutableFields {
-    /**
-     * ユーザーネーム
-     */
-    username: string;
-}
+export declare type IImmutableFields = AnonymousOwnerFactory.IImmutableFields;
 /**
  * 会員属性中で可変のフィールド
  *
@@ -21,32 +16,7 @@ export interface IImmutableFields {
  * @extends {AnonymousOwnerFactory.IAnonymousOwner}
  * @memberof factory/owner/member
  */
-export interface IVariableFields {
-    /**
-     * 名
-     */
-    name_first: string;
-    /**
-     * 姓
-     */
-    name_last: string;
-    /**
-     * メールアドレス
-     */
-    email: string;
-    /**
-     * 電話番号
-     */
-    tel: string;
-    /**
-     * 説明
-     */
-    description: IMultilingualString;
-    /**
-     * 備考
-     */
-    notes: IMultilingualString;
-}
+export declare type IVariableFields = AnonymousOwnerFactory.IVariableFields;
 /**
  * 会員属性中でハッシュ化されたフィールド
  *
