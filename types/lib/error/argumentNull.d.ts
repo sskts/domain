@@ -1,10 +1,11 @@
+import SSKTSError from '../error';
 /**
  * ArgumentNullError
  *
  * @class ArgumentNullError
- * @extends {Error}
+ * @extends {SSKTSError}
  */
-export default class ArgumentNullError extends Error {
+export default class ArgumentNullError extends SSKTSError {
     readonly argumentName: string;
     constructor(argumentName: string, message?: string);
 }

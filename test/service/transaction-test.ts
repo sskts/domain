@@ -176,6 +176,8 @@ describe('取引サービス 取引開始する', () => {
             ownerAdapter, transactionAdapter, transactionCountAdapter
         ).catch((error) => error);
         assert(startError instanceof ArgumentError);
+        console.error(startError);
+        console.error(startError.name);
         assert.equal((<ArgumentError>startError).argumentName, 'ownerId');
     });
 

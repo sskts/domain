@@ -10,6 +10,7 @@ import * as createDebug from 'debug';
 import * as monapt from 'monapt';
 
 import ArgumentError from '../error/argument';
+import DuplicateKeyError from '../error/duplicateKey';
 
 import AssetAdapter from '../adapter/asset';
 import OwnerAdapter from '../adapter/owner';
@@ -57,7 +58,7 @@ export function signUp(owner: MemberOwnerFactory.IMemberOwner): IOwnerOperation<
             // todo エラーコード管理を整理する
             // tslint:disable-next-line:no-magic-numbers
             if (error.name === 'MongoError' && error.code === 11000) {
-                throw new Error('username already exsits');
+                throw new DuplicateKeyError('username', 'username already exsits');
             }
 
             throw error;

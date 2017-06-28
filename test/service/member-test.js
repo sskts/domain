@@ -17,6 +17,7 @@ const GMO = require("@motionpicture/gmo-service");
 const assert = require("assert");
 const mongoose = require("mongoose");
 const argument_1 = require("../../lib/error/argument");
+const duplicateKey_1 = require("../../lib/error/duplicateKey");
 const asset_1 = require("../../lib/adapter/asset");
 const owner_1 = require("../../lib/adapter/owner");
 const SeatReservationAssetFactory = require("../../lib/factory/asset/seatReservation");
@@ -156,7 +157,8 @@ describe('会員サービス 新規登録', () => {
         });
         const signUpError = yield MemberService.signUp(memberOwner2)(ownerAdapter)
             .catch((error) => error);
-        assert(signUpError instanceof Error);
+        assert(signUpError instanceof duplicateKey_1.default);
+        assert.equal(signUpError.key, 'username');
         // テスト会員削除
         yield ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
     }));

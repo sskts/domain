@@ -5,8 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- エラーコードを追加。
 
 ### Changed
+- 内部でハンドリングされたエラーを全てSSKTSErrorとして投げるように変更。
 
 ### Deprecated
 

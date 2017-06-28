@@ -9,6 +9,7 @@ import * as assert from 'assert';
 import * as mongoose from 'mongoose';
 
 import ArgumentError from '../../lib/error/argument';
+import DuplicateKeyError from '../../lib/error/duplicateKey';
 
 import AssetAdapter from '../../lib/adapter/asset';
 import OwnerAdapter from '../../lib/adapter/owner';
@@ -164,7 +165,8 @@ describe('会員サービス 新規登録', () => {
 
         const signUpError = await MemberService.signUp(memberOwner2)(ownerAdapter)
             .catch((error) => error);
-        assert(signUpError instanceof Error);
+        assert(signUpError instanceof DuplicateKeyError);
+        assert.equal((<DuplicateKeyError>signUpError).key, 'username');
 
         // テスト会員削除
         await ownerAdapter.model.findByIdAndRemove(memberOwner.id).exec();
