@@ -4,15 +4,8 @@
  * @namespace factory/theaterWebsiteGroup
  */
 
-export type TheaterWebsiteGroup =
-    'PORTAL'
-    ;
-
-export namespace TheaterWebsiteGroup {
-    /**
-     * ポータルサイト
-     */
-    export const PORTAL = 'PORTAL';
+enum TheaterWebsiteGroup {
+    PORTAL = 'PORTAL'
 }
 
 export default TheaterWebsiteGroup;

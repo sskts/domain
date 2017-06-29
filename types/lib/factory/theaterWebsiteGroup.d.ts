@@ -3,11 +3,7 @@
  *
  * @namespace factory/theaterWebsiteGroup
  */
-export declare type TheaterWebsiteGroup = 'PORTAL';
-export declare namespace TheaterWebsiteGroup {
-    /**
-     * ポータルサイト
-     */
-    const PORTAL = "PORTAL";
+declare enum TheaterWebsiteGroup {
+    PORTAL = "PORTAL",
 }
 export default TheaterWebsiteGroup;

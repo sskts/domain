@@ -14,6 +14,7 @@ import * as NotificationService from './service/notification';
 import * as QueueService from './service/queue';
 import * as ReportService from './service/report';
 import * as SalesService from './service/sales';
+import * as ShopService from './service/shop';
 import * as StockService from './service/stock';
 import * as StockStatusService from './service/stockStatus';
 import * as TransactionService from './service/transaction';
@@ -63,6 +64,7 @@ import QueueStatus from './factory/queueStatus';
 import * as ScreenFactory from './factory/screen';
 import * as PerformanceStockStatusFactory from './factory/stockStatus/performance';
 import * as TheaterFactory from './factory/theater';
+import TheaterWebsiteGroup from './factory/theaterWebsiteGroup';
 import * as TransactionFactory from './factory/transaction';
 import * as AddNotificationTransactionEventFactory from './factory/transactionEvent/addNotification';
 import * as AuthorizeTransactionEventFactory from './factory/transactionEvent/authorize';
@@ -131,6 +133,7 @@ export namespace service {
     export import queue = QueueService;
     export import report = ReportService;
     export import sales = SalesService;
+    export import shop = ShopService;
     export import stock = StockService;
     export import stockStatus = StockStatusService;
     export import transaction = TransactionService;
@@ -183,6 +186,7 @@ export namespace factory {
         export import performance = PerformanceStockStatusFactory;
     }
     export import theater = TheaterFactory;
+    export import theaterWebsiteGroup = TheaterWebsiteGroup;
     export import transaction = TransactionFactory;
     export namespace transactionEvent {
         export import addNotification = AddNotificationTransactionEventFactory;
