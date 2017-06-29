@@ -55,10 +55,10 @@ export declare function updateProfile(ownerId: string, update: MemberOwnerFactor
  * @export
  * @param {string} ownerId 所有者ID
  * @param {(GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized)} card GMOカードオブジェクト
- * @returns {IOperation<string>} 操作
+ * @returns {IOperation<GMOCardFactory.ICheckedCard>} 登録後カードを返す操作
  * @memberof service/member
  */
-export declare function addCard(ownerId: string, card: GMOCardFactory.IUncheckedCardRaw | GMOCardFactory.IUncheckedCardTokenized): IOperation<string>;
+export declare function addCard(ownerId: string, card: GMOCardFactory.IUncheckedCardRaw | GMOCardFactory.IUncheckedCardTokenized): IOperation<GMOCardFactory.ICheckedCard>;
 /**
  * カード削除
  *

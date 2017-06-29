@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 - カードインターフェースに属性を追加(IDと所有者)
+- 会員カード追加サービスの返却値を、有効性確認済みカードに変更。
 
 ### Deprecated
 

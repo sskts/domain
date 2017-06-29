@@ -155,13 +155,13 @@ export function updateProfile(ownerId: string, update: MemberOwnerFactory.IVaria
  * @export
  * @param {string} ownerId 所有者ID
  * @param {(GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized)} card GMOカードオブジェクト
- * @returns {IOperation<string>} 操作
+ * @returns {IOperation<GMOCardFactory.ICheckedCard>} 登録後カードを返す操作
  * @memberof service/member
  */
 export function addCard(
     ownerId: string,
     card: GMOCardFactory.IUncheckedCardRaw | GMOCardFactory.IUncheckedCardTokenized
-): IOperation<string> {
+): IOperation<GMOCardFactory.ICheckedCard> {
     return async () => {
         // GMOカード登録
         debug('saving a card to GMO...', card);
@@ -178,7 +178,15 @@ export function addCard(
         });
         debug('card saved', saveCardResult);
 
-        return saveCardResult.cardSeq;
+        const searchCardResults = await GMO.services.card.searchCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: ownerId,
+            seqMode: GMO.utils.util.SEQ_MODE_PHYSICS,
+            cardSeq: saveCardResult.cardSeq
+        });
+
+        return GMOCardFactory.createCheckedCardFromGMOSearchCardResult(searchCardResults[0], ownerId);
     };
 }
 
