@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - GMOカードIDファクトリーを追加。
 - 開店サービスを追加。
 - 劇場ウェブサイトグループをindexモジュールからエクスポート。
+- GMOにて会員カードでの決済実行を可能にするために、gmo-serviceをアップデート。
 
 ### Changed
 - カードインターフェースに属性を追加(IDと所有者)
