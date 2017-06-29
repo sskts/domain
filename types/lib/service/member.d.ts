@@ -64,11 +64,11 @@ export declare function addCard(ownerId: string, card: GMOCardFactory.IUnchecked
  *
  * @export
  * @param {string} ownerId 所有者ID
- * @param {string} cardSeq GMO側のカード登録連番
+ * @param {string} cardId カードID
  * @returns {IOperation<void>} 操作
  * @memberof service/member
  */
-export declare function removeCard(ownerId: string, cardSeq: string): IOperation<void>;
+export declare function removeCard(ownerId: string, cardId: string): IOperation<void>;
 /**
  * 会員カード検索
  *

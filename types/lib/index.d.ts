@@ -39,6 +39,7 @@ import * as MvtkAuthorizationFactory from './factory/authorization/mvtk';
 import AuthorizationGroup from './factory/authorizationGroup';
 import * as GMOCardFactory from './factory/card/gmo';
 import CardGroup from './factory/cardGroup';
+import * as GMOCardIdFactory from './factory/cardId/gmo';
 import * as ClientFactory from './factory/client';
 import * as ClientEventFactory from './factory/clientEvent';
 import * as FilmFactory from './factory/film';
@@ -114,6 +115,9 @@ export declare namespace factory {
     export import authorizationGroup = AuthorizationGroup;
     namespace card {
         export import gmo = GMOCardFactory;
+    }
+    namespace cardId {
+        export import gmo = GMOCardIdFactory;
     }
     export import cardGroup = CardGroup;
     export import client = ClientFactory;

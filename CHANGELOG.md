@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- GMOカードファクトリーに作成メソッドを追加。
+- GMOカードIDファクトリーを追加。
 
 ### Changed
+- カードインターフェースに属性を追加(IDと所有者)
 
 ### Deprecated
 

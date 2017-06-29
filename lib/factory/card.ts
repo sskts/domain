@@ -14,6 +14,14 @@ import CardGroup from './cardGroup';
  */
 export interface ICard {
     /**
+     * ID
+     */
+    id: any;
+    /**
+     * 所有者ID
+     */
+    owner: string;
+    /**
      * カードグループ
      */
     group: CardGroup;

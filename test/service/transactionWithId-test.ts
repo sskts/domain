@@ -19,7 +19,6 @@ import * as COASeatReservationAuthorizationFactory from '../../lib/factory/autho
 import * as GMOAuthorizationFactory from '../../lib/factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from '../../lib/factory/authorization/mvtk';
 import * as GMOCardFactory from '../../lib/factory/card/gmo';
-import CardGroup from '../../lib/factory/cardGroup';
 import * as EmailNotificationFactory from '../../lib/factory/notification/email';
 import ObjectId from '../../lib/factory/objectId';
 import * as AnonymousOwnerFactory from '../../lib/factory/owner/anonymous';
@@ -42,13 +41,7 @@ let TEST_MVTK_AUTHORIZATION: MvtkAuthorizationFactory.IMvtkAuthorization;
 let TEST_EMAIL_NOTIFICATION: EmailNotificationFactory.IEmailNotification;
 let TEST_TRANSACTION_INQUIRY_KEY: TransactionInquiryKeyFactory.ITransactionInquiryKey;
 let TEST_PROMOTER_OWNER: PromoterOwnerFactory.IPromoterOwner;
-const TEST_GMO_CARD: GMOCardFactory.IUncheckedCardRaw = {
-    card_no: '4111111111111111',
-    card_pass: '111',
-    expire: '1812',
-    holder_name: 'AA BB',
-    group: CardGroup.GMO
-};
+let TEST_GMO_CARD: GMOCardFactory.IUncheckedCardRaw;
 let connection: mongoose.Connection;
 
 // tslint:disable-next-line:max-func-body-length
@@ -75,6 +68,13 @@ before(async () => {
         { new: true, upsert: true }
     ).exec();
     TEST_PROMOTER_OWNER = <PromoterOwnerFactory.IPromoterOwner>promoterOwnerDoc.toObject();
+
+    TEST_GMO_CARD = GMOCardFactory.createUncheckedCardRaw({
+        card_no: '4111111111111111',
+        card_pass: '111',
+        expire: '2812',
+        holder_name: 'AA BB'
+    });
 
     TEST_GMO_AUTHORIZATION = GMOAuthorizationFactory.create({
         price: 123,

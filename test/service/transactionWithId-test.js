@@ -24,7 +24,7 @@ const assetGroup_1 = require("../../lib/factory/assetGroup");
 const COASeatReservationAuthorizationFactory = require("../../lib/factory/authorization/coaSeatReservation");
 const GMOAuthorizationFactory = require("../../lib/factory/authorization/gmo");
 const MvtkAuthorizationFactory = require("../../lib/factory/authorization/mvtk");
-const cardGroup_1 = require("../../lib/factory/cardGroup");
+const GMOCardFactory = require("../../lib/factory/card/gmo");
 const EmailNotificationFactory = require("../../lib/factory/notification/email");
 const objectId_1 = require("../../lib/factory/objectId");
 const AnonymousOwnerFactory = require("../../lib/factory/owner/anonymous");
@@ -44,13 +44,7 @@ let TEST_MVTK_AUTHORIZATION;
 let TEST_EMAIL_NOTIFICATION;
 let TEST_TRANSACTION_INQUIRY_KEY;
 let TEST_PROMOTER_OWNER;
-const TEST_GMO_CARD = {
-    card_no: '4111111111111111',
-    card_pass: '111',
-    expire: '1812',
-    holder_name: 'AA BB',
-    group: cardGroup_1.default.GMO
-};
+let TEST_GMO_CARD;
 let connection;
 // tslint:disable-next-line:max-func-body-length
 before(() => __awaiter(this, void 0, void 0, function* () {
@@ -69,6 +63,12 @@ before(() => __awaiter(this, void 0, void 0, function* () {
         }
     }, { new: true, upsert: true }).exec();
     TEST_PROMOTER_OWNER = promoterOwnerDoc.toObject();
+    TEST_GMO_CARD = GMOCardFactory.createUncheckedCardRaw({
+        card_no: '4111111111111111',
+        card_pass: '111',
+        expire: '2812',
+        holder_name: 'AA BB'
+    });
     TEST_GMO_AUTHORIZATION = GMOAuthorizationFactory.create({
         price: 123,
         owner_from: 'xxx',
