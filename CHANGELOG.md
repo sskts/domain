@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 ### Fixed
+- GMO売上健康診断にて、マルチショップ対応していないために不健康と診断されるバグを修正。
 
 ### Security
 

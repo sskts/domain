@@ -15,7 +15,7 @@ import QueueAdapter from '../adapter/queue';
 import TelemetryAdapter from '../adapter/telemetry';
 import TransactionAdapter from '../adapter/transaction';
 
-import * as GMOAuthorization from '../factory/authorization/gmo';
+import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
 import AuthorizationGroup from '../factory/authorizationGroup';
 import QueueStatus from '../factory/queueStatus';
 import TransactionQueuesStatus from '../factory/transactionQueuesStatus';
@@ -478,17 +478,20 @@ export function examineGMOSales(notification: ICreditGMONotification) {
             throw new Error(`err_code exists${notification.err_code}`);
         }
 
-        // オーダーIDからCOA予約番号を取得
+        // オーダーIDから劇場コードと予約番号を取得
+        // tslint:disable-next-line:no-magic-numbers
+        const theaterCode = notification.order_id.slice(8, 11);
         // tslint:disable-next-line:no-magic-numbers
         const reserveNum = parseInt(notification.order_id.slice(11, 19), 10);
-        debug('reserveNum:', reserveNum);
-        if (!Number.isInteger(reserveNum)) {
+        debug('theaterCode, reserveNum:', theaterCode, reserveNum);
+        if (typeof theaterCode !== 'string' || !Number.isInteger(reserveNum)) {
             throw new Error('invalid orderId');
         }
 
         const transactionDoc = await transactionAdapter.transactionModel.findOne(
             {
                 status: TransactionStatus.CLOSED,
+                'inquiry_key.theater_code': theaterCode,
                 'inquiry_key.reserve_num': reserveNum
             },
             '_id'
@@ -500,13 +503,13 @@ export function examineGMOSales(notification: ICreditGMONotification) {
         }
 
         const authorizations = await transactionAdapter.findAuthorizationsById(transactionDoc.get('id'));
-        const gmoAuthorizationObject = authorizations.find((authorization) => authorization.group === AuthorizationGroup.GMO);
-
+        const gmoAuthorization = <GMOAuthorizationFactory.IGMOAuthorization>authorizations.find(
+            (authorization) => authorization.group === AuthorizationGroup.GMO
+        );
         // GMOオーソリがなければ異常
-        if (gmoAuthorizationObject === undefined) {
+        if (gmoAuthorization === undefined) {
             throw new Error('gmo authorization not found');
         }
-        const gmoAuthorization = GMOAuthorization.create(<any>gmoAuthorizationObject);
         debug('gmoAuthorization:', gmoAuthorization);
 
         // オーソリのオーダーIDと同一かどうか
@@ -527,5 +530,7 @@ export function examineGMOSales(notification: ICreditGMONotification) {
         if (gmoAuthorization.price !== parseInt(notification.amount, 10)) {
             throw new Error('amount not matched');
         }
+
+        // health!
     };
 }
