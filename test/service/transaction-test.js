@@ -19,6 +19,7 @@ const mongoose = require("mongoose");
 const redis = require("redis");
 const sskts = require("../../lib/index");
 const argument_1 = require("../../lib/error/argument");
+const ClientUserFactory = require("../../lib/factory/clientUser");
 const EmailNotificationFactory = require("../../lib/factory/notification/email");
 const MemberOwnerFactory = require("../../lib/factory/owner/member");
 const ownerGroup_1 = require("../../lib/factory/ownerGroup");
@@ -73,10 +74,15 @@ before(() => __awaiter(this, void 0, void 0, function* () {
         ready_from: readyFrom.toDate(),
         ready_until: readyUntil.toDate()
     });
+    const clientUser = ClientUserFactory.create({
+        client: 'xxx',
+        state: 'xxx',
+        scopes: ['xxx']
+    });
     TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS = {
         expiresAt: expiresAt,
         maxCountPerUnit: 999,
-        state: 'xxx',
+        clientUser: clientUser,
         scope: scope
     };
     TEST_MEMBER_OWNER = yield MemberOwnerFactory.create({
@@ -165,53 +171,6 @@ describe('取引サービス 取引開始する', () => {
         assert.equal(memberOwnerInTransaction.id, TEST_MEMBER_OWNER.id);
         // テスト会員削除
         yield ownerAdapter.model.findByIdAndRemove(TEST_MEMBER_OWNER.id).exec();
-    }));
-});
-describe('取引サービス', () => {
-    it('prepare ok', () => __awaiter(this, void 0, void 0, function* () {
-        yield sskts.service.transaction.prepare(3, 60)(sskts.adapter.transaction(connection)); // tslint:disable-line:no-magic-numbers
-    }));
-    it('makeExpired ok', () => __awaiter(this, void 0, void 0, function* () {
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        // 期限切れの取引を作成
-        yield sskts.service.transaction.prepare(3, -60)(transactionAdapter); // tslint:disable-line:no-magic-numbers
-        yield sskts.service.transaction.makeExpired()(transactionAdapter);
-    }));
-    it('clean should be removed', () => __awaiter(this, void 0, void 0, function* () {
-        // test data
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        const transactionIds = [];
-        const promises = Array.from(Array(3).keys()).map(() => __awaiter(this, void 0, void 0, function* () {
-            const transaction = TransactionFactory.create({
-                status: transactionStatus_1.default.READY,
-                owners: [],
-                expires_at: moment().add(0, 'seconds').toDate()
-            });
-            yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
-            transactionIds.push(transaction.id);
-        }));
-        yield Promise.all(promises);
-        yield sskts.service.transaction.clean()(sskts.adapter.transaction(connection));
-        const nubmerOfTransaction = yield transactionAdapter.transactionModel.find({ _id: { $in: transactionIds } }).count().exec();
-        assert.equal(nubmerOfTransaction, 0);
-    }));
-    it('clean should not be removed', () => __awaiter(this, void 0, void 0, function* () {
-        // test data
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        const transactionIds = [];
-        const promises = Array.from(Array(3).keys()).map(() => __awaiter(this, void 0, void 0, function* () {
-            const transaction = TransactionFactory.create({
-                status: transactionStatus_1.default.READY,
-                owners: [],
-                expires_at: moment().add(60, 'seconds').toDate() // tslint:disable-line:no-magic-numbers
-            });
-            yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
-            transactionIds.push(transaction.id);
-        }));
-        yield Promise.all(promises);
-        yield sskts.service.transaction.clean()(sskts.adapter.transaction(connection));
-        const nubmerOfTransaction = yield transactionAdapter.transactionModel.find({ _id: { $in: transactionIds } }).count().exec();
-        assert.equal(nubmerOfTransaction, 3); // tslint:disable-line:no-magic-numbers
     }));
 });
 describe('取引サービス 再エクスポート', () => {

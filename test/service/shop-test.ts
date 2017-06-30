@@ -32,7 +32,7 @@ describe('ショップサービス 開店', () => {
     it('開店できる', async () => {
         const theaterAdapter = new TheaterAdapter(connection);
         // 劇場を削除してから
-        await theaterAdapter.model.findByIdAndRemove(TEST_THEATER_CODE);
+        await theaterAdapter.model.findByIdAndRemove(TEST_THEATER_CODE).exec();
 
         const requiredFields = await COA.MasterService.theater({
             theater_code: TEST_THEATER_CODE

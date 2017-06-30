@@ -13,10 +13,6 @@ export interface IImmutableFields {
      * 匿名所有者の場合システムで自動発行
      */
     username: string;
-    /**
-     * 状態(クライアント側のセッションIDなど、匿名とはいえ何かしら人を特定するためのもの)
-     */
-    state: string;
 }
 /**
  * 属性中で可変のフィールド
@@ -69,5 +65,4 @@ export declare function create(args: {
     name_last?: string;
     email?: string;
     tel?: string;
-    state?: string;
 }): IAnonymousOwner;

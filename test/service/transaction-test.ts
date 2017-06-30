@@ -12,6 +12,7 @@ import * as sskts from '../../lib/index';
 
 import ArgumentError from '../../lib/error/argument';
 
+import * as ClientUserFactory from '../../lib/factory/clientUser';
 import * as EmailNotificationFactory from '../../lib/factory/notification/email';
 import * as MemberOwnerFactory from '../../lib/factory/owner/member';
 import OwnerGroup from '../../lib/factory/ownerGroup';
@@ -76,10 +77,15 @@ before(async () => {
         ready_from: readyFrom.toDate(),
         ready_until: readyUntil.toDate()
     });
+    const clientUser = ClientUserFactory.create({
+        client: 'xxx',
+        state: 'xxx',
+        scopes: ['xxx']
+    });
     TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS = {
         expiresAt: expiresAt,
         maxCountPerUnit: 999,
-        state: 'xxx',
+        clientUser: clientUser,
         scope: scope
     };
 
@@ -205,63 +211,6 @@ describe('取引サービス 取引開始する', () => {
 
         // テスト会員削除
         await ownerAdapter.model.findByIdAndRemove(TEST_MEMBER_OWNER.id).exec();
-    });
-});
-
-describe('取引サービス', () => {
-    it('prepare ok', async () => {
-        await sskts.service.transaction.prepare(3, 60)(sskts.adapter.transaction(connection)); // tslint:disable-line:no-magic-numbers
-    });
-
-    it('makeExpired ok', async () => {
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        // 期限切れの取引を作成
-        await sskts.service.transaction.prepare(3, -60)(transactionAdapter); // tslint:disable-line:no-magic-numbers
-        await sskts.service.transaction.makeExpired()(transactionAdapter);
-    });
-
-    it('clean should be removed', async () => {
-        // test data
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        const transactionIds: string[] = [];
-        const promises = Array.from(Array(3).keys()).map(async () => { // tslint:disable-line:no-magic-numbers
-            const transaction = TransactionFactory.create({
-                status: TransactionStatus.READY,
-                owners: [],
-                expires_at: moment().add(0, 'seconds').toDate()
-            });
-            await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
-            transactionIds.push(transaction.id);
-        });
-        await Promise.all(promises);
-
-        await sskts.service.transaction.clean()(sskts.adapter.transaction(connection));
-
-        const nubmerOfTransaction = await transactionAdapter.transactionModel.find({ _id: { $in: transactionIds } }).count().exec();
-
-        assert.equal(nubmerOfTransaction, 0);
-    });
-
-    it('clean should not be removed', async () => {
-        // test data
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        const transactionIds: string[] = [];
-        const promises = Array.from(Array(3).keys()).map(async () => { // tslint:disable-line:no-magic-numbers
-            const transaction = TransactionFactory.create({
-                status: TransactionStatus.READY,
-                owners: [],
-                expires_at: moment().add(60, 'seconds').toDate() // tslint:disable-line:no-magic-numbers
-            });
-            await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
-            transactionIds.push(transaction.id);
-        });
-        await Promise.all(promises);
-
-        await sskts.service.transaction.clean()(sskts.adapter.transaction(connection));
-
-        const nubmerOfTransaction = await transactionAdapter.transactionModel.find({ _id: { $in: transactionIds } }).count().exec();
-
-        assert.equal(nubmerOfTransaction, 3); // tslint:disable-line:no-magic-numbers
     });
 });
 

@@ -43,6 +43,7 @@ import CardGroup from './factory/cardGroup';
 import * as GMOCardIdFactory from './factory/cardId/gmo';
 import * as ClientFactory from './factory/client';
 import * as ClientEventFactory from './factory/clientEvent';
+import * as ClientUserFactory from './factory/clientUser';
 import * as FilmFactory from './factory/film';
 import * as EmailNotificationFactory from './factory/notification/email';
 import NotificationGroup from './factory/notificationGroup';
@@ -125,6 +126,7 @@ export declare namespace factory {
     export import cardGroup = CardGroup;
     export import client = ClientFactory;
     export import clientEvent = ClientEventFactory;
+    export import clientUser = ClientUserFactory;
     export import film = FilmFactory;
     namespace notification {
         export import email = EmailNotificationFactory;

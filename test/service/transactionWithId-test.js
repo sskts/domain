@@ -179,8 +179,7 @@ function assertSetAnonymousOwner(transactionId, ownerId) {
             name_first: 'name_first',
             name_last: 'name_last',
             email: 'noreply@example.com',
-            tel: '09012345678',
-            state: 'state'
+            tel: '09012345678'
         });
         yield TransactionWithIdService.setOwnerProfile(transactionId, anonymousOwner)(ownerAdapter, transactionAdapter);
         // 所有者を検索して情報の一致を確認
@@ -190,7 +189,6 @@ function assertSetAnonymousOwner(transactionId, ownerId) {
         assert.equal(anonymousOwnerDoc.get('name_last'), anonymousOwner.name_last);
         assert.equal(anonymousOwnerDoc.get('email'), anonymousOwner.email);
         assert.equal(anonymousOwnerDoc.get('tel'), anonymousOwner.tel);
-        assert.equal(anonymousOwnerDoc.get('state'), anonymousOwner.state);
         assert.equal(anonymousOwnerDoc.get('group'), anonymousOwner.group);
     });
 }
@@ -206,8 +204,7 @@ function assertSetMemberOwner(transactionId, ownerId) {
             name_first: 'name_first',
             name_last: 'name_last',
             email: 'noreply@example.com',
-            tel: '09012345678',
-            state: 'state'
+            tel: '09012345678'
         });
         yield TransactionWithIdService.setOwnerProfile(transactionId, memberOwner)(ownerAdapter, transactionAdapter);
         // 所有者を検索して情報の一致を確認
@@ -220,7 +217,6 @@ function assertSetMemberOwner(transactionId, ownerId) {
         assert.equal(ownerDoc.get('name_last'), memberOwner.name_last);
         assert.equal(ownerDoc.get('email'), memberOwner.email);
         assert.equal(ownerDoc.get('tel'), memberOwner.tel);
-        assert.equal(ownerDoc.get('state'), memberOwner.state);
         assert.equal(ownerDoc.get('group'), memberOwner.group);
     });
 }
@@ -855,8 +851,7 @@ describe('所有者プロフィールセット', () => {
             name_first: 'name_first',
             name_last: 'name_last',
             email: 'noreply@example.com',
-            tel: '09012345678',
-            state: 'state'
+            tel: '09012345678'
         });
         const setOwnerProfileError = yield TransactionWithIdService.setOwnerProfile(transaction.id, anonymousOwner)(ownerAdapter, transactionAdapter).catch((error) => error);
         assert(setOwnerProfileError instanceof argument_1.default);
@@ -881,8 +876,7 @@ describe('所有者プロフィールセット', () => {
             name_first: 'name_first',
             name_last: 'name_last',
             email: 'noreply@example.com',
-            tel: '09012345678',
-            state: 'state'
+            tel: '09012345678'
         });
         const setOwnerProfileError = yield TransactionWithIdService.setOwnerProfile(transaction.id, anonymousOwner)(ownerAdapter, transactionAdapter).catch((error) => error);
         assert(setOwnerProfileError instanceof argument_1.default);

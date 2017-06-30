@@ -18,6 +18,7 @@ const schema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: ownerModel.modelName
         }],
+        client_user: mongoose.Schema.Types.Mixed,
         inquiry_key: TransactionInquiryKeySchemaType,
         queues_status: String,
         expired_at: Date, // 期限切れ日時

@@ -18,6 +18,7 @@ import * as _ from 'underscore';
 import ArgumentError from '../error/argument';
 import ArgumentNullError from '../error/argumentNull';
 
+import * as ClientUserFactory from './clientUser';
 import ObjectId from './objectId';
 import * as OwnerFactory from './owner';
 import * as TransactionInquiryKeyFactory from './transactionInquiryKey';
@@ -25,9 +26,11 @@ import TransactionQueuesStatus from './transactionQueuesStatus';
 import TransactionStatus from './transactionStatus';
 
 /**
+ * 取引インターフェース
  *
+ * @export
  * @interface ITransaction
- * @memberof tobereplaced$
+ * @memberof factory/transaction
  */
 export interface ITransaction {
     id: string;
@@ -39,6 +42,10 @@ export interface ITransaction {
      * 取引に参加している所有者リスト
      */
     owners: OwnerFactory.IOwner[];
+    /**
+     * 取引を進行するクライアントユーザー
+     */
+    client_user: ClientUserFactory.IClientUser;
     /**
      * 期限切れ予定日時
      */
@@ -70,14 +77,17 @@ export interface ITransaction {
 }
 
 /**
+ * 取引を作成する
  *
- * @returns {ITransaction}
- * @memberof tobereplaced$
+ * @export
+ * @returns {ITransaction} 取引
+ * @memberof factory/transaction
  */
 export function create(args: {
     id?: string;
     status: TransactionStatus;
     owners: OwnerFactory.IOwner[];
+    client_user?: ClientUserFactory.IClientUser;
     expires_at: Date;
     expired_at?: Date;
     started_at?: Date;
@@ -90,10 +100,15 @@ export function create(args: {
     if (!_.isArray(args.owners)) throw new ArgumentError('owners', 'owner should be array');
     if (!_.isDate(args.expires_at)) throw new ArgumentError('expires_at', 'expires_at should be Date');
 
+    const clientUser = (args.client_user === undefined)
+        ? ClientUserFactory.create({ client: '', state: '', scopes: [] })
+        : args.client_user;
+
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
         status: args.status,
         owners: args.owners,
+        client_user: clientUser,
         expires_at: args.expires_at,
         expired_at: args.expired_at,
         started_at: args.started_at,

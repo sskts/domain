@@ -3,19 +3,18 @@
  *
  * @namespace factory/transactionQueuesStatus
  */
-declare type TransactionQueuesStatus = 'UNEXPORTED' | 'EXPORTING' | 'EXPORTED';
-declare namespace TransactionQueuesStatus {
+declare enum TransactionQueuesStatus {
     /**
      * 未エクスポート
      */
-    const UNEXPORTED = "UNEXPORTED";
+    UNEXPORTED = "UNEXPORTED",
     /**
      * エクスポート中
      */
-    const EXPORTING = "EXPORTING";
+    EXPORTING = "EXPORTING",
     /**
      * エクスポート済
      */
-    const EXPORTED = "EXPORTED";
+    EXPORTED = "EXPORTED",
 }
 export default TransactionQueuesStatus;

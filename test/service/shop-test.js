@@ -34,7 +34,7 @@ describe('ショップサービス 開店', () => {
     it('開店できる', () => __awaiter(this, void 0, void 0, function* () {
         const theaterAdapter = new theater_1.default(connection);
         // 劇場を削除してから
-        yield theaterAdapter.model.findByIdAndRemove(TEST_THEATER_CODE);
+        yield theaterAdapter.model.findByIdAndRemove(TEST_THEATER_CODE).exec();
         const requiredFields = yield COA.MasterService.theater({
             theater_code: TEST_THEATER_CODE
         })

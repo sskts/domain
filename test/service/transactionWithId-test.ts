@@ -191,8 +191,7 @@ async function assertSetAnonymousOwner(transactionId: string, ownerId: string) {
         name_first: 'name_first',
         name_last: 'name_last',
         email: 'noreply@example.com',
-        tel: '09012345678',
-        state: 'state'
+        tel: '09012345678'
     });
     await TransactionWithIdService.setOwnerProfile(transactionId, anonymousOwner)(ownerAdapter, transactionAdapter);
 
@@ -203,7 +202,6 @@ async function assertSetAnonymousOwner(transactionId: string, ownerId: string) {
     assert.equal(anonymousOwnerDoc.get('name_last'), anonymousOwner.name_last);
     assert.equal(anonymousOwnerDoc.get('email'), anonymousOwner.email);
     assert.equal(anonymousOwnerDoc.get('tel'), anonymousOwner.tel);
-    assert.equal(anonymousOwnerDoc.get('state'), anonymousOwner.state);
     assert.equal(anonymousOwnerDoc.get('group'), anonymousOwner.group);
 }
 
@@ -219,8 +217,7 @@ async function assertSetMemberOwner(transactionId: string, ownerId: string) {
         name_first: 'name_first',
         name_last: 'name_last',
         email: 'noreply@example.com',
-        tel: '09012345678',
-        state: 'state'
+        tel: '09012345678'
     });
     await TransactionWithIdService.setOwnerProfile(transactionId, memberOwner)(ownerAdapter, transactionAdapter);
 
@@ -234,7 +231,6 @@ async function assertSetMemberOwner(transactionId: string, ownerId: string) {
     assert.equal(ownerDoc.get('name_last'), memberOwner.name_last);
     assert.equal(ownerDoc.get('email'), memberOwner.email);
     assert.equal(ownerDoc.get('tel'), memberOwner.tel);
-    assert.equal(ownerDoc.get('state'), memberOwner.state);
     assert.equal(ownerDoc.get('group'), memberOwner.group);
 }
 
@@ -1039,8 +1035,7 @@ describe('所有者プロフィールセット', () => {
             name_first: 'name_first',
             name_last: 'name_last',
             email: 'noreply@example.com',
-            tel: '09012345678',
-            state: 'state'
+            tel: '09012345678'
         });
         const setOwnerProfileError = await TransactionWithIdService.setOwnerProfile(
             transaction.id, anonymousOwner
@@ -1071,8 +1066,7 @@ describe('所有者プロフィールセット', () => {
             name_first: 'name_first',
             name_last: 'name_last',
             email: 'noreply@example.com',
-            tel: '09012345678',
-            state: 'state'
+            tel: '09012345678'
         });
         const setOwnerProfileError = await TransactionWithIdService.setOwnerProfile(
             transaction.id, anonymousOwner

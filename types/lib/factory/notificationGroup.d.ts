@@ -3,11 +3,10 @@
  *
  * @namespace factory/notificationGroup
  */
-declare type NotificationGroup = 'EMAIL';
-declare namespace NotificationGroup {
+declare enum NotificationGroup {
     /**
      * Eメール
      */
-    const EMAIL = "EMAIL";
+    EMAIL = "EMAIL",
 }
 export default NotificationGroup;

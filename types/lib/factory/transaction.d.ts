@@ -1,11 +1,14 @@
+import * as ClientUserFactory from './clientUser';
 import * as OwnerFactory from './owner';
 import * as TransactionInquiryKeyFactory from './transactionInquiryKey';
 import TransactionQueuesStatus from './transactionQueuesStatus';
 import TransactionStatus from './transactionStatus';
 /**
+ * 取引インターフェース
  *
+ * @export
  * @interface ITransaction
- * @memberof tobereplaced$
+ * @memberof factory/transaction
  */
 export interface ITransaction {
     id: string;
@@ -17,6 +20,10 @@ export interface ITransaction {
      * 取引に参加している所有者リスト
      */
     owners: OwnerFactory.IOwner[];
+    /**
+     * 取引を進行するクライアントユーザー
+     */
+    client_user: ClientUserFactory.IClientUser;
     /**
      * 期限切れ予定日時
      */
@@ -47,14 +54,17 @@ export interface ITransaction {
     queues_status: TransactionQueuesStatus;
 }
 /**
+ * 取引を作成する
  *
- * @returns {ITransaction}
- * @memberof tobereplaced$
+ * @export
+ * @returns {ITransaction} 取引
+ * @memberof factory/transaction
  */
 export declare function create(args: {
     id?: string;
     status: TransactionStatus;
     owners: OwnerFactory.IOwner[];
+    client_user?: ClientUserFactory.IClientUser;
     expires_at: Date;
     expired_at?: Date;
     started_at?: Date;

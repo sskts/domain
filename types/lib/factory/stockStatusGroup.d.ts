@@ -3,11 +3,10 @@
  *
  * @namespace factory/stockStatusGroup
  */
-declare type StockStatusGroup = 'PERFORMANCE';
-declare namespace StockStatusGroup {
+declare enum StockStatusGroup {
     /**
      * パフォーマンス
      */
-    const PERFORMANCE = "PERFORMANCE";
+    PERFORMANCE = "PERFORMANCE",
 }
 export default StockStatusGroup;

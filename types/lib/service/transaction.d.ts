@@ -1,4 +1,5 @@
 import * as monapt from 'monapt';
+import * as clientUserFactory from '../factory/clientUser';
 import * as TransactionFactory from '../factory/transaction';
 import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
 import * as TransactionScopeFactory from '../factory/transactionScope';
@@ -11,20 +12,12 @@ export declare type TransactionAndQueueOperation<T> = (transactionAdapter: Trans
 export declare type OwnerAndTransactionAndTransactionCountOperation<T> = (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => Promise<T>;
 export declare type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) => Promise<T>;
 /**
- * 開始準備のできた取引を用意する
- *
- * @param {number} length 取引数
- * @param {number} expiresInSeconds 現在から何秒後に期限切れにするか
- * @memberof service/transaction
- */
-export declare function prepare(length: number, expiresInSeconds: number): (transactionAdapter: TransactionAdapter) => Promise<void>;
-/**
  * 取引を開始する
  *
  * @export
  * @param {Date} args.expiresAt 期限切れ予定日時
  * @param {number} args.maxCountPerUnit 単位期間あたりの最大取引数
- * @param {string} args.state 所有者状態
+ * @param {string} args.clientUser クライアントユーザー
  * @param {TransactionScopeFactory.ITransactionScope} args.scope 取引スコープ
  * @param {TransactionScopeFactory.ITransactionScope} [args.ownerId] 所有者ID
  * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
@@ -33,7 +26,7 @@ export declare function prepare(length: number, expiresInSeconds: number): (tran
 export declare function start(args: {
     expiresAt: Date;
     maxCountPerUnit: number;
-    state: string;
+    clientUser: clientUserFactory.IClientUser;
     scope: TransactionScopeFactory.ITransactionScope;
     /**
      * 所有者ID
@@ -68,11 +61,6 @@ export declare function startAsAnonymous(args: {
  * @memberof service/transaction
  */
 export declare function makeInquiry(key: TransactionInquiryKeyFactory.ITransactionInquiryKey): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<TransactionFactory.ITransaction>>;
-/**
- * 不要な取引を削除する
- * @memberof service/transaction
- */
-export declare function clean(): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 取引を期限切れにする
  * @memberof service/transaction

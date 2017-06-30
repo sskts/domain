@@ -4,15 +4,11 @@
  * @namespace factory/stockStatusGroup
  */
 
-type StockStatusGroup =
-    'PERFORMANCE'
-    ;
-
-namespace StockStatusGroup {
+enum StockStatusGroup {
     /**
      * パフォーマンス
      */
-    export const PERFORMANCE = 'PERFORMANCE';
+    PERFORMANCE = 'PERFORMANCE'
 }
 
 export default StockStatusGroup;

@@ -54,7 +54,6 @@ export declare function create(args: {
     name_last: string;
     email: string;
     tel?: string;
-    state?: string;
     description?: IMultilingualString;
     notes?: IMultilingualString;
 }): Promise<IMemberOwner>;

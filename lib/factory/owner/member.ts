@@ -75,7 +75,6 @@ export async function create(args: {
     name_last: string;
     email: string;
     tel?: string;
-    state?: string;
     description?: IMultilingualString;
     notes?: IMultilingualString;
 }): Promise<IMemberOwner> {
@@ -93,8 +92,7 @@ export async function create(args: {
         ...{
             id: (args.id === undefined) ? ObjectId().toString() : args.id,
             group: OwnerGroup.MEMBER,
-            password_hash: passwordHash,
-            state: (args.state === undefined) ? '' : args.state
+            password_hash: passwordHash
         }
     };
 }
@@ -115,8 +113,7 @@ export function createUnhashedFields(args: {
     return {
         ...variableFields,
         ...{
-            username: args.username,
-            state: ''
+            username: args.username
         }
     };
 }

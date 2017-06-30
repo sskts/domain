@@ -14,6 +14,7 @@ import * as util from 'util';
 
 import ArgumentError from '../error/argument';
 
+import * as clientUserFactory from '../factory/clientUser';
 import * as OwnerFactor from '../factory/owner';
 import * as AnonymousOwnerFactory from '../factory/owner/anonymous';
 import * as MemberOwnerFactory from '../factory/owner/member';
@@ -45,40 +46,12 @@ export type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) =
 const debug = createDebug('sskts-domain:service:transaction');
 
 /**
- * 開始準備のできた取引を用意する
- *
- * @param {number} length 取引数
- * @param {number} expiresInSeconds 現在から何秒後に期限切れにするか
- * @memberof service/transaction
- */
-export function prepare(length: number, expiresInSeconds: number) {
-    return async (transactionAdapter: TransactionAdapter) => {
-        // 取引を{length}コ作成
-        const expiresAt = moment().add(expiresInSeconds, 'seconds').toDate();
-        const transactions = Array.from(Array(length).keys()).map(() => {
-            const transaction = TransactionFactory.create({
-                status: TransactionStatus.READY,
-                owners: [],
-                expires_at: expiresAt
-            });
-            (<any>transaction)._id = transaction.id;
-
-            return transaction;
-        });
-
-        // 永続化
-        debug('creating transactions...', transactions);
-        await transactionAdapter.transactionModel.create(transactions);
-    };
-}
-
-/**
  * 取引を開始する
  *
  * @export
  * @param {Date} args.expiresAt 期限切れ予定日時
  * @param {number} args.maxCountPerUnit 単位期間あたりの最大取引数
- * @param {string} args.state 所有者状態
+ * @param {string} args.clientUser クライアントユーザー
  * @param {TransactionScopeFactory.ITransactionScope} args.scope 取引スコープ
  * @param {TransactionScopeFactory.ITransactionScope} [args.ownerId] 所有者ID
  * @returns {OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>>}
@@ -87,7 +60,7 @@ export function prepare(length: number, expiresInSeconds: number) {
 export function start(args: {
     expiresAt: Date;
     maxCountPerUnit: number;
-    state: string;
+    clientUser: clientUserFactory.IClientUser;
     scope: TransactionScopeFactory.ITransactionScope;
     /**
      * 所有者ID
@@ -106,10 +79,8 @@ export function start(args: {
         // 利用可能であれば、取引作成&匿名所有者作成
         let owner: OwnerFactor.IOwner;
         if (args.ownerId === undefined) {
-            // 一般所有者作成(後で取引の所有者が適切かどうかを確認するために、状態を持たせる)
-            owner = AnonymousOwnerFactory.create({
-                state: args.state
-            });
+            // 一般所有者作成
+            owner = AnonymousOwnerFactory.create({});
         } else {
             // 所有者指定であれば存在確認
             const ownerDoc = await ownerAdapter.model.findById(args.ownerId).exec();
@@ -130,6 +101,7 @@ export function start(args: {
         const transaction = TransactionFactory.create({
             status: TransactionStatus.UNDERWAY,
             owners: [promoter, owner],
+            client_user: args.clientUser,
             expires_at: args.expiresAt,
             started_at: moment().toDate()
         });
@@ -168,7 +140,18 @@ export function startAsAnonymous(args: {
     state: string;
     scope: TransactionScopeFactory.ITransactionScope;
 }): OwnerAndTransactionAndTransactionCountOperation<monapt.Option<TransactionFactory.ITransaction>> {
-    return start(args);
+    const clientUser = clientUserFactory.create({
+        client: '',
+        state: args.state,
+        scopes: []
+    });
+
+    return start({
+        expiresAt: args.expiresAt,
+        maxCountPerUnit: args.maxCountPerUnit,
+        clientUser: clientUser,
+        scope: args.scope
+    });
 }
 exports.startAsAnonymous = util.deprecate(
     startAsAnonymous,
@@ -195,22 +178,6 @@ export function makeInquiry(key: TransactionInquiryKeyFactory.ITransactionInquir
         }).populate('owners').exec();
 
         return (doc === null) ? monapt.None : monapt.Option(<TransactionFactory.ITransaction>doc.toObject());
-    };
-}
-
-/**
- * 不要な取引を削除する
- * @memberof service/transaction
- */
-export function clean() {
-    return async (transactionAdapter: TransactionAdapter) => {
-        // 開始準備ステータスのまま期限切れの取引を削除する
-        await transactionAdapter.transactionModel.remove(
-            {
-                status: TransactionStatus.READY,
-                expires_at: { $lt: new Date() }
-            }
-        ).exec();
     };
 }
 

@@ -271,8 +271,7 @@ export function updateAnonymousOwner(args: {
             name_first: args.name_first,
             name_last: args.name_last,
             email: args.email,
-            tel: args.tel,
-            state: anonymousOwnerInTransaction.state
+            tel: args.tel
         });
 
         return setOwnerProfile(args.transaction_id, anonymousOwner)(ownerAdapter, transactionAdapter);
