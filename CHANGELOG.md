@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v19.6.1 - 2017-06-30
+### Fixed
+- GMO売上健康診断にて、マルチショップ対応していないために不健康と診断されるバグを修正。
+
 ## v19.6.0 - 2017-06-27
 ### Added
 - エラーコードモジュールを追加し、indexからエクスポート。

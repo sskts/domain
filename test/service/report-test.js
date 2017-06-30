@@ -118,10 +118,12 @@ describe('レポートサービス GMO実売上診察', () => {
         yield transactionAdapter.transactionModel.remove({}).exec();
         yield transactionAdapter.transactionEventModel.remove({}).exec();
     }));
-    it('ok', () => __awaiter(this, void 0, void 0, function* () {
+    it('健康を確認できる', () => __awaiter(this, void 0, void 0, function* () {
+        const theaterCode = '118';
         const reserveNum = 123;
         const shopId = '123';
-        const orderId = '201704201180000012300';
+        // tslint:disable-next-line:no-magic-numbers
+        const orderId = `20170420${theaterCode}${(`00000000${reserveNum}`).slice(-8)}00`;
         const accessId = '12345';
         const amount = 12345;
         const transactionAdapter = new transaction_1.default(connection);
@@ -134,7 +136,7 @@ describe('レポートサービス GMO実売上診察', () => {
             started_at: moment().toDate(),
             closed_at: moment().toDate(),
             inquiry_key: TransactionInquiryKeyFactory.create({
-                theater_code: '118',
+                theater_code: theaterCode,
                 reserve_num: reserveNum,
                 tel: '09012345678'
             })
@@ -157,8 +159,8 @@ describe('レポートサービス GMO実売上診察', () => {
                 gmo_pay_type: '0'
             })
         });
-        const transactionDoc = yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
-        const transactionEventDoc = yield transactionAdapter.transactionEventModel.findByIdAndUpdate(transactionEvent.id, transactionEvent, { new: true, upsert: true }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+        yield transactionAdapter.transactionEventModel.findByIdAndUpdate(transactionEvent.id, transactionEvent, { new: true, upsert: true }).exec();
         const notification = {
             shop_id: shopId,
             access_id: accessId,
@@ -179,7 +181,79 @@ describe('レポートサービス GMO実売上診察', () => {
             pay_type: '0'
         };
         yield ReportService.examineGMOSales(notification)(transactionAdapter);
-        yield transactionDoc.remove();
-        yield transactionEventDoc.remove();
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
+    }));
+    it('劇場コードが違えば不健康', () => __awaiter(this, void 0, void 0, function* () {
+        const theaterCode = '118';
+        const invalidTheaterCode = '112';
+        const reserveNum = 123;
+        const shopId = '123';
+        // tslint:disable-next-line:no-magic-numbers
+        const orderId = `20170420${invalidTheaterCode}${(`00000000${reserveNum}`).slice(-8)}00`;
+        const accessId = '12345';
+        const amount = 12345;
+        const transactionAdapter = new transaction_1.default(connection);
+        // テスト取引作成
+        const transaction = TransactionFactory.create({
+            status: transactionStatus_1.default.CLOSED,
+            owners: [],
+            // tslint:disable-next-line:no-magic-numbers
+            expires_at: moment().add(15, 'minutes').toDate(),
+            started_at: moment().toDate(),
+            closed_at: moment().toDate(),
+            inquiry_key: TransactionInquiryKeyFactory.create({
+                theater_code: theaterCode,
+                reserve_num: reserveNum,
+                tel: '09012345678'
+            })
+        });
+        // テスト取引イベント作成
+        const transactionEvent = AuthorizeTransactionEventFactory.create({
+            transaction: transaction.id,
+            occurred_at: moment().toDate(),
+            authorization: GMOAuthorizationFactory.create({
+                price: amount,
+                owner_from: 'xxx',
+                owner_to: 'xxx',
+                gmo_shop_id: shopId,
+                gmo_shop_pass: 'xxx',
+                gmo_order_id: orderId,
+                gmo_amount: amount,
+                gmo_access_id: accessId,
+                gmo_access_pass: 'xxx',
+                gmo_job_cd: 'AUTH',
+                gmo_pay_type: '0'
+            })
+        });
+        yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
+        yield transactionAdapter.transactionEventModel.findByIdAndUpdate(transactionEvent.id, transactionEvent, { new: true, upsert: true }).exec();
+        const notification = {
+            shop_id: shopId,
+            access_id: accessId,
+            order_id: orderId,
+            status: 'SALES',
+            job_cd: 'SALES',
+            amount: amount.toString(),
+            tax: '0',
+            currency: 'JPN',
+            forward: 'xxx',
+            method: '1',
+            pay_times: '',
+            tran_id: 'xxx',
+            approve: 'xxx',
+            tran_date: 'xxx',
+            err_code: '',
+            err_info: '',
+            pay_type: '0'
+        };
+        yield ReportService.examineGMOSales(notification)(transactionAdapter)
+            .catch((error) => {
+            assert(error instanceof Error);
+        });
+        // テストデータ削除
+        yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
+        yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
     }));
 });
