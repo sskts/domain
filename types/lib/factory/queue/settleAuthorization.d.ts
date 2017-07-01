@@ -7,7 +7,7 @@ import QueueStatus from '../queueStatus';
  * @param {T} authorization
  * @memberof tobereplaced$
  */
-export interface ISettleAuthorizationQueue<T extends Authorization.IAuthorization> extends QueueFactory.IQueue {
+export interface IQueue<T extends Authorization.IAuthorization> extends QueueFactory.IQueue {
     authorization: T;
 }
 /**
@@ -23,4 +23,4 @@ export declare function create<T extends Authorization.IAuthorization>(args: {
     last_tried_at: Date | null;
     count_tried: number;
     results: string[];
-}): ISettleAuthorizationQueue<T>;
+}): IQueue<T>;

@@ -67,10 +67,10 @@ export interface IVariableFields {
  * 匿名所有者インターフェース
  *
  * @export
- * @interface IAnonymousOwner
+ * @interface IOwner
  * @memberof factory/owner/anonymous
  */
-export type IAnonymousOwner = OwnerFactory.IOwner & IImmutableFields & IVariableFields;
+export type IOwner = OwnerFactory.IOwner & IImmutableFields & IVariableFields;
 
 /**
  * 一般所有者を作成する
@@ -82,7 +82,7 @@ export function create(args: {
     name_last?: string;
     email?: string;
     tel?: string;
-}): IAnonymousOwner {
+}): IOwner {
     if (!_.isEmpty(args.email) && !validator.isEmail(<string>args.email)) throw new ArgumentError('email', 'invalid email');
 
     const id = (args.id === undefined) ? ObjectId().toString() : args.id;

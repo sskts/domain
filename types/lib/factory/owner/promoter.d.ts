@@ -7,11 +7,11 @@ import IMultilingualString from '../../factory/multilingualString';
 import * as OwnerFactory from '../owner';
 /**
  *
- * @interface IPromoterOwner
+ * @interface IOwner
  * @extends {OwnerFactory.IOwner}
  * @memberof tobereplaced$
  */
-export interface IPromoterOwner extends OwnerFactory.IOwner {
+export interface IOwner extends OwnerFactory.IOwner {
     id: string;
     name: IMultilingualString;
 }
@@ -20,10 +20,10 @@ export interface IPromoterOwner extends OwnerFactory.IOwner {
  *
  * @param {string} [args.id]
  * @param {string} [args.name]
- * @returns {IPromoterOwner}
+ * @returns {IOwner}
  * @memberof tobereplaced$
  */
 export declare function create(args: {
     id?: string;
     name?: IMultilingualString;
-}): IPromoterOwner;
+}): IOwner;

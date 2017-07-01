@@ -19,7 +19,7 @@ import * as AuthorizeTransactionEventFactory from '../../lib/factory/transaction
 import * as TransactionInquiryKeyFactory from '../../lib/factory/transactionInquiryKey';
 import TransactionStatus from '../../lib/factory/transactionStatus';
 
-let TEST_COA_SEAT_RESERVATION_AUTHORIZATION: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization;
+let TEST_COA_SEAT_RESERVATION_AUTHORIZATION: COASeatReservationAuthorizationFactory.IAuthorization;
 let TEST_TRANSACTION_INQUIRY_KEY: TransactionInquiryKeyFactory.ITransactionInquiryKey;
 let connection: mongoose.Connection;
 

@@ -503,7 +503,7 @@ export function examineGMOSales(notification: ICreditGMONotification) {
         }
 
         const authorizations = await transactionAdapter.findAuthorizationsById(transactionDoc.get('id'));
-        const gmoAuthorization = <GMOAuthorizationFactory.IGMOAuthorization>authorizations.find(
+        const gmoAuthorization = <GMOAuthorizationFactory.IAuthorization>authorizations.find(
             (authorization) => authorization.group === AuthorizationGroup.GMO
         );
         // GMOオーソリがなければ異常

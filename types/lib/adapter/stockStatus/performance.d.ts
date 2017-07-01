@@ -25,11 +25,11 @@ export default class PerformanceStockStatusAdapter {
      *
      * @param {string} performanceDay 上映日
      * @param {string} performanceId パフォーマンスID
-     * @returns {(Promise<PerformanceStockStatusFactory.IPerformanceStockStatus | null>)}
+     * @returns {(Promise<PerformanceStockStatusFactory.IStockStatus | null>)}
      *
      * @memberof PerformanceStockStatusAdapter
      */
-    findOne(performanceDay: string, performanceId: string): Promise<PerformanceStockStatusFactory.IPerformanceStockStatus | null>;
+    findOne(performanceDay: string, performanceId: string): Promise<PerformanceStockStatusFactory.IStockStatus | null>;
     /**
      * 在庫状況をひとつ更新する
      *

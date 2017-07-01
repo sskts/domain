@@ -38,15 +38,15 @@ export default class PerformanceStockStatusAdapter {
      *
      * @param {string} performanceDay 上映日
      * @param {string} performanceId パフォーマンスID
-     * @returns {(Promise<PerformanceStockStatusFactory.IPerformanceStockStatus | null>)}
+     * @returns {(Promise<PerformanceStockStatusFactory.IStockStatus | null>)}
      *
      * @memberof PerformanceStockStatusAdapter
      */
     public async findOne(performanceDay: string, performanceId: string):
-        Promise<PerformanceStockStatusFactory.IPerformanceStockStatus | null> {
+        Promise<PerformanceStockStatusFactory.IStockStatus | null> {
         const key = PerformanceStockStatusAdapter.CREATE_REDIS_KEY(performanceDay);
 
-        return new Promise<PerformanceStockStatusFactory.IPerformanceStockStatus | null>((resolve, reject) => {
+        return new Promise<PerformanceStockStatusFactory.IStockStatus | null>((resolve, reject) => {
             // 劇場のパフォーマンス空席状況を取得
             this.redisClient.hget([key, performanceId], (err, res) => {
                 debug('hget processed.', err, res);

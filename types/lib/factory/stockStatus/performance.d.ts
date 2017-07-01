@@ -2,10 +2,10 @@ import * as StockStatusFactory from '../stockStatus';
 /**
  * パフォーマンス在庫状況インターフェース
  *
- * @interface IPerformanceStockStatus
+ * @interface IStockStatus
  * @extends {StockStatusFactory.IStockStatus}
  */
-export interface IPerformanceStockStatus extends StockStatusFactory.IStockStatus {
+export interface IStockStatus extends StockStatusFactory.IStockStatus {
     expression: Expression;
 }
 /**
@@ -27,9 +27,9 @@ export declare function createExpression(numberOfAvailableSeats: number, numberO
  * @export
  * @param {string} args.performaceId パフォーマンスID
  * @param {Expression} args.expression 在庫状況表現
- * @returns {IPerformanceStockStatus} パフォーマンス在庫状況
+ * @returns {IStockStatus} パフォーマンス在庫状況
  */
 export declare function create(args: {
     performaceId: string;
     expression: Expression;
-}): IPerformanceStockStatus;
+}): IStockStatus;

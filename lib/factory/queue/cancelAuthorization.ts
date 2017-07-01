@@ -21,7 +21,7 @@ import QueueStatus from '../queueStatus';
  * @param {T} authorization
  * @memberof tobereplaced$
  */
-export interface ICancelAuthorizationQueue<T extends Authorization.IAuthorization> extends QueueFactory.IQueue {
+export interface IQueue<T extends Authorization.IAuthorization> extends QueueFactory.IQueue {
     authorization: T;
 }
 
@@ -38,7 +38,7 @@ export function create<T extends Authorization.IAuthorization>(args: {
     last_tried_at: Date | null,
     count_tried: number,
     results: string[]
-}): ICancelAuthorizationQueue<T> {
+}): IQueue<T> {
     if (_.isEmpty(args.authorization)) throw new ArgumentNullError('authorization');
     if (_.isEmpty(args.status)) throw new ArgumentNullError('status');
     if (!_.isDate(args.run_at)) throw new ArgumentError('run_at', 'run_at should be Date');

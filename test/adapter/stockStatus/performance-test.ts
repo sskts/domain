@@ -84,7 +84,7 @@ describe('パフォーマンス空席状況アダプター パフォーマンス
 
         stockStatusFromRedis = await adapter.findOne(TEST_PERFORMANCE_DAY, TEST_PERFORMANCE_ID);
         assert.equal(
-            (<PerformanceStockStatusFactory.IPerformanceStockStatus>stockStatusFromRedis).expression,
+            (<PerformanceStockStatusFactory.IStockStatus>stockStatusFromRedis).expression,
             TEST_PERFORMANCE_STOCK_STATUS_EXPRESSION
         );
     });

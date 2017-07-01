@@ -10,7 +10,7 @@ export declare type Operation<T> = () => Promise<T>;
  *
  * @memberof service/notification
  */
-export declare function sendEmail(email: EmailNotificationFactory.IEmailNotification): Operation<void>;
+export declare function sendEmail(email: EmailNotificationFactory.INotification): Operation<void>;
 /**
  * 開発者に報告する
  *

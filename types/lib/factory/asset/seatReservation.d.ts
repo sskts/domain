@@ -35,7 +35,7 @@ export interface IMvtkFields {
     mvtk_kbn_kensyu: string;
     mvtk_sales_price: number;
 }
-export interface ISeatReservationAssetBase extends AssetFactory.IAsset {
+export interface IAssetBase extends AssetFactory.IAsset {
     performance: string;
     screen_section: string;
     seat_code: string;
@@ -48,19 +48,19 @@ export interface ISeatReservationAssetBase extends AssetFactory.IAsset {
     sale_price: number;
     add_glasses: number;
 }
-export declare type ISeatReservationAssetWithoutDetails = ISeatReservationAssetBase & IMvtkFields;
+export declare type IAssetWithoutDetails = IAssetBase & IMvtkFields;
 /**
  * 座席予約資産
  *
- * @interface ISeatReservationAsset
+ * @interface IAsset
  * @extends {IAsset}
  * @memberof factory/asset/seatReservation
  */
-export declare type ISeatReservationAsset = ISeatReservationAssetWithoutDetails & IDetails;
+export declare type IAsset = IAssetWithoutDetails & IDetails;
 /**
  * 座席予約資産を作成する
  *
- * @returns {SeatReservationAsset}
+ * @returns {Asset}
  * @memberof factory/asset/seatReservation
  */
 export declare function create(args: {
@@ -106,7 +106,7 @@ export declare function create(args: {
     mvtk_kbn_maeuriken: string;
     mvtk_kbn_kensyu: string;
     mvtk_sales_price: number;
-}): ISeatReservationAsset;
+}): IAsset;
 export declare function createWithoutDetails(args: {
     id?: string;
     ownership: OwnershipFactory.IOwnership;
@@ -129,4 +129,4 @@ export declare function createWithoutDetails(args: {
     mvtk_kbn_maeuriken: string;
     mvtk_kbn_kensyu: string;
     mvtk_sales_price: number;
-}): ISeatReservationAssetWithoutDetails;
+}): IAssetWithoutDetails;

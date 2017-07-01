@@ -30,7 +30,7 @@ export interface IZskInfo {
  * ムビチケ着券情報
  * @memberof tobereplaced$
  */
-export interface IMvtkAuthorization extends AuthorizationFactory.IAuthorization {
+export interface IAuthorization extends AuthorizationFactory.IAuthorization {
     kgygish_cd: string;
     yyk_dvc_typ: string;
     trksh_flg: string;
@@ -65,4 +65,4 @@ export declare function create(args: {
     knyknr_no_info: IKnyknrNoInfo[];
     zsk_info: IZskInfo[];
     skhn_cd: string;
-}): IMvtkAuthorization;
+}): IAuthorization;

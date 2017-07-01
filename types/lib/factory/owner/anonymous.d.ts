@@ -51,10 +51,10 @@ export interface IVariableFields {
  * 匿名所有者インターフェース
  *
  * @export
- * @interface IAnonymousOwner
+ * @interface IOwner
  * @memberof factory/owner/anonymous
  */
-export declare type IAnonymousOwner = OwnerFactory.IOwner & IImmutableFields & IVariableFields;
+export declare type IOwner = OwnerFactory.IOwner & IImmutableFields & IVariableFields;
 /**
  * 一般所有者を作成する
  * @memberof factory/owner/anonymous
@@ -65,4 +65,4 @@ export declare function create(args: {
     name_last?: string;
     email?: string;
     tel?: string;
-}): IAnonymousOwner;
+}): IOwner;

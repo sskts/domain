@@ -87,7 +87,7 @@ export function start(args: {
             if (ownerDoc === null) {
                 throw new ArgumentError('ownerId', `owner[id:${args.ownerId}] not found`);
             }
-            owner = <MemberOwnerFactory.IMemberOwner>ownerDoc.toObject();
+            owner = <MemberOwnerFactory.IOwner>ownerDoc.toObject();
         }
 
         // 興行主取得
@@ -95,7 +95,7 @@ export function start(args: {
         if (promoterOwnerDoc === null) {
             throw new Error('promoter not found');
         }
-        const promoter = <PromoterOwnerFactory.IPromoterOwner>promoterOwnerDoc.toObject();
+        const promoter = <PromoterOwnerFactory.IOwner>promoterOwnerDoc.toObject();
 
         // 取引ファクトリーで新しい進行中取引オブジェクトを作成
         const transaction = TransactionFactory.create({

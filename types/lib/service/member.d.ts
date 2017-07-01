@@ -19,7 +19,7 @@ export interface ILoginResult {
  * @param {MemberOwnerFactory.IMemberOwner} owner 会員所有者
  * @returns {IOwnerOperation<void>} 結果を取得する操作
  */
-export declare function signUp(owner: MemberOwnerFactory.IMemberOwner): IOwnerOperation<void>;
+export declare function signUp(owner: MemberOwnerFactory.IOwner): IOwnerOperation<void>;
 /**
  * ログイン
  *
@@ -86,4 +86,4 @@ export declare function findCards(ownerId: string): IOperation<GMOCardFactory.IC
  * @returns {IAssetOperation<SeatReservationAssetFactory.ISeatReservationAsset[]>} 資産に対する操作
  * @memberof service/member
  */
-export declare function findSeatReservationAssets(ownerId: string): IAssetOperation<SeatReservationAssetFactory.ISeatReservationAsset[]>;
+export declare function findSeatReservationAssets(ownerId: string): IAssetOperation<SeatReservationAssetFactory.IAsset[]>;
