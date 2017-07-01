@@ -35,7 +35,7 @@ const TEST_PROMOTER_OWNER = {
         en: 'Cinema Sunshine Co., Ltd.'
     }
 };
-let TEST_MEMBER_OWNER: MemberOwnerFactory.IMemberOwner;
+let TEST_MEMBER_OWNER: MemberOwnerFactory.IOwner;
 
 let redisClient: redis.RedisClient;
 let connection: mongoose.Connection;
@@ -207,7 +207,7 @@ describe('取引サービス 取引開始する', () => {
         assert.equal(transaction.queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
         const memberOwnerInTransaction = transaction.owners.find((owner) => owner.group === OwnerGroup.MEMBER);
         assert.notEqual(memberOwnerInTransaction, null);
-        assert.equal((<MemberOwnerFactory.IMemberOwner>memberOwnerInTransaction).id, TEST_MEMBER_OWNER.id);
+        assert.equal((<MemberOwnerFactory.IOwner>memberOwnerInTransaction).id, TEST_MEMBER_OWNER.id);
 
         // テスト会員削除
         await ownerAdapter.model.findByIdAndRemove(TEST_MEMBER_OWNER.id).exec();

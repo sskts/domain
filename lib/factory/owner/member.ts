@@ -62,10 +62,10 @@ export type IUnhashedFields = IImmutableFields & IVariableFields;
  * 会員所有者インターフェース
  *
  * @export
- * @interface IMemberOwner
+ * @interface IOwner
  * @memberof factory/owner/member
  */
-export type IMemberOwner = AnonymousOwnerFactory.IAnonymousOwner & IUnhashedFields & IHashedFields;
+export type IOwner = AnonymousOwnerFactory.IOwner & IUnhashedFields & IHashedFields;
 
 export async function create(args: {
     id?: string;
@@ -77,7 +77,7 @@ export async function create(args: {
     tel?: string;
     description?: IMultilingualString;
     notes?: IMultilingualString;
-}): Promise<IMemberOwner> {
+}): Promise<IOwner> {
     if (_.isEmpty(args.password)) throw new ArgumentNullError('password');
 
     const unhashedFields = createUnhashedFields(args);

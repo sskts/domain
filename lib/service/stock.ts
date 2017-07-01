@@ -27,7 +27,7 @@ import PerformanceAdapter from '../adapter/performance';
 import TransactionAdapter from '../adapter/transaction';
 
 const debug = createDebug('sskts-domain:service:stock');
-export type ICOASeatReservationAuthorization = COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization;
+export type ICOASeatReservationAuthorization = COASeatReservationAuthorizationFactory.IAuthorization;
 export type AssetAndOwnerAndPerformanceAndTransactionOperation<T> =
     // tslint:disable-next-line:max-line-length
     (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, performanceAdapter: PerformanceAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
@@ -39,7 +39,7 @@ export type AssetAndOwnerAndPerformanceAndTransactionOperation<T> =
  *
  * @memberof service/stock
  */
-export function unauthorizeCOASeatReservation(authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization) {
+export function unauthorizeCOASeatReservation(authorization: COASeatReservationAuthorizationFactory.IAuthorization) {
     return async () => {
         debug('calling deleteTmpReserve...');
         await COA.ReserveService.delTmpReserve({
@@ -77,7 +77,7 @@ export function transferCOASeatReservation(authorization: ICOASeatReservationAut
             throw new Error('owner group not implemented');
         }
 
-        const owner = <AnonymousOwnerFactory.IAnonymousOwner>ownerDoc.toObject();
+        const owner = <AnonymousOwnerFactory.IOwner>ownerDoc.toObject();
         debug('owner:', owner);
 
         // パフォーマンス情報詳細を取得

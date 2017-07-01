@@ -10,7 +10,7 @@ import * as TransactionEventFactory from '../transactionEvent';
  * @param {T} notification
  * @memberof tobereplaced$
  */
-export interface IAddNotificationTransactionEvent<T extends Notification.INotification> extends TransactionEventFactory.ITransactionEvent {
+export interface ITransactionEvent<T extends Notification.INotification> extends TransactionEventFactory.ITransactionEvent {
     notification: T;
 }
 /**
@@ -22,4 +22,4 @@ export declare function create<T extends Notification.INotification>(args: {
     transaction: string;
     occurred_at: Date;
     notification: T;
-}): IAddNotificationTransactionEvent<T>;
+}): ITransactionEvent<T>;

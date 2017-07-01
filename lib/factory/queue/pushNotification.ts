@@ -21,7 +21,7 @@ import QueueStatus from '../queueStatus';
  * @param {T} notification
  * @memberof tobereplaced$
  */
-export interface IPushNotificationQueue<T extends Notification.INotification> extends QueueFactory.IQueue {
+export interface IQueue<T extends Notification.INotification> extends QueueFactory.IQueue {
     notification: T;
 }
 
@@ -38,7 +38,7 @@ export function create<T extends Notification.INotification>(args: {
     last_tried_at: Date | null,
     count_tried: number,
     results: string[]
-}): IPushNotificationQueue<T> {
+}): IQueue<T> {
     if (_.isEmpty(args.notification)) throw new ArgumentNullError('notification');
     if (_.isEmpty(args.status)) throw new ArgumentNullError('status');
     if (!_.isDate(args.run_at)) throw new ArgumentError('run_at', 'run_at should be Date');

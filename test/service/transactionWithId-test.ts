@@ -35,12 +35,12 @@ import TransactionStatus from '../../lib/factory/transactionStatus';
 
 import ArgumentError from '../../lib/error/argument';
 
-let TEST_COA_SEAT_RESERVATION_AUTHORIZATION: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization;
-let TEST_GMO_AUTHORIZATION: GMOAuthorizationFactory.IGMOAuthorization;
-let TEST_MVTK_AUTHORIZATION: MvtkAuthorizationFactory.IMvtkAuthorization;
-let TEST_EMAIL_NOTIFICATION: EmailNotificationFactory.IEmailNotification;
+let TEST_COA_SEAT_RESERVATION_AUTHORIZATION: COASeatReservationAuthorizationFactory.IAuthorization;
+let TEST_GMO_AUTHORIZATION: GMOAuthorizationFactory.IAuthorization;
+let TEST_MVTK_AUTHORIZATION: MvtkAuthorizationFactory.IAuthorization;
+let TEST_EMAIL_NOTIFICATION: EmailNotificationFactory.INotification;
 let TEST_TRANSACTION_INQUIRY_KEY: TransactionInquiryKeyFactory.ITransactionInquiryKey;
-let TEST_PROMOTER_OWNER: PromoterOwnerFactory.IPromoterOwner;
+let TEST_PROMOTER_OWNER: PromoterOwnerFactory.IOwner;
 let TEST_GMO_CARD: GMOCardFactory.IUncheckedCardRaw;
 let connection: mongoose.Connection;
 
@@ -67,7 +67,7 @@ before(async () => {
         },
         { new: true, upsert: true }
     ).exec();
-    TEST_PROMOTER_OWNER = <PromoterOwnerFactory.IPromoterOwner>promoterOwnerDoc.toObject();
+    TEST_PROMOTER_OWNER = <PromoterOwnerFactory.IOwner>promoterOwnerDoc.toObject();
 
     TEST_GMO_CARD = GMOCardFactory.createUncheckedCardRaw({
         card_no: '4111111111111111',

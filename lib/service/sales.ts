@@ -16,7 +16,7 @@ const debug = createDebug('sskts-domain:service:sales');
  *
  * @memberof service/sales
  */
-export function cancelGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthorization) {
+export function cancelGMOAuth(authorization: GMOAuthorizationFactory.IAuthorization) {
     return async () => {
         debug('calling alterTran...');
         await GMO.CreditService.alterTran({
@@ -39,7 +39,7 @@ export function cancelGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthori
  *
  * @memberof service/sales
  */
-export function settleGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthorization) {
+export function settleGMOAuth(authorization: GMOAuthorizationFactory.IAuthorization) {
     return async () => {
         // 取引状態参照
         const searchTradeResult = await GMO.CreditService.searchTrade({
@@ -76,7 +76,7 @@ export function settleGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthori
  *
  * @memberof service/sales
  */
-export function cancelMvtkAuthorization(__: MvtkAuthorizationFactory.IMvtkAuthorization) {
+export function cancelMvtkAuthorization(__: MvtkAuthorizationFactory.IAuthorization) {
     return async () => {
         // ムビチケは実は仮押さえの仕組みがないので何もしない
     };
@@ -87,7 +87,7 @@ export function cancelMvtkAuthorization(__: MvtkAuthorizationFactory.IMvtkAuthor
  *
  * @memberof service/sales
  */
-export function settleMvtkAuthorization(__: MvtkAuthorizationFactory.IMvtkAuthorization) {
+export function settleMvtkAuthorization(__: MvtkAuthorizationFactory.IAuthorization) {
     return async () => {
         // 実は取引成立の前に着券済みなので何もしない
     };

@@ -18,7 +18,7 @@ import ObjectId from '../objectId';
 /**
  * 座席予約承認に必要な資産インターフェース
  */
-export type IAsset = SeatReservationAssetFactory.ISeatReservationAssetWithoutDetails;
+export type IAsset = SeatReservationAssetFactory.IAssetWithoutDetails;
 
 /**
  * COA座席仮予約
@@ -33,7 +33,7 @@ export type IAsset = SeatReservationAssetFactory.ISeatReservationAssetWithoutDet
  * @param {IAsset[]} assets 資産リスト(COA側では複数座席に対してひとつの仮予約番号が割り当てられるため)
  * @memberof factory/authorization/coaSeatReservation
  */
-export interface ICOASeatReservationAuthorization extends AuthorizationFactory.IAuthorization {
+export interface IAuthorization extends AuthorizationFactory.IAuthorization {
     coa_tmp_reserve_num: number;
     coa_theater_code: string;
     coa_date_jouei: string;
@@ -61,7 +61,7 @@ export function create(args: {
     coa_time_begin: string;
     coa_screen_code: string;
     assets: IAsset[];
-}): ICOASeatReservationAuthorization {
+}): IAuthorization {
     if (_.isEmpty(args.owner_from)) throw new ArgumentNullError('owner_from');
     if (_.isEmpty(args.owner_to)) throw new ArgumentNullError('owner_to');
     if (_.isEmpty(args.coa_theater_code)) throw new ArgumentNullError('coa_theater_code');

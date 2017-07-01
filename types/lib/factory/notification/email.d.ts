@@ -9,7 +9,7 @@ import * as NotificationFactory from '../notification';
  * @param {string} subject
  * @param {string} content
  */
-export interface IEmailNotification extends NotificationFactory.INotification {
+export interface INotification extends NotificationFactory.INotification {
     /**
      * 送信元メールアドレス
      */
@@ -42,4 +42,4 @@ export declare function create(args: {
     subject: string;
     content: string;
     send_at?: Date;
-}): IEmailNotification;
+}): INotification;

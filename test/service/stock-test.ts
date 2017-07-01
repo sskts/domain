@@ -31,9 +31,9 @@ import TransactionStatus from '../../lib/factory/transactionStatus';
 import * as MasterService from '../../lib/service/master';
 import * as StockService from '../../lib/service/stock';
 
-let TEST_ANOYMOUS_OWNER: AnonymousOwnerFactory.IAnonymousOwner;
-let TEST_COA_SEAT_RESERVATION_AUTHORIZATION: CoaSeatReservationAuthorizationFactory.ICOASeatReservationAuthorization;
-let TEST_GMO_AUTHORIZATION: GMOAuthorizationFactory.IGMOAuthorization;
+let TEST_ANOYMOUS_OWNER: AnonymousOwnerFactory.IOwner;
+let TEST_COA_SEAT_RESERVATION_AUTHORIZATION: CoaSeatReservationAuthorizationFactory.IAuthorization;
+let TEST_GMO_AUTHORIZATION: GMOAuthorizationFactory.IAuthorization;
 let connection: mongoose.Connection;
 // tslint:disable-next-line:max-func-body-length
 before(async () => {

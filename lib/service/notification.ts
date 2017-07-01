@@ -30,7 +30,7 @@ const LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify';
  *
  * @memberof service/notification
  */
-export function sendEmail(email: EmailNotificationFactory.IEmailNotification): Operation<void> {
+export function sendEmail(email: EmailNotificationFactory.INotification): Operation<void> {
     return async () => {
         debug('sending email...', email.content);
         const mail = new sendgrid.mail.Mail(

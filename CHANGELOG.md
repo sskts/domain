@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 会員カード追加サービスの返却値を、有効性確認済みカードに変更。
 - 取引にクライアントユーザー属性を追加し、所有者から状態属性を削除。
 - 文字列固定値に全てstring enumsを使用するようにコードを変更。
+- 子ファクトリーのインターフェース名をシンプル化。
 
 ### Deprecated
 

@@ -27,7 +27,7 @@ import ObjectId from '../objectId';
  * @param {string} gmo_pay_type
  * @memberof tobereplaced$
  */
-export interface IGMOAuthorization extends AuthorizationFactory.IAuthorization {
+export interface IAuthorization extends AuthorizationFactory.IAuthorization {
     gmo_shop_id: string;
     gmo_shop_pass: string;
     gmo_order_id: string;
@@ -55,7 +55,7 @@ export function create(args: {
     gmo_access_pass: string;
     gmo_job_cd: string;
     gmo_pay_type: string;
-}): IGMOAuthorization {
+}): IAuthorization {
     if (_.isEmpty(args.owner_from)) throw new ArgumentNullError('owner_from');
     if (_.isEmpty(args.owner_to)) throw new ArgumentNullError('owner_to');
     if (_.isEmpty(args.gmo_shop_id)) throw new ArgumentNullError('gmo_shop_id');

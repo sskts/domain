@@ -24,10 +24,10 @@ import * as TransactionInquiryKeyFactory from '../../lib/factory/transactionInqu
 import * as MemberService from '../../lib/service/member';
 
 const TEST_PASSWORD = 'password';
-let TEST_MEMBER_OWNER: MemberOwnerFactory.IMemberOwner;
+let TEST_MEMBER_OWNER: MemberOwnerFactory.IOwner;
 let TEST_MEMBER_VARIABLE_FIELDS: MemberOwnerFactory.IVariableFields;
 let TEST_GMO_CARD: GMOCardFactory.IUncheckedCardRaw;
-let TEST_SEAT_RESERVATION_ASSET: SeatReservationAssetFactory.ISeatReservationAsset;
+let TEST_SEAT_RESERVATION_ASSET: SeatReservationAssetFactory.IAsset;
 
 let connection: mongoose.Connection;
 
@@ -287,7 +287,7 @@ describe('会員サービス プロフィール更新', () => {
         await MemberService.updateProfile(TEST_MEMBER_OWNER.id, TEST_MEMBER_VARIABLE_FIELDS)(ownerAdapter);
 
         const memberOwnerDoc = await ownerAdapter.model.findById(TEST_MEMBER_OWNER.id).exec();
-        const memberOwner = <MemberOwnerFactory.IMemberOwner>(<mongoose.Document>memberOwnerDoc).toObject();
+        const memberOwner = <MemberOwnerFactory.IOwner>(<mongoose.Document>memberOwnerDoc).toObject();
         assert.equal(memberOwner.name_first, TEST_MEMBER_VARIABLE_FIELDS.name_first);
         assert.equal(memberOwner.name_last, TEST_MEMBER_VARIABLE_FIELDS.name_last);
         assert.equal(memberOwner.email, TEST_MEMBER_VARIABLE_FIELDS.email);

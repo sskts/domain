@@ -47,7 +47,7 @@ export interface IZskInfo {
  * ムビチケ着券情報
  * @memberof tobereplaced$
  */
-export interface IMvtkAuthorization extends AuthorizationFactory.IAuthorization {
+export interface IAuthorization extends AuthorizationFactory.IAuthorization {
     kgygish_cd: string;
     yyk_dvc_typ: string;
     trksh_flg: string;
@@ -83,7 +83,7 @@ export function create(args: {
     knyknr_no_info: IKnyknrNoInfo[];
     zsk_info: IZskInfo[];
     skhn_cd: string;
-}): IMvtkAuthorization {
+}): IAuthorization {
     if (_.isEmpty(args.kgygish_cd)) throw new ArgumentNullError('kgygish_cd');
     if (_.isEmpty(args.yyk_dvc_typ)) throw new ArgumentNullError('yyk_dvc_typ');
     if (_.isEmpty(args.trksh_flg)) throw new ArgumentNullError('trksh_flg');
