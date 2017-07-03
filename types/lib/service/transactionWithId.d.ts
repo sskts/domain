@@ -34,7 +34,7 @@ export declare function addAuthorization(transactionId: string, authorization: A
  *
  * @memberof service/transactionWithId
  */
-export declare function addGMOAuthorization(transactionId: string, authorization: GMOAuthorizationFactory.IGMOAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function addGMOAuthorization(transactionId: string, authorization: GMOAuthorizationFactory.IAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * COA資産承認
  *
@@ -44,7 +44,7 @@ export declare function addGMOAuthorization(transactionId: string, authorization
  *
  * @memberof service/transactionWithId
  */
-export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function addCOASeatReservationAuthorization(transactionId: string, authorization: COASeatReservationAuthorizationFactory.IAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * ムビチケ着券承認追加
  *
@@ -54,7 +54,7 @@ export declare function addCOASeatReservationAuthorization(transactionId: string
  *
  * @memberof service/transactionWithId
  */
-export declare function addMvtkAuthorization(transactionId: string, authorization: MvtkAuthorizationFactory.IMvtkAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function addMvtkAuthorization(transactionId: string, authorization: MvtkAuthorizationFactory.IAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 資産承認解除
  *
@@ -74,7 +74,7 @@ export declare function removeAuthorization(transactionId: string, authorization
  *
  * @memberof service/transactionWithId
  */
-export declare function addEmail(transactionId: string, notification: EmailNotificationFactory.IEmailNotification): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function addEmail(transactionId: string, notification: EmailNotificationFactory.INotification): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * メール削除
  *
@@ -108,7 +108,7 @@ export declare function updateAnonymousOwner(args: {
  * @param {(AnonymousOwnerFactory.IAnonymousOwner | MemberOwnerFactory.IMemberOwner)} owner 所有者
  * @returns {OwnerAndTransactionOperation<void>} 所有者と取引に対する操作
  */
-export declare function setOwnerProfile(transactionId: string, owner: AnonymousOwnerFactory.IAnonymousOwner | MemberOwnerFactory.IMemberOwner): OwnerAndTransactionOperation<void>;
+export declare function setOwnerProfile(transactionId: string, owner: AnonymousOwnerFactory.IOwner | MemberOwnerFactory.IOwner): OwnerAndTransactionOperation<void>;
 /**
  * 取引中の所有者に対してカード情報を保管する
  *

@@ -3,23 +3,22 @@
  *
  * @namespace factory/queueStatus
  */
-declare type QueueStatus = 'UNEXECUTED' | 'RUNNING' | 'EXECUTED' | 'ABORTED';
-declare namespace QueueStatus {
+declare enum QueueStatus {
     /**
      * 未実行
      */
-    const UNEXECUTED = "UNEXECUTED";
+    UNEXECUTED = "UNEXECUTED",
     /**
      * 実行中
      */
-    const RUNNING = "RUNNING";
+    RUNNING = "RUNNING",
     /**
      * 実行済
      */
-    const EXECUTED = "EXECUTED";
+    EXECUTED = "EXECUTED",
     /**
      * 実行中止
      */
-    const ABORTED = "ABORTED";
+    ABORTED = "ABORTED",
 }
 export default QueueStatus;

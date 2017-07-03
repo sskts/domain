@@ -24,7 +24,7 @@ const assetGroup_1 = require("../../lib/factory/assetGroup");
 const COASeatReservationAuthorizationFactory = require("../../lib/factory/authorization/coaSeatReservation");
 const GMOAuthorizationFactory = require("../../lib/factory/authorization/gmo");
 const MvtkAuthorizationFactory = require("../../lib/factory/authorization/mvtk");
-const cardGroup_1 = require("../../lib/factory/cardGroup");
+const GMOCardFactory = require("../../lib/factory/card/gmo");
 const EmailNotificationFactory = require("../../lib/factory/notification/email");
 const objectId_1 = require("../../lib/factory/objectId");
 const AnonymousOwnerFactory = require("../../lib/factory/owner/anonymous");
@@ -44,13 +44,7 @@ let TEST_MVTK_AUTHORIZATION;
 let TEST_EMAIL_NOTIFICATION;
 let TEST_TRANSACTION_INQUIRY_KEY;
 let TEST_PROMOTER_OWNER;
-const TEST_GMO_CARD = {
-    card_no: '4111111111111111',
-    card_pass: '111',
-    expire: '1812',
-    holder_name: 'AA BB',
-    group: cardGroup_1.default.GMO
-};
+let TEST_GMO_CARD;
 let connection;
 // tslint:disable-next-line:max-func-body-length
 before(() => __awaiter(this, void 0, void 0, function* () {
@@ -69,6 +63,12 @@ before(() => __awaiter(this, void 0, void 0, function* () {
         }
     }, { new: true, upsert: true }).exec();
     TEST_PROMOTER_OWNER = promoterOwnerDoc.toObject();
+    TEST_GMO_CARD = GMOCardFactory.createUncheckedCardRaw({
+        card_no: '4111111111111111',
+        card_pass: '111',
+        expire: '2812',
+        holder_name: 'AA BB'
+    });
     TEST_GMO_AUTHORIZATION = GMOAuthorizationFactory.create({
         price: 123,
         owner_from: 'xxx',
@@ -179,8 +179,7 @@ function assertSetAnonymousOwner(transactionId, ownerId) {
             name_first: 'name_first',
             name_last: 'name_last',
             email: 'noreply@example.com',
-            tel: '09012345678',
-            state: 'state'
+            tel: '09012345678'
         });
         yield TransactionWithIdService.setOwnerProfile(transactionId, anonymousOwner)(ownerAdapter, transactionAdapter);
         // 所有者を検索して情報の一致を確認
@@ -190,7 +189,6 @@ function assertSetAnonymousOwner(transactionId, ownerId) {
         assert.equal(anonymousOwnerDoc.get('name_last'), anonymousOwner.name_last);
         assert.equal(anonymousOwnerDoc.get('email'), anonymousOwner.email);
         assert.equal(anonymousOwnerDoc.get('tel'), anonymousOwner.tel);
-        assert.equal(anonymousOwnerDoc.get('state'), anonymousOwner.state);
         assert.equal(anonymousOwnerDoc.get('group'), anonymousOwner.group);
     });
 }
@@ -206,8 +204,7 @@ function assertSetMemberOwner(transactionId, ownerId) {
             name_first: 'name_first',
             name_last: 'name_last',
             email: 'noreply@example.com',
-            tel: '09012345678',
-            state: 'state'
+            tel: '09012345678'
         });
         yield TransactionWithIdService.setOwnerProfile(transactionId, memberOwner)(ownerAdapter, transactionAdapter);
         // 所有者を検索して情報の一致を確認
@@ -220,7 +217,6 @@ function assertSetMemberOwner(transactionId, ownerId) {
         assert.equal(ownerDoc.get('name_last'), memberOwner.name_last);
         assert.equal(ownerDoc.get('email'), memberOwner.email);
         assert.equal(ownerDoc.get('tel'), memberOwner.tel);
-        assert.equal(ownerDoc.get('state'), memberOwner.state);
         assert.equal(ownerDoc.get('group'), memberOwner.group);
     });
 }
@@ -855,8 +851,7 @@ describe('所有者プロフィールセット', () => {
             name_first: 'name_first',
             name_last: 'name_last',
             email: 'noreply@example.com',
-            tel: '09012345678',
-            state: 'state'
+            tel: '09012345678'
         });
         const setOwnerProfileError = yield TransactionWithIdService.setOwnerProfile(transaction.id, anonymousOwner)(ownerAdapter, transactionAdapter).catch((error) => error);
         assert(setOwnerProfileError instanceof argument_1.default);
@@ -881,8 +876,7 @@ describe('所有者プロフィールセット', () => {
             name_first: 'name_first',
             name_last: 'name_last',
             email: 'noreply@example.com',
-            tel: '09012345678',
-            state: 'state'
+            tel: '09012345678'
         });
         const setOwnerProfileError = yield TransactionWithIdService.setOwnerProfile(transaction.id, anonymousOwner)(ownerAdapter, transactionAdapter).catch((error) => error);
         assert(setOwnerProfileError instanceof argument_1.default);

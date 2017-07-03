@@ -18,6 +18,7 @@ import OwnerAdapter from '../adapter/owner';
 import * as SeatReservationAssetFactory from '../factory/asset/seatReservation';
 import AssetGroup from '../factory/assetGroup';
 import * as GMOCardFactory from '../factory/card/gmo';
+import * as GMOCardIdFactory from '../factory/cardId/gmo';
 import * as MemberOwnerFactory from '../factory/owner/member';
 import OwnerGroup from '../factory/ownerGroup';
 
@@ -39,7 +40,7 @@ export interface ILoginResult {
  * @param {MemberOwnerFactory.IMemberOwner} owner 会員所有者
  * @returns {IOwnerOperation<void>} 結果を取得する操作
  */
-export function signUp(owner: MemberOwnerFactory.IMemberOwner): IOwnerOperation<void> {
+export function signUp(owner: MemberOwnerFactory.IOwner): IOwnerOperation<void> {
     return async (ownerAdapter: OwnerAdapter) => {
         // まずGMO会員登録
         const saveMemberResult = await GMO.services.card.saveMember({
@@ -154,13 +155,13 @@ export function updateProfile(ownerId: string, update: MemberOwnerFactory.IVaria
  * @export
  * @param {string} ownerId 所有者ID
  * @param {(GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized)} card GMOカードオブジェクト
- * @returns {IOperation<string>} 操作
+ * @returns {IOperation<GMOCardFactory.ICheckedCard>} 登録後カードを返す操作
  * @memberof service/member
  */
 export function addCard(
     ownerId: string,
     card: GMOCardFactory.IUncheckedCardRaw | GMOCardFactory.IUncheckedCardTokenized
-): IOperation<string> {
+): IOperation<GMOCardFactory.ICheckedCard> {
     return async () => {
         // GMOカード登録
         debug('saving a card to GMO...', card);
@@ -177,7 +178,15 @@ export function addCard(
         });
         debug('card saved', saveCardResult);
 
-        return saveCardResult.cardSeq;
+        const searchCardResults = await GMO.services.card.searchCard({
+            siteId: process.env.GMO_SITE_ID,
+            sitePass: process.env.GMO_SITE_PASS,
+            memberId: ownerId,
+            seqMode: GMO.utils.util.SEQ_MODE_PHYSICS,
+            cardSeq: saveCardResult.cardSeq
+        });
+
+        return GMOCardFactory.createCheckedCardFromGMOSearchCardResult(searchCardResults[0], ownerId);
     };
 }
 
@@ -186,20 +195,21 @@ export function addCard(
  *
  * @export
  * @param {string} ownerId 所有者ID
- * @param {string} cardSeq GMO側のカード登録連番
+ * @param {string} cardId カードID
  * @returns {IOperation<void>} 操作
  * @memberof service/member
  */
-export function removeCard(ownerId: string, cardSeq: string): IOperation<void> {
+export function removeCard(ownerId: string, cardId: string): IOperation<void> {
     return async () => {
         // GMOカード削除
-        debug('removing a card from GMO...cardSeq:', cardSeq);
+        debug('removing a card from GMO...cardSeq:', cardId);
+        const gmoCardId = GMOCardIdFactory.parse(cardId);
         const deleteCardResult = await GMO.services.card.deleteCard({
             siteId: process.env.GMO_SITE_ID,
             sitePass: process.env.GMO_SITE_PASS,
             memberId: ownerId,
             seqMode: GMO.utils.util.SEQ_MODE_PHYSICS,
-            cardSeq: cardSeq
+            cardSeq: gmoCardId.cardSeq
         });
         debug('card deleted', deleteCardResult);
     };
@@ -225,7 +235,7 @@ export function findCards(ownerId: string): IOperation<GMOCardFactory.ICheckedCa
             return searchCardResults
                 // 未削除のものに絞り込む
                 .filter((searchCardResult) => searchCardResult.deleteFlag === '0')
-                .map(GMOCardFactory.createCheckedCardFromGMOSearchCardResult);
+                .map((searchCardResult) => GMOCardFactory.createCheckedCardFromGMOSearchCardResult(searchCardResult, ownerId));
         });
     };
 }
@@ -238,7 +248,7 @@ export function findCards(ownerId: string): IOperation<GMOCardFactory.ICheckedCa
  * @returns {IAssetOperation<SeatReservationAssetFactory.ISeatReservationAsset[]>} 資産に対する操作
  * @memberof service/member
  */
-export function findSeatReservationAssets(ownerId: string): IAssetOperation<SeatReservationAssetFactory.ISeatReservationAsset[]> {
+export function findSeatReservationAssets(ownerId: string): IAssetOperation<SeatReservationAssetFactory.IAsset[]> {
     return async (assetAdapter: AssetAdapter) => {
         // 資産全検索
         // todo add limit
@@ -247,6 +257,6 @@ export function findSeatReservationAssets(ownerId: string): IAssetOperation<Seat
             'ownership.owner': ownerId
         }).sort({ created_at: 1 })
             .exec()
-            .then((docs) => docs.map((doc) => <SeatReservationAssetFactory.ISeatReservationAsset>doc.toObject()));
+            .then((docs) => docs.map((doc) => <SeatReservationAssetFactory.IAsset>doc.toObject()));
     };
 }

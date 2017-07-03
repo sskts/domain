@@ -23,7 +23,9 @@ const performance_1 = require("../../lib/adapter/performance");
 const screen_1 = require("../../lib/adapter/screen");
 const theater_1 = require("../../lib/adapter/theater");
 const transaction_1 = require("../../lib/adapter/transaction");
+const assetGroup_1 = require("../../lib/factory/assetGroup");
 const GMOAuthorizationFactory = require("../../lib/factory/authorization/gmo");
+const authorizationGroup_1 = require("../../lib/factory/authorizationGroup");
 const objectId_1 = require("../../lib/factory/objectId");
 const AnonymousOwnerFactory = require("../../lib/factory/owner/anonymous");
 const TransactionFactory = require("../../lib/factory/transaction");
@@ -82,7 +84,7 @@ before(() => __awaiter(this, void 0, void 0, function* () {
                 performance: perforamnce.get('_id'),
                 authorizations: [],
                 price: 2800,
-                group: 'SEAT_RESERVATION',
+                group: assetGroup_1.default.SEAT_RESERVATION,
                 ownership: {
                     authentication_records: [],
                     owner: '58e344ac36a44424c0997dad',
@@ -114,7 +116,7 @@ before(() => __awaiter(this, void 0, void 0, function* () {
                 performance: perforamnce.get('_id'),
                 authorizations: [],
                 price: 2800,
-                group: 'SEAT_RESERVATION',
+                group: assetGroup_1.default.SEAT_RESERVATION,
                 ownership: {
                     authentication_records: [],
                     owner: '58e344ac36a44424c0997dad',
@@ -133,7 +135,7 @@ before(() => __awaiter(this, void 0, void 0, function* () {
         coa_date_jouei: '20170404',
         coa_theater_code: '118',
         coa_tmp_reserve_num: 1103,
-        group: 'COA_SEAT_RESERVATION',
+        group: authorizationGroup_1.default.COA_SEAT_RESERVATION,
         id: '58e344b236a44424c0997db2'
     };
     TEST_GMO_AUTHORIZATION = GMOAuthorizationFactory.create({
@@ -154,7 +156,7 @@ describe('在庫サービス 取引照会無効化', () => {
     it('照会キーがなければ失敗', () => __awaiter(this, void 0, void 0, function* () {
         const transactionAdapter = new transaction_1.default(connection);
         const transaction = TransactionFactory.create({
-            status: 'UNDERWAY',
+            status: transactionStatus_1.default.UNDERWAY,
             owners: [],
             expires_at: new Date()
         });

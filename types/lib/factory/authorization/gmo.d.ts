@@ -12,7 +12,7 @@ import * as AuthorizationFactory from '../authorization';
  * @param {string} gmo_pay_type
  * @memberof tobereplaced$
  */
-export interface IGMOAuthorization extends AuthorizationFactory.IAuthorization {
+export interface IAuthorization extends AuthorizationFactory.IAuthorization {
     gmo_shop_id: string;
     gmo_shop_pass: string;
     gmo_order_id: string;
@@ -39,4 +39,4 @@ export declare function create(args: {
     gmo_access_pass: string;
     gmo_job_cd: string;
     gmo_pay_type: string;
-}): IGMOAuthorization;
+}): IAuthorization;

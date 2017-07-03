@@ -19,7 +19,6 @@ import * as COASeatReservationAuthorizationFactory from '../../lib/factory/autho
 import * as GMOAuthorizationFactory from '../../lib/factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from '../../lib/factory/authorization/mvtk';
 import * as GMOCardFactory from '../../lib/factory/card/gmo';
-import CardGroup from '../../lib/factory/cardGroup';
 import * as EmailNotificationFactory from '../../lib/factory/notification/email';
 import ObjectId from '../../lib/factory/objectId';
 import * as AnonymousOwnerFactory from '../../lib/factory/owner/anonymous';
@@ -36,19 +35,13 @@ import TransactionStatus from '../../lib/factory/transactionStatus';
 
 import ArgumentError from '../../lib/error/argument';
 
-let TEST_COA_SEAT_RESERVATION_AUTHORIZATION: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization;
-let TEST_GMO_AUTHORIZATION: GMOAuthorizationFactory.IGMOAuthorization;
-let TEST_MVTK_AUTHORIZATION: MvtkAuthorizationFactory.IMvtkAuthorization;
-let TEST_EMAIL_NOTIFICATION: EmailNotificationFactory.IEmailNotification;
+let TEST_COA_SEAT_RESERVATION_AUTHORIZATION: COASeatReservationAuthorizationFactory.IAuthorization;
+let TEST_GMO_AUTHORIZATION: GMOAuthorizationFactory.IAuthorization;
+let TEST_MVTK_AUTHORIZATION: MvtkAuthorizationFactory.IAuthorization;
+let TEST_EMAIL_NOTIFICATION: EmailNotificationFactory.INotification;
 let TEST_TRANSACTION_INQUIRY_KEY: TransactionInquiryKeyFactory.ITransactionInquiryKey;
-let TEST_PROMOTER_OWNER: PromoterOwnerFactory.IPromoterOwner;
-const TEST_GMO_CARD: GMOCardFactory.IUncheckedCardRaw = {
-    card_no: '4111111111111111',
-    card_pass: '111',
-    expire: '1812',
-    holder_name: 'AA BB',
-    group: CardGroup.GMO
-};
+let TEST_PROMOTER_OWNER: PromoterOwnerFactory.IOwner;
+let TEST_GMO_CARD: GMOCardFactory.IUncheckedCardRaw;
 let connection: mongoose.Connection;
 
 // tslint:disable-next-line:max-func-body-length
@@ -74,7 +67,14 @@ before(async () => {
         },
         { new: true, upsert: true }
     ).exec();
-    TEST_PROMOTER_OWNER = <PromoterOwnerFactory.IPromoterOwner>promoterOwnerDoc.toObject();
+    TEST_PROMOTER_OWNER = <PromoterOwnerFactory.IOwner>promoterOwnerDoc.toObject();
+
+    TEST_GMO_CARD = GMOCardFactory.createUncheckedCardRaw({
+        card_no: '4111111111111111',
+        card_pass: '111',
+        expire: '2812',
+        holder_name: 'AA BB'
+    });
 
     TEST_GMO_AUTHORIZATION = GMOAuthorizationFactory.create({
         price: 123,
@@ -191,8 +191,7 @@ async function assertSetAnonymousOwner(transactionId: string, ownerId: string) {
         name_first: 'name_first',
         name_last: 'name_last',
         email: 'noreply@example.com',
-        tel: '09012345678',
-        state: 'state'
+        tel: '09012345678'
     });
     await TransactionWithIdService.setOwnerProfile(transactionId, anonymousOwner)(ownerAdapter, transactionAdapter);
 
@@ -203,7 +202,6 @@ async function assertSetAnonymousOwner(transactionId: string, ownerId: string) {
     assert.equal(anonymousOwnerDoc.get('name_last'), anonymousOwner.name_last);
     assert.equal(anonymousOwnerDoc.get('email'), anonymousOwner.email);
     assert.equal(anonymousOwnerDoc.get('tel'), anonymousOwner.tel);
-    assert.equal(anonymousOwnerDoc.get('state'), anonymousOwner.state);
     assert.equal(anonymousOwnerDoc.get('group'), anonymousOwner.group);
 }
 
@@ -219,8 +217,7 @@ async function assertSetMemberOwner(transactionId: string, ownerId: string) {
         name_first: 'name_first',
         name_last: 'name_last',
         email: 'noreply@example.com',
-        tel: '09012345678',
-        state: 'state'
+        tel: '09012345678'
     });
     await TransactionWithIdService.setOwnerProfile(transactionId, memberOwner)(ownerAdapter, transactionAdapter);
 
@@ -234,7 +231,6 @@ async function assertSetMemberOwner(transactionId: string, ownerId: string) {
     assert.equal(ownerDoc.get('name_last'), memberOwner.name_last);
     assert.equal(ownerDoc.get('email'), memberOwner.email);
     assert.equal(ownerDoc.get('tel'), memberOwner.tel);
-    assert.equal(ownerDoc.get('state'), memberOwner.state);
     assert.equal(ownerDoc.get('group'), memberOwner.group);
 }
 
@@ -1039,8 +1035,7 @@ describe('所有者プロフィールセット', () => {
             name_first: 'name_first',
             name_last: 'name_last',
             email: 'noreply@example.com',
-            tel: '09012345678',
-            state: 'state'
+            tel: '09012345678'
         });
         const setOwnerProfileError = await TransactionWithIdService.setOwnerProfile(
             transaction.id, anonymousOwner
@@ -1071,8 +1066,7 @@ describe('所有者プロフィールセット', () => {
             name_first: 'name_first',
             name_last: 'name_last',
             email: 'noreply@example.com',
-            tel: '09012345678',
-            state: 'state'
+            tel: '09012345678'
         });
         const setOwnerProfileError = await TransactionWithIdService.setOwnerProfile(
             transaction.id, anonymousOwner

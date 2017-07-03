@@ -17,8 +17,10 @@ import ScreenAdapter from '../../lib/adapter/screen';
 import TheaterAdapter from '../../lib/adapter/theater';
 import TransactionAdapter from '../../lib/adapter/transaction';
 
+import AssetGroup from '../../lib/factory/assetGroup';
 import * as CoaSeatReservationAuthorizationFactory from '../../lib/factory/authorization/coaSeatReservation';
 import * as GMOAuthorizationFactory from '../../lib/factory/authorization/gmo';
+import AuthorizationGroup from '../../lib/factory/authorizationGroup';
 import ObjectId from '../../lib/factory/objectId';
 import * as AnonymousOwnerFactory from '../../lib/factory/owner/anonymous';
 import * as TransactionFactory from '../../lib/factory/transaction';
@@ -29,9 +31,9 @@ import TransactionStatus from '../../lib/factory/transactionStatus';
 import * as MasterService from '../../lib/service/master';
 import * as StockService from '../../lib/service/stock';
 
-let TEST_ANOYMOUS_OWNER: AnonymousOwnerFactory.IAnonymousOwner;
-let TEST_COA_SEAT_RESERVATION_AUTHORIZATION: CoaSeatReservationAuthorizationFactory.ICOASeatReservationAuthorization;
-let TEST_GMO_AUTHORIZATION: GMOAuthorizationFactory.IGMOAuthorization;
+let TEST_ANOYMOUS_OWNER: AnonymousOwnerFactory.IOwner;
+let TEST_COA_SEAT_RESERVATION_AUTHORIZATION: CoaSeatReservationAuthorizationFactory.IAuthorization;
+let TEST_GMO_AUTHORIZATION: GMOAuthorizationFactory.IAuthorization;
 let connection: mongoose.Connection;
 // tslint:disable-next-line:max-func-body-length
 before(async () => {
@@ -83,7 +85,7 @@ before(async () => {
                 performance: perforamnce.get('_id'),
                 authorizations: [],
                 price: 2800,
-                group: 'SEAT_RESERVATION',
+                group: AssetGroup.SEAT_RESERVATION,
                 ownership: {
                     authentication_records: [],
                     owner: '58e344ac36a44424c0997dad',
@@ -115,7 +117,7 @@ before(async () => {
                 performance: perforamnce.get('_id'),
                 authorizations: [],
                 price: 2800,
-                group: 'SEAT_RESERVATION',
+                group: AssetGroup.SEAT_RESERVATION,
                 ownership: {
                     authentication_records: [],
                     owner: '58e344ac36a44424c0997dad',
@@ -134,7 +136,7 @@ before(async () => {
         coa_date_jouei: '20170404',
         coa_theater_code: '118',
         coa_tmp_reserve_num: 1103,
-        group: 'COA_SEAT_RESERVATION',
+        group: AuthorizationGroup.COA_SEAT_RESERVATION,
         id: '58e344b236a44424c0997db2'
     };
 
@@ -157,7 +159,7 @@ describe('在庫サービス 取引照会無効化', () => {
     it('照会キーがなければ失敗', async () => {
         const transactionAdapter = new TransactionAdapter(connection);
         const transaction = TransactionFactory.create({
-            status: 'UNDERWAY',
+            status: TransactionStatus.UNDERWAY,
             owners: [],
             expires_at: new Date()
         });

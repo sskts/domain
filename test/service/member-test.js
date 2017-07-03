@@ -21,7 +21,7 @@ const argument_1 = require("../../lib/error/argument");
 const asset_1 = require("../../lib/adapter/asset");
 const owner_1 = require("../../lib/adapter/owner");
 const SeatReservationAssetFactory = require("../../lib/factory/asset/seatReservation");
-const cardGroup_1 = require("../../lib/factory/cardGroup");
+const GMOCardFactory = require("../../lib/factory/card/gmo");
 const MemberOwnerFactory = require("../../lib/factory/owner/member");
 const ownerGroup_1 = require("../../lib/factory/ownerGroup");
 const OwnershipFactory = require("../../lib/factory/ownership");
@@ -30,15 +30,10 @@ const MemberService = require("../../lib/service/member");
 const TEST_PASSWORD = 'password';
 let TEST_MEMBER_OWNER;
 let TEST_MEMBER_VARIABLE_FIELDS;
-const TEST_GMO_CARD = {
-    card_no: '4111111111111111',
-    card_pass: '111',
-    expire: '1812',
-    holder_name: 'AA BB',
-    group: cardGroup_1.default.GMO
-};
+let TEST_GMO_CARD;
 let TEST_SEAT_RESERVATION_ASSET;
 let connection;
+// tslint:disable-next-line:max-func-body-length
 before(() => __awaiter(this, void 0, void 0, function* () {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
     // 全て削除してからテスト開始
@@ -66,6 +61,12 @@ before(() => __awaiter(this, void 0, void 0, function* () {
         description: { en: 'new description en', ja: 'new description ja' },
         notes: { en: 'new notes en', ja: 'new notes ja' }
     };
+    TEST_GMO_CARD = GMOCardFactory.createUncheckedCardRaw({
+        card_no: '4111111111111111',
+        card_pass: '111',
+        expire: '2812',
+        holder_name: 'AA BB'
+    });
     TEST_SEAT_RESERVATION_ASSET = SeatReservationAssetFactory.create({
         ownership: OwnershipFactory.create({
             owner: TEST_MEMBER_OWNER.id
@@ -286,13 +287,13 @@ describe('会員サービス カード追加', () => {
     }));
     it('正しく追加できる', () => __awaiter(this, void 0, void 0, function* () {
         // GMOに確かにカードが登録されていることを確認
-        const newCardSeq = yield MemberService.addCard(TEST_MEMBER_OWNER.id, TEST_GMO_CARD)();
+        const addedCard = yield MemberService.addCard(TEST_MEMBER_OWNER.id, TEST_GMO_CARD)();
         const searchCardResults = yield GMO.services.card.searchCard({
             siteId: process.env.GMO_SITE_ID,
             sitePass: process.env.GMO_SITE_PASS,
             memberId: TEST_MEMBER_OWNER.id,
             seqMode: GMO.Util.SEQ_MODE_PHYSICS,
-            cardSeq: newCardSeq
+            cardSeq: addedCard.card_seq
         });
         assert.equal(searchCardResults.length, 1);
         // テストカード削除
@@ -301,7 +302,7 @@ describe('会員サービス カード追加', () => {
             sitePass: process.env.GMO_SITE_PASS,
             memberId: TEST_MEMBER_OWNER.id,
             seqMode: GMO.Util.SEQ_MODE_PHYSICS,
-            cardSeq: newCardSeq
+            cardSeq: addedCard.card_seq
         });
     }));
 });
@@ -323,8 +324,11 @@ describe('会員サービス カード削除', () => {
             expire: TEST_GMO_CARD.expire,
             holderName: TEST_GMO_CARD.holder_name
         });
+        // 登録されたテストカードを検索して取り出す
+        const cards = yield MemberService.findCards(TEST_MEMBER_OWNER.id)();
+        const removingCard = cards.find((card) => card.card_seq === saveCardResult.cardSeq);
         // GMOに確かにカードが削除されていることを確認
-        yield MemberService.removeCard(TEST_MEMBER_OWNER.id, saveCardResult.cardSeq)();
+        yield MemberService.removeCard(TEST_MEMBER_OWNER.id, removingCard.id.toString())();
         const searchCardResults = yield GMO.services.card.searchCard({
             siteId: process.env.GMO_SITE_ID,
             sitePass: process.env.GMO_SITE_PASS,
@@ -357,18 +361,18 @@ describe('会員サービス カード検索', () => {
     }));
     it('正しく検索できる', () => __awaiter(this, void 0, void 0, function* () {
         // テストカード登録
-        const newCardSeq = yield MemberService.addCard(TEST_MEMBER_OWNER.id, TEST_GMO_CARD)();
-        // GMOに確かにカードが削除されていることを確認
+        const addedCard = yield MemberService.addCard(TEST_MEMBER_OWNER.id, TEST_GMO_CARD)();
+        // カードの存在確認
         const cards = yield MemberService.findCards(TEST_MEMBER_OWNER.id)();
         assert.equal(cards.length, 1);
-        assert.equal(cards[0].card_seq, newCardSeq);
+        assert.equal(cards[0].card_seq, addedCard.card_seq);
         // テストカード削除
         yield GMO.services.card.deleteCard({
             siteId: process.env.GMO_SITE_ID,
             sitePass: process.env.GMO_SITE_PASS,
             memberId: TEST_MEMBER_OWNER.id,
             seqMode: GMO.Util.SEQ_MODE_PHYSICS,
-            cardSeq: newCardSeq
+            cardSeq: addedCard.card_seq
         });
     }));
 });

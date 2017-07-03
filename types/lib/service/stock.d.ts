@@ -4,7 +4,7 @@ import AssetAdapter from '../adapter/asset';
 import OwnerAdapter from '../adapter/owner';
 import PerformanceAdapter from '../adapter/performance';
 import TransactionAdapter from '../adapter/transaction';
-export declare type ICOASeatReservationAuthorization = COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization;
+export declare type ICOASeatReservationAuthorization = COASeatReservationAuthorizationFactory.IAuthorization;
 export declare type AssetAndOwnerAndPerformanceAndTransactionOperation<T> = (assetAdapter: AssetAdapter, ownerAdapter: OwnerAdapter, performanceAdapter: PerformanceAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 /**
  * 資産承認解除(COA座席予約)
@@ -13,7 +13,7 @@ export declare type AssetAndOwnerAndPerformanceAndTransactionOperation<T> = (ass
  *
  * @memberof service/stock
  */
-export declare function unauthorizeCOASeatReservation(authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization): () => Promise<void>;
+export declare function unauthorizeCOASeatReservation(authorization: COASeatReservationAuthorizationFactory.IAuthorization): () => Promise<void>;
 /**
  * 資産移動(COA座席予約)
  *

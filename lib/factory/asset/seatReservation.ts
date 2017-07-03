@@ -52,7 +52,7 @@ export interface IMvtkFields {
     mvtk_sales_price: number;
 }
 
-export interface ISeatReservationAssetBase extends AssetFactory.IAsset {
+export interface IAssetBase extends AssetFactory.IAsset {
     performance: string;
     screen_section: string;
     seat_code: string;
@@ -66,21 +66,21 @@ export interface ISeatReservationAssetBase extends AssetFactory.IAsset {
     add_glasses: number;
 }
 
-export type ISeatReservationAssetWithoutDetails = ISeatReservationAssetBase & IMvtkFields;
+export type IAssetWithoutDetails = IAssetBase & IMvtkFields;
 
 /**
  * 座席予約資産
  *
- * @interface ISeatReservationAsset
+ * @interface IAsset
  * @extends {IAsset}
  * @memberof factory/asset/seatReservation
  */
-export type ISeatReservationAsset = ISeatReservationAssetWithoutDetails & IDetails;
+export type IAsset = IAssetWithoutDetails & IDetails;
 
 /**
  * 座席予約資産を作成する
  *
- * @returns {SeatReservationAsset}
+ * @returns {Asset}
  * @memberof factory/asset/seatReservation
  */
 // tslint:disable-next-line:cyclomatic-complexity
@@ -127,7 +127,7 @@ export function create(args: {
     mvtk_kbn_maeuriken: string;
     mvtk_kbn_kensyu: string;
     mvtk_sales_price: number;
-}): ISeatReservationAsset {
+}): IAsset {
     const seatReservationAssetWithoutDetails = createWithoutDetails(args);
 
     // todo validation
@@ -183,7 +183,7 @@ export function createWithoutDetails(args: {
     mvtk_kbn_maeuriken: string;
     mvtk_kbn_kensyu: string;
     mvtk_sales_price: number;
-}): ISeatReservationAssetWithoutDetails {
+}): IAssetWithoutDetails {
     if (!_.isString(args.screen_section)) throw new ArgumentError('screen_section', 'screen_section should be string');
     if (!_.isString(args.ticket_name_kana)) throw new ArgumentError('ticket_name_kana', 'ticket_name_kana should be string');
     if (!_.isString(args.mvtk_num)) throw new ArgumentError('mvtk_num', 'mvtk_num should be string');

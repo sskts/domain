@@ -16,11 +16,13 @@ const schema = new mongoose.Schema(
         name_kana: String,
         address: MultilingualStringSchemaType,
         gmo: { // 劇場ごとにGMOショップが異なる可能性があるため
+            _id: false,
             site_id: String,
             shop_id: String,
             shop_pass: String
         },
         websites: [{
+            _id: false,
             group: String,
             name: MultilingualStringSchemaType,
             url: String

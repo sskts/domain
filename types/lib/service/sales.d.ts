@@ -5,22 +5,22 @@ import * as MvtkAuthorizationFactory from '../factory/authorization/mvtk';
  *
  * @memberof service/sales
  */
-export declare function cancelGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthorization): () => Promise<void>;
+export declare function cancelGMOAuth(authorization: GMOAuthorizationFactory.IAuthorization): () => Promise<void>;
 /**
  * GMO売上確定
  *
  * @memberof service/sales
  */
-export declare function settleGMOAuth(authorization: GMOAuthorizationFactory.IGMOAuthorization): () => Promise<void>;
+export declare function settleGMOAuth(authorization: GMOAuthorizationFactory.IAuthorization): () => Promise<void>;
 /**
  * ムビチケ着券取消し
  *
  * @memberof service/sales
  */
-export declare function cancelMvtkAuthorization(__: MvtkAuthorizationFactory.IMvtkAuthorization): () => Promise<void>;
+export declare function cancelMvtkAuthorization(__: MvtkAuthorizationFactory.IAuthorization): () => Promise<void>;
 /**
  * ムビチケ資産移動
  *
  * @memberof service/sales
  */
-export declare function settleMvtkAuthorization(__: MvtkAuthorizationFactory.IMvtkAuthorization): () => Promise<void>;
+export declare function settleMvtkAuthorization(__: MvtkAuthorizationFactory.IAuthorization): () => Promise<void>;

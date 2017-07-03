@@ -24,7 +24,7 @@ import TransactionEventGroup from '../transactionEventGroup';
  * @param {T} notification
  * @memberof tobereplaced$
  */
-export interface IAddNotificationTransactionEvent<T extends Notification.INotification> extends TransactionEventFactory.ITransactionEvent {
+export interface ITransactionEvent<T extends Notification.INotification> extends TransactionEventFactory.ITransactionEvent {
     notification: T;
 }
 
@@ -37,7 +37,7 @@ export function create<T extends Notification.INotification>(args: {
     transaction: string,
     occurred_at: Date,
     notification: T
-}): IAddNotificationTransactionEvent<T> {
+}): ITransactionEvent<T> {
     if (_.isEmpty(args.transaction)) throw new ArgumentNullError('transaction');
     if (_.isEmpty(args.notification)) throw new ArgumentNullError('notification');
     if (!_.isDate(args.occurred_at)) throw new ArgumentError('occurred_at', 'occurred_at should be Date');

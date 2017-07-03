@@ -3,23 +3,18 @@
  *
  * @namespace factory/transactionStatus
  */
-declare type TransactionStatus = 'READY' | 'UNDERWAY' | 'CLOSED' | 'EXPIRED';
-declare namespace TransactionStatus {
-    /**
-     * 開始待機
-     */
-    const READY = "READY";
+declare enum TransactionStatus {
     /**
      * 進行中
      */
-    const UNDERWAY = "UNDERWAY";
+    UNDERWAY = "UNDERWAY",
     /**
      * 成立済み
      */
-    const CLOSED = "CLOSED";
+    CLOSED = "CLOSED",
     /**
      * 期限切れ
      */
-    const EXPIRED = "EXPIRED";
+    EXPIRED = "EXPIRED",
 }
 export default TransactionStatus;

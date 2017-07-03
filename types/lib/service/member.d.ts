@@ -19,7 +19,7 @@ export interface ILoginResult {
  * @param {MemberOwnerFactory.IMemberOwner} owner 会員所有者
  * @returns {IOwnerOperation<void>} 結果を取得する操作
  */
-export declare function signUp(owner: MemberOwnerFactory.IMemberOwner): IOwnerOperation<void>;
+export declare function signUp(owner: MemberOwnerFactory.IOwner): IOwnerOperation<void>;
 /**
  * ログイン
  *
@@ -55,20 +55,20 @@ export declare function updateProfile(ownerId: string, update: MemberOwnerFactor
  * @export
  * @param {string} ownerId 所有者ID
  * @param {(GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized)} card GMOカードオブジェクト
- * @returns {IOperation<string>} 操作
+ * @returns {IOperation<GMOCardFactory.ICheckedCard>} 登録後カードを返す操作
  * @memberof service/member
  */
-export declare function addCard(ownerId: string, card: GMOCardFactory.IUncheckedCardRaw | GMOCardFactory.IUncheckedCardTokenized): IOperation<string>;
+export declare function addCard(ownerId: string, card: GMOCardFactory.IUncheckedCardRaw | GMOCardFactory.IUncheckedCardTokenized): IOperation<GMOCardFactory.ICheckedCard>;
 /**
  * カード削除
  *
  * @export
  * @param {string} ownerId 所有者ID
- * @param {string} cardSeq GMO側のカード登録連番
+ * @param {string} cardId カードID
  * @returns {IOperation<void>} 操作
  * @memberof service/member
  */
-export declare function removeCard(ownerId: string, cardSeq: string): IOperation<void>;
+export declare function removeCard(ownerId: string, cardId: string): IOperation<void>;
 /**
  * 会員カード検索
  *
@@ -86,4 +86,4 @@ export declare function findCards(ownerId: string): IOperation<GMOCardFactory.IC
  * @returns {IAssetOperation<SeatReservationAssetFactory.ISeatReservationAsset[]>} 資産に対する操作
  * @memberof service/member
  */
-export declare function findSeatReservationAssets(ownerId: string): IAssetOperation<SeatReservationAssetFactory.ISeatReservationAsset[]>;
+export declare function findSeatReservationAssets(ownerId: string): IAssetOperation<SeatReservationAssetFactory.IAsset[]>;

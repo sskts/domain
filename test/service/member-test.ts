@@ -16,7 +16,6 @@ import OwnerAdapter from '../../lib/adapter/owner';
 
 import * as SeatReservationAssetFactory from '../../lib/factory/asset/seatReservation';
 import * as GMOCardFactory from '../../lib/factory/card/gmo';
-import CardGroup from '../../lib/factory/cardGroup';
 import * as MemberOwnerFactory from '../../lib/factory/owner/member';
 import OwnerGroup from '../../lib/factory/ownerGroup';
 import * as OwnershipFactory from '../../lib/factory/ownership';
@@ -25,19 +24,14 @@ import * as TransactionInquiryKeyFactory from '../../lib/factory/transactionInqu
 import * as MemberService from '../../lib/service/member';
 
 const TEST_PASSWORD = 'password';
-let TEST_MEMBER_OWNER: MemberOwnerFactory.IMemberOwner;
+let TEST_MEMBER_OWNER: MemberOwnerFactory.IOwner;
 let TEST_MEMBER_VARIABLE_FIELDS: MemberOwnerFactory.IVariableFields;
-const TEST_GMO_CARD: GMOCardFactory.IUncheckedCardRaw = {
-    card_no: '4111111111111111',
-    card_pass: '111',
-    expire: '1812',
-    holder_name: 'AA BB',
-    group: CardGroup.GMO
-};
-let TEST_SEAT_RESERVATION_ASSET: SeatReservationAssetFactory.ISeatReservationAsset;
+let TEST_GMO_CARD: GMOCardFactory.IUncheckedCardRaw;
+let TEST_SEAT_RESERVATION_ASSET: SeatReservationAssetFactory.IAsset;
 
 let connection: mongoose.Connection;
 
+// tslint:disable-next-line:max-func-body-length
 before(async () => {
     connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 
@@ -68,6 +62,13 @@ before(async () => {
         description: { en: 'new description en', ja: 'new description ja' },
         notes: { en: 'new notes en', ja: 'new notes ja' }
     };
+
+    TEST_GMO_CARD = GMOCardFactory.createUncheckedCardRaw({
+        card_no: '4111111111111111',
+        card_pass: '111',
+        expire: '2812',
+        holder_name: 'AA BB'
+    });
 
     TEST_SEAT_RESERVATION_ASSET = SeatReservationAssetFactory.create({
         ownership: OwnershipFactory.create({
@@ -286,7 +287,7 @@ describe('会員サービス プロフィール更新', () => {
         await MemberService.updateProfile(TEST_MEMBER_OWNER.id, TEST_MEMBER_VARIABLE_FIELDS)(ownerAdapter);
 
         const memberOwnerDoc = await ownerAdapter.model.findById(TEST_MEMBER_OWNER.id).exec();
-        const memberOwner = <MemberOwnerFactory.IMemberOwner>(<mongoose.Document>memberOwnerDoc).toObject();
+        const memberOwner = <MemberOwnerFactory.IOwner>(<mongoose.Document>memberOwnerDoc).toObject();
         assert.equal(memberOwner.name_first, TEST_MEMBER_VARIABLE_FIELDS.name_first);
         assert.equal(memberOwner.name_last, TEST_MEMBER_VARIABLE_FIELDS.name_last);
         assert.equal(memberOwner.email, TEST_MEMBER_VARIABLE_FIELDS.email);
@@ -319,13 +320,13 @@ describe('会員サービス カード追加', () => {
 
     it('正しく追加できる', async () => {
         // GMOに確かにカードが登録されていることを確認
-        const newCardSeq = await MemberService.addCard(TEST_MEMBER_OWNER.id, TEST_GMO_CARD)();
+        const addedCard = await MemberService.addCard(TEST_MEMBER_OWNER.id, TEST_GMO_CARD)();
         const searchCardResults = await GMO.services.card.searchCard({
             siteId: process.env.GMO_SITE_ID,
             sitePass: process.env.GMO_SITE_PASS,
             memberId: TEST_MEMBER_OWNER.id,
             seqMode: GMO.Util.SEQ_MODE_PHYSICS,
-            cardSeq: newCardSeq
+            cardSeq: addedCard.card_seq
         });
         assert.equal(searchCardResults.length, 1);
 
@@ -335,7 +336,7 @@ describe('会員サービス カード追加', () => {
             sitePass: process.env.GMO_SITE_PASS,
             memberId: TEST_MEMBER_OWNER.id,
             seqMode: GMO.Util.SEQ_MODE_PHYSICS,
-            cardSeq: newCardSeq
+            cardSeq: addedCard.card_seq
         });
     });
 });
@@ -360,8 +361,12 @@ describe('会員サービス カード削除', () => {
             holderName: TEST_GMO_CARD.holder_name
         });
 
+        // 登録されたテストカードを検索して取り出す
+        const cards = await MemberService.findCards(TEST_MEMBER_OWNER.id)();
+        const removingCard = <GMOCardFactory.ICheckedCard>cards.find((card) => card.card_seq === saveCardResult.cardSeq);
+
         // GMOに確かにカードが削除されていることを確認
-        await MemberService.removeCard(TEST_MEMBER_OWNER.id, saveCardResult.cardSeq)();
+        await MemberService.removeCard(TEST_MEMBER_OWNER.id, removingCard.id.toString())();
         const searchCardResults = await GMO.services.card.searchCard({
             siteId: process.env.GMO_SITE_ID,
             sitePass: process.env.GMO_SITE_PASS,
@@ -397,12 +402,12 @@ describe('会員サービス カード検索', () => {
 
     it('正しく検索できる', async () => {
         // テストカード登録
-        const newCardSeq = await MemberService.addCard(TEST_MEMBER_OWNER.id, TEST_GMO_CARD)();
+        const addedCard = await MemberService.addCard(TEST_MEMBER_OWNER.id, TEST_GMO_CARD)();
 
-        // GMOに確かにカードが削除されていることを確認
+        // カードの存在確認
         const cards = await MemberService.findCards(TEST_MEMBER_OWNER.id)();
         assert.equal(cards.length, 1);
-        assert.equal(cards[0].card_seq, newCardSeq);
+        assert.equal(cards[0].card_seq, addedCard.card_seq);
 
         // テストカード削除
         await GMO.services.card.deleteCard({
@@ -410,7 +415,7 @@ describe('会員サービス カード検索', () => {
             sitePass: process.env.GMO_SITE_PASS,
             memberId: TEST_MEMBER_OWNER.id,
             seqMode: GMO.Util.SEQ_MODE_PHYSICS,
-            cardSeq: newCardSeq
+            cardSeq: addedCard.card_seq
         });
     });
 });

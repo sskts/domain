@@ -13,8 +13,10 @@ import * as NotificationService from './service/notification';
 import * as QueueService from './service/queue';
 import * as ReportService from './service/report';
 import * as SalesService from './service/sales';
+import * as ShopService from './service/shop';
 import * as StockService from './service/stock';
 import * as StockStatusService from './service/stockStatus';
+import * as TaskService from './service/task';
 import * as TransactionService from './service/transaction';
 import * as TransactionWithIdService from './service/transactionWithId';
 import AssetAdapter from './adapter/asset';
@@ -27,6 +29,7 @@ import QueueAdapter from './adapter/queue';
 import ScreenAdapter from './adapter/screen';
 import SendGridEventAdapter from './adapter/sendGridEvent';
 import PerformanceStockStatusAdapter from './adapter/stockStatus/performance';
+import TaskAdapter from './adapter/task';
 import TelemetryAdapter from './adapter/telemetry';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
@@ -39,8 +42,10 @@ import * as MvtkAuthorizationFactory from './factory/authorization/mvtk';
 import AuthorizationGroup from './factory/authorizationGroup';
 import * as GMOCardFactory from './factory/card/gmo';
 import CardGroup from './factory/cardGroup';
+import * as GMOCardIdFactory from './factory/cardId/gmo';
 import * as ClientFactory from './factory/client';
 import * as ClientEventFactory from './factory/clientEvent';
+import * as ClientUserFactory from './factory/clientUser';
 import * as FilmFactory from './factory/film';
 import * as EmailNotificationFactory from './factory/notification/email';
 import NotificationGroup from './factory/notificationGroup';
@@ -58,7 +63,9 @@ import QueueGroup from './factory/queueGroup';
 import QueueStatus from './factory/queueStatus';
 import * as ScreenFactory from './factory/screen';
 import * as PerformanceStockStatusFactory from './factory/stockStatus/performance';
+import TaskName from './factory/taskName';
 import * as TheaterFactory from './factory/theater';
+import TheaterWebsiteGroup from './factory/theaterWebsiteGroup';
 import * as TransactionFactory from './factory/transaction';
 import * as AddNotificationTransactionEventFactory from './factory/transactionEvent/addNotification';
 import * as AuthorizeTransactionEventFactory from './factory/transactionEvent/authorize';
@@ -83,6 +90,7 @@ export declare namespace adapter {
     function queue(connection: Connection): QueueAdapter;
     function screen(connection: Connection): ScreenAdapter;
     function sendGridEvent(connection: Connection): SendGridEventAdapter;
+    function task(connection: Connection): TaskAdapter;
     function telemetry(connection: Connection): TelemetryAdapter;
     function theater(connection: Connection): TheaterAdapter;
     function transaction(connection: Connection): TransactionAdapter;
@@ -96,8 +104,10 @@ export declare namespace service {
     export import queue = QueueService;
     export import report = ReportService;
     export import sales = SalesService;
+    export import shop = ShopService;
     export import stock = StockService;
     export import stockStatus = StockStatusService;
+    export import task = TaskService;
     export import transaction = TransactionService;
     export import transactionWithId = TransactionWithIdService;
 }
@@ -115,9 +125,13 @@ export declare namespace factory {
     namespace card {
         export import gmo = GMOCardFactory;
     }
+    namespace cardId {
+        export import gmo = GMOCardIdFactory;
+    }
     export import cardGroup = CardGroup;
     export import client = ClientFactory;
     export import clientEvent = ClientEventFactory;
+    export import clientUser = ClientUserFactory;
     export import film = FilmFactory;
     namespace notification {
         export import email = EmailNotificationFactory;
@@ -143,7 +157,9 @@ export declare namespace factory {
     namespace stockStatus {
         export import performance = PerformanceStockStatusFactory;
     }
+    export import taskName = TaskName;
     export import theater = TheaterFactory;
+    export import theaterWebsiteGroup = TheaterWebsiteGroup;
     export import transaction = TransactionFactory;
     namespace transactionEvent {
         export import addNotification = AddNotificationTransactionEventFactory;

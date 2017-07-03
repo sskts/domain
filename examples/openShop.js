@@ -1,9 +1,4 @@
 "use strict";
-/**
- * 取引在庫準備
- *
- * @ignore
- */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -13,23 +8,44 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const createDebug = require("debug");
+/* tslint:disable */
+const COA = require("@motionpicture/coa-service");
 const mongoose = require("mongoose");
 const sskts = require("../lib/index");
-const debug = createDebug('sskts-domain:examples:prepareTransactions');
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         mongoose.Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        const transactionAdapter = sskts.adapter.transaction(connection);
-        yield transactionAdapter.transactionModel.remove({}).exec();
-        // tslint:disable-next-line:no-magic-numbers
-        yield sskts.service.transaction.prepare(1, 60)(transactionAdapter);
+        const requiredFields = yield COA.MasterService.theater({
+            theater_code: '118'
+        }).then(sskts.factory.theater.createFromCOA);
+        const theater = Object.assign({}, requiredFields, {
+            address: {
+                en: '',
+                ja: ''
+            },
+            websites: [
+                sskts.factory.theater.createWebsite({
+                    group: sskts.factory.theaterWebsiteGroup.PORTAL,
+                    name: {
+                        "en": "portal site",
+                        "ja": "ポータルサイト"
+                    },
+                    url: 'http://devssktsportal.azurewebsites.net/theater/aira/'
+                })
+            ],
+            gmo: {
+                site_id: '',
+                shop_id: '',
+                shop_pass: ''
+            }
+        });
+        yield sskts.service.shop.open(theater)(sskts.adapter.theater(connection));
         mongoose.disconnect();
     });
 }
 main().then(() => {
-    debug('success!');
+    console.log('success!');
 }).catch((err) => {
     console.error(err);
     process.exit(1);

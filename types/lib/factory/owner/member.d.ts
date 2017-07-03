@@ -42,10 +42,10 @@ export declare type IUnhashedFields = IImmutableFields & IVariableFields;
  * 会員所有者インターフェース
  *
  * @export
- * @interface IMemberOwner
+ * @interface IOwner
  * @memberof factory/owner/member
  */
-export declare type IMemberOwner = AnonymousOwnerFactory.IAnonymousOwner & IUnhashedFields & IHashedFields;
+export declare type IOwner = AnonymousOwnerFactory.IOwner & IUnhashedFields & IHashedFields;
 export declare function create(args: {
     id?: string;
     username: string;
@@ -54,10 +54,9 @@ export declare function create(args: {
     name_last: string;
     email: string;
     tel?: string;
-    state?: string;
     description?: IMultilingualString;
     notes?: IMultilingualString;
-}): Promise<IMemberOwner>;
+}): Promise<IOwner>;
 export declare function createUnhashedFields(args: {
     username: string;
     name_first: string;

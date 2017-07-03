@@ -20,8 +20,7 @@ const schema = new mongoose.Schema(
         description: MultilingualStringSchemaType,
         notes: MultilingualStringSchemaType,
         username: String,
-        password_hash: String,
-        state: String
+        password_hash: String
     },
     {
         collection: 'owners',

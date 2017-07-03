@@ -106,7 +106,7 @@ export function addAuthorization(transactionId: string, authorization: Authoriza
  *
  * @memberof service/transactionWithId
  */
-export function addGMOAuthorization(transactionId: string, authorization: GMOAuthorizationFactory.IGMOAuthorization) {
+export function addGMOAuthorization(transactionId: string, authorization: GMOAuthorizationFactory.IAuthorization) {
     return addAuthorization(transactionId, authorization);
 }
 
@@ -121,7 +121,7 @@ export function addGMOAuthorization(transactionId: string, authorization: GMOAut
  */
 export function addCOASeatReservationAuthorization(
     transactionId: string,
-    authorization: COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization
+    authorization: COASeatReservationAuthorizationFactory.IAuthorization
 ) {
     return addAuthorization(transactionId, authorization);
 }
@@ -135,7 +135,7 @@ export function addCOASeatReservationAuthorization(
  *
  * @memberof service/transactionWithId
  */
-export function addMvtkAuthorization(transactionId: string, authorization: MvtkAuthorizationFactory.IMvtkAuthorization) {
+export function addMvtkAuthorization(transactionId: string, authorization: MvtkAuthorizationFactory.IAuthorization) {
     return addAuthorization(transactionId, authorization);
 }
 
@@ -185,7 +185,7 @@ export function removeAuthorization(transactionId: string, authorizationId: stri
  *
  * @memberof service/transactionWithId
  */
-export function addEmail(transactionId: string, notification: EmailNotificationFactory.IEmailNotification) {
+export function addEmail(transactionId: string, notification: EmailNotificationFactory.INotification) {
     return async (transactionAdapter: TransactionAdapter) => {
         // イベント作成
         const event = AddNotificationTransactionEventFactory.create({
@@ -259,7 +259,7 @@ export function updateAnonymousOwner(args: {
         const transaction = <TransactionFactory.ITransaction>doc.toObject();
 
         // 取引から、更新対象の所有者を取り出す
-        const anonymousOwnerInTransaction = <AnonymousOwnerFactory.IAnonymousOwner>transaction.owners.find((ownerInTransaction) => {
+        const anonymousOwnerInTransaction = <AnonymousOwnerFactory.IOwner>transaction.owners.find((ownerInTransaction) => {
             return (ownerInTransaction.group === OwnerGroup.ANONYMOUS);
         });
         if (anonymousOwnerInTransaction === undefined) {
@@ -271,8 +271,7 @@ export function updateAnonymousOwner(args: {
             name_first: args.name_first,
             name_last: args.name_last,
             email: args.email,
-            tel: args.tel,
-            state: anonymousOwnerInTransaction.state
+            tel: args.tel
         });
 
         return setOwnerProfile(args.transaction_id, anonymousOwner)(ownerAdapter, transactionAdapter);
@@ -294,7 +293,7 @@ exports.updateAnonymousOwner = util.deprecate(
  */
 export function setOwnerProfile(
     transactionId: string,
-    owner: AnonymousOwnerFactory.IAnonymousOwner | MemberOwnerFactory.IMemberOwner
+    owner: AnonymousOwnerFactory.IOwner | MemberOwnerFactory.IOwner
 ): OwnerAndTransactionOperation<void> {
     return async (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => {
         // 取引取得
@@ -315,7 +314,7 @@ export function setOwnerProfile(
 
         if (owner.group === OwnerGroup.MEMBER) {
             // 会員に更新の場合、まずGMO会員登録
-            await saveGMOMember(<MemberOwnerFactory.IMemberOwner>owner);
+            await saveGMOMember(<MemberOwnerFactory.IOwner>owner);
         }
 
         // 永続化
@@ -340,7 +339,7 @@ export function setOwnerProfile(
  *
  * @param {MemberOwnerFactory.IMemberOwner} memberOwner 会員所有者
  */
-async function saveGMOMember(memberOwner: MemberOwnerFactory.IMemberOwner) {
+async function saveGMOMember(memberOwner: MemberOwnerFactory.IOwner) {
     // GMO会員登録
     // GMOサイト情報は環境変数に持たせる(1システムにつき1サイト)
     // 2回目かもしれないので、存在チェック

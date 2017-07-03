@@ -8,7 +8,7 @@ import * as TransactionEventFactory from '../transactionEvent';
  * @param {Authorization} authorization
  * @memberof tobereplaced$
  */
-export interface IUnauthorizeTransactionEvent extends TransactionEventFactory.ITransactionEvent {
+export interface ITransactionEvent extends TransactionEventFactory.ITransactionEvent {
     authorization: Authorization.IAuthorization;
 }
 /**
@@ -20,4 +20,4 @@ export declare function create(args: {
     transaction: string;
     occurred_at: Date;
     authorization: Authorization.IAuthorization;
-}): IUnauthorizeTransactionEvent;
+}): ITransactionEvent;

@@ -22,7 +22,7 @@ import TransactionEventGroup from '../transactionEventGroup';
  * @param {Authorization} authorization
  * @memberof tobereplaced$
  */
-export interface IUnauthorizeTransactionEvent extends TransactionEventFactory.ITransactionEvent {
+export interface ITransactionEvent extends TransactionEventFactory.ITransactionEvent {
     authorization: Authorization.IAuthorization;
 }
 
@@ -35,7 +35,7 @@ export function create(args: {
     transaction: string,
     occurred_at: Date,
     authorization: Authorization.IAuthorization
-}): IUnauthorizeTransactionEvent {
+}): ITransactionEvent {
     if (_.isEmpty(args.transaction)) throw new ArgumentNullError('transaction');
     if (_.isEmpty(args.authorization)) throw new ArgumentNullError('authorization');
     if (!_.isDate(args.occurred_at)) throw new ArgumentError('occurred_at', 'occurred_at should be Date');

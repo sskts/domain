@@ -24,7 +24,7 @@ import ObjectId from '../objectId';
  * @param {string} subject
  * @param {string} content
  */
-export interface IEmailNotification extends NotificationFactory.INotification {
+export interface INotification extends NotificationFactory.INotification {
     /**
      * 送信元メールアドレス
      */
@@ -60,7 +60,7 @@ export function create(args: {
     subject: string;
     content: string;
     send_at?: Date;
-}): IEmailNotification {
+}): INotification {
     if (_.isEmpty(args.from)) throw new ArgumentNullError('from');
     if (_.isEmpty(args.to)) throw new ArgumentNullError('to');
     if (_.isEmpty(args.subject)) throw new ArgumentNullError('subject');

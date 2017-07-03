@@ -4,15 +4,11 @@
  * @namespace factory/notificationGroup
  */
 
-type NotificationGroup =
-    'EMAIL'
-    ;
-
-namespace NotificationGroup {
+enum NotificationGroup {
     /**
      * Eメール
      */
-    export const EMAIL = 'EMAIL';
+    EMAIL = 'EMAIL'
 }
 
 export default NotificationGroup;

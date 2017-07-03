@@ -5,7 +5,7 @@ import QueueStatus from '../queueStatus';
  * 取引照会無効化キュー
  * @memberof tobereplaced$
  */
-export interface IDisableTransactionInquiryQueue extends QueueFactory.IQueue {
+export interface IQueue extends QueueFactory.IQueue {
     transaction: Transaction.ITransaction;
 }
 /**
@@ -21,4 +21,4 @@ export declare function create(args: {
     last_tried_at: Date | null;
     count_tried: number;
     results: string[];
-}): IDisableTransactionInquiryQueue;
+}): IQueue;

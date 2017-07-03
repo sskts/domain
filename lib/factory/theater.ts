@@ -6,6 +6,10 @@
  */
 
 import * as COA from '@motionpicture/coa-service';
+import * as _ from 'underscore';
+
+import ArgumentNullError from '../error/argumentNull';
+
 import IMultilingualString from './multilingualString';
 import TheaterWebsiteGroup from './theaterWebsiteGroup';
 
@@ -104,4 +108,25 @@ export function createInitialOptionalFields(): IOptionalFields & IGMO {
             shop_pass: ''
         }
     };
+}
+
+export function createWebsite(args: {
+    group: TheaterWebsiteGroup;
+    name: IMultilingualString;
+    url: string;
+}): IWebsite {
+    if (_.isEmpty(args.group)) {
+        throw new ArgumentNullError('group');
+    }
+    if (_.isEmpty(args.name.en)) {
+        throw new ArgumentNullError('name.en');
+    }
+    if (_.isEmpty(args.name.ja)) {
+        throw new ArgumentNullError('name.ja');
+    }
+    if (_.isEmpty(args.url)) {
+        throw new ArgumentNullError('url');
+    }
+
+    return args;
 }

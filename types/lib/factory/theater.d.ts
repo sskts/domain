@@ -75,3 +75,8 @@ export declare type ITheater = IRequiredFields & IOptionalFields & IGMO;
  */
 export declare function createFromCOA(theaterFromCOA: COA.MasterService.ITheaterResult): IRequiredFields;
 export declare function createInitialOptionalFields(): IOptionalFields & IGMO;
+export declare function createWebsite(args: {
+    group: TheaterWebsiteGroup;
+    name: IMultilingualString;
+    url: string;
+}): IWebsite;

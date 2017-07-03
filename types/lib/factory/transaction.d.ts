@@ -1,11 +1,16 @@
+import * as ClientUserFactory from './clientUser';
 import * as OwnerFactory from './owner';
+import * as TaskFactory from './task';
 import * as TransactionInquiryKeyFactory from './transactionInquiryKey';
 import TransactionQueuesStatus from './transactionQueuesStatus';
 import TransactionStatus from './transactionStatus';
+import TransactionTasksExportationStatus from './transactionTasksExportationStatus';
 /**
+ * 取引インターフェース
  *
+ * @export
  * @interface ITransaction
- * @memberof tobereplaced$
+ * @memberof factory/transaction
  */
 export interface ITransaction {
     id: string;
@@ -17,6 +22,10 @@ export interface ITransaction {
      * 取引に参加している所有者リスト
      */
     owners: OwnerFactory.IOwner[];
+    /**
+     * 取引を進行するクライアントユーザー
+     */
+    client_user: ClientUserFactory.IClientUser;
     /**
      * 期限切れ予定日時
      */
@@ -45,16 +54,31 @@ export interface ITransaction {
      * キューエクスポート状態
      */
     queues_status: TransactionQueuesStatus;
+    /**
+     * タスクエクスポート日時
+     */
+    tasks_exported_at?: Date;
+    /**
+     * タスクエクスポート状態
+     */
+    tasks_exportation_status: TransactionTasksExportationStatus;
+    /**
+     * タスクリスト
+     */
+    tasks: TaskFactory.ITask[];
 }
 /**
+ * 取引を作成する
  *
- * @returns {ITransaction}
- * @memberof tobereplaced$
+ * @export
+ * @returns {ITransaction} 取引
+ * @memberof factory/transaction
  */
 export declare function create(args: {
     id?: string;
     status: TransactionStatus;
     owners: OwnerFactory.IOwner[];
+    client_user?: ClientUserFactory.IClientUser;
     expires_at: Date;
     expired_at?: Date;
     started_at?: Date;
@@ -62,4 +86,7 @@ export declare function create(args: {
     inquiry_key?: TransactionInquiryKeyFactory.ITransactionInquiryKey;
     queues_exported_at?: Date;
     queues_status?: TransactionQueuesStatus;
+    tasks_exported_at?: Date;
+    tasks_exportation_status?: TransactionTasksExportationStatus;
+    tasks?: TaskFactory.ITask[];
 }): ITransaction;
