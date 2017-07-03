@@ -31,6 +31,7 @@ import QueueAdapter from './adapter/queue';
 import ScreenAdapter from './adapter/screen';
 import SendGridEventAdapter from './adapter/sendGridEvent';
 import PerformanceStockStatusAdapter from './adapter/stockStatus/performance';
+import TaskAdapter from './adapter/task';
 import TelemetryAdapter from './adapter/telemetry';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
@@ -113,6 +114,9 @@ export namespace adapter {
     }
     export function sendGridEvent(connection: Connection) {
         return new SendGridEventAdapter(connection);
+    }
+    export function task(connection: Connection) {
+        return new TaskAdapter(connection);
     }
     export function telemetry(connection: Connection) {
         return new TelemetryAdapter(connection);

@@ -29,6 +29,7 @@ import QueueAdapter from './adapter/queue';
 import ScreenAdapter from './adapter/screen';
 import SendGridEventAdapter from './adapter/sendGridEvent';
 import PerformanceStockStatusAdapter from './adapter/stockStatus/performance';
+import TaskAdapter from './adapter/task';
 import TelemetryAdapter from './adapter/telemetry';
 import TheaterAdapter from './adapter/theater';
 import TransactionAdapter from './adapter/transaction';
@@ -89,6 +90,7 @@ export declare namespace adapter {
     function queue(connection: Connection): QueueAdapter;
     function screen(connection: Connection): ScreenAdapter;
     function sendGridEvent(connection: Connection): SendGridEventAdapter;
+    function task(connection: Connection): TaskAdapter;
     function telemetry(connection: Connection): TelemetryAdapter;
     function theater(connection: Connection): TheaterAdapter;
     function transaction(connection: Connection): TransactionAdapter;
