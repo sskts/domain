@@ -21,9 +21,11 @@ import ArgumentNullError from '../error/argumentNull';
 import * as ClientUserFactory from './clientUser';
 import ObjectId from './objectId';
 import * as OwnerFactory from './owner';
+import * as TaskFactory from './task';
 import * as TransactionInquiryKeyFactory from './transactionInquiryKey';
 import TransactionQueuesStatus from './transactionQueuesStatus';
 import TransactionStatus from './transactionStatus';
+import TransactionTasksExportationStatus from './transactionTasksExportationStatus';
 
 /**
  * 取引インターフェース
@@ -74,6 +76,18 @@ export interface ITransaction {
      * キューエクスポート状態
      */
     queues_status: TransactionQueuesStatus;
+    /**
+     * タスクエクスポート日時
+     */
+    tasks_exported_at?: Date;
+    /**
+     * タスクエクスポート状態
+     */
+    tasks_exportation_status: TransactionTasksExportationStatus;
+    /**
+     * タスクリスト
+     */
+    tasks: TaskFactory.ITask[];
 }
 
 /**
@@ -95,6 +109,9 @@ export function create(args: {
     inquiry_key?: TransactionInquiryKeyFactory.ITransactionInquiryKey;
     queues_exported_at?: Date;
     queues_status?: TransactionQueuesStatus;
+    tasks_exported_at?: Date;
+    tasks_exportation_status?: TransactionTasksExportationStatus;
+    tasks?: TaskFactory.ITask[];
 }): ITransaction {
     if (_.isEmpty(args.status)) throw new ArgumentNullError('status');
     if (!_.isArray(args.owners)) throw new ArgumentError('owners', 'owner should be array');
@@ -115,6 +132,10 @@ export function create(args: {
         closed_at: args.closed_at,
         inquiry_key: args.inquiry_key,
         queues_exported_at: args.queues_exported_at,
-        queues_status: (args.queues_status === undefined) ? TransactionQueuesStatus.UNEXPORTED : args.queues_status
+        queues_status: (args.queues_status === undefined) ? TransactionQueuesStatus.UNEXPORTED : args.queues_status,
+        tasks_exported_at: args.tasks_exported_at,
+        // tslint:disable-next-line:max-line-length
+        tasks_exportation_status: (args.tasks_exportation_status === undefined) ? TransactionTasksExportationStatus.Unexported : args.tasks_exportation_status,
+        tasks: (args.tasks === undefined) ? [] : args.tasks
     };
 }

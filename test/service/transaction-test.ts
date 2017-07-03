@@ -16,7 +16,7 @@ import * as ClientUserFactory from '../../lib/factory/clientUser';
 import * as EmailNotificationFactory from '../../lib/factory/notification/email';
 import * as MemberOwnerFactory from '../../lib/factory/owner/member';
 import OwnerGroup from '../../lib/factory/ownerGroup';
-import QueueGroup from '../../lib/factory/queueGroup';
+import TaskName from '../../lib/factory/taskName';
 import * as TransactionFactory from '../../lib/factory/transaction';
 import * as AddNotificationTransactionEventFactory from '../../lib/factory/transactionEvent/addNotification';
 import * as TransactionInquiryKeyFactory from '../../lib/factory/transactionInquiryKey';
@@ -24,6 +24,7 @@ import TransactionQueuesStatus from '../../lib/factory/transactionQueuesStatus';
 import * as TransactionScopeFactory from '../../lib/factory/transactionScope';
 import TransactionStatus from '../../lib/factory/transactionStatus';
 
+import TaskAdapter from '../../lib/adapter/task';
 import TransactionCountAdapter from '../../lib/adapter/transactionCount';
 
 const TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS = 60;
@@ -245,7 +246,7 @@ describe('取引サービス 再エクスポート', () => {
 
 describe('取引サービス キューエクスポート', () => {
     it('ok.', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const taskAdapter = new TaskAdapter(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         const status = TransactionStatus.CLOSED;
 
@@ -266,7 +267,7 @@ describe('取引サービス キューエクスポート', () => {
             setDefaultsOnInsert: false
         }).exec();
 
-        await sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
+        await sskts.service.transaction.exportQueues(status)(taskAdapter, transactionAdapter);
 
         // 取引のキューエクスポートステータスを確認
         const transactionDoc = <mongoose.Document>await transactionAdapter.transactionModel.findById(transaction.id).exec();
@@ -277,7 +278,7 @@ describe('取引サービス キューエクスポート', () => {
     });
 
     it('ステータスが不適切なので失敗', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const taskAdapter = new TaskAdapter(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         const status = TransactionStatus.UNDERWAY;
 
@@ -297,7 +298,7 @@ describe('取引サービス キューエクスポート', () => {
 
         let exportQueues: any;
         try {
-            await sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
+            await sskts.service.transaction.exportQueues(status)(taskAdapter, transactionAdapter);
         } catch (error) {
             exportQueues = error;
         }
@@ -310,7 +311,7 @@ describe('取引サービス キューエクスポート', () => {
 
 describe('取引サービス 取引IDからキュー出力する', () => {
     it('成立取引の出力成功', async () => {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const taskAdapter = new TaskAdapter(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
 
         // test data
@@ -342,11 +343,11 @@ describe('取引サービス 取引IDからキュー出力する', () => {
         ).exec();
         await transactionAdapter.addEvent(event);
 
-        await sskts.service.transaction.exportQueuesById(transaction.id)(queueAdapter, transactionAdapter);
-        const queueDoc4pushNotification = <mongoose.Document>await queueAdapter.model.findOne(
+        await sskts.service.transaction.exportQueuesById(transaction.id)(taskAdapter, transactionAdapter);
+        const queueDoc4pushNotification = <mongoose.Document>await taskAdapter.taskModel.findOne(
             {
-                group: QueueGroup.PUSH_NOTIFICATION,
-                'notification.id': event.notification.id
+                name: TaskName.SendEmailNotification,
+                'data.notification.id': event.notification.id
             }
         ).exec();
 

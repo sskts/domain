@@ -23,13 +23,14 @@ const ClientUserFactory = require("../../lib/factory/clientUser");
 const EmailNotificationFactory = require("../../lib/factory/notification/email");
 const MemberOwnerFactory = require("../../lib/factory/owner/member");
 const ownerGroup_1 = require("../../lib/factory/ownerGroup");
-const queueGroup_1 = require("../../lib/factory/queueGroup");
+const taskName_1 = require("../../lib/factory/taskName");
 const TransactionFactory = require("../../lib/factory/transaction");
 const AddNotificationTransactionEventFactory = require("../../lib/factory/transactionEvent/addNotification");
 const TransactionInquiryKeyFactory = require("../../lib/factory/transactionInquiryKey");
 const transactionQueuesStatus_1 = require("../../lib/factory/transactionQueuesStatus");
 const TransactionScopeFactory = require("../../lib/factory/transactionScope");
 const transactionStatus_1 = require("../../lib/factory/transactionStatus");
+const task_1 = require("../../lib/adapter/task");
 const transactionCount_1 = require("../../lib/adapter/transactionCount");
 const TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS = 60;
 let TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS;
@@ -199,7 +200,7 @@ describe('取引サービス 再エクスポート', () => {
 });
 describe('取引サービス キューエクスポート', () => {
     it('ok.', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const taskAdapter = new task_1.default(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         const status = transactionStatus_1.default.CLOSED;
         // test data
@@ -218,7 +219,7 @@ describe('取引サービス キューエクスポート', () => {
             new: true, upsert: true,
             setDefaultsOnInsert: false
         }).exec();
-        yield sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
+        yield sskts.service.transaction.exportQueues(status)(taskAdapter, transactionAdapter);
         // 取引のキューエクスポートステータスを確認
         const transactionDoc = yield transactionAdapter.transactionModel.findById(transaction.id).exec();
         assert.equal(transactionDoc.get('queues_status'), transactionQueuesStatus_1.default.EXPORTED);
@@ -226,7 +227,7 @@ describe('取引サービス キューエクスポート', () => {
         yield transactionDoc.remove();
     }));
     it('ステータスが不適切なので失敗', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const taskAdapter = new task_1.default(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         const status = transactionStatus_1.default.UNDERWAY;
         // test data
@@ -244,7 +245,7 @@ describe('取引サービス キューエクスポート', () => {
         yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
         let exportQueues;
         try {
-            yield sskts.service.transaction.exportQueues(status)(queueAdapter, transactionAdapter);
+            yield sskts.service.transaction.exportQueues(status)(taskAdapter, transactionAdapter);
         }
         catch (error) {
             exportQueues = error;
@@ -255,7 +256,7 @@ describe('取引サービス キューエクスポート', () => {
 });
 describe('取引サービス 取引IDからキュー出力する', () => {
     it('成立取引の出力成功', () => __awaiter(this, void 0, void 0, function* () {
-        const queueAdapter = sskts.adapter.queue(connection);
+        const taskAdapter = new task_1.default(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         // test data
         const transaction = TransactionFactory.create({
@@ -281,10 +282,10 @@ describe('取引サービス 取引IDからキュー出力する', () => {
         });
         const transactionDoc = yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
         yield transactionAdapter.addEvent(event);
-        yield sskts.service.transaction.exportQueuesById(transaction.id)(queueAdapter, transactionAdapter);
-        const queueDoc4pushNotification = yield queueAdapter.model.findOne({
-            group: queueGroup_1.default.PUSH_NOTIFICATION,
-            'notification.id': event.notification.id
+        yield sskts.service.transaction.exportQueuesById(transaction.id)(taskAdapter, transactionAdapter);
+        const queueDoc4pushNotification = yield taskAdapter.taskModel.findOne({
+            name: taskName_1.default.SendEmailNotification,
+            'data.notification.id': event.notification.id
         }).exec();
         assert.notEqual(queueDoc4pushNotification, null);
         yield transactionDoc.remove();
