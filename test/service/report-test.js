@@ -17,7 +17,7 @@ const assert = require("assert");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const gmoNotification_1 = require("../../lib/adapter/gmoNotification");
-const queue_1 = require("../../lib/adapter/queue");
+const task_1 = require("../../lib/adapter/task");
 const telemetry_1 = require("../../lib/adapter/telemetry");
 const transaction_1 = require("../../lib/adapter/transaction");
 const GMOAuthorizationFactory = require("../../lib/factory/authorization/gmo");
@@ -35,16 +35,7 @@ describe('レポートサービス 測定データ作成', () => {
         yield telemetryAdapter.telemetryModel.remove({}).exec();
     }));
     it('ok', () => __awaiter(this, void 0, void 0, function* () {
-        yield ReportService.createTelemetry()(new queue_1.default(connection), new telemetry_1.default(connection), new transaction_1.default(connection));
-    }));
-});
-describe('レポートサービス 取引状態', () => {
-    let connection;
-    before(() => __awaiter(this, void 0, void 0, function* () {
-        connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-    }));
-    it('ok', () => __awaiter(this, void 0, void 0, function* () {
-        yield ReportService.transactionStatuses()(new queue_1.default(connection), new transaction_1.default(connection));
+        yield ReportService.createTelemetry()(new task_1.default(connection), new telemetry_1.default(connection), new transaction_1.default(connection));
     }));
 });
 describe('レポートサービス GMO実売上検索', () => {

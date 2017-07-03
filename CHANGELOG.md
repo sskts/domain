@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v20.0.1 - 2017-07-03
+### Changed
+- レポートサービスをタスクスキーマに合わせて調整。
+
 ## v20.0.0 - 2017-07-03
 ### Added
 - GMOカードファクトリーに作成メソッドを追加。

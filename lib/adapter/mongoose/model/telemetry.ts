@@ -11,14 +11,14 @@ const schema = new mongoose.Schema(
     {
         flow: {
             transactions: mongoose.Schema.Types.Mixed,
-            queues: mongoose.Schema.Types.Mixed,
+            tasks: mongoose.Schema.Types.Mixed,
             measured_from: Date,
             measured_to: Date
 
         },
         stock: {
             transactions: mongoose.Schema.Types.Mixed,
-            queues: mongoose.Schema.Types.Mixed,
+            tasks: mongoose.Schema.Types.Mixed,
             measured_at: Date
         }
     },
