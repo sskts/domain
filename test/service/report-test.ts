@@ -9,7 +9,7 @@ import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import GMONotificationAdapter from '../../lib/adapter/gmoNotification';
-import QueueAdapter from '../../lib/adapter/queue';
+import TaskAdapter from '../../lib/adapter/task';
 import TelemetryAdapter from '../../lib/adapter/telemetry';
 import TransactionAdapter from '../../lib/adapter/transaction';
 
@@ -33,22 +33,8 @@ describe('レポートサービス 測定データ作成', () => {
 
     it('ok', async () => {
         await ReportService.createTelemetry()(
-            new QueueAdapter(connection),
+            new TaskAdapter(connection),
             new TelemetryAdapter(connection),
-            new TransactionAdapter(connection)
-        );
-    });
-});
-
-describe('レポートサービス 取引状態', () => {
-    let connection: mongoose.Connection;
-    before(async () => {
-        connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-    });
-
-    it('ok', async () => {
-        await ReportService.transactionStatuses()(
-            new QueueAdapter(connection),
             new TransactionAdapter(connection)
         );
     });

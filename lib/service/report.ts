@@ -11,21 +11,20 @@ import * as moment from 'moment';
 import * as _ from 'underscore';
 
 import GMONotificationAdapter from '../adapter/gmoNotification';
-import QueueAdapter from '../adapter/queue';
+import TaskAdapter from '../adapter/task';
 import TelemetryAdapter from '../adapter/telemetry';
 import TransactionAdapter from '../adapter/transaction';
 
 import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
 import AuthorizationGroup from '../factory/authorizationGroup';
-import QueueStatus from '../factory/queueStatus';
-import TransactionQueuesStatus from '../factory/transactionQueuesStatus';
+import TaskStatus from '../factory/taskStatus';
 import TransactionStatus from '../factory/transactionStatus';
 
 import ArgumentError from '../error/argument';
 
-export type QueueAndTransactionOperation<T> = (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
-export type QueueAndTelemetryAndTransactionOperation<T> =
-    (queueAdapter: QueueAdapter, telemetryAdapter: TelemetryAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
+export type TaskAndTransactionOperation<T> = (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
+export type TaskAndTelemetryAndTransactionOperation<T> =
+    (taskAdapter: TaskAdapter, telemetryAdapter: TelemetryAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 export type GMONotificationOperation<T> = (gmoNotificationAdapter: GMONotificationAdapter) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:report');
@@ -76,7 +75,7 @@ export interface IFlow {
          */
         minAmount: number;
     };
-    queues: {
+    tasks: {
         /**
          * 集計期間中に作成されたキュー数
          */
@@ -128,7 +127,7 @@ export interface IStock {
     transactions: {
         numberOfUnderway: number;
     };
-    queues: {
+    tasks: {
         numberOfUnexecuted: number;
     };
     measured_at: Date;
@@ -139,22 +138,15 @@ export interface ITelemetry {
     stock: IStock;
 }
 
-export interface IReportTransactionStatuses {
-    numberOfTransactionsUnderway: number;
-    numberOfTransactionsClosedWithQueuesUnexported: number;
-    numberOfTransactionsExpiredWithQueuesUnexported: number;
-    numberOfQueuesUnexecuted: number;
-}
-
 /**
  * 測定データを作成する
  *
- * @returns {QueueAndTelemetryAndTransactionOperation<void>}
+ * @returns {TaskAndTelemetryAndTransactionOperation<void>}
  * @memberof service/report
  */
-export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void> {
+export function createTelemetry(): TaskAndTelemetryAndTransactionOperation<void> {
     return async (
-        queueAdapter: QueueAdapter,
+        taskAdapter: TaskAdapter,
         telemetryAdapter: TelemetryAdapter,
         transactionAdapter: TransactionAdapter
     ) => {
@@ -163,8 +155,8 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
         const measuredFrom = moment(measuredTo).add(-TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS, 'seconds');
         const measuredAt = moment(measuredTo);
 
-        const flowData = await createFlowTelemetry(measuredFrom.toDate(), measuredTo.toDate())(queueAdapter, transactionAdapter);
-        const stockData = await createStockTelemetry(measuredAt.toDate())(queueAdapter, transactionAdapter);
+        const flowData = await createFlowTelemetry(measuredFrom.toDate(), measuredTo.toDate())(taskAdapter, transactionAdapter);
+        const stockData = await createStockTelemetry(measuredAt.toDate())(taskAdapter, transactionAdapter);
 
         const telemetry: ITelemetry = {
             flow: flowData,
@@ -180,12 +172,12 @@ export function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void
  *
  * @param {Date} measuredFrom 計測開始日時
  * @param {Date} measuredTo 計測終了日時
- * @returns {QueueAndTransactionOperation<IFlow>}
+ * @returns {TaskAndTransactionOperation<IFlow>}
  */
-export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): QueueAndTransactionOperation<IFlow> {
+export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskAndTransactionOperation<IFlow> {
     // tslint:disable-next-line:max-func-body-length
     return async (
-        queueAdapter: QueueAdapter,
+        taskAdapter: TaskAdapter,
         transactionAdapter: TransactionAdapter
     ) => {
         // 直近{TELEMETRY_UNIT_TIME_IN_SECONDS}秒に開始された取引数を算出する
@@ -229,7 +221,7 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): Queue
             }
         }).exec();
 
-        const numberOfQueuesCreated = await queueAdapter.model.count({
+        const numberOfTasksCreated = await taskAdapter.taskModel.count({
             created_at: {
                 $gte: measuredFrom,
                 $lt: measuredTo
@@ -237,40 +229,40 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): Queue
         }).exec();
 
         // 実行中止ステータスで、最終試行日時が範囲にあるものを実行キュー数とする
-        const numberOfQueuesAborted = await queueAdapter.model.count({
+        const numberOfTasksAborted = await taskAdapter.taskModel.count({
             last_tried_at: {
                 $gte: measuredFrom,
                 $lt: measuredTo
             },
-            status: QueueStatus.ABORTED
+            status: TaskStatus.Aborted
         }).exec();
 
         // 実行済みステータスで、最終試行日時が範囲にあるものを実行キュー数とする
-        const executedQueues = await queueAdapter.model.find(
+        const executedTasks = await taskAdapter.taskModel.find(
             {
                 last_tried_at: {
                     $gte: measuredFrom,
                     $lt: measuredTo
                 },
-                status: QueueStatus.EXECUTED
+                status: TaskStatus.Executed
             },
-            'run_at last_tried_at count_tried'
+            'runs_at last_tried_at number_of_tried'
         ).exec();
-        const numberOfQueuesExecuted = executedQueues.length;
+        const numberOfTasksExecuted = executedTasks.length;
 
         const latencies = await Promise.all(
-            executedQueues.map(
-                (queue) => moment(queue.get('last_tried_at')).diff(moment(queue.get('run_at'), 'milliseconds'))
+            executedTasks.map(
+                (task) => moment(task.get('last_tried_at')).diff(moment(task.get('runs_at'), 'milliseconds'))
             )
         );
         const totalLatency = latencies.reduce((a, b) => a + b, 0);
         const maxLatency = latencies.reduce((a, b) => Math.max(a, b), 0);
-        const minLatency = latencies.reduce((a, b) => Math.min(a, b), (numberOfQueuesExecuted > 0) ? latencies[0] : 0);
+        const minLatency = latencies.reduce((a, b) => Math.min(a, b), (numberOfTasksExecuted > 0) ? latencies[0] : 0);
 
-        const numbersOfTrials = await Promise.all(executedQueues.map((queue) => <number>queue.get('count_tried')));
+        const numbersOfTrials = await Promise.all(executedTasks.map((task) => <number>task.get('number_of_tried')));
         const totalNumberOfTrials = numbersOfTrials.reduce((a, b) => a + b, 0);
         const maxNumberOfTrials = numbersOfTrials.reduce((a, b) => Math.max(a, b), 0);
-        const minNumberOfTrials = numbersOfTrials.reduce((a, b) => Math.min(a, b), (numberOfQueuesExecuted > 0) ? numbersOfTrials[0] : 0);
+        const minNumberOfTrials = numbersOfTrials.reduce((a, b) => Math.min(a, b), (numberOfTasksExecuted > 0) ? numbersOfTrials[0] : 0);
 
         return {
             transactions: {
@@ -284,10 +276,10 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): Queue
                 maxAmount: maxAmount,
                 minAmount: minAmount
             },
-            queues: {
-                numberOfCreated: numberOfQueuesCreated,
-                numberOfExecuted: numberOfQueuesExecuted,
-                numberOfAborted: numberOfQueuesAborted,
+            tasks: {
+                numberOfCreated: numberOfTasksCreated,
+                numberOfExecuted: numberOfTasksExecuted,
+                numberOfAborted: numberOfTasksAborted,
                 totalLatencyInMilliseconds: totalLatency,
                 maxLatencyInMilliseconds: maxLatency,
                 minLatencyInMilliseconds: minLatency,
@@ -307,10 +299,10 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): Queue
  * @param {Date} measuredAt 計測日時
  * @returns {QueueAndTransactionOperation<IStock>}
  */
-export function createStockTelemetry(measuredAt: Date): QueueAndTransactionOperation<IStock> {
+export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperation<IStock> {
     // tslint:disable-next-line:max-func-body-length
     return async (
-        queueAdapter: QueueAdapter,
+        taskAdapter: TaskAdapter,
         transactionAdapter: TransactionAdapter
     ) => {
         const numberOfTransactionsUnderway = await transactionAdapter.transactionModel.count({
@@ -343,7 +335,7 @@ export function createStockTelemetry(measuredAt: Date): QueueAndTransactionOpera
             ]
         }).exec();
 
-        const numberOfQueuesUnexecuted = await queueAdapter.model.count({
+        const numberOfTasksUnexecuted = await taskAdapter.taskModel.count({
             $or: [
                 // {measuredAt}以前に作成され、{measuredAt}以後に実行試行されたキュー
                 {
@@ -363,7 +355,7 @@ export function createStockTelemetry(measuredAt: Date): QueueAndTransactionOpera
                     created_at: {
                         $lte: measuredAt
                     },
-                    status: QueueStatus.UNEXECUTED
+                    status: TaskStatus.Ready
                 }
             ]
         }).exec();
@@ -372,47 +364,10 @@ export function createStockTelemetry(measuredAt: Date): QueueAndTransactionOpera
             transactions: {
                 numberOfUnderway: numberOfTransactionsUnderway
             },
-            queues: {
-                numberOfUnexecuted: numberOfQueuesUnexecuted
+            tasks: {
+                numberOfUnexecuted: numberOfTasksUnexecuted
             },
             measured_at: measuredAt
-        };
-    };
-
-}
-
-/**
- * 状態ごとの取引数を算出する
- *
- * @returns {QueueAndTransactionOperation<IReportTransactionStatuses>}
- * @memberof service/report
- */
-export function transactionStatuses(): QueueAndTransactionOperation<IReportTransactionStatuses> {
-    return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
-        debug('counting underway transactions...');
-        const numberOfTransactionsUnderway = await transactionAdapter.transactionModel.count({
-            status: TransactionStatus.UNDERWAY
-        }).exec();
-
-        const numberOfTransactionsClosedWithQueuesUnexported = await transactionAdapter.transactionModel.count({
-            status: TransactionStatus.CLOSED,
-            queues_status: TransactionQueuesStatus.UNEXPORTED
-        }).exec();
-
-        const numberOfTransactionsExpiredWithQueuesUnexported = await transactionAdapter.transactionModel.count({
-            status: TransactionStatus.EXPIRED,
-            queues_status: TransactionQueuesStatus.UNEXPORTED
-        }).exec();
-
-        const numberOfQueuesUnexecuted = await queueAdapter.model.count({
-            status: QueueStatus.UNEXECUTED
-        }).exec();
-
-        return {
-            numberOfTransactionsUnderway: numberOfTransactionsUnderway,
-            numberOfTransactionsClosedWithQueuesUnexported: numberOfTransactionsClosedWithQueuesUnexported,
-            numberOfTransactionsExpiredWithQueuesUnexported: numberOfTransactionsExpiredWithQueuesUnexported,
-            numberOfQueuesUnexecuted: numberOfQueuesUnexecuted
         };
     };
 }

@@ -1,9 +1,9 @@
 import GMONotificationAdapter from '../adapter/gmoNotification';
-import QueueAdapter from '../adapter/queue';
+import TaskAdapter from '../adapter/task';
 import TelemetryAdapter from '../adapter/telemetry';
 import TransactionAdapter from '../adapter/transaction';
-export declare type QueueAndTransactionOperation<T> = (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
-export declare type QueueAndTelemetryAndTransactionOperation<T> = (queueAdapter: QueueAdapter, telemetryAdapter: TelemetryAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
+export declare type TaskAndTransactionOperation<T> = (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
+export declare type TaskAndTelemetryAndTransactionOperation<T> = (taskAdapter: TaskAdapter, telemetryAdapter: TelemetryAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 export declare type GMONotificationOperation<T> = (gmoNotificationAdapter: GMONotificationAdapter) => Promise<T>;
 /**
  * フローデータ
@@ -50,7 +50,7 @@ export interface IFlow {
          */
         minAmount: number;
     };
-    queues: {
+    tasks: {
         /**
          * 集計期間中に作成されたキュー数
          */
@@ -101,7 +101,7 @@ export interface IStock {
     transactions: {
         numberOfUnderway: number;
     };
-    queues: {
+    tasks: {
         numberOfUnexecuted: number;
     };
     measured_at: Date;
@@ -110,41 +110,28 @@ export interface ITelemetry {
     flow: IFlow;
     stock: IStock;
 }
-export interface IReportTransactionStatuses {
-    numberOfTransactionsUnderway: number;
-    numberOfTransactionsClosedWithQueuesUnexported: number;
-    numberOfTransactionsExpiredWithQueuesUnexported: number;
-    numberOfQueuesUnexecuted: number;
-}
 /**
  * 測定データを作成する
  *
- * @returns {QueueAndTelemetryAndTransactionOperation<void>}
+ * @returns {TaskAndTelemetryAndTransactionOperation<void>}
  * @memberof service/report
  */
-export declare function createTelemetry(): QueueAndTelemetryAndTransactionOperation<void>;
+export declare function createTelemetry(): TaskAndTelemetryAndTransactionOperation<void>;
 /**
  * フロー計測データーを作成する
  *
  * @param {Date} measuredFrom 計測開始日時
  * @param {Date} measuredTo 計測終了日時
- * @returns {QueueAndTransactionOperation<IFlow>}
+ * @returns {TaskAndTransactionOperation<IFlow>}
  */
-export declare function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): QueueAndTransactionOperation<IFlow>;
+export declare function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskAndTransactionOperation<IFlow>;
 /**
  * ストック計測データを作成する
  *
  * @param {Date} measuredAt 計測日時
  * @returns {QueueAndTransactionOperation<IStock>}
  */
-export declare function createStockTelemetry(measuredAt: Date): QueueAndTransactionOperation<IStock>;
-/**
- * 状態ごとの取引数を算出する
- *
- * @returns {QueueAndTransactionOperation<IReportTransactionStatuses>}
- * @memberof service/report
- */
-export declare function transactionStatuses(): QueueAndTransactionOperation<IReportTransactionStatuses>;
+export declare function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperation<IStock>;
 /**
  * カード決済GMO通知インターフェース
  * todo そのうち仕様が固まってきたらfactoryに移動
