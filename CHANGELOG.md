@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v20.0.0 - 2017-07-03
+### Added
 - GMOカードファクトリーに作成メソッドを追加。
 - GMOカードIDファクトリーを追加。
 - 開店サービスを追加。
@@ -23,16 +36,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 子ファクトリーのインターフェース名をシンプル化。
 - 取引からのキューエクスポートを削除し、タスクをエクスポートするように変更。また、その際にタスクリストを取引にも保管するように対応。
 
-### Deprecated
-
 ### Removed
 - 取引ステータスからREADYを削除。
 - 取引サービスから、開始準備メソッド(service.transaction.prepare)を削除。
 - 取引サービスから、開始準備メソッド(service.transaction.clean)を削除。
-
-### Fixed
-
-### Security
 
 ## v19.6.1 - 2017-06-30
 ### Fixed
