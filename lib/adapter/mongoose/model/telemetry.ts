@@ -36,4 +36,9 @@ const schema = new mongoose.Schema(
     }
 );
 
+// レポート参照時に使用
+schema.index(
+    { 'stock.measured_at': 1 }
+);
+
 export default mongoose.model('Telemetry', schema);

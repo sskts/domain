@@ -78,4 +78,12 @@ schema.index(
     { 'inquiry_key.reserve_num': 1, 'inquiry_key.tel': 1, 'inquiry_key.theater_code': 1, status: 1 }
 );
 
+// レポート作成時に使用
+schema.index({ closed_at: 1 });
+schema.index({ expired_at: 1 });
+schema.index({ started_at: 1 });
+schema.index({ started_at: 1, closed_at: 1 });
+schema.index({ started_at: 1, expired_at: 1 });
+schema.index({ status: 1, started_at: 1 });
+
 export default mongoose.model('Transaction', schema);
