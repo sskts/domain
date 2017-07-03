@@ -30,7 +30,7 @@ const debug = createDebug('sskts-domain:service:task');
  * @ignore
  */
 const sortOrder4executionOfTasks = {
-    count_trinumber_of_trieded: 1, // 試行回数の少なさ優先
+    number_of_tried: 1, // 試行回数の少なさ優先
     runs_at: 1 // 実行予定日時の早さ優先
 };
 

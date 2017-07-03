@@ -7,12 +7,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- MongoDBのslow queriesレポートに対応してindexを追加。
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+- タスク実行時のソート条件が間違っていたので修正。
 
 ### Security
 

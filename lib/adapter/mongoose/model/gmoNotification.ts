@@ -41,4 +41,7 @@ const schema = new mongoose.Schema(
     }
 );
 
+// GMO売上健康診断時に使用
+schema.index({ job_cd: 1, tran_date: 1 });
+
 export default mongoose.model('GMONotification', schema);
