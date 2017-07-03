@@ -30,7 +30,7 @@ describe('タスクサービス:タスク名で実行する', () => {
     it('タスクがなければ何もしない', async () => {
         const name = TaskName.SendEmailNotification;
         const taskAdapter = new TaskAdapter(connection);
-        await TaskService.executeByName(name)(taskAdapter);
+        await TaskService.executeByName(name)(taskAdapter, connection);
 
         // 実行済みのキューはないはず
         const taskDoc = await taskAdapter.taskModel.findOne({
@@ -62,7 +62,7 @@ describe('タスクサービス:タスク名で実行する', () => {
         });
         await taskAdapter.taskModel.findByIdAndUpdate(task.id, task, { upsert: true }).exec();
 
-        await TaskService.executeByName(TaskName.SendEmailNotification)(taskAdapter);
+        await TaskService.executeByName(TaskName.SendEmailNotification)(taskAdapter, connection);
 
         const taskDoc = <mongoose.Document>await taskAdapter.taskModel.findById(task.id, 'status').exec();
         assert.equal(taskDoc.get('status'), TaskStatus.Executed);

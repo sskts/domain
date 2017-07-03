@@ -7,6 +7,7 @@
 
 import * as createDebug from 'debug';
 import * as moment from 'moment';
+import * as mongoose from 'mongoose';
 
 import TaskAdapter from '../adapter/task';
 
@@ -19,6 +20,7 @@ import * as NotificationService from './notification';
 import * as TaskFunctionsService from './taskFunctions';
 
 export type TaskOperation<T> = (taskAdapter: TaskAdapter) => Promise<T>;
+export type TaskAndConnectionOperation<T> = (taskAdapter: TaskAdapter, connection: mongoose.Connection) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:task');
 
@@ -32,8 +34,8 @@ const sortOrder4executionOfTasks = {
     runs_at: 1 // 実行予定日時の早さ優先
 };
 
-export function executeByName(taskName: TaskName): TaskOperation<void> {
-    return async (taskAdapter: TaskAdapter) => {
+export function executeByName(taskName: TaskName): TaskAndConnectionOperation<void> {
+    return async (taskAdapter: TaskAdapter, connection: mongoose.Connection) => {
         // 未実行のタスクを取得
         const taskDoc = await taskAdapter.taskModel.findOneAndUpdate(
             {
@@ -56,19 +58,19 @@ export function executeByName(taskName: TaskName): TaskOperation<void> {
         }
 
         const task = <TaskFactory.ITask>taskDoc.toObject();
-        await execute(task)(taskAdapter);
+        await execute(task)(taskAdapter, connection);
     };
 }
 
-export function execute(task: TaskFactory.ITask): TaskOperation<void> {
-    return async (taskAdapter: TaskAdapter) => {
+export function execute(task: TaskFactory.ITask): TaskAndConnectionOperation<void> {
+    return async (taskAdapter: TaskAdapter, connection: mongoose.Connection) => {
         try {
             // タスク名の関数が定義されていることが必須
             if (typeof (<any>TaskFunctionsService)[task.name] !== 'function') {
                 throw new TypeError(`function undefined ${task.name}`);
             }
 
-            await (<any>TaskFunctionsService)[task.name](task.data);
+            await (<any>TaskFunctionsService)[task.name](task.data)(connection);
 
             const result = TaskExecutionResult.create({
                 executed_at: new Date(),

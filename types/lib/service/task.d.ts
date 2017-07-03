@@ -1,9 +1,12 @@
+/// <reference types="mongoose" />
+import * as mongoose from 'mongoose';
 import TaskAdapter from '../adapter/task';
 import * as TaskFactory from '../factory/task';
 import TaskName from '../factory/taskName';
 export declare type TaskOperation<T> = (taskAdapter: TaskAdapter) => Promise<T>;
-export declare function executeByName(taskName: TaskName): TaskOperation<void>;
-export declare function execute(task: TaskFactory.ITask): TaskOperation<void>;
+export declare type TaskAndConnectionOperation<T> = (taskAdapter: TaskAdapter, connection: mongoose.Connection) => Promise<T>;
+export declare function executeByName(taskName: TaskName): TaskAndConnectionOperation<void>;
+export declare function execute(task: TaskFactory.ITask): TaskAndConnectionOperation<void>;
 /**
  * リトライ
  *

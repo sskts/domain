@@ -33,7 +33,7 @@ describe('タスクサービス:タスク名で実行する', () => {
     it('タスクがなければ何もしない', () => __awaiter(this, void 0, void 0, function* () {
         const name = taskName_1.default.SendEmailNotification;
         const taskAdapter = new task_1.default(connection);
-        yield TaskService.executeByName(name)(taskAdapter);
+        yield TaskService.executeByName(name)(taskAdapter, connection);
         // 実行済みのキューはないはず
         const taskDoc = yield taskAdapter.taskModel.findOne({
             status: taskStatus_1.default.Executed,
@@ -61,7 +61,7 @@ describe('タスクサービス:タスク名で実行する', () => {
             execution_results: []
         });
         yield taskAdapter.taskModel.findByIdAndUpdate(task.id, task, { upsert: true }).exec();
-        yield TaskService.executeByName(taskName_1.default.SendEmailNotification)(taskAdapter);
+        yield TaskService.executeByName(taskName_1.default.SendEmailNotification)(taskAdapter, connection);
         const taskDoc = yield taskAdapter.taskModel.findById(task.id, 'status').exec();
         assert.equal(taskDoc.get('status'), taskStatus_1.default.Executed);
         // テストデータ削除
