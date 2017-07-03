@@ -1,7 +1,9 @@
 import TaskAdapter from '../adapter/task';
+import * as TaskFactory from '../factory/task';
 import TaskName from '../factory/taskName';
 export declare type TaskOperation<T> = (taskAdapter: TaskAdapter) => Promise<T>;
 export declare function executeByName(taskName: TaskName): TaskOperation<void>;
+export declare function execute(task: TaskFactory.ITask): TaskOperation<void>;
 /**
  * リトライ
  *

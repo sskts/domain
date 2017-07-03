@@ -4,14 +4,14 @@
  * @namespace factory/task/settleGMOAuthorization
  */
 
+import * as GMOAuthorizationFactory from '../authorization/gmo';
 import * as TaskFactory from '../task';
 import * as TaskExecutionResult from '../taskExecutionResult';
 import TaskName from '../taskName';
 import TaskStatus from '../taskStatus';
 
 export interface IData {
-    transaction: string;
-    authorization: string;
+    authorization: GMOAuthorizationFactory.IAuthorization;
 }
 
 export interface ITask extends TaskFactory.ITask {

@@ -4,8 +4,6 @@
  * @ignore
  */
 
-import * as assert from 'assert';
-import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import * as EmailNotificationFactory from '../../lib/factory/notification/email';

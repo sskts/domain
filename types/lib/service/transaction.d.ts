@@ -1,14 +1,15 @@
 import * as monapt from 'monapt';
 import * as clientUserFactory from '../factory/clientUser';
+import * as TaskFactory from '../factory/task';
 import * as TransactionFactory from '../factory/transaction';
 import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
 import * as TransactionScopeFactory from '../factory/transactionScope';
 import TransactionStatus from '../factory/transactionStatus';
 import OwnerAdapter from '../adapter/owner';
-import QueueAdapter from '../adapter/queue';
+import TaskAdapter from '../adapter/task';
 import TransactionAdapter from '../adapter/transaction';
 import TransactionCountAdapter from '../adapter/transactionCount';
-export declare type TransactionAndQueueOperation<T> = (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => Promise<T>;
+export declare type TaskAndTransactionOperation<T> = (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 export declare type OwnerAndTransactionAndTransactionCountOperation<T> = (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => Promise<T>;
 export declare type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) => Promise<T>;
 /**
@@ -72,19 +73,19 @@ export declare function makeExpired(): (transactionAdapter: TransactionAdapter) 
  * @param {TransactionStatus} statu 取引ステータス
  * @memberof service/transaction
  */
-export declare function exportQueues(status: TransactionStatus): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function exportQueues(status: TransactionStatus): TaskAndTransactionOperation<void>;
 /**
  * ID指定で取引のキュー出力
  *
  * @param {string} id
- * @returns {TransactionAndQueueOperation<void>}
+ * @returns {TaskAndTransactionOperation<void>}
  *
  * @memberof service/transaction
  */
-export declare function exportQueuesById(id: string): (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function exportQueuesById(id: string): TaskAndTransactionOperation<TaskFactory.ITask[]>;
 /**
- * キューエクスポートリトライ
- * todo updated_atを基準にしているが、キューエクスポートトライ日時を持たせた方が安全か？
+ * タスクエクスポートリトライ
+ * todo updated_atを基準にしているが、タスクエクスポートトライ日時を持たせた方が安全か？
  *
  * @param {number} intervalInMinutes
  * @memberof service/transaction

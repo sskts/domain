@@ -3,12 +3,12 @@
  *
  * @namespace factory/task/settleSeatReservationAuthorization
  */
+import * as COASeatReservationAuthorizationFactory from '../authorization/coaSeatReservation';
 import * as TaskFactory from '../task';
 import * as TaskExecutionResult from '../taskExecutionResult';
 import TaskStatus from '../taskStatus';
 export interface IData {
-    transaction: string;
-    authorization: string;
+    authorization: COASeatReservationAuthorizationFactory.IAuthorization;
 }
 export interface ITask extends TaskFactory.ITask {
     data: IData;

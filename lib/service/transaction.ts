@@ -9,10 +9,17 @@
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as monapt from 'monapt';
-import * as _ from 'underscore';
 import * as util from 'util';
 
 import ArgumentError from '../error/argument';
+
+import * as COASeatReservationAuthorizationFactory from '../factory/authorization/coaSeatReservation';
+import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
+import * as MvtkAuthorizationFactory from '../factory/authorization/mvtk';
+import AuthorizationGroup from '../factory/authorizationGroup';
+
+import * as EmailNotificationFactory from '../factory/notification/email';
+import NotificationGroup from '../factory/notificationGroup';
 
 import * as clientUserFactory from '../factory/clientUser';
 import * as OwnerFactor from '../factory/owner';
@@ -20,12 +27,17 @@ import * as AnonymousOwnerFactory from '../factory/owner/anonymous';
 import * as MemberOwnerFactory from '../factory/owner/member';
 import * as PromoterOwnerFactory from '../factory/owner/promoter';
 import OwnerGroup from '../factory/ownerGroup';
-import * as QueueFactory from '../factory/queue';
-import * as CancelAuthorizationQueueFactory from '../factory/queue/cancelAuthorization';
-import * as DisableTransactionInquiryQueueFactory from '../factory/queue/disableTransactionInquiry';
-import * as PushNotificationQueueFactory from '../factory/queue/pushNotification';
-import * as SettleAuthorizationQueueFactory from '../factory/queue/settleAuthorization';
-import QueueStatus from '../factory/queueStatus';
+
+import * as TaskFactory from '../factory/task';
+import * as CancelGMOAuthorizationTaskFactory from '../factory/task/cancelGMOAuthorization';
+import * as CancelMvtkAuthorizationTaskFactory from '../factory/task/cancelMvtkAuthorization';
+import * as CancelSeatReservationAuthorizationTaskFactory from '../factory/task/cancelSeatReservationAuthorization';
+import * as SendEmailNotificationTaskFactory from '../factory/task/sendEmailNotification';
+import * as SettleGMOAuthorizationTaskFactoryTaskFactory from '../factory/task/settleGMOAuthorization';
+import * as SettleMvtkAuthorizationTaskFactory from '../factory/task/settleMvtkAuthorization';
+import * as SettleSeatReservationAuthorizationTaskFactory from '../factory/task/settleSeatReservationAuthorization';
+import TaskStatus from '../factory/taskStatus';
+
 import * as TransactionFactory from '../factory/transaction';
 import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
 import TransactionQueuesStatus from '../factory/transactionQueuesStatus';
@@ -33,12 +45,12 @@ import * as TransactionScopeFactory from '../factory/transactionScope';
 import TransactionStatus from '../factory/transactionStatus';
 
 import OwnerAdapter from '../adapter/owner';
-import QueueAdapter from '../adapter/queue';
+import TaskAdapter from '../adapter/task';
 import TransactionAdapter from '../adapter/transaction';
 import TransactionCountAdapter from '../adapter/transactionCount';
 
-export type TransactionAndQueueOperation<T> =
-    (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => Promise<T>;
+export type TaskAndTransactionOperation<T> =
+    (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 export type OwnerAndTransactionAndTransactionCountOperation<T> =
     (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => Promise<T>;
 export type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) => Promise<T>;
@@ -210,14 +222,14 @@ export function makeExpired() {
  * @param {TransactionStatus} statu 取引ステータス
  * @memberof service/transaction
  */
-export function exportQueues(status: TransactionStatus) {
-    return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
+export function exportQueues(status: TransactionStatus): TaskAndTransactionOperation<void> {
+    return async (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => {
         const statusesQueueExportable = [TransactionStatus.EXPIRED, TransactionStatus.CLOSED];
         if (statusesQueueExportable.indexOf(status) < 0) {
             throw new ArgumentError('status', `transaction status should be in [${statusesQueueExportable.join(',')}]`);
         }
 
-        let transactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
+        const transactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
             {
                 status: status,
                 queues_status: TransactionQueuesStatus.UNEXPORTED
@@ -231,18 +243,18 @@ export function exportQueues(status: TransactionStatus) {
         }
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
-        await exportQueuesById(transactionDoc.get('id'))(
-            queueAdapter,
+        const tasks = await exportQueuesById(transactionDoc.get('id'))(
+            taskAdapter,
             transactionAdapter
         );
 
-        transactionDoc = await transactionAdapter.transactionModel.findByIdAndUpdate(
+        await transactionAdapter.transactionModel.findByIdAndUpdate(
             transactionDoc.get('id'),
             {
                 queues_status: TransactionQueuesStatus.EXPORTED,
-                queues_exported_at: moment().toDate()
-            },
-            { new: true }
+                queues_exported_at: moment().toDate(),
+                tasks: tasks
+            }
         ).exec();
     };
 }
@@ -251,45 +263,77 @@ export function exportQueues(status: TransactionStatus) {
  * ID指定で取引のキュー出力
  *
  * @param {string} id
- * @returns {TransactionAndQueueOperation<void>}
+ * @returns {TaskAndTransactionOperation<void>}
  *
  * @memberof service/transaction
  */
-export function exportQueuesById(id: string) {
+export function exportQueuesById(id: string): TaskAndTransactionOperation<TaskFactory.ITask[]> {
     // tslint:disable-next-line:max-func-body-length
-    return async (queueAdapter: QueueAdapter, transactionAdapter: TransactionAdapter) => {
+    return async (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => {
         const doc = await transactionAdapter.transactionModel.findById(id).populate('owners').exec();
         if (doc === null) {
             throw new Error(`transaction[${id}] not found.`);
         }
         const transaction = <TransactionFactory.ITransaction>doc.toObject();
 
-        const queues: QueueFactory.IQueue[] = [];
+        const tasks: TaskFactory.ITask[] = [];
         switch (transaction.status) {
             case TransactionStatus.CLOSED:
-                // 取引イベントからキューリストを作成
+                // 取引イベントからタスクリストを作成
                 (await transactionAdapter.findAuthorizationsById(transaction.id)).forEach((authorization) => {
-                    queues.push(SettleAuthorizationQueueFactory.create({
-                        authorization: authorization,
-                        status: QueueStatus.UNEXECUTED,
-                        run_at: new Date(), // なるはやで実行
-                        max_count_try: 10,
-                        last_tried_at: null,
-                        count_tried: 0,
-                        results: []
-                    }));
+                    if (authorization.group === AuthorizationGroup.COA_SEAT_RESERVATION) {
+                        tasks.push(SettleSeatReservationAuthorizationTaskFactory.create({
+                            status: TaskStatus.Ready,
+                            runs_at: new Date(), // なるはやで実行
+                            max_number_of_try: 10,
+                            last_tried_at: null,
+                            number_of_tried: 0,
+                            execution_results: [],
+                            data: {
+                                authorization: <COASeatReservationAuthorizationFactory.IAuthorization>authorization
+                            }
+                        }));
+                    } else if (authorization.group === AuthorizationGroup.GMO) {
+                        tasks.push(SettleGMOAuthorizationTaskFactoryTaskFactory.create({
+                            status: TaskStatus.Ready,
+                            runs_at: new Date(), // なるはやで実行
+                            max_number_of_try: 10,
+                            last_tried_at: null,
+                            number_of_tried: 0,
+                            execution_results: [],
+                            data: {
+                                authorization: <GMOAuthorizationFactory.IAuthorization>authorization
+                            }
+                        }));
+                    } else if (authorization.group === AuthorizationGroup.MVTK) {
+                        tasks.push(SettleMvtkAuthorizationTaskFactory.create({
+                            status: TaskStatus.Ready,
+                            runs_at: new Date(), // なるはやで実行
+                            max_number_of_try: 10,
+                            last_tried_at: null,
+                            number_of_tried: 0,
+                            execution_results: [],
+                            data: {
+                                authorization: <MvtkAuthorizationFactory.IAuthorization>authorization
+                            }
+                        }));
+                    }
                 });
 
                 (await transactionAdapter.findNotificationsById(transaction.id)).forEach((notification) => {
-                    queues.push(PushNotificationQueueFactory.create({
-                        notification: notification,
-                        status: QueueStatus.UNEXECUTED,
-                        run_at: new Date(), // todo emailのsent_atを指定
-                        max_count_try: 10,
-                        last_tried_at: null,
-                        count_tried: 0,
-                        results: []
-                    }));
+                    if (notification.group === NotificationGroup.EMAIL) {
+                        tasks.push(SendEmailNotificationTaskFactory.create({
+                            status: TaskStatus.Ready,
+                            runs_at: new Date(), // todo emailのsent_atを指定
+                            max_number_of_try: 10,
+                            last_tried_at: null,
+                            number_of_tried: 0,
+                            execution_results: [],
+                            data: {
+                                notification: <EmailNotificationFactory.INotification>notification
+                            }
+                        }));
+                    }
                 });
 
                 break;
@@ -297,48 +341,64 @@ export function exportQueuesById(id: string) {
             // 期限切れの場合は、キューリストを作成する
             case TransactionStatus.EXPIRED:
                 (await transactionAdapter.findAuthorizationsById(transaction.id)).forEach((authorization) => {
-                    queues.push(CancelAuthorizationQueueFactory.create({
-                        authorization: authorization,
-                        status: QueueStatus.UNEXECUTED,
-                        run_at: new Date(),
-                        max_count_try: 10,
-                        last_tried_at: null,
-                        count_tried: 0,
-                        results: []
-                    }));
+                    if (authorization.group === AuthorizationGroup.COA_SEAT_RESERVATION) {
+                        tasks.push(CancelSeatReservationAuthorizationTaskFactory.create({
+                            status: TaskStatus.Ready,
+                            runs_at: new Date(), // なるはやで実行
+                            max_number_of_try: 10,
+                            last_tried_at: null,
+                            number_of_tried: 0,
+                            execution_results: [],
+                            data: {
+                                authorization: <COASeatReservationAuthorizationFactory.IAuthorization>authorization
+                            }
+                        }));
+                    } else if (authorization.group === AuthorizationGroup.GMO) {
+                        tasks.push(CancelGMOAuthorizationTaskFactory.create({
+                            status: TaskStatus.Ready,
+                            runs_at: new Date(), // なるはやで実行
+                            max_number_of_try: 10,
+                            last_tried_at: null,
+                            number_of_tried: 0,
+                            execution_results: [],
+                            data: {
+                                authorization: <GMOAuthorizationFactory.IAuthorization>authorization
+                            }
+                        }));
+                    } else if (authorization.group === AuthorizationGroup.MVTK) {
+                        tasks.push(CancelMvtkAuthorizationTaskFactory.create({
+                            status: TaskStatus.Ready,
+                            runs_at: new Date(), // なるはやで実行
+                            max_number_of_try: 10,
+                            last_tried_at: null,
+                            number_of_tried: 0,
+                            execution_results: [],
+                            data: {
+                                authorization: <MvtkAuthorizationFactory.IAuthorization>authorization
+                            }
+                        }));
+                    }
                 });
-
-                // COA本予約があれば取消
-                if (!_.isEmpty(transaction.inquiry_key)) {
-                    queues.push(DisableTransactionInquiryQueueFactory.create({
-                        transaction: transaction,
-                        status: QueueStatus.UNEXECUTED,
-                        run_at: new Date(),
-                        max_count_try: 10,
-                        last_tried_at: null,
-                        count_tried: 0,
-                        results: []
-                    }));
-                }
 
                 break;
 
             default:
                 throw new ArgumentError('id', 'transaction group not implemented.');
         }
-        debug('queues:', queues);
+        debug('tasks prepared', tasks);
 
-        const promises = queues.map(async (queue) => {
-            debug('storing queue...', queue);
-            await queueAdapter.model.findByIdAndUpdate(queue.id, queue, { new: true, upsert: true }).exec();
-        });
-        await Promise.all(promises);
+        await Promise.all(tasks.map(async (task) => {
+            debug('storing task...', task);
+            await taskAdapter.taskModel.findByIdAndUpdate(task.id, task, { upsert: true }).exec();
+        }));
+
+        return tasks;
     };
 }
 
 /**
- * キューエクスポートリトライ
- * todo updated_atを基準にしているが、キューエクスポートトライ日時を持たせた方が安全か？
+ * タスクエクスポートリトライ
+ * todo updated_atを基準にしているが、タスクエクスポートトライ日時を持たせた方が安全か？
  *
  * @param {number} intervalInMinutes
  * @memberof service/transaction
@@ -348,7 +408,7 @@ export function reexportQueues(intervalInMinutes: number) {
         await transactionAdapter.transactionModel.findOneAndUpdate(
             {
                 queues_status: TransactionQueuesStatus.EXPORTING,
-                updated_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() } // tslint:disable-line:no-magic-numbers
+                updated_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() }
             },
             {
                 queues_status: TransactionQueuesStatus.UNEXPORTED

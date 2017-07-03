@@ -11,7 +11,7 @@ import TaskName from '../taskName';
 import TaskStatus from '../taskStatus';
 
 export interface IData {
-    notification: EmailNotificationFactory.IEmailNotification;
+    notification: EmailNotificationFactory.INotification;
 }
 
 export interface ITask extends TaskFactory.ITask {

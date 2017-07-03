@@ -3,12 +3,12 @@
  *
  * @namespace factory/task/cancelGMOAuthorization
  */
+import * as GMOAuthorizationFactory from '../authorization/gmo';
 import * as TaskFactory from '../task';
 import * as TaskExecutionResult from '../taskExecutionResult';
 import TaskStatus from '../taskStatus';
 export interface IData {
-    transaction: string;
-    authorization: string;
+    authorization: GMOAuthorizationFactory.IAuthorization;
 }
 export interface ITask extends TaskFactory.ITask {
     data: IData;

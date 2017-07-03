@@ -56,14 +56,19 @@ export function executeByName(taskName: TaskName): TaskOperation<void> {
         }
 
         const task = <TaskFactory.ITask>taskDoc.toObject();
+        await execute(task)(taskAdapter);
+    };
+}
 
+export function execute(task: TaskFactory.ITask): TaskOperation<void> {
+    return async (taskAdapter: TaskAdapter) => {
         try {
             // タスク名の関数が定義されていることが必須
-            if (typeof (<any>TaskFunctionsService)[taskName] !== 'function') {
-                throw new TypeError(`function undefined ${taskName}`);
+            if (typeof (<any>TaskFunctionsService)[task.name] !== 'function') {
+                throw new TypeError(`function undefined ${task.name}`);
             }
 
-            await (<any>TaskFunctionsService)[taskName](task.data);
+            await (<any>TaskFunctionsService)[task.name](task.data);
 
             const result = TaskExecutionResult.create({
                 executed_at: new Date(),

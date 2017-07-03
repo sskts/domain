@@ -8,10 +8,9 @@
 import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
 
-import TransactionAdapter from '../adapter/transaction';
-
-import * as COASeatReservationAuthorizationFactory from '../factory/authorization/coaSeatReservation';
-import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
+import AssetAdapter from '../adapter/asset';
+import OwnerAdapter from '../adapter/owner';
+import PerformanceAdapter from '../adapter/performance';
 
 import * as CancelGMOAuthorizationTaskFactory from '../factory/task/cancelGMOAuthorization';
 import * as CancelMvtkAuthorizationTaskFactory from '../factory/task/cancelMvtkAuthorization';
@@ -46,16 +45,8 @@ export function cancelSeatReservationAuthorization(
 ): IOperation<void> {
     debug('executing...', data);
 
-    return async (connection: mongoose.Connection) => {
-        debug('creating adapters on connection...', connection);
-
-        // 座席予約承認を取り出す
-        const transactionAdapter = new TransactionAdapter(connection);
-        const authorizations = await transactionAdapter.findAuthorizationsById(data.transaction);
-        const seatReservationAuthorization = <COASeatReservationAuthorizationFactory.ICOASeatReservationAuthorization>authorizations.find(
-            (authorization) => authorization.id === data.authorization
-        );
-        await StockService.unauthorizeCOASeatReservation(seatReservationAuthorization)();
+    return async (__: mongoose.Connection) => {
+        await StockService.unauthorizeCOASeatReservation(data.authorization)();
     };
 }
 
@@ -64,16 +55,8 @@ export function cancelGMOAuthorization(
 ): IOperation<void> {
     debug('executing...', data);
 
-    return async (connection: mongoose.Connection) => {
-        debug('creating adapters on connection...', connection);
-
-        // 座席予約承認を取り出す
-        const transactionAdapter = new TransactionAdapter(connection);
-        const authorizations = await transactionAdapter.findAuthorizationsById(data.transaction);
-        const gmoAuthorization = <GMOAuthorizationFactory.IGMOAuthorization>authorizations.find(
-            (authorization) => authorization.id === data.authorization
-        );
-        await SalesService.cancelGMOAuth(gmoAuthorization)();
+    return async (__: mongoose.Connection) => {
+        await SalesService.cancelGMOAuth(data.authorization)();
     };
 }
 
@@ -82,9 +65,8 @@ export function cancelMvtkAuthorization(
 ): IOperation<void> {
     debug('executing...', data);
 
-    return async (connection: mongoose.Connection) => {
-        debug('creating adapters on connection...', connection);
-        // await salesService.cancelMvtkAuthorization(queueDoc.get('authorization'))();
+    return async (__: mongoose.Connection) => {
+        await SalesService.cancelMvtkAuthorization(data.authorization)();
     };
 }
 
@@ -93,9 +75,8 @@ export function disableTransactionInquiry(
 ): IOperation<void> {
     debug('executing...', data);
 
-    return async (connection: mongoose.Connection) => {
-        debug('creating adapters on connection...', connection);
-        // await stockService.disableTransactionInquiry(queueDoc.get('transaction'))(transactionAdapter);
+    return async (__: mongoose.Connection) => {
+        // 照会キーを登録する前にCOA本予約を実行する必要がなくなったので、この処理は不要
     };
 }
 
@@ -105,10 +86,12 @@ export function settleSeatReservationAuthorization(
     debug('executing...', data);
 
     return async (connection: mongoose.Connection) => {
-        debug('creating adapters on connection...', connection);
-        // await stockService.transferCOASeatReservation(queueDoc.get('authorization'))(
-        //     assetAdapter, ownerAdapter, performanceAdapter
-        // );
+        const assetAdapter = new AssetAdapter(connection);
+        const ownerAdapter = new OwnerAdapter(connection);
+        const performanceAdapter = new PerformanceAdapter(connection);
+        await StockService.transferCOASeatReservation(data.authorization)(
+            assetAdapter, ownerAdapter, performanceAdapter
+        );
     };
 }
 
@@ -117,9 +100,8 @@ export function settleGMOAuthorization(
 ): IOperation<void> {
     debug('executing...', data);
 
-    return async (connection: mongoose.Connection) => {
-        debug('creating adapters on connection...', connection);
-        // await salesService.settleGMOAuth(queueDoc.get('authorization'))();
+    return async (__: mongoose.Connection) => {
+        await SalesService.settleGMOAuth(data.authorization)();
     };
 }
 
@@ -128,8 +110,7 @@ export function settleMvtkAuthorization(
 ): IOperation<void> {
     debug('executing...', data);
 
-    return async (connection: mongoose.Connection) => {
-        debug('creating adapters on connection...', connection);
-        // await salesService.settleMvtkAuthorization(queueDoc.get('authorization'))();
+    return async (__: mongoose.Connection) => {
+        await SalesService.settleMvtkAuthorization(data.authorization)();
     };
 }
