@@ -4,8 +4,10 @@
  * @module
  */
 
-import { Connection } from 'mongoose';
-import { RedisClient } from 'redis';
+import * as COA from '@motionpicture/coa-service';
+import * as GMO from '@motionpicture/gmo-service';
+import * as mongoose from 'mongoose';
+import * as redis from 'redis';
 
 import * as ClientService from './service/client';
 import * as MasterService from './service/master';
@@ -82,52 +84,99 @@ import TransactionStatus from './factory/transactionStatus';
 
 import ErrorCode from './errorCode';
 
+/**
+ * MongoDBクライアント`mongoose`
+ *
+ * @example
+ * var promise = sskts.mongoose.connect('mongodb://localhost/myapp', {
+ *     useMongoClient: true
+ * });
+ */
+export import mongoose = mongoose;
+
+/**
+ * Redis Cacheクライアント
+ *
+ * @example
+ * const client = sskts.redis.createClient({
+ *      host: process.env.REDIS_HOST,
+ *      port: process.env.REDIS_PORT,
+ *      password: process.env.REDIS_KEY,
+ *      tls: { servername: process.env.TEST_REDIS_HOST }
+ * });
+ */
+export import redis = redis;
+
+/**
+ * COAのAPIクライアント
+ *
+ * @example
+ * sskts.COA.MasterService.theater({ theater_code: '118' }).then(() => {
+ *     console.log(result);
+ * });
+ */
+export import COA = COA;
+
+/**
+ * GMOのAPIクライアント
+ *
+ * @example
+ * sskts.GMO.services.card.searchMember({
+ *     siteId: '',
+ *     sitePass: '',
+ *     memberId: ''
+ * }).then((result) => {
+ *     console.log(result);
+ * });
+ */
+export import GMO = GMO;
+
 export namespace adapter {
-    export function asset(connection: Connection) {
+    export function asset(connection: mongoose.Connection) {
         return new AssetAdapter(connection);
     }
-    export function client(connection: Connection) {
+    export function client(connection: mongoose.Connection) {
         return new ClientAdapter(connection);
     }
-    export function film(connection: Connection) {
+    export function film(connection: mongoose.Connection) {
         return new FilmAdapter(connection);
     }
-    export function gmoNotification(connection: Connection) {
+    export function gmoNotification(connection: mongoose.Connection) {
         return new GMONotificationAdapter(connection);
     }
-    export function owner(connection: Connection) {
+    export function owner(connection: mongoose.Connection) {
         return new OwnerAdapter(connection);
     }
-    export function performance(connection: Connection) {
+    export function performance(connection: mongoose.Connection) {
         return new PerformanceAdapter(connection);
     }
     export namespace stockStatus {
-        export function performance(redisClient: RedisClient) {
+        export function performance(redisClient: redis.RedisClient) {
             return new PerformanceStockStatusAdapter(redisClient);
         }
     }
-    export function queue(connection: Connection) {
+    export function queue(connection: mongoose.Connection) {
         return new QueueAdapter(connection);
     }
-    export function screen(connection: Connection) {
+    export function screen(connection: mongoose.Connection) {
         return new ScreenAdapter(connection);
     }
-    export function sendGridEvent(connection: Connection) {
+    export function sendGridEvent(connection: mongoose.Connection) {
         return new SendGridEventAdapter(connection);
     }
-    export function task(connection: Connection) {
+    export function task(connection: mongoose.Connection) {
         return new TaskAdapter(connection);
     }
-    export function telemetry(connection: Connection) {
+    export function telemetry(connection: mongoose.Connection) {
         return new TelemetryAdapter(connection);
     }
-    export function theater(connection: Connection) {
+    export function theater(connection: mongoose.Connection) {
         return new TheaterAdapter(connection);
     }
-    export function transaction(connection: Connection) {
+    export function transaction(connection: mongoose.Connection) {
         return new TransactionAdapter(connection);
     }
-    export function transactionCount(redisClient: RedisClient) {
+    export function transactionCount(redisClient: redis.RedisClient) {
         return new TransactionCountAdapter(redisClient);
     }
 }

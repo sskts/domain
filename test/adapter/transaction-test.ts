@@ -94,11 +94,11 @@ describe('取引アダプター 金額算出', () => {
             expires_at: new Date(),
             inquiry_key: TEST_TRANSACTION_INQUIRY_KEY
         });
-        const authorization1 = {
+        const authorization1: COASeatReservationAuthorizationFactory.IAuthorization = {
             ...TEST_COA_SEAT_RESERVATION_AUTHORIZATION,
             ...{ price: amount, owner_from: ownerFrom.id, owner_to: ownerTo.id }
         };
-        const authorization2 = {
+        const authorization2: COASeatReservationAuthorizationFactory.IAuthorization = {
             ...TEST_COA_SEAT_RESERVATION_AUTHORIZATION,
             ...{ price: amount, owner_from: ownerTo.id, owner_to: ownerFrom.id }
         };

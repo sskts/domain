@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 依存パッケージである、mongoose,redis,coa-service,gmo-serviceをindexモジュールからエクスポート。
 
 ### Changed
 
@@ -15,6 +16,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+- update package [mongoose@^4.11.1](https://www.npmjs.com/package/mongoose)
+- update package [sendgrid@^5.1.2](https://www.npmjs.com/package/sendgrid)
+- update package [validator@^7.2.0](https://www.npmjs.com/package/validator)
+- update package [snyk@^1.36.2](https://www.npmjs.com/package/snyk)
+- update package [tslint-microsoft-contrib@^5.0.1](https://www.npmjs.com/package/tslint-microsoft-contrib)
+- update package [typescript@^2.4.1](https://www.npmjs.com/package/typescript)
 
 ## v20.0.2 - 2017-07-04
 ### Changed

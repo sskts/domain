@@ -97,18 +97,34 @@ function main() {
         yield transactionAdapter.transactionModel.create(transactionDoc);
         debug('trasaction started', transaction);
         // 所有者を逆にして座席予約承認を作成する
-        const coaSeatReservationAuthorization = sskts.factory.authorization.coaSeatReservation.create(Object.assign({}, originalCOASeatReservationAuthorization, {
-            id: undefined,
+        const coaSeatReservationAuthorization = sskts.factory.authorization.coaSeatReservation.create({
+            price: originalCOASeatReservationAuthorization.price,
             owner_from: originalCOASeatReservationAuthorization.owner_to,
-            owner_to: originalCOASeatReservationAuthorization.owner_from
-        }));
+            owner_to: originalCOASeatReservationAuthorization.owner_from,
+            coa_tmp_reserve_num: originalCOASeatReservationAuthorization.coa_tmp_reserve_num,
+            coa_theater_code: originalCOASeatReservationAuthorization.coa_theater_code,
+            coa_date_jouei: originalCOASeatReservationAuthorization.coa_date_jouei,
+            coa_title_code: originalCOASeatReservationAuthorization.coa_title_code,
+            coa_title_branch_num: originalCOASeatReservationAuthorization.coa_title_branch_num,
+            coa_time_begin: originalCOASeatReservationAuthorization.coa_time_begin,
+            coa_screen_code: originalCOASeatReservationAuthorization.coa_screen_code,
+            assets: originalCOASeatReservationAuthorization.assets
+        });
         debug('adding coaSeatReservationAuthorization...', coaSeatReservationAuthorization);
         // 興行から所有者へGMO金額変更のオーソリ
-        const gmoAuthorization = sskts.factory.authorization.gmo.create(Object.assign({}, originalGMOAuthorization, {
-            id: undefined,
+        const gmoAuthorization = sskts.factory.authorization.gmo.create({
+            price: originalGMOAuthorization.price,
             owner_from: originalGMOAuthorization.owner_to,
-            owner_to: originalGMOAuthorization.owner_from
-        }));
+            owner_to: originalGMOAuthorization.owner_from,
+            gmo_shop_id: originalGMOAuthorization.gmo_shop_id,
+            gmo_shop_pass: originalGMOAuthorization.gmo_shop_pass,
+            gmo_order_id: originalGMOAuthorization.gmo_order_id,
+            gmo_amount: originalGMOAuthorization.gmo_amount,
+            gmo_access_id: originalGMOAuthorization.gmo_access_id,
+            gmo_access_pass: originalGMOAuthorization.gmo_access_pass,
+            gmo_job_cd: originalGMOAuthorization.gmo_job_cd,
+            gmo_pay_type: originalGMOAuthorization.gmo_pay_type
+        });
         debug('adding gmoAuthorization...', gmoAuthorization);
         // 通知を追加
         const emailNotification = sskts.factory.notification.email.create({
