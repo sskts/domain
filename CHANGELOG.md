@@ -5,7 +5,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
-- 依存パッケージである、mongoose,redis,coa-service,gmo-serviceをindexモジュールからエクスポート。
 
 ### Changed
 
@@ -14,6 +13,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 ### Fixed
+
+### Security
+
+## v20.1.0 - 2017-07-04
+### Added
+- 依存パッケージである、mongoose,redis,coa-service,gmo-serviceをindexモジュールからエクスポート。
 
 ### Security
 - update package [mongoose@^4.11.1](https://www.npmjs.com/package/mongoose)
