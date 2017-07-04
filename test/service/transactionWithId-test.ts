@@ -508,7 +508,9 @@ describe('承認追加', () => {
             expires_at: new Date()
         });
 
-        const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        const authorization: GMOAuthorizationFactory.IAuthorization = {
+            ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id }
+        };
         const addAuthorizationError = await TransactionWithIdService.addAuthorization(transaction.id, authorization)(
             transactionAdapter
         ).catch((error: any) => {
@@ -536,7 +538,9 @@ describe('承認追加', () => {
         const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
         await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
 
-        const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        const authorization: GMOAuthorizationFactory.IAuthorization = {
+            ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id }
+        };
         const addAuthorizationError = await TransactionWithIdService.addAuthorization(transaction.id, authorization)(
             transactionAdapter
         ).catch((error: any) => {
@@ -570,7 +574,9 @@ describe('承認追加', () => {
         const transactionDoc = { ...transaction, ...{ owners: transaction.owners.map((owner) => owner.id) } };
         await transactionAdapter.transactionModel.findByIdAndUpdate(transactionDoc.id, transactionDoc, { upsert: true }).exec();
 
-        const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        const authorization: GMOAuthorizationFactory.IAuthorization = {
+            ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id }
+        };
         const addAuthorizationError = await TransactionWithIdService.addAuthorization(transaction.id, authorization)(
             transactionAdapter
         ).catch((error: any) => {
@@ -600,7 +606,9 @@ describe('承認削除', () => {
             owners: [ownerFrom, ownerTo],
             expires_at: new Date()
         });
-        const authorization = { ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id } };
+        const authorization: GMOAuthorizationFactory.IAuthorization = {
+            ...TEST_GMO_AUTHORIZATION, ...{ owner_from: ownerFrom.id, owner_to: ownerTo.id }
+        };
         const authorizeEvent = AuthorizeTransactionEventFactory.create({
             transaction: transaction.id,
             occurred_at: new Date(),

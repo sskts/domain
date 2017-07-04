@@ -155,7 +155,8 @@ export function transferCOASeatReservation(authorization: ICOASeatReservationAut
                 : (<COA.ReserveService.IUpdReserveQR>updReserveResult.list_qr.find((updReserveQR) => (updReserveQR.seat_num === asset.seat_code))).seat_qrcode;
 
             const args = {
-                ...asset, ...{
+                ...asset,
+                ...{
                     ownership: OwnershipFactory.create({
                         id: qr,
                         owner: owner.id
@@ -185,7 +186,8 @@ export function transferCOASeatReservation(authorization: ICOASeatReservationAut
                         reserve_num: authorization.coa_tmp_reserve_num,
                         tel: owner.tel
                     })
-                }
+                },
+                group: undefined
             };
             const seatReservationAsset = SeatReservationAssetFactory.create(args);
 

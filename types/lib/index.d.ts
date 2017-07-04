@@ -4,8 +4,10 @@
  *
  * @module
  */
-import { Connection } from 'mongoose';
-import { RedisClient } from 'redis';
+import * as COA from '@motionpicture/coa-service';
+import * as GMO from '@motionpicture/gmo-service';
+import * as mongoose from 'mongoose';
+import * as redis from 'redis';
 import * as ClientService from './service/client';
 import * as MasterService from './service/master';
 import * as MemberService from './service/member';
@@ -77,24 +79,67 @@ import TransactionQueuesStatus from './factory/transactionQueuesStatus';
 import * as TransactionScopeFactory from './factory/transactionScope';
 import TransactionStatus from './factory/transactionStatus';
 import ErrorCode from './errorCode';
+/**
+ * MongoDBクライアント`mongoose`
+ *
+ * @example
+ * var promise = sskts.mongoose.connect('mongodb://localhost/myapp', {
+ *     useMongoClient: true
+ * });
+ */
+export import mongoose = mongoose;
+/**
+ * Redis Cacheクライアント
+ *
+ * @example
+ * const client = sskts.redis.createClient({
+ *      host: process.env.REDIS_HOST,
+ *      port: process.env.REDIS_PORT,
+ *      password: process.env.REDIS_KEY,
+ *      tls: { servername: process.env.TEST_REDIS_HOST }
+ * });
+ */
+export import redis = redis;
+/**
+ * COAのAPIクライアント
+ *
+ * @example
+ * sskts.COA.MasterService.theater({ theater_code: '118' }).then(() => {
+ *     console.log(result);
+ * });
+ */
+export import COA = COA;
+/**
+ * GMOのAPIクライアント
+ *
+ * @example
+ * sskts.GMO.services.card.searchMember({
+ *     siteId: '',
+ *     sitePass: '',
+ *     memberId: ''
+ * }).then((result) => {
+ *     console.log(result);
+ * });
+ */
+export import GMO = GMO;
 export declare namespace adapter {
-    function asset(connection: Connection): AssetAdapter;
-    function client(connection: Connection): ClientAdapter;
-    function film(connection: Connection): FilmAdapter;
-    function gmoNotification(connection: Connection): GMONotificationAdapter;
-    function owner(connection: Connection): OwnerAdapter;
-    function performance(connection: Connection): PerformanceAdapter;
+    function asset(connection: mongoose.Connection): AssetAdapter;
+    function client(connection: mongoose.Connection): ClientAdapter;
+    function film(connection: mongoose.Connection): FilmAdapter;
+    function gmoNotification(connection: mongoose.Connection): GMONotificationAdapter;
+    function owner(connection: mongoose.Connection): OwnerAdapter;
+    function performance(connection: mongoose.Connection): PerformanceAdapter;
     namespace stockStatus {
-        function performance(redisClient: RedisClient): PerformanceStockStatusAdapter;
+        function performance(redisClient: redis.RedisClient): PerformanceStockStatusAdapter;
     }
-    function queue(connection: Connection): QueueAdapter;
-    function screen(connection: Connection): ScreenAdapter;
-    function sendGridEvent(connection: Connection): SendGridEventAdapter;
-    function task(connection: Connection): TaskAdapter;
-    function telemetry(connection: Connection): TelemetryAdapter;
-    function theater(connection: Connection): TheaterAdapter;
-    function transaction(connection: Connection): TransactionAdapter;
-    function transactionCount(redisClient: RedisClient): TransactionCountAdapter;
+    function queue(connection: mongoose.Connection): QueueAdapter;
+    function screen(connection: mongoose.Connection): ScreenAdapter;
+    function sendGridEvent(connection: mongoose.Connection): SendGridEventAdapter;
+    function task(connection: mongoose.Connection): TaskAdapter;
+    function telemetry(connection: mongoose.Connection): TelemetryAdapter;
+    function theater(connection: mongoose.Connection): TheaterAdapter;
+    function transaction(connection: mongoose.Connection): TransactionAdapter;
+    function transactionCount(redisClient: redis.RedisClient): TransactionCountAdapter;
 }
 export declare namespace service {
     export import client = ClientService;
