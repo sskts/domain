@@ -57,7 +57,10 @@ import * as OwnershipFactory from './factory/ownership';
 import * as PerformanceFactory from './factory/performance';
 import * as ScreenFactory from './factory/screen';
 import * as PerformanceStockStatusFactory from './factory/stockStatus/performance';
+import * as TaskFactory from './factory/task';
+import * as TaskExecutionResultFactory from './factory/taskExecutionResult';
 import TaskName from './factory/taskName';
+import TaskStatus from './factory/taskStatus';
 import * as TheaterFactory from './factory/theater';
 import TheaterWebsiteGroup from './factory/theaterWebsiteGroup';
 import * as TransactionFactory from './factory/transaction';
@@ -69,6 +72,7 @@ import TransactionEventGroup from './factory/transactionEventGroup';
 import * as TransactionInquiryKeyFactory from './factory/transactionInquiryKey';
 import * as TransactionScopeFactory from './factory/transactionScope';
 import TransactionStatus from './factory/transactionStatus';
+import TransactionTasksExportationStatus from './factory/transactionTasksExportationStatus';
 import ErrorCode from './errorCode';
 /**
  * MongoDBクライアント`mongoose`
@@ -183,7 +187,10 @@ export declare namespace factory {
     namespace stockStatus {
         export import performance = PerformanceStockStatusFactory;
     }
+    export import task = TaskFactory;
+    export import taskExecutionResult = TaskExecutionResultFactory;
     export import taskName = TaskName;
+    export import taskStatus = TaskStatus;
     export import theater = TheaterFactory;
     export import theaterWebsiteGroup = TheaterWebsiteGroup;
     export import transaction = TransactionFactory;
@@ -197,5 +204,6 @@ export declare namespace factory {
     export import transactionInquiryKey = TransactionInquiryKeyFactory;
     export import transactionScope = TransactionScopeFactory;
     export import transactionStatus = TransactionStatus;
+    export import transactionTasksExportationStatus = TransactionTasksExportationStatus;
 }
 export import errorCode = ErrorCode;

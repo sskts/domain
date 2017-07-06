@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- indexモジュールから以下をエクスポート。
+  - タスクファクトリー
+  - タスク実行結果ファクトリー
+  - タスク名ファクトリー
+  - タスクステータスファクトリー
 
 ### Changed
 - 取引からキューをエクスポートするサービスを、タスクをエクスポートするサービスへ変更。
