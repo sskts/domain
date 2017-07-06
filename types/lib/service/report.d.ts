@@ -52,15 +52,15 @@ export interface IFlow {
     };
     tasks: {
         /**
-         * 集計期間中に作成されたキュー数
+         * 集計期間中に作成されたタスク数
          */
         numberOfCreated: number;
         /**
-         * 集計期間中に実行されたキュー数
+         * 集計期間中に実行されたタスク数
          */
         numberOfExecuted: number;
         /**
-         * 集計期間中に中止されたキュー数
+         * 集計期間中に中止されたタスク数
          */
         numberOfAborted: number;
         /**
@@ -129,7 +129,7 @@ export declare function createFlowTelemetry(measuredFrom: Date, measuredTo: Date
  * ストック計測データを作成する
  *
  * @param {Date} measuredAt 計測日時
- * @returns {QueueAndTransactionOperation<IStock>}
+ * @returns {TaskAndTransactionOperation<IStock>}
  */
 export declare function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperation<IStock>;
 /**

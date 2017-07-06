@@ -7,10 +7,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 取引からキューをエクスポートするサービスを、タスクをエクスポートするサービスへ変更。
 
 ### Deprecated
 
 ### Removed
+- キュー仕様からタスク仕様への移行につき、以下不要なモジュールを削除。
+  - キューアダプター
+  - キューファクトリー、キューグループファクトリー、キューステータスファクトリー
+  - 取引キューステータスファクトリー
+  - キューサービス
 
 ### Fixed
 

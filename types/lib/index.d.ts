@@ -12,7 +12,6 @@ import * as ClientService from './service/client';
 import * as MasterService from './service/master';
 import * as MemberService from './service/member';
 import * as NotificationService from './service/notification';
-import * as QueueService from './service/queue';
 import * as ReportService from './service/report';
 import * as SalesService from './service/sales';
 import * as ShopService from './service/shop';
@@ -27,7 +26,6 @@ import FilmAdapter from './adapter/film';
 import GMONotificationAdapter from './adapter/gmoNotification';
 import OwnerAdapter from './adapter/owner';
 import PerformanceAdapter from './adapter/performance';
-import QueueAdapter from './adapter/queue';
 import ScreenAdapter from './adapter/screen';
 import SendGridEventAdapter from './adapter/sendGridEvent';
 import PerformanceStockStatusAdapter from './adapter/stockStatus/performance';
@@ -57,12 +55,6 @@ import * as PromoterOwnerFactory from './factory/owner/promoter';
 import OwnerGroup from './factory/ownerGroup';
 import * as OwnershipFactory from './factory/ownership';
 import * as PerformanceFactory from './factory/performance';
-import * as CancelAuthorizationQueueFactory from './factory/queue/cancelAuthorization';
-import * as DisableTransactionInquiryQueueFactory from './factory/queue/disableTransactionInquiry';
-import * as PushNotificationQueueFactory from './factory/queue/pushNotification';
-import * as SettleAuthorizationQueueFactory from './factory/queue/settleAuthorization';
-import QueueGroup from './factory/queueGroup';
-import QueueStatus from './factory/queueStatus';
 import * as ScreenFactory from './factory/screen';
 import * as PerformanceStockStatusFactory from './factory/stockStatus/performance';
 import TaskName from './factory/taskName';
@@ -75,7 +67,6 @@ import * as RemoveNotificationTransactionEventFactory from './factory/transactio
 import * as UnauthorizeTransactionEventFactory from './factory/transactionEvent/unauthorize';
 import TransactionEventGroup from './factory/transactionEventGroup';
 import * as TransactionInquiryKeyFactory from './factory/transactionInquiryKey';
-import TransactionQueuesStatus from './factory/transactionQueuesStatus';
 import * as TransactionScopeFactory from './factory/transactionScope';
 import TransactionStatus from './factory/transactionStatus';
 import ErrorCode from './errorCode';
@@ -132,7 +123,6 @@ export declare namespace adapter {
     namespace stockStatus {
         function performance(redisClient: redis.RedisClient): PerformanceStockStatusAdapter;
     }
-    function queue(connection: mongoose.Connection): QueueAdapter;
     function screen(connection: mongoose.Connection): ScreenAdapter;
     function sendGridEvent(connection: mongoose.Connection): SendGridEventAdapter;
     function task(connection: mongoose.Connection): TaskAdapter;
@@ -146,7 +136,6 @@ export declare namespace service {
     export import master = MasterService;
     export import member = MemberService;
     export import notification = NotificationService;
-    export import queue = QueueService;
     export import report = ReportService;
     export import sales = SalesService;
     export import shop = ShopService;
@@ -190,14 +179,6 @@ export declare namespace factory {
     export import ownerGroup = OwnerGroup;
     export import ownership = OwnershipFactory;
     export import performance = PerformanceFactory;
-    namespace queue {
-        export import cancelAuthorization = CancelAuthorizationQueueFactory;
-        export import disableTransactionInquiry = DisableTransactionInquiryQueueFactory;
-        export import pushNotification = PushNotificationQueueFactory;
-        export import settleAuthorization = SettleAuthorizationQueueFactory;
-    }
-    export import queueGroup = QueueGroup;
-    export import queueStatus = QueueStatus;
     export import screen = ScreenFactory;
     namespace stockStatus {
         export import performance = PerformanceStockStatusFactory;
@@ -214,7 +195,6 @@ export declare namespace factory {
     }
     export import transactionEventGroup = TransactionEventGroup;
     export import transactionInquiryKey = TransactionInquiryKeyFactory;
-    export import transactionQueuesStatus = TransactionQueuesStatus;
     export import transactionScope = TransactionScopeFactory;
     export import transactionStatus = TransactionStatus;
 }

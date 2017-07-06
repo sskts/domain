@@ -2,15 +2,6 @@
  * 取引ファクトリー
  *
  * @namespace factory/transaction
- *
- * @param {string} id
- * @param {TransactionStatus} status
- * @param {Owner[]} owners
- * @param {Date} expires_at
- * @param {string} inquiry_theater
- * @param {string} inquiry_id
- * @param {string} inquiry_pass
- * @param {TransactionQueuesStatus} queues_status
  */
 
 import * as _ from 'underscore';
@@ -23,7 +14,6 @@ import ObjectId from './objectId';
 import * as OwnerFactory from './owner';
 import * as TaskFactory from './task';
 import * as TransactionInquiryKeyFactory from './transactionInquiryKey';
-import TransactionQueuesStatus from './transactionQueuesStatus';
 import TransactionStatus from './transactionStatus';
 import TransactionTasksExportationStatus from './transactionTasksExportationStatus';
 
@@ -69,14 +59,6 @@ export interface ITransaction {
      */
     inquiry_key?: TransactionInquiryKeyFactory.ITransactionInquiryKey;
     /**
-     * キューエクスポート日時
-     */
-    queues_exported_at?: Date;
-    /**
-     * キューエクスポート状態
-     */
-    queues_status: TransactionQueuesStatus;
-    /**
      * タスクエクスポート日時
      */
     tasks_exported_at?: Date;
@@ -107,8 +89,6 @@ export function create(args: {
     started_at?: Date;
     closed_at?: Date;
     inquiry_key?: TransactionInquiryKeyFactory.ITransactionInquiryKey;
-    queues_exported_at?: Date;
-    queues_status?: TransactionQueuesStatus;
     tasks_exported_at?: Date;
     tasks_exportation_status?: TransactionTasksExportationStatus;
     tasks?: TaskFactory.ITask[];
@@ -131,8 +111,6 @@ export function create(args: {
         started_at: args.started_at,
         closed_at: args.closed_at,
         inquiry_key: args.inquiry_key,
-        queues_exported_at: args.queues_exported_at,
-        queues_status: (args.queues_status === undefined) ? TransactionQueuesStatus.UNEXPORTED : args.queues_status,
         tasks_exported_at: args.tasks_exported_at,
         // tslint:disable-next-line:max-line-length
         tasks_exportation_status: (args.tasks_exportation_status === undefined) ? TransactionTasksExportationStatus.Unexported : args.tasks_exportation_status,

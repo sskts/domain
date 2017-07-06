@@ -2,7 +2,6 @@ import * as ClientUserFactory from './clientUser';
 import * as OwnerFactory from './owner';
 import * as TaskFactory from './task';
 import * as TransactionInquiryKeyFactory from './transactionInquiryKey';
-import TransactionQueuesStatus from './transactionQueuesStatus';
 import TransactionStatus from './transactionStatus';
 import TransactionTasksExportationStatus from './transactionTasksExportationStatus';
 /**
@@ -47,14 +46,6 @@ export interface ITransaction {
      */
     inquiry_key?: TransactionInquiryKeyFactory.ITransactionInquiryKey;
     /**
-     * キューエクスポート日時
-     */
-    queues_exported_at?: Date;
-    /**
-     * キューエクスポート状態
-     */
-    queues_status: TransactionQueuesStatus;
-    /**
      * タスクエクスポート日時
      */
     tasks_exported_at?: Date;
@@ -84,8 +75,6 @@ export declare function create(args: {
     started_at?: Date;
     closed_at?: Date;
     inquiry_key?: TransactionInquiryKeyFactory.ITransactionInquiryKey;
-    queues_exported_at?: Date;
-    queues_status?: TransactionQueuesStatus;
     tasks_exported_at?: Date;
     tasks_exportation_status?: TransactionTasksExportationStatus;
     tasks?: TaskFactory.ITask[];

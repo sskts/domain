@@ -20,9 +20,9 @@ import TaskName from '../../lib/factory/taskName';
 import * as TransactionFactory from '../../lib/factory/transaction';
 import * as AddNotificationTransactionEventFactory from '../../lib/factory/transactionEvent/addNotification';
 import * as TransactionInquiryKeyFactory from '../../lib/factory/transactionInquiryKey';
-import TransactionQueuesStatus from '../../lib/factory/transactionQueuesStatus';
 import * as TransactionScopeFactory from '../../lib/factory/transactionScope';
 import TransactionStatus from '../../lib/factory/transactionStatus';
+import TransactionTasksExportationStatus from '../../lib/factory/transactionTasksExportationStatus';
 
 import TaskAdapter from '../../lib/adapter/task';
 import TransactionCountAdapter from '../../lib/adapter/transactionCount';
@@ -113,7 +113,7 @@ describe('取引サービス 匿名所有者として取引開始する', () => 
         assert(transactionOption.isDefined);
         assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
         assert.equal(transactionOption.get().expires_at.valueOf(), TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS.expiresAt.valueOf());
-        assert.equal(transactionOption.get().queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
+        assert.equal(transactionOption.get().tasks_exportation_status, TransactionTasksExportationStatus.Unexported);
     });
 });
 
@@ -170,7 +170,7 @@ describe('取引サービス 取引開始する', () => {
         assert(transactionOption.isDefined);
         assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
         assert.equal(transactionOption.get().expires_at.valueOf(), TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS.expiresAt.valueOf());
-        assert.equal(transactionOption.get().queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
+        assert.equal(transactionOption.get().tasks_exportation_status, TransactionTasksExportationStatus.Unexported);
     });
 
     it('会員が存在しなければ開始できない', async () => {
@@ -205,7 +205,7 @@ describe('取引サービス 取引開始する', () => {
         const transaction = transactionOption.get();
         assert.equal(transaction.status, sskts.factory.transactionStatus.UNDERWAY);
         assert.equal(transaction.expires_at.valueOf(), TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS.expiresAt.valueOf());
-        assert.equal(transaction.queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
+        assert.equal(transaction.tasks_exportation_status, TransactionTasksExportationStatus.Unexported);
         const memberOwnerInTransaction = transaction.owners.find((owner) => owner.group === OwnerGroup.MEMBER);
         assert.notEqual(memberOwnerInTransaction, null);
         assert.equal((<MemberOwnerFactory.IOwner>memberOwnerInTransaction).id, TEST_MEMBER_OWNER.id);
@@ -229,22 +229,22 @@ describe('取引サービス 再エクスポート', () => {
                 reserve_num: 123,
                 tel: '09012345678'
             }),
-            queues_status: TransactionQueuesStatus.EXPORTING
+            tasks_exportation_status: TransactionTasksExportationStatus.Exporting
         });
         await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
 
-        await sskts.service.transaction.reexportQueues(0)(transactionAdapter); // tslint:disable-line:no-magic-numbers
+        await sskts.service.transaction.reexportTasks(0)(transactionAdapter); // tslint:disable-line:no-magic-numbers
 
         // ステータスが変更されているかどうか確認
         const retriedTransaction = <mongoose.Document>await transactionAdapter.transactionModel.findById(transaction.id).exec();
-        assert.equal(retriedTransaction.get('queues_status'), TransactionQueuesStatus.UNEXPORTED);
+        assert.equal(retriedTransaction.get('tasks_exportation_status'), TransactionTasksExportationStatus.Unexported);
 
         // テストデータ削除
         await retriedTransaction.remove();
     });
 });
 
-describe('取引サービス キューエクスポート', () => {
+describe('取引サービス タスクエクスポート', () => {
     it('ok.', async () => {
         const taskAdapter = new TaskAdapter(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
@@ -260,18 +260,18 @@ describe('取引サービス キューエクスポート', () => {
                 reserve_num: 123,
                 tel: '09012345678'
             }),
-            queues_status: TransactionQueuesStatus.UNEXPORTED
+            tasks_exportation_status: TransactionTasksExportationStatus.Unexported
         });
         await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, {
             new: true, upsert: true,
             setDefaultsOnInsert: false
         }).exec();
 
-        await sskts.service.transaction.exportQueues(status)(taskAdapter, transactionAdapter);
+        await sskts.service.transaction.exportTasks(status)(taskAdapter, transactionAdapter);
 
-        // 取引のキューエクスポートステータスを確認
+        // 取引のタスクエクスポートステータスを確認
         const transactionDoc = <mongoose.Document>await transactionAdapter.transactionModel.findById(transaction.id).exec();
-        assert.equal(transactionDoc.get('queues_status'), TransactionQueuesStatus.EXPORTED);
+        assert.equal(transactionDoc.get('tasks_exportation_status'), TransactionTasksExportationStatus.Exported);
 
         // テストデータ削除
         await transactionDoc.remove();
@@ -292,24 +292,19 @@ describe('取引サービス キューエクスポート', () => {
                 reserve_num: 123,
                 tel: '09012345678'
             }),
-            queues_status: TransactionQueuesStatus.UNEXPORTED
+            tasks_exportation_status: TransactionTasksExportationStatus.Unexported
         });
         await transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
 
-        let exportQueues: any;
-        try {
-            await sskts.service.transaction.exportQueues(status)(taskAdapter, transactionAdapter);
-        } catch (error) {
-            exportQueues = error;
-        }
-
-        assert(exportQueues instanceof Error);
+        const exportTasksError = await sskts.service.transaction.exportTasks(status)(taskAdapter, transactionAdapter)
+            .catch((error) => error);
+        assert(exportTasksError instanceof Error);
 
         await transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
     });
 });
 
-describe('取引サービス 取引IDからキュー出力する', () => {
+describe('取引サービス 取引IDからタスク出力する', () => {
     it('成立取引の出力成功', async () => {
         const taskAdapter = new TaskAdapter(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
@@ -324,7 +319,7 @@ describe('取引サービス 取引IDからキュー出力する', () => {
                 reserve_num: 123,
                 tel: '09012345678'
             }),
-            queues_status: TransactionQueuesStatus.UNEXPORTED
+            tasks_exportation_status: TransactionTasksExportationStatus.Unexported
         });
 
         const event = AddNotificationTransactionEventFactory.create({
@@ -343,18 +338,18 @@ describe('取引サービス 取引IDからキュー出力する', () => {
         ).exec();
         await transactionAdapter.addEvent(event);
 
-        await sskts.service.transaction.exportQueuesById(transaction.id)(taskAdapter, transactionAdapter);
-        const queueDoc4pushNotification = <mongoose.Document>await taskAdapter.taskModel.findOne(
+        await sskts.service.transaction.exportTasksById(transaction.id)(taskAdapter, transactionAdapter);
+        const taskDoc4pushNotification = <mongoose.Document>await taskAdapter.taskModel.findOne(
             {
                 name: TaskName.SendEmailNotification,
                 'data.notification.id': event.notification.id
             }
         ).exec();
 
-        assert.notEqual(queueDoc4pushNotification, null);
+        assert.notEqual(taskDoc4pushNotification, null);
 
         await transactionDoc.remove();
         await transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
-        await queueDoc4pushNotification.remove();
+        await taskDoc4pushNotification.remove();
     });
 });

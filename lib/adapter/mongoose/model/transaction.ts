@@ -20,11 +20,9 @@ const schema = new mongoose.Schema(
         }],
         client_user: mongoose.Schema.Types.Mixed,
         inquiry_key: TransactionInquiryKeySchemaType,
-        queues_status: String,
         expired_at: Date, // 期限切れ日時
         started_at: Date, // 開始日時
         closed_at: Date, // 成立日時
-        queues_exported_at: Date, // キューエクスポート日時
         tasks_exported_at: Date,
         tasks_exportation_status: String,
         tasks: [mongoose.Schema.Types.Mixed]
@@ -43,11 +41,6 @@ const schema = new mongoose.Schema(
     }
 );
 
-// キューエクスポート時の検索で使用
-schema.index(
-    { status: 1, queues_status: 1 }
-);
-
 // タスクエクスポート時の検索で使用
 schema.index(
     { status: 1, tasks_exportation_status: 1 }
@@ -56,11 +49,6 @@ schema.index(
 // 取引期限切れ確認等に使用
 schema.index(
     { status: 1, expires_at: 1 }
-);
-
-// 実行中キューエクスポート監視に使用
-schema.index(
-    { queues_status: 1, updated_at: 1 }
 );
 
 // 実行中タスクエクスポート監視に使用
