@@ -32,7 +32,7 @@ describe('タスクサービス:タスク名で実行する', () => {
         const taskAdapter = new TaskAdapter(connection);
         await TaskService.executeByName(name)(taskAdapter, connection);
 
-        // 実行済みのキューはないはず
+        // 実行済みのタスクはないはず
         const taskDoc = await taskAdapter.taskModel.findOne({
             status: TaskStatus.Executed,
             name: name

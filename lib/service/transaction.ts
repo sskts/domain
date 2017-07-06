@@ -40,9 +40,9 @@ import TaskStatus from '../factory/taskStatus';
 
 import * as TransactionFactory from '../factory/transaction';
 import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
-import TransactionQueuesStatus from '../factory/transactionQueuesStatus';
 import * as TransactionScopeFactory from '../factory/transactionScope';
 import TransactionStatus from '../factory/transactionStatus';
+import TransactionTasksExportationStatus from '../factory/transactionTasksExportationStatus';
 
 import OwnerAdapter from '../adapter/owner';
 import TaskAdapter from '../adapter/task';
@@ -217,24 +217,24 @@ export function makeExpired() {
 }
 
 /**
- * ひとつの取引のキューをエクスポートする
+ * ひとつの取引のタスクをエクスポートする
  *
  * @param {TransactionStatus} statu 取引ステータス
  * @memberof service/transaction
  */
-export function exportQueues(status: TransactionStatus): TaskAndTransactionOperation<void> {
+export function exportTasks(status: TransactionStatus): TaskAndTransactionOperation<void> {
     return async (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => {
-        const statusesQueueExportable = [TransactionStatus.EXPIRED, TransactionStatus.CLOSED];
-        if (statusesQueueExportable.indexOf(status) < 0) {
-            throw new ArgumentError('status', `transaction status should be in [${statusesQueueExportable.join(',')}]`);
+        const statusesTasksExportable = [TransactionStatus.EXPIRED, TransactionStatus.CLOSED];
+        if (statusesTasksExportable.indexOf(status) < 0) {
+            throw new ArgumentError('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
         }
 
         const transactionDoc = await transactionAdapter.transactionModel.findOneAndUpdate(
             {
                 status: status,
-                queues_status: TransactionQueuesStatus.UNEXPORTED
+                tasks_exportation_status: TransactionTasksExportationStatus.Unexported
             },
-            { queues_status: TransactionQueuesStatus.EXPORTING },
+            { tasks_exportation_status: TransactionTasksExportationStatus.Exporting },
             { new: true }
         ).exec();
 
@@ -243,7 +243,7 @@ export function exportQueues(status: TransactionStatus): TaskAndTransactionOpera
         }
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
-        const tasks = await exportQueuesById(transactionDoc.get('id'))(
+        const tasks = await exportTasksById(transactionDoc.get('id'))(
             taskAdapter,
             transactionAdapter
         );
@@ -251,8 +251,8 @@ export function exportQueues(status: TransactionStatus): TaskAndTransactionOpera
         await transactionAdapter.transactionModel.findByIdAndUpdate(
             transactionDoc.get('id'),
             {
-                queues_status: TransactionQueuesStatus.EXPORTED,
-                queues_exported_at: moment().toDate(),
+                tasks_exportation_status: TransactionTasksExportationStatus.Exported,
+                tasks_exported_at: moment().toDate(),
                 tasks: tasks
             }
         ).exec();
@@ -260,14 +260,14 @@ export function exportQueues(status: TransactionStatus): TaskAndTransactionOpera
 }
 
 /**
- * ID指定で取引のキュー出力
+ * ID指定で取引のタスク出力
  *
  * @param {string} id
  * @returns {TaskAndTransactionOperation<void>}
  *
  * @memberof service/transaction
  */
-export function exportQueuesById(id: string): TaskAndTransactionOperation<TaskFactory.ITask[]> {
+export function exportTasksById(id: string): TaskAndTransactionOperation<TaskFactory.ITask[]> {
     // tslint:disable-next-line:max-func-body-length
     return async (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => {
         const doc = await transactionAdapter.transactionModel.findById(id).populate('owners').exec();
@@ -338,7 +338,7 @@ export function exportQueuesById(id: string): TaskAndTransactionOperation<TaskFa
 
                 break;
 
-            // 期限切れの場合は、キューリストを作成する
+            // 期限切れの場合は、タスクリストを作成する
             case TransactionStatus.EXPIRED:
                 (await transactionAdapter.findAuthorizationsById(transaction.id)).forEach((authorization) => {
                     if (authorization.group === AuthorizationGroup.COA_SEAT_RESERVATION) {
@@ -403,15 +403,15 @@ export function exportQueuesById(id: string): TaskAndTransactionOperation<TaskFa
  * @param {number} intervalInMinutes
  * @memberof service/transaction
  */
-export function reexportQueues(intervalInMinutes: number) {
+export function reexportTasks(intervalInMinutes: number) {
     return async (transactionAdapter: TransactionAdapter) => {
         await transactionAdapter.transactionModel.findOneAndUpdate(
             {
-                queues_status: TransactionQueuesStatus.EXPORTING,
+                tasks_exportation_status: TransactionTasksExportationStatus.Exporting,
                 updated_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() }
             },
             {
-                queues_status: TransactionQueuesStatus.UNEXPORTED
+                tasks_exportation_status: TransactionTasksExportationStatus.Unexported
             }
         ).exec();
     };

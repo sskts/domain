@@ -34,7 +34,7 @@ describe('タスクサービス:タスク名で実行する', () => {
         const name = taskName_1.default.SendEmailNotification;
         const taskAdapter = new task_1.default(connection);
         yield TaskService.executeByName(name)(taskAdapter, connection);
-        // 実行済みのキューはないはず
+        // 実行済みのタスクはないはず
         const taskDoc = yield taskAdapter.taskModel.findOne({
             status: taskStatus_1.default.Executed,
             name: name

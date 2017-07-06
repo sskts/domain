@@ -77,15 +77,15 @@ export interface IFlow {
     };
     tasks: {
         /**
-         * 集計期間中に作成されたキュー数
+         * 集計期間中に作成されたタスク数
          */
         numberOfCreated: number;
         /**
-         * 集計期間中に実行されたキュー数
+         * 集計期間中に実行されたタスク数
          */
         numberOfExecuted: number;
         /**
-         * 集計期間中に中止されたキュー数
+         * 集計期間中に中止されたタスク数
          */
         numberOfAborted: number;
         /**
@@ -228,7 +228,7 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
             }
         }).exec();
 
-        // 実行中止ステータスで、最終試行日時が範囲にあるものを実行キュー数とする
+        // 実行中止ステータスで、最終試行日時が範囲にあるものを実行タスク数とする
         const numberOfTasksAborted = await taskAdapter.taskModel.count({
             last_tried_at: {
                 $gte: measuredFrom,
@@ -237,7 +237,7 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
             status: TaskStatus.Aborted
         }).exec();
 
-        // 実行済みステータスで、最終試行日時が範囲にあるものを実行キュー数とする
+        // 実行済みステータスで、最終試行日時が範囲にあるものを実行タスク数とする
         const executedTasks = await taskAdapter.taskModel.find(
             {
                 last_tried_at: {
@@ -297,7 +297,7 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
  * ストック計測データを作成する
  *
  * @param {Date} measuredAt 計測日時
- * @returns {QueueAndTransactionOperation<IStock>}
+ * @returns {TaskAndTransactionOperation<IStock>}
  */
 export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperation<IStock> {
     // tslint:disable-next-line:max-func-body-length
@@ -337,7 +337,7 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
 
         const numberOfTasksUnexecuted = await taskAdapter.taskModel.count({
             $or: [
-                // {measuredAt}以前に作成され、{measuredAt}以後に実行試行されたキュー
+                // {measuredAt}以前に作成され、{measuredAt}以後に実行試行されたタスク
                 {
                     created_at: {
                         $lte: measuredAt
@@ -350,7 +350,7 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
                         }
                     ]
                 },
-                // {measuredAt}以前に作成され、いまだに未実行のキュー
+                // {measuredAt}以前に作成され、いまだに未実行のタスク
                 {
                     created_at: {
                         $lte: measuredAt

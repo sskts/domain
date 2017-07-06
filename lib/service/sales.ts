@@ -30,7 +30,7 @@ export function cancelGMOAuth(authorization: GMOAuthorizationFactory.IAuthorizat
 
         // 失敗したら取引状態確認してどうこう、という処理も考えうるが、
         // GMOはapiのコール制限が厳しく、下手にコールするとすぐにクライアントサイドにも影響をあたえてしまう
-        // リトライはキューの仕組みに含まれているので失敗してもここでは何もしない
+        // リトライはタスクの仕組みに含まれているので失敗してもここでは何もしない
     };
 }
 
@@ -67,7 +67,7 @@ export function settleGMOAuth(authorization: GMOAuthorizationFactory.IAuthorizat
 
         // 失敗したら取引状態確認してどうこう、という処理も考えうるが、
         // GMOはapiのコール制限が厳しく、下手にコールするとすぐにクライアントサイドにも影響をあたえてしまう
-        // リトライはキューの仕組みに含まれているので失敗してもここでは何もしない
+        // リトライはタスクの仕組みに含まれているので失敗してもここでは何もしない
     };
 }
 

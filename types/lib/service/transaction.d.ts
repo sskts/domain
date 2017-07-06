@@ -68,21 +68,21 @@ export declare function makeInquiry(key: TransactionInquiryKeyFactory.ITransacti
  */
 export declare function makeExpired(): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
- * ひとつの取引のキューをエクスポートする
+ * ひとつの取引のタスクをエクスポートする
  *
  * @param {TransactionStatus} statu 取引ステータス
  * @memberof service/transaction
  */
-export declare function exportQueues(status: TransactionStatus): TaskAndTransactionOperation<void>;
+export declare function exportTasks(status: TransactionStatus): TaskAndTransactionOperation<void>;
 /**
- * ID指定で取引のキュー出力
+ * ID指定で取引のタスク出力
  *
  * @param {string} id
  * @returns {TaskAndTransactionOperation<void>}
  *
  * @memberof service/transaction
  */
-export declare function exportQueuesById(id: string): TaskAndTransactionOperation<TaskFactory.ITask[]>;
+export declare function exportTasksById(id: string): TaskAndTransactionOperation<TaskFactory.ITask[]>;
 /**
  * タスクエクスポートリトライ
  * todo updated_atを基準にしているが、タスクエクスポートトライ日時を持たせた方が安全か？
@@ -90,4 +90,4 @@ export declare function exportQueuesById(id: string): TaskAndTransactionOperatio
  * @param {number} intervalInMinutes
  * @memberof service/transaction
  */
-export declare function reexportQueues(intervalInMinutes: number): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function reexportTasks(intervalInMinutes: number): (transactionAdapter: TransactionAdapter) => Promise<void>;
