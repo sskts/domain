@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v21.0.0 - 2017-07-06
+### Added
 - indexモジュールから以下をエクスポート。
   - タスクファクトリー
   - タスク実行結果ファクトリー
@@ -14,18 +27,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 - 取引からキューをエクスポートするサービスを、タスクをエクスポートするサービスへ変更。
 
-### Deprecated
-
 ### Removed
 - キュー仕様からタスク仕様への移行につき、以下不要なモジュールを削除。
   - キューアダプター
   - キューファクトリー、キューグループファクトリー、キューステータスファクトリー
   - 取引キューステータスファクトリー
   - キューサービス
-
-### Fixed
-
-### Security
 
 ## v20.1.0 - 2017-07-04
 ### Added
