@@ -17,7 +17,7 @@ export declare function create(args: {
     id?: string;
     status: TaskStatus;
     runs_at: Date;
-    max_number_of_try: number;
+    remaining_number_of_tries: number;
     last_tried_at: Date | null;
     number_of_tried: number;
     execution_results: TaskExecutionResult.ITaskExecutionResult[];

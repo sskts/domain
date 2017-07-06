@@ -27,7 +27,7 @@ export function updatePerformanceStockStatuses(theaterCode: string, dayStart: st
     PerformanceStockStatusOperation<void> {
     return async (performanceStockStatusAdapter: PerformanceStockStatusAdapter) => {
         // COAから空席状況取得
-        const countFreeSeatResult = await COA.ReserveService.countFreeSeat({
+        const countFreeSeatResult = await COA.services.reserve.countFreeSeat({
             theater_code: theaterCode,
             begin: dayStart,
             end: dayEnd

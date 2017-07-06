@@ -69,11 +69,11 @@ export declare type ITheater = IRequiredFields & IOptionalFields & IGMO;
 /**
  * COAの劇場抽出結果からTheaterオブジェクトを作成する
  *
- * @param {COA.MasterService.TheaterResult} theaterFromCOA
+ * @param {COA.services.master.TheaterResult} theaterFromCOA
  * @returns {ITheaterWithoutGMO}
  * @memberof factory/theater
  */
-export declare function createFromCOA(theaterFromCOA: COA.MasterService.ITheaterResult): IRequiredFields;
+export declare function createFromCOA(theaterFromCOA: COA.services.master.ITheaterResult): IRequiredFields;
 export declare function createInitialOptionalFields(): IOptionalFields & IGMO;
 export declare function createWebsite(args: {
     group: TheaterWebsiteGroup;

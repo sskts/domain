@@ -10,7 +10,7 @@ export declare function execute(task: TaskFactory.ITask): TaskAndConnectionOpera
 /**
  * リトライ
  *
- * @param {number} intervalInMinutes 最終試行日時から何分経過したタスクをリトライするか
+ * @param {number} intervalInMinutes 最終トライ日時から何分経過したタスクをリトライするか
  * @returns {TaskOperation<void>}
  * @memberof service/task
  */
@@ -18,7 +18,7 @@ export declare function retry(intervalInMinutes: number): TaskOperation<void>;
 /**
  * 実行中止
  *
- * @param {number} intervalInMinutes 最終試行日時から何分経過したタスクを中止するか
+ * @param {number} intervalInMinutes 最終トライ日時から何分経過したタスクを中止するか
  * @returns {TaskOperation<void>}
  * @memberof service/task
  */

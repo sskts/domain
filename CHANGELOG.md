@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- タスクの最大試行回数フィールドを、残り試行可能回数に変更。これによって、リトライor中止を判断する際に、MongoDBへの操作に$whereオペレーターを使う必要がなくなった(indexが効くようになる)
+- update package [tslint@5.5.0](https://www.npmjs.com/package/tslint)
+- update package [@motionpicture/coa-service@3.3.1](https://www.npmjs.com/package/@motionpicture/coa-service)
 
 ### Deprecated
 
@@ -15,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+- npmのテストコマンドに[nyc](https://www.npmjs.com/package/nyc)を導入。
 
 ## v21.0.0 - 2017-07-06
 ### Added

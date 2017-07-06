@@ -115,10 +115,10 @@ export type IPerformanceWithReferenceDetails = IPerformanceBase & ICOAFields & I
 
 /**
  *
- * @param {COA.MasterService.IScheduleResult} performanceFromCOA
+ * @param {COA.services.master.IScheduleResult} performanceFromCOA
  * @memberof tobereplaced$
  */
-export function createFromCOA(performanceFromCOA: COA.MasterService.IScheduleResult) {
+export function createFromCOA(performanceFromCOA: COA.services.master.IScheduleResult) {
     return (screen: ScreenFactory.IScreen, film: FilmFactory.IFilm): IPerformance => {
         const id = createIdFromCOA({
             theater_code: screen.theater,

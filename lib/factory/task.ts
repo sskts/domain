@@ -18,10 +18,40 @@ export interface ITask {
     id: string;
     name: TaskName;
     status: TaskStatus;
+    /**
+     * いつ実行するか
+     *
+     * @type {Date}
+     * @memberof ITask
+     */
     runs_at: Date;
-    max_number_of_try: number;
+    /**
+     * あと何回トライできるか
+     *
+     * @type {number}
+     * @memberof ITask
+     */
+    remaining_number_of_tries: number;
+    /**
+     * 最終トライ日時
+     *
+     * @type {(Date | null)}
+     * @memberof ITask
+     */
     last_tried_at: Date | null;
+    /**
+     * すでにトライした回数
+     *
+     * @type {number}
+     * @memberof ITask
+     */
     number_of_tried: number;
+    /**
+     * 実行結果リスト
+     *
+     * @type {TaskExecutionResult.ITaskExecutionResult[]}
+     * @memberof ITask
+     */
     execution_results: TaskExecutionResult.ITaskExecutionResult[];
     /**
      * データ
@@ -38,7 +68,7 @@ export function create(args: {
     name: TaskName;
     status: TaskStatus;
     runs_at: Date;
-    max_number_of_try: number;
+    remaining_number_of_tries: number;
     last_tried_at: Date | null;
     number_of_tried: number;
     execution_results: TaskExecutionResult.ITaskExecutionResult[];
@@ -51,8 +81,8 @@ export function create(args: {
     if (!_.isDate(args.runs_at)) {
         throw new ArgumentError('runs_at', 'run_at should be Date');
     }
-    if (!_.isNumber(args.max_number_of_try)) {
-        throw new ArgumentError('max_number_of_try', 'max_number_of_try should be number');
+    if (!_.isNumber(args.remaining_number_of_tries)) {
+        throw new ArgumentError('remaining_number_of_tries', 'remaining_number_of_tries should be number');
     }
     if (!_.isNull(args.last_tried_at) && !_.isDate(args.last_tried_at)) {
         throw new ArgumentError('last_tried_at', 'last_tried_at should be Date or null');
@@ -69,7 +99,7 @@ export function create(args: {
         name: args.name,
         status: args.status,
         runs_at: args.runs_at,
-        max_number_of_try: args.max_number_of_try,
+        remaining_number_of_tries: args.remaining_number_of_tries,
         last_tried_at: args.last_tried_at,
         number_of_tried: args.number_of_tried,
         execution_results: args.execution_results,

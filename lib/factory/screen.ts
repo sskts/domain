@@ -57,10 +57,10 @@ export interface IScreen {
 /**
  * COAのスクリーン抽出結果からScreenオブジェクトを作成する
  *
- * @param {COA.MasterService.ScreenResult} screenFromCOA
+ * @param {COA.services.master.ScreenResult} screenFromCOA
  * @memberof factory/screen
  */
-export function createFromCOA(screenFromCOA: COA.MasterService.IScreenResult) {
+export function createFromCOA(screenFromCOA: COA.services.master.IScreenResult) {
     return (theater: TheaterFactory.ITheater): IScreen => {
         const sections: ISection[] = [];
         const sectionCodes: string[] = [];

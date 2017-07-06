@@ -31,7 +31,7 @@ describe('タスクファンクションサービス:メール送信', () => {
             },
             status: TaskStatus.Ready,
             runs_at: new Date(),
-            max_number_of_try: 1,
+            remaining_number_of_tries: 1,
             last_tried_at: null,
             number_of_tried: 0,
             execution_results: []

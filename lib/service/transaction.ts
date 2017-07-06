@@ -285,7 +285,7 @@ export function exportTasksById(id: string): TaskAndTransactionOperation<TaskFac
                         tasks.push(SettleSeatReservationAuthorizationTaskFactory.create({
                             status: TaskStatus.Ready,
                             runs_at: new Date(), // なるはやで実行
-                            max_number_of_try: 10,
+                            remaining_number_of_tries: 10,
                             last_tried_at: null,
                             number_of_tried: 0,
                             execution_results: [],
@@ -297,7 +297,7 @@ export function exportTasksById(id: string): TaskAndTransactionOperation<TaskFac
                         tasks.push(SettleGMOAuthorizationTaskFactoryTaskFactory.create({
                             status: TaskStatus.Ready,
                             runs_at: new Date(), // なるはやで実行
-                            max_number_of_try: 10,
+                            remaining_number_of_tries: 10,
                             last_tried_at: null,
                             number_of_tried: 0,
                             execution_results: [],
@@ -309,7 +309,7 @@ export function exportTasksById(id: string): TaskAndTransactionOperation<TaskFac
                         tasks.push(SettleMvtkAuthorizationTaskFactory.create({
                             status: TaskStatus.Ready,
                             runs_at: new Date(), // なるはやで実行
-                            max_number_of_try: 10,
+                            remaining_number_of_tries: 10,
                             last_tried_at: null,
                             number_of_tried: 0,
                             execution_results: [],
@@ -325,7 +325,7 @@ export function exportTasksById(id: string): TaskAndTransactionOperation<TaskFac
                         tasks.push(SendEmailNotificationTaskFactory.create({
                             status: TaskStatus.Ready,
                             runs_at: new Date(), // todo emailのsent_atを指定
-                            max_number_of_try: 10,
+                            remaining_number_of_tries: 10,
                             last_tried_at: null,
                             number_of_tried: 0,
                             execution_results: [],
@@ -345,7 +345,7 @@ export function exportTasksById(id: string): TaskAndTransactionOperation<TaskFac
                         tasks.push(CancelSeatReservationAuthorizationTaskFactory.create({
                             status: TaskStatus.Ready,
                             runs_at: new Date(), // なるはやで実行
-                            max_number_of_try: 10,
+                            remaining_number_of_tries: 10,
                             last_tried_at: null,
                             number_of_tried: 0,
                             execution_results: [],
@@ -357,7 +357,7 @@ export function exportTasksById(id: string): TaskAndTransactionOperation<TaskFac
                         tasks.push(CancelGMOAuthorizationTaskFactory.create({
                             status: TaskStatus.Ready,
                             runs_at: new Date(), // なるはやで実行
-                            max_number_of_try: 10,
+                            remaining_number_of_tries: 10,
                             last_tried_at: null,
                             number_of_tried: 0,
                             execution_results: [],
@@ -369,7 +369,7 @@ export function exportTasksById(id: string): TaskAndTransactionOperation<TaskFac
                         tasks.push(CancelMvtkAuthorizationTaskFactory.create({
                             status: TaskStatus.Ready,
                             runs_at: new Date(), // なるはやで実行
-                            max_number_of_try: 10,
+                            remaining_number_of_tries: 10,
                             last_tried_at: null,
                             number_of_tried: 0,
                             execution_results: [],

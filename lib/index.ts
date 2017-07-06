@@ -106,7 +106,7 @@ export import redis = redis;
  * COAのAPIクライアント
  *
  * @example
- * sskts.COA.MasterService.theater({ theater_code: '118' }).then(() => {
+ * sskts.COA.services.master.theater({ theater_code: '118' }).then(() => {
  *     console.log(result);
  * });
  */
@@ -146,6 +146,7 @@ export namespace adapter {
         return new PerformanceAdapter(connection);
     }
     export namespace stockStatus {
+        // tslint:disable-next-line:no-shadowed-variable
         export function performance(redisClient: redis.RedisClient) {
             return new PerformanceStockStatusAdapter(redisClient);
         }
@@ -224,6 +225,7 @@ export namespace factory {
     export import performance = PerformanceFactory;
     export import screen = ScreenFactory;
     export namespace stockStatus {
+        // tslint:disable-next-line:no-shadowed-variable
         export import performance = PerformanceStockStatusFactory;
     }
     export import task = TaskFactory;

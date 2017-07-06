@@ -47,7 +47,7 @@ export function sendEmail(email: EmailNotificationFactory.INotification): Operat
 
         const sg = sendgrid(process.env.SENDGRID_API_KEY);
 
-        const request = sg.emptyRequest({
+        const sendGridRequest = sg.emptyRequest({
             host: 'api.sendgrid.com',
             method: 'POST',
             path: '/v3/mail/send',
@@ -58,8 +58,8 @@ export function sendEmail(email: EmailNotificationFactory.INotification): Operat
             port: ''
         });
 
-        debug('requesting sendgrid api...', request);
-        const response = await sg.API(request);
+        debug('requesting sendgrid api...', sendGridRequest);
+        const response = await sg.API(sendGridRequest);
         debug('response is', response);
 
         // check the response.

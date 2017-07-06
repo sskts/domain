@@ -107,10 +107,10 @@ export declare type IPerformance = IPerformanceBase & ICOAFields & IReferences;
 export declare type IPerformanceWithReferenceDetails = IPerformanceBase & ICOAFields & IReferencesWithDetails;
 /**
  *
- * @param {COA.MasterService.IScheduleResult} performanceFromCOA
+ * @param {COA.services.master.IScheduleResult} performanceFromCOA
  * @memberof tobereplaced$
  */
-export declare function createFromCOA(performanceFromCOA: COA.MasterService.IScheduleResult): (screen: ScreenFactory.IScreen, film: FilmFactory.IFilm) => IPerformance;
+export declare function createFromCOA(performanceFromCOA: COA.services.master.IScheduleResult): (screen: ScreenFactory.IScreen, film: FilmFactory.IFilm) => IPerformance;
 /**
  * COA情報からパフォーマンスIDを生成する
  *

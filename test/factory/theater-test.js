@@ -30,7 +30,7 @@ const TEST_CREATE_WEBSITE_ARGS = {
 };
 describe('取引ファクトリー COA情報から必須フィールドを作成する', () => {
     it('作成できる', () => __awaiter(this, void 0, void 0, function* () {
-        const theaterFromCOA = yield COA.MasterService.theater({
+        const theaterFromCOA = yield COA.services.master.theater({
             theater_code: TEST_THEATER_CODE
         });
         assert.doesNotThrow(() => {

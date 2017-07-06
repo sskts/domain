@@ -7,7 +7,7 @@ async function main() {
     (<any>mongoose).Promise = global.Promise;
     const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
 
-    const requiredFields = await COA.MasterService.theater({
+    const requiredFields = await COA.services.master.theater({
         theater_code: '118'
     }).then(sskts.factory.theater.createFromCOA);
 

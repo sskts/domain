@@ -16,7 +16,7 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         mongoose.Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        const requiredFields = yield COA.MasterService.theater({
+        const requiredFields = yield COA.services.master.theater({
             theater_code: '118'
         }).then(sskts.factory.theater.createFromCOA);
         const theater = Object.assign({}, requiredFields, {

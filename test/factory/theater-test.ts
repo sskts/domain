@@ -25,7 +25,7 @@ const TEST_CREATE_WEBSITE_ARGS = {
 
 describe('取引ファクトリー COA情報から必須フィールドを作成する', () => {
     it('作成できる', async () => {
-        const theaterFromCOA = await COA.MasterService.theater({
+        const theaterFromCOA = await COA.services.master.theater({
             theater_code: TEST_THEATER_CODE
         });
         assert.doesNotThrow(() => {
