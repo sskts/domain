@@ -31,11 +31,8 @@ import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey'
 import TransactionStatus from '../factory/transactionStatus';
 
 import OwnerAdapter from '../adapter/owner';
-import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
 
-export type TransactionAndQueueOperation<T> =
-    (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => Promise<T>;
 export type OwnerAndTransactionOperation<T> =
     (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 export type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) => Promise<T>;

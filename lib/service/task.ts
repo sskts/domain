@@ -101,7 +101,7 @@ export function execute(task: TaskFactory.ITask): TaskAndConnectionOperation<voi
 /**
  * リトライ
  *
- * @param {number} intervalInMinutes 最終試行日時から何分経過したキューをリトライするか
+ * @param {number} intervalInMinutes 最終試行日時から何分経過したタスクをリトライするか
  * @returns {TaskOperation<void>}
  * @memberof service/task
  */
@@ -125,7 +125,7 @@ export function retry(intervalInMinutes: number): TaskOperation<void> {
 /**
  * 実行中止
  *
- * @param {number} intervalInMinutes 最終試行日時から何分経過したキューを中止するか
+ * @param {number} intervalInMinutes 最終試行日時から何分経過したタスクを中止するか
  * @returns {TaskOperation<void>}
  * @memberof service/task
  */
@@ -153,7 +153,7 @@ export function abort(intervalInMinutes: number): TaskOperation<void> {
         const results = <string[]>abortedTaskDoc.get('execution_results');
         const data = abortedTaskDoc.get('data');
         await NotificationService.report2developers(
-            'キューの実行が中止されました',
+            'タスクの実行が中止されました',
             `id:${abortedTaskDoc.get('_id')}
 name:${abortedTaskDoc.get('name')}
 data:${(data !== undefined) ? data : ''}

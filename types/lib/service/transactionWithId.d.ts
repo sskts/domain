@@ -10,9 +10,7 @@ import * as MemberOwnerFactory from '../factory/owner/member';
 import * as TransactionFactory from '../factory/transaction';
 import * as TransactionInquiryKeyFactory from '../factory/transactionInquiryKey';
 import OwnerAdapter from '../adapter/owner';
-import QueueAdapter from '../adapter/queue';
 import TransactionAdapter from '../adapter/transaction';
-export declare type TransactionAndQueueOperation<T> = (transactionAdapter: TransactionAdapter, queueAdapter: QueueAdapter) => Promise<T>;
 export declare type OwnerAndTransactionOperation<T> = (ownerAdapter: OwnerAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 export declare type TransactionOperation<T> = (transactionAdapter: TransactionAdapter) => Promise<T>;
 /**

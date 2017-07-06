@@ -27,9 +27,9 @@ const taskName_1 = require("../../lib/factory/taskName");
 const TransactionFactory = require("../../lib/factory/transaction");
 const AddNotificationTransactionEventFactory = require("../../lib/factory/transactionEvent/addNotification");
 const TransactionInquiryKeyFactory = require("../../lib/factory/transactionInquiryKey");
-const transactionQueuesStatus_1 = require("../../lib/factory/transactionQueuesStatus");
 const TransactionScopeFactory = require("../../lib/factory/transactionScope");
 const transactionStatus_1 = require("../../lib/factory/transactionStatus");
+const transactionTasksExportationStatus_1 = require("../../lib/factory/transactionTasksExportationStatus");
 const task_1 = require("../../lib/adapter/task");
 const transactionCount_1 = require("../../lib/adapter/transactionCount");
 const TEST_UNIT_OF_COUNT_TRANSACTIONS_IN_SECONDS = 60;
@@ -104,7 +104,7 @@ describe('取引サービス 匿名所有者として取引開始する', () => 
         assert(transactionOption.isDefined);
         assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
         assert.equal(transactionOption.get().expires_at.valueOf(), TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS.expiresAt.valueOf());
-        assert.equal(transactionOption.get().queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
+        assert.equal(transactionOption.get().tasks_exportation_status, transactionTasksExportationStatus_1.default.Unexported);
     }));
 });
 describe('取引サービス 取引開始する', () => {
@@ -141,7 +141,7 @@ describe('取引サービス 取引開始する', () => {
         assert(transactionOption.isDefined);
         assert.equal(transactionOption.get().status, sskts.factory.transactionStatus.UNDERWAY);
         assert.equal(transactionOption.get().expires_at.valueOf(), TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS.expiresAt.valueOf());
-        assert.equal(transactionOption.get().queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
+        assert.equal(transactionOption.get().tasks_exportation_status, transactionTasksExportationStatus_1.default.Unexported);
     }));
     it('会員が存在しなければ開始できない', () => __awaiter(this, void 0, void 0, function* () {
         const ownerAdapter = sskts.adapter.owner(connection);
@@ -166,7 +166,7 @@ describe('取引サービス 取引開始する', () => {
         const transaction = transactionOption.get();
         assert.equal(transaction.status, sskts.factory.transactionStatus.UNDERWAY);
         assert.equal(transaction.expires_at.valueOf(), TEST_START_TRANSACTION_AS_ANONYMOUS_ARGS.expiresAt.valueOf());
-        assert.equal(transaction.queues_status, sskts.factory.transactionQueuesStatus.UNEXPORTED);
+        assert.equal(transaction.tasks_exportation_status, transactionTasksExportationStatus_1.default.Unexported);
         const memberOwnerInTransaction = transaction.owners.find((owner) => owner.group === ownerGroup_1.default.MEMBER);
         assert.notEqual(memberOwnerInTransaction, null);
         assert.equal(memberOwnerInTransaction.id, TEST_MEMBER_OWNER.id);
@@ -187,18 +187,18 @@ describe('取引サービス 再エクスポート', () => {
                 reserve_num: 123,
                 tel: '09012345678'
             }),
-            queues_status: transactionQueuesStatus_1.default.EXPORTING
+            tasks_exportation_status: transactionTasksExportationStatus_1.default.Exporting
         });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
-        yield sskts.service.transaction.reexportQueues(0)(transactionAdapter); // tslint:disable-line:no-magic-numbers
+        yield sskts.service.transaction.reexportTasks(0)(transactionAdapter); // tslint:disable-line:no-magic-numbers
         // ステータスが変更されているかどうか確認
         const retriedTransaction = yield transactionAdapter.transactionModel.findById(transaction.id).exec();
-        assert.equal(retriedTransaction.get('queues_status'), transactionQueuesStatus_1.default.UNEXPORTED);
+        assert.equal(retriedTransaction.get('tasks_exportation_status'), transactionTasksExportationStatus_1.default.Unexported);
         // テストデータ削除
         yield retriedTransaction.remove();
     }));
 });
-describe('取引サービス キューエクスポート', () => {
+describe('取引サービス タスクエクスポート', () => {
     it('ok.', () => __awaiter(this, void 0, void 0, function* () {
         const taskAdapter = new task_1.default(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
@@ -213,16 +213,16 @@ describe('取引サービス キューエクスポート', () => {
                 reserve_num: 123,
                 tel: '09012345678'
             }),
-            queues_status: transactionQueuesStatus_1.default.UNEXPORTED
+            tasks_exportation_status: transactionTasksExportationStatus_1.default.Unexported
         });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, {
             new: true, upsert: true,
             setDefaultsOnInsert: false
         }).exec();
-        yield sskts.service.transaction.exportQueues(status)(taskAdapter, transactionAdapter);
-        // 取引のキューエクスポートステータスを確認
+        yield sskts.service.transaction.exportTasks(status)(taskAdapter, transactionAdapter);
+        // 取引のタスクエクスポートステータスを確認
         const transactionDoc = yield transactionAdapter.transactionModel.findById(transaction.id).exec();
-        assert.equal(transactionDoc.get('queues_status'), transactionQueuesStatus_1.default.EXPORTED);
+        assert.equal(transactionDoc.get('tasks_exportation_status'), transactionTasksExportationStatus_1.default.Exported);
         // テストデータ削除
         yield transactionDoc.remove();
     }));
@@ -240,21 +240,16 @@ describe('取引サービス キューエクスポート', () => {
                 reserve_num: 123,
                 tel: '09012345678'
             }),
-            queues_status: transactionQueuesStatus_1.default.UNEXPORTED
+            tasks_exportation_status: transactionTasksExportationStatus_1.default.Unexported
         });
         yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
-        let exportQueues;
-        try {
-            yield sskts.service.transaction.exportQueues(status)(taskAdapter, transactionAdapter);
-        }
-        catch (error) {
-            exportQueues = error;
-        }
-        assert(exportQueues instanceof Error);
+        const exportTasksError = yield sskts.service.transaction.exportTasks(status)(taskAdapter, transactionAdapter)
+            .catch((error) => error);
+        assert(exportTasksError instanceof Error);
         yield transactionAdapter.transactionModel.findByIdAndRemove(transaction.id).exec();
     }));
 });
-describe('取引サービス 取引IDからキュー出力する', () => {
+describe('取引サービス 取引IDからタスク出力する', () => {
     it('成立取引の出力成功', () => __awaiter(this, void 0, void 0, function* () {
         const taskAdapter = new task_1.default(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
@@ -268,7 +263,7 @@ describe('取引サービス 取引IDからキュー出力する', () => {
                 reserve_num: 123,
                 tel: '09012345678'
             }),
-            queues_status: transactionQueuesStatus_1.default.UNEXPORTED
+            tasks_exportation_status: transactionTasksExportationStatus_1.default.Unexported
         });
         const event = AddNotificationTransactionEventFactory.create({
             transaction: transaction.id,
@@ -282,14 +277,14 @@ describe('取引サービス 取引IDからキュー出力する', () => {
         });
         const transactionDoc = yield transactionAdapter.transactionModel.findByIdAndUpdate(transaction.id, transaction, { new: true, upsert: true }).exec();
         yield transactionAdapter.addEvent(event);
-        yield sskts.service.transaction.exportQueuesById(transaction.id)(taskAdapter, transactionAdapter);
-        const queueDoc4pushNotification = yield taskAdapter.taskModel.findOne({
+        yield sskts.service.transaction.exportTasksById(transaction.id)(taskAdapter, transactionAdapter);
+        const taskDoc4pushNotification = yield taskAdapter.taskModel.findOne({
             name: taskName_1.default.SendEmailNotification,
             'data.notification.id': event.notification.id
         }).exec();
-        assert.notEqual(queueDoc4pushNotification, null);
+        assert.notEqual(taskDoc4pushNotification, null);
         yield transactionDoc.remove();
         yield transactionAdapter.transactionEventModel.remove({ transaction: transaction.id }).exec();
-        yield queueDoc4pushNotification.remove();
+        yield taskDoc4pushNotification.remove();
     }));
 });
