@@ -82,7 +82,7 @@ function main() {
         const timeBegin = '1510';
         const screenCode = '90';
         // 販売可能チケット検索
-        const salesTicketResult = yield COA.ReserveService.salesTicket({
+        const salesTicketResult = yield COA.services.reserve.salesTicket({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -90,7 +90,7 @@ function main() {
             time_begin: timeBegin
         });
         // COA空席確認
-        const getStateReserveSeatResult = yield COA.ReserveService.stateReserveSeat({
+        const getStateReserveSeatResult = yield COA.services.reserve.stateReserveSeat({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,
@@ -106,7 +106,7 @@ function main() {
         if (getStateReserveSeatResult.cnt_reserve_free === 0)
             throw new Error('no available seats.');
         // COA仮予約
-        const reserveSeatsTemporarilyResult = yield COA.ReserveService.updTmpReserveSeat({
+        const reserveSeatsTemporarilyResult = yield COA.services.reserve.updTmpReserveSeat({
             theater_code: theaterCode,
             date_jouei: dateJouei,
             title_code: titleCode,

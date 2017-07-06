@@ -99,7 +99,7 @@ export import redis = redis;
  * COAのAPIクライアント
  *
  * @example
- * sskts.COA.MasterService.theater({ theater_code: '118' }).then(() => {
+ * sskts.COA.services.master.theater({ theater_code: '118' }).then(() => {
  *     console.log(result);
  * });
  */

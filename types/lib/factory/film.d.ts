@@ -58,7 +58,7 @@ export interface IFilm {
 /**
  * COAの作品抽出結果からFilmオブジェクトを作成する
  *
- * @param {COA.MasterService.TitleResult} filmFromCOA
+ * @param {COA.services.master.TitleResult} filmFromCOA
  * @memberof tobereplaced$
  */
-export declare function createFromCOA(filmFromCOA: COA.MasterService.ITitleResult): (theater: TheaterFactory.ITheater) => IFilm;
+export declare function createFromCOA(filmFromCOA: COA.services.master.ITitleResult): (theater: TheaterFactory.ITheater) => IFilm;

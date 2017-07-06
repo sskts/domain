@@ -53,7 +53,7 @@ export interface IScreen {
 /**
  * COAのスクリーン抽出結果からScreenオブジェクトを作成する
  *
- * @param {COA.MasterService.ScreenResult} screenFromCOA
+ * @param {COA.services.master.ScreenResult} screenFromCOA
  * @memberof factory/screen
  */
-export declare function createFromCOA(screenFromCOA: COA.MasterService.IScreenResult): (theater: TheaterFactory.ITheater) => IScreen;
+export declare function createFromCOA(screenFromCOA: COA.services.master.IScreenResult): (theater: TheaterFactory.ITheater) => IScreen;

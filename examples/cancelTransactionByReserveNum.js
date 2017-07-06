@@ -171,7 +171,7 @@ http://www.cinemasunshine.co.jp/
         }).exec();
         // 非同期でCOA本予約取消
         // COAから内容抽出
-        const stateReserveResult = yield COA.ReserveService.stateReserve({
+        const stateReserveResult = yield COA.services.reserve.stateReserve({
             theater_code: inquiryKey.theater_code,
             reserve_num: inquiryKey.reserve_num,
             tel_num: inquiryKey.tel
@@ -180,7 +180,7 @@ http://www.cinemasunshine.co.jp/
         if (stateReserveResult !== null) {
             // COA購入チケット取消
             debug('calling deleteReserve...');
-            yield COA.ReserveService.delReserve({
+            yield COA.services.reserve.delReserve({
                 theater_code: inquiryKey.theater_code,
                 reserve_num: inquiryKey.reserve_num,
                 tel_num: inquiryKey.tel,

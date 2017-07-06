@@ -42,7 +42,7 @@ export type AssetAndOwnerAndPerformanceAndTransactionOperation<T> =
 export function unauthorizeCOASeatReservation(authorization: COASeatReservationAuthorizationFactory.IAuthorization) {
     return async () => {
         debug('calling deleteTmpReserve...');
-        await COA.ReserveService.delTmpReserve({
+        await COA.services.reserve.delTmpReserve({
             theater_code: authorization.coa_theater_code,
             date_jouei: authorization.coa_date_jouei,
             title_code: authorization.coa_title_code,
@@ -95,7 +95,7 @@ export function transferCOASeatReservation(authorization: ICOASeatReservationAut
 
         // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
         // すでに本予約済みかどうか確認
-        const stateReserveResult = await COA.ReserveService.stateReserve({
+        const stateReserveResult = await COA.services.reserve.stateReserve({
             theater_code: authorization.coa_theater_code,
             reserve_num: authorization.coa_tmp_reserve_num,
             tel_num: owner.tel
@@ -103,9 +103,9 @@ export function transferCOASeatReservation(authorization: ICOASeatReservationAut
 
         // COA本予約
         // 未本予約であれば実行(COA本予約は一度成功すると成功できない)
-        let updReserveResult: COA.ReserveService.IUpdReserveResult;
+        let updReserveResult: COA.services.reserve.IUpdReserveResult;
         if (stateReserveResult === null) {
-            updReserveResult = await COA.ReserveService.updReserve({
+            updReserveResult = await COA.services.reserve.updReserve({
                 theater_code: authorization.coa_theater_code,
                 date_jouei: authorization.coa_date_jouei,
                 title_code: authorization.coa_title_code,
@@ -150,9 +150,9 @@ export function transferCOASeatReservation(authorization: ICOASeatReservationAut
             // let qr: string;
             const qr = (stateReserveResult !== null)
                 // tslint:disable-next-line:max-line-length
-                ? (<COA.ReserveService.IStateReserveTicket>stateReserveResult.list_ticket.find((stateReserveTicket) => (stateReserveTicket.seat_num === asset.seat_code))).seat_qrcode
+                ? (<COA.services.reserve.IStateReserveTicket>stateReserveResult.list_ticket.find((stateReserveTicket) => (stateReserveTicket.seat_num === asset.seat_code))).seat_qrcode
                 // tslint:disable-next-line:max-line-length
-                : (<COA.ReserveService.IUpdReserveQR>updReserveResult.list_qr.find((updReserveQR) => (updReserveQR.seat_num === asset.seat_code))).seat_qrcode;
+                : (<COA.services.reserve.IUpdReserveQR>updReserveResult.list_qr.find((updReserveQR) => (updReserveQR.seat_num === asset.seat_code))).seat_qrcode;
 
             const args = {
                 ...asset,
@@ -253,7 +253,7 @@ export function disableTransactionInquiry(transaction: TransactionFactory.ITrans
         const inquiryKey = <TransactionInquiryKeyFactory.ITransactionInquiryKey>transaction.inquiry_key;
 
         // COAから内容抽出
-        const reservation = await COA.ReserveService.stateReserve({
+        const reservation = await COA.services.reserve.stateReserve({
             theater_code: inquiryKey.theater_code,
             reserve_num: inquiryKey.reserve_num,
             tel_num: inquiryKey.tel
@@ -262,7 +262,7 @@ export function disableTransactionInquiry(transaction: TransactionFactory.ITrans
         if (reservation !== null) {
             // COA購入チケット取消
             debug('calling deleteReserve...');
-            await COA.ReserveService.delReserve({
+            await COA.services.reserve.delReserve({
                 theater_code: inquiryKey.theater_code,
                 reserve_num: inquiryKey.reserve_num,
                 tel_num: inquiryKey.tel,

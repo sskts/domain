@@ -30,7 +30,7 @@ const debug = createDebug('sskts-domain:service:task');
  * @ignore
  */
 const sortOrder4executionOfTasks = {
-    number_of_tried: 1, // 試行回数の少なさ優先
+    number_of_tried: 1, // トライ回数の少なさ優先
     runs_at: 1 // 実行予定日時の早さ優先
 };
 
@@ -46,7 +46,10 @@ export function executeByName(taskName: TaskName): TaskAndConnectionOperation<vo
             {
                 status: TaskStatus.Running, // 実行中に変更
                 last_tried_at: new Date(),
-                $inc: { number_of_tried: 1 } // トライ回数増やす
+                $inc: {
+                    remaining_number_of_tries: -1, // 残りトライ可能回数減らす
+                    number_of_tried: 1 // トライ回数増やす
+                }
             },
             { new: true }
         ).sort(sortOrder4executionOfTasks).exec();
@@ -65,11 +68,7 @@ export function executeByName(taskName: TaskName): TaskAndConnectionOperation<vo
 export function execute(task: TaskFactory.ITask): TaskAndConnectionOperation<void> {
     return async (taskAdapter: TaskAdapter, connection: mongoose.Connection) => {
         try {
-            // タスク名の関数が定義されていることが必須
-            if (typeof (<any>TaskFunctionsService)[task.name] !== 'function') {
-                throw new TypeError(`function undefined ${task.name}`);
-            }
-
+            // タスク名の関数が定義されていなければ、TypeErrorとなる
             await (<any>TaskFunctionsService)[task.name](task.data)(connection);
 
             const result = TaskExecutionResult.create({
@@ -101,7 +100,7 @@ export function execute(task: TaskFactory.ITask): TaskAndConnectionOperation<voi
 /**
  * リトライ
  *
- * @param {number} intervalInMinutes 最終試行日時から何分経過したタスクをリトライするか
+ * @param {number} intervalInMinutes 最終トライ日時から何分経過したタスクをリトライするか
  * @returns {TaskOperation<void>}
  * @memberof service/task
  */
@@ -111,8 +110,7 @@ export function retry(intervalInMinutes: number): TaskOperation<void> {
             {
                 status: TaskStatus.Running,
                 last_tried_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() },
-                // tslint:disable-next-line:no-invalid-this space-before-function-paren
-                $where: function (this: any) { return (this.max_number_of_try > this.number_of_tried); }
+                remaining_number_of_tries: { $gt: 0 }
             },
             {
                 status: TaskStatus.Ready // 実行前に変更
@@ -125,7 +123,7 @@ export function retry(intervalInMinutes: number): TaskOperation<void> {
 /**
  * 実行中止
  *
- * @param {number} intervalInMinutes 最終試行日時から何分経過したタスクを中止するか
+ * @param {number} intervalInMinutes 最終トライ日時から何分経過したタスクを中止するか
  * @returns {TaskOperation<void>}
  * @memberof service/task
  */
@@ -135,8 +133,7 @@ export function abort(intervalInMinutes: number): TaskOperation<void> {
             {
                 status: TaskStatus.Running,
                 last_tried_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() },
-                // tslint:disable-next-line:no-invalid-this space-before-function-paren
-                $where: function (this: any) { return (this.max_number_of_try === this.number_of_tried); }
+                remaining_number_of_tries: 0
             },
             {
                 status: TaskStatus.Aborted
@@ -150,16 +147,15 @@ export function abort(intervalInMinutes: number): TaskOperation<void> {
         }
 
         // メール通知
-        const results = <string[]>abortedTaskDoc.get('execution_results');
-        const data = abortedTaskDoc.get('data');
+        const task = <TaskFactory.ITask>abortedTaskDoc.toObject();
         await NotificationService.report2developers(
             'タスクの実行が中止されました',
-            `id:${abortedTaskDoc.get('_id')}
-name:${abortedTaskDoc.get('name')}
-data:${(data !== undefined) ? data : ''}
-runs_at:${moment(abortedTaskDoc.get('runs_at')).toISOString()}
-last_tried_at:${moment(abortedTaskDoc.get('last_tried_at')).toISOString()}
-最終結果:${results[results.length - 1]}`
+            `id:${task.id}
+name:${task.name}
+runs_at:${moment(task.runs_at).toISOString()}
+last_tried_at:${moment(<Date>task.last_tried_at).toISOString()}
+number_of_tried:${task.number_of_tried}
+最終結果:${(task.execution_results.length > 0) ? task.execution_results[task.execution_results.length - 1].error : ''}`
         )();
     };
 }

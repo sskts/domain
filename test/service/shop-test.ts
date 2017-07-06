@@ -34,7 +34,7 @@ describe('ショップサービス 開店', () => {
         // 劇場を削除してから
         await theaterAdapter.model.findByIdAndRemove(TEST_THEATER_CODE).exec();
 
-        const requiredFields = await COA.MasterService.theater({
+        const requiredFields = await COA.services.master.theater({
             theater_code: TEST_THEATER_CODE
         })
             .then(TheaterFactory.createFromCOA);
