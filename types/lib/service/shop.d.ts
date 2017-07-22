@@ -3,7 +3,6 @@
  *
  * @namespace service/shop
  */
-import * as TheaterFactory from '../factory/theater';
-import TheaterAdapter from '../adapter/theater';
-export declare type ITheaterOperation<T> = (adapter: TheaterAdapter) => Promise<T>;
-export declare function open(theater: TheaterFactory.ITheater): ITheaterOperation<void>;
+import * as MovieTheaterOrganizationFactory from '../factory/organization/movieTheater';
+import OrganizationAdapter from '../adapter/organization';
+export declare function open(organization: MovieTheaterOrganizationFactory.IOrganization): (organizationAdapter: OrganizationAdapter) => Promise<void>;

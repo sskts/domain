@@ -1,93 +1,128 @@
 /**
  * COA座席仮予約ファクトリー
- * todo jsdoc
  *
  * @namespace factory/authorization/coaSeatReservation
  */
 
-import * as _ from 'underscore';
+import * as COA from '@motionpicture/coa-service';
 
 import ArgumentError from '../../error/argument';
-import ArgumentNullError from '../../error/argumentNull';
 
-import * as SeatReservationAssetFactory from '../asset/seatReservation';
 import * as AuthorizationFactory from '../authorization';
 import AuthorizationGroup from '../authorizationGroup';
 import ObjectId from '../objectId';
+import PriceCurrency from '../priceCurrency';
+
+import * as IndivisualScreeningEventFactory from '../event/indivisualScreeningEvent';
+import * as ReservationFactory from '../reservation';
+import ReservationStatusType from '../reservationStatusType';
+
+export type IResult = COA.services.reserve.IUpdTmpReserveSeatResult;
 
 /**
- * 座席予約承認に必要な資産インターフェース
+ * 承認対象
+ * 受け入れられた供給情報
  */
-export type IAsset = SeatReservationAssetFactory.IAssetWithoutDetails;
+export interface IObject {
+    updTmpReserveSeatArgs: COA.services.reserve.IUpdTmpReserveSeatArgs;
+    acceptedOffer: IAcceptedOffer[];
+}
+
+export interface IAcceptedOffer {
+    itemOffered: IReservation;
+    price: number;
+    priceCurrency: PriceCurrency;
+    seller: {
+        name: string;
+    };
+}
+
+export type IReservation = ReservationFactory.IReservation;
 
 /**
  * COA座席仮予約
- *
- * @param {number} coa_tmp_reserve_num
- * @param {string} coa_theater_code
- * @param {string} coa_date_jouei
- * @param {string} coa_title_code
- * @param {string} coa_title_branch_num
- * @param {string} coa_time_begin
- * @param {string} coa_screen_code
- * @param {IAsset[]} assets 資産リスト(COA側では複数座席に対してひとつの仮予約番号が割り当てられるため)
- * @memberof factory/authorization/coaSeatReservation
  */
 export interface IAuthorization extends AuthorizationFactory.IAuthorization {
-    coa_tmp_reserve_num: number;
-    coa_theater_code: string;
-    coa_date_jouei: string;
-    coa_title_code: string;
-    coa_title_branch_num: string;
-    coa_time_begin: string;
-    coa_screen_code: string;
-    assets: IAsset[];
+    result: IResult;
+    object: IObject;
 }
 
-/**
- *
- * @memberof factory/authorization/coaSeatReservation
- */
-export function create(args: {
-    id?: string;
+export function createFromCOATmpReserve(args: {
     price: number;
-    owner_from: string;
-    owner_to: string;
-    coa_tmp_reserve_num: number;
-    coa_theater_code: string;
-    coa_date_jouei: string;
-    coa_title_code: string;
-    coa_title_branch_num: string;
-    coa_time_begin: string;
-    coa_screen_code: string;
-    assets: IAsset[];
+    agent: AuthorizationFactory.IOwner;
+    recipient: AuthorizationFactory.IOwner;
+    updTmpReserveSeatArgs: COA.services.reserve.IUpdTmpReserveSeatArgs;
+    reserveSeatsTemporarilyResult: COA.services.reserve.IUpdTmpReserveSeatResult;
+    tickets: COA.services.reserve.IUpdReserveTicket[],
+    indivisualScreeningEvent: IndivisualScreeningEventFactory.IEvent
 }): IAuthorization {
-    if (_.isEmpty(args.owner_from)) throw new ArgumentNullError('owner_from');
-    if (_.isEmpty(args.owner_to)) throw new ArgumentNullError('owner_to');
-    if (_.isEmpty(args.coa_theater_code)) throw new ArgumentNullError('coa_theater_code');
-    if (_.isEmpty(args.coa_date_jouei)) throw new ArgumentNullError('coa_date_jouei');
-    if (_.isEmpty(args.coa_title_code)) throw new ArgumentNullError('coa_title_code');
-    if (_.isEmpty(args.coa_title_branch_num)) throw new ArgumentNullError('coa_title_branch_num');
-    if (_.isEmpty(args.coa_time_begin)) throw new ArgumentNullError('coa_time_begin');
-    if (_.isEmpty(args.coa_screen_code)) throw new ArgumentNullError('coa_screen_code');
-
-    if (!_.isNumber(args.coa_tmp_reserve_num)) throw new ArgumentError('coa_tmp_reserve_num', 'coa_tmp_reserve_num should be number');
-    if (!_.isNumber(args.price)) throw new ArgumentError('price', 'price should be number');
-    if (args.price <= 0) throw new ArgumentError('price', 'price should be greater than 0');
-
     return {
-        id: (args.id === undefined) ? ObjectId().toString() : args.id,
+        id: ObjectId().toString(),
         group: AuthorizationGroup.COA_SEAT_RESERVATION,
-        coa_tmp_reserve_num: args.coa_tmp_reserve_num,
-        coa_theater_code: args.coa_theater_code,
-        coa_date_jouei: args.coa_date_jouei,
-        coa_title_code: args.coa_title_code,
-        coa_title_branch_num: args.coa_title_branch_num,
-        coa_time_begin: args.coa_time_begin,
-        coa_screen_code: args.coa_screen_code,
         price: args.price,
-        owner_from: args.owner_from,
-        owner_to: args.owner_to,
-        assets: args.assets
+        recipient: args.recipient,
+        agent: args.agent,
+        result: args.reserveSeatsTemporarilyResult,
+        object: {
+            updTmpReserveSeatArgs: args.updTmpReserveSeatArgs,
+            acceptedOffer: args.reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve, index) => {
+                const selectedTicket = args.tickets.find((ticket) => ticket.seat_num === tmpReserve.seat_num);
+                if (selectedTicket === undefined) {
+                    throw new ArgumentError('tickets');
+                }
+
+                // QRコード文字列を手動で作成
+                const ticketToken = [
+                    args.indivisualScreeningEvent.coaInfo.theaterCode,
+                    args.indivisualScreeningEvent.coaInfo.dateJouei,
+                    // tslint:disable-next-line:no-magic-numbers
+                    (`00000000${args.reserveSeatsTemporarilyResult.tmp_reserve_num}`).slice(-8),
+                    // tslint:disable-next-line:no-magic-numbers
+                    (`000${index + 1}`).slice(-3)
+                ].join('');
+
+                return {
+                    itemOffered: ReservationFactory.create({
+                        additionalTicketText: '',
+                        modifiedTime: new Date(),
+                        numSeats: 1,
+                        price: selectedTicket.sale_price,
+                        priceCurrency: PriceCurrency.JPY,
+                        reservationFor: args.indivisualScreeningEvent,
+                        reservationNumber: `${args.reserveSeatsTemporarilyResult.tmp_reserve_num}-${index.toString()}`,
+                        reservationStatus: ReservationStatusType.ReservationHold,
+                        reservedTicket: {
+                            coaTicketInfo: selectedTicket,
+                            dateIssued: new Date(),
+                            issuedBy: args.agent,
+                            priceCurrency: PriceCurrency.JPY,
+                            ticketedSeat: {
+                                seatingType: '',
+                                seatNumber: tmpReserve.seat_num,
+                                seatRow: '',
+                                seatSection: tmpReserve.seat_section
+                            },
+                            ticketNumber: ticketToken,
+                            ticketToken: ticketToken,
+                            totalPrice: selectedTicket.sale_price,
+                            underName: {
+                                typeOf: 'Person',
+                                name: ''
+                            }
+                        },
+                        totalPrice: selectedTicket.sale_price,
+                        underName: {
+                            typeOf: 'Person',
+                            name: ''
+                        }
+                    }),
+                    price: selectedTicket.sale_price,
+                    priceCurrency: PriceCurrency.JPY,
+                    seller: {
+                        name: ''
+                    }
+                };
+            })
+        }
     };
 }

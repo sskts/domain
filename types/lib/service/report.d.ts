@@ -163,9 +163,3 @@ export interface ICreditGMONotification {
  * @memberof service/report
  */
 export declare function searchGMOSales(dateFrom: Date, dateTo: Date): GMONotificationOperation<ICreditGMONotification[]>;
-/**
- * GMO実売上を診察にかける
- *
- * @param {ICreditGMONotification} notification GMOクレジットカード通知
- */
-export declare function examineGMOSales(notification: ICreditGMONotification): (transactionAdapter: TransactionAdapter) => Promise<void>;

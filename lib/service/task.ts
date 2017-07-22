@@ -30,8 +30,8 @@ const debug = createDebug('sskts-domain:service:task');
  * @ignore
  */
 const sortOrder4executionOfTasks = {
-    number_of_tried: 1, // トライ回数の少なさ優先
-    runs_at: 1 // 実行予定日時の早さ優先
+    numberOfTried: 1, // トライ回数の少なさ優先
+    runsAt: 1 // 実行予定日時の早さ優先
 };
 
 export function executeByName(taskName: TaskName): TaskAndConnectionOperation<void> {
@@ -40,15 +40,15 @@ export function executeByName(taskName: TaskName): TaskAndConnectionOperation<vo
         const taskDoc = await taskAdapter.taskModel.findOneAndUpdate(
             {
                 status: TaskStatus.Ready,
-                runs_at: { $lt: new Date() },
+                runsAt: { $lt: new Date() },
                 name: taskName
             },
             {
                 status: TaskStatus.Running, // 実行中に変更
-                last_tried_at: new Date(),
+                lastTriedAt: new Date(),
                 $inc: {
-                    remaining_number_of_tries: -1, // 残りトライ可能回数減らす
-                    number_of_tried: 1 // トライ回数増やす
+                    remainingNumberOfTries: -1, // 残りトライ可能回数減らす
+                    numberOfTried: 1 // トライ回数増やす
                 }
             },
             { new: true }
@@ -72,26 +72,26 @@ export function execute(task: TaskFactory.ITask): TaskAndConnectionOperation<voi
             await (<any>TaskFunctionsService)[task.name](task.data)(connection);
 
             const result = TaskExecutionResult.create({
-                executed_at: new Date(),
+                executedAt: new Date(),
                 error: ''
             });
             await taskAdapter.taskModel.findByIdAndUpdate(
                 task.id,
                 {
                     status: TaskStatus.Executed,
-                    $push: { execution_results: result }
+                    $push: { executionResults: result }
                 }
             ).exec();
         } catch (error) {
             // 失敗してもここでは戻さない(Runningのまま待機)
             // 実行結果追加
             const result = TaskExecutionResult.create({
-                executed_at: new Date(),
+                executedAt: new Date(),
                 error: error.stack
             });
             await taskAdapter.taskModel.findByIdAndUpdate(
                 task.id,
-                { $push: { execution_results: result } }
+                { $push: { executionResults: result } }
             ).exec();
         }
     };
@@ -109,8 +109,8 @@ export function retry(intervalInMinutes: number): TaskOperation<void> {
         await taskAdapter.taskModel.update(
             {
                 status: TaskStatus.Running,
-                last_tried_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() },
-                remaining_number_of_tries: { $gt: 0 }
+                lastTriedAt: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() },
+                remainingNumberOfTries: { $gt: 0 }
             },
             {
                 status: TaskStatus.Ready // 実行前に変更
@@ -132,8 +132,8 @@ export function abort(intervalInMinutes: number): TaskOperation<void> {
         const abortedTaskDoc = await taskAdapter.taskModel.findOneAndUpdate(
             {
                 status: TaskStatus.Running,
-                last_tried_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() },
-                remaining_number_of_tries: 0
+                lastTriedAt: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() },
+                remainingNumberOfTries: 0
             },
             {
                 status: TaskStatus.Aborted
@@ -152,10 +152,10 @@ export function abort(intervalInMinutes: number): TaskOperation<void> {
             'タスクの実行が中止されました',
             `id:${task.id}
 name:${task.name}
-runs_at:${moment(task.runs_at).toISOString()}
-last_tried_at:${moment(<Date>task.last_tried_at).toISOString()}
-number_of_tried:${task.number_of_tried}
-最終結果:${(task.execution_results.length > 0) ? task.execution_results[task.execution_results.length - 1].error : ''}`
+runsAt:${moment(task.runsAt).toISOString()}
+lastTriedAt:${moment(<Date>task.lastTriedAt).toISOString()}
+numberOfTried:${task.numberOfTried}
+最終結果:${(task.executionResults.length > 0) ? task.executionResults[task.executionResults.length - 1].error : ''}`
         )();
     };
 }

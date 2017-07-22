@@ -20,12 +20,12 @@ export function cancelGMOAuth(authorization: GMOAuthorizationFactory.IAuthorizat
     return async () => {
         debug('calling alterTran...');
         await GMO.CreditService.alterTran({
-            shopId: authorization.gmo_shop_id,
-            shopPass: authorization.gmo_shop_pass,
-            accessId: authorization.gmo_access_id,
-            accessPass: authorization.gmo_access_pass,
+            shopId: authorization.object.shopId,
+            shopPass: authorization.object.shopPass,
+            accessId: authorization.object.accessId,
+            accessPass: authorization.object.accessPass,
             jobCd: GMO.Util.JOB_CD_VOID,
-            amount: authorization.gmo_amount
+            amount: authorization.object.amount
         });
 
         // 失敗したら取引状態確認してどうこう、という処理も考えうるが、
@@ -43,9 +43,9 @@ export function settleGMOAuth(authorization: GMOAuthorizationFactory.IAuthorizat
     return async () => {
         // 取引状態参照
         const searchTradeResult = await GMO.CreditService.searchTrade({
-            shopId: authorization.gmo_shop_id,
-            shopPass: authorization.gmo_shop_pass,
-            orderId: authorization.gmo_order_id
+            shopId: authorization.object.shopId,
+            shopPass: authorization.object.shopPass,
+            orderId: authorization.object.orderId
         });
 
         if (searchTradeResult.jobCd === GMO.Util.JOB_CD_SALES) {
@@ -57,12 +57,12 @@ export function settleGMOAuth(authorization: GMOAuthorizationFactory.IAuthorizat
 
         debug('calling alterTran...');
         await GMO.CreditService.alterTran({
-            shopId: authorization.gmo_shop_id,
-            shopPass: authorization.gmo_shop_pass,
-            accessId: authorization.gmo_access_id,
-            accessPass: authorization.gmo_access_pass,
+            shopId: authorization.object.shopId,
+            shopPass: authorization.object.shopPass,
+            accessId: authorization.object.accessId,
+            accessPass: authorization.object.accessPass,
             jobCd: GMO.Util.JOB_CD_SALES,
-            amount: authorization.gmo_amount
+            amount: authorization.object.amount
         });
 
         // 失敗したら取引状態確認してどうこう、という処理も考えうるが、

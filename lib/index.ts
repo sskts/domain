@@ -11,7 +11,6 @@ import * as redis from 'redis';
 
 import * as ClientService from './service/client';
 import * as MasterService from './service/master';
-import * as MemberService from './service/member';
 import * as NotificationService from './service/notification';
 import * as ReportService from './service/report';
 import * as SalesService from './service/sales';
@@ -19,26 +18,34 @@ import * as ShopService from './service/shop';
 import * as StockService from './service/stock';
 import * as StockStatusService from './service/stockStatus';
 import * as TaskService from './service/task';
-import * as TransactionService from './service/transaction';
-import * as TransactionWithIdService from './service/transactionWithId';
+import * as TradeService from './service/trade';
+import * as TradeInProgressService from './service/tradeInProgress';
 
-import AssetAdapter from './adapter/asset';
+import ActionAdapter from './adapter/action';
 import ClientAdapter from './adapter/client';
-import FilmAdapter from './adapter/film';
+import CreativeWorkAdapter from './adapter/creativeWork';
+import EventAdapter from './adapter/event';
 import GMONotificationAdapter from './adapter/gmoNotification';
+import OrganizationAdapter from './adapter/organization';
 import OwnerAdapter from './adapter/owner';
-import PerformanceAdapter from './adapter/performance';
-import ScreenAdapter from './adapter/screen';
+import OwnershipInfoAdapter from './adapter/ownershipInfo';
+import PersonAdapter from './adapter/person';
+import PlaceAdapter from './adapter/place';
 import SendGridEventAdapter from './adapter/sendGridEvent';
 import PerformanceStockStatusAdapter from './adapter/stockStatus/performance';
 import TaskAdapter from './adapter/task';
 import TelemetryAdapter from './adapter/telemetry';
-import TheaterAdapter from './adapter/theater';
-import TransactionAdapter from './adapter/transaction';
 import TransactionCountAdapter from './adapter/transactionCount';
 
-import * as SeatReservationAssetFactory from './factory/asset/seatReservation';
-import AssetGroup from './factory/assetGroup';
+import * as ActionFactory from './factory/action';
+import * as AddNotificationActionEventFactory from './factory/actionEvent/addNotification';
+import * as AuthorizeActionEventFactory from './factory/actionEvent/authorize';
+import * as RemoveNotificationActionEventFactory from './factory/actionEvent/removeNotification';
+import * as UnauthorizeActionEventFactory from './factory/actionEvent/unauthorize';
+import ActionEventGroup from './factory/actionEventType';
+import * as ActionScopeFactory from './factory/actionScope';
+import ActionStatusType from './factory/actionStatusType';
+import ActionTasksExportationStatus from './factory/actionTasksExportationStatus';
 import * as CoaSeatReservationAuthorizationFactory from './factory/authorization/coaSeatReservation';
 import * as GmoAuthorizationFactory from './factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from './factory/authorization/mvtk';
@@ -49,33 +56,21 @@ import * as GMOCardIdFactory from './factory/cardId/gmo';
 import * as ClientFactory from './factory/client';
 import * as ClientEventFactory from './factory/clientEvent';
 import * as ClientUserFactory from './factory/clientUser';
-import * as FilmFactory from './factory/film';
+import EventType from './factory/eventType';
 import * as EmailNotificationFactory from './factory/notification/email';
 import NotificationGroup from './factory/notificationGroup';
-import * as AnonymousOwnerFactory from './factory/owner/anonymous';
-import * as MemberOwnerFactory from './factory/owner/member';
-import * as PromoterOwnerFactory from './factory/owner/promoter';
-import OwnerGroup from './factory/ownerGroup';
-import * as OwnershipFactory from './factory/ownership';
-import * as PerformanceFactory from './factory/performance';
-import * as ScreenFactory from './factory/screen';
+import * as OrderInquiryKeyFactory from './factory/orderInquiryKey';
+import * as CorporationOrganizationFactory from './factory/organization/corporation';
+import * as MovieTheaterOrganizationFactory from './factory/organization/movieTheater';
+import CorporationOrganizationIdentifier from './factory/organizationIdentifier/corporation';
+import OrganizationType from './factory/organizationType';
+import ReservationStatusType from './factory/reservationStatusType';
 import * as PerformanceStockStatusFactory from './factory/stockStatus/performance';
 import * as TaskFactory from './factory/task';
 import * as TaskExecutionResultFactory from './factory/taskExecutionResult';
 import TaskName from './factory/taskName';
 import TaskStatus from './factory/taskStatus';
-import * as TheaterFactory from './factory/theater';
-import TheaterWebsiteGroup from './factory/theaterWebsiteGroup';
-import * as TransactionFactory from './factory/transaction';
-import * as AddNotificationTransactionEventFactory from './factory/transactionEvent/addNotification';
-import * as AuthorizeTransactionEventFactory from './factory/transactionEvent/authorize';
-import * as RemoveNotificationTransactionEventFactory from './factory/transactionEvent/removeNotification';
-import * as UnauthorizeTransactionEventFactory from './factory/transactionEvent/unauthorize';
-import TransactionEventGroup from './factory/transactionEventGroup';
-import * as TransactionInquiryKeyFactory from './factory/transactionInquiryKey';
-import * as TransactionScopeFactory from './factory/transactionScope';
-import TransactionStatus from './factory/transactionStatus';
-import TransactionTasksExportationStatus from './factory/transactionTasksExportationStatus';
+import * as URLFactory from './factory/url';
 
 import ErrorCode from './errorCode';
 
@@ -127,32 +122,41 @@ export import COA = COA;
 export import GMO = GMO;
 
 export namespace adapter {
-    export function asset(connection: mongoose.Connection) {
-        return new AssetAdapter(connection);
+    export function action(connection: mongoose.Connection) {
+        return new ActionAdapter(connection);
     }
     export function client(connection: mongoose.Connection) {
         return new ClientAdapter(connection);
     }
-    export function film(connection: mongoose.Connection) {
-        return new FilmAdapter(connection);
+    export function creativeWork(connection: mongoose.Connection) {
+        return new CreativeWorkAdapter(connection);
+    }
+    export function event(connection: mongoose.Connection) {
+        return new EventAdapter(connection);
     }
     export function gmoNotification(connection: mongoose.Connection) {
         return new GMONotificationAdapter(connection);
     }
+    export function organization(connection: mongoose.Connection) {
+        return new OrganizationAdapter(connection);
+    }
     export function owner(connection: mongoose.Connection) {
         return new OwnerAdapter(connection);
     }
-    export function performance(connection: mongoose.Connection) {
-        return new PerformanceAdapter(connection);
+    export function ownershipInfo(connection: mongoose.Connection) {
+        return new OwnershipInfoAdapter(connection);
+    }
+    export function person(connection: mongoose.Connection) {
+        return new PersonAdapter(connection);
+    }
+    export function place(connection: mongoose.Connection) {
+        return new PlaceAdapter(connection);
     }
     export namespace stockStatus {
         // tslint:disable-next-line:no-shadowed-variable
         export function performance(redisClient: redis.RedisClient) {
             return new PerformanceStockStatusAdapter(redisClient);
         }
-    }
-    export function screen(connection: mongoose.Connection) {
-        return new ScreenAdapter(connection);
     }
     export function sendGridEvent(connection: mongoose.Connection) {
         return new SendGridEventAdapter(connection);
@@ -163,12 +167,6 @@ export namespace adapter {
     export function telemetry(connection: mongoose.Connection) {
         return new TelemetryAdapter(connection);
     }
-    export function theater(connection: mongoose.Connection) {
-        return new TheaterAdapter(connection);
-    }
-    export function transaction(connection: mongoose.Connection) {
-        return new TransactionAdapter(connection);
-    }
     export function transactionCount(redisClient: redis.RedisClient) {
         return new TransactionCountAdapter(redisClient);
     }
@@ -177,7 +175,6 @@ export namespace adapter {
 export namespace service {
     export import client = ClientService;
     export import master = MasterService;
-    export import member = MemberService;
     export import notification = NotificationService;
     export import report = ReportService;
     export import sales = SalesService;
@@ -185,15 +182,11 @@ export namespace service {
     export import stock = StockService;
     export import stockStatus = StockStatusService;
     export import task = TaskService;
-    export import transaction = TransactionService;
-    export import transactionWithId = TransactionWithIdService;
+    export import trade = TradeService;
+    export import tradeInProgress = TradeInProgressService;
 }
 
 export namespace factory {
-    export namespace asset {
-        export import seatReservation = SeatReservationAssetFactory;
-    }
-    export import assetGroup = AssetGroup;
     export namespace authorization {
         export import coaSeatReservation = CoaSeatReservationAuthorizationFactory;
         export import gmo = GmoAuthorizationFactory;
@@ -210,20 +203,21 @@ export namespace factory {
     export import client = ClientFactory;
     export import clientEvent = ClientEventFactory;
     export import clientUser = ClientUserFactory;
-    export import film = FilmFactory;
     export namespace notification {
         export import email = EmailNotificationFactory;
     }
+    export import eventType = EventType;
     export import notificationGroup = NotificationGroup;
-    export namespace owner {
-        export import anonymous = AnonymousOwnerFactory;
-        export import member = MemberOwnerFactory;
-        export import promoter = PromoterOwnerFactory;
+    export namespace organization {
+        export import corporation = CorporationOrganizationFactory;
+        export import movieTheater = MovieTheaterOrganizationFactory;
     }
-    export import ownerGroup = OwnerGroup;
-    export import ownership = OwnershipFactory;
-    export import performance = PerformanceFactory;
-    export import screen = ScreenFactory;
+    export import orderInquiryKey = OrderInquiryKeyFactory;
+    export namespace organizationIdentifier {
+        export import corporation = CorporationOrganizationIdentifier;
+    }
+    export import organizationType = OrganizationType;
+    export import reservationStatusType = ReservationStatusType;
     export namespace stockStatus {
         // tslint:disable-next-line:no-shadowed-variable
         export import performance = PerformanceStockStatusFactory;
@@ -232,20 +226,18 @@ export namespace factory {
     export import taskExecutionResult = TaskExecutionResultFactory;
     export import taskName = TaskName;
     export import taskStatus = TaskStatus;
-    export import theater = TheaterFactory;
-    export import theaterWebsiteGroup = TheaterWebsiteGroup;
-    export import transaction = TransactionFactory;
-    export namespace transactionEvent {
-        export import addNotification = AddNotificationTransactionEventFactory;
-        export import authorize = AuthorizeTransactionEventFactory;
-        export import removeNotification = RemoveNotificationTransactionEventFactory;
-        export import unauthorize = UnauthorizeTransactionEventFactory;
+    export import action = ActionFactory;
+    export namespace actionEvent {
+        export import addNotification = AddNotificationActionEventFactory;
+        export import authorize = AuthorizeActionEventFactory;
+        export import removeNotification = RemoveNotificationActionEventFactory;
+        export import unauthorize = UnauthorizeActionEventFactory;
     }
-    export import transactionEventGroup = TransactionEventGroup;
-    export import transactionInquiryKey = TransactionInquiryKeyFactory;
-    export import transactionScope = TransactionScopeFactory;
-    export import transactionStatus = TransactionStatus;
-    export import transactionTasksExportationStatus = TransactionTasksExportationStatus;
+    export import actionEventGroup = ActionEventGroup;
+    export import actionScope = ActionScopeFactory;
+    export import actionStatusType = ActionStatusType;
+    export import actionTasksExportationStatus = ActionTasksExportationStatus;
+    export import url = URLFactory;
 }
 
 export import errorCode = ErrorCode;

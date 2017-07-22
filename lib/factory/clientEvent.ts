@@ -13,7 +13,7 @@ import ObjectId from './objectId';
 export interface IClientEvent {
     id: string;
     client: string;
-    occurred_at: Date;
+    occurredAt: Date;
     url: string;
     label: string;
     category: string;
@@ -28,7 +28,7 @@ export interface IClientEvent {
 export function create(args: {
     id?: string;
     client: string;
-    occurred_at: Date;
+    occurredAt: Date;
     url?: string;
     label: string;
     category?: string;
@@ -44,7 +44,7 @@ export function create(args: {
     const event: IClientEvent = {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
         client: args.client,
-        occurred_at: args.occurred_at,
+        occurredAt: args.occurredAt,
         url: (args.url !== undefined) ? args.url : '',
         label: args.label,
         category: (args.category !== undefined) ? args.category : '',

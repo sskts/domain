@@ -8,19 +8,14 @@
 import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
-import * as _ from 'underscore';
 
 import GMONotificationAdapter from '../adapter/gmoNotification';
 import TaskAdapter from '../adapter/task';
 import TelemetryAdapter from '../adapter/telemetry';
 import TransactionAdapter from '../adapter/transaction';
 
-import * as GMOAuthorizationFactory from '../factory/authorization/gmo';
-import AuthorizationGroup from '../factory/authorizationGroup';
+import ActionStatusType from '../factory/actionStatusType';
 import TaskStatus from '../factory/taskStatus';
-import TransactionStatus from '../factory/transactionStatus';
-
-import ArgumentError from '../error/argument';
 
 export type TaskAndTransactionOperation<T> = (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 export type TaskAndTelemetryAndTransactionOperation<T> =
@@ -207,9 +202,11 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
         const minRequiredTimeInMilliseconds =
             requiredTimes.reduce((a, b) => Math.min(a, b), (numberOfTransactionsClosed > 0) ? requiredTimes[0] : 0);
 
-        const amounts = await Promise.all(
-            closedTransactions.map(async (transaction) => await transactionAdapter.calculateAmountById(transaction.get('id')))
-        );
+        // todo 金額算出
+        // const amounts = await Promise.all(
+        //     closedTransactions.map(async (transaction) => await transactionAdapter.calculateAmountById(transaction.get('id')))
+        // );
+        const amounts: number[] = [];
         const totalAmount = amounts.reduce((a, b) => a + b, 0);
         const maxAmount = amounts.reduce((a, b) => Math.max(a, b), 0);
         const minAmount = amounts.reduce((a, b) => Math.min(a, b), (numberOfTransactionsClosed > 0) ? amounts[0] : 0);
@@ -330,7 +327,7 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
                     started_at: {
                         $lte: measuredAt
                     },
-                    status: TransactionStatus.UNDERWAY
+                    status: ActionStatusType.ActiveActionStatus
                 }
             ]
         }).exec();
@@ -420,72 +417,70 @@ export function searchGMOSales(dateFrom: Date, dateTo: Date): GMONotificationOpe
 
 /**
  * GMO実売上を診察にかける
- *
- * @param {ICreditGMONotification} notification GMOクレジットカード通知
  */
-export function examineGMOSales(notification: ICreditGMONotification) {
-    return async (transactionAdapter: TransactionAdapter) => {
-        if (notification.job_cd !== GMO.Util.JOB_CD_SALES) {
-            throw new ArgumentError('notification.job_cd', 'job_cd should be SALES');
-        }
+// export function examineGMOSales(notification: ICreditGMONotification) {
+//     return async (transactionAdapter: TransactionAdapter) => {
+//         if (notification.job_cd !== GMO.Util.JOB_CD_SALES) {
+//             throw new ArgumentError('notification.job_cd', 'job_cd should be SALES');
+//         }
 
-        if (!_.isEmpty(notification.err_code)) {
-            throw new Error(`err_code exists${notification.err_code}`);
-        }
+//         if (!_.isEmpty(notification.err_code)) {
+//             throw new Error(`err_code exists${notification.err_code}`);
+//         }
 
-        // オーダーIDから劇場コードと予約番号を取得
-        // tslint:disable-next-line:no-magic-numbers
-        const theaterCode = notification.order_id.slice(8, 11);
-        // tslint:disable-next-line:no-magic-numbers
-        const reserveNum = parseInt(notification.order_id.slice(11, 19), 10);
-        debug('theaterCode, reserveNum:', theaterCode, reserveNum);
-        if (typeof theaterCode !== 'string' || !Number.isInteger(reserveNum)) {
-            throw new Error('invalid orderId');
-        }
+//         // オーダーIDから劇場コードと予約番号を取得
+//         // tslint:disable-next-line:no-magic-numbers
+//         const theaterCode = notification.order_id.slice(8, 11);
+//         // tslint:disable-next-line:no-magic-numbers
+//         const reserveNum = parseInt(notification.order_id.slice(11, 19), 10);
+//         debug('theaterCode, reserveNum:', theaterCode, reserveNum);
+//         if (typeof theaterCode !== 'string' || !Number.isInteger(reserveNum)) {
+//             throw new Error('invalid orderId');
+//         }
 
-        const transactionDoc = await transactionAdapter.transactionModel.findOne(
-            {
-                status: TransactionStatus.CLOSED,
-                'inquiry_key.theater_code': theaterCode,
-                'inquiry_key.reserve_num': reserveNum
-            },
-            '_id'
-        ).exec();
-        debug('transactionDoc:', transactionDoc);
+//         const transactionDoc = await transactionAdapter.transactionModel.findOne(
+//             {
+//                 status: TransactionStatus.CLOSED,
+//                 'inquiry_key.theater_code': theaterCode,
+//                 'inquiry_key.reserve_num': reserveNum
+//             },
+//             '_id'
+//         ).exec();
+//         debug('transactionDoc:', transactionDoc);
 
-        if (transactionDoc === null) {
-            throw new Error('transaction not found');
-        }
+//         if (transactionDoc === null) {
+//             throw new Error('transaction not found');
+//         }
 
-        const authorizations = await transactionAdapter.findAuthorizationsById(transactionDoc.get('id'));
-        const gmoAuthorization = <GMOAuthorizationFactory.IAuthorization>authorizations.find(
-            (authorization) => authorization.group === AuthorizationGroup.GMO
-        );
-        // GMOオーソリがなければ異常
-        if (gmoAuthorization === undefined) {
-            throw new Error('gmo authorization not found');
-        }
-        debug('gmoAuthorization:', gmoAuthorization);
+//         const authorizations = await transactionAdapter.findAuthorizationsById(transactionDoc.get('id'));
+//         const gmoAuthorization = <GMOAuthorizationFactory.IAuthorization>authorizations.find(
+//             (authorization) => authorization.group === AuthorizationGroup.GMO
+//         );
+//         // GMOオーソリがなければ異常
+//         if (gmoAuthorization === undefined) {
+//             throw new Error('gmo authorization not found');
+//         }
+//         debug('gmoAuthorization:', gmoAuthorization);
 
-        // オーソリのオーダーIDと同一かどうか
-        if (gmoAuthorization.gmo_order_id !== notification.order_id) {
-            throw new Error('order_id not matched');
-        }
+//         // オーソリのオーダーIDと同一かどうか
+//         if (gmoAuthorization.object.orderId !== notification.order_id) {
+//             throw new Error('orderId not matched');
+//         }
 
-        if (gmoAuthorization.gmo_access_id !== notification.access_id) {
-            throw new Error('gmo_access_id not matched');
-        }
+//         if (gmoAuthorization.object.accessId !== notification.access_id) {
+//             throw new Error('accessId not matched');
+//         }
 
-        if (gmoAuthorization.gmo_pay_type !== notification.pay_type) {
-            throw new Error('gmo_pay_type not matched');
-        }
+//         if (gmoAuthorization.object.payType !== notification.pay_type) {
+//             throw new Error('payType not matched');
+//         }
 
-        // オーソリの金額と同一かどうか
-        // tslint:disable-next-line:no-magic-numbers
-        if (gmoAuthorization.price !== parseInt(notification.amount, 10)) {
-            throw new Error('amount not matched');
-        }
+//         // オーソリの金額と同一かどうか
+//         // tslint:disable-next-line:no-magic-numbers
+//         if (gmoAuthorization.price !== parseInt(notification.amount, 10)) {
+//             throw new Error('amount not matched');
+//         }
 
-        // health!
-    };
-}
+//         // health!
+//     };
+// }

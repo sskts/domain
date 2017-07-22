@@ -8,9 +8,8 @@
 import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
 
-import AssetAdapter from '../adapter/asset';
-import OwnerAdapter from '../adapter/owner';
-import PerformanceAdapter from '../adapter/performance';
+import OwnershipInfoAdapter from '../adapter/ownershipInfo';
+import PersonAdapter from '../adapter/person';
 
 import * as CancelGMOAuthorizationTaskFactory from '../factory/task/cancelGMOAuthorization';
 import * as CancelMvtkAuthorizationTaskFactory from '../factory/task/cancelMvtkAuthorization';
@@ -86,12 +85,9 @@ export function settleSeatReservationAuthorization(
     debug('executing...', data);
 
     return async (connection: mongoose.Connection) => {
-        const assetAdapter = new AssetAdapter(connection);
-        const ownerAdapter = new OwnerAdapter(connection);
-        const performanceAdapter = new PerformanceAdapter(connection);
-        await StockService.transferCOASeatReservation(data.authorization)(
-            assetAdapter, ownerAdapter, performanceAdapter
-        );
+        const ownershipInfoAdapter = new OwnershipInfoAdapter(connection);
+        const personAdapter = new PersonAdapter(connection);
+        await StockService.transferCOASeatReservation(data.authorization)(ownershipInfoAdapter, personAdapter);
     };
 }
 

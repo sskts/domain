@@ -5,12 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- アクション、創作物、イベント、組織、人物、所有権、場所、注文、予約スキーマを新たに追加。
 
 ### Changed
 
 ### Deprecated
 
 ### Removed
+- 劇場、スクリーン、作品、パフォーマンススキーマを削除。
+- 所有者、資産、取引スキーマを削除。
 
 ### Fixed
 

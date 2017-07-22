@@ -1,27 +1,14 @@
 import * as monapt from 'monapt';
-import * as FilmFactory from '../factory/film';
+import * as IndivisualScreeningEventFactory from '../factory/event/indivisualScreeningEvent';
 import IMultilingualString from '../factory/multilingualString';
-import * as PerformanceFactory from '../factory/performance';
-import * as ScreenFactory from '../factory/screen';
+import * as MovieTheaterPlaceFactory from '../factory/place/movieTheater';
 import * as PerformanceStockStatusFactory from '../factory/stockStatus/performance';
-import * as TheaterFactory from '../factory/theater';
-import FilmAdapter from '../adapter/film';
-import PerformanceAdapter from '../adapter/performance';
-import ScreenAdapter from '../adapter/screen';
-import PerformanceStockStatusAdapter from '../adapter/stockStatus/performance';
-import TheaterAdapter from '../adapter/theater';
-export declare type TheaterOperation<T> = (adapter: TheaterAdapter) => Promise<T>;
-export declare type FilmOperation<T> = (adapter: FilmAdapter) => Promise<T>;
-export declare type ScreenOperation<T> = (adapter: ScreenAdapter) => Promise<T>;
-export declare type PerformanceOperation<T> = (adapter: PerformanceAdapter) => Promise<T>;
-export declare type PerformanceAndPerformanceStockStatusOperation<T> = (performanceAdapter: PerformanceAdapter, performanceStockStatusAdapter?: PerformanceStockStatusAdapter) => Promise<T>;
-export declare type TheaterAndScreenOperation<T> = (theaterRepo: TheaterAdapter, screenRepo: ScreenAdapter) => Promise<T>;
-export declare type TheaterAndFilmOperation<T> = (theaterRepo: TheaterAdapter, filmRepo: FilmAdapter) => Promise<T>;
-export declare type FilmAndScreenAndPerformanceOperation<T> = (filmRepo: FilmAdapter, screenRepo: ScreenAdapter, performanceRepo: PerformanceAdapter) => Promise<T>;
+import CreativeWorkAdapter from '../adapter/creativeWork';
+import EventAdapter from '../adapter/event';
+import PlaceAdapter from '../adapter/place';
 export interface ISearchTheatersConditions {
     name?: string;
 }
-export declare type ISearchTheatersResult = TheaterFactory.IRequiredFields & TheaterFactory.IOptionalFields;
 export interface ISearchPerformancesConditions {
     day?: string;
     theater?: string;
@@ -55,7 +42,7 @@ export interface ISearchPerformancesResult {
  *
  * @memberof service/master
  */
-export declare function importTheater(theaterCode: string): TheaterOperation<void>;
+export declare function importMovieTheater(theaterCode: string): (placeAdapter: PlaceAdapter) => Promise<void>;
 /**
  * 作品インポート
  *
@@ -64,7 +51,7 @@ export declare function importTheater(theaterCode: string): TheaterOperation<voi
  *
  * @memberof service/master
  */
-export declare function importFilms(theaterCode: string): TheaterAndFilmOperation<void>;
+export declare function importMovies(theaterCode: string): (creativeWorkAdapter: CreativeWorkAdapter, eventAdapter: EventAdapter, placeAdapter: PlaceAdapter) => Promise<void>;
 /**
  * スクリーンインポート
  *
@@ -73,18 +60,12 @@ export declare function importFilms(theaterCode: string): TheaterAndFilmOperatio
  *
  * @memberof service/master
  */
-export declare function importScreens(theaterCode: string): TheaterAndScreenOperation<void>;
 /**
- * パフォーマンスインポート
- *
- * @param {string} theaterCode
- * @param {string} dayStart
- * @param {string} dayEnd
- * @returns {FilmAndScreenAndPerformanceOperation<void>}
+ * 個々の上映会イベントインポート
  *
  * @memberof service/master
  */
-export declare function importPerformances(theaterCode: string, dayStart: string, dayEnd: string): FilmAndScreenAndPerformanceOperation<void>;
+export declare function importIndivisualScreeningEvents(theaterCode: string, importFrom: Date, importThrough: Date): (eventAdapter: EventAdapter, placeAdapter: PlaceAdapter) => Promise<void>;
 /**
  * 劇場検索
  *
@@ -93,9 +74,14 @@ export declare function importPerformances(theaterCode: string, dayStart: string
  *
  * @memberof service/master
  */
-export declare function searchTheaters(searchConditions: ISearchTheatersConditions): TheaterOperation<ISearchTheatersResult[]>;
+export declare function searchMovieTheaters(searchConditions: ISearchTheatersConditions): (placeAdapter: PlaceAdapter) => Promise<{
+    branchCode: string;
+    name: IMultilingualString;
+    kanaName: string;
+    sameAs: string | undefined;
+}[]>;
 /**
- * パフォーマンス検索
+ * 上映イベント検索
  * 空席状況情報がなかったバージョンに対して互換性を保つために
  * performanceStockStatusAdapterはundefinedでも使えるようになっている
  *
@@ -104,40 +90,12 @@ export declare function searchTheaters(searchConditions: ISearchTheatersConditio
  *
  * @memberof service/master
  */
-export declare function searchPerformances(searchConditions: ISearchPerformancesConditions): PerformanceAndPerformanceStockStatusOperation<ISearchPerformancesResult[]>;
+export declare function searchIndivisualScreeningEvents(searchConditions: ISearchPerformancesConditions): (eventAdapter: EventAdapter) => Promise<IndivisualScreeningEventFactory.IEvent>;
 /**
- * IDで劇場検索
- *
- * @param {string} theaterId
- * @returns {TheaterOperation<monapt.Option<Theater>>}
- *
- * @memberof service/master
+ * 枝番号で劇場検索
  */
-export declare function findTheater(theaterId: string): TheaterOperation<monapt.Option<TheaterFactory.ITheater>>;
+export declare function findTMovieTheaterByBranchCode(branchCode: string): (placeAdapter: PlaceAdapter) => Promise<monapt.Option<MovieTheaterPlaceFactory.IPlace>>;
 /**
- * IDで作品検索
- *
- * @param {string} filmId
- * @returns {FilmOperation<monapt.Option<Film>>}
- *
- * @memberof service/master
+ * IDで上映イベント検索
  */
-export declare function findFilm(filmId: string): FilmOperation<monapt.Option<FilmFactory.IFilm>>;
-/**
- *
- *
- * @param {string} screenId
- * @returns {ScreenOperation<monapt.Option<Screen>>}
- *
- * @memberof service/master
- */
-export declare function findScreen(screenId: string): ScreenOperation<monapt.Option<ScreenFactory.IScreen>>;
-/**
- * IDでパフォーマンス検索
- *
- * @param {string} performanceId
- * @returns {PerformanceOperation<monapt.Option<Performance>>}
- *
- * @memberof service/master
- */
-export declare function findPerformance(performanceId: string): PerformanceOperation<monapt.Option<PerformanceFactory.IPerformanceWithReferenceDetails>>;
+export declare function findIndivisualScreeningEventByIdentifier(identifier: string): (eventAdapter: EventAdapter) => Promise<monapt.Option<IndivisualScreeningEventFactory.IEvent>>;

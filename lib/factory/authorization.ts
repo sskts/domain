@@ -9,6 +9,17 @@
 
 import AuthorizationGroup from './authorizationGroup';
 
+export enum OwnerType {
+    Organization = 'Organization',
+    Person = 'Person'
+}
+
+export interface IOwner {
+    typeOf: string;
+    id: string;
+    name: string;
+}
+
 /**
  * 承認インターフェース
  *
@@ -16,14 +27,18 @@ import AuthorizationGroup from './authorizationGroup';
  * @param {string} id
  * @param {Asset} asset 資産
  * @param {number} price 資産価格
- * @param {string} owner_from 誰が
- * @param {string} owner_to 誰に対して
+ * @param {any} agent 誰が
+ * @param {any} recipient 誰に対して
+ * @param {any} object 何を
+ * @param {any} result The result produced in the action.
  * @memberof tobereplaced$
  */
 export interface IAuthorization {
     id: string;
     group: AuthorizationGroup;
     price: number;
-    owner_from: string;
-    owner_to: string;
+    agent: IOwner;
+    recipient: IOwner;
+    object: any;
+    result: any;
 }

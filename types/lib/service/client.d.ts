@@ -37,7 +37,7 @@ export interface ICreateArgs {
 export declare function create(args: ICreateArgs): ClientOperation<void>;
 export interface IPushEventArgs {
     client: string;
-    occurred_at: Date;
+    occurredAt: Date;
     url?: string;
     label: string;
     category?: string;

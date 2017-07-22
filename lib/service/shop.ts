@@ -4,19 +4,21 @@
  * @namespace service/shop
  */
 
-import * as TheaterFactory from '../factory/theater';
+import * as MovieTheaterOrganizationFactory from '../factory/organization/movieTheater';
+import OrganizationType from '../factory/organizationType';
 
-import TheaterAdapter from '../adapter/theater';
+import OrganizationAdapter from '../adapter/organization';
 
-export type ITheaterOperation<T> = (adapter: TheaterAdapter) => Promise<T>;
-
-export function open(theater: TheaterFactory.ITheater): ITheaterOperation<void> {
-    return async (theaterAdapter: TheaterAdapter) => {
-        await theaterAdapter.model.findByIdAndUpdate(
-            theater.id,
+export function open(organization: MovieTheaterOrganizationFactory.IOrganization) {
+    return async (organizationAdapter: OrganizationAdapter) => {
+        await organizationAdapter.organizationModel.findOneAndUpdate(
+            {
+                identifier: organization.identifier,
+                typeOf: OrganizationType.MovieTheater
+            },
             {
                 // 存在しない場合のみ更新(既にあれば何もしない)
-                $setOnInsert: theater
+                $setOnInsert: organization
             },
             { upsert: true }
         ).exec();

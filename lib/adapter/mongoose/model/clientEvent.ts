@@ -16,7 +16,7 @@ const schema = new mongoose.Schema(
             type: String,
             ref: clientModel.modelName
         },
-        occurred_at: Date,
+        occurredAt: Date,
         url: String,
         label: String,
         category: String,
@@ -36,8 +36,8 @@ const schema = new mongoose.Schema(
         read: 'primaryPreferred',
         safe: safe,
         timestamps: {
-            createdAt: 'created_at',
-            updatedAt: 'updated_at'
+            createdAt: 'createdAt',
+            updatedAt: 'updatedAt'
         },
         toJSON: { getters: true },
         toObject: { getters: true }

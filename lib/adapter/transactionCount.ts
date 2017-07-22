@@ -2,7 +2,7 @@ import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as redis from 'redis';
 
-import * as TransactionScopeFactory from '../factory/transactionScope';
+import * as ActionScopeFactory from '../factory/actionScope';
 
 const debug = createDebug('sskts-domain:adapter:transactionCount');
 const KEY_PREFIX: string = 'sskts-domain:transactionCount';
@@ -19,11 +19,11 @@ export default class TransactionCountAdapter {
         this.redisClient = redisClient;
     }
 
-    public static SCOPE2KEY(scope: TransactionScopeFactory.ITransactionScope): string {
-        return `${KEY_PREFIX}:${TransactionScopeFactory.scope2String(scope)}`;
+    public static SCOPE2KEY(scope: ActionScopeFactory.IActionScope): string {
+        return `${KEY_PREFIX}:${ActionScopeFactory.scope2String(scope)}`;
     }
 
-    public async incr(scope: TransactionScopeFactory.ITransactionScope) {
+    public async incr(scope: ActionScopeFactory.IActionScope) {
         return new Promise<number>((resolve, reject) => {
             // redisでカウントアップ
             const key = TransactionCountAdapter.SCOPE2KEY(scope);
@@ -47,7 +47,7 @@ export default class TransactionCountAdapter {
         });
     }
 
-    public async getByScope(scope: TransactionScopeFactory.ITransactionScope) {
+    public async getByScope(scope: ActionScopeFactory.IActionScope) {
         return new Promise<number>((resolve, reject) => {
             const key = TransactionCountAdapter.SCOPE2KEY(scope);
             this.redisClient.get([key], (err, replies) => {

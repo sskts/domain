@@ -11,35 +11,35 @@ export interface ITask {
      * @type {Date}
      * @memberof ITask
      */
-    runs_at: Date;
+    runsAt: Date;
     /**
      * あと何回トライできるか
      *
      * @type {number}
      * @memberof ITask
      */
-    remaining_number_of_tries: number;
+    remainingNumberOfTries: number;
     /**
      * 最終トライ日時
      *
      * @type {(Date | null)}
      * @memberof ITask
      */
-    last_tried_at: Date | null;
+    lastTriedAt: Date | null;
     /**
      * すでにトライした回数
      *
      * @type {number}
      * @memberof ITask
      */
-    number_of_tried: number;
+    numberOfTried: number;
     /**
      * 実行結果リスト
      *
      * @type {TaskExecutionResult.ITaskExecutionResult[]}
      * @memberof ITask
      */
-    execution_results: TaskExecutionResult.ITaskExecutionResult[];
+    executionResults: TaskExecutionResult.ITaskExecutionResult[];
     /**
      * データ
      * TaskNameによってインターフェースが決定する
@@ -53,10 +53,10 @@ export declare function create(args: {
     id?: string;
     name: TaskName;
     status: TaskStatus;
-    runs_at: Date;
-    remaining_number_of_tries: number;
-    last_tried_at: Date | null;
-    number_of_tried: number;
-    execution_results: TaskExecutionResult.ITaskExecutionResult[];
+    runsAt: Date;
+    remainingNumberOfTries: number;
+    lastTriedAt: Date | null;
+    numberOfTried: number;
+    executionResults: TaskExecutionResult.ITaskExecutionResult[];
     data: any;
 }): ITask;

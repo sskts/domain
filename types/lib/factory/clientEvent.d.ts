@@ -1,7 +1,7 @@
 export interface IClientEvent {
     id: string;
     client: string;
-    occurred_at: Date;
+    occurredAt: Date;
     url: string;
     label: string;
     category: string;
@@ -15,7 +15,7 @@ export interface IClientEvent {
 export declare function create(args: {
     id?: string;
     client: string;
-    occurred_at: Date;
+    occurredAt: Date;
     url?: string;
     label: string;
     category?: string;

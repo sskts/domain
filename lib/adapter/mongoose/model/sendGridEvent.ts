@@ -45,8 +45,8 @@ const schema = new mongoose.Schema(
         read: 'primaryPreferred',
         safe: safe,
         timestamps: {
-            createdAt: 'created_at',
-            updatedAt: 'updated_at'
+            createdAt: 'createdAt',
+            updatedAt: 'updatedAt'
         },
         toJSON: { getters: true },
         toObject: { getters: true }

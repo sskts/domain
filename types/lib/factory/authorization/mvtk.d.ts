@@ -1,4 +1,19 @@
 import * as AuthorizationFactory from '../authorization';
+export interface IResult {
+    kgygish_cd: string;
+    yyk_dvc_typ: string;
+    trksh_flg: string;
+    kgygish_sstm_zskyyk_no: string;
+    kgygish_usr_zskyyk_no: string;
+    jei_dt: string;
+    kij_ymd: string;
+    st_cd: string;
+    scren_cd: string;
+    knyknr_no_info: IKnyknrNoInfo[];
+    zsk_info: IZskInfo[];
+    skhn_cd: string;
+}
+export declare type IObject = any;
 /**
  * 券種情報
  * @interface IKnshInfo
@@ -31,38 +46,14 @@ export interface IZskInfo {
  * @memberof tobereplaced$
  */
 export interface IAuthorization extends AuthorizationFactory.IAuthorization {
-    kgygish_cd: string;
-    yyk_dvc_typ: string;
-    trksh_flg: string;
-    kgygish_sstm_zskyyk_no: string;
-    kgygish_usr_zskyyk_no: string;
-    jei_dt: string;
-    kij_ymd: string;
-    st_cd: string;
-    scren_cd: string;
-    knyknr_no_info: IKnyknrNoInfo[];
-    zsk_info: IZskInfo[];
-    skhn_cd: string;
+    result: IResult;
+    object: IObject;
 }
-/**
- *
- * @memberof tobereplaced$
- */
 export declare function create(args: {
     id?: string;
     price: number;
-    owner_from: string;
-    owner_to: string;
-    kgygish_cd: string;
-    yyk_dvc_typ: string;
-    trksh_flg: string;
-    kgygish_sstm_zskyyk_no: string;
-    kgygish_usr_zskyyk_no: string;
-    jei_dt: string;
-    kij_ymd: string;
-    st_cd: string;
-    scren_cd: string;
-    knyknr_no_info: IKnyknrNoInfo[];
-    zsk_info: IZskInfo[];
-    skhn_cd: string;
+    agent: AuthorizationFactory.IOwner;
+    recipient: AuthorizationFactory.IOwner;
+    result: IResult;
+    object: IObject;
 }): IAuthorization;

@@ -20,11 +20,11 @@ export interface ITask extends TaskFactory.ITask {
 export function create(args: {
     id?: string;
     status: TaskStatus;
-    runs_at: Date;
-    remaining_number_of_tries: number;
-    last_tried_at: Date | null;
-    number_of_tried: number;
-    execution_results: TaskExecutionResult.ITaskExecutionResult[];
+    runsAt: Date;
+    remainingNumberOfTries: number;
+    lastTriedAt: Date | null;
+    numberOfTried: number;
+    executionResults: TaskExecutionResult.ITaskExecutionResult[];
     data: IData;
 }): ITask {
     // todo validation

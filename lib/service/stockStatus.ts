@@ -7,7 +7,6 @@
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 
-import * as PerformanceFactory from '../factory/performance';
 import * as PerformanceStockStatusFactory from '../factory/stockStatus/performance';
 
 import PerformanceStockStatusAdapter from '../adapter/stockStatus/performance';
@@ -39,14 +38,14 @@ export function updatePerformanceStockStatuses(theaterCode: string, dayStart: st
             // パフォーマンスごとに空席状況を生成して保管
             await Promise.all(
                 countFreeSeatDate.list_performance.map(async (countFreeSeatPerformance) => {
-                    const performanceId = PerformanceFactory.createIdFromCOA({
-                        theater_code: countFreeSeatResult.theater_code,
-                        date_jouei: countFreeSeatDate.date_jouei,
-                        title_code: countFreeSeatPerformance.title_code,
-                        title_branch_num: countFreeSeatPerformance.title_branch_num,
-                        screen_code: countFreeSeatPerformance.screen_code,
-                        time_begin: countFreeSeatPerformance.time_begin
-                    });
+                    const performanceId = [ // todo ID生成メソッドを利用する
+                        countFreeSeatResult.theater_code,
+                        countFreeSeatPerformance.title_code,
+                        countFreeSeatPerformance.title_branch_num,
+                        countFreeSeatDate.date_jouei,
+                        countFreeSeatPerformance.screen_code,
+                        countFreeSeatPerformance.time_begin
+                    ].join('');
 
                     const stockStatusExpression = PerformanceStockStatusFactory.createExpression(
                         countFreeSeatPerformance.cnt_reserve_free,

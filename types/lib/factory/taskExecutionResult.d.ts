@@ -1,10 +1,10 @@
 export interface ITaskExecutionResult {
     id: string;
-    executed_at: Date;
+    executedAt: Date;
     error: string;
 }
 export declare function create(args: {
     id?: string;
-    executed_at: Date;
+    executedAt: Date;
     error: string;
 }): ITaskExecutionResult;

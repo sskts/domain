@@ -1,48 +1,60 @@
-/* tslint:disable */
-import * as COA from '@motionpicture/coa-service';
+/**
+ * 劇場ショップオープンサンプル
+ *
+ * @ignore
+ */
+
+import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
+import * as url from 'url';
 import * as sskts from '../lib/index';
 
+const debug = createDebug('sskts-domain:examples');
+
+(<any>mongoose).Promise = global.Promise;
+mongoose.connect(process.env.MONGOLAB_URI);
+
 async function main() {
-    (<any>mongoose).Promise = global.Promise;
-    const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+    const organizationAdapter = sskts.adapter.organization(mongoose.connection);
 
-    const requiredFields = await COA.services.master.theater({
-        theater_code: '118'
-    }).then(sskts.factory.theater.createFromCOA);
-
-    const theater: sskts.factory.theater.ITheater = {
-        ...requiredFields,
-        ...{
-            address: {
-                en: '',
-                ja: ''
-            },
-            websites: [
-                sskts.factory.theater.createWebsite({
-                    group: sskts.factory.theaterWebsiteGroup.PORTAL,
-                    name: {
-                        "en": "portal site",
-                        "ja": "ポータルサイト"
-                    },
-                    url: 'http://devssktsportal.azurewebsites.net/theater/aira/'
-                })
-            ],
-            gmo: {
-                site_id: '',
-                shop_id: '',
-                shop_pass: ''
+    const movieTheater = sskts.factory.organization.movieTheater.create({
+        name: {
+            en: 'CinemasunshineTest118',
+            ja: 'シネマサンシャイン１１８'
+        },
+        branchCode: '118',
+        gmoInfo: {
+            shopPass: 'xbxmkaa6',
+            shopID: 'tshop00026096',
+            siteID: 'tsite00022126'
+        },
+        parentOrganization: {
+            typeOf: sskts.factory.organizationType.Corporation,
+            identifier: sskts.factory.organizationIdentifier.corporation.SasakiKogyo,
+            name: {
+                en: 'Cinema Sunshine Co., Ltd.',
+                ja: '佐々木興業株式会社'
             }
-        }
-    };
+        },
+        location: {
+            typeOf: 'MovieTheater',
+            branchCode: '118',
+            name: {
+                en: 'CinemasunshineTest118',
+                ja: 'シネマサンシャイン１１８'
+            }
+        },
+        // tslint:disable-next-line:no-http-string
+        sameAs: sskts.factory.url.create(new url.URL('http://devssktsportal.azurewebsites.net/theater/aira/'))
+    });
 
-    await sskts.service.shop.open(theater)(sskts.adapter.theater(connection));
+    await sskts.service.shop.open(movieTheater)(organizationAdapter);
 
     mongoose.disconnect();
 }
 
 main().then(() => {
-    console.log('success!');
+    debug('success!');
 }).catch((err) => {
     console.error(err);
     process.exit(1);
