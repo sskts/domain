@@ -14,7 +14,7 @@ const debug = createDebug('sskts-domain:examples');
 mongoose.connect(process.env.MONGOLAB_URI);
 
 async function main() {
-    await sskts.service.task.executeByName(sskts.factory.taskName.SettleSeatReservationAuthorization)(
+    await sskts.service.task.executeByName(sskts.factory.taskName.CreateOrder)(
         sskts.adapter.task(mongoose.connection),
         mongoose.connection
     );

@@ -10,7 +10,7 @@ import OrderStatus from './orderStatus';
 import PaymentMethod from './paymentMethod';
 import PriceCurrency from './priceCurrency';
 import * as ReservationFactory from './reservation';
-import * as COASeatReservationAuthorizationFactory from './authorization/coaSeatReservation';
+import * as SeatReservationAuthorizationFactory from './authorization/seatReservation';
 export declare type IOffer = ReservationFactory.IReservation;
 export interface ISeller {
     /**
@@ -95,8 +95,8 @@ export interface IOrder {
     customer: ICustomer;
     orderInquiryKey: OrderInquiryKeyFactory.IOrderInquiryKey;
 }
-export declare function createFromBuyAction(args: {
-    coaSeatReservationAuthorization: COASeatReservationAuthorizationFactory.IAuthorization;
+export declare function createFromBuyTransaction(args: {
+    seatReservationAuthorization: SeatReservationAuthorizationFactory.IAuthorization;
     customerName: string;
     seller: ISeller;
     orderNumber: string;

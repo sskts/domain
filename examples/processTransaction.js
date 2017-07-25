@@ -34,17 +34,17 @@ function main() {
         const eventAdapter = sskts.adapter.event(connection);
         const personAdapter = sskts.adapter.person(connection);
         const organizationAdapter = sskts.adapter.organization(connection);
-        const actionAdapter = sskts.adapter.action(connection);
+        const transactionAdapter = sskts.adapter.transaction(connection);
         const transactionCountAdapter = sskts.adapter.transactionCount(redisClient);
         // 取引開始
         debug('starting transaction...');
         const readyFrom = moment();
         const readyUntil = moment(readyFrom).add(1, 'minute');
-        const scope = sskts.factory.actionScope.create({
-            ready_from: readyFrom.toDate(),
-            ready_until: readyUntil.toDate()
+        const scope = sskts.factory.transactionScope.create({
+            readyFrom: readyFrom.toDate(),
+            readyThrough: readyUntil.toDate()
         });
-        const transactionOption = yield sskts.service.trade.start({
+        const transactionOption = yield sskts.service.transaction.placeOrder.start({
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(30, 'minutes').toDate(),
             maxCountPerUnit: 120,
@@ -55,7 +55,7 @@ function main() {
                 scopes: []
             },
             sellerId: '597012c4ca579a808193cde2'
-        })(personAdapter, organizationAdapter, actionAdapter, transactionCountAdapter);
+        })(personAdapter, organizationAdapter, transactionAdapter, transactionCountAdapter);
         if (transactionOption.isEmpty) {
             throw new Error('no ready transaction');
         }
@@ -63,7 +63,7 @@ function main() {
         const transaction = transactionOption.get();
         const transactionId = transaction.id;
         // 空席なくなったら変更する
-        const indivisualScreeningEventIdentifier = '11816421020170723501515';
+        const indivisualScreeningEventIdentifier = '11816421020170726500945';
         const indivisualScreeningEventOption = yield sskts.service.master.findIndivisualScreeningEventByIdentifier(indivisualScreeningEventIdentifier)(eventAdapter);
         const indivisualScreeningEvent = indivisualScreeningEventOption.get();
         const theaterCode = indivisualScreeningEvent.superEvent.location.branchCode;
@@ -143,41 +143,40 @@ function main() {
             }
         ];
         const totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
-        let coaAuthorization = yield sskts.service.tradeInProgress.acceptIndivisualScreeningEventOffers(transactionId, indivisualScreeningEvent, offers)(actionAdapter);
+        const coaAuthorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(transactionId, indivisualScreeningEvent, offers)(transactionAdapter);
         debug('coaAuthorization added');
         // COAオーソリ削除
-        yield sskts.service.tradeInProgress.deleteAuthorization(transactionId, coaAuthorization.id)(actionAdapter);
+        yield sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(transactionId, coaAuthorization.id)(transactionAdapter);
         debug('coaAuthorization deleted');
         // COAオーソリ追加
         debug('adding authorizations coaSeatReservation...');
-        coaAuthorization = yield sskts.service.tradeInProgress.acceptIndivisualScreeningEventOffers(transactionId, indivisualScreeningEvent, offers)(actionAdapter);
+        yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(transactionId, indivisualScreeningEvent, offers)(transactionAdapter);
         debug('coaAuthorization added');
         // GMOオーソリ追加
         debug('adding authorizations gmo...');
         let orderId = Date.now().toString();
-        const gmoAuthorization = yield sskts.service.tradeInProgress.authorizeGMOCard(transactionId, {
+        const gmoAuthorization = yield sskts.service.transaction.placeOrder.authorizeGMOCard(transactionId, {
             orderId: orderId,
             amount: totalPrice,
             method: '1',
             cardNo: '4111111111111111',
             expire: '2012',
             securityCode: '123'
-        })(organizationAdapter, actionAdapter);
+        })(organizationAdapter, transactionAdapter);
         debug('GMOAuthorization added.');
-        // GMO取消
-        yield sskts.service.tradeInProgress.deleteAuthorization(transactionId, gmoAuthorization.id)(actionAdapter);
+        yield sskts.service.transaction.placeOrder.cancelGMOAuthorization(transactionId, gmoAuthorization.id)(transactionAdapter);
         debug('GMOAuthorization deleted');
         // GMOオーソリ追加
         debug('adding authorizations gmo...');
         orderId = Date.now().toString();
-        yield sskts.service.tradeInProgress.authorizeGMOCard(transactionId, {
+        yield sskts.service.transaction.placeOrder.authorizeGMOCard(transactionId, {
             orderId: orderId,
             amount: totalPrice,
             method: '1',
             cardNo: '4111111111111111',
             expire: '2012',
             securityCode: '123'
-        })(organizationAdapter, actionAdapter);
+        })(organizationAdapter, transactionAdapter);
         debug('GMOAuthorization added.');
         // 購入者情報登録
         debug('updating agent profile...');
@@ -188,44 +187,40 @@ function main() {
             telephone: telephone,
             email: process.env.SSKTS_DEVELOPER_EMAIL
         };
-        yield sskts.service.tradeInProgress.setAgentProfile(transactionId, profile)(personAdapter, actionAdapter);
+        yield sskts.service.transaction.placeOrder.setAgentProfile(transactionId, profile)(personAdapter, transactionAdapter);
         debug('agent profile updated.');
-        // 照会情報登録(購入番号と電話番号で照会する場合)
-        debug('enabling inquiry...');
-        const key = sskts.factory.orderInquiryKey.create({
-            theaterCode: theaterCode,
-            orderNumber: coaAuthorization.result.tmp_reserve_num,
-            telephone: telephone
-        });
-        yield sskts.service.tradeInProgress.enableInquiry(transactionId, key)(actionAdapter);
-        debug('inquiry enabled.');
-        // メール追加
-        const content = `
-テスト 購入 ${profile.familyName} ${profile.givenName}様\n
--------------------------------------------------------------------\n
-◆購入番号 ：${coaAuthorization.result.tmp_reserve_num}\n
-◆電話番号 ：${profile.telephone}\n
-◆合計金額 ：${totalPrice}円\n
--------------------------------------------------------------------\n
-シネマサンシャイン\n
--------------------------------------------------------------------\n
-`;
-        debug('adding email...');
-        const notification = sskts.factory.notification.email.create({
-            from: 'noreply@example.net',
-            to: process.env.SSKTS_DEVELOPER_EMAIL,
-            subject: '購入完了',
-            content: content
-        });
-        yield sskts.service.tradeInProgress.addEmail(transactionId, notification)(actionAdapter);
-        debug('email added.');
         // 取引成立
-        debug('closing transaction...');
-        yield sskts.service.tradeInProgress.close(transactionId)(actionAdapter);
-        debug('closed.');
+        debug('confirming transaction...');
+        const order = yield sskts.service.transaction.placeOrder.confirm(transactionId)(transactionAdapter);
+        debug('confirmed', order);
         // 照会してみる
-        const inquiryResult = yield sskts.service.trade.makeInquiryAboutOrder(key)(actionAdapter);
-        debug('makeInquiry result:', inquiryResult.get());
+        // const key = sskts.factory.orderInquiryKey.create({
+        //     theaterCode: theaterCode,
+        //     orderNumber: coaAuthorization.result.tmp_reserve_num,
+        //     telephone: telephone
+        // });
+        // const inquiryResult = await sskts.service.order.makeInquiry(key)(orderAdapter);
+        // debug('makeInquiry result:', inquiryResult.get());
+        // メール追加
+        //     const content = `
+        // テスト 購入 ${profile.familyName} ${profile.givenName}様\n
+        // -------------------------------------------------------------------\n
+        // ◆購入番号 ：${coaAuthorization.result.tmp_reserve_num}\n
+        // ◆電話番号 ：${profile.telephone}\n
+        // ◆合計金額 ：${totalPrice}円\n
+        // -------------------------------------------------------------------\n
+        // シネマサンシャイン\n
+        // -------------------------------------------------------------------\n
+        // `;
+        // debug('adding email...');
+        // const notification = sskts.factory.notification.email.create({
+        //     from: 'noreply@example.net',
+        //     to: process.env.SSKTS_DEVELOPER_EMAIL,
+        //     subject: '購入完了',
+        //     content: content
+        // });
+        // await sskts.service.transaction.placeOrder.addEmail(transactionId, notification)(transactionAdapter);
+        // debug('email added.');
         redisClient.quit();
         mongoose.disconnect();
     });

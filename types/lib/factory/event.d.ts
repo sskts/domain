@@ -7,7 +7,6 @@ import * as CreativeWorkFactory from './creativeWork';
 import EventStatusType from './eventStatusType';
 import EventType from './eventType';
 import IMultilingualString from './multilingualString';
-import * as OfferFactory from './offer';
 import * as PlaceFactory from './place';
 export interface IEvent {
     typeOf: EventType;
@@ -51,7 +50,6 @@ export interface IEvent {
      * An offer to provide this item—for example, an offer to sell a product,
      * rent the DVD of a movie, perform a service, or give away tickets to an event.
      */
-    offers?: OfferFactory.IOffer[];
     /**
      * The number of attendee places for an event that remain unallocated.
      */
@@ -76,7 +74,6 @@ export declare function create(args: {
     eventStatus: EventStatusType;
     location?: PlaceFactory.IPlace;
     maximumAttendeeCapacity?: number;
-    offers?: OfferFactory.IOffer[];
     remainingAttendeeCapacity?: number;
     startDate?: Date;
     workPerformed?: CreativeWorkFactory.ICreativeWork;

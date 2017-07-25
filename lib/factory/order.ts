@@ -13,7 +13,7 @@ import PriceCurrency from './priceCurrency';
 import * as ReservationFactory from './reservation';
 import ReservationStatusType from './reservationStatusType';
 
-import * as COASeatReservationAuthorizationFactory from './authorization/coaSeatReservation';
+import * as SeatReservationAuthorizationFactory from './authorization/seatReservation';
 
 export type IOffer = ReservationFactory.IReservation;
 export interface ISeller {
@@ -101,8 +101,8 @@ export interface IOrder {
     orderInquiryKey: OrderInquiryKeyFactory.IOrderInquiryKey;
 }
 
-export function createFromBuyAction(args: {
-    coaSeatReservationAuthorization: COASeatReservationAuthorizationFactory.IAuthorization
+export function createFromBuyTransaction(args: {
+    seatReservationAuthorization: SeatReservationAuthorizationFactory.IAuthorization
     customerName: string;
     seller: ISeller;
     orderNumber: string;
@@ -112,8 +112,8 @@ export function createFromBuyAction(args: {
         seller: args.seller,
         orderNumber: args.orderNumber,
         priceCurrency: PriceCurrency.JPY,
-        price: args.coaSeatReservationAuthorization.price,
-        acceptedOffer: args.coaSeatReservationAuthorization.object.acceptedOffer.map((offer) => {
+        price: args.seatReservationAuthorization.price,
+        acceptedOffer: args.seatReservationAuthorization.object.acceptedOffer.map((offer) => {
             const reservation = offer.itemOffered;
             reservation.reservationStatus = ReservationStatusType.ReservationConfirmed;
             reservation.underName.name = args.customerName;

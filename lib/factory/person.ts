@@ -16,6 +16,7 @@ import * as ProgramMembershipFactory from './programMembership';
 
 export interface IImmutableFields {
     id: string;
+    typeOf: string;
 }
 
 export interface IProfile {
@@ -52,6 +53,8 @@ export interface IHashedFields {
     hashedPassword?: string;
 }
 
+export type IPublicFields = IImmutableFields & IMember & IProfile;
+
 /**
  * 人物インターフェース
  *
@@ -59,7 +62,7 @@ export interface IHashedFields {
  * @interface IPerson
  * @memberof factory/person
  */
-export type IPerson = IImmutableFields & IProfile & IMember & IHashedFields & {
+export type IPerson = IPublicFields & IHashedFields & {
     owns: OwnershipInfoFactory.IOwnership[];
 };
 
@@ -90,6 +93,7 @@ export async function create(args: {
 
     return {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
+        typeOf: 'Person',
         givenName: (args.givenName === undefined) ? '' : args.givenName,
         familyName: (args.familyName === undefined) ? '' : args.familyName,
         email: (args.email === undefined) ? '' : args.email,

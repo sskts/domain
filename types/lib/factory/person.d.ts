@@ -2,6 +2,7 @@ import * as OwnershipInfoFactory from './ownershipInfo';
 import * as ProgramMembershipFactory from './programMembership';
 export interface IImmutableFields {
     id: string;
+    typeOf: string;
 }
 export interface IProfile {
     /**
@@ -34,6 +35,7 @@ export interface IHashedFields {
      */
     hashedPassword?: string;
 }
+export declare type IPublicFields = IImmutableFields & IMember & IProfile;
 /**
  * 人物インターフェース
  *
@@ -41,7 +43,7 @@ export interface IHashedFields {
  * @interface IPerson
  * @memberof factory/person
  */
-export declare type IPerson = IImmutableFields & IProfile & IMember & IHashedFields & {
+export declare type IPerson = IPublicFields & IHashedFields & {
     owns: OwnershipInfoFactory.IOwnership[];
 };
 /**

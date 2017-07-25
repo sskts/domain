@@ -1,5 +1,5 @@
 import * as redis from 'redis';
-import * as ActionScopeFactory from '../factory/actionScope';
+import * as TransactionScopeFactory from '../factory/transactionScope';
 /**
  * 取引数redisアダプター
  *
@@ -8,7 +8,7 @@ import * as ActionScopeFactory from '../factory/actionScope';
 export default class TransactionCountAdapter {
     readonly redisClient: redis.RedisClient;
     constructor(redisClient: redis.RedisClient);
-    static SCOPE2KEY(scope: ActionScopeFactory.IActionScope): string;
-    incr(scope: ActionScopeFactory.IActionScope): Promise<number>;
-    getByScope(scope: ActionScopeFactory.IActionScope): Promise<number>;
+    static SCOPE2KEY(scope: TransactionScopeFactory.ITransactionScope): string;
+    incr(scope: TransactionScopeFactory.ITransactionScope): Promise<number>;
+    getByScope(scope: TransactionScopeFactory.ITransactionScope): Promise<number>;
 }

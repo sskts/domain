@@ -4,13 +4,13 @@
  * @namespace factory/taskName
  */
 declare enum TaskName {
-    CancelSeatReservationAuthorization = "cancelSeatReservationAuthorization",
-    CancelGMOAuthorization = "cancelGMOAuthorization",
-    CancelMvtkAuthorization = "cancelMvtkAuthorization",
-    DisableTransactionInquiry = "disableTransactionInquiry",
+    CancelSeatReservation = "cancelSeatReservation",
+    CancelGMO = "cancelGMO",
+    CancelMvtk = "cancelMvtk",
     SendEmailNotification = "sendEmailNotification",
-    SettleSeatReservationAuthorization = "settleSeatReservationAuthorization",
-    SettleGMOAuthorization = "settleGMOAuthorization",
-    SettleMvtkAuthorization = "settleMvtkAuthorization",
+    SettleSeatReservation = "settleSeatReservation",
+    SettleGMO = "settleGMO",
+    SettleMvtk = "settleMvtk",
+    CreateOrder = "createOrder",
 }
 export default TaskName;

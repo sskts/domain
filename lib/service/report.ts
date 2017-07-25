@@ -14,8 +14,8 @@ import TaskAdapter from '../adapter/task';
 import TelemetryAdapter from '../adapter/telemetry';
 import TransactionAdapter from '../adapter/transaction';
 
-import ActionStatusType from '../factory/actionStatusType';
 import TaskStatus from '../factory/taskStatus';
+import TransactionStatusType from '../factory/transactionStatusType';
 
 export type TaskAndTransactionOperation<T> = (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
 export type TaskAndTelemetryAndTransactionOperation<T> =
@@ -219,7 +219,7 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
         }).exec();
 
         const numberOfTasksCreated = await taskAdapter.taskModel.count({
-            created_at: {
+            createdAt: {
                 $gte: measuredFrom,
                 $lt: measuredTo
             }
@@ -327,7 +327,7 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
                     started_at: {
                         $lte: measuredAt
                     },
-                    status: ActionStatusType.ActiveActionStatus
+                    status: TransactionStatusType.InProgress
                 }
             ]
         }).exec();
@@ -336,7 +336,7 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
             $or: [
                 // {measuredAt}以前に作成され、{measuredAt}以後に実行試行されたタスク
                 {
-                    created_at: {
+                    createdAt: {
                         $lte: measuredAt
                     },
                     $or: [
@@ -349,7 +349,7 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
                 },
                 // {measuredAt}以前に作成され、いまだに未実行のタスク
                 {
-                    created_at: {
+                    createdAt: {
                         $lte: measuredAt
                     },
                     status: TaskStatus.Ready

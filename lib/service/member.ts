@@ -6,7 +6,7 @@
 
 // import * as GMO from '@motionpicture/gmo-service';
 // import * as bcrypt from 'bcryptjs';
-// import * as createDebug from 'debug';
+import * as createDebug from 'debug';
 // import * as monapt from 'monapt';
 
 // import AlreadyInUseError from '../error/alreadyInUse';
@@ -18,7 +18,7 @@
 // import * as GMOCardFactory from '../factory/card/gmo';
 // import * as GMOCardIdFactory from '../factory/cardId/gmo';
 
-// const debug = createDebug('sskts-domain:service:member');
+createDebug('sskts-domain:service:member');
 
 // export type IOperation<T> = () => Promise<T>;
 // export type IAssetOperation<T> = (assetAdapter: AssetAdapter) => Promise<T>;

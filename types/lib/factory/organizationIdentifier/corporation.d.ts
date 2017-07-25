@@ -1,9 +1,9 @@
 /**
  * 企業識別子
  *
- * @namespace factory/organizationIndentifier/corporation
+ * @namespace factory/organizationIdentifier/corporation
  */
-declare enum CorporationOrganizationIndentifier {
+declare enum CorporationOrganizationIdentifier {
     SasakiKogyo = "SasakiKogyo",
 }
-export default CorporationOrganizationIndentifier;
+export default CorporationOrganizationIdentifier;

@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
-- アクション、創作物、イベント、組織、人物、所有権、場所、注文、予約スキーマを新たに追加。
+- 創作物、イベント、組織、人物、所有権、場所、注文、予約スキーマを新たに追加。
+- 取引タイプを追加。
 
 ### Changed
 

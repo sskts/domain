@@ -14,9 +14,9 @@ const debug = createDebug('sskts-domain:examples');
 mongoose.connect(process.env.MONGOLAB_URI);
 
 async function main() {
-    await sskts.service.trade.exportTasks(sskts.factory.actionStatusType.CompletedActionStatus)(
+    await sskts.service.transaction.placeOrder.exportTasks(sskts.factory.transactionStatusType.Confirmed)(
         sskts.adapter.task(mongoose.connection),
-        sskts.adapter.action(mongoose.connection)
+        sskts.adapter.transaction(mongoose.connection)
     );
 
     mongoose.disconnect();

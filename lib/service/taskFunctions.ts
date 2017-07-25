@@ -8,19 +8,21 @@
 import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
 
+import OrderAdapter from '../adapter/order';
 import OwnershipInfoAdapter from '../adapter/ownershipInfo';
 import PersonAdapter from '../adapter/person';
 
-import * as CancelGMOAuthorizationTaskFactory from '../factory/task/cancelGMOAuthorization';
-import * as CancelMvtkAuthorizationTaskFactory from '../factory/task/cancelMvtkAuthorization';
-import * as CancelSeatReservationAuthorizationTaskFactory from '../factory/task/cancelSeatReservationAuthorization';
-import * as DisableTransactionInquiryTaskFactory from '../factory/task/disableTransactionInquiry';
+import * as CancelGMOTaskFactory from '../factory/task/cancelGMO';
+import * as CancelMvtkTaskFactory from '../factory/task/cancelMvtk';
+import * as CancelSeatReservationTaskFactory from '../factory/task/cancelSeatReservation';
+import * as CreateOrderTaskFactory from '../factory/task/createOrder';
 import * as SendEmailNotificationTaskFactory from '../factory/task/sendEmailNotification';
-import * as SettleGMOAuthorizationTaskFactory from '../factory/task/settleGMOAuthorization';
-import * as SettleMvtkAuthorizationTaskFactory from '../factory/task/settleMvtkAuthorization';
-import * as SettleSeatReservationAuthorizationTaskFactory from '../factory/task/settleSeatReservationAuthorization';
+import * as SettleGMOTaskFactory from '../factory/task/settleGMO';
+import * as SettleMvtkTaskFactory from '../factory/task/settleMvtk';
+import * as SettleSeatReservationTaskFactory from '../factory/task/settleSeatReservation';
 
 import * as NotificationService from '../service/notification';
+import * as OrderService from '../service/order';
 import * as SalesService from '../service/sales';
 import * as StockService from '../service/stock';
 
@@ -39,74 +41,75 @@ export function sendEmailNotification(
     };
 }
 
-export function cancelSeatReservationAuthorization(
-    data: CancelSeatReservationAuthorizationTaskFactory.IData
+export function cancelSeatReservation(
+    data: CancelSeatReservationTaskFactory.IData
 ): IOperation<void> {
     debug('executing...', data);
 
     return async (__: mongoose.Connection) => {
-        await StockService.unauthorizeCOASeatReservation(data.authorization)();
+        await StockService.unauthorizeSeatReservation(data.transaction)();
     };
 }
 
-export function cancelGMOAuthorization(
-    data: CancelGMOAuthorizationTaskFactory.IData
+export function cancelGMO(
+    data: CancelGMOTaskFactory.IData
 ): IOperation<void> {
     debug('executing...', data);
 
     return async (__: mongoose.Connection) => {
-        await SalesService.cancelGMOAuth(data.authorization)();
+        await SalesService.cancelGMOAuth(data.transaction)();
     };
 }
 
-export function cancelMvtkAuthorization(
-    data: CancelMvtkAuthorizationTaskFactory.IData
+export function cancelMvtk(
+    data: CancelMvtkTaskFactory.IData
 ): IOperation<void> {
     debug('executing...', data);
 
     return async (__: mongoose.Connection) => {
-        await SalesService.cancelMvtkAuthorization(data.authorization)();
+        await SalesService.cancelMvtk(data.transaction)();
     };
 }
 
-export function disableTransactionInquiry(
-    data: DisableTransactionInquiryTaskFactory.IData
-): IOperation<void> {
-    debug('executing...', data);
-
-    return async (__: mongoose.Connection) => {
-        // 照会キーを登録する前にCOA本予約を実行する必要がなくなったので、この処理は不要
-    };
-}
-
-export function settleSeatReservationAuthorization(
-    data: SettleSeatReservationAuthorizationTaskFactory.IData
+export function settleSeatReservation(
+    data: SettleSeatReservationTaskFactory.IData
 ): IOperation<void> {
     debug('executing...', data);
 
     return async (connection: mongoose.Connection) => {
         const ownershipInfoAdapter = new OwnershipInfoAdapter(connection);
         const personAdapter = new PersonAdapter(connection);
-        await StockService.transferCOASeatReservation(data.authorization)(ownershipInfoAdapter, personAdapter);
+        await StockService.transferSeatReservation(data.transaction)(ownershipInfoAdapter, personAdapter);
     };
 }
 
-export function settleGMOAuthorization(
-    data: SettleGMOAuthorizationTaskFactory.IData
+export function settleGMO(
+    data: SettleGMOTaskFactory.IData
 ): IOperation<void> {
     debug('executing...', data);
 
     return async (__: mongoose.Connection) => {
-        await SalesService.settleGMOAuth(data.authorization)();
+        await SalesService.settleGMOAuth(data.transaction)();
     };
 }
 
-export function settleMvtkAuthorization(
-    data: SettleMvtkAuthorizationTaskFactory.IData
+export function settleMvtk(
+    data: SettleMvtkTaskFactory.IData
 ): IOperation<void> {
     debug('executing...', data);
 
     return async (__: mongoose.Connection) => {
-        await SalesService.settleMvtkAuthorization(data.authorization)();
+        await SalesService.settleMvtk(data.transaction)();
+    };
+}
+
+export function createOrder(
+    data: CreateOrderTaskFactory.IData
+): IOperation<void> {
+    debug('executing...', data);
+
+    return async (connection: mongoose.Connection) => {
+        const orderAdapter = new OrderAdapter(connection);
+        await OrderService.createFromTransaction(data.transaction)(orderAdapter);
     };
 }

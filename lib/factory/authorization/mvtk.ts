@@ -71,8 +71,6 @@ export interface IAuthorization extends AuthorizationFactory.IAuthorization {
 export function create(args: {
     id?: string;
     price: number;
-    agent: AuthorizationFactory.IOwner;
-    recipient: AuthorizationFactory.IOwner;
     result: IResult;
     object: IObject;
 }): IAuthorization {
@@ -83,8 +81,6 @@ export function create(args: {
         id: (args.id === undefined) ? ObjectId().toString() : args.id,
         group: AuthorizationGroup.MVTK,
         price: args.price,
-        agent: args.agent,
-        recipient: args.recipient,
         result: args.result,
         object: args.object
     };

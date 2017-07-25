@@ -12,20 +12,20 @@ import * as redis from 'redis';
 import * as ClientService from './service/client';
 import * as MasterService from './service/master';
 import * as NotificationService from './service/notification';
+import * as OrderService from './service/order';
 import * as ReportService from './service/report';
 import * as SalesService from './service/sales';
 import * as ShopService from './service/shop';
 import * as StockService from './service/stock';
 import * as StockStatusService from './service/stockStatus';
 import * as TaskService from './service/task';
-import * as TradeService from './service/trade';
-import * as TradeInProgressService from './service/tradeInProgress';
+import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
 
-import ActionAdapter from './adapter/action';
 import ClientAdapter from './adapter/client';
 import CreativeWorkAdapter from './adapter/creativeWork';
 import EventAdapter from './adapter/event';
 import GMONotificationAdapter from './adapter/gmoNotification';
+import OrderAdapter from './adapter/order';
 import OrganizationAdapter from './adapter/organization';
 import OwnerAdapter from './adapter/owner';
 import OwnershipInfoAdapter from './adapter/ownershipInfo';
@@ -35,20 +35,12 @@ import SendGridEventAdapter from './adapter/sendGridEvent';
 import PerformanceStockStatusAdapter from './adapter/stockStatus/performance';
 import TaskAdapter from './adapter/task';
 import TelemetryAdapter from './adapter/telemetry';
+import TransactionAdapter from './adapter/transaction';
 import TransactionCountAdapter from './adapter/transactionCount';
 
-import * as ActionFactory from './factory/action';
-import * as AddNotificationActionEventFactory from './factory/actionEvent/addNotification';
-import * as AuthorizeActionEventFactory from './factory/actionEvent/authorize';
-import * as RemoveNotificationActionEventFactory from './factory/actionEvent/removeNotification';
-import * as UnauthorizeActionEventFactory from './factory/actionEvent/unauthorize';
-import ActionEventGroup from './factory/actionEventType';
-import * as ActionScopeFactory from './factory/actionScope';
-import ActionStatusType from './factory/actionStatusType';
-import ActionTasksExportationStatus from './factory/actionTasksExportationStatus';
-import * as CoaSeatReservationAuthorizationFactory from './factory/authorization/coaSeatReservation';
-import * as GmoAuthorizationFactory from './factory/authorization/gmo';
+import * as GMOAuthorizationFactory from './factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from './factory/authorization/mvtk';
+import * as seatReservationAuthorizationFactory from './factory/authorization/seatReservation';
 import AuthorizationGroup from './factory/authorizationGroup';
 import * as GMOCardFactory from './factory/card/gmo';
 import CardGroup from './factory/cardGroup';
@@ -70,6 +62,10 @@ import * as TaskFactory from './factory/task';
 import * as TaskExecutionResultFactory from './factory/taskExecutionResult';
 import TaskName from './factory/taskName';
 import TaskStatus from './factory/taskStatus';
+import * as TransactionFactory from './factory/transaction';
+import * as TransactionScopeFactory from './factory/transactionScope';
+import TransactionStatusType from './factory/transactionStatusType';
+import TransactionTasksExportationStatus from './factory/transactionTasksExportationStatus';
 import * as URLFactory from './factory/url';
 
 import ErrorCode from './errorCode';
@@ -122,8 +118,8 @@ export import COA = COA;
 export import GMO = GMO;
 
 export namespace adapter {
-    export function action(connection: mongoose.Connection) {
-        return new ActionAdapter(connection);
+    export function transaction(connection: mongoose.Connection) {
+        return new TransactionAdapter(connection);
     }
     export function client(connection: mongoose.Connection) {
         return new ClientAdapter(connection);
@@ -136,6 +132,9 @@ export namespace adapter {
     }
     export function gmoNotification(connection: mongoose.Connection) {
         return new GMONotificationAdapter(connection);
+    }
+    export function order(connection: mongoose.Connection) {
+        return new OrderAdapter(connection);
     }
     export function organization(connection: mongoose.Connection) {
         return new OrganizationAdapter(connection);
@@ -176,21 +175,23 @@ export namespace service {
     export import client = ClientService;
     export import master = MasterService;
     export import notification = NotificationService;
+    export import order = OrderService;
     export import report = ReportService;
     export import sales = SalesService;
     export import shop = ShopService;
     export import stock = StockService;
     export import stockStatus = StockStatusService;
     export import task = TaskService;
-    export import trade = TradeService;
-    export import tradeInProgress = TradeInProgressService;
+    export namespace transaction {
+        export import placeOrder = PlaceOrderTransactionService;
+    }
 }
 
 export namespace factory {
     export namespace authorization {
-        export import coaSeatReservation = CoaSeatReservationAuthorizationFactory;
-        export import gmo = GmoAuthorizationFactory;
+        export import gmo = GMOAuthorizationFactory;
         export import mvtk = MvtkAuthorizationFactory;
+        export import seatReservation = seatReservationAuthorizationFactory;
     }
     export import authorizationGroup = AuthorizationGroup;
     export namespace card {
@@ -226,17 +227,10 @@ export namespace factory {
     export import taskExecutionResult = TaskExecutionResultFactory;
     export import taskName = TaskName;
     export import taskStatus = TaskStatus;
-    export import action = ActionFactory;
-    export namespace actionEvent {
-        export import addNotification = AddNotificationActionEventFactory;
-        export import authorize = AuthorizeActionEventFactory;
-        export import removeNotification = RemoveNotificationActionEventFactory;
-        export import unauthorize = UnauthorizeActionEventFactory;
-    }
-    export import actionEventGroup = ActionEventGroup;
-    export import actionScope = ActionScopeFactory;
-    export import actionStatusType = ActionStatusType;
-    export import actionTasksExportationStatus = ActionTasksExportationStatus;
+    export import transaction = TransactionFactory;
+    export import transactionScope = TransactionScopeFactory;
+    export import transactionStatusType = TransactionStatusType;
+    export import transactionTasksExportationStatus = TransactionTasksExportationStatus;
     export import url = URLFactory;
 }
 

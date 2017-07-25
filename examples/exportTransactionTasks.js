@@ -21,7 +21,7 @@ mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        yield sskts.service.trade.exportTasks(sskts.factory.actionStatusType.CompletedActionStatus)(sskts.adapter.task(mongoose.connection), sskts.adapter.action(mongoose.connection));
+        yield sskts.service.transaction.placeOrder.exportTasks(sskts.factory.transactionStatusType.Confirmed)(sskts.adapter.task(mongoose.connection), sskts.adapter.transaction(mongoose.connection));
         mongoose.disconnect();
     });
 }

@@ -22,6 +22,7 @@ export function create(args: {
 }): IOrderInquiryKey {
     if (_.isEmpty(args.theaterCode)) throw new ArgumentNullError('theaterCode');
     if (!_.isNumber(args.orderNumber)) throw new ArgumentError('orderNumber', 'orderNumber should be number');
+    if (_.isEmpty(args.telephone)) throw new ArgumentNullError('telephone');
 
     return args;
 }

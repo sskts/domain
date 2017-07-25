@@ -25,6 +25,19 @@ const schema = new mongoose.Schema(
         closed_at: Date, // 成立日時
         tasks_exported_at: Date,
         tasks_exportation_status: String,
+
+        typeOf: String,
+        agent: mongoose.Schema.Types.Mixed,
+        seller: mongoose.Schema.Types.Mixed,
+        error: mongoose.Schema.Types.Mixed,
+        result: mongoose.Schema.Types.Mixed,
+        object: mongoose.Schema.Types.Mixed,
+        expires: Date,
+        startDate: Date,
+        endDate: Date,
+
+        tasksExportedAt: Date,
+        tasksExportationStatus: String,
         tasks: [mongoose.Schema.Types.Mixed]
     },
     {
@@ -33,8 +46,8 @@ const schema = new mongoose.Schema(
         read: 'primaryPreferred',
         safe: safe,
         timestamps: {
-            createdAt: 'created_at',
-            updatedAt: 'updated_at'
+            createdAt: 'createdAt',
+            updatedAt: 'updatedAt'
         },
         toJSON: { getters: true },
         toObject: { getters: true }
