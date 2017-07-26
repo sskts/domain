@@ -1,5 +1,5 @@
 /**
- * 個々の上映会イベントインポートサンプル
+ * 上映イベントインポートサンプル
  *
  * @ignore
  */
@@ -12,7 +12,7 @@ async function main() {
     try {
         (<any>mongoose).Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        await sskts.service.event.importIndividualScreeningEvents(
+        await sskts.service.event.importScreeningEvents(
             '118',
             moment().toDate(),
             moment().add(1, 'week').toDate()

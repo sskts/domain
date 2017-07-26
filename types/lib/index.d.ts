@@ -9,6 +9,7 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 import * as ClientService from './service/client';
+import * as CreativeWorkService from './service/creativeWork';
 import * as EventService from './service/event';
 import * as NotificationService from './service/notification';
 import * as OrderService from './service/order';
@@ -131,6 +132,7 @@ export declare namespace adapter {
 }
 export declare namespace service {
     export import client = ClientService;
+    export import creativeWork = CreativeWorkService;
     export import event = EventService;
     export import notification = NotificationService;
     export import order = OrderService;

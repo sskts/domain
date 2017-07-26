@@ -32,20 +32,11 @@ export interface ISearchPerformancesResult {
 /**
  * 上映イベントインポート
  */
-export declare function importScreeningEvents(theaterCode: string): (eventAdapter: EventAdapter, placeAdapter: PlaceAdapter) => Promise<void>;
-/**
- * 個々の上映イベントインポート
- */
-export declare function importIndividualScreeningEvents(theaterCode: string, importFrom: Date, importThrough: Date): (eventAdapter: EventAdapter, placeAdapter: PlaceAdapter) => Promise<void>;
+export declare function importScreeningEvents(theaterCode: string, importFrom: Date, importThrough: Date): (eventAdapter: EventAdapter, placeAdapter: PlaceAdapter) => Promise<void>;
 /**
  * 上映イベント検索
  * 空席状況情報がなかったバージョンに対して互換性を保つために
  * performanceStockStatusAdapterはundefinedでも使えるようになっている
- *
- * @param {SearchPerformancesConditions} conditions
- * @returns {PerformanceAndPerformanceStockStatusOperation<ISearchPerformancesResult[]>}
- *
- * @memberof service/master
  */
 export declare function searchIndividualScreeningEvents(searchConditions: ISearchPerformancesConditions): (eventAdapter: EventAdapter) => Promise<IndividualScreeningEventFactory.IEvent>;
 /**

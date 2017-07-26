@@ -54,7 +54,7 @@ const debug = createDebug('sskts-domain:service:event');
 /**
  * 上映イベントインポート
  */
-export function importScreeningEvents(theaterCode: string) {
+export function importScreeningEvents(theaterCode: string, importFrom: Date, importThrough: Date) {
     return async (eventAdapter: EventAdapter, placeAdapter: PlaceAdapter) => {
         // 劇場取得
         const movieTheaterDoc = await placeAdapter.placeModel.findOne(
@@ -73,8 +73,15 @@ export function importScreeningEvents(theaterCode: string) {
             theaterCode: theaterCode
         });
 
+        // COAからパフォーマンス取得
+        const performances = await COA.services.master.schedule({
+            theaterCode: theaterCode,
+            begin: moment(importFrom).locale('ja').format('YYYYMMDD'),
+            end: moment(importThrough).locale('ja').format('YYYYMMDD')
+        });
+
         // 永続化
-        await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
+        const screeningEvents = await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
             const screeningEvent = ScreeningEventFactory.createFromCOA(filmFromCOA)(movieTheater);
             debug('storing screeningEvent...', filmFromCOA, screeningEvent);
             await eventAdapter.eventModel.findOneAndUpdate(
@@ -86,39 +93,9 @@ export function importScreeningEvents(theaterCode: string) {
                 { upsert: true }
             ).exec();
             debug('screeningEvent stored.');
+
+            return screeningEvent;
         }));
-    };
-}
-
-/**
- * 個々の上映イベントインポート
- */
-export function importIndividualScreeningEvents(theaterCode: string, importFrom: Date, importThrough: Date) {
-    return async (
-        eventAdapter: EventAdapter,
-        placeAdapter: PlaceAdapter
-    ) => {
-        // 劇場取得
-        const movieTheater = await placeAdapter.placeModel.findOne(
-            {
-                branchCode: theaterCode,
-                typeOf: PlaceType.MovieTheater
-            }
-        ).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new ArgumentError('theater not found.');
-                }
-
-                return <MovieTheaterPlaceFactory.IPlace>doc.toObject();
-            });
-
-        // COAからパフォーマンス取得
-        const performances = await COA.services.master.schedule({
-            theaterCode: theaterCode,
-            begin: moment(importFrom).locale('ja').format('YYYYMMDD'),
-            end: moment(importThrough).locale('ja').format('YYYYMMDD')
-        });
 
         // パフォーマンスごとに永続化トライ
         await Promise.all(performances.map(async (performanceFromCOA) => {
@@ -137,18 +114,12 @@ export function importIndividualScreeningEvents(theaterCode: string, importFrom:
             }
 
             // 上映イベント取得
-            const screeningEventDoc = await eventAdapter.eventModel.findOne(
-                {
-                    identifier: screeningEventIdentifier,
-                    typeOf: EventType.ScreeningEvent
-                }
-            ).exec();
-            if (screeningEventDoc === null) {
+            const screeningEvent = screeningEvents.find((event) => event.identifier === screeningEventIdentifier);
+            if (screeningEvent === undefined) {
                 console.error('screeningEvent not found.', screeningEventIdentifier);
 
                 return;
             }
-            const screeningEvent = <ScreeningEventFactory.IEvent>screeningEventDoc.toObject();
 
             // 永続化
             const individualScreeningEvent = IndividualScreeningEventFactory.createFromCOA(performanceFromCOA)(screenRoom, screeningEvent);
@@ -170,11 +141,6 @@ export function importIndividualScreeningEvents(theaterCode: string, importFrom:
  * 上映イベント検索
  * 空席状況情報がなかったバージョンに対して互換性を保つために
  * performanceStockStatusAdapterはundefinedでも使えるようになっている
- *
- * @param {SearchPerformancesConditions} conditions
- * @returns {PerformanceAndPerformanceStockStatusOperation<ISearchPerformancesResult[]>}
- *
- * @memberof service/master
  */
 export function searchIndividualScreeningEvents(searchConditions: ISearchPerformancesConditions) {
     return async (

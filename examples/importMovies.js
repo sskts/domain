@@ -1,6 +1,6 @@
 "use strict";
 /**
- * 上映イベントインポートサンプル
+ * 映画作品インポートサンプル
  *
  * @ignore
  */
@@ -20,7 +20,7 @@ function main() {
         try {
             mongoose.Promise = global.Promise;
             const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-            yield sskts.service.event.importScreeningEvents('118')(sskts.adapter.event(connection), sskts.adapter.place(connection));
+            yield sskts.service.creativeWork.importMovies('118')(sskts.adapter.creativeWork(connection));
         }
         catch (error) {
             console.error(error);
