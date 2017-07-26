@@ -21,7 +21,7 @@ function main() {
         try {
             mongoose.Promise = global.Promise;
             const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-            yield sskts.service.master.importIndivisualScreeningEvents('118', moment().toDate(), moment().add(1, 'week').toDate())(sskts.adapter.event(connection), sskts.adapter.place(connection));
+            yield sskts.service.event.importIndividualScreeningEvents('118', moment().toDate(), moment().add(1, 'week').toDate())(sskts.adapter.event(connection), sskts.adapter.place(connection));
         }
         catch (error) {
             console.error(error);

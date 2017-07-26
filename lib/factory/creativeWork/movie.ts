@@ -22,10 +22,10 @@ export interface ICreativeWork extends CreativeWorkFactory.ICreativeWork {
  */
 export function createFromCOA(filmFromCOA: COA.services.master.ITitleResult): ICreativeWork {
     return {
-        identifier: filmFromCOA.title_code,
-        name: filmFromCOA.title_name_orig,
-        duration: moment.duration(filmFromCOA.show_time, 'm').toISOString(),
-        contentRating: filmFromCOA.kbn_eirin,
+        identifier: filmFromCOA.titleCode,
+        name: filmFromCOA.titleNameOrig,
+        duration: moment.duration(filmFromCOA.showTime, 'm').toISOString(),
+        contentRating: filmFromCOA.kbnEirin,
         typeOf: CreativeWorkType.Movie
     };
 }

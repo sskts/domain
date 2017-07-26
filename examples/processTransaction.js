@@ -63,38 +63,38 @@ function main() {
         const transaction = transactionOption.get();
         const transactionId = transaction.id;
         // 空席なくなったら変更する
-        const indivisualScreeningEventIdentifier = '11816421020170726500945';
-        const indivisualScreeningEventOption = yield sskts.service.master.findIndivisualScreeningEventByIdentifier(indivisualScreeningEventIdentifier)(eventAdapter);
-        const indivisualScreeningEvent = indivisualScreeningEventOption.get();
-        const theaterCode = indivisualScreeningEvent.superEvent.location.branchCode;
-        const dateJouei = moment(indivisualScreeningEvent.startDate).locale('ja').format('YYYYMMDD');
-        const titleCode = indivisualScreeningEvent.workPerformed.identifier;
-        const titleBranchNum = indivisualScreeningEvent.superEvent.coaInfo.titleBranchNum;
-        const timeBegin = moment(indivisualScreeningEvent.startDate).locale('ja').format('HHmm');
-        const screenCode = indivisualScreeningEvent.location.branchCode;
+        const individualScreeningEventIdentifier = '11816421020170726500945';
+        const individualScreeningEventOption = yield sskts.service.event.findIndividualScreeningEventByIdentifier(individualScreeningEventIdentifier)(eventAdapter);
+        const individualScreeningEvent = individualScreeningEventOption.get();
+        const theaterCode = individualScreeningEvent.superEvent.location.branchCode;
+        const dateJouei = moment(individualScreeningEvent.startDate).locale('ja').format('YYYYMMDD');
+        const titleCode = individualScreeningEvent.workPerformed.identifier;
+        const titleBranchNum = individualScreeningEvent.superEvent.coaInfo.titleBranchNum;
+        const timeBegin = moment(individualScreeningEvent.startDate).locale('ja').format('HHmm');
+        const screenCode = individualScreeningEvent.location.branchCode;
         // 販売可能チケット検索
         const salesTicketResult = yield COA.services.reserve.salesTicket({
-            theater_code: theaterCode,
-            date_jouei: dateJouei,
-            title_code: titleCode,
-            title_branch_num: titleBranchNum,
-            time_begin: timeBegin
+            theaterCode: theaterCode,
+            dateJouei: dateJouei,
+            titleCode: titleCode,
+            titleBranchNum: titleBranchNum,
+            timeBegin: timeBegin
         });
         // COA空席確認
         const getStateReserveSeatResult = yield COA.services.reserve.stateReserveSeat({
-            theater_code: theaterCode,
-            date_jouei: dateJouei,
-            title_code: titleCode,
-            title_branch_num: titleBranchNum,
-            time_begin: timeBegin,
-            screen_code: screenCode
+            theaterCode: theaterCode,
+            dateJouei: dateJouei,
+            titleCode: titleCode,
+            titleBranchNum: titleBranchNum,
+            timeBegin: timeBegin,
+            screenCode: screenCode
         });
-        const sectionCode = getStateReserveSeatResult.list_seat[0].seat_section;
-        const freeSeatCodes = getStateReserveSeatResult.list_seat[0].list_free_seat.map((freeSeat) => {
-            return freeSeat.seat_num;
+        const sectionCode = getStateReserveSeatResult.listSeat[0].seatSection;
+        const freeSeatCodes = getStateReserveSeatResult.listSeat[0].listFreeSeat.map((freeSeat) => {
+            return freeSeat.seatNum;
         });
         debug('freeSeatCodes count', freeSeatCodes.length);
-        if (getStateReserveSeatResult.cnt_reserve_free === 0)
+        if (getStateReserveSeatResult.cntReserveFree === 0)
             throw new Error('no available seats.');
         // COAオーソリ追加
         debug('adding authorizations coaSeatReservation...');
@@ -103,54 +103,54 @@ function main() {
                 seatSection: sectionCode,
                 seatNumber: freeSeatCodes[0],
                 ticket: {
-                    ticket_code: salesTicketResult[0].ticket_code,
-                    std_price: salesTicketResult[0].std_price,
-                    add_price: salesTicketResult[0].add_price,
-                    dis_price: 0,
-                    sale_price: salesTicketResult[0].sale_price,
-                    mvtk_app_price: 0,
-                    add_glasses: 0,
-                    kbn_eisyahousiki: '00',
-                    mvtk_num: '',
-                    mvtk_kbn_denshiken: '00',
-                    mvtk_kbn_maeuriken: '00',
-                    mvtk_kbn_kensyu: '00',
-                    mvtk_sales_price: 0,
-                    ticket_count: 1,
-                    seat_num: freeSeatCodes[0]
+                    ticketCode: salesTicketResult[0].ticketCode,
+                    stdPrice: salesTicketResult[0].stdPrice,
+                    addPrice: salesTicketResult[0].addPrice,
+                    disPrice: 0,
+                    salePrice: salesTicketResult[0].salePrice,
+                    mvtkAppPrice: 0,
+                    addGlasses: 0,
+                    kbnEisyahousiki: '00',
+                    mvtkNum: '',
+                    mvtkKbnDenshiken: '00',
+                    mvtkKbnMaeuriken: '00',
+                    mvtkKbnKensyu: '00',
+                    mvtkSalesPrice: 0,
+                    ticketCount: 1,
+                    seatNum: freeSeatCodes[0]
                 }
             },
             {
                 seatSection: sectionCode,
                 seatNumber: freeSeatCodes[1],
                 ticket: {
-                    ticket_code: salesTicketResult[0].ticket_code,
-                    std_price: salesTicketResult[0].std_price,
-                    add_price: salesTicketResult[0].add_price,
-                    dis_price: 0,
-                    sale_price: salesTicketResult[0].sale_price,
-                    mvtk_app_price: 0,
-                    add_glasses: 0,
-                    kbn_eisyahousiki: '00',
-                    mvtk_num: '',
-                    mvtk_kbn_denshiken: '00',
-                    mvtk_kbn_maeuriken: '00',
-                    mvtk_kbn_kensyu: '00',
-                    mvtk_sales_price: 0,
-                    ticket_count: 1,
-                    seat_num: freeSeatCodes[1]
+                    ticketCode: salesTicketResult[0].ticketCode,
+                    stdPrice: salesTicketResult[0].stdPrice,
+                    addPrice: salesTicketResult[0].addPrice,
+                    disPrice: 0,
+                    salePrice: salesTicketResult[0].salePrice,
+                    mvtkAppPrice: 0,
+                    addGlasses: 0,
+                    kbnEisyahousiki: '00',
+                    mvtkNum: '',
+                    mvtkKbnDenshiken: '00',
+                    mvtkKbnMaeuriken: '00',
+                    mvtkKbnKensyu: '00',
+                    mvtkSalesPrice: 0,
+                    ticketCount: 1,
+                    seatNum: freeSeatCodes[1]
                 }
             }
         ];
-        const totalPrice = salesTicketResult[0].sale_price + salesTicketResult[0].sale_price;
-        const coaAuthorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(transactionId, indivisualScreeningEvent, offers)(transactionAdapter);
+        const totalPrice = salesTicketResult[0].salePrice + salesTicketResult[0].salePrice;
+        const coaAuthorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(transactionId, individualScreeningEvent, offers)(transactionAdapter);
         debug('coaAuthorization added');
         // COAオーソリ削除
         yield sskts.service.transaction.placeOrder.cancelSeatReservationAuthorization(transactionId, coaAuthorization.id)(transactionAdapter);
         debug('coaAuthorization deleted');
         // COAオーソリ追加
         debug('adding authorizations coaSeatReservation...');
-        yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(transactionId, indivisualScreeningEvent, offers)(transactionAdapter);
+        yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(transactionId, individualScreeningEvent, offers)(transactionAdapter);
         debug('coaAuthorization added');
         // GMOオーソリ追加
         debug('adding authorizations gmo...');

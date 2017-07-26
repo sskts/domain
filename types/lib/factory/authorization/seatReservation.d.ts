@@ -6,7 +6,7 @@
 import * as COA from '@motionpicture/coa-service';
 import * as AuthorizationFactory from '../authorization';
 import PriceCurrency from '../priceCurrency';
-import * as IndivisualScreeningEventFactory from '../event/indivisualScreeningEvent';
+import * as IndividualScreeningEventFactory from '../event/individualScreeningEvent';
 import * as ReservationFactory from '../reservation';
 export declare type IResult = COA.services.reserve.IUpdTmpReserveSeatResult;
 /**
@@ -38,5 +38,5 @@ export declare function createFromCOATmpReserve(args: {
     updTmpReserveSeatArgs: COA.services.reserve.IUpdTmpReserveSeatArgs;
     reserveSeatsTemporarilyResult: COA.services.reserve.IUpdTmpReserveSeatResult;
     tickets: COA.services.reserve.IUpdReserveTicket[];
-    indivisualScreeningEvent: IndivisualScreeningEventFactory.IEvent;
+    individualScreeningEvent: IndividualScreeningEventFactory.IEvent;
 }): IAuthorization;

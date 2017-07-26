@@ -13,7 +13,7 @@ import AuthorizationGroup from '../authorizationGroup';
 import ObjectId from '../objectId';
 import PriceCurrency from '../priceCurrency';
 
-import * as IndivisualScreeningEventFactory from '../event/indivisualScreeningEvent';
+import * as IndividualScreeningEventFactory from '../event/individualScreeningEvent';
 import * as ReservationFactory from '../reservation';
 import ReservationStatusType from '../reservationStatusType';
 
@@ -52,7 +52,7 @@ export function createFromCOATmpReserve(args: {
     updTmpReserveSeatArgs: COA.services.reserve.IUpdTmpReserveSeatArgs;
     reserveSeatsTemporarilyResult: COA.services.reserve.IUpdTmpReserveSeatResult;
     tickets: COA.services.reserve.IUpdReserveTicket[],
-    indivisualScreeningEvent: IndivisualScreeningEventFactory.IEvent
+    individualScreeningEvent: IndividualScreeningEventFactory.IEvent
 }): IAuthorization {
     return {
         id: ObjectId().toString(),
@@ -61,18 +61,18 @@ export function createFromCOATmpReserve(args: {
         result: args.reserveSeatsTemporarilyResult,
         object: {
             updTmpReserveSeatArgs: args.updTmpReserveSeatArgs,
-            acceptedOffer: args.reserveSeatsTemporarilyResult.list_tmp_reserve.map((tmpReserve, index) => {
-                const selectedTicket = args.tickets.find((ticket) => ticket.seat_num === tmpReserve.seat_num);
+            acceptedOffer: args.reserveSeatsTemporarilyResult.listTmpReserve.map((tmpReserve, index) => {
+                const selectedTicket = args.tickets.find((ticket) => ticket.seatNum === tmpReserve.seatNum);
                 if (selectedTicket === undefined) {
                     throw new ArgumentError('tickets');
                 }
 
                 // QRコード文字列を手動で作成
                 const ticketToken = [
-                    args.indivisualScreeningEvent.coaInfo.theaterCode,
-                    args.indivisualScreeningEvent.coaInfo.dateJouei,
+                    args.individualScreeningEvent.coaInfo.theaterCode,
+                    args.individualScreeningEvent.coaInfo.dateJouei,
                     // tslint:disable-next-line:no-magic-numbers
-                    (`00000000${args.reserveSeatsTemporarilyResult.tmp_reserve_num}`).slice(-8),
+                    (`00000000${args.reserveSeatsTemporarilyResult.tmpReserveNum}`).slice(-8),
                     // tslint:disable-next-line:no-magic-numbers
                     (`000${index + 1}`).slice(-3)
                 ].join('');
@@ -82,10 +82,10 @@ export function createFromCOATmpReserve(args: {
                         additionalTicketText: '',
                         modifiedTime: new Date(),
                         numSeats: 1,
-                        price: selectedTicket.sale_price,
+                        price: selectedTicket.salePrice,
                         priceCurrency: PriceCurrency.JPY,
-                        reservationFor: args.indivisualScreeningEvent,
-                        reservationNumber: `${args.reserveSeatsTemporarilyResult.tmp_reserve_num}-${index.toString()}`,
+                        reservationFor: args.individualScreeningEvent,
+                        reservationNumber: `${args.reserveSeatsTemporarilyResult.tmpReserveNum}-${index.toString()}`,
                         reservationStatus: ReservationStatusType.ReservationHold,
                         reservedTicket: {
                             coaTicketInfo: selectedTicket,
@@ -97,25 +97,25 @@ export function createFromCOATmpReserve(args: {
                             priceCurrency: PriceCurrency.JPY,
                             ticketedSeat: {
                                 seatingType: '',
-                                seatNumber: tmpReserve.seat_num,
+                                seatNumber: tmpReserve.seatNum,
                                 seatRow: '',
-                                seatSection: tmpReserve.seat_section
+                                seatSection: tmpReserve.seatSection
                             },
                             ticketNumber: ticketToken,
                             ticketToken: ticketToken,
-                            totalPrice: selectedTicket.sale_price,
+                            totalPrice: selectedTicket.salePrice,
                             underName: {
                                 typeOf: 'Person',
                                 name: ''
                             }
                         },
-                        totalPrice: selectedTicket.sale_price,
+                        totalPrice: selectedTicket.salePrice,
                         underName: {
                             typeOf: 'Person',
                             name: ''
                         }
                     }),
-                    price: selectedTicket.sale_price,
+                    price: selectedTicket.salePrice,
                     priceCurrency: PriceCurrency.JPY,
                     seller: {
                         name: ''

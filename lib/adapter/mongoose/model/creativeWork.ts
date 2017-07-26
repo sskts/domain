@@ -7,6 +7,10 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
  */
 const schema = new mongoose.Schema(
     {
+        typeOf: {
+            type: String,
+            required: true
+        },
         identifier: String,
         name: String,
         description: String,
@@ -15,7 +19,6 @@ const schema = new mongoose.Schema(
         datePublished: Date,
         license: String,
         thumbnailUrl: String,
-        typeOf: String,
         duration: String,
         contentRating: String,
         coaInfo: mongoose.SchemaTypes.Mixed

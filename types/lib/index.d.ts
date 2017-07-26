@@ -9,9 +9,10 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 import * as ClientService from './service/client';
-import * as MasterService from './service/master';
+import * as EventService from './service/event';
 import * as NotificationService from './service/notification';
 import * as OrderService from './service/order';
+import * as PlaceService from './service/place';
 import * as ReportService from './service/report';
 import * as SalesService from './service/sales';
 import * as ShopService from './service/shop';
@@ -130,9 +131,10 @@ export declare namespace adapter {
 }
 export declare namespace service {
     export import client = ClientService;
-    export import master = MasterService;
+    export import event = EventService;
     export import notification = NotificationService;
     export import order = OrderService;
+    export import place = PlaceService;
     export import report = ReportService;
     export import sales = SalesService;
     export import shop = ShopService;

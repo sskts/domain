@@ -20,7 +20,7 @@ function main() {
         try {
             mongoose.Promise = global.Promise;
             const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-            const event = yield sskts.service.master.findIndivisualScreeningEventByIdentifier('11816221020170720301300')(sskts.adapter.event(connection));
+            const event = yield sskts.service.event.findIndividualScreeningEventByIdentifier('11816221020170720301300')(sskts.adapter.event(connection));
             // tslint:disable-next-line:no-console
             console.log(event.get());
         }

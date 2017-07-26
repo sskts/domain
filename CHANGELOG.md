@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 - 創作物、イベント、組織、人物、所有権、場所、注文、予約スキーマを新たに追加。
 - 取引タイプを追加。
+- イベントサービスを追加。
+- 場所サービスを追加。
 
 ### Changed
 - 注文作成取引に対するタスクに渡すデータを取引オブジェクトに変更。
@@ -16,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 - 劇場、スクリーン、作品、パフォーマンススキーマを削除。
 - 所有者、資産、取引スキーマを削除。
+- マスターサービスを削除。
 
 ### Fixed
 

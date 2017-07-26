@@ -12,7 +12,7 @@ async function main() {
     try {
         (<any>mongoose).Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        await sskts.service.master.importIndivisualScreeningEvents(
+        await sskts.service.event.importIndividualScreeningEvents(
             '118',
             moment().toDate(),
             moment().add(1, 'week').toDate()

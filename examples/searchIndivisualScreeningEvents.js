@@ -30,7 +30,7 @@ function main() {
         try {
             mongoose.Promise = global.Promise;
             const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-            const performances = yield sskts.service.master.searchIndivisualScreeningEvents({
+            const performances = yield sskts.service.event.searchIndividualScreeningEvents({
                 day: moment().format('YYYYMMDD'),
                 theater: '118'
             })(sskts.adapter.event(connection)

@@ -66,15 +66,15 @@ export function createFromCOA(performanceFromCOA: COA.services.master.IScheduleR
     return (screenRoom: MovieTheaterPlaceFactory.IScreeningRoom, screeningEvent: ScreeningEventFactory.IEvent): IEvent => {
         const identifier = createIdFromCOA({
             screeningEvent: screeningEvent,
-            dateJouei: performanceFromCOA.date_jouei,
-            screenCode: performanceFromCOA.screen_code,
-            timeBegin: performanceFromCOA.time_begin
+            dateJouei: performanceFromCOA.dateJouei,
+            screenCode: performanceFromCOA.screenCode,
+            timeBegin: performanceFromCOA.timeBegin
         });
 
         return {
             ...EventFactory.create({
                 eventStatus: EventStatusType.EventScheduled,
-                typeOf: EventType.IndivisualScreeningEvent,
+                typeOf: EventType.IndividualScreeningEvent,
                 identifier: identifier,
                 name: screeningEvent.name
             }),
@@ -85,24 +85,24 @@ export function createFromCOA(performanceFromCOA: COA.services.master.IScheduleR
                     branchCode: screenRoom.branchCode,
                     name: screenRoom.name
                 },
-                endDate: moment(`${performanceFromCOA.date_jouei} ${performanceFromCOA.time_end}`, 'YYYYMMDD HHmm').toDate(),
-                startDate: moment(`${performanceFromCOA.date_jouei} ${performanceFromCOA.time_begin}`, 'YYYYMMDD HHmm').toDate(),
+                endDate: moment(`${performanceFromCOA.dateJouei} ${performanceFromCOA.timeEnd}`, 'YYYYMMDD HHmm').toDate(),
+                startDate: moment(`${performanceFromCOA.dateJouei} ${performanceFromCOA.timeBegin}`, 'YYYYMMDD HHmm').toDate(),
                 superEvent: screeningEvent,
                 coaInfo: {
                     theaterCode: screeningEvent.location.branchCode,
-                    dateJouei: performanceFromCOA.date_jouei,
-                    titleCode: performanceFromCOA.title_code,
-                    titleBranchNum: performanceFromCOA.title_branch_num,
-                    timeBegin: performanceFromCOA.time_begin,
-                    screenCode: performanceFromCOA.screen_code,
-                    trailerTime: performanceFromCOA.trailer_time,
-                    kbnService: performanceFromCOA.kbn_service,
-                    kbnAcoustic: performanceFromCOA.kbn_acoustic,
-                    nameServiceDay: performanceFromCOA.name_service_day,
-                    availableNum: performanceFromCOA.available_num,
-                    rsvStartDate: performanceFromCOA.rsv_start_date,
-                    rsvEndDate: performanceFromCOA.rsv_end_date,
-                    flgEarlyBooking: performanceFromCOA.flg_early_booking
+                    dateJouei: performanceFromCOA.dateJouei,
+                    titleCode: performanceFromCOA.titleCode,
+                    titleBranchNum: performanceFromCOA.titleBranchNum,
+                    timeBegin: performanceFromCOA.timeBegin,
+                    screenCode: performanceFromCOA.screenCode,
+                    trailerTime: performanceFromCOA.trailerTime,
+                    kbnService: performanceFromCOA.kbnService,
+                    kbnAcoustic: performanceFromCOA.kbnAcoustic,
+                    nameServiceDay: performanceFromCOA.nameServiceDay,
+                    availableNum: performanceFromCOA.availableNum,
+                    rsvStartDate: performanceFromCOA.rsvStartDate,
+                    rsvEndDate: performanceFromCOA.rsvEndDate,
+                    flgEarlyBooking: performanceFromCOA.flgEarlyBooking
                 }
             }
         };

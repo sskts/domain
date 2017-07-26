@@ -23,7 +23,7 @@ async function main() {
     try {
         (<any>mongoose).Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        const performances = await sskts.service.master.searchIndivisualScreeningEvents({
+        const performances = await sskts.service.event.searchIndividualScreeningEvents({
             day: moment().format('YYYYMMDD'),
             theater: '118'
         })(

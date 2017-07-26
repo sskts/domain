@@ -11,7 +11,7 @@ async function main() {
     try {
         (<any>mongoose).Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        const event = await sskts.service.master.findIndivisualScreeningEventByIdentifier('11816221020170720301300')(
+        const event = await sskts.service.event.findIndividualScreeningEventByIdentifier('11816221020170720301300')(
             sskts.adapter.event(connection)
         );
         // tslint:disable-next-line:no-console

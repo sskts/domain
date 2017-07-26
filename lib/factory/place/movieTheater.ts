@@ -27,6 +27,7 @@ export interface IScreeningRoom extends PlaceFactory.IPlace {
 
 export interface IPlace extends PlaceFactory.IPlace {
     // id: string;
+    screenCount: number;
     containsPlace: IScreeningRoom[];
     branchCode: string; // 劇場コード
     name: IMultilingualString;
@@ -47,12 +48,13 @@ export function createFromCOA(
     screensFromCOA: COA.services.master.IScreenResult[]
 ): IPlace {
     return {
-        branchCode: theaterFromCOA.theater_code,
+        screenCount: screensFromCOA.length,
+        branchCode: theaterFromCOA.theaterCode,
         name: {
-            ja: theaterFromCOA.theater_name,
-            en: theaterFromCOA.theater_name_eng
+            ja: theaterFromCOA.theaterName,
+            en: theaterFromCOA.theaterNameEng
         },
-        kanaName: theaterFromCOA.theater_name_kana,
+        kanaName: theaterFromCOA.theaterNameKana,
         containsPlace: screensFromCOA.map((screenFromCOA) => {
             return createScreeningRoomFromCOA(screenFromCOA);
         }),
@@ -70,32 +72,32 @@ export function createFromCOA(
 export function createScreeningRoomFromCOA(screenFromCOA: COA.services.master.IScreenResult): IScreeningRoom {
     const sections: IScreeningRoomSection[] = [];
     const sectionCodes: string[] = [];
-    screenFromCOA.list_seat.forEach((seat) => {
-        if (sectionCodes.indexOf(seat.seat_section) < 0) {
-            sectionCodes.push(seat.seat_section);
+    screenFromCOA.listSeat.forEach((seat) => {
+        if (sectionCodes.indexOf(seat.seatSection) < 0) {
+            sectionCodes.push(seat.seatSection);
             sections.push({
-                branchCode: seat.seat_section,
+                branchCode: seat.seatSection,
                 name: {
-                    ja: `セクション${seat.seat_section}`,
-                    en: `section${seat.seat_section}`
+                    ja: `セクション${seat.seatSection}`,
+                    en: `section${seat.seatSection}`
                 },
                 containsPlace: [],
                 typeOf: PlaceType.ScreeningRoomSection
             });
         }
 
-        sections[sectionCodes.indexOf(seat.seat_section)].containsPlace.push({
-            branchCode: seat.seat_num,
+        sections[sectionCodes.indexOf(seat.seatSection)].containsPlace.push({
+            branchCode: seat.seatNum,
             typeOf: PlaceType.Seat
         });
     });
 
     return {
         containsPlace: sections,
-        branchCode: screenFromCOA.screen_code,
+        branchCode: screenFromCOA.screenCode,
         name: {
-            ja: screenFromCOA.screen_name,
-            en: screenFromCOA.screen_name_eng
+            ja: screenFromCOA.screenName,
+            en: screenFromCOA.screenNameEng
         },
         typeOf: PlaceType.ScreeningRoom
     };

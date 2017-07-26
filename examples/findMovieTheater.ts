@@ -16,7 +16,7 @@ async function main() {
     (<any>mongoose).Promise = global.Promise;
     mongoose.connect(process.env.MONGOLAB_URI);
 
-    const theaterOption = await sskts.service.master.findTMovieTheaterByBranchCode('118')(sskts.adapter.place(mongoose.connection));
+    const theaterOption = await sskts.service.place.findMovieTheaterByBranchCode('118')(sskts.adapter.place(mongoose.connection));
     // tslint:disable-next-line:no-magic-numbers
     debug(util.inspect(theaterOption.get(), false, 10));
 

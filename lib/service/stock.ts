@@ -30,12 +30,12 @@ export function unauthorizeSeatReservation(transaction: IPlaceOrderTransaction) 
             debug('calling deleteTmpReserve...');
             const authorization = transaction.object.seatReservation;
             await COA.services.reserve.delTmpReserve({
-                theater_code: authorization.object.updTmpReserveSeatArgs.theater_code,
-                date_jouei: authorization.object.updTmpReserveSeatArgs.date_jouei,
-                title_code: authorization.object.updTmpReserveSeatArgs.title_code,
-                title_branch_num: authorization.object.updTmpReserveSeatArgs.title_branch_num,
-                time_begin: authorization.object.updTmpReserveSeatArgs.time_begin,
-                tmp_reserve_num: authorization.result.tmp_reserve_num
+                theaterCode: authorization.object.updTmpReserveSeatArgs.theaterCode,
+                dateJouei: authorization.object.updTmpReserveSeatArgs.dateJouei,
+                titleCode: authorization.object.updTmpReserveSeatArgs.titleCode,
+                titleBranchNum: authorization.object.updTmpReserveSeatArgs.titleBranchNum,
+                timeBegin: authorization.object.updTmpReserveSeatArgs.timeBegin,
+                tmpReserveNum: authorization.result.tmpReserveNum
             });
         }
     };
@@ -64,9 +64,9 @@ export function transferSeatReservation(transaction: IPlaceOrderTransaction) {
             // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
             // すでに本予約済みかどうか確認
             const stateReserveResult = await COA.services.reserve.stateReserve({
-                theater_code: authorization.object.updTmpReserveSeatArgs.theater_code,
-                reserve_num: authorization.result.tmp_reserve_num,
-                tel_num: recipient.telephone
+                theaterCode: authorization.object.updTmpReserveSeatArgs.theaterCode,
+                reserveNum: authorization.result.tmpReserveNum,
+                telNum: recipient.telephone
             });
 
             // COA本予約
@@ -74,21 +74,21 @@ export function transferSeatReservation(transaction: IPlaceOrderTransaction) {
             let updReserveResult: COA.services.reserve.IUpdReserveResult;
             if (stateReserveResult === null) {
                 updReserveResult = await COA.services.reserve.updReserve({
-                    theater_code: authorization.object.updTmpReserveSeatArgs.theater_code,
-                    date_jouei: authorization.object.updTmpReserveSeatArgs.date_jouei,
-                    title_code: authorization.object.updTmpReserveSeatArgs.title_code,
-                    title_branch_num: authorization.object.updTmpReserveSeatArgs.title_branch_num,
-                    time_begin: authorization.object.updTmpReserveSeatArgs.time_begin,
-                    tmp_reserve_num: authorization.result.tmp_reserve_num,
-                    reserve_name: `${recipient.familyName}　${recipient.givenName}`,
-                    reserve_name_jkana: `${recipient.familyName}　${recipient.givenName}`,
-                    tel_num: recipient.telephone,
-                    mail_addr: recipient.email,
-                    reserve_amount: authorization.object.acceptedOffer.reduce(
+                    theaterCode: authorization.object.updTmpReserveSeatArgs.theaterCode,
+                    dateJouei: authorization.object.updTmpReserveSeatArgs.dateJouei,
+                    titleCode: authorization.object.updTmpReserveSeatArgs.titleCode,
+                    titleBranchNum: authorization.object.updTmpReserveSeatArgs.titleBranchNum,
+                    timeBegin: authorization.object.updTmpReserveSeatArgs.timeBegin,
+                    tmpReserveNum: authorization.result.tmpReserveNum,
+                    reserveName: `${recipient.familyName}　${recipient.givenName}`,
+                    reserveNameJkana: `${recipient.familyName}　${recipient.givenName}`,
+                    telNum: recipient.telephone,
+                    mailAddr: recipient.email,
+                    reserveAmount: authorization.object.acceptedOffer.reduce(
                         (a, b) => a + b.price,
                         0
                     ),
-                    list_ticket: authorization.object.acceptedOffer.map((offer) => offer.itemOffered.reservedTicket.coaTicketInfo)
+                    listTicket: authorization.object.acceptedOffer.map((offer) => offer.itemOffered.reservedTicket.coaTicketInfo)
                 });
             }
 

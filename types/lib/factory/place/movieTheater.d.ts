@@ -19,6 +19,7 @@ export interface IScreeningRoom extends PlaceFactory.IPlace {
     name: IMultilingualString;
 }
 export interface IPlace extends PlaceFactory.IPlace {
+    screenCount: number;
     containsPlace: IScreeningRoom[];
     branchCode: string;
     name: IMultilingualString;

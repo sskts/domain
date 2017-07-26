@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/coa-service": "^3.4.0",
+    "@motionpicture/coa-service": "^4.0.0",
     "@motionpicture/gmo-service": "^3.6.0",
     "@types/mongoose": "^4.7.19",
     "@types/redis": "^0.12.36",

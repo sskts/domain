@@ -20,7 +20,7 @@ function main() {
         try {
             mongoose.Promise = global.Promise;
             const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-            yield sskts.service.master.importMovieTheater('118')(sskts.adapter.place(connection));
+            yield sskts.service.place.importMovieTheater('118')(sskts.adapter.place(connection));
         }
         catch (error) {
             console.error(error);

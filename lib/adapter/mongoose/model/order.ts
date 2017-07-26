@@ -7,7 +7,10 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
  */
 const schema = new mongoose.Schema(
     {
-        typeOf: String,
+        typeOf: {
+            type: String,
+            required: true
+        },
         seller: mongoose.SchemaTypes.Mixed,
         orderNumber: String,
         priceCurrency: String,

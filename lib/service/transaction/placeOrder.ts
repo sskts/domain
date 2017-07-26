@@ -17,7 +17,7 @@ import * as MvtkAuthorizationFactory from '../../factory/authorization/mvtk';
 import * as SeatReservationAuthorizationFactory from '../../factory/authorization/seatReservation';
 import AuthorizationGroup from '../../factory/authorizationGroup';
 import * as clientUserFactory from '../../factory/clientUser';
-import * as IndivisualScreeningEventFactory from '../../factory/event/indivisualScreeningEvent';
+import * as IndividualScreeningEventFactory from '../../factory/event/individualScreeningEvent';
 import * as OrderFactory from '../../factory/order';
 import * as OrderInquiryKeyFactory from '../../factory/orderInquiryKey';
 import * as OrganizationFactory from '../../factory/organization';
@@ -487,7 +487,7 @@ export function cancelGMOAuthorization(transactionId: string, authorizationId: s
 
 export function createSeatReservationAuthorization(
     transactionId: string,
-    indivisualScreeningEvent: IndivisualScreeningEventFactory.IEvent,
+    individualScreeningEvent: IndividualScreeningEventFactory.IEvent,
     offers: {
         seatSection: string;
         seatNumber: string;
@@ -508,16 +508,16 @@ export function createSeatReservationAuthorization(
 
         // COA仮予約
         const updTmpReserveSeatArgs = {
-            theater_code: indivisualScreeningEvent.coaInfo.theaterCode,
-            date_jouei: indivisualScreeningEvent.coaInfo.dateJouei,
-            title_code: indivisualScreeningEvent.coaInfo.titleCode,
-            title_branch_num: indivisualScreeningEvent.coaInfo.titleBranchNum,
-            time_begin: indivisualScreeningEvent.coaInfo.timeBegin,
-            screen_code: indivisualScreeningEvent.coaInfo.screenCode,
-            list_seat: offers.map((offer) => {
+            theaterCode: individualScreeningEvent.coaInfo.theaterCode,
+            dateJouei: individualScreeningEvent.coaInfo.dateJouei,
+            titleCode: individualScreeningEvent.coaInfo.titleCode,
+            titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum,
+            timeBegin: individualScreeningEvent.coaInfo.timeBegin,
+            screenCode: individualScreeningEvent.coaInfo.screenCode,
+            listSeat: offers.map((offer) => {
                 return {
-                    seat_section: offer.seatSection,
-                    seat_num: offer.seatNumber
+                    seatSection: offer.seatSection,
+                    seatNum: offer.seatNumber
                 };
             })
         };
@@ -528,11 +528,11 @@ export function createSeatReservationAuthorization(
         // COAオーソリ追加
         debug('adding authorizations coaSeatReservation...');
         const authorization = SeatReservationAuthorizationFactory.createFromCOATmpReserve({
-            price: offers.reduce((a, b) => a + b.ticket.sale_price, 0),
+            price: offers.reduce((a, b) => a + b.ticket.salePrice, 0),
             updTmpReserveSeatArgs: updTmpReserveSeatArgs,
             reserveSeatsTemporarilyResult: reserveSeatsTemporarilyResult,
             tickets: offers.map((offer) => offer.ticket),
-            indivisualScreeningEvent: indivisualScreeningEvent
+            individualScreeningEvent: individualScreeningEvent
         });
 
         await transactionAdapter.transactionModel.findByIdAndUpdate(
@@ -567,12 +567,12 @@ export function cancelSeatReservationAuthorization(transactionId: string, author
         // 座席仮予約削除
         debug('delTmpReserve processing...', authorization);
         await COA.services.reserve.delTmpReserve({
-            theater_code: authorization.object.updTmpReserveSeatArgs.theater_code,
-            date_jouei: authorization.object.updTmpReserveSeatArgs.date_jouei,
-            title_code: authorization.object.updTmpReserveSeatArgs.title_code,
-            title_branch_num: authorization.object.updTmpReserveSeatArgs.title_branch_num,
-            time_begin: authorization.object.updTmpReserveSeatArgs.time_begin,
-            tmp_reserve_num: authorization.result.tmp_reserve_num
+            theaterCode: authorization.object.updTmpReserveSeatArgs.theaterCode,
+            dateJouei: authorization.object.updTmpReserveSeatArgs.dateJouei,
+            titleCode: authorization.object.updTmpReserveSeatArgs.titleCode,
+            titleBranchNum: authorization.object.updTmpReserveSeatArgs.titleBranchNum,
+            timeBegin: authorization.object.updTmpReserveSeatArgs.timeBegin,
+            tmpReserveNum: authorization.result.tmpReserveNum
         });
         debug('delTmpReserve processed');
 
@@ -867,8 +867,8 @@ export function confirm(transactionId: string) {
             throw new ArgumentError('transactionId', '座席予約が見つかりません');
         }
         const orderInquiryKey = OrderInquiryKeyFactory.create({
-            theaterCode: seatReservationAuthorization.object.updTmpReserveSeatArgs.theater_code,
-            orderNumber: seatReservationAuthorization.result.tmp_reserve_num,
+            theaterCode: seatReservationAuthorization.object.updTmpReserveSeatArgs.theaterCode,
+            orderNumber: seatReservationAuthorization.result.tmpReserveNum,
             telephone: transaction.agent.telephone
         });
 

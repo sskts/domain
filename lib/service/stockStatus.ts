@@ -27,35 +27,35 @@ export function updatePerformanceStockStatuses(theaterCode: string, dayStart: st
     return async (performanceStockStatusAdapter: PerformanceStockStatusAdapter) => {
         // COAから空席状況取得
         const countFreeSeatResult = await COA.services.reserve.countFreeSeat({
-            theater_code: theaterCode,
+            theaterCode: theaterCode,
             begin: dayStart,
             end: dayEnd
         });
 
         // 上映日ごとに
-        await Promise.all(countFreeSeatResult.list_date.map(async (countFreeSeatDate) => {
-            debug('saving performance stock status... day:', countFreeSeatDate.date_jouei);
+        await Promise.all(countFreeSeatResult.listDate.map(async (countFreeSeatDate) => {
+            debug('saving performance stock status... day:', countFreeSeatDate.dateJouei);
             // パフォーマンスごとに空席状況を生成して保管
             await Promise.all(
-                countFreeSeatDate.list_performance.map(async (countFreeSeatPerformance) => {
+                countFreeSeatDate.listPerformance.map(async (countFreeSeatPerformance) => {
                     const performanceId = [ // todo ID生成メソッドを利用する
-                        countFreeSeatResult.theater_code,
-                        countFreeSeatPerformance.title_code,
-                        countFreeSeatPerformance.title_branch_num,
-                        countFreeSeatDate.date_jouei,
-                        countFreeSeatPerformance.screen_code,
-                        countFreeSeatPerformance.time_begin
+                        countFreeSeatResult.theaterCode,
+                        countFreeSeatPerformance.titleCode,
+                        countFreeSeatPerformance.titleBranchNum,
+                        countFreeSeatDate.dateJouei,
+                        countFreeSeatPerformance.screenCode,
+                        countFreeSeatPerformance.timeBegin
                     ].join('');
 
                     const stockStatusExpression = PerformanceStockStatusFactory.createExpression(
-                        countFreeSeatPerformance.cnt_reserve_free,
-                        countFreeSeatPerformance.cnt_reserve_max
+                        countFreeSeatPerformance.cntReserveFree,
+                        countFreeSeatPerformance.cntReserveMax
                     );
 
                     // 永続化
                     debug('saving performance stock status... id:', performanceId);
                     await performanceStockStatusAdapter.updateOne(
-                        countFreeSeatDate.date_jouei,
+                        countFreeSeatDate.dateJouei,
                         performanceId,
                         stockStatusExpression
                     );

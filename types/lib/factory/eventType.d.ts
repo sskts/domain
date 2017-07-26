@@ -5,6 +5,6 @@
  */
 declare enum EventType {
     ScreeningEvent = "ScreeningEvent",
-    IndivisualScreeningEvent = "IndivisualScreeningEvent",
+    IndividualScreeningEvent = "IndividualScreeningEvent",
 }
 export default EventType;

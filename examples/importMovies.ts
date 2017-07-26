@@ -1,5 +1,5 @@
 /**
- * 映画作品インポートサンプル
+ * 上映イベントインポートサンプル
  *
  * @ignore
  */
@@ -11,8 +11,7 @@ async function main() {
     try {
         (<any>mongoose).Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
-        await sskts.service.master.importMovies('118')(
-            sskts.adapter.creativeWork(connection),
+        await sskts.service.event.importScreeningEvents('118')(
             sskts.adapter.event(connection),
             sskts.adapter.place(connection)
         );

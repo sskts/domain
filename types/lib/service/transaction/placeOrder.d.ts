@@ -9,7 +9,7 @@ import * as GMOAuthorizationFactory from '../../factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from '../../factory/authorization/mvtk';
 import * as SeatReservationAuthorizationFactory from '../../factory/authorization/seatReservation';
 import * as clientUserFactory from '../../factory/clientUser';
-import * as IndivisualScreeningEventFactory from '../../factory/event/indivisualScreeningEvent';
+import * as IndividualScreeningEventFactory from '../../factory/event/individualScreeningEvent';
 import * as OrderFactory from '../../factory/order';
 import * as PersonFactory from '../../factory/person';
 import * as TaskFactory from '../../factory/task';
@@ -69,7 +69,7 @@ export declare function authorizeGMOCard(transactionId: string, gmoTransaction: 
     token?: string;
 }): (organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter) => Promise<GMOAuthorizationFactory.IAuthorization>;
 export declare function cancelGMOAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
-export declare function createSeatReservationAuthorization(transactionId: string, indivisualScreeningEvent: IndivisualScreeningEventFactory.IEvent, offers: {
+export declare function createSeatReservationAuthorization(transactionId: string, individualScreeningEvent: IndividualScreeningEventFactory.IEvent, offers: {
     seatSection: string;
     seatNumber: string;
     ticket: COA.services.reserve.IUpdReserveTicket;
