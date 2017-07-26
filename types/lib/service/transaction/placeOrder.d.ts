@@ -22,7 +22,7 @@ import TaskAdapter from '../../adapter/task';
 import TransactionAdapter from '../../adapter/transaction';
 import TransactionCountAdapter from '../../adapter/transactionCount';
 /**
- * 注文開始
+ * 取引開始
  */
 export declare function start(args: {
     expires: Date;
@@ -38,9 +38,6 @@ export declare function start(args: {
 export declare function makeExpired(): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * ひとつの取引のタスクをエクスポートする
- *
- * @param {TransactionStatus} statu 取引ステータス
- * @memberof service/transaction
  */
 export declare function exportTasks(status: TransactionStatusType): (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
@@ -56,9 +53,9 @@ export declare function exportTasksById(transactionId: string): (taskAdapter: Ta
  */
 export declare function reexportTasks(intervalInMinutes: number): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
- * アクションIDから取得する
+ * 進行中の取引を取得する
  */
-export declare function findByTranstransactionId(transactionId: string): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<PlaceOrderTransactionFactory.ITransaction>>;
+export declare function findInProgressById(transactionId: string): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<PlaceOrderTransactionFactory.ITransaction>>;
 /**
  * GMOクレジットカードオーソリ
  */
@@ -125,18 +122,6 @@ export declare function setAgentProfile(transactionId: string, profile: PersonFa
  * @returns {TransactionOperation<void>} 取引に対する操作
  */
 /**
- * 照合を可能にする
- *
- * @param {string} transactionId
- * @param {TransactionInquiryKey} key
- * @returns {TransactionOperation<monapt.Option<Transaction>>}
- *
- * @memberof service/transaction/placeOrder
- */
-/**
- * 取引成立
- *
- * @param {string} transactionId
- * @memberof service/transaction/placeOrder
+ * 取引確定
  */
 export declare function confirm(transactionId: string): (transactionAdapter: TransactionAdapter) => Promise<OrderFactory.IOrder>;

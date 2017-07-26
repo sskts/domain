@@ -46,7 +46,7 @@ function main() {
         });
         const transactionOption = yield sskts.service.transaction.placeOrder.start({
             // tslint:disable-next-line:no-magic-numbers
-            expires: moment().add(30, 'minutes').toDate(),
+            expires: moment().add(1, 'minutes').toDate(),
             maxCountPerUnit: 120,
             scope: scope,
             clientUser: {

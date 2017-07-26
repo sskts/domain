@@ -21,7 +21,7 @@ mongoose.Promise = global.Promise;
 mongoose.connect(process.env.MONGOLAB_URI);
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        yield sskts.service.task.executeByName(sskts.factory.taskName.CreateOrder)(sskts.adapter.task(mongoose.connection), mongoose.connection);
+        yield sskts.service.task.executeByName(sskts.factory.taskName.CancelSeatReservation)(sskts.adapter.task(mongoose.connection), mongoose.connection);
         mongoose.disconnect();
     });
 }

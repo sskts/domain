@@ -1,5 +1,5 @@
 /**
- * 取引タスクエクスポートサンプル
+ * 取引を期限切れにするサンプル
  *
  * @ignore
  */
@@ -14,8 +14,7 @@ const debug = createDebug('sskts-domain:examples');
 mongoose.connect(process.env.MONGOLAB_URI);
 
 async function main() {
-    await sskts.service.transaction.placeOrder.exportTasks(sskts.factory.transactionStatusType.Expired)(
-        sskts.adapter.task(mongoose.connection),
+    await sskts.service.transaction.placeOrder.makeExpired()(
         sskts.adapter.transaction(mongoose.connection)
     );
 

@@ -18,9 +18,6 @@ import * as SeatReservationAuthorizationFactory from '../../factory/authorizatio
 import AuthorizationGroup from '../../factory/authorizationGroup';
 import * as clientUserFactory from '../../factory/clientUser';
 import * as IndivisualScreeningEventFactory from '../../factory/event/indivisualScreeningEvent';
-// import * as NotificationFactory from '../../factory/notification';
-// import * as EmailNotificationFactory from '../../factory/notification/email';
-// import NotificationGroup from '../../factory/notificationGroup';
 import * as OrderFactory from '../../factory/order';
 import * as OrderInquiryKeyFactory from '../../factory/orderInquiryKey';
 import * as OrganizationFactory from '../../factory/organization';
@@ -32,7 +29,6 @@ import * as CancelGMOTaskFactory from '../../factory/task/cancelGMO';
 import * as CancelMvtkTaskFactory from '../../factory/task/cancelMvtk';
 import * as CancelSeatReservationTaskFactory from '../../factory/task/cancelSeatReservation';
 import * as CreateOrderTaskFactory from '../../factory/task/createOrder';
-// import * as SendEmailNotificationTaskFactory from '../../factory/task/sendEmailNotification';
 import * as SettleGMOTaskFactoryTaskFactory from '../../factory/task/settleGMO';
 import * as SettleMvtkTaskFactory from '../../factory/task/settleMvtk';
 import * as SettleSeatReservationTaskFactory from '../../factory/task/settleSeatReservation';
@@ -52,7 +48,7 @@ import TransactionCountAdapter from '../../adapter/transactionCount';
 const debug = createDebug('sskts-domain:service:transaction:placeOrder');
 
 /**
- * 注文開始
+ * 取引開始
  */
 export function start(args: {
     expires: Date;
@@ -161,9 +157,6 @@ export function makeExpired() {
 
 /**
  * ひとつの取引のタスクをエクスポートする
- *
- * @param {TransactionStatus} statu 取引ステータス
- * @memberof service/transaction
  */
 export function exportTasks(status: TransactionStatusType) {
     return async (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => {
@@ -217,19 +210,6 @@ export function exportTasksById(transactionId: string) {
 
                 return <PlaceOrderTransactionFactory.ITransaction>doc.toObject();
             });
-
-        // 通知リストを取り出す
-        // type IAddNotificationTransactionEvent =
-        //     AddNotificationTransactionEventFactory.ITransactionEvent<NotificationFactory.INotification>;
-        // type IRemoveotificationTransactionEvent =
-        //     RemoveNotificationTransactionEventFactory.ITransactionEvent<NotificationFactory.INotification>;
-        // const removedNotificationIds = transaction.object.actionEvents
-        //     .filter((actionEvent) => actionEvent.actionEventType === TransactionEventType.RemoveNotification)
-        //     .map((actionEvent: IRemoveotificationTransactionEvent) => actionEvent.notification.id);
-        // const notifications = transaction.object.actionEvents
-        //     .filter((actionEvent) => actionEvent.actionEventType === TransactionEventType.AddNotification)
-        //     .map((actionEvent: IAddNotificationTransactionEvent) => actionEvent.notification)
-        //     .filter((notification) => removedNotificationIds.indexOf(notification.id) < 0);
 
         const tasks: TaskFactory.ITask[] = [];
         switch (transaction.status) {
@@ -371,9 +351,9 @@ export function reexportTasks(intervalInMinutes: number) {
 }
 
 /**
- * アクションIDから取得する
+ * 進行中の取引を取得する
  */
-export function findByTranstransactionId(transactionId: string) {
+export function findInProgressById(transactionId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
         return await transactionAdapter.transactionModel.findOne({
             _id: transactionId,
@@ -399,7 +379,7 @@ export function authorizeGMOCard(transactionId: string, gmoTransaction: {
     token?: string;
 }) {
     return async (organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter) => {
-        const transaction = await findByTranstransactionId(transactionId)(transactionAdapter)
+        const transaction = await findInProgressById(transactionId)(transactionAdapter)
             .then((option) => {
                 if (option.isEmpty) {
                     throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
@@ -467,7 +447,7 @@ export function authorizeGMOCard(transactionId: string, gmoTransaction: {
 
 export function cancelGMOAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await findByTranstransactionId(transactionId)(transactionAdapter)
+        const transaction = await findInProgressById(transactionId)(transactionAdapter)
             .then((option) => {
                 if (option.isEmpty) {
                     throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
@@ -515,7 +495,7 @@ export function createSeatReservationAuthorization(
     }[]
 ) {
     return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await findByTranstransactionId(transactionId)(transactionAdapter)
+        const transaction = await findInProgressById(transactionId)(transactionAdapter)
             .then((option) => {
                 if (option.isEmpty) {
                     throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
@@ -567,7 +547,7 @@ export function createSeatReservationAuthorization(
 
 export function cancelSeatReservationAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await findByTranstransactionId(transactionId)(transactionAdapter)
+        const transaction = await findInProgressById(transactionId)(transactionAdapter)
             .then((option) => {
                 if (option.isEmpty) {
                     throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
@@ -623,7 +603,7 @@ export function createMvtkAuthorization(transactionId: string, authorization: Mv
 
 export function cancelMvtkAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await findByTranstransactionId(transactionId)(transactionAdapter)
+        const transaction = await findInProgressById(transactionId)(transactionAdapter)
             .then((option) => {
                 if (option.isEmpty) {
                     throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
@@ -685,7 +665,7 @@ export function cancelMvtkAuthorization(transactionId: string, authorizationId: 
  */
 // export function removeEmail(transactionId: string, notificationId: string) {
 //     return async (transactionAdapter: TransactionAdapter) => {
-//         const transaction = await findByTranstransactionId(transactionId)(transactionAdapter)
+//         const transaction = await findInProgressById(transactionId)(transactionAdapter)
 //             .then((option) => {
 //                 if (option.isEmpty) {
 //                     throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
@@ -724,7 +704,7 @@ export function setAgentProfile(
     profile: PersonFactory.IProfile
 ) {
     return async (personAdapter: PersonAdapter, transactionAdapter: TransactionAdapter) => {
-        const transaction = await findByTranstransactionId(transactionId)(transactionAdapter)
+        const transaction = await findInProgressById(transactionId)(transactionAdapter)
             .then((option) => {
                 if (option.isEmpty) {
                     throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
@@ -868,44 +848,11 @@ export function setAgentProfile(
 // }
 
 /**
- * 照合を可能にする
- *
- * @param {string} transactionId
- * @param {TransactionInquiryKey} key
- * @returns {TransactionOperation<monapt.Option<Transaction>>}
- *
- * @memberof service/transaction/placeOrder
- */
-// export function enableInquiry(transactionId: string, orderInquiryKey: OrderInquiryKeyFactory.IOrderInquiryKey) {
-//     return async (transactionAdapter: TransactionAdapter) => {
-//         debug('updating transaction...');
-//         await transactionAdapter.transactionModel.findOneAndUpdate(
-//             {
-//                 _id: transactionId,
-//                 actionStatus: TransactionStatusType.ActiveTransactionStatus
-//             },
-//             {
-//                 'object.orderInquiryKey': orderInquiryKey
-//             },
-//             { new: true }
-//         ).exec()
-//             .then((doc) => {
-//                 if (doc === null) {
-//                     throw new Error('UNDERWAY transaction not found');
-//                 }
-//             });
-//     };
-// }
-
-/**
- * 取引成立
- *
- * @param {string} transactionId
- * @memberof service/transaction/placeOrder
+ * 取引確定
  */
 export function confirm(transactionId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await findByTranstransactionId(transactionId)(transactionAdapter)
+        const transaction = await findInProgressById(transactionId)(transactionAdapter)
             .then((option) => {
                 if (option.isEmpty) {
                     throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
@@ -983,25 +930,22 @@ export function confirm(transactionId: string) {
  *
  * @returns {boolean}
  */
-function canBeClosed(__: PlaceOrderTransactionFactory.ITransaction) {
-    // 承認リストを取り出す
-    // const removedAuthorizationIds = transaction.object.actionEvents
-    //     .filter((actionEvent) => actionEvent.actionEventType === TransactionEventGroup.Unauthorize)
-    //     .map((actionEvent: UnauthorizeTransactionEventFactory.ITransactionEvent) => actionEvent.authorization.id);
-    // const authorizations = transaction.object.actionEvents
-    //     .filter((actionEvent) => actionEvent.actionEventType === TransactionEventGroup.Authorize)
-    //     .map((actionEvent: AuthorizeTransactionEventFactory.ITransactionEvent) => actionEvent.authorization)
-    //     .filter((authorization) => removedAuthorizationIds.indexOf(authorization.id) < 0);
+function canBeClosed(transaction: PlaceOrderTransactionFactory.ITransaction) {
+    // 座席予約がなければ×
+    const seatReservationAuthorization = transaction.object.seatReservation;
+    if (seatReservationAuthorization === undefined) {
+        return false;
+    }
 
-    // const priceByAgent = authorizations
-    //     .filter((authorization) => authorization.agent.id === transaction.agent.id)
-    //     .reduce((a, b) => a + b.price, 0);
-    // const priceBySeller = authorizations
-    //     .filter((authorization) => authorization.agent.id === transaction.seller.id)
-    //     .reduce((a, b) => a + b.price, 0);
+    // 決済情報がなければ×
+    const paymentInfos = transaction.object.paymentInfo;
+    if (paymentInfos.length === 0) {
+        return false;
+    }
 
-    // debug('prices:', priceByAgent, priceBySeller);
+    const priceBySeller = seatReservationAuthorization.price;
+    const priceByAgent = paymentInfos.reduce((a, b) => a + b.price, 0);
 
-    // return priceByAgent === priceBySeller;
-    return true;
+    // 注文アイテムと決済の金額が合うかどうか
+    return priceByAgent === priceBySeller;
 }
