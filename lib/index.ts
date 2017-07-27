@@ -14,6 +14,7 @@ import * as CreativeWorkService from './service/creativeWork';
 import * as EventService from './service/event';
 import * as NotificationService from './service/notification';
 import * as OrderService from './service/order';
+import * as OrganizationService from './service/organization';
 import * as PlaceService from './service/place';
 import * as ReportService from './service/report';
 import * as SalesService from './service/sales';
@@ -181,6 +182,7 @@ export namespace service {
     export import event = EventService;
     export import notification = NotificationService;
     export import order = OrderService;
+    export import organization = OrganizationService;
     export import place = PlaceService;
     export import report = ReportService;
     export import sales = SalesService;

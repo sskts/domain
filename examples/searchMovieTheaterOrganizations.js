@@ -1,6 +1,6 @@
 "use strict";
 /**
- * タスク名でタスクを実行するサンプル
+ * 劇場組織検索サンプル
  *
  * @ignore
  */
@@ -17,17 +17,18 @@ const createDebug = require("debug");
 const mongoose = require("mongoose");
 const sskts = require("../lib/index");
 const debug = createDebug('sskts-domain:examples');
-mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI);
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        yield sskts.service.task.executeByName(sskts.factory.taskName.SettleMvtk)(sskts.adapter.task(mongoose.connection), mongoose.connection);
+        mongoose.Promise = global.Promise;
+        mongoose.connect(process.env.MONGOLAB_URI);
+        const theaters = yield sskts.service.organization.searchMovieTheaters({})(sskts.adapter.organization(mongoose.connection));
+        debug('theaters are', theaters);
         mongoose.disconnect();
     });
 }
 main().then(() => {
     debug('success!');
-}).catch((err) => {
-    console.error(err);
+}).catch((error) => {
+    console.error(error);
     process.exit(1);
 });

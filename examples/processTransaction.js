@@ -36,6 +36,8 @@ function main() {
         const organizationAdapter = sskts.adapter.organization(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         const transactionCountAdapter = sskts.adapter.transactionCount(redisClient);
+        // 劇場ショップ検索
+        const movieTheaters = yield sskts.service.organization.searchMovieTheaters({})(organizationAdapter);
         // 取引開始
         debug('starting transaction...');
         const readyFrom = moment();
@@ -54,7 +56,7 @@ function main() {
                 state: 'state',
                 scopes: []
             },
-            sellerId: '597012c4ca579a808193cde2'
+            sellerId: movieTheaters[0].id
         })(personAdapter, organizationAdapter, transactionAdapter, transactionCountAdapter);
         if (transactionOption.isEmpty) {
             throw new Error('no ready transaction');
@@ -63,7 +65,7 @@ function main() {
         const transaction = transactionOption.get();
         const transactionId = transaction.id;
         // 空席なくなったら変更する
-        const individualScreeningEventIdentifier = '11816421020170726500945';
+        const individualScreeningEventIdentifier = '11899500020170729601750';
         const individualScreeningEventOption = yield sskts.service.event.findIndividualScreeningEventByIdentifier(individualScreeningEventIdentifier)(eventAdapter);
         const individualScreeningEvent = individualScreeningEventOption.get();
         const theaterCode = individualScreeningEvent.superEvent.location.branchCode;

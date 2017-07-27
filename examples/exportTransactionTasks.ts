@@ -14,7 +14,7 @@ const debug = createDebug('sskts-domain:examples');
 mongoose.connect(process.env.MONGOLAB_URI);
 
 async function main() {
-    await sskts.service.transaction.placeOrder.exportTasks(sskts.factory.transactionStatusType.Expired)(
+    await sskts.service.transaction.placeOrder.exportTasks(sskts.factory.transactionStatusType.Confirmed)(
         sskts.adapter.task(mongoose.connection),
         sskts.adapter.transaction(mongoose.connection)
     );
