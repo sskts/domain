@@ -9,7 +9,6 @@ import * as monapt from 'monapt';
 import OrderAdapter from '../adapter/order';
 import * as OrderFactory from '../factory/order';
 import * as OrderInquiryKeyFactory from '../factory/orderInquiryKey';
-import OrderStatus from '../factory/orderStatus';
 import * as PlaceOrderTransactionFactory from '../factory/transaction/placeOrder';
 
 export type IPlaceOrderTransaction = PlaceOrderTransactionFactory.ITransaction;
@@ -33,16 +32,14 @@ export function createFromTransaction(transaction: IPlaceOrderTransaction) {
 /**
  * 注文内容を照会する
  */
-export function makeInquiry(orderInquiryKey: OrderInquiryKeyFactory.IOrderInquiryKey) {
+export function findByOrderInquiryKey(orderInquiryKey: OrderInquiryKeyFactory.IOrderInquiryKey) {
     return async (orderAdapter: OrderAdapter) => {
         return await orderAdapter.orderModel.findOne(
             {
                 'orderInquiryKey.theaterCode': orderInquiryKey.theaterCode,
                 'orderInquiryKey.orderNumber': orderInquiryKey.orderNumber,
-                'orderInquiryKey.telephone': orderInquiryKey.telephone,
-                orderStatus: OrderStatus.OrderDelivered
-            },
-            'result'
+                'orderInquiryKey.telephone': orderInquiryKey.telephone
+            }
         ).exec()
             .then((doc) => (doc === null) ? monapt.None : monapt.Option(<OrderFactory.IOrder>doc.toObject()));
     };

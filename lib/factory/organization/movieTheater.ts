@@ -27,15 +27,18 @@ export interface IParentOrganization {
     name: IMultilingualString;
 }
 
-export interface IOrganization extends OrganizationFactory.IOrganization {
+export interface IOrganizationWithoutGMOInfo extends OrganizationFactory.IOrganization {
     identifier: string;
     name: IMultilingualString;
     branchCode: string; // 劇場コード
-    gmoInfo: IGMOInfo;
     parentOrganization: IParentOrganization;
     location: ILocation;
     sameAs: URLFactory.IURL;
 }
+
+export type IOrganization = IOrganizationWithoutGMOInfo & {
+    gmoInfo: IGMOInfo;
+};
 
 export function create(args: {
     name: IMultilingualString;

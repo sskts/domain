@@ -5,6 +5,7 @@
  */
 
 import * as createDebug from 'debug';
+// import * as monapt from 'monapt';
 
 import IMultilingualString from '../factory/multilingualString';
 import * as MovieTheaterOrganizationFactory from '../factory/organization/movieTheater';
@@ -63,3 +64,21 @@ export function searchMovieTheaters(searchConditions: ISearchMovieTheatersCondit
             });
     };
 }
+
+/**
+ * 枝番号で劇場検索
+ */
+// export function findMovieTheaterByBranchCode(
+//     branchCode: string
+// ): IOrganizationOperation<monapt.Option<MovieTheaterOrganizationFactory.IOrganization>> {
+//     return async (organizationAdapter: OrganizationAdapter) => {
+//         return await organizationAdapter.organizationModel.findOne({
+//             typeOf: OrganizationType.MovieTheater,
+//             'location.branchCide': branchCode
+//         }).lean()
+//             .exec()
+//             .then((movieTheater: MovieTheaterPlaceFactory.IPlace) => {
+//                 (movieTheater === null) ? monapt.None : monapt.Option(movieTheater)
+//             });
+//     };
+// }

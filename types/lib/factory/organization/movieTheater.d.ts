@@ -21,15 +21,17 @@ export interface IParentOrganization {
     identifier: string;
     name: IMultilingualString;
 }
-export interface IOrganization extends OrganizationFactory.IOrganization {
+export interface IOrganizationWithoutGMOInfo extends OrganizationFactory.IOrganization {
     identifier: string;
     name: IMultilingualString;
     branchCode: string;
-    gmoInfo: IGMOInfo;
     parentOrganization: IParentOrganization;
     location: ILocation;
     sameAs: URLFactory.IURL;
 }
+export declare type IOrganization = IOrganizationWithoutGMOInfo & {
+    gmoInfo: IGMOInfo;
+};
 export declare function create(args: {
     name: IMultilingualString;
     branchCode: string;

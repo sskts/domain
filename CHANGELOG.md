@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベントサービスを追加。
 - 場所サービスを追加。
 - 組織サービスを追加。
+- 注文サービスを追加。
 
 ### Changed
 - 注文作成取引に対するタスクに渡すデータを取引オブジェクトに変更。
