@@ -51,6 +51,8 @@ import * as GMOCardIdFactory from './factory/cardId/gmo';
 import * as ClientFactory from './factory/client';
 import * as ClientEventFactory from './factory/clientEvent';
 import * as ClientUserFactory from './factory/clientUser';
+import * as IndividualScreeningEventFactory from './factory/event/individualScreeningEvent';
+import * as ScreeningEventFactory from './factory/event/screeningEvent';
 import EventType from './factory/eventType';
 import * as EmailNotificationFactory from './factory/notification/email';
 import NotificationGroup from './factory/notificationGroup';
@@ -60,6 +62,7 @@ import * as CorporationOrganizationFactory from './factory/organization/corporat
 import * as MovieTheaterOrganizationFactory from './factory/organization/movieTheater';
 import CorporationOrganizationIdentifier from './factory/organizationIdentifier/corporation';
 import OrganizationType from './factory/organizationType';
+import * as MovieTheaterPlaceFactory from './factory/place/movieTheater';
 import ReservationStatusType from './factory/reservationStatusType';
 import * as PerformanceStockStatusFactory from './factory/stockStatus/performance';
 import * as TaskFactory from './factory/task';
@@ -216,18 +219,25 @@ export namespace factory {
     export namespace notification {
         export import email = EmailNotificationFactory;
     }
+    export namespace event {
+        export import individualScreeningEvent = IndividualScreeningEventFactory;
+        export import screeningEvent = ScreeningEventFactory;
+    }
     export import eventType = EventType;
     export import notificationGroup = NotificationGroup;
+    export import order = OrderFactory;
+    export import orderInquiryKey = OrderInquiryKeyFactory;
     export namespace organization {
         export import corporation = CorporationOrganizationFactory;
         export import movieTheater = MovieTheaterOrganizationFactory;
     }
-    export import order = OrderFactory;
-    export import orderInquiryKey = OrderInquiryKeyFactory;
     export namespace organizationIdentifier {
         export import corporation = CorporationOrganizationIdentifier;
     }
     export import organizationType = OrganizationType;
+    export namespace place {
+        export import movieTheater = MovieTheaterPlaceFactory;
+    }
     export import reservationStatusType = ReservationStatusType;
     export namespace stockStatus {
         // tslint:disable-next-line:no-shadowed-variable
