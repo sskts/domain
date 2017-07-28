@@ -51,6 +51,7 @@ import * as ClientUserFactory from './factory/clientUser';
 import EventType from './factory/eventType';
 import * as EmailNotificationFactory from './factory/notification/email';
 import NotificationGroup from './factory/notificationGroup';
+import * as OrderFactory from './factory/order';
 import * as OrderInquiryKeyFactory from './factory/orderInquiryKey';
 import * as CorporationOrganizationFactory from './factory/organization/corporation';
 import * as MovieTheaterOrganizationFactory from './factory/organization/movieTheater';
@@ -175,6 +176,7 @@ export declare namespace factory {
         export import corporation = CorporationOrganizationFactory;
         export import movieTheater = MovieTheaterOrganizationFactory;
     }
+    export import order = OrderFactory;
     export import orderInquiryKey = OrderInquiryKeyFactory;
     namespace organizationIdentifier {
         export import corporation = CorporationOrganizationIdentifier;
