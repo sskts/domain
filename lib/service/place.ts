@@ -40,15 +40,36 @@ export function importMovieTheater(theaterCode: string): IPlaceOperation<void> {
     };
 }
 
+/**
+ * 劇場検索条件インターフェース
+ */
 export interface ISearchMovieTheatersConditions {
     name?: string;
 }
 
+/**
+ * 劇場検索結果インターフェース
+ */
 export interface ISearchMovieTheaterResult {
+    /**
+     * スキーマタイプ
+     */
     typeOf: string;
+    /**
+     * 枝番号
+     */
     branchCode: string;
+    /**
+     * 劇場名称
+     */
     name: IMultilingualString;
+    /**
+     * 劇場カナ名称
+     */
     kanaName: string;
+    /**
+     * 劇場URL
+     */
     url?: string;
 }
 

@@ -17,15 +17,36 @@ const debug = createDebug('sskts-domain:service:organization');
 
 export type IOrganizationOperation<T> = (organizationAdapter: OrganizationAdapter) => Promise<T>;
 
+/**
+ * 劇場検索条件インターフェース
+ */
 export interface ISearchMovieTheatersConditions {
     name?: string;
 }
 
+/**
+ * 劇場検索結果インターフェース
+ */
 export interface ISearchMovieTheaterResult {
+    /**
+     * スキーマタイプ
+     */
     typeOf: string;
+    /**
+     * 組織ID
+     */
     id: string;
+    /**
+     * 場所
+     */
     location: MovieTheaterOrganizationFactory.ILocation;
+    /**
+     * 組織名称
+     */
     name: IMultilingualString;
+    /**
+     * 組織URL
+     */
     url: string;
 }
 
