@@ -26,12 +26,12 @@ export function cancelGMOAuth(transaction: IPlaceOrderTransaction) {
         );
         if (authorization !== undefined) {
             debug('calling alterTran...');
-            await GMO.CreditService.alterTran({
+            await GMO.services.credit.alterTran({
                 shopId: authorization.object.shopId,
                 shopPass: authorization.object.shopPass,
                 accessId: authorization.object.accessId,
                 accessPass: authorization.object.accessPass,
-                jobCd: GMO.Util.JOB_CD_VOID,
+                jobCd: GMO.utils.util.JobCd.Void,
                 amount: authorization.object.amount
             });
         }
@@ -54,13 +54,13 @@ export function settleGMOAuth(transaction: IPlaceOrderTransaction) {
         );
         if (authorization !== undefined) {
             // 取引状態参照
-            const searchTradeResult = await GMO.CreditService.searchTrade({
+            const searchTradeResult = await GMO.services.credit.searchTrade({
                 shopId: authorization.object.shopId,
                 shopPass: authorization.object.shopPass,
                 orderId: authorization.object.orderId
             });
 
-            if (searchTradeResult.jobCd === GMO.Util.JOB_CD_SALES) {
+            if (searchTradeResult.jobCd === GMO.utils.util.JobCd.Sales) {
                 debug('already in SALES');
                 // すでに実売上済み
 
@@ -68,12 +68,12 @@ export function settleGMOAuth(transaction: IPlaceOrderTransaction) {
             }
 
             debug('calling alterTran...');
-            await GMO.CreditService.alterTran({
+            await GMO.services.credit.alterTran({
                 shopId: authorization.object.shopId,
                 shopPass: authorization.object.shopPass,
                 accessId: authorization.object.accessId,
                 accessPass: authorization.object.accessPass,
-                jobCd: GMO.Util.JOB_CD_SALES,
+                jobCd: GMO.utils.util.JobCd.Sales,
                 amount: authorization.object.amount
             });
 

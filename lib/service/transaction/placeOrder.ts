@@ -383,7 +383,6 @@ export interface ICreditCard4authorizationTokenized {
  */
 export interface ICreditCard4authorizationOfMember {
     memberId: string;
-    seqMode: string;
     cardSeq: number;
     cardPass?: string;
 }
@@ -399,7 +398,7 @@ export function createCreditCardAuthorization(
     transactionId: string,
     orderId: string,
     amount: number,
-    method: string,
+    method: GMO.utils.util.Method,
     creditCard: ICreditCard4authorization
 ) {
     return async (organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter) => {
@@ -423,11 +422,11 @@ export function createCreditCardAuthorization(
             });
 
         // GMOオーソリ取得
-        const entryTranResult = await GMO.CreditService.entryTran({
+        const entryTranResult = await GMO.services.credit.entryTran({
             shopId: movieTheater.gmoInfo.shopId,
             shopPass: movieTheater.gmoInfo.shopPass,
             orderId: orderId,
-            jobCd: GMO.Util.JOB_CD_AUTH,
+            jobCd: GMO.utils.util.JobCd.Auth,
             amount: amount
         });
         const execTranArgs = {
@@ -439,9 +438,12 @@ export function createCreditCardAuthorization(
                 siteId: <string>process.env.GMO_SITE_ID,
                 sitePass: <string>process.env.GMO_SITE_PASS
             },
-            ...creditCard
+            ...creditCard,
+            ...{
+                seqMode: GMO.utils.util.SeqMode.Physics
+            }
         };
-        const execTranResult = await GMO.CreditService.execTran(execTranArgs);
+        const execTranResult = await GMO.services.credit.execTran(execTranArgs);
         debug(execTranResult);
 
         // GMOオーソリ追加
@@ -455,8 +457,8 @@ export function createCreditCardAuthorization(
                 amount: amount,
                 accessId: entryTranResult.accessId,
                 accessPass: entryTranResult.accessPass,
-                jobCd: GMO.Util.JOB_CD_AUTH,
-                payType: GMO.Util.PAY_TYPE_CREDIT
+                jobCd: GMO.utils.util.JobCd.Auth,
+                payType: GMO.utils.util.PayType.Credit
             },
             result: execTranResult
         });
@@ -498,9 +500,9 @@ export function cancelGMOAuthorization(transactionId: string, authorizationId: s
             shopPass: authorization.object.shopPass,
             accessId: authorization.object.accessId,
             accessPass: authorization.object.accessPass,
-            jobCd: GMO.utils.util.JOB_CD_VOID
+            jobCd: GMO.utils.util.JobCd.Void
         });
-        debug('alterTran processed', GMO.utils.util.JOB_CD_VOID);
+        debug('alterTran processed', GMO.utils.util.JobCd.Void);
 
         await transactionAdapter.transactionModel.findByIdAndUpdate(
             transaction.id,

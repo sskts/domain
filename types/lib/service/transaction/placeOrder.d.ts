@@ -4,6 +4,7 @@
  * @namespace service/transaction/placeOrder
  */
 import * as COA from '@motionpicture/coa-service';
+import * as GMO from '@motionpicture/gmo-service';
 import * as monapt from 'monapt';
 import * as GMOAuthorizationFactory from '../../factory/authorization/gmo';
 import * as MvtkAuthorizationFactory from '../../factory/authorization/mvtk';
@@ -75,7 +76,6 @@ export interface ICreditCard4authorizationTokenized {
  */
 export interface ICreditCard4authorizationOfMember {
     memberId: string;
-    seqMode: string;
     cardSeq: number;
     cardPass?: string;
 }
@@ -86,7 +86,7 @@ export declare type ICreditCard4authorization = ICreditCard4authorizationRaw | I
 /**
  * クレジットカードオーソリ取得
  */
-export declare function createCreditCardAuthorization(transactionId: string, orderId: string, amount: number, method: string, creditCard: ICreditCard4authorization): (organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter) => Promise<GMOAuthorizationFactory.IAuthorization>;
+export declare function createCreditCardAuthorization(transactionId: string, orderId: string, amount: number, method: GMO.utils.util.Method, creditCard: ICreditCard4authorization): (organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter) => Promise<GMOAuthorizationFactory.IAuthorization>;
 export declare function cancelGMOAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
 export declare function createSeatReservationAuthorization(transactionId: string, individualScreeningEvent: IndividualScreeningEventFactory.IEvent, offers: {
     seatSection: string;

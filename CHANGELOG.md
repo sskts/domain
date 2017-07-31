@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 - 注文作成取引に対するタスクに渡すデータを取引オブジェクトに変更。
 - indexモジュールを再構成。
+- update package [@motionpicture/gmo-service](https://www.npmjs.com/package/@motionpicture/gmo-service)
 
 ### Deprecated
 

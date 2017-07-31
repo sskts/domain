@@ -405,7 +405,7 @@ export function searchGMOSales(dateFrom: Date, dateTo: Date): GMONotificationOpe
         // 'tran_date': '20170415230109'の形式
         return <ICreditGMONotification[]>await gmoNotificationAdapter.gmoNotificationModel.find(
             {
-                job_cd: GMO.Util.JOB_CD_SALES,
+                job_cd: GMO.utils.util.JobCd.Sales,
                 tran_date: {
                     $gte: moment(dateFrom).format('YYYYMMDDHHmmss'),
                     $lte: moment(dateTo).format('YYYYMMDDHHmmss')

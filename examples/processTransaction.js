@@ -144,7 +144,7 @@ function main() {
                 }
             }
         ];
-        const totalPrice = salesTicketResult[0].salePrice + salesTicketResult[0].salePrice;
+        const amount = salesTicketResult[0].salePrice + salesTicketResult[0].salePrice;
         const coaAuthorization = yield sskts.service.transaction.placeOrder.createSeatReservationAuthorization(transactionId, individualScreeningEvent, offers)(transactionAdapter);
         debug('coaAuthorization added');
         // COAオーソリ削除
@@ -157,7 +157,7 @@ function main() {
         // GMOオーソリ追加
         debug('adding authorizations gmo...');
         let orderId = Date.now().toString();
-        const gmoAuthorization = yield sskts.service.transaction.placeOrder.createCreditCardAuthorization(transactionId, orderId, totalPrice, '1', {
+        const gmoAuthorization = yield sskts.service.transaction.placeOrder.createCreditCardAuthorization(transactionId, orderId, amount, sskts.GMO.utils.util.Method.Lump, {
             cardNo: '4111111111111111',
             expire: '2012',
             securityCode: '123'
@@ -168,7 +168,7 @@ function main() {
         // GMOオーソリ追加
         debug('adding authorizations gmo...');
         orderId = Date.now().toString();
-        yield sskts.service.transaction.placeOrder.createCreditCardAuthorization(transactionId, orderId, totalPrice, '1', {
+        yield sskts.service.transaction.placeOrder.createCreditCardAuthorization(transactionId, orderId, amount, sskts.GMO.utils.util.Method.Lump, {
             cardNo: '4111111111111111',
             expire: '2012',
             securityCode: '123'
@@ -189,34 +189,6 @@ function main() {
         debug('confirming transaction...');
         const order = yield sskts.service.transaction.placeOrder.confirm(transactionId)(transactionAdapter);
         debug('confirmed', order);
-        // 照会してみる
-        // const key = sskts.factory.orderInquiryKey.create({
-        //     theaterCode: theaterCode,
-        //     orderNumber: coaAuthorization.result.tmp_reserve_num,
-        //     telephone: telephone
-        // });
-        // const inquiryResult = await sskts.service.order.makeInquiry(key)(orderAdapter);
-        // debug('makeInquiry result:', inquiryResult.get());
-        // メール追加
-        //     const content = `
-        // テスト 購入 ${profile.familyName} ${profile.givenName}様\n
-        // -------------------------------------------------------------------\n
-        // ◆購入番号 ：${coaAuthorization.result.tmp_reserve_num}\n
-        // ◆電話番号 ：${profile.telephone}\n
-        // ◆合計金額 ：${totalPrice}円\n
-        // -------------------------------------------------------------------\n
-        // シネマサンシャイン\n
-        // -------------------------------------------------------------------\n
-        // `;
-        // debug('adding email...');
-        // const notification = sskts.factory.notification.email.create({
-        //     from: 'noreply@example.net',
-        //     to: process.env.SSKTS_DEVELOPER_EMAIL,
-        //     subject: '購入完了',
-        //     content: content
-        // });
-        // await sskts.service.transaction.placeOrder.addEmail(transactionId, notification)(transactionAdapter);
-        // debug('email added.');
         redisClient.quit();
         mongoose.disconnect();
     });
