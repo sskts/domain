@@ -57,21 +57,36 @@ export declare function reexportTasks(intervalInMinutes: number): (transactionAd
  */
 export declare function findInProgressById(transactionId: string): (transactionAdapter: TransactionAdapter) => Promise<monapt.Option<PlaceOrderTransactionFactory.ITransaction>>;
 /**
- * GMOクレジットカードオーソリ
+ * 生のクレジットカード情報
  */
-export declare function authorizeGMOCard(transactionId: string, gmoTransaction: {
-    orderId: string;
-    amount: number;
-    method?: string;
-    cardNo?: string;
-    expire?: string;
-    securityCode?: string;
-    token?: string;
-    memberId?: string;
-    seqMode?: string;
-    cardSeq?: number;
+export interface ICreditCard4authorizationRaw {
+    cardNo: string;
+    expire: string;
+    securityCode: string;
+}
+/**
+ * トークン化されたクレジットカード情報
+ */
+export interface ICreditCard4authorizationTokenized {
+    token: string;
+}
+/**
+ * 会員のクレジットカード情報
+ */
+export interface ICreditCard4authorizationOfMember {
+    memberId: string;
+    seqMode: string;
+    cardSeq: number;
     cardPass?: string;
-}): (organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter) => Promise<GMOAuthorizationFactory.IAuthorization>;
+}
+/**
+ * オーソリを取得するクレジットカード情報インターフェース
+ */
+export declare type ICreditCard4authorization = ICreditCard4authorizationRaw | ICreditCard4authorizationTokenized | ICreditCard4authorizationOfMember;
+/**
+ * クレジットカードオーソリ取得
+ */
+export declare function createCreditCardAuthorization(transactionId: string, orderId: string, amount: number, method: string, creditCard: ICreditCard4authorization): (organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter) => Promise<GMOAuthorizationFactory.IAuthorization>;
 export declare function cancelGMOAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
 export declare function createSeatReservationAuthorization(transactionId: string, individualScreeningEvent: IndividualScreeningEventFactory.IEvent, offers: {
     seatSection: string;

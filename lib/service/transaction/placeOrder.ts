@@ -365,21 +365,43 @@ export function findInProgressById(transactionId: string) {
 }
 
 /**
- * GMOクレジットカードオーソリ
+ * 生のクレジットカード情報
  */
-export function authorizeGMOCard(transactionId: string, gmoTransaction: {
-    orderId: string;
-    amount: number;
-    method?: string;
-    cardNo?: string;
-    expire?: string;
-    securityCode?: string;
-    token?: string;
-    memberId?: string;
-    seqMode?: string;
-    cardSeq?: number;
+export interface ICreditCard4authorizationRaw {
+    cardNo: string;
+    expire: string;
+    securityCode: string;
+}
+/**
+ * トークン化されたクレジットカード情報
+ */
+export interface ICreditCard4authorizationTokenized {
+    token: string;
+}
+/**
+ * 会員のクレジットカード情報
+ */
+export interface ICreditCard4authorizationOfMember {
+    memberId: string;
+    seqMode: string;
+    cardSeq: number;
     cardPass?: string;
-}) {
+}
+/**
+ * オーソリを取得するクレジットカード情報インターフェース
+ */
+export type ICreditCard4authorization =
+    ICreditCard4authorizationRaw | ICreditCard4authorizationTokenized | ICreditCard4authorizationOfMember;
+/**
+ * クレジットカードオーソリ取得
+ */
+export function createCreditCardAuthorization(
+    transactionId: string,
+    orderId: string,
+    amount: number,
+    method: string,
+    creditCard: ICreditCard4authorization
+) {
     return async (organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter) => {
         const transaction = await findInProgressById(transactionId)(transactionAdapter)
             .then((option) => {
@@ -404,35 +426,33 @@ export function authorizeGMOCard(transactionId: string, gmoTransaction: {
         const entryTranResult = await GMO.CreditService.entryTran({
             shopId: movieTheater.gmoInfo.shopId,
             shopPass: movieTheater.gmoInfo.shopPass,
-            orderId: gmoTransaction.orderId,
+            orderId: orderId,
             jobCd: GMO.Util.JOB_CD_AUTH,
-            amount: gmoTransaction.amount
+            amount: amount
         });
-        const execTranResult = await GMO.CreditService.execTran({
-            accessId: entryTranResult.accessId,
-            accessPass: entryTranResult.accessPass,
-            orderId: gmoTransaction.orderId,
-            method: gmoTransaction.method,
-            cardNo: gmoTransaction.cardNo,
-            expire: gmoTransaction.expire,
-            securityCode: gmoTransaction.securityCode,
-            token: gmoTransaction.token,
-            memberId: gmoTransaction.memberId,
-            seqMode: gmoTransaction.seqMode,
-            cardSeq: gmoTransaction.cardSeq,
-            cardPass: gmoTransaction.cardPass
-        });
+        const execTranArgs = {
+            ...{
+                accessId: entryTranResult.accessId,
+                accessPass: entryTranResult.accessPass,
+                orderId: orderId,
+                method: method,
+                siteId: <string>process.env.GMO_SITE_ID,
+                sitePass: <string>process.env.GMO_SITE_PASS
+            },
+            ...creditCard
+        };
+        const execTranResult = await GMO.CreditService.execTran(execTranArgs);
         debug(execTranResult);
 
         // GMOオーソリ追加
         debug('adding authorizations gmo...');
         const gmoAuthorization = GMOAuthorizationFactory.create({
-            price: gmoTransaction.amount,
+            price: amount,
             object: {
                 shopId: movieTheater.gmoInfo.shopId,
                 shopPass: movieTheater.gmoInfo.shopPass,
-                orderId: gmoTransaction.orderId,
-                amount: gmoTransaction.amount,
+                orderId: orderId,
+                amount: amount,
                 accessId: entryTranResult.accessId,
                 accessPass: entryTranResult.accessPass,
                 jobCd: GMO.Util.JOB_CD_AUTH,

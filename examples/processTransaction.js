@@ -157,10 +157,7 @@ function main() {
         // GMOオーソリ追加
         debug('adding authorizations gmo...');
         let orderId = Date.now().toString();
-        const gmoAuthorization = yield sskts.service.transaction.placeOrder.authorizeGMOCard(transactionId, {
-            orderId: orderId,
-            amount: totalPrice,
-            method: '1',
+        const gmoAuthorization = yield sskts.service.transaction.placeOrder.createCreditCardAuthorization(transactionId, orderId, totalPrice, '1', {
             cardNo: '4111111111111111',
             expire: '2012',
             securityCode: '123'
@@ -171,10 +168,7 @@ function main() {
         // GMOオーソリ追加
         debug('adding authorizations gmo...');
         orderId = Date.now().toString();
-        yield sskts.service.transaction.placeOrder.authorizeGMOCard(transactionId, {
-            orderId: orderId,
-            amount: totalPrice,
-            method: '1',
+        yield sskts.service.transaction.placeOrder.createCreditCardAuthorization(transactionId, orderId, totalPrice, '1', {
             cardNo: '4111111111111111',
             expire: '2012',
             securityCode: '123'
