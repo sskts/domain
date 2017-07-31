@@ -19,40 +19,116 @@ import TransactionType from '../transactionType';
 
 export type IAvailablePaymentInfo = GMOAuthorizationFactory.IAuthorization | MvtkAuthorizationFactory.IAuthorization;
 
-export interface IPerformer {
+/**
+ * 販売者インターフェース
+ */
+export interface ISeller {
+    /**
+     * スキーマタイプ
+     */
     typeOf: string;
+    /**
+     * ID
+     */
     id: string;
+    /**
+     * 販売者名称
+     */
     name: string;
 }
 
+/**
+ * 購入者インターフェース
+ */
 export interface IAgent {
     id: string;
+    /**
+     * スキーマタイプ
+     */
     typeOf: string;
+    /**
+     * めい
+     */
     givenName: string;
+    /**
+     * せい
+     */
     familyName: string;
+    /**
+     * メールアドレス
+     */
     email: string;
+    /**
+     * 電話番号
+     */
     telephone: string;
+    /**
+     * 参加している会員プログラム
+     */
     memberOf?: ProgramMembershipFactory.IProgramMembership;
 }
 
+/**
+ * 取引結果インターフェース
+ */
 export interface IResult {
+    /**
+     * 注文データ
+     */
     order: OrderFactory.IOrder;
+    /**
+     * 購入者に与えられる所有権リスト
+     */
     ownershipInfos: OwnershipInfoFactory.IOwnership[];
 }
 
+/**
+ * エラーインターフェース
+ */
 export type IError = any;
 
+/**
+ * 取引対象物インターフェース
+ */
 export interface IObject {
-    clientUser: ClientUserFactory.IClientUser; // 取引進行クライアントユーザー
-    paymentInfo: IAvailablePaymentInfo[]; // 決済情報
-    seatReservation?: SeatReservationAuthorizationFactory.IAuthorization; // 座席予約情報
+    /**
+     * 取引進行クライアントユーザー
+     */
+    clientUser: ClientUserFactory.IClientUser;
+    /**
+     * 決済情報リスト
+     */
+    paymentInfos: IAvailablePaymentInfo[];
+    /**
+     * 座席予約情報
+     */
+    seatReservation?: SeatReservationAuthorizationFactory.IAuthorization;
 }
 
+/**
+ * 注文取引インターフェース
+ */
 export interface ITransaction extends TranstransactionFactory.ITransaction {
+    /**
+     * 購入者
+     */
     agent: IAgent;
-    seller: IPerformer;
+    /**
+     * 販売者
+     */
+    seller: ISeller;
+    /**
+     * 取引の結果発生するもの
+     */
     result?: IResult;
+    /**
+     * 取引に関するエラー
+     */
     error?: IError;
+    /**
+     * 取引の対象物
+     * 座席仮予約、クレジットカードのオーソリなど、取引を構成する承認などが含まれます。
+     */
     object: IObject;
 }
 
@@ -60,7 +136,7 @@ export function create(args: {
     id?: string;
     status: TransactionStatusType;
     agent: IAgent
-    seller: IPerformer;
+    seller: ISeller;
     result?: IResult;
     error?: IError;
     object: IObject;

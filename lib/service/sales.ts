@@ -21,7 +21,7 @@ export type IPlaceOrderTransaction = PlaceOrderTransactionFactory.ITransaction;
  */
 export function cancelGMOAuth(transaction: IPlaceOrderTransaction) {
     return async () => {
-        const authorization = <GMOAuthorizationFactory.IAuthorization | undefined>transaction.object.paymentInfo.find(
+        const authorization = <GMOAuthorizationFactory.IAuthorization | undefined>transaction.object.paymentInfos.find(
             (paymentInfo) => paymentInfo.group === AuthorizationGroup.GMO
         );
         if (authorization !== undefined) {
@@ -49,7 +49,7 @@ export function cancelGMOAuth(transaction: IPlaceOrderTransaction) {
  */
 export function settleGMOAuth(transaction: IPlaceOrderTransaction) {
     return async () => {
-        const authorization = <GMOAuthorizationFactory.IAuthorization | undefined>transaction.object.paymentInfo.find(
+        const authorization = <GMOAuthorizationFactory.IAuthorization | undefined>transaction.object.paymentInfos.find(
             (paymentInfo) => paymentInfo.group === AuthorizationGroup.GMO
         );
         if (authorization !== undefined) {

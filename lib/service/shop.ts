@@ -16,10 +16,7 @@ export function open(organization: MovieTheaterOrganizationFactory.IOrganization
                 identifier: organization.identifier,
                 typeOf: OrganizationType.MovieTheater
             },
-            {
-                // 存在しない場合のみ更新(既にあれば何もしない)
-                $setOnInsert: organization
-            },
+            organization,
             { upsert: true }
         ).exec();
     };

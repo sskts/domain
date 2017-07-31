@@ -10,28 +10,79 @@ import IMultilingualString from '../multilingualString';
 import * as PlaceFactory from '../place';
 import PlaceType from '../placeType';
 
+/**
+ * 場所としての座席インターフェース
+ */
 export interface ISeat extends PlaceFactory.IPlace {
+    /**
+     * 枝番号
+     * COAの座席コードにあたります。
+     */
     branchCode: string; // 座席コード
 }
 
+/**
+ * 上映セクションインターフェース
+ */
 export interface IScreeningRoomSection extends PlaceFactory.IPlace {
-    containsPlace: ISeat[]; // 座席リスト
-    branchCode: string; // セクションコード
+    /**
+     * 座席リスト
+     */
+    containsPlace: ISeat[];
+    /**
+     * 枝番号
+     * COAのセクションコードにあたります。
+     */
+    branchCode: string;
 }
 
+/**
+ * 場所としての上映室インターフェース
+ */
 export interface IScreeningRoom extends PlaceFactory.IPlace {
-    containsPlace: IScreeningRoomSection[]; // 上映セクションリスト
-    branchCode: string; // スクリーンコード
+    /**
+     * 上映セクションリスト
+     */
+    containsPlace: IScreeningRoomSection[];
+    /**
+     * 枝番号
+     * COAのスクリーンコードにあたります。
+     */
+    branchCode: string;
+    /**
+     * 上映室名称
+     */
     name: IMultilingualString;
 }
 
+/**
+ * 劇場施設インターフェース
+ */
 export interface IPlace extends PlaceFactory.IPlace {
-    // id: string;
+    /**
+     * スクリーン数
+     */
     screenCount: number;
+    /**
+     * 上映室リスト
+     */
     containsPlace: IScreeningRoom[];
+    /**
+     * 枝番号
+     * COAの劇場コードにあたります。
+     */
     branchCode: string; // 劇場コード
+    /**
+     * 劇場名称
+     */
     name: IMultilingualString;
+    /**
+     * 劇場名称(カナ)
+     */
     kanaName: string;
+    /**
+     * 劇場住所
+     */
     address?: IMultilingualString;
 }
 

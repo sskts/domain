@@ -14,15 +14,24 @@ import ArgumentError from '../../error/argument';
 import AuthorizationGroup from '../authorizationGroup';
 import ObjectId from '../objectId';
 
+/**
+ * オーソリ対象インターフェース
+ */
 export type IObject = GMO.services.credit.IEntryTranArgs & GMO.services.credit.IExecTranArgs & {
     payType: string;
 };
 
 /**
- * GMOオーソリ
+ * GMOオーソリインターフェース
  */
 export interface IAuthorization extends AuthorizationFactory.IAuthorization {
+    /**
+     * 承認結果
+     */
     result: GMO.services.credit.IExecTranResult;
+    /**
+     * 承認対象
+     */
     object: IObject;
 }
 

@@ -74,9 +74,7 @@ export function start(args: {
         let person: PersonFactory.IPerson;
         if (args.agentId === undefined) {
             // 一般所有者作成
-            person = await PersonFactory.create({
-                owns: []
-            });
+            person = await PersonFactory.create({});
         } else {
             // 所有者指定であれば存在確認
             const personDoc = await personAdapter.personModel.findById(args.agentId).exec();
@@ -112,7 +110,7 @@ export function start(args: {
             },
             object: {
                 clientUser: args.clientUser,
-                paymentInfo: []
+                paymentInfos: []
             },
             expires: args.expires,
             startDate: moment().toDate()
@@ -377,6 +375,10 @@ export function authorizeGMOCard(transactionId: string, gmoTransaction: {
     expire?: string;
     securityCode?: string;
     token?: string;
+    memberId?: string;
+    seqMode?: string;
+    cardSeq?: number;
+    cardPass?: string;
 }) {
     return async (organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter) => {
         const transaction = await findInProgressById(transactionId)(transactionAdapter)
@@ -400,7 +402,7 @@ export function authorizeGMOCard(transactionId: string, gmoTransaction: {
 
         // GMOオーソリ取得
         const entryTranResult = await GMO.CreditService.entryTran({
-            shopId: movieTheater.gmoInfo.shopID,
+            shopId: movieTheater.gmoInfo.shopId,
             shopPass: movieTheater.gmoInfo.shopPass,
             orderId: gmoTransaction.orderId,
             jobCd: GMO.Util.JOB_CD_AUTH,
@@ -414,7 +416,11 @@ export function authorizeGMOCard(transactionId: string, gmoTransaction: {
             cardNo: gmoTransaction.cardNo,
             expire: gmoTransaction.expire,
             securityCode: gmoTransaction.securityCode,
-            token: gmoTransaction.token
+            token: gmoTransaction.token,
+            memberId: gmoTransaction.memberId,
+            seqMode: gmoTransaction.seqMode,
+            cardSeq: gmoTransaction.cardSeq,
+            cardPass: gmoTransaction.cardPass
         });
         debug(execTranResult);
 
@@ -423,7 +429,7 @@ export function authorizeGMOCard(transactionId: string, gmoTransaction: {
         const gmoAuthorization = GMOAuthorizationFactory.create({
             price: gmoTransaction.amount,
             object: {
-                shopId: movieTheater.gmoInfo.shopID,
+                shopId: movieTheater.gmoInfo.shopId,
                 shopPass: movieTheater.gmoInfo.shopPass,
                 orderId: gmoTransaction.orderId,
                 amount: gmoTransaction.amount,
@@ -437,7 +443,7 @@ export function authorizeGMOCard(transactionId: string, gmoTransaction: {
 
         await transactionAdapter.transactionModel.findByIdAndUpdate(
             transactionId,
-            { $push: { 'object.paymentInfo': gmoAuthorization } }
+            { $push: { 'object.paymentInfos': gmoAuthorization } }
         ).exec();
         debug('GMOAuthorization added.');
 
@@ -456,7 +462,7 @@ export function cancelGMOAuthorization(transactionId: string, authorizationId: s
                 return option.get();
             });
 
-        const authorization = transaction.object.paymentInfo.find(
+        const authorization = transaction.object.paymentInfos.find(
             (paymentInfo) => paymentInfo.group === AuthorizationGroup.GMO
         );
         if (authorization === undefined) {
@@ -479,7 +485,7 @@ export function cancelGMOAuthorization(transactionId: string, authorizationId: s
         await transactionAdapter.transactionModel.findByIdAndUpdate(
             transaction.id,
             {
-                $pull: { 'object.paymentInfo': { id: authorizationId } }
+                $pull: { 'object.paymentInfos': { id: authorizationId } }
             }
         ).exec();
     };
@@ -596,7 +602,7 @@ export function createMvtkAuthorization(transactionId: string, authorization: Mv
     return async (transactionAdapter: TransactionAdapter) => {
         await transactionAdapter.transactionModel.findByIdAndUpdate(
             transactionId,
-            { $push: { 'object.paymentInfo': authorization } }
+            { $push: { 'object.paymentInfos': authorization } }
         ).exec();
     };
 }
@@ -612,7 +618,7 @@ export function cancelMvtkAuthorization(transactionId: string, authorizationId: 
                 return option.get();
             });
 
-        const authorization = transaction.object.paymentInfo.find(
+        const authorization = transaction.object.paymentInfos.find(
             (paymentInfo) => paymentInfo.group === AuthorizationGroup.MVTK
         );
         if (authorization === undefined) {
@@ -625,7 +631,7 @@ export function cancelMvtkAuthorization(transactionId: string, authorizationId: 
         await transactionAdapter.transactionModel.findByIdAndUpdate(
             transaction.id,
             {
-                $pull: { 'object.paymentInfo': { id: authorizationId } }
+                $pull: { 'object.paymentInfos': { id: authorizationId } }
             }
         ).exec();
     };
@@ -888,8 +894,13 @@ export function confirm(transactionId: string) {
             orderNumber: `${orderInquiryKey.theaterCode}-${orderInquiryKey.orderNumber}`,
             orderInquiryKey: orderInquiryKey
         });
-        const ownershipInfos = order.acceptedOffer.map((reservation) => {
+        const ownershipInfos = order.acceptedOffers.map((reservation) => {
             return OwnershipInfoFactory.create({
+                ownedBy: {
+                    id: transaction.agent.id,
+                    typeOf: transaction.agent.typeOf,
+                    name: `${transaction.agent.familyName} ${transaction.agent.givenName}`
+                },
                 acquiredFrom: transaction.seller,
                 ownedFrom: new Date(),
                 ownedThrough: moment().add(1, 'month').toDate(),
@@ -938,7 +949,7 @@ function canBeClosed(transaction: PlaceOrderTransactionFactory.ITransaction) {
     }
 
     // 決済情報がなければ×
-    const paymentInfos = transaction.object.paymentInfo;
+    const paymentInfos = transaction.object.paymentInfos;
     if (paymentInfos.length === 0) {
         return false;
     }

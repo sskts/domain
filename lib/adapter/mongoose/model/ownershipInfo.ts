@@ -12,6 +12,7 @@ const schema = new mongoose.Schema(
             required: true
         },
         identifier: String,
+        ownedBy: mongoose.SchemaTypes.Mixed,
         acquiredFrom: mongoose.SchemaTypes.Mixed,
         ownedFrom: Date,
         ownedThrough: Date,

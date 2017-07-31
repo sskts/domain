@@ -58,7 +58,7 @@ export interface IOrder {
      * Offer	(required)
      * The offers included in the order.Also accepts an array of objects.
      */
-    acceptedOffer: IOffer[];
+    acceptedOffers: IOffer[];
     /**
      * URL	(recommended for confirmation cards/ Search Answers)
      * URL of the Order, typically a link to the merchant's website where the user can retrieve further details about an order.
@@ -113,7 +113,7 @@ export function createFromBuyTransaction(args: {
         orderNumber: args.orderNumber,
         priceCurrency: PriceCurrency.JPY,
         price: args.seatReservationAuthorization.price,
-        acceptedOffer: args.seatReservationAuthorization.object.acceptedOffer.map((offer) => {
+        acceptedOffers: args.seatReservationAuthorization.object.acceptedOffers.map((offer) => {
             const reservation = offer.itemOffered;
             reservation.reservationStatus = ReservationStatusType.ReservationConfirmed;
             reservation.underName.name = args.customerName;

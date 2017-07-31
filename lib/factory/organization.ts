@@ -8,6 +8,9 @@ import IMultilingualString from './multilingualString';
 import OrganizationType from './organizationType';
 import * as URLFactory from './url';
 
+/**
+ * 組織インターフェース
+ */
 export interface IOrganization {
     id: string;
     identifier: string;
@@ -15,7 +18,7 @@ export interface IOrganization {
     legalName: IMultilingualString;
     typeOf: OrganizationType;
     location?: any;
-    sameAs?: URLFactory.IURL;
+    url?: URLFactory.IURL;
 }
 
 export function create(args: {
@@ -25,7 +28,7 @@ export function create(args: {
     legalName?: IMultilingualString;
     typeOf: OrganizationType;
     location?: any;
-    sameAs?: URLFactory.IURL;
+    url?: URLFactory.IURL;
 }): IOrganization {
     return {
         id: (args.id === undefined) ? '' : args.id,
@@ -34,6 +37,6 @@ export function create(args: {
         legalName: (args.legalName === undefined) ? { ja: '', en: '' } : args.legalName,
         typeOf: args.typeOf,
         location: args.location,
-        sameAs: (args.sameAs !== undefined) ? args.sameAs.toString() : undefined
+        url: (args.url !== undefined) ? args.url.toString() : undefined
     };
 }

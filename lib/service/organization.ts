@@ -22,11 +22,11 @@ export interface ISearchMovieTheatersConditions {
 }
 
 export interface ISearchMovieTheaterResult {
+    typeOf: string;
     id: string;
     location: MovieTheaterOrganizationFactory.ILocation;
     name: IMultilingualString;
-    // kanaName: string;
-    sameAs?: string;
+    url: string;
 }
 
 /**
@@ -44,7 +44,7 @@ export function searchMovieTheaters(searchConditions: ISearchMovieTheatersCondit
 
         debug('finding places...', conditions);
 
-        return await organizationAdapter.organizationModel.find(conditions, 'typeOf location name kanaName sameAs')
+        return await organizationAdapter.organizationModel.find(conditions, 'typeOf location name kanaName url')
             .setOptions({ maxTimeMS: 10000 })
             .exec()
             .then((docs) => {
@@ -56,8 +56,7 @@ export function searchMovieTheaters(searchConditions: ISearchMovieTheatersCondit
                         typeOf: movieTheater.typeOf,
                         location: movieTheater.location,
                         name: movieTheater.name,
-                        // kanaName: movieTheater.kanaName,
-                        sameAs: movieTheater.sameAs
+                        url: movieTheater.url
                     };
                 });
 

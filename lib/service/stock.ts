@@ -84,11 +84,11 @@ export function transferSeatReservation(transaction: IPlaceOrderTransaction) {
                     reserveNameJkana: `${recipient.familyName}　${recipient.givenName}`,
                     telNum: recipient.telephone,
                     mailAddr: recipient.email,
-                    reserveAmount: authorization.object.acceptedOffer.reduce(
+                    reserveAmount: authorization.object.acceptedOffers.reduce(
                         (a, b) => a + b.price,
                         0
                     ),
-                    listTicket: authorization.object.acceptedOffer.map((offer) => offer.itemOffered.reservedTicket.coaTicketInfo)
+                    listTicket: authorization.object.acceptedOffers.map((offer) => offer.itemOffered.reservedTicket.coaTicketInfo)
                 });
             }
 

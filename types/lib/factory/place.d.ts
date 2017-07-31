@@ -5,6 +5,9 @@
  */
 import IMultilingualString from './multilingualString';
 import PlaceType from './placeType';
+/**
+ * 場所インターフェース
+ */
 export interface IPlace {
     id?: string;
     name?: IMultilingualString;
@@ -17,7 +20,10 @@ export interface IPlace {
     openingHoursSpecification?: any;
     smokingAllowed?: boolean;
     telephone?: string;
-    sameAs?: string;
+    url?: string;
+    /**
+     * スキーマタイプ
+     */
     typeOf: PlaceType;
 }
 export declare function create(args: {
@@ -32,6 +38,6 @@ export declare function create(args: {
     openingHoursSpecification?: any;
     smokingAllowed?: boolean;
     telephone?: string;
-    sameAs?: URL;
+    url?: URL;
     typeOf: PlaceType;
 }): IPlace;

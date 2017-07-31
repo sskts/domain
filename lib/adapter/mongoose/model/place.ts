@@ -24,6 +24,7 @@ const schema = new mongoose.Schema(
         smokingAllowed: Boolean,
         telephone: String,
         sameAs: String,
+        url: String,
         kanaName: String,
         coaInfo: mongoose.SchemaTypes.Mixed
     },

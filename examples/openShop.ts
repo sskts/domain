@@ -25,8 +25,8 @@ async function main() {
         branchCode: '118',
         gmoInfo: {
             shopPass: 'xbxmkaa6',
-            shopID: 'tshop00026096',
-            siteID: 'tsite00022126'
+            shopId: 'tshop00026096',
+            siteId: 'tsite00022126'
         },
         parentOrganization: {
             typeOf: sskts.factory.organizationType.Corporation,
@@ -45,7 +45,7 @@ async function main() {
             }
         },
         // tslint:disable-next-line:no-http-string
-        sameAs: sskts.factory.url.create(new url.URL('http://devssktsportal.azurewebsites.net/theater/aira/'))
+        url: sskts.factory.url.create(new url.URL('http://devssktsportal.azurewebsites.net/theater/aira/'))
     });
 
     await sskts.service.shop.open(movieTheater)(organizationAdapter);

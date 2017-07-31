@@ -65,7 +65,7 @@ function main() {
         const transaction = transactionOption.get();
         const transactionId = transaction.id;
         // 空席なくなったら変更する
-        const individualScreeningEventIdentifier = '11899500020170729601750';
+        const individualScreeningEventIdentifier = '11816421020170801501230';
         const individualScreeningEventOption = yield sskts.service.event.findIndividualScreeningEventByIdentifier(individualScreeningEventIdentifier)(eventAdapter);
         const individualScreeningEvent = individualScreeningEventOption.get();
         const theaterCode = individualScreeningEvent.superEvent.location.branchCode;

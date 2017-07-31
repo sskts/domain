@@ -53,7 +53,7 @@ export interface IOrder {
      * Offer	(required)
      * The offers included in the order.Also accepts an array of objects.
      */
-    acceptedOffer: IOffer[];
+    acceptedOffers: IOffer[];
     /**
      * URL	(recommended for confirmation cards/ Search Answers)
      * URL of the Order, typically a link to the merchant's website where the user can retrieve further details about an order.

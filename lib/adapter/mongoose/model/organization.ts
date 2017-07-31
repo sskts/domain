@@ -17,6 +17,7 @@ const schema = new mongoose.Schema(
         name: MultilingualStringSchemaType,
         legalName: MultilingualStringSchemaType,
         sameAs: String,
+        url: String,
         gmoInfo: mongoose.SchemaTypes.Mixed,
         parentOrganization: mongoose.SchemaTypes.Mixed,
         location: mongoose.SchemaTypes.Mixed

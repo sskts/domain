@@ -8,42 +8,49 @@ import EventStatusType from './eventStatusType';
 import EventType from './eventType';
 import IMultilingualString from './multilingualString';
 import * as PlaceFactory from './place';
+/**
+ * イベントインターフェース
+ */
 export interface IEvent {
+    /**
+     * スキーマタイプ
+     */
     typeOf: EventType;
     /**
-     * The identifier property represents any kind of identifier for any kind of Thing, such as ISBNs, GTIN codes, UUIDs etc.
+     * イベント識別子
      */
     identifier: string;
     /**
-     * The name of the item.
+     * イベント名称
      */
     name: IMultilingualString;
     /**
-     * A description of the item.
+     * イベント説明
      */
     description?: IMultilingualString;
     /**
-     * The time admission will commence.
+     * 開場日時(in ISO 8601 date format)
      */
     doorTime?: Date;
     /**
-     * The duration of the item (movie, audio recording, event, etc.) in ISO 8601 date format.
+     * イベント上演時間 in ISO 8601 date format.
      */
     duration?: string;
     /**
-     * The end date and time of the item (in ISO 8601 date format).
+     * 終了日時(in ISO 8601 date format)
      */
     endDate?: Date;
     /**
-     * An eventStatus of an event represents its status; particularly useful when an event is cancelled or rescheduled.
+     * イベントステータス
+     * イベントがキャンセル、あるいは、延期された場合に主に使用されます。
      */
     eventStatus: EventStatusType;
     /**
-     * The location of for example where the event is happening, an organization is located, or where an action takes place.
+     * イベントが実行される場所
      */
     location?: PlaceFactory.IPlace;
     /**
-     * The total number of individuals that may attend an event or venue.
+     * 最大収容人数
      */
     maximumAttendeeCapacity?: number;
     /**
@@ -51,15 +58,15 @@ export interface IEvent {
      * rent the DVD of a movie, perform a service, or give away tickets to an event.
      */
     /**
-     * The number of attendee places for an event that remain unallocated.
+     * 残り収容人数
      */
     remainingAttendeeCapacity?: number;
     /**
-     * The start date and time of the item (in ISO 8601 date format).
+     * 開始日時(in ISO 8601 date format)
      */
     startDate?: Date;
     /**
-     * A work performed in some event, for example a play performed in a TheaterEvent.
+     * イベントで上演される作品
      */
     workPerformed?: CreativeWorkFactory.ICreativeWork;
 }

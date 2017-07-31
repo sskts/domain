@@ -63,7 +63,7 @@ async function main() {
     const transactionId = transaction.id;
 
     // 空席なくなったら変更する
-    const individualScreeningEventIdentifier = '11899500020170729601750';
+    const individualScreeningEventIdentifier = '11816421020170801501230';
     const individualScreeningEventOption = await sskts.service.event.findIndividualScreeningEventByIdentifier(
         individualScreeningEventIdentifier
     )(eventAdapter);

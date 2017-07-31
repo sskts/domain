@@ -6,10 +6,11 @@ export interface ISearchMovieTheatersConditions {
     name?: string;
 }
 export interface ISearchMovieTheaterResult {
+    typeOf: string;
     id: string;
     location: MovieTheaterOrganizationFactory.ILocation;
     name: IMultilingualString;
-    sameAs?: string;
+    url: string;
 }
 /**
  * 劇場検索

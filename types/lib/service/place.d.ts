@@ -11,10 +11,11 @@ export interface ISearchMovieTheatersConditions {
     name?: string;
 }
 export interface ISearchMovieTheaterResult {
+    typeOf: string;
     branchCode: string;
     name: IMultilingualString;
     kanaName: string;
-    sameAs?: string;
+    url?: string;
 }
 /**
  * 劇場検索

@@ -11,14 +11,26 @@ import * as validator from 'validator';
 import ArgumentError from '../error/argument';
 
 import ObjectId from './objectId';
-import * as OwnershipInfoFactory from './ownershipInfo';
+// import * as OwnershipInfoFactory from './ownershipInfo';
 import * as ProgramMembershipFactory from './programMembership';
 
+/**
+ * 不変属性インターフェース
+ */
 export interface IImmutableFields {
+    /**
+     * 人物ID
+     */
     id: string;
+    /**
+     * スキーマタイプ
+     */
     typeOf: string;
 }
 
+/**
+ * プロフィールインターフェース
+ */
 export interface IProfile {
     /**
      * 名
@@ -38,6 +50,9 @@ export interface IProfile {
     telephone: string;
 }
 
+/**
+ * 会員情報インターフェース
+ */
 export interface IMember {
     username?: string;
     /**
@@ -63,7 +78,7 @@ export type IPublicFields = IImmutableFields & IMember & IProfile;
  * @memberof factory/person
  */
 export type IPerson = IPublicFields & IHashedFields & {
-    owns: OwnershipInfoFactory.IOwnership[];
+    // owns: OwnershipInfoFactory.IOwnership[];
 };
 
 /**
@@ -80,7 +95,7 @@ export async function create(args: {
     email?: string;
     telephone?: string;
     memberOf?: ProgramMembershipFactory.IProgramMembership;
-    owns: OwnershipInfoFactory.IOwnership[];
+    // owns: OwnershipInfoFactory.IOwnership[];
 }): Promise<IPerson> {
     if (!_.isEmpty(args.email) && !validator.isEmail(<string>args.email)) {
         throw new ArgumentError('email', 'invalid email');
@@ -100,7 +115,7 @@ export async function create(args: {
         telephone: (args.telephone === undefined) ? '' : args.telephone,
         username: args.username,
         hashedPassword: hashedPassword,
-        memberOf: args.memberOf,
-        owns: args.owns
+        memberOf: args.memberOf
+        // owns: args.owns
     };
 }

@@ -45,10 +45,11 @@ export interface ISearchMovieTheatersConditions {
 }
 
 export interface ISearchMovieTheaterResult {
+    typeOf: string;
     branchCode: string;
     name: IMultilingualString;
     kanaName: string;
-    sameAs?: string;
+    url?: string;
 }
 
 /**
@@ -66,7 +67,7 @@ export function searchMovieTheaters(searchConditions: ISearchMovieTheatersCondit
 
         debug('finding places...', conditions);
 
-        return await placeAdapter.placeModel.find(conditions, 'typeOf branchCode name kanaName sameAs')
+        return await placeAdapter.placeModel.find(conditions, 'typeOf branchCode name kanaName url')
             .setOptions({ maxTimeMS: 10000 })
             .exec()
             .then((docs) => {
@@ -78,7 +79,7 @@ export function searchMovieTheaters(searchConditions: ISearchMovieTheatersCondit
                         branchCode: movieTheater.branchCode,
                         name: movieTheater.name,
                         kanaName: movieTheater.kanaName,
-                        sameAs: movieTheater.sameAs
+                        url: movieTheater.url
                     };
                 });
 

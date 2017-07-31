@@ -15,16 +15,50 @@ import TransactionStatusType from './transactionStatusType';
 import TransactionTasksExportationStatus from './transactionTasksExportationStatus';
 import TransactionType from './transactionType';
 
+/**
+ * 取引インターフェース
+ */
 export interface ITransaction {
+    /**
+     * 取引ID
+     * MongoDBのオブジェクトID
+     */
     id: string;
+    /**
+     * 取引タイプ
+     */
     typeOf: TransactionType;
+    /**
+     * 取引状態
+     */
     status: TransactionStatusType;
+    /**
+     * 取引主体
+     */
     agent: any;
+    /**
+     * 取引結果
+     */
     result?: any;
+    /**
+     * 取引エラー
+     */
     error?: any;
+    /**
+     * 取引対象
+     */
     object?: any;
+    /**
+     * 取引進行期限
+     */
     expires: Date;
+    /**
+     * 取引開始日時
+     */
     startDate?: Date;
+    /**
+     * 取引終了日時
+     */
     endDate?: Date;
     /**
      * タスクエクスポート日時

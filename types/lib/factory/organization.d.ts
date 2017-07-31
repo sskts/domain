@@ -6,6 +6,9 @@
 import IMultilingualString from './multilingualString';
 import OrganizationType from './organizationType';
 import * as URLFactory from './url';
+/**
+ * 組織インターフェース
+ */
 export interface IOrganization {
     id: string;
     identifier: string;
@@ -13,7 +16,7 @@ export interface IOrganization {
     legalName: IMultilingualString;
     typeOf: OrganizationType;
     location?: any;
-    sameAs?: URLFactory.IURL;
+    url?: URLFactory.IURL;
 }
 export declare function create(args: {
     id?: string;
@@ -22,5 +25,5 @@ export declare function create(args: {
     legalName?: IMultilingualString;
     typeOf: OrganizationType;
     location?: any;
-    sameAs?: URLFactory.IURL;
+    url?: URLFactory.IURL;
 }): IOrganization;

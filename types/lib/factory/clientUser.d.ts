@@ -27,12 +27,12 @@ export interface IClientUser {
      */
     state: string;
     /**
-     * ログイン会員所有者ID
+     * ログイン会員人物ID
      *
      * @type {string}
      * @memberof IClientUser
      */
-    owner?: string;
+    person?: string;
     /**
      * スコープ
      *
@@ -50,6 +50,6 @@ export interface IClientUser {
 export declare function create(args: {
     client: string;
     state: string;
-    owner?: string;
+    person?: string;
     scopes: string[];
 }): IClientUser;

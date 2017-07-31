@@ -67,6 +67,10 @@ export declare function authorizeGMOCard(transactionId: string, gmoTransaction: 
     expire?: string;
     securityCode?: string;
     token?: string;
+    memberId?: string;
+    seqMode?: string;
+    cardSeq?: number;
+    cardPass?: string;
 }): (organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter) => Promise<GMOAuthorizationFactory.IAuthorization>;
 export declare function cancelGMOAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
 export declare function createSeatReservationAuthorization(transactionId: string, individualScreeningEvent: IndividualScreeningEventFactory.IEvent, offers: {
