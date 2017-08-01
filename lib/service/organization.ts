@@ -5,9 +5,8 @@
  */
 
 import * as createDebug from 'debug';
-// import * as monapt from 'monapt';
+import * as monapt from 'monapt';
 
-import IMultilingualString from '../factory/multilingualString';
 import * as MovieTheaterOrganizationFactory from '../factory/organization/movieTheater';
 import OrganizationType from '../factory/organizationType';
 
@@ -27,33 +26,21 @@ export interface ISearchMovieTheatersConditions {
 /**
  * 劇場検索結果インターフェース
  */
-export interface ISearchMovieTheaterResult {
+export type IMovieTheater = MovieTheaterOrganizationFactory.IOrganizationWithoutGMOInfo & {
     /**
-     * スキーマタイプ
+     * GMO情報
      */
-    typeOf: string;
-    /**
-     * 組織ID
-     */
-    id: string;
-    /**
-     * 場所
-     */
-    location: MovieTheaterOrganizationFactory.ILocation;
-    /**
-     * 組織名称
-     */
-    name: IMultilingualString;
-    /**
-     * 組織URL
-     */
-    url: string;
-}
+    gmoInfo: {
+        shopId: string;
+    };
+};
 
 /**
  * 劇場検索
  */
-export function searchMovieTheaters(searchConditions: ISearchMovieTheatersConditions): IOrganizationOperation<ISearchMovieTheaterResult[]> {
+export function searchMovieTheaters(
+    searchConditions: ISearchMovieTheatersConditions
+): IOrganizationOperation<IMovieTheater[]> {
     return async (organizationAdapter: OrganizationAdapter) => {
         // 検索条件を作成
         const conditions: any = {
@@ -63,42 +50,36 @@ export function searchMovieTheaters(searchConditions: ISearchMovieTheatersCondit
 
         // todo 検索条件を指定できるように改修
 
-        debug('finding places...', conditions);
+        debug('searching movie theaters...', conditions);
 
-        return await organizationAdapter.organizationModel.find(conditions, 'typeOf location name kanaName url')
+        // GMOのセキュアな情報を公開しないように注意
+        return <IMovieTheater[]>await organizationAdapter.organizationModel.find(
+            conditions,
+            'identifier name legalName typeOf location url branchCode parentOrganization gmoInfo.shopId'
+        )
             .setOptions({ maxTimeMS: 10000 })
             .exec()
-            .then((docs) => {
-                return docs.map((doc) => {
-                    const movieTheater = <MovieTheaterOrganizationFactory.IOrganization>doc.toObject();
-
-                    return {
-                        id: movieTheater.id,
-                        typeOf: movieTheater.typeOf,
-                        location: movieTheater.location,
-                        name: movieTheater.name,
-                        url: movieTheater.url
-                    };
-                });
-
-            });
+            .then((docs) => docs.map((doc) => doc.toObject()));
     };
 }
 
 /**
  * 枝番号で劇場検索
  */
-// export function findMovieTheaterByBranchCode(
-//     branchCode: string
-// ): IOrganizationOperation<monapt.Option<MovieTheaterOrganizationFactory.IOrganization>> {
-//     return async (organizationAdapter: OrganizationAdapter) => {
-//         return await organizationAdapter.organizationModel.findOne({
-//             typeOf: OrganizationType.MovieTheater,
-//             'location.branchCide': branchCode
-//         }).lean()
-//             .exec()
-//             .then((movieTheater: MovieTheaterPlaceFactory.IPlace) => {
-//                 (movieTheater === null) ? monapt.None : monapt.Option(movieTheater)
-//             });
-//     };
-// }
+export function findMovieTheaterByBranchCode(
+    branchCode: string
+): IOrganizationOperation<monapt.Option<IMovieTheater>> {
+    return async (organizationAdapter: OrganizationAdapter) => {
+        return await organizationAdapter.organizationModel.findOne(
+            {
+                typeOf: OrganizationType.MovieTheater,
+                'location.branchCode': branchCode
+            },
+            'identifier name legalName typeOf location url branchCode parentOrganization gmoInfo.shopId'
+        )
+            .exec()
+            .then((doc) => {
+                return (doc === null) ? monapt.None : monapt.Option(<IMovieTheater>doc.toObject());
+            });
+    };
+}

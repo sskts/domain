@@ -1,4 +1,4 @@
-import IMultilingualString from '../factory/multilingualString';
+import * as monapt from 'monapt';
 import * as MovieTheaterOrganizationFactory from '../factory/organization/movieTheater';
 import OrganizationAdapter from '../adapter/organization';
 export declare type IOrganizationOperation<T> = (organizationAdapter: OrganizationAdapter) => Promise<T>;
@@ -11,29 +11,19 @@ export interface ISearchMovieTheatersConditions {
 /**
  * 劇場検索結果インターフェース
  */
-export interface ISearchMovieTheaterResult {
+export declare type IMovieTheater = MovieTheaterOrganizationFactory.IOrganizationWithoutGMOInfo & {
     /**
-     * スキーマタイプ
+     * GMO情報
      */
-    typeOf: string;
-    /**
-     * 組織ID
-     */
-    id: string;
-    /**
-     * 場所
-     */
-    location: MovieTheaterOrganizationFactory.ILocation;
-    /**
-     * 組織名称
-     */
-    name: IMultilingualString;
-    /**
-     * 組織URL
-     */
-    url: string;
-}
+    gmoInfo: {
+        shopId: string;
+    };
+};
 /**
  * 劇場検索
  */
-export declare function searchMovieTheaters(searchConditions: ISearchMovieTheatersConditions): IOrganizationOperation<ISearchMovieTheaterResult[]>;
+export declare function searchMovieTheaters(searchConditions: ISearchMovieTheatersConditions): IOrganizationOperation<IMovieTheater[]>;
+/**
+ * 枝番号で劇場検索
+ */
+export declare function findMovieTheaterByBranchCode(branchCode: string): IOrganizationOperation<monapt.Option<IMovieTheater>>;

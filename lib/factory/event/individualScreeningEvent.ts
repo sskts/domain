@@ -157,8 +157,8 @@ export function createFromCOA(performanceFromCOA: COA.services.master.IScheduleR
                     branchCode: screenRoom.branchCode,
                     name: screenRoom.name
                 },
-                endDate: moment(`${performanceFromCOA.dateJouei} ${performanceFromCOA.timeEnd}`, 'YYYYMMDD HHmm').toDate(),
-                startDate: moment(`${performanceFromCOA.dateJouei} ${performanceFromCOA.timeBegin}`, 'YYYYMMDD HHmm').toDate(),
+                endDate: moment(`${performanceFromCOA.dateJouei} ${performanceFromCOA.timeEnd} +09:00`, 'YYYYMMDD HHmm Z').toDate(),
+                startDate: moment(`${performanceFromCOA.dateJouei} ${performanceFromCOA.timeBegin} +09:00`, 'YYYYMMDD HHmm Z').toDate(),
                 superEvent: screeningEvent,
                 coaInfo: {
                     theaterCode: screeningEvent.location.branchCode,

@@ -154,8 +154,8 @@ export function searchIndividualScreeningEvents(searchConditions: ISearchPerform
 
         if (searchConditions.day !== undefined) {
             conditions.startDate = {
-                $gte: moment(searchConditions.day, 'YYYYMMDD').toDate(),
-                $lt: moment(searchConditions.day, 'YYYYMMDD').add(1, 'day').toDate()
+                $gte: moment(`${searchConditions.day} +09:00`, 'YYYYMMDD Z').toDate(),
+                $lt: moment(`${searchConditions.day} +09:00`, 'YYYYMMDD Z').add(1, 'day').toDate()
             };
         }
 
@@ -165,7 +165,8 @@ export function searchIndividualScreeningEvents(searchConditions: ISearchPerform
 
         debug('finding individualScreeningEvents...', conditions);
 
-        return <IndividualScreeningEventFactory.IEvent>await eventAdapter.eventModel.find(conditions)
+        return <IndividualScreeningEventFactory.IEvent[]>await eventAdapter.eventModel.find(conditions)
+            .sort({ startDate: 1 })
             .setOptions({ maxTimeMS: 10000 })
             // .populate('film', '_id name minutes')
             // .populate('theater', '_id name')

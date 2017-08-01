@@ -24,13 +24,13 @@ async function main() {
         (<any>mongoose).Promise = global.Promise;
         const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
         const performances = await sskts.service.event.searchIndividualScreeningEvents({
-            day: moment().format('YYYYMMDD'),
+            day: moment().locale('ja').add(1, 'day').format('YYYYMMDD'),
             theater: '118'
         })(
             sskts.adapter.event(connection)
             // sskts.adapter.stockStatus.performance(redisClient)
             );
-        debug(performances);
+        debug(performances[0]);
     } catch (error) {
         console.error(error);
     }

@@ -38,7 +38,7 @@ export declare function importScreeningEvents(theaterCode: string, importFrom: D
  * 空席状況情報がなかったバージョンに対して互換性を保つために
  * performanceStockStatusAdapterはundefinedでも使えるようになっている
  */
-export declare function searchIndividualScreeningEvents(searchConditions: ISearchPerformancesConditions): (eventAdapter: EventAdapter) => Promise<IndividualScreeningEventFactory.IEvent>;
+export declare function searchIndividualScreeningEvents(searchConditions: ISearchPerformancesConditions): (eventAdapter: EventAdapter) => Promise<IndividualScreeningEventFactory.IEvent[]>;
 /**
  * IDで上映イベント検索
  */

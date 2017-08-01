@@ -65,15 +65,15 @@ function main() {
         const transaction = transactionOption.get();
         const transactionId = transaction.id;
         // 空席なくなったら変更する
-        const individualScreeningEventIdentifier = '11816421020170801501230';
+        const individualScreeningEventIdentifier = '11816221020170801302030';
         const individualScreeningEventOption = yield sskts.service.event.findIndividualScreeningEventByIdentifier(individualScreeningEventIdentifier)(eventAdapter);
         const individualScreeningEvent = individualScreeningEventOption.get();
-        const theaterCode = individualScreeningEvent.superEvent.location.branchCode;
-        const dateJouei = moment(individualScreeningEvent.startDate).locale('ja').format('YYYYMMDD');
-        const titleCode = individualScreeningEvent.workPerformed.identifier;
-        const titleBranchNum = individualScreeningEvent.superEvent.coaInfo.titleBranchNum;
-        const timeBegin = moment(individualScreeningEvent.startDate).locale('ja').format('HHmm');
-        const screenCode = individualScreeningEvent.location.branchCode;
+        const theaterCode = individualScreeningEvent.coaInfo.theaterCode;
+        const dateJouei = individualScreeningEvent.coaInfo.dateJouei;
+        const titleCode = individualScreeningEvent.coaInfo.titleCode;
+        const titleBranchNum = individualScreeningEvent.coaInfo.titleBranchNum;
+        const timeBegin = individualScreeningEvent.coaInfo.timeBegin;
+        const screenCode = individualScreeningEvent.coaInfo.screenCode;
         // 販売可能チケット検索
         const salesTicketResult = yield COA.services.reserve.salesTicket({
             theaterCode: theaterCode,

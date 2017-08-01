@@ -123,11 +123,11 @@ export interface IEvent extends EventFactory.IEvent {
  */
 export function createFromCOA(filmFromCOA: COA.services.master.ITitleResult) {
     return (movieTheater: MovieTheaterPlaceFactory.IPlace): IEvent => {
-        const endDate = (moment(filmFromCOA.dateEnd, 'YYYYMMDD').isValid())
-            ? moment(filmFromCOA.dateEnd, 'YYYYMMDD').toDate()
+        const endDate = (moment(`${filmFromCOA.dateEnd} +09:00`, 'YYYYMMDD Z').isValid())
+            ? moment(`${filmFromCOA.dateEnd} +09:00`, 'YYYYMMDD Z').toDate()
             : undefined;
-        const startDate = (moment(filmFromCOA.dateBegin, 'YYYYMMDD').isValid())
-            ? moment(filmFromCOA.dateBegin, 'YYYYMMDD').toDate()
+        const startDate = (moment(`${filmFromCOA.dateBegin} +09:00`, 'YYYYMMDD Z').isValid())
+            ? moment(`${filmFromCOA.dateBegin} +09:00`, 'YYYYMMDD Z').toDate()
             : undefined;
 
         return {
