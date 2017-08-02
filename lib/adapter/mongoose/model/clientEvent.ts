@@ -31,7 +31,7 @@ const schema = new mongoose.Schema(
         }
     },
     {
-        collection: 'client_events',
+        collection: 'clientEvents',
         id: true,
         read: 'primaryPreferred',
         safe: safe,

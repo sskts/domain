@@ -44,6 +44,7 @@ async function main() {
                 ja: 'シネマサンシャイン１１８'
             }
         },
+        telephone: '0312345678',
         // tslint:disable-next-line:no-http-string
         url: sskts.factory.url.create(new url.URL('http://devssktsportal.azurewebsites.net/theater/aira/'))
     });

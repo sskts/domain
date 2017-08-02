@@ -86,6 +86,13 @@ export interface IOrganizationWithoutGMOInfo extends OrganizationFactory.IOrgani
      * 場所
      */
     location: ILocation;
+    /**
+     * 電話番号
+     */
+    telephone: string;
+    /**
+     * 劇場ポータルサイトURL
+     */
     url: URLFactory.IURL;
 }
 
@@ -105,6 +112,7 @@ export function create(args: {
     gmoInfo: IGMOInfo;
     parentOrganization: IParentOrganization;
     location: ILocation;
+    telephone: string;
     url: URLFactory.IURL;
 }): IOrganization {
     const identifier = `MovieTheaterOrganization-${args.branchCode}`;
@@ -120,6 +128,7 @@ export function create(args: {
             gmoInfo: args.gmoInfo,
             parentOrganization: args.parentOrganization,
             location: args.location,
+            telephone: args.telephone,
             url: args.url
         }
     };

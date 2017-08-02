@@ -14,10 +14,8 @@ import ArgumentError from '../error/argument';
 import * as IndividualScreeningEventFactory from '../factory/event/individualScreeningEvent';
 import * as ScreeningEventFactory from '../factory/event/screeningEvent';
 import EventType from '../factory/eventType';
-import IMultilingualString from '../factory/multilingualString';
 import * as MovieTheaterPlaceFactory from '../factory/place/movieTheater';
 import PlaceType from '../factory/placeType';
-import * as PerformanceStockStatusFactory from '../factory/stockStatus/performance';
 
 import EventAdapter from '../adapter/event';
 import PlaceAdapter from '../adapter/place';
@@ -26,27 +24,6 @@ import PlaceAdapter from '../adapter/place';
 export interface ISearchPerformancesConditions {
     day?: string;
     theater?: string;
-}
-export interface ISearchPerformancesResult {
-    id: string;
-    theater: {
-        id: string;
-        name: IMultilingualString;
-    };
-    screen: {
-        id: string;
-        name: IMultilingualString;
-    };
-    film: {
-        id: string;
-        name: IMultilingualString;
-        minutes: number;
-    };
-    day: string;
-    time_start: string;
-    time_end: string;
-    canceled: boolean;
-    stock_status: PerformanceStockStatusFactory.Expression | null;
 }
 
 const debug = createDebug('sskts-domain:service:event');

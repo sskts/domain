@@ -18,6 +18,7 @@ export interface IOrganization {
     legalName: IMultilingualString;
     typeOf: OrganizationType;
     location?: any;
+    telephone?: string;
     url?: URLFactory.IURL;
 }
 
@@ -28,6 +29,7 @@ export function create(args: {
     legalName?: IMultilingualString;
     typeOf: OrganizationType;
     location?: any;
+    telephone?: string;
     url?: URLFactory.IURL;
 }): IOrganization {
     return {
@@ -37,6 +39,7 @@ export function create(args: {
         legalName: (args.legalName === undefined) ? { ja: '', en: '' } : args.legalName,
         typeOf: args.typeOf,
         location: args.location,
+        telephone: args.telephone,
         url: (args.url !== undefined) ? args.url.toString() : undefined
     };
 }

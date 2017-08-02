@@ -80,6 +80,13 @@ export interface IOrganizationWithoutGMOInfo extends OrganizationFactory.IOrgani
      * 場所
      */
     location: ILocation;
+    /**
+     * 電話番号
+     */
+    telephone: string;
+    /**
+     * 劇場ポータルサイトURL
+     */
     url: URLFactory.IURL;
 }
 /**
@@ -97,5 +104,6 @@ export declare function create(args: {
     gmoInfo: IGMOInfo;
     parentOrganization: IParentOrganization;
     location: ILocation;
+    telephone: string;
     url: URLFactory.IURL;
 }): IOrganization;

@@ -16,6 +16,7 @@ export interface IOrganization {
     legalName: IMultilingualString;
     typeOf: OrganizationType;
     location?: any;
+    telephone?: string;
     url?: URLFactory.IURL;
 }
 export declare function create(args: {
@@ -25,5 +26,6 @@ export declare function create(args: {
     legalName?: IMultilingualString;
     typeOf: OrganizationType;
     location?: any;
+    telephone?: string;
     url?: URLFactory.IURL;
 }): IOrganization;

@@ -1,8 +1,6 @@
 import * as mongoose from 'mongoose';
 import ownerModel from './owner';
 
-import TransactionInquiryKeySchemaType from '../schemaTypes/transactionInquiryKey';
-
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
 /**
@@ -19,7 +17,7 @@ const schema = new mongoose.Schema(
             ref: ownerModel.modelName
         }],
         client_user: mongoose.Schema.Types.Mixed,
-        inquiry_key: TransactionInquiryKeySchemaType,
+        inquiry_key: mongoose.Schema.Types.Mixed,
         expired_at: Date, // 期限切れ日時
         started_at: Date, // 開始日時
         closed_at: Date, // 成立日時

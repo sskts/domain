@@ -1,33 +1,10 @@
 import * as monapt from 'monapt';
 import * as IndividualScreeningEventFactory from '../factory/event/individualScreeningEvent';
-import IMultilingualString from '../factory/multilingualString';
-import * as PerformanceStockStatusFactory from '../factory/stockStatus/performance';
 import EventAdapter from '../adapter/event';
 import PlaceAdapter from '../adapter/place';
 export interface ISearchPerformancesConditions {
     day?: string;
     theater?: string;
-}
-export interface ISearchPerformancesResult {
-    id: string;
-    theater: {
-        id: string;
-        name: IMultilingualString;
-    };
-    screen: {
-        id: string;
-        name: IMultilingualString;
-    };
-    film: {
-        id: string;
-        name: IMultilingualString;
-        minutes: number;
-    };
-    day: string;
-    time_start: string;
-    time_end: string;
-    canceled: boolean;
-    stock_status: PerformanceStockStatusFactory.Expression | null;
 }
 /**
  * 上映イベントインポート
