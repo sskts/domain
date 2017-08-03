@@ -514,14 +514,28 @@ export function cancelGMOAuthorization(transactionId: string, authorizationId: s
     };
 }
 
+/**
+ * 座席予約販売情報インターフェース
+ */
+export interface ISeatReservationOffer {
+    /**
+     * 座席セクション
+     */
+    seatSection: string;
+    /**
+     * 座席番号
+     */
+    seatNumber: string;
+    /**
+     * 券種情報
+     */
+    ticket: ReservationFactory.ICOATicketInfo;
+}
+
 export function createSeatReservationAuthorization(
     transactionId: string,
     individualScreeningEvent: IndividualScreeningEventFactory.IEvent,
-    offers: {
-        seatSection: string;
-        seatNumber: string;
-        ticket: ReservationFactory.ICOATicketInfo
-    }[]
+    offers: ISeatReservationOffer[]
 ) {
     return async (transactionAdapter: TransactionAdapter) => {
         const transaction = await findInProgressById(transactionId)(transactionAdapter)

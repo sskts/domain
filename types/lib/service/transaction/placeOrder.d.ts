@@ -83,11 +83,24 @@ export declare type ICreditCard4authorization = ICreditCard4authorizationRaw | I
  */
 export declare function createCreditCardAuthorization(transactionId: string, orderId: string, amount: number, method: GMO.utils.util.Method, creditCard: ICreditCard4authorization): (organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter) => Promise<GMOAuthorizationFactory.IAuthorization>;
 export declare function cancelGMOAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
-export declare function createSeatReservationAuthorization(transactionId: string, individualScreeningEvent: IndividualScreeningEventFactory.IEvent, offers: {
+/**
+ * 座席予約販売情報インターフェース
+ */
+export interface ISeatReservationOffer {
+    /**
+     * 座席セクション
+     */
     seatSection: string;
+    /**
+     * 座席番号
+     */
     seatNumber: string;
+    /**
+     * 券種情報
+     */
     ticket: ReservationFactory.ICOATicketInfo;
-}[]): (transactionAdapter: TransactionAdapter) => Promise<SeatReservationAuthorizationFactory.IAuthorization>;
+}
+export declare function createSeatReservationAuthorization(transactionId: string, individualScreeningEvent: IndividualScreeningEventFactory.IEvent, offers: ISeatReservationOffer[]): (transactionAdapter: TransactionAdapter) => Promise<SeatReservationAuthorizationFactory.IAuthorization>;
 export declare function cancelSeatReservationAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * ムビチケ着券承認追加
