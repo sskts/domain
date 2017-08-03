@@ -24,6 +24,7 @@ import * as OrganizationFactory from '../../factory/organization';
 import * as MovieTheaterOrganizationFactory from '../../factory/organization/movieTheater';
 import * as OwnershipInfoFactory from '../../factory/ownershipInfo';
 import * as PersonFactory from '../../factory/person';
+import * as ReservationFactory from '../../factory/reservation';
 import * as TaskFactory from '../../factory/task';
 import * as CancelGMOTaskFactory from '../../factory/task/cancelGMO';
 import * as CancelMvtkTaskFactory from '../../factory/task/cancelMvtk';
@@ -519,7 +520,7 @@ export function createSeatReservationAuthorization(
     offers: {
         seatSection: string;
         seatNumber: string;
-        ticket: COA.services.reserve.IUpdReserveTicket;
+        ticket: ReservationFactory.ICOATicketInfo
     }[]
 ) {
     return async (transactionAdapter: TransactionAdapter) => {

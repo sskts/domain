@@ -15,7 +15,7 @@ const schema = new mongoose.Schema(
         orderNumber: String,
         priceCurrency: String,
         price: Number,
-        acceptedOffer: [mongoose.SchemaTypes.Mixed],
+        acceptedOffers: [mongoose.SchemaTypes.Mixed],
         url: String,
         orderStatus: String,
         paymentMethod: String,

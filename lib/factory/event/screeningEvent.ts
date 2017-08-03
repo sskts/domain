@@ -149,11 +149,11 @@ export function createFromCOA(filmFromCOA: COA.services.master.ITitleResult) {
             workPerformed: {
                 identifier: filmFromCOA.titleCode,
                 name: filmFromCOA.titleNameOrig,
-                duration: moment.duration(filmFromCOA.showTime, 'M').toISOString(),
+                duration: moment.duration(filmFromCOA.showTime, 'm').toISOString(),
                 contentRating: filmFromCOA.kbnEirin,
                 typeOf: CreativeWorkType.Movie
             },
-            duration: moment.duration(filmFromCOA.showTime, 'M').toISOString(),
+            duration: moment.duration(filmFromCOA.showTime, 'm').toISOString(),
             endDate: endDate,
             startDate: startDate,
             coaInfo: {

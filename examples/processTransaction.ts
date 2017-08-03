@@ -109,6 +109,9 @@ async function main() {
             seatNumber: freeSeatCodes[0],
             ticket: {
                 ticketCode: salesTicketResult[0].ticketCode,
+                ticketName: salesTicketResult[0].ticketName,
+                ticketNameEng: salesTicketResult[0].ticketNameEng,
+                ticketNameKana: salesTicketResult[0].ticketNameKana,
                 stdPrice: salesTicketResult[0].stdPrice,
                 addPrice: salesTicketResult[0].addPrice,
                 disPrice: 0,
@@ -130,6 +133,9 @@ async function main() {
             seatNumber: freeSeatCodes[1],
             ticket: {
                 ticketCode: salesTicketResult[0].ticketCode,
+                ticketName: salesTicketResult[0].ticketName,
+                ticketNameEng: salesTicketResult[0].ticketNameEng,
+                ticketNameKana: salesTicketResult[0].ticketNameKana,
                 stdPrice: salesTicketResult[0].stdPrice,
                 addPrice: salesTicketResult[0].addPrice,
                 disPrice: 0,

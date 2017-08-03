@@ -70,6 +70,6 @@ export declare function createFromCOATmpReserve(args: {
     price: number;
     updTmpReserveSeatArgs: COA.services.reserve.IUpdTmpReserveSeatArgs;
     reserveSeatsTemporarilyResult: COA.services.reserve.IUpdTmpReserveSeatResult;
-    tickets: COA.services.reserve.IUpdReserveTicket[];
+    tickets: ReservationFactory.ICOATicketInfo[];
     individualScreeningEvent: IndividualScreeningEventFactory.IEvent;
 }): IAuthorization;

@@ -1,9 +1,3 @@
-/**
- * 取引サービス
- *
- * @namespace service/transaction/placeOrder
- */
-import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
 import * as monapt from 'monapt';
 import * as GMOAuthorizationFactory from '../../factory/authorization/gmo';
@@ -13,6 +7,7 @@ import * as clientUserFactory from '../../factory/clientUser';
 import * as IndividualScreeningEventFactory from '../../factory/event/individualScreeningEvent';
 import * as OrderFactory from '../../factory/order';
 import * as PersonFactory from '../../factory/person';
+import * as ReservationFactory from '../../factory/reservation';
 import * as TaskFactory from '../../factory/task';
 import * as PlaceOrderTransactionFactory from '../../factory/transaction/placeOrder';
 import * as TransactionScopeFactory from '../../factory/transactionScope';
@@ -91,7 +86,7 @@ export declare function cancelGMOAuthorization(transactionId: string, authorizat
 export declare function createSeatReservationAuthorization(transactionId: string, individualScreeningEvent: IndividualScreeningEventFactory.IEvent, offers: {
     seatSection: string;
     seatNumber: string;
-    ticket: COA.services.reserve.IUpdReserveTicket;
+    ticket: ReservationFactory.ICOATicketInfo;
 }[]): (transactionAdapter: TransactionAdapter) => Promise<SeatReservationAuthorizationFactory.IAuthorization>;
 export declare function cancelSeatReservationAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**

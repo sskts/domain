@@ -41,13 +41,30 @@ export interface ISeat {
     seatSection: string;
 }
 /**
+ * COA券種情報
+ */
+export declare type ICOATicketInfo = COA.services.reserve.IUpdReserveTicket & {
+    /**
+     * チケット名
+     */
+    ticketName: string;
+    /**
+     * チケット名（カナ）
+     */
+    ticketNameKana: string;
+    /**
+     * チケット名（英）
+     */
+    ticketNameEng: string;
+};
+/**
  * 予約チケット情報
  */
 export interface ITicket {
     /**
      * COA券種情報
      */
-    coaTicketInfo: COA.services.reserve.IUpdReserveTicket;
+    coaTicketInfo: ICOATicketInfo;
     /**
      * チケット発行日
      * The date the ticket was issued.
