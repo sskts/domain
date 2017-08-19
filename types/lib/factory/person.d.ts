@@ -66,10 +66,9 @@ export declare type IPerson = IPublicFields & IHashedFields & {};
 export declare function create(args: {
     id?: string;
     username?: string;
-    password?: string;
     givenName?: string;
     familyName?: string;
     email?: string;
     telephone?: string;
     memberOf?: ProgramMembershipFactory.IProgramMembership;
-}): Promise<IPerson>;
+}): IPerson;

@@ -32,7 +32,6 @@ function main() {
             tls: { servername: process.env.TEST_REDIS_HOST }
         });
         const eventAdapter = sskts.adapter.event(connection);
-        const personAdapter = sskts.adapter.person(connection);
         const organizationAdapter = sskts.adapter.organization(connection);
         const transactionAdapter = sskts.adapter.transaction(connection);
         const transactionCountAdapter = sskts.adapter.transactionCount(redisClient);
@@ -52,12 +51,18 @@ function main() {
             maxCountPerUnit: 120,
             scope: scope,
             clientUser: {
-                client: 'client',
-                state: 'state',
-                scopes: []
+                client_id: 'cq8em79ileeqlcp6q5kkd446n',
+                jti: 'cf7c2a05-5ab6-4fc6-a3c1-ec6c6fc9254f',
+                version: 2,
+                iat: 1502954230,
+                exp: 1502957830,
+                iss: 'iss',
+                scope: 'https://sskts-api-development.azurewebsites.net/transactions',
+                token_use: 'access',
+                sub: 'cq8em79ileeqlcp6q5kkd446n'
             },
             sellerId: movieTheaters[0].id
-        })(personAdapter, organizationAdapter, transactionAdapter, transactionCountAdapter);
+        })(organizationAdapter, transactionAdapter, transactionCountAdapter);
         if (transactionOption.isEmpty) {
             throw new Error('no ready transaction');
         }
@@ -189,7 +194,7 @@ function main() {
             telephone: telephone,
             email: process.env.SSKTS_DEVELOPER_EMAIL
         };
-        yield sskts.service.transaction.placeOrder.setAgentProfile(transactionId, profile)(personAdapter, transactionAdapter);
+        yield sskts.service.transaction.placeOrder.setAgentProfile(transactionId, profile)(transactionAdapter);
         debug('agent profile updated.');
         // 取引成立
         debug('confirming transaction...');

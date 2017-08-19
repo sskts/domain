@@ -41,7 +41,6 @@ import TransactionTasksExportationStatus from '../../factory/transactionTasksExp
 import TransactionType from '../../factory/transactionType';
 
 import OrganizationAdapter from '../../adapter/organization';
-import PersonAdapter from '../../adapter/person';
 import TaskAdapter from '../../adapter/task';
 import TransactionAdapter from '../../adapter/transaction';
 import TransactionCountAdapter from '../../adapter/transactionCount';
@@ -60,7 +59,7 @@ export function start(args: {
     sellerId: string;
 }) {
     return async (
-        personAdapter: PersonAdapter,
+        // personAdapter: PersonAdapter,
         organizationAdapter: OrganizationAdapter,
         transactionAdapter: TransactionAdapter,
         transactionCountAdapter: TransactionCountAdapter
@@ -73,17 +72,28 @@ export function start(args: {
 
         // 利用可能であれば、取引作成&匿名所有者作成
         let person: PersonFactory.IPerson;
-        if (args.agentId === undefined) {
-            // 一般所有者作成
-            person = await PersonFactory.create({});
+        if (args.agentId !== undefined) {
+            person = PersonFactory.create({
+                id: args.agentId,
+                memberOf: {
+                    membershipNumber: args.agentId,
+                    programName: 'Amazon Cognito'
+                }
+            });
         } else {
-            // 所有者指定であれば存在確認
-            const personDoc = await personAdapter.personModel.findById(args.agentId).exec();
-            if (personDoc === null) {
-                throw new ArgumentError('agentId', `person[id:${args.agentId}] not found`);
-            }
-            person = <PersonFactory.IPerson>personDoc.toObject();
+            person = PersonFactory.create({});
         }
+        // if (args.agentId === undefined) {
+        //     // 一般所有者作成
+        //     person = await PersonFactory.create({});
+        // } else {
+        //     // 所有者指定であれば存在確認
+        //     const personDoc = await personAdapter.personModel.findById(args.agentId).exec();
+        //     if (personDoc === null) {
+        //         throw new ArgumentError('agentId', `person[id:${args.agentId}] not found`);
+        //     }
+        //     person = <PersonFactory.IPerson>personDoc.toObject();
+        // }
 
         // 売り手を取得
         const sellerDoc = await organizationAdapter.organizationModel.findById(args.sellerId).exec();
@@ -119,10 +129,10 @@ export function start(args: {
 
         // 所有者永続化
         // createコマンドで作成すること(ありえないはずだが、万が一所有者IDが重複するようなバグがあっても、ユニークインデックスではじかれる)
-        if (args.agentId === undefined) {
-            debug('creating person...', person);
-            await personAdapter.personModel.create({ ...person, ...{ _id: person.id } });
-        }
+        // if (args.agentId === undefined) {
+        //     debug('creating person...', person);
+        //     await personAdapter.personModel.create({ ...person, ...{ _id: person.id } });
+        // }
 
         debug('creating transaction...');
         // mongoDBに追加するために_id属性を拡張
@@ -746,8 +756,8 @@ export function setAgentProfile(
     transactionId: string,
     profile: PersonFactory.IProfile
 ) {
-    return async (personAdapter: PersonAdapter, transactionAdapter: TransactionAdapter) => {
-        const transaction = await findInProgressById(transactionId)(transactionAdapter)
+    return async (transactionAdapter: TransactionAdapter) => {
+        await findInProgressById(transactionId)(transactionAdapter)
             .then((option) => {
                 if (option.isEmpty) {
                     throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
@@ -758,12 +768,6 @@ export function setAgentProfile(
 
         // 永続化
         debug('setting person profile...');
-        await personAdapter.personModel.findByIdAndUpdate(
-            transaction.agent.id,
-            profile
-        ).exec();
-        debug('person updated');
-
         await transactionAdapter.transactionModel.findOneAndUpdate(
             {
                 _id: transactionId,

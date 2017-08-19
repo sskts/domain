@@ -13,7 +13,6 @@ import * as PlaceOrderTransactionFactory from '../../factory/transaction/placeOr
 import * as TransactionScopeFactory from '../../factory/transactionScope';
 import TransactionStatusType from '../../factory/transactionStatusType';
 import OrganizationAdapter from '../../adapter/organization';
-import PersonAdapter from '../../adapter/person';
 import TaskAdapter from '../../adapter/task';
 import TransactionAdapter from '../../adapter/transaction';
 import TransactionCountAdapter from '../../adapter/transactionCount';
@@ -27,7 +26,7 @@ export declare function start(args: {
     scope: TransactionScopeFactory.ITransactionScope;
     agentId?: string;
     sellerId: string;
-}): (personAdapter: PersonAdapter, organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => Promise<monapt.Option<PlaceOrderTransactionFactory.ITransaction>>;
+}): (organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter, transactionCountAdapter: TransactionCountAdapter) => Promise<monapt.Option<PlaceOrderTransactionFactory.ITransaction>>;
 /**
  * 取引を期限切れにする
  */
@@ -133,7 +132,7 @@ export declare function cancelMvtkAuthorization(transactionId: string, authoriza
  * 取引中の所有者プロフィールを変更する
  * 匿名所有者として開始した場合のみ想定(匿名か会員に変更可能)
  */
-export declare function setAgentProfile(transactionId: string, profile: PersonFactory.IProfile): (personAdapter: PersonAdapter, transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function setAgentProfile(transactionId: string, profile: PersonFactory.IProfile): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 会員情報をGMO会員として保管する
  *

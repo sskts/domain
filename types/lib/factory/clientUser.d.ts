@@ -12,44 +12,14 @@
  * @memberof factory/clientUser
  */
 export interface IClientUser {
-    /**
-     * アプリケーションクライアントID
-     *
-     * @type {string}
-     * @memberof IClientUser
-     */
-    client: string;
-    /**
-     * アプリケーション状態
-     *
-     * @type {string}
-     * @memberof IClientUser
-     */
-    state: string;
-    /**
-     * ログイン会員人物ID
-     *
-     * @type {string}
-     * @memberof IClientUser
-     */
-    person?: string;
-    /**
-     * スコープ
-     *
-     * @type {string[]}
-     * @memberof IClientUser
-     */
-    scopes: string[];
+    sub: string;
+    token_use: string;
+    scope: string;
+    iss: string;
+    exp: number;
+    iat: number;
+    version: number;
+    jti: string;
+    client_id: string;
+    username?: string;
 }
-/**
- * クライアントユーザーを作成する
- *
- * @export
- * @returns {IClientUser} クライアントユーザー
- */
-export declare function create(args: {
-    client: string;
-    state: string;
-    person?: string;
-    scopes: string[];
-}): IClientUser;

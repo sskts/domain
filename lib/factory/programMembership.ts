@@ -7,7 +7,7 @@
 import * as OrganizationFactory from './organization';
 
 export interface IProgramMembership {
-    hostingOrganization: OrganizationFactory.IOrganization;
+    hostingOrganization?: OrganizationFactory.IOrganization;
     membershipNumber: string;
     programName: string;
 }
