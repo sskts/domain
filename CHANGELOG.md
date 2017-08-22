@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - indexモジュールを再構成。
 - update package [@motionpicture/gmo-service](https://www.npmjs.com/package/@motionpicture/gmo-service)
 - Amazon Cognitoでの会員管理に対応
+- migrate factories as @motionpicture/sskts-factory.
 
 ### Deprecated
 

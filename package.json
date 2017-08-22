@@ -11,6 +11,7 @@
   "dependencies": {
     "@motionpicture/coa-service": "^4.0.0",
     "@motionpicture/gmo-service": "^4.0.0",
+    "@motionpicture/sskts-factory": "git+https://m-p.backlog.jp/git/SSKTS/factory.git#feature/SSKTS-566",
     "@types/mongoose": "^4.7.19",
     "@types/redis": "^0.12.36",
     "bcryptjs": "^2.4.3",
@@ -54,6 +55,10 @@
   "keywords": [],
   "license": "UNLICENSED",
   "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "directories": {
+    "lib": "lib"
+  },
   "name": "@motionpicture/sskts-domain",
   "nyc": {
     "check-coverage": true,
@@ -69,17 +74,16 @@
   "scripts": {
     "build": "tsc",
     "check": "npm run tslint && nsp check && npm run snyk",
-    "clean": "rimraf examples/**/*.js lib/**/*.js test/**/*.js types/* npm-debug.log* docs/*",
+    "clean": "rimraf test/**/*.js lib/* npm-debug.log* docs/*",
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
     "nyc": "nyc mocha",
     "snyk": "snyk auth && snyk test --ignore-policy",
     "test": "npm run check && npm run nyc",
-    "tslint": "tslint --type-check --project tsconfig.json -c tslint.json lib/**/*.ts",
+    "tslint": "tslint --type-check --project tsconfig.json -c tslint.json src/**/*.ts",
     "preversion": "npm run clean && npm run build && npm test",
     "version": "git add -A",
     "postversion": "git push origin --tags",
     "prepublishOnly": "npm run clean && npm run build && npm test"
   },
-  "types": "./types/lib/index.d.ts",
   "version": "22.0.0"
 }

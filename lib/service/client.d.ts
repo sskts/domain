@@ -1,0 +1,55 @@
+/**
+ * アプリケーションクライアントサービス
+ *
+ * @namespace service/client
+ */
+import * as factory from '@motionpicture/sskts-factory';
+import ClientAdapter from '../adapter/client';
+export declare type ClientOperation<T> = (clientAdapter: ClientAdapter) => Promise<T>;
+export interface ICreateArgs {
+    /**
+     * ID
+     */
+    id: string;
+    /**
+     * シークレット
+     */
+    secret: string;
+    /**
+     * 名称
+     */
+    name: factory.multilingualString;
+    /**
+     * 説明
+     */
+    description: factory.multilingualString;
+    /**
+     * 備考
+     */
+    notes: factory.multilingualString;
+    /**
+     * メールアドレス
+     */
+    email: string;
+}
+/**
+ * クライアントを更新する
+ *
+ * @param {clientFactory.IClient} args クライアントインターフェース
+ * @returns {ClientOperation<void>} クライアントアダプターを使った操作
+ */
+export declare function create(args: ICreateArgs): ClientOperation<void>;
+export interface IPushEventArgs {
+    client: string;
+    occurredAt: Date;
+    url?: string;
+    label: string;
+    category?: string;
+    action?: string;
+    message?: string;
+    notes?: string;
+    useragent?: string;
+    location?: number[];
+    transaction?: string;
+}
+export declare function pushEvent(args: IPushEventArgs): ClientOperation<factory.clientEvent.IClientEvent>;
