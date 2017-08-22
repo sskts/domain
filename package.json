@@ -11,7 +11,7 @@
   "dependencies": {
     "@motionpicture/coa-service": "^4.0.0",
     "@motionpicture/gmo-service": "^4.0.0",
-    "@motionpicture/sskts-factory": "git+https://m-p.backlog.jp/git/SSKTS/factory.git#feature/SSKTS-566",
+    "@motionpicture/sskts-factory": "git+https://tetsu:M0P!Xmopix@m-p.backlog.jp/git/SSKTS/factory.git#feature/SSKTS-566",
     "@types/mongoose": "^4.7.19",
     "@types/redis": "^0.12.36",
     "bcryptjs": "^2.4.3",
