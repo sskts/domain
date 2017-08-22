@@ -15,30 +15,11 @@ const debug = createDebug('sskts-domain:service:organization');
 export type IOrganizationOperation<T> = (organizationAdapter: OrganizationAdapter) => Promise<T>;
 
 /**
- * 劇場検索条件インターフェース
- */
-export interface ISearchMovieTheatersConditions {
-    name?: string;
-}
-
-/**
- * 劇場検索結果インターフェース
- */
-export type IMovieTheater = factory.organization.movieTheater.IOrganizationWithoutGMOInfo & {
-    /**
-     * GMO情報
-     */
-    gmoInfo: {
-        shopId: string;
-    };
-};
-
-/**
  * 劇場検索
  */
 export function searchMovieTheaters(
-    searchConditions: ISearchMovieTheatersConditions
-): IOrganizationOperation<IMovieTheater[]> {
+    searchConditions: {}
+): IOrganizationOperation<factory.organization.movieTheater.IPublicFields[]> {
     return async (organizationAdapter: OrganizationAdapter) => {
         // 検索条件を作成
         const conditions: any = {
@@ -51,7 +32,7 @@ export function searchMovieTheaters(
         debug('searching movie theaters...', conditions);
 
         // GMOのセキュアな情報を公開しないように注意
-        return <IMovieTheater[]>await organizationAdapter.organizationModel.find(
+        return <factory.organization.movieTheater.IPublicFields[]>await organizationAdapter.organizationModel.find(
             conditions,
             'identifier name legalName typeOf location url branchCode parentOrganization gmoInfo.shopId'
         )
@@ -66,7 +47,7 @@ export function searchMovieTheaters(
  */
 export function findMovieTheaterByBranchCode(
     branchCode: string
-): IOrganizationOperation<monapt.Option<IMovieTheater>> {
+): IOrganizationOperation<monapt.Option<factory.organization.movieTheater.IPublicFields>> {
     return async (organizationAdapter: OrganizationAdapter) => {
         return await organizationAdapter.organizationModel.findOne(
             {
@@ -77,7 +58,7 @@ export function findMovieTheaterByBranchCode(
         )
             .exec()
             .then((doc) => {
-                return (doc === null) ? monapt.None : monapt.Option(<IMovieTheater>doc.toObject());
+                return (doc === null) ? monapt.None : monapt.Option(<factory.organization.movieTheater.IPublicFields>doc.toObject());
             });
     };
 }

@@ -16,11 +16,6 @@ import EventAdapter from '../adapter/event';
 import PlaceAdapter from '../adapter/place';
 // import PerformanceStockStatusAdapter from '../adapter/stockStatus/performance';
 
-export interface ISearchPerformancesConditions {
-    day?: string;
-    theater?: string;
-}
-
 const debug = createDebug('sskts-domain:service:event');
 
 export type IEventOperation<T> = (eventAdapter: EventAdapter) => Promise<T>;
@@ -119,7 +114,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
  * performanceStockStatusAdapterはundefinedでも使えるようになっている
  */
 export function searchIndividualScreeningEvents(
-    searchConditions: ISearchPerformancesConditions
+    searchConditions: factory.event.individualScreeningEvent.ISearchConditions
 ): IEventOperation<factory.event.individualScreeningEvent.IEvent[]> {
     return async (
         eventAdapter: EventAdapter
