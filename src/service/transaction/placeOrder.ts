@@ -56,17 +56,21 @@ export function start(args: {
         }
 
         // 利用可能であれば、取引作成&匿名所有者作成
-        let person: factory.person.IPerson;
+        let agent: factory.transaction.placeOrder.IAgent;
         if (args.agentId !== undefined) {
-            person = factory.person.create({
+            agent = {
+                typeOf: 'Person',
                 id: args.agentId,
                 memberOf: {
                     membershipNumber: args.agentId,
                     programName: 'Amazon Cognito'
                 }
-            });
+            };
         } else {
-            person = factory.person.create({});
+            agent = {
+                typeOf: 'Person',
+                id: ''
+            };
         }
         // if (args.agentId === undefined) {
         //     // 一般所有者作成
@@ -90,15 +94,7 @@ export function start(args: {
         // 取引ファクトリーで新しい進行中取引オブジェクトを作成
         const transaction = factory.transaction.placeOrder.create({
             status: factory.transactionStatusType.InProgress,
-            agent: {
-                id: person.id,
-                typeOf: person.typeOf,
-                givenName: person.givenName,
-                familyName: person.familyName,
-                email: person.email,
-                telephone: person.telephone,
-                memberOf: person.memberOf
-            },
+            agent: agent,
             seller: {
                 typeOf: 'MovieTheater', // todo enum管理
                 id: seller.id,
@@ -511,28 +507,10 @@ export function cancelGMOAuthorization(transactionId: string, authorizationId: s
     };
 }
 
-/**
- * 座席予約販売情報インターフェース
- */
-export interface ISeatReservationOffer {
-    /**
-     * 座席セクション
-     */
-    seatSection: string;
-    /**
-     * 座席番号
-     */
-    seatNumber: string;
-    /**
-     * 券種情報
-     */
-    ticket: factory.reservation.ICOATicketInfo;
-}
-
 export function createSeatReservationAuthorization(
     transactionId: string,
     individualScreeningEvent: factory.event.individualScreeningEvent.IEvent,
-    offers: ISeatReservationOffer[]
+    offers: factory.offer.ISeatReservationOffer[]
 ): ITransactionOperation<factory.authorization.seatReservation.IAuthorization> {
     return async (transactionAdapter: TransactionAdapter) => {
         const transaction = await findInProgressById(transactionId)(transactionAdapter)
@@ -568,10 +546,10 @@ export function createSeatReservationAuthorization(
         // COAオーソリ追加
         debug('adding authorizations coaSeatReservation...');
         const authorization = factory.authorization.seatReservation.createFromCOATmpReserve({
-            price: offers.reduce((a, b) => a + b.ticket.salePrice, 0),
+            price: offers.reduce((a, b) => a + b.ticketInfo.salePrice, 0),
             updTmpReserveSeatArgs: updTmpReserveSeatArgs,
             reserveSeatsTemporarilyResult: reserveSeatsTemporarilyResult,
-            tickets: offers.map((offer) => offer.ticket),
+            tickets: offers.map((offer) => offer.ticketInfo),
             individualScreeningEvent: individualScreeningEvent
         });
 
@@ -741,7 +719,7 @@ export function cancelMvtkAuthorization(transactionId: string, authorizationId: 
  */
 export function setAgentProfile(
     transactionId: string,
-    profile: factory.person.IProfile
+    profile: factory.transaction.placeOrder.ICustomerContact
 ) {
     return async (transactionAdapter: TransactionAdapter) => {
         await findInProgressById(transactionId)(transactionAdapter)
@@ -761,10 +739,7 @@ export function setAgentProfile(
                 status: factory.transactionStatusType.InProgress
             },
             {
-                'agent.familyName': profile.familyName,
-                'agent.givenName': profile.givenName,
-                'agent.email': profile.email,
-                'agent.telephone': profile.telephone
+                'object.customerContact': profile
             }
         ).exec();
     };
@@ -900,11 +875,17 @@ export function confirm(transactionId: string) {
         if (seatReservationAuthorization === undefined) {
             throw new ArgumentError('transactionId', '座席予約が見つかりません');
         }
-        const orderInquiryKey = factory.orderInquiryKey.create({
+
+        if (transaction.object.customerContact === undefined) {
+            throw new ArgumentError('transactionId', '購入者情報が見つかりません');
+        }
+
+        const cutomerContact = transaction.object.customerContact;
+        const orderInquiryKey = {
             theaterCode: seatReservationAuthorization.object.updTmpReserveSeatArgs.theaterCode,
             orderNumber: seatReservationAuthorization.result.tmpReserveNum,
-            telephone: transaction.agent.telephone
-        });
+            telephone: cutomerContact.telephone
+        };
 
         // 条件が対等かどうかチェック
         if (!canBeClosed(transaction)) {
@@ -914,20 +895,26 @@ export function confirm(transactionId: string) {
         // 結果作成
         const order = factory.order.createFromBuyTransaction({
             seatReservationAuthorization: seatReservationAuthorization,
-            customerName: `${transaction.agent.familyName} ${transaction.agent.givenName}`,
+            customerName: `${cutomerContact.familyName} ${cutomerContact.givenName}`,
             seller: {
                 name: transaction.seller.name,
-                sameAs: ''
+                url: ''
             },
             orderNumber: `${orderInquiryKey.theaterCode}-${orderInquiryKey.orderNumber}`,
-            orderInquiryKey: orderInquiryKey
+            orderInquiryKey: orderInquiryKey,
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO ムビチケ対応
+            paymentMethod: {
+                typeOf: 'CreditCard',
+                identifier: ''
+            }
         });
         const ownershipInfos = order.acceptedOffers.map((reservation) => {
             return factory.ownershipInfo.create({
                 ownedBy: {
                     id: transaction.agent.id,
                     typeOf: transaction.agent.typeOf,
-                    name: `${transaction.agent.familyName} ${transaction.agent.givenName}`
+                    name: `${cutomerContact.familyName} ${cutomerContact.givenName}`
                 },
                 acquiredFrom: transaction.seller,
                 ownedFrom: new Date(),

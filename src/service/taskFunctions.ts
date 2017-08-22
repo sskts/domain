@@ -11,7 +11,6 @@ import * as mongoose from 'mongoose';
 
 import OrderAdapter from '../adapter/order';
 import OwnershipInfoAdapter from '../adapter/ownershipInfo';
-import PersonAdapter from '../adapter/person';
 
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
@@ -70,8 +69,7 @@ export function settleSeatReservation(
 
     return async (connection: mongoose.Connection) => {
         const ownershipInfoAdapter = new OwnershipInfoAdapter(connection);
-        const personAdapter = new PersonAdapter(connection);
-        await StockService.transferSeatReservation(data.transaction)(ownershipInfoAdapter, personAdapter);
+        await StockService.transferSeatReservation(data.transaction)(ownershipInfoAdapter);
     };
 }
 

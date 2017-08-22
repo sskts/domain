@@ -30,7 +30,7 @@ export function createFromTransaction(transaction: IPlaceOrderTransaction) {
 /**
  * 注文内容を照会する
  */
-export function findByOrderInquiryKey(orderInquiryKey: factory.orderInquiryKey.IOrderInquiryKey) {
+export function findByOrderInquiryKey(orderInquiryKey: factory.order.IOrderInquiryKey) {
     return async (orderAdapter: OrderAdapter) => {
         return await orderAdapter.orderModel.findOne(
             {

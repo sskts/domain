@@ -11,7 +11,6 @@ import * as createDebug from 'debug';
 import ArgumentError from '../error/argument';
 
 import OwnershipInfoAdapter from '../adapter/ownershipInfo';
-import PersonAdapter from '../adapter/person';
 
 const debug = createDebug('sskts-domain:service:stock');
 
@@ -47,24 +46,21 @@ export function unauthorizeSeatReservation(transaction: IPlaceOrderTransaction) 
  */
 export function transferSeatReservation(transaction: IPlaceOrderTransaction) {
     // tslint:disable-next-line:max-func-body-length
-    return async (ownershipInfoAdapter: OwnershipInfoAdapter, personAdapter: PersonAdapter) => {
+    return async (ownershipInfoAdapter: OwnershipInfoAdapter) => {
         if (transaction.object.seatReservation !== undefined) {
             const authorization = transaction.object.seatReservation;
 
-            const recipientDoc = await personAdapter.personModel.findById(transaction.agent.id).exec();
-            if (recipientDoc === null) {
-                throw new ArgumentError('authorization.recipient', 'recipient not found');
+            const cutomerContact = transaction.object.customerContact;
+            if (cutomerContact === undefined) {
+                throw new ArgumentError('transaction', 'customer contact not created');
             }
-
-            const recipient = <factory.person.IPerson>recipientDoc.toObject();
-            debug('recipient:', recipient);
 
             // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
             // すでに本予約済みかどうか確認
             const stateReserveResult = await COA.services.reserve.stateReserve({
                 theaterCode: authorization.object.updTmpReserveSeatArgs.theaterCode,
                 reserveNum: authorization.result.tmpReserveNum,
-                telNum: recipient.telephone
+                telNum: cutomerContact.telephone
             });
 
             // COA本予約
@@ -78,10 +74,10 @@ export function transferSeatReservation(transaction: IPlaceOrderTransaction) {
                     titleBranchNum: authorization.object.updTmpReserveSeatArgs.titleBranchNum,
                     timeBegin: authorization.object.updTmpReserveSeatArgs.timeBegin,
                     tmpReserveNum: authorization.result.tmpReserveNum,
-                    reserveName: `${recipient.familyName}　${recipient.givenName}`,
-                    reserveNameJkana: `${recipient.familyName}　${recipient.givenName}`,
-                    telNum: recipient.telephone,
-                    mailAddr: recipient.email,
+                    reserveName: `${cutomerContact.familyName}　${cutomerContact.givenName}`,
+                    reserveNameJkana: `${cutomerContact.familyName}　${cutomerContact.givenName}`,
+                    telNum: cutomerContact.telephone,
+                    mailAddr: cutomerContact.email,
                     reserveAmount: authorization.object.acceptedOffers.reduce(
                         (a, b) => a + b.price,
                         0

@@ -75,24 +75,7 @@ export declare type ICreditCard4authorization = ICreditCard4authorizationRaw | I
  */
 export declare function createCreditCardAuthorization(transactionId: string, orderId: string, amount: number, method: GMO.utils.util.Method, creditCard: ICreditCard4authorization): IOrganizationAndTransactionOperation<factory.authorization.gmo.IAuthorization>;
 export declare function cancelGMOAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
-/**
- * 座席予約販売情報インターフェース
- */
-export interface ISeatReservationOffer {
-    /**
-     * 座席セクション
-     */
-    seatSection: string;
-    /**
-     * 座席番号
-     */
-    seatNumber: string;
-    /**
-     * 券種情報
-     */
-    ticket: factory.reservation.ICOATicketInfo;
-}
-export declare function createSeatReservationAuthorization(transactionId: string, individualScreeningEvent: factory.event.individualScreeningEvent.IEvent, offers: ISeatReservationOffer[]): ITransactionOperation<factory.authorization.seatReservation.IAuthorization>;
+export declare function createSeatReservationAuthorization(transactionId: string, individualScreeningEvent: factory.event.individualScreeningEvent.IEvent, offers: factory.offer.ISeatReservationOffer[]): ITransactionOperation<factory.authorization.seatReservation.IAuthorization>;
 export declare function cancelSeatReservationAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * ムビチケ着券承認追加
@@ -125,7 +108,7 @@ export declare function cancelMvtkAuthorization(transactionId: string, authoriza
  * 取引中の所有者プロフィールを変更する
  * 匿名所有者として開始した場合のみ想定(匿名か会員に変更可能)
  */
-export declare function setAgentProfile(transactionId: string, profile: factory.person.IProfile): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function setAgentProfile(transactionId: string, profile: factory.transaction.placeOrder.ICustomerContact): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * 会員情報をGMO会員として保管する
  *

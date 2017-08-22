@@ -11,4 +11,4 @@ export declare function createFromTransaction(transaction: IPlaceOrderTransactio
 /**
  * 注文内容を照会する
  */
-export declare function findByOrderInquiryKey(orderInquiryKey: factory.orderInquiryKey.IOrderInquiryKey): (orderAdapter: OrderAdapter) => Promise<monapt.Option<factory.order.IOrder>>;
+export declare function findByOrderInquiryKey(orderInquiryKey: factory.order.IOrderInquiryKey): (orderAdapter: OrderAdapter) => Promise<monapt.Option<factory.order.IOrder>>;

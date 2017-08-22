@@ -1,6 +1,5 @@
 import * as factory from '@motionpicture/sskts-factory';
 import OwnershipInfoAdapter from '../adapter/ownershipInfo';
-import PersonAdapter from '../adapter/person';
 export declare type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 /**
  * 資産承認解除(COA座席予約)
@@ -14,4 +13,4 @@ export declare function unauthorizeSeatReservation(transaction: IPlaceOrderTrans
  * @param {ISeatReservationAuthorization} authorization
  * @memberof service/stock
  */
-export declare function transferSeatReservation(transaction: IPlaceOrderTransaction): (ownershipInfoAdapter: OwnershipInfoAdapter, personAdapter: PersonAdapter) => Promise<void>;
+export declare function transferSeatReservation(transaction: IPlaceOrderTransaction): (ownershipInfoAdapter: OwnershipInfoAdapter) => Promise<void>;
