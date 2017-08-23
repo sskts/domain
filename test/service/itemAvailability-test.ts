@@ -1,5 +1,5 @@
 /**
- * 在庫サービステスト
+ * itemAvailability service test
  *
  * @ignore
  */

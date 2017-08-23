@@ -1,19 +1,27 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as monapt from 'monapt';
 import EventAdapter from '../adapter/event';
+import IndividualScreeningEventItemAvailabilityAdapter from '../adapter/itemAvailability/individualScreeningEvent';
 import PlaceAdapter from '../adapter/place';
-export declare type IEventOperation<T> = (eventAdapter: EventAdapter) => Promise<T>;
+export declare type IEventOperation<T> = (eventAdapter: EventAdapter, itemAvailability?: IndividualScreeningEventItemAvailabilityAdapter) => Promise<T>;
 /**
  * 上映イベントインポート
+ * @export
+ * @function
+ * @memberof service/event
  */
 export declare function importScreeningEvents(theaterCode: string, importFrom: Date, importThrough: Date): (eventAdapter: EventAdapter, placeAdapter: PlaceAdapter) => Promise<void>;
 /**
- * 上映イベント検索
- * 空席状況情報がなかったバージョンに対して互換性を保つために
- * performanceStockStatusAdapterはundefinedでも使えるようになっている
+ * search individualScreeningEvents
+ * @export
+ * @function
+ * @memberof service/event
  */
-export declare function searchIndividualScreeningEvents(searchConditions: factory.event.individualScreeningEvent.ISearchConditions): IEventOperation<factory.event.individualScreeningEvent.IEvent[]>;
+export declare function searchIndividualScreeningEvents(searchConditions: factory.event.individualScreeningEvent.ISearchConditions): IEventOperation<factory.event.individualScreeningEvent.IEventWithOffer[]>;
 /**
- * IDで上映イベント検索
+ * find individualScreeningEvent by identifier
+ * @export
+ * @function
+ * @memberof service/event
  */
-export declare function findIndividualScreeningEventByIdentifier(identifier: string): IEventOperation<monapt.Option<factory.event.individualScreeningEvent.IEvent>>;
+export declare function findIndividualScreeningEventByIdentifier(identifier: string): IEventOperation<monapt.Option<factory.event.individualScreeningEvent.IEventWithOffer>>;

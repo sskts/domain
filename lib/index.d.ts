@@ -1,7 +1,6 @@
 /// <reference types="mongoose" />
 /**
- * sskts-domainモジュール
- *
+ * sskts-domain index module
  * @module
  */
 import * as COA from '@motionpicture/coa-service';
@@ -12,6 +11,7 @@ import * as redis from 'redis';
 import * as ClientService from './service/client';
 import * as CreativeWorkService from './service/creativeWork';
 import * as EventService from './service/event';
+import * as ItemAvailabilityService from './service/itemAvailability';
 import * as NotificationService from './service/notification';
 import * as OrderService from './service/order';
 import * as OrganizationService from './service/organization';
@@ -20,13 +20,13 @@ import * as ReportService from './service/report';
 import * as SalesService from './service/sales';
 import * as ShopService from './service/shop';
 import * as StockService from './service/stock';
-import * as StockStatusService from './service/stockStatus';
 import * as TaskService from './service/task';
 import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
 import ClientAdapter from './adapter/client';
 import CreativeWorkAdapter from './adapter/creativeWork';
 import EventAdapter from './adapter/event';
 import GMONotificationAdapter from './adapter/gmoNotification';
+import IndividualScreeningEventItemAvailabilityAdapter from './adapter/itemAvailability/individualScreeningEvent';
 import OrderAdapter from './adapter/order';
 import OrganizationAdapter from './adapter/organization';
 import OwnerAdapter from './adapter/owner';
@@ -34,7 +34,6 @@ import OwnershipInfoAdapter from './adapter/ownershipInfo';
 import PersonAdapter from './adapter/person';
 import PlaceAdapter from './adapter/place';
 import SendGridEventAdapter from './adapter/sendGridEvent';
-import PerformanceStockStatusAdapter from './adapter/stockStatus/performance';
 import TaskAdapter from './adapter/task';
 import TelemetryAdapter from './adapter/telemetry';
 import TransactionAdapter from './adapter/transaction';
@@ -95,8 +94,8 @@ export declare namespace adapter {
     function ownershipInfo(connection: mongoose.Connection): OwnershipInfoAdapter;
     function person(connection: mongoose.Connection): PersonAdapter;
     function place(connection: mongoose.Connection): PlaceAdapter;
-    namespace stockStatus {
-        function performance(redisClient: redis.RedisClient): PerformanceStockStatusAdapter;
+    namespace itemAvailability {
+        function individualScreeningEvent(redisClient: redis.RedisClient): IndividualScreeningEventItemAvailabilityAdapter;
     }
     function sendGridEvent(connection: mongoose.Connection): SendGridEventAdapter;
     function task(connection: mongoose.Connection): TaskAdapter;
@@ -115,7 +114,7 @@ export declare namespace service {
     export import sales = SalesService;
     export import shop = ShopService;
     export import stock = StockService;
-    export import stockStatus = StockStatusService;
+    export import itemAvailability = ItemAvailabilityService;
     export import task = TaskService;
     namespace transaction {
         export import placeOrder = PlaceOrderTransactionService;

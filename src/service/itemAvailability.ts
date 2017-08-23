@@ -1,18 +1,19 @@
 /**
- * 在庫状況サービス
- *
- * @namespace service/stockStatus
+ * itemAvailability service
+ * @namespace service/itemAvailability
  */
 
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import PerformanceStockStatusAdapter from '../adapter/stockStatus/performance';
+import IndividualScreeningEventItemAvailabilityAdapter from '../adapter/itemAvailability/individualScreeningEvent';
 
-const debug = createDebug('sskts-domain:service:stockStatus');
+const debug = createDebug('sskts-domain:service:itemAvailability');
 
-export type PerformanceStockStatusOperation<T> = (performanceStockStatusAdapter: PerformanceStockStatusAdapter) => Promise<T>;
+export type IItemAvailabilityOperation<T> = (
+    itemAvailabilityAdapter: IndividualScreeningEventItemAvailabilityAdapter
+) => Promise<T>;
 
 /**
  * 劇場IDと上映日範囲からパフォーマンス在庫状況を更新する
@@ -22,8 +23,8 @@ export type PerformanceStockStatusOperation<T> = (performanceStockStatusAdapter:
  * @param {string} dayEnd 終了上映日(YYYYMMDD)
  */
 export function updatePerformanceStockStatuses(theaterCode: string, dayStart: string, dayEnd: string):
-    PerformanceStockStatusOperation<void> {
-    return async (performanceStockStatusAdapter: PerformanceStockStatusAdapter) => {
+    IItemAvailabilityOperation<void> {
+    return async (itemAvailabilityAdapter: IndividualScreeningEventItemAvailabilityAdapter) => {
         // COAから空席状況取得
         const countFreeSeatResult = await COA.services.reserve.countFreeSeat({
             theaterCode: theaterCode,
@@ -33,11 +34,13 @@ export function updatePerformanceStockStatuses(theaterCode: string, dayStart: st
 
         // 上映日ごとに
         await Promise.all(countFreeSeatResult.listDate.map(async (countFreeSeatDate) => {
-            debug('saving performance stock status... day:', countFreeSeatDate.dateJouei);
+            debug('saving individualScreeningEvent item availability... day:', countFreeSeatDate.dateJouei);
             // パフォーマンスごとに空席状況を生成して保管
             await Promise.all(
                 countFreeSeatDate.listPerformance.map(async (countFreeSeatPerformance) => {
-                    const performanceId = [ // todo ID生成メソッドを利用する
+                    // tslint:disable-next-line:no-suspicious-comment
+                    // TODO ID生成メソッドを利用する
+                    const eventIdentifier = [
                         countFreeSeatResult.theaterCode,
                         countFreeSeatPerformance.titleCode,
                         countFreeSeatPerformance.titleBranchNum,
@@ -46,19 +49,19 @@ export function updatePerformanceStockStatuses(theaterCode: string, dayStart: st
                         countFreeSeatPerformance.timeBegin
                     ].join('');
 
-                    const stockStatusExpression = factory.stockStatus.performance.createExpression(
+                    const itemAvailability = factory.event.individualScreeningEvent.createItemAvailability(
                         countFreeSeatPerformance.cntReserveFree,
                         countFreeSeatPerformance.cntReserveMax
                     );
 
                     // 永続化
-                    debug('saving performance stock status... id:', performanceId);
-                    await performanceStockStatusAdapter.updateOne(
+                    debug('saving item availability... identifier:', eventIdentifier);
+                    await itemAvailabilityAdapter.updateOne(
                         countFreeSeatDate.dateJouei,
-                        performanceId,
-                        stockStatusExpression
+                        eventIdentifier,
+                        itemAvailability
                     );
-                    debug('performance stock status saved');
+                    debug('item availability saved');
                 })
             );
         }));

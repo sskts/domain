@@ -2,18 +2,17 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as redis from 'redis';
 
-const debug = createDebug('sskts-domain:adapter:stockStatus:performance');
-const REDIS_KEY_PREFIX = 'sskts-domain:stockStatus:performance';
-const TIMEOUT_IN_SECONDS = 864000; // todo 調整？
+const debug = createDebug('sskts-domain:adapter:itemAvailability:individualScreeningEvent');
+const REDIS_KEY_PREFIX = 'sskts-domain:itemAvailability:individualScreeningEvent';
+// tslint:disable-next-line:no-suspicious-comment
+// TODO 調整？
+const TIMEOUT_IN_SECONDS = 864000;
 
 /**
  * パフォーマンス在庫状況アダプター
- * todo jsdoc
- * todo IStockStatusAdapterをimplements?
- *
- * @class PerformanceStockStatusAdapter
+ * @class IndividualScreeningEventItemAvailabilityAdapter
  */
-export default class PerformanceStockStatusAdapter {
+export default class IndividualScreeningEventItemAvailabilityAdapter {
     public readonly redisClient: redis.RedisClient;
 
     constructor(redisClient: redis.RedisClient) {
@@ -24,31 +23,31 @@ export default class PerformanceStockStatusAdapter {
      * パフォーマンス上映日からredisキーを生成する
      *
      * @static
-     * @param {string} performanceDay 上映日
+     * @param {string} screeningDay 上映日
      * @returns {string} redis key
      *
-     * @memberof PerformanceStockStatusAdapter
+     * @memberof IndividualScreeningEventItemAvailabilityAdapter
      */
-    public static CREATE_REDIS_KEY(performanceDay: string): string {
-        return `${REDIS_KEY_PREFIX}:${performanceDay}`;
+    public static CREATE_REDIS_KEY(screeningDay: string): string {
+        return `${REDIS_KEY_PREFIX}:${screeningDay}`;
     }
 
     /**
      * 在庫状況をひとつ取得する
      *
-     * @param {string} performanceDay 上映日
-     * @param {string} performanceId パフォーマンスID
-     * @returns {(Promise<factory.stockStatus.performance.IStockStatus | null>)}
+     * @param {string} screeningDay 上映日
+     * @param {string} eventIdentifier パフォーマンスID
+     * @returns {(Promise<factory.event.individualScreeningEvent.ItemAvailability | null>)}
      *
-     * @memberof PerformanceStockStatusAdapter
+     * @memberof IndividualScreeningEventItemAvailabilityAdapter
      */
-    public async findOne(performanceDay: string, performanceId: string):
-        Promise<factory.stockStatus.performance.IStockStatus | null> {
-        const key = PerformanceStockStatusAdapter.CREATE_REDIS_KEY(performanceDay);
+    public async findOne(screeningDay: string, eventIdentifier: string):
+        Promise<factory.event.individualScreeningEvent.IItemAvailability | null> {
+        const key = IndividualScreeningEventItemAvailabilityAdapter.CREATE_REDIS_KEY(screeningDay);
 
-        return new Promise<factory.stockStatus.performance.IStockStatus | null>((resolve, reject) => {
+        return new Promise<factory.event.individualScreeningEvent.IItemAvailability | null>((resolve, reject) => {
             // 劇場のパフォーマンス空席状況を取得
-            this.redisClient.hget([key, performanceId], (err, res) => {
+            this.redisClient.hget([key, eventIdentifier], (err, res) => {
                 debug('hget processed.', err, res);
                 if (err instanceof Error) {
                     reject(err);
@@ -64,13 +63,8 @@ export default class PerformanceStockStatusAdapter {
                 }
 
                 // tslint:disable-next-line:no-magic-numbers
-                const expression = parseInt((res instanceof Buffer) ? res.toString() : res, 10);
-                const stockStatus = factory.stockStatus.performance.create({
-                    performaceId: performanceId,
-                    expression: expression
-                });
-
-                resolve(stockStatus);
+                const itemAvailability = parseInt((res instanceof Buffer) ? res.toString() : res, 10);
+                resolve(itemAvailability);
             });
         });
     }
@@ -78,22 +72,22 @@ export default class PerformanceStockStatusAdapter {
     /**
      * 在庫状況をひとつ更新する
      *
-     * @param {string} performanceDay 上映日
-     * @param {string} performanceId パフォーマンスID
-     * @param {factory.stockStatus.performance.Expression} expression 在庫状況表現
+     * @param {string} screeningDay 上映日
+     * @param {string} eventIdentifier パフォーマンスID
+     * @param {factory.event.individualScreeningEvent.IItemAvailability} itemAvailability 在庫状況表現
      * @returns {Promise<void>}
      *
-     * @memberof PerformanceStockStatusAdapter
+     * @memberof IndividualScreeningEventItemAvailabilityAdapter
      */
     public async updateOne(
-        performanceDay: string,
-        performanceId: string,
-        expression: factory.stockStatus.performance.Expression
+        screeningDay: string,
+        eventIdentifier: string,
+        itemAvailability: factory.event.individualScreeningEvent.IItemAvailability
     ): Promise<void> {
-        const key = PerformanceStockStatusAdapter.CREATE_REDIS_KEY(performanceDay);
+        const key = IndividualScreeningEventItemAvailabilityAdapter.CREATE_REDIS_KEY(screeningDay);
 
         return new Promise<void>(async (resolve, reject) => {
-            this.redisClient.hset([key, performanceId, expression], (err) => {
+            this.redisClient.hset([key, eventIdentifier, itemAvailability], (err) => {
                 debug('hset processed.', err);
                 if (err instanceof Error) {
                     reject(err);
@@ -107,13 +101,13 @@ export default class PerformanceStockStatusAdapter {
     /**
      * 上映日から在庫状況を削除する
      *
-     * @param {string} performanceDay 上映日
+     * @param {string} screeningDay 上映日
      * @returns {Promise<void>}
      *
-     * @memberof PerformanceStockStatusAdapter
+     * @memberof IndividualScreeningEventItemAvailabilityAdapter
      */
-    public async removeByPerformaceDay(performanceDay: string): Promise<void> {
-        const key = PerformanceStockStatusAdapter.CREATE_REDIS_KEY(performanceDay);
+    public async removeByPerformaceDay(screeningDay: string): Promise<void> {
+        const key = IndividualScreeningEventItemAvailabilityAdapter.CREATE_REDIS_KEY(screeningDay);
 
         return new Promise<void>(async (resolve, reject) => {
             this.redisClient.del([key], (err) => {
@@ -130,13 +124,13 @@ export default class PerformanceStockStatusAdapter {
     /**
      * 上映日からredis cacheに期限をセットする
      *
-     * @param {string} performanceDay 上映日
+     * @param {string} screeningDay 上映日
      * @returns {Promise<void>}
      *
-     * @memberof PerformanceStockStatusAdapter
+     * @memberof IndividualScreeningEventItemAvailabilityAdapter
      */
-    public async setTTLIfNotExist(performanceDay: string): Promise<void> {
-        const key = PerformanceStockStatusAdapter.CREATE_REDIS_KEY(performanceDay);
+    public async setTTLIfNotExist(screeningDay: string): Promise<void> {
+        const key = IndividualScreeningEventItemAvailabilityAdapter.CREATE_REDIS_KEY(screeningDay);
 
         return new Promise<void>((resolve, reject) => {
             this.redisClient.ttl([key], (err, ttl) => {

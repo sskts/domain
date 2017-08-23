@@ -13,15 +13,21 @@ import * as monapt from 'monapt';
 import ArgumentError from '../error/argument';
 
 import EventAdapter from '../adapter/event';
+import IndividualScreeningEventItemAvailabilityAdapter from '../adapter/itemAvailability/individualScreeningEvent';
 import PlaceAdapter from '../adapter/place';
-// import PerformanceStockStatusAdapter from '../adapter/stockStatus/performance';
 
 const debug = createDebug('sskts-domain:service:event');
 
-export type IEventOperation<T> = (eventAdapter: EventAdapter) => Promise<T>;
+export type IEventOperation<T> = (
+    eventAdapter: EventAdapter,
+    itemAvailability?: IndividualScreeningEventItemAvailabilityAdapter
+) => Promise<T>;
 
 /**
  * 上映イベントインポート
+ * @export
+ * @function
+ * @memberof service/event
  */
 export function importScreeningEvents(theaterCode: string, importFrom: Date, importThrough: Date) {
     return async (eventAdapter: EventAdapter, placeAdapter: PlaceAdapter) => {
@@ -43,7 +49,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
         });
 
         // COAからパフォーマンス取得
-        const performances = await COA.services.master.schedule({
+        const schedulesFromCOA = await COA.services.master.schedule({
             theaterCode: theaterCode,
             begin: moment(importFrom).locale('ja').format('YYYYMMDD'),
             end: moment(importThrough).locale('ja').format('YYYYMMDD')
@@ -67,17 +73,17 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
         }));
 
         // パフォーマンスごとに永続化トライ
-        await Promise.all(performances.map(async (performanceFromCOA) => {
+        await Promise.all(schedulesFromCOA.map(async (scheduleFromCOA) => {
             const screeningEventIdentifier = factory.event.screeningEvent.createIdentifier(
-                theaterCode, performanceFromCOA.titleCode, performanceFromCOA.titleBranchNum
+                theaterCode, scheduleFromCOA.titleCode, scheduleFromCOA.titleBranchNum
             );
 
             // スクリーン存在チェック
             const screenRoom = movieTheater.containsPlace.find(
-                (place) => place.branchCode === performanceFromCOA.screenCode
+                (place) => place.branchCode === scheduleFromCOA.screenCode
             );
             if (screenRoom === undefined) {
-                console.error('screenRoom not found.', performanceFromCOA.screenCode);
+                console.error('screenRoom not found.', scheduleFromCOA.screenCode);
 
                 return;
             }
@@ -92,7 +98,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
 
             // 永続化
             const individualScreeningEvent = factory.event.individualScreeningEvent.createFromCOA(
-                performanceFromCOA
+                scheduleFromCOA
             )(screenRoom, screeningEvent);
             debug('storing individualScreeningEvent', individualScreeningEvent);
             await eventAdapter.eventModel.findOneAndUpdate(
@@ -109,16 +115,17 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
 }
 
 /**
- * 上映イベント検索
- * 空席状況情報がなかったバージョンに対して互換性を保つために
- * performanceStockStatusAdapterはundefinedでも使えるようになっている
+ * search individualScreeningEvents
+ * @export
+ * @function
+ * @memberof service/event
  */
 export function searchIndividualScreeningEvents(
     searchConditions: factory.event.individualScreeningEvent.ISearchConditions
-): IEventOperation<factory.event.individualScreeningEvent.IEvent[]> {
+): IEventOperation<factory.event.individualScreeningEvent.IEventWithOffer[]> {
     return async (
-        eventAdapter: EventAdapter
-        // performanceStockStatusAdapter?: PerformanceStockStatusAdapter
+        eventAdapter: EventAdapter,
+        itemAvailabilityAdapter?: IndividualScreeningEventItemAvailabilityAdapter
     ) => {
         // 検索条件を作成
         const conditions: any = {
@@ -137,64 +144,70 @@ export function searchIndividualScreeningEvents(
         }
 
         debug('finding individualScreeningEvents...', conditions);
-
-        return <factory.event.individualScreeningEvent.IEvent[]>await eventAdapter.eventModel.find(conditions)
+        const events = <factory.event.individualScreeningEvent.IEvent[]>await eventAdapter.eventModel.find(conditions)
             .sort({ startDate: 1 })
             .setOptions({ maxTimeMS: 10000 })
-            // .populate('film', '_id name minutes')
-            // .populate('theater', '_id name')
-            // .populate('screen', '_id name')
             .lean()
             .exec();
 
-        // const performances: ISearchPerformancesResult[] = [];
-        // await Promise.all(docs.map(async (doc) => {
-        //     // 空席状況を追加
-        //     let stockStatus = null;
-        //     if (performanceStockStatusAdapter !== undefined) {
-        //         stockStatus = await performanceStockStatusAdapter.findOne(doc.get('day'), doc.get('id'));
-        //         debug('stockStatus:', stockStatus);
-        //     }
+        return await Promise.all(events.map(async (event) => {
+            // add item availability info
+            const offer: factory.event.individualScreeningEvent.IOffer = {
+                typeOf: 'Offer',
+                availability: null,
+                url: ''
+            };
+            if (itemAvailabilityAdapter !== undefined) {
+                offer.availability = await itemAvailabilityAdapter.findOne(event.coaInfo.dateJouei, event.identifier);
+            }
 
-        //     performances.push({
-        //         id: doc.get('id'),
-        //         theater: {
-        //             id: doc.get('theater').id,
-        //             name: doc.get('theater').name
-        //         },
-        //         screen: {
-        //             id: doc.get('screen').id,
-        //             name: doc.get('screen').name
-        //         },
-        //         film: {
-        //             id: doc.get('film').id,
-        //             name: doc.get('film').name,
-        //             minutes: doc.get('film').minutes
-        //         },
-        //         day: doc.get('day'),
-        //         time_start: doc.get('time_start'),
-        //         time_end: doc.get('time_end'),
-        //         canceled: doc.get('canceled'),
-        //         stock_status: (stockStatus === null) ? null : stockStatus.expression
-        //     });
-        // }));
-
-        // return performances;
+            return {
+                ...event,
+                ...{
+                    offer: offer
+                }
+            };
+        }));
     };
 }
 
 /**
- * IDで上映イベント検索
+ * find individualScreeningEvent by identifier
+ * @export
+ * @function
+ * @memberof service/event
  */
 export function findIndividualScreeningEventByIdentifier(
     identifier: string
-): IEventOperation<monapt.Option<factory.event.individualScreeningEvent.IEvent>> {
-    return async (eventAdapter: EventAdapter) => {
+): IEventOperation<monapt.Option<factory.event.individualScreeningEvent.IEventWithOffer>> {
+    return async (
+        eventAdapter: EventAdapter,
+        itemAvailabilityAdapter?: IndividualScreeningEventItemAvailabilityAdapter
+    ) => {
         const event = <factory.event.individualScreeningEvent.IEvent>await eventAdapter.eventModel.findOne({
             typeOf: factory.eventType.IndividualScreeningEvent,
             identifier: identifier
         }).lean().exec();
 
-        return (event === null) ? monapt.None : monapt.Option(event);
+        if (event === null) {
+            return monapt.None;
+        }
+
+        // add item availability info
+        const offer: factory.event.individualScreeningEvent.IOffer = {
+            typeOf: 'Offer',
+            availability: null,
+            url: ''
+        };
+        if (itemAvailabilityAdapter !== undefined) {
+            offer.availability = await itemAvailabilityAdapter.findOne(event.coaInfo.dateJouei, event.identifier);
+        }
+
+        return monapt.Option({
+            ...event,
+            ...{
+                offer: offer
+            }
+        });
     };
 }
