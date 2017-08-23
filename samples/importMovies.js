@@ -4,13 +4,11 @@
  * @ignore
  */
 
-import * as mongoose from 'mongoose';
-import * as sskts from '../lib/index';
+const sskts = require('../lib/index');
 
 async function main() {
     try {
-        (<any>mongoose).Promise = global.Promise;
-        const connection = mongoose.createConnection(process.env.MONGOLAB_URI);
+        const connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
         await sskts.service.creativeWork.importMovies('118')(
             sskts.adapter.creativeWork(connection)
         );
@@ -18,7 +16,7 @@ async function main() {
         console.error(error);
     }
 
-    mongoose.disconnect();
+    sskts.mongoose.disconnect();
 }
 
 main();
