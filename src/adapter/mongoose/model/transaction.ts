@@ -9,6 +9,7 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
  */
 const schema = new mongoose.Schema(
     {
+        status: String,
         typeOf: String,
         agent: mongoose.Schema.Types.Mixed,
         seller: mongoose.Schema.Types.Mixed,
