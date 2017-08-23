@@ -1,4 +1,7 @@
 import * as mongoose from 'mongoose';
+import ownerModel from './owner';
+
+import TransactionInquiryKeySchemaType from '../schemaTypes/transactionInquiryKey';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
@@ -9,17 +12,19 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
  */
 const schema = new mongoose.Schema(
     {
-        typeOf: String,
-        agent: mongoose.Schema.Types.Mixed,
-        seller: mongoose.Schema.Types.Mixed,
-        error: mongoose.Schema.Types.Mixed,
-        result: mongoose.Schema.Types.Mixed,
-        object: mongoose.Schema.Types.Mixed,
-        expires: Date,
-        startDate: Date,
-        endDate: Date,
-        tasksExportedAt: Date,
-        tasksExportationStatus: String,
+        expires_at: Date, // 期限切れ予定日時
+        status: String,
+        owners: [{ // 取引の対象所有者リスト
+            type: mongoose.Schema.Types.ObjectId,
+            ref: ownerModel.modelName
+        }],
+        client_user: mongoose.Schema.Types.Mixed,
+        inquiry_key: TransactionInquiryKeySchemaType,
+        expired_at: Date, // 期限切れ日時
+        started_at: Date, // 開始日時
+        closed_at: Date, // 成立日時
+        tasks_exported_at: Date,
+        tasks_exportation_status: String,
         tasks: [mongoose.Schema.Types.Mixed]
     },
     {
@@ -28,8 +33,8 @@ const schema = new mongoose.Schema(
         read: 'primaryPreferred',
         safe: safe,
         timestamps: {
-            createdAt: 'createdAt',
-            updatedAt: 'updatedAt'
+            createdAt: 'created_at',
+            updatedAt: 'updated_at'
         },
         toJSON: { getters: true },
         toObject: { getters: true }

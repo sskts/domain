@@ -6,8 +6,6 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import ArgumentError from '../error/argument';
-
 import ClientAdapter from '../adapter/client';
 
 const debug = createDebug('sskts-domain:service:client');
@@ -30,11 +28,8 @@ export interface IPushEventParams {
 
 export function pushEvent(params: IPushEventParams): ClientOperation<factory.clientEvent.IClientEvent> {
     return async (clientAdapter: ClientAdapter) => {
-        // クライアントの存在確認
-        const clientDoc = await clientAdapter.clientModel.findById(params.client, '_id').exec();
-        if (clientDoc === null) {
-            throw new ArgumentError('client', `client[${params.client}] not found.`);
-        }
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO クライアントの存在確認
 
         // イベント作成
         const clientEvent = factory.clientEvent.create(params);

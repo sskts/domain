@@ -1,6 +1,5 @@
 import * as mongoose from 'mongoose';
 
-import clientModel from './client';
 import transactionModel from './transaction';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
@@ -12,10 +11,7 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
  */
 const schema = new mongoose.Schema(
     {
-        client: {
-            type: String,
-            ref: clientModel.modelName
-        },
+        client: String,
         occurredAt: Date,
         url: String,
         label: String,

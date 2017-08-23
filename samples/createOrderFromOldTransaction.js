@@ -1,27 +1,30 @@
-const sskts = require('../lib/index');
-const FilmAdapter = require('../lib/oldAdapter/film');
-const PerformanceAdapter = require('../lib/oldAdapter/performance');
-const ScreenAdapter = require('../lib/oldAdapter/screen');
-const TheaterAdapter = require('../lib/oldAdapter/theater');
+const mongoose = require('mongoose');
+const MigrationService = require('../lib/service/migration');
+const OrderAdapter = require('../lib/adapter/order');
+const FilmAdapter = require('../lib/v22/adapter/film');
+const PerformanceAdapter = require('../lib/v22/adapter/performance');
+const ScreenAdapter = require('../lib/v22/adapter/screen');
+const TheaterAdapter = require('../lib/v22/adapter/theater');
+const TransactionAdapter = require('../lib/v22/adapter/transaction');
 
 async function main() {
-    sskts.mongoose.connect(process.env.MONGOLAB_URI);
-
+    mongoose.connect(process.env.MONGOLAB_URI);
+    const connection = mongoose.connection;
 
     const transactionId = '599bffcea7e4341e64aeb105'; // GMO & MVTK
     // const transactionId = '598bf5905b24ad16e83c73f9'; // GMO
     // const transactionId = '59673c4c6d16372074052cce'; // GMO & MVTK
 
-    await sskts.service.order.createFromOldTransaction(transactionId)(
-        sskts.adapter.order(sskts.mongoose.connection),
-        sskts.adapter.transaction(sskts.mongoose.connection),
-        new FilmAdapter.default(sskts.mongoose.connection),
-        new PerformanceAdapter.default(sskts.mongoose.connection),
-        new ScreenAdapter.default(sskts.mongoose.connection),
-        new TheaterAdapter.default(sskts.mongoose.connection)
+    await MigrationService.createFromOldTransaction(transactionId)(
+        new OrderAdapter.default(connection),
+        new TransactionAdapter.default(connection),
+        new FilmAdapter.default(connection),
+        new PerformanceAdapter.default(connection),
+        new ScreenAdapter.default(connection),
+        new TheaterAdapter.default(connection)
     );
 
-    sskts.mongoose.disconnect();
+    mongoose.disconnect();
 }
 
 main().then(() => {

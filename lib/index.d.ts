@@ -29,7 +29,6 @@ import GMONotificationAdapter from './adapter/gmoNotification';
 import IndividualScreeningEventItemAvailabilityAdapter from './adapter/itemAvailability/individualScreeningEvent';
 import OrderAdapter from './adapter/order';
 import OrganizationAdapter from './adapter/organization';
-import OwnerAdapter from './adapter/owner';
 import OwnershipInfoAdapter from './adapter/ownershipInfo';
 import PersonAdapter from './adapter/person';
 import PlaceAdapter from './adapter/place';
@@ -90,7 +89,6 @@ export declare namespace adapter {
     function gmoNotification(connection: mongoose.Connection): GMONotificationAdapter;
     function order(connection: mongoose.Connection): OrderAdapter;
     function organization(connection: mongoose.Connection): OrganizationAdapter;
-    function owner(connection: mongoose.Connection): OwnerAdapter;
     function ownershipInfo(connection: mongoose.Connection): OwnershipInfoAdapter;
     function person(connection: mongoose.Connection): PersonAdapter;
     function place(connection: mongoose.Connection): PlaceAdapter;

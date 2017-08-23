@@ -31,7 +31,6 @@ import GMONotificationAdapter from './adapter/gmoNotification';
 import IndividualScreeningEventItemAvailabilityAdapter from './adapter/itemAvailability/individualScreeningEvent';
 import OrderAdapter from './adapter/order';
 import OrganizationAdapter from './adapter/organization';
-import OwnerAdapter from './adapter/owner';
 import OwnershipInfoAdapter from './adapter/ownershipInfo';
 import PersonAdapter from './adapter/person';
 import PlaceAdapter from './adapter/place';
@@ -113,9 +112,6 @@ export namespace adapter {
     }
     export function organization(connection: mongoose.Connection) {
         return new OrganizationAdapter(connection);
-    }
-    export function owner(connection: mongoose.Connection) {
-        return new OwnerAdapter(connection);
     }
     export function ownershipInfo(connection: mongoose.Connection) {
         return new OwnershipInfoAdapter(connection);
