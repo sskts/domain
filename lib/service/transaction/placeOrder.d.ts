@@ -113,20 +113,6 @@ export declare function cancelMvtkAuthorization(transactionId: string, authoriza
  */
 export declare function setAgentProfile(transactionId: string, profile: factory.transaction.placeOrder.ICustomerContact): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
- * 会員情報をGMO会員として保管する
- *
- * @param {MemberOwnerFactory.IMemberOwner} memberOwner 会員所有者
- */
-/**
- * 取引中の所有者に対してカード情報を保管する
- *
- * @export
- * @param {string} transactionId 取引ID
- * @param {string} ownerId 所有者ID
- * @param {(GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized)} gmoCard GMOカード情報
- * @returns {TransactionOperation<void>} 取引に対する操作
- */
-/**
  * 取引確定
  */
 export declare function confirm(transactionId: string): (transactionAdapter: TransactionAdapter) => Promise<factory.order.IOrder>;

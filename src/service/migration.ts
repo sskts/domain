@@ -105,23 +105,17 @@ export function createFromOldTransaction(transactionId: string) {
  */
 // tslint:disable-next-line:max-func-body-length
 function createOrder(params: ITransactionDetail): factory.order.IOrder {
-    let paymentMethod: factory.order.IPaymentMethod;
+    const paymentMethods: factory.order.IPaymentMethod[] = [];
 
-    if (params.gmoAuthorization !== undefined && params.mvtkAuthorization !== undefined) {
-        paymentMethod = {
-            typeOf: 'CreditCard',
-            identifier: params.gmoAuthorization.gmo_order_id
-        };
-    } else if (params.gmoAuthorization !== undefined) {
-        paymentMethod = {
-            typeOf: 'CreditCard',
-            identifier: params.gmoAuthorization.gmo_order_id
-        };
+    if (params.gmoAuthorization !== undefined) {
+        paymentMethods.push({
+            name: 'クレジットカード',
+            paymentMethod: 'CreditCard',
+            paymentMethodId: params.gmoAuthorization.gmo_order_id
+        });
     } else if (params.mvtkAuthorization !== undefined) {
-        paymentMethod = {
-            typeOf: 'Mvtk',
-            identifier: ''
-        };
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO discounts
     } else {
         throw new Error('payment method does not exist');
     }
@@ -283,14 +277,13 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
             }),
         url: '',
         orderStatus: <any>'OrderDelivered',
-        paymentMethod: paymentMethod,
-        paymentMethodId: '',
+        paymentMethods: paymentMethods,
         orderDate: params.closedAt,
         isGift: false,
-        discount: 0,
-        discountCurrency: '',
+        discounts: [],
         customer: {
-            name: customerName
+            name: customerName,
+            url: ''
         },
         orderInquiryKey: {
             theaterCode: params.inquiryKey.theater_code,

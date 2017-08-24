@@ -64,25 +64,16 @@ export function start(args: {
                 memberOf: {
                     membershipNumber: args.agentId,
                     programName: 'Amazon Cognito'
-                }
+                },
+                url: ''
             };
         } else {
             agent = {
                 typeOf: 'Person',
-                id: ''
+                id: '',
+                url: ''
             };
         }
-        // if (args.agentId === undefined) {
-        //     // 一般所有者作成
-        //     person = await PersonFactory.create({});
-        // } else {
-        //     // 所有者指定であれば存在確認
-        //     const personDoc = await personAdapter.personModel.findById(args.agentId).exec();
-        //     if (personDoc === null) {
-        //         throw new ArgumentError('agentId', `person[id:${args.agentId}] not found`);
-        //     }
-        //     person = <PersonFactory.IPerson>personDoc.toObject();
-        // }
 
         // 売り手を取得
         const sellerDoc = await organizationAdapter.organizationModel.findById(args.sellerId).exec();
@@ -98,24 +89,19 @@ export function start(args: {
             seller: {
                 typeOf: 'MovieTheater', // todo enum管理
                 id: seller.id,
-                name: seller.name.ja
+                name: seller.name.ja,
+                url: seller.url
             },
             object: {
                 clientUser: args.clientUser,
-                paymentInfos: []
+                paymentInfos: [],
+                discountInfos: []
             },
             expires: args.expires,
             startDate: moment().toDate()
         });
 
-        // 所有者永続化
-        // createコマンドで作成すること(ありえないはずだが、万が一所有者IDが重複するようなバグがあっても、ユニークインデックスではじかれる)
-        // if (args.agentId === undefined) {
-        //     debug('creating person...', person);
-        //     await personAdapter.personModel.create({ ...person, ...{ _id: person.id } });
-        // }
-
-        debug('creating transaction...');
+        debug('creating transaction...', transaction);
         // mongoDBに追加するために_id属性を拡張
         await transactionAdapter.transactionModel.create({ ...transaction, ...{ _id: transaction.id } });
 
@@ -703,7 +689,7 @@ export function createMvtkAuthorization(
 
         await transactionAdapter.transactionModel.findByIdAndUpdate(
             transactionId,
-            { $push: { 'object.paymentInfos': authorization } }
+            { $push: { 'object.discountInfos': authorization } }
         ).exec();
 
         return authorization;
@@ -721,20 +707,20 @@ export function cancelMvtkAuthorization(transactionId: string, authorizationId: 
                 return option.get();
             });
 
-        const authorization = transaction.object.paymentInfos.find(
-            (paymentInfo) => paymentInfo.group === factory.authorizationGroup.MVTK
+        const authorization = transaction.object.discountInfos.find(
+            (discountInfo) => discountInfo.group === factory.authorizationGroup.MVTK
         );
         if (authorization === undefined) {
-            throw new ArgumentError('authorizationId', '指定された承認は見つかりません');
+            throw new ArgumentError('authorizationId', 'mvtk authorization not found');
         }
         if (authorization.id !== authorizationId) {
-            throw new ArgumentError('authorizationId', '指定された承認は見つかりません');
+            throw new ArgumentError('authorizationId', 'mvtk authorization not found');
         }
 
         await transactionAdapter.transactionModel.findByIdAndUpdate(
             transaction.id,
             {
-                $pull: { 'object.paymentInfos': { id: authorizationId } }
+                $pull: { 'object.discountInfos': { id: authorizationId } }
             }
         ).exec();
     };
@@ -837,120 +823,10 @@ export function setAgentProfile(
 }
 
 /**
- * 会員情報をGMO会員として保管する
- *
- * @param {MemberOwnerFactory.IMemberOwner} memberOwner 会員所有者
- */
-// async function saveGMOMember(memberOwner: MemberOwnerFactory.IOwner) {
-//     // GMO会員登録
-//     // GMOサイト情報は環境変数に持たせる(1システムにつき1サイト)
-//     // 2回目かもしれないので、存在チェック
-//     const searchMemberResult = await GMO.services.card.searchMember({
-//         siteId: process.env.GMO_SITE_ID,
-//         sitePass: process.env.GMO_SITE_PASS,
-//         memberId: memberOwner.id
-//     });
-//     debug('GMO searchMember processed', searchMemberResult);
-
-//     if (searchMemberResult !== null) {
-//         // 存在していれば変更
-//         const updateMemberResult = await GMO.services.card.updateMember({
-//             siteId: process.env.GMO_SITE_ID,
-//             sitePass: process.env.GMO_SITE_PASS,
-//             memberId: memberOwner.id,
-//             memberName: `${memberOwner.name_last} ${memberOwner.name_first}`
-//         });
-//         debug('GMO updateMember processed', updateMemberResult);
-//     } else {
-//         const saveMemberResult = await GMO.services.card.saveMember({
-//             siteId: process.env.GMO_SITE_ID,
-//             sitePass: process.env.GMO_SITE_PASS,
-//             memberId: memberOwner.id,
-//             memberName: `${memberOwner.name_last} ${memberOwner.name_first}`
-//         });
-//         debug('GMO saveMember processed', saveMemberResult);
-//     }
-// }
-
-/**
- * 取引中の所有者に対してカード情報を保管する
- *
- * @export
- * @param {string} transactionId 取引ID
- * @param {string} ownerId 所有者ID
- * @param {(GMOCardFactory.IGMOCardRaw | GMOCardFactory.IGMOCardTokenized)} gmoCard GMOカード情報
- * @returns {TransactionOperation<void>} 取引に対する操作
- */
-// export function saveCard(
-//     transactionId: string,
-//     ownerId: string,
-//     gmoCard: GMOCardFactory.IUncheckedCardRaw | GMOCardFactory.IUncheckedCardTokenized
-// ): TransactionOperation<void> {
-//     return async (transactionAdapter: TransactionAdapter) => {
-//         // 取引取得
-//         const transaction = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec()
-//             .then((doc) => {
-//                 if (doc === null) {
-//                     throw new ArgumentError('transactionId', `transtransaction[id:${transactionId}] not found.`);
-//                 }
-
-//                 return <TransactionFactory.ITransaction>doc.toObject();
-//             });
-
-//         // 取引から、更新対象の所有者を取り出す
-//         const existingOwner = transaction.owners.find((ownerInTransaction) => ownerInTransaction.id === ownerId);
-//         if (existingOwner === undefined) {
-//             throw new ArgumentError('ownerId', `owner[id:${ownerId}] not found`);
-//         }
-//         // 万が一会員所有者でなければ不適切な操作
-//         if (existingOwner.group !== OwnerGroup.MEMBER) {
-//             throw new ArgumentError('ownerId', `owner[id:${ownerId}] is not a member`);
-//         }
-
-//         // 登録済みのカードがあれば削除
-//         // もし会員未登録でこのサービスを使えば、この時点でGMOエラー
-//         const searchCardResults = await GMO.services.card.searchCard({
-//             siteId: process.env.GMO_SITE_ID,
-//             sitePass: process.env.GMO_SITE_PASS,
-//             memberId: ownerId,
-//             seqMode: GMO.utils.util.SEQ_MODE_PHYSICS
-//         });
-//         debug('GMO searchCard processed', searchCardResults);
-
-//         await Promise.all(searchCardResults.map(async (searchCardResult) => {
-//             // 未削除であれば削除
-//             if (searchCardResult.deleteFlag !== '1') {
-//                 const deleteCardResult = await GMO.services.card.deleteCard({
-//                     siteId: process.env.GMO_SITE_ID,
-//                     sitePass: process.env.GMO_SITE_PASS,
-//                     memberId: ownerId,
-//                     seqMode: GMO.utils.util.SEQ_MODE_PHYSICS,
-//                     cardSeq: searchCardResult.cardSeq
-//                 });
-//                 debug('GMO deleteCard processed', deleteCardResult);
-//             }
-//         }));
-
-//         // GMOカード登録
-//         const saveCardResult = await GMO.services.card.saveCard({
-//             siteId: process.env.GMO_SITE_ID,
-//             sitePass: process.env.GMO_SITE_PASS,
-//             memberId: ownerId,
-//             seqMode: GMO.utils.util.SEQ_MODE_PHYSICS,
-//             cardNo: (<GMOCardFactory.IUncheckedCardRaw>gmoCard).card_no,
-//             cardPass: (<GMOCardFactory.IUncheckedCardRaw>gmoCard).card_pass,
-//             expire: (<GMOCardFactory.IUncheckedCardRaw>gmoCard).expire,
-//             holderName: (<GMOCardFactory.IUncheckedCardRaw>gmoCard).holder_name,
-//             token: (<GMOCardFactory.IUncheckedCardTokenized>gmoCard).token
-//         });
-//         debug('GMO saveCard processed', saveCardResult);
-//     };
-// }
-
-/**
  * 取引確定
  */
 export function confirm(transactionId: string) {
+    // tslint:disable-next-line:max-func-body-length
     return async (transactionAdapter: TransactionAdapter) => {
         const transaction = await findInProgressById(transactionId)(transactionAdapter)
             .then((option) => {
@@ -984,6 +860,43 @@ export function confirm(transactionId: string) {
         }
 
         // 結果作成
+        const discounts: factory.order.IDiscount[] = [];
+        transaction.object.discountInfos.forEach((discountInfo) => {
+            switch (discountInfo.group) {
+                case factory.authorizationGroup.MVTK:
+                    const discountCode = (<factory.authorization.mvtk.IAuthorization>discountInfo).result.knyknrNoInfo.map(
+                        (knshInfo) => knshInfo.knyknrNo
+                    ).join(',');
+
+                    discounts.push({
+                        name: 'ムビチケカード',
+                        discount: discountInfo.price,
+                        discountCode: discountCode,
+                        discountCurrency: factory.priceCurrency.JPY
+                    });
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        const paymentMethods: factory.order.IPaymentMethod[] = [];
+        transaction.object.paymentInfos.forEach((paymentInfo) => {
+            switch (paymentInfo.group) {
+                case factory.authorizationGroup.GMO:
+                    const paymentMethodId = (<factory.authorization.gmo.IAuthorization>paymentInfo).result.orderId;
+
+                    paymentMethods.push({
+                        name: 'クレジットカード',
+                        paymentMethod: 'CreditCard',
+                        paymentMethodId: paymentMethodId
+                    });
+                    break;
+                default:
+                    break;
+            }
+        });
+
         const order = factory.order.createFromBuyTransaction({
             seatReservationAuthorization: seatReservationAuthorization,
             customerName: `${cutomerContact.familyName} ${cutomerContact.givenName}`,
@@ -995,10 +908,8 @@ export function confirm(transactionId: string) {
             orderInquiryKey: orderInquiryKey,
             // tslint:disable-next-line:no-suspicious-comment
             // TODO ムビチケ対応
-            paymentMethod: {
-                typeOf: 'CreditCard',
-                identifier: ''
-            }
+            paymentMethods: paymentMethods,
+            discounts: discounts
         });
         const ownershipInfos = order.acceptedOffers.map((reservation) => {
             return factory.ownershipInfo.create({
@@ -1043,26 +954,23 @@ export function confirm(transactionId: string) {
 }
 
 /**
- * 成立可能かどうか
- *
+ * whether a transaction can be closed
+ * @function
  * @returns {boolean}
  */
 function canBeClosed(transaction: factory.transaction.placeOrder.ITransaction) {
-    // 座席予約がなければ×
+    // seatReservation exists?
     const seatReservationAuthorization = transaction.object.seatReservation;
     if (seatReservationAuthorization === undefined) {
         return false;
     }
 
-    // 決済情報がなければ×
     const paymentInfos = transaction.object.paymentInfos;
-    if (paymentInfos.length === 0) {
-        return false;
-    }
+    const discountInfos = transaction.object.discountInfos;
 
     const priceBySeller = seatReservationAuthorization.price;
-    const priceByAgent = paymentInfos.reduce((a, b) => a + b.price, 0);
+    const priceByAgent = paymentInfos.reduce((a, b) => a + b.price, 0) + discountInfos.reduce((a, b) => a + b.price, 0);
 
-    // 注文アイテムと決済の金額が合うかどうか
+    // price matched between an agent and a seller?
     return priceByAgent === priceBySeller;
 }
