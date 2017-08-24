@@ -546,7 +546,7 @@ export function createSeatReservationAuthorization(
         // COAオーソリ追加
         debug('adding authorizations coaSeatReservation...');
         const authorization = factory.authorization.seatReservation.createFromCOATmpReserve({
-            price: offers.reduce((a, b) => a + b.ticketInfo.salePrice, 0),
+            price: offers.reduce((a, b) => a + b.ticketInfo.salePrice + b.ticketInfo.mvtkSalesPrice, 0),
             updTmpReserveSeatArgs: updTmpReserveSeatArgs,
             reserveSeatsTemporarilyResult: reserveSeatsTemporarilyResult,
             tickets: offers.map((offer) => offer.ticketInfo),
@@ -604,13 +604,19 @@ export function cancelSeatReservationAuthorization(transactionId: string, author
 }
 
 /**
- * ムビチケ着券承認追加
- *
+ * create a mvtk authorization
+ * add the result of using a mvtk card
+ * @export
+ * @function
  * @param {string} transactionId
- * @param {MvtkAuthorization.IMvtkAuthorization} authorization
+ * @param {factory.authorization.mvtk.IResult} authorizationResult
+ * @return {ITransactionOperation<factory.authorization.mvtk.IAuthorization>}
  * @memberof service/transaction/placeOrder
  */
-export function createMvtkAuthorization(transactionId: string, authorization: factory.authorization.mvtk.IAuthorization) {
+export function createMvtkAuthorization(
+    transactionId: string,
+    authorizationResult: factory.authorization.mvtk.IResult
+): ITransactionOperation<factory.authorization.mvtk.IAuthorization> {
     return async (transactionAdapter: TransactionAdapter) => {
         const transaction = await findInProgressById(transactionId)(transactionAdapter)
             .then((option) => {
@@ -627,37 +633,80 @@ export function createMvtkAuthorization(transactionId: string, authorization: fa
             throw new Error('seat reservation authorization not created yet');
         }
 
-        // stCd matched?
+        // knyknrNo matched?
+        interface IKnyknrNoNumsByNo { [knyknrNo: string]: number; }
+        const knyknrNoNumsByNoShouldBe: IKnyknrNoNumsByNo = seatReservationAuthorization.object.acceptedOffers.reduce(
+            (a: IKnyknrNoNumsByNo, b) => {
+                const knyknrNo = b.itemOffered.reservedTicket.coaTicketInfo.mvtkNum;
+                if (a[knyknrNo] === undefined) {
+                    a[knyknrNo] = 0;
+                }
+                a[knyknrNo] += 1;
+
+                return a;
+            },
+            {}
+        );
+        const knyknrNoNumsByNo: IKnyknrNoNumsByNo = authorizationResult.knyknrNoInfo.reduce(
+            (a: IKnyknrNoNumsByNo, b) => {
+                if (a[b.knyknrNo] === undefined) {
+                    a[b.knyknrNo] = 0;
+                }
+                const knyknrNoNum = b.knshInfo.reduce((a2, b2) => a2 + b2.miNum, 0);
+                a[b.knyknrNo] += knyknrNoNum;
+
+                return a;
+            },
+            {}
+        );
+        debug('knyknrNoNumsByNo:', knyknrNoNumsByNo);
+        debug('knyyknrNoNumsByNoShouldBe:', knyknrNoNumsByNoShouldBe);
+        const knyknrNoExistsInSeatReservation =
+            Object.keys(knyknrNoNumsByNo).every((knyknrNo) => knyknrNoNumsByNo[knyknrNo] === knyknrNoNumsByNoShouldBe[knyknrNo]);
+        const knyknrNoExistsMvtkResult =
+            Object.keys(knyknrNoNumsByNoShouldBe).every((knyknrNo) => knyknrNoNumsByNo[knyknrNo] === knyknrNoNumsByNoShouldBe[knyknrNo]);
+        if (!knyknrNoExistsInSeatReservation || !knyknrNoExistsMvtkResult) {
+            throw new ArgumentError('authorizationResult', 'knyknrNoInfo not matched with seat reservation authorization');
+        }
+
+        // stCd matched? (last two figures of theater code)
+        // tslint:disable-next-line:no-magic-numbers
         const stCdShouldBe = seatReservationAuthorization.object.updTmpReserveSeatArgs.theaterCode.slice(-2);
-        if (authorization.result.stCd !== stCdShouldBe) {
-            throw new ArgumentError('authorization', 'stCd not matched with seat reservation authorization');
+        if (authorizationResult.stCd !== stCdShouldBe) {
+            throw new ArgumentError('authorizationResult', 'stCd not matched with seat reservation authorization');
         }
 
         // skhnCd matched?
         // tslint:disable-next-line:max-line-length
         const skhnCdShouldBe = `${seatReservationAuthorization.object.updTmpReserveSeatArgs.titleCode}${seatReservationAuthorization.object.updTmpReserveSeatArgs.titleBranchNum}`;
-        if (authorization.result.skhnCd !== skhnCdShouldBe) {
-            throw new ArgumentError('authorization', 'skhnCd not matched with seat reservation authorization');
+        if (authorizationResult.skhnCd !== skhnCdShouldBe) {
+            throw new ArgumentError('authorizationResult', 'skhnCd not matched with seat reservation authorization');
         }
 
         // screen code matched?
-        if (authorization.result.screnCd !== seatReservationAuthorization.object.updTmpReserveSeatArgs.screenCode) {
-            throw new ArgumentError('authorization', 'screnCd not matched with seat reservation authorization');
+        if (authorizationResult.screnCd !== seatReservationAuthorization.object.updTmpReserveSeatArgs.screenCode) {
+            throw new ArgumentError('authorizationResult', 'screnCd not matched with seat reservation authorization');
         }
 
         // seat num matched?
         const seatNumsInSeatReservationAuthorization =
             seatReservationAuthorization.result.listTmpReserve.map((tmpReserve) => tmpReserve.seatNum);
-        debug('authorization.result.zskInfo:', authorization.result.zskInfo);
-        debug('seatNumsInSeatReservationAuthorization', seatNumsInSeatReservationAuthorization);
-        if (!authorization.result.zskInfo.every((zskInfo) => seatNumsInSeatReservationAuthorization.indexOf(zskInfo.zskCd) >= 0)) {
-            throw new ArgumentError('authorization', 'zskInfo not matched with seat reservation authorization');
+        if (!authorizationResult.zskInfo.every((zskInfo) => seatNumsInSeatReservationAuthorization.indexOf(zskInfo.zskCd) >= 0)) {
+            throw new ArgumentError('authorizationResult', 'zskInfo not matched with seat reservation authorization');
         }
+
+        const authorization = factory.authorization.mvtk.create({
+            price: authorizationResult.price,
+            result: authorizationResult,
+            object: {}
+        });
 
         await transactionAdapter.transactionModel.findByIdAndUpdate(
             transactionId,
             { $push: { 'object.paymentInfos': authorization } }
         ).exec();
+
+        return authorization;
     };
 }
 

@@ -78,13 +78,16 @@ export declare function cancelGMOAuthorization(transactionId: string, authorizat
 export declare function createSeatReservationAuthorization(transactionId: string, individualScreeningEvent: factory.event.individualScreeningEvent.IEvent, offers: factory.offer.ISeatReservationOffer[]): ITransactionOperation<factory.authorization.seatReservation.IAuthorization>;
 export declare function cancelSeatReservationAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
- * ムビチケ着券承認追加
- *
+ * create a mvtk authorization
+ * add the result of using a mvtk card
+ * @export
+ * @function
  * @param {string} transactionId
- * @param {MvtkAuthorization.IMvtkAuthorization} authorization
+ * @param {factory.authorization.mvtk.IResult} authorizationResult
+ * @return {ITransactionOperation<factory.authorization.mvtk.IAuthorization>}
  * @memberof service/transaction/placeOrder
  */
-export declare function createMvtkAuthorization(transactionId: string, authorization: factory.authorization.mvtk.IAuthorization): (transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function createMvtkAuthorization(transactionId: string, authorizationResult: factory.authorization.mvtk.IResult): ITransactionOperation<factory.authorization.mvtk.IAuthorization>;
 export declare function cancelMvtkAuthorization(transactionId: string, authorizationId: string): (transactionAdapter: TransactionAdapter) => Promise<void>;
 /**
  * メール追加
