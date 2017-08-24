@@ -612,6 +612,48 @@ export function cancelSeatReservationAuthorization(transactionId: string, author
  */
 export function createMvtkAuthorization(transactionId: string, authorization: factory.authorization.mvtk.IAuthorization) {
     return async (transactionAdapter: TransactionAdapter) => {
+        const transaction = await findInProgressById(transactionId)(transactionAdapter)
+            .then((option) => {
+                if (option.isEmpty) {
+                    throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
+                }
+
+                return option.get();
+            });
+
+        const seatReservationAuthorization = transaction.object.seatReservation;
+        // seatReservationAuthorization already exists?
+        if (seatReservationAuthorization === undefined) {
+            throw new Error('seat reservation authorization not created yet');
+        }
+
+        // stCd matched?
+        const stCdShouldBe = seatReservationAuthorization.object.updTmpReserveSeatArgs.theaterCode.slice(-2);
+        if (authorization.result.stCd !== stCdShouldBe) {
+            throw new ArgumentError('authorization', 'stCd not matched with seat reservation authorization');
+        }
+
+        // skhnCd matched?
+        // tslint:disable-next-line:max-line-length
+        const skhnCdShouldBe = `${seatReservationAuthorization.object.updTmpReserveSeatArgs.titleCode}${seatReservationAuthorization.object.updTmpReserveSeatArgs.titleBranchNum}`;
+        if (authorization.result.skhnCd !== skhnCdShouldBe) {
+            throw new ArgumentError('authorization', 'skhnCd not matched with seat reservation authorization');
+        }
+
+        // screen code matched?
+        if (authorization.result.screnCd !== seatReservationAuthorization.object.updTmpReserveSeatArgs.screenCode) {
+            throw new ArgumentError('authorization', 'screnCd not matched with seat reservation authorization');
+        }
+
+        // seat num matched?
+        const seatNumsInSeatReservationAuthorization =
+            seatReservationAuthorization.result.listTmpReserve.map((tmpReserve) => tmpReserve.seatNum);
+        debug('authorization.result.zskInfo:', authorization.result.zskInfo);
+        debug('seatNumsInSeatReservationAuthorization', seatNumsInSeatReservationAuthorization);
+        if (!authorization.result.zskInfo.every((zskInfo) => seatNumsInSeatReservationAuthorization.indexOf(zskInfo.zskCd) >= 0)) {
+            throw new ArgumentError('authorization', 'zskInfo not matched with seat reservation authorization');
+        }
+
         await transactionAdapter.transactionModel.findByIdAndUpdate(
             transactionId,
             { $push: { 'object.paymentInfos': authorization } }
