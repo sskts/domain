@@ -837,7 +837,7 @@ export function confirm(transactionId: string) {
         const order = factory.order.createFromPlaceOrderTransaction({
             transaction: transaction
         });
-        const ownershipInfos = order.acceptedOffers.map((reservation) => {
+        const ownershipInfos = order.acceptedOffers.map((acceptedOffer) => {
             return factory.ownershipInfo.create({
                 ownedBy: {
                     id: transaction.agent.id,
@@ -847,7 +847,7 @@ export function confirm(transactionId: string) {
                 acquiredFrom: transaction.seller,
                 ownedFrom: new Date(),
                 ownedThrough: moment().add(1, 'month').toDate(),
-                typeOfGood: reservation
+                typeOfGood: acceptedOffer.itemOffered
             });
         });
         const result: factory.transaction.placeOrder.IResult = {

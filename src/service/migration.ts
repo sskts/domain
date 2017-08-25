@@ -212,7 +212,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
         priceCurrency: <any>'JPY',
         price: (params.gmoAuthorization === undefined) ? 0 : params.gmoAuthorization.price,
         acceptedOffers: params.seatReservationAuthorization.assets.map(
-            (asset, index): factory.reservation.event.IEventReservation => {
+            (asset, index): factory.order.IOffer => {
                 const qrCodeInfo = params.qrCodesBySeatCode.find((qrCode) => qrCode.seat_code === asset.seat_code);
                 if (qrCodeInfo === undefined) {
                     throw new Error('qr not found');
@@ -243,40 +243,48 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                 // tslint:disable-next-line:no-suspicious-comment
                 // TODO 諸々まだ値微調整
                 return {
-                    numSeats: 1,
                     price: asset.sale_price,
                     priceCurrency: <any>'JPY',
-                    typeOf: 'Reservation',
-                    additionalTicketText: '',
-                    modifiedTime: params.closedAt,
-                    reservationFor: individualScreeningEvent,
-                    reservationNumber: `${params.inquiryKey.reserve_num}-${index.toString()}`,
-                    reservationStatus: factory.reservationStatusType.ReservationConfirmed,
-                    reservedTicket: {
-                        totalPrice: asset.sale_price,
-                        coaTicketInfo: coaTicketInfo,
-                        dateIssued: params.closedAt,
-                        issuedBy: {
-                            typeOf: '',
-                            name: ''
-                        },
+                    seller: {
+                        typeOf: 'MovieTheater',
+                        name: params.theater.name.ja
+                    },
+                    itemOffered: {
+                        numSeats: 1,
+                        price: asset.sale_price,
                         priceCurrency: <any>'JPY',
-                        ticketedSeat: {
-                            seatingType: '',
-                            seatNumber: asset.seat_code,
-                            seatRow: '',
-                            seatSection: asset.screen_section
+                        typeOf: 'Reservation',
+                        additionalTicketText: '',
+                        modifiedTime: params.closedAt,
+                        reservationFor: individualScreeningEvent,
+                        reservationNumber: `${params.inquiryKey.reserve_num}-${index.toString()}`,
+                        reservationStatus: factory.reservationStatusType.ReservationConfirmed,
+                        reservedTicket: {
+                            totalPrice: asset.sale_price,
+                            coaTicketInfo: coaTicketInfo,
+                            dateIssued: params.closedAt,
+                            issuedBy: {
+                                typeOf: '',
+                                name: ''
+                            },
+                            priceCurrency: <any>'JPY',
+                            ticketedSeat: {
+                                seatingType: '',
+                                seatNumber: asset.seat_code,
+                                seatRow: '',
+                                seatSection: asset.screen_section
+                            },
+                            ticketNumber: ticketToken,
+                            ticketToken: ticketToken,
+                            underName: {
+                                typeOf: 'Person',
+                                name: customerName
+                            }
                         },
-                        ticketNumber: ticketToken,
-                        ticketToken: ticketToken,
                         underName: {
                             typeOf: 'Person',
                             name: customerName
                         }
-                    },
-                    underName: {
-                        typeOf: 'Person',
-                        name: customerName
                     }
                 };
             }),

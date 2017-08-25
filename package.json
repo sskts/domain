@@ -19,7 +19,7 @@
     "http-status": "^1.0.1",
     "moment": "^2.18.1",
     "monapt": "^0.7.1",
-    "mongoose": "^4.11.7",
+    "mongoose": "^4.11.8",
     "redis": "^2.8.0",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4",
@@ -43,7 +43,7 @@
     "nsp": "^2.7.0",
     "nyc": "^10.3.2",
     "rimraf": "^2.6.1",
-    "snyk": "^1.40.0",
+    "snyk": "^1.40.1",
     "tslint": "^5.6.0",
     "tslint-microsoft-contrib": "^5.0.1",
     "typescript": "^2.5.1"
