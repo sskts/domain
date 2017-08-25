@@ -35,7 +35,7 @@ export function findByOrderInquiryKey(orderInquiryKey: factory.order.IOrderInqui
         return await orderAdapter.orderModel.findOne(
             {
                 'orderInquiryKey.theaterCode': orderInquiryKey.theaterCode,
-                'orderInquiryKey.orderNumber': orderInquiryKey.orderNumber,
+                'orderInquiryKey.confirmationNumber': orderInquiryKey.confirmationNumber,
                 'orderInquiryKey.telephone': orderInquiryKey.telephone
             }
         ).exec()

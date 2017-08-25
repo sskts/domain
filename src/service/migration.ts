@@ -203,9 +203,11 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
     return {
         typeOf: 'Order',
         seller: {
+            typeOf: 'MovieTheater',
             name: params.theater.name.ja,
             url: params.theater.websites[0].url
         },
+        confirmationNumber: params.inquiryKey.reserve_num,
         orderNumber: `${params.performance.theater.id}-${params.inquiryKey.reserve_num}`,
         priceCurrency: <any>'JPY',
         price: (params.gmoAuthorization === undefined) ? 0 : params.gmoAuthorization.price,
@@ -282,12 +284,13 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
         isGift: false,
         discounts: [],
         customer: {
+            typeOf: 'Person',
             name: customerName,
             url: ''
         },
         orderInquiryKey: {
             theaterCode: params.inquiryKey.theater_code,
-            orderNumber: params.inquiryKey.reserve_num,
+            confirmationNumber: params.inquiryKey.reserve_num,
             telephone: params.inquiryKey.tel
         }
     };

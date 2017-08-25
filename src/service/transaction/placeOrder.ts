@@ -40,7 +40,7 @@ export function start(args: {
     maxCountPerUnit: number;
     clientUser: factory.clientUser.IClientUser;
     scope: factory.transactionScope.ITransactionScope;
-    agentId?: string;
+    agentId: string;
     sellerId: string;
 }): IOrganizationAndTransactionAndTransactionCountOperation<monapt.Option<factory.transaction.placeOrder.ITransaction>> {
     return async (
@@ -55,23 +55,15 @@ export function start(args: {
             return monapt.None;
         }
 
-        // 利用可能であれば、取引作成&匿名所有者作成
-        let agent: factory.transaction.placeOrder.IAgent;
-        if (args.agentId !== undefined) {
-            agent = {
-                typeOf: 'Person',
-                id: args.agentId,
-                memberOf: {
-                    membershipNumber: args.agentId,
-                    programName: 'Amazon Cognito'
-                },
-                url: ''
-            };
-        } else {
-            agent = {
-                typeOf: 'Person',
-                id: '',
-                url: ''
+        const agent: factory.transaction.placeOrder.IAgent = {
+            typeOf: 'Person',
+            id: args.agentId,
+            url: ''
+        };
+        if (args.clientUser.username !== undefined) {
+            agent.memberOf = {
+                membershipNumber: args.agentId,
+                programName: 'Amazon Cognito'
             };
         }
 
@@ -838,85 +830,20 @@ export function confirm(transactionId: string) {
             });
 
         // 照会可能になっているかどうか
-        const seatReservationAuthorization = transaction.object.seatReservation;
-        if (seatReservationAuthorization === undefined) {
-            throw new ArgumentError('transactionId', '座席予約が見つかりません');
-        }
-
-        if (transaction.object.customerContact === undefined) {
-            throw new ArgumentError('transactionId', '購入者情報が見つかりません');
-        }
-
-        const cutomerContact = transaction.object.customerContact;
-        const orderInquiryKey = {
-            theaterCode: seatReservationAuthorization.object.updTmpReserveSeatArgs.theaterCode,
-            orderNumber: seatReservationAuthorization.result.tmpReserveNum,
-            telephone: cutomerContact.telephone
-        };
-
-        // 条件が対等かどうかチェック
         if (!canBeClosed(transaction)) {
             throw new Error('transaction cannot be closed');
         }
 
         // 結果作成
-        const discounts: factory.order.IDiscount[] = [];
-        transaction.object.discountInfos.forEach((discountInfo) => {
-            switch (discountInfo.group) {
-                case factory.authorizationGroup.MVTK:
-                    const discountCode = (<factory.authorization.mvtk.IAuthorization>discountInfo).result.knyknrNoInfo.map(
-                        (knshInfo) => knshInfo.knyknrNo
-                    ).join(',');
-
-                    discounts.push({
-                        name: 'ムビチケカード',
-                        discount: discountInfo.price,
-                        discountCode: discountCode,
-                        discountCurrency: factory.priceCurrency.JPY
-                    });
-                    break;
-                default:
-                    break;
-            }
-        });
-
-        const paymentMethods: factory.order.IPaymentMethod[] = [];
-        transaction.object.paymentInfos.forEach((paymentInfo) => {
-            switch (paymentInfo.group) {
-                case factory.authorizationGroup.GMO:
-                    const paymentMethodId = (<factory.authorization.gmo.IAuthorization>paymentInfo).result.orderId;
-
-                    paymentMethods.push({
-                        name: 'クレジットカード',
-                        paymentMethod: 'CreditCard',
-                        paymentMethodId: paymentMethodId
-                    });
-                    break;
-                default:
-                    break;
-            }
-        });
-
-        const order = factory.order.createFromBuyTransaction({
-            seatReservationAuthorization: seatReservationAuthorization,
-            customerName: `${cutomerContact.familyName} ${cutomerContact.givenName}`,
-            seller: {
-                name: transaction.seller.name,
-                url: ''
-            },
-            orderNumber: `${orderInquiryKey.theaterCode}-${orderInquiryKey.orderNumber}`,
-            orderInquiryKey: orderInquiryKey,
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO ムビチケ対応
-            paymentMethods: paymentMethods,
-            discounts: discounts
+        const order = factory.order.createFromPlaceOrderTransaction({
+            transaction: transaction
         });
         const ownershipInfos = order.acceptedOffers.map((reservation) => {
             return factory.ownershipInfo.create({
                 ownedBy: {
                     id: transaction.agent.id,
                     typeOf: transaction.agent.typeOf,
-                    name: `${cutomerContact.familyName} ${cutomerContact.givenName}`
+                    name: order.customer.name
                 },
                 acquiredFrom: transaction.seller,
                 ownedFrom: new Date(),

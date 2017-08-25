@@ -17,7 +17,7 @@ export declare function start(args: {
     maxCountPerUnit: number;
     clientUser: factory.clientUser.IClientUser;
     scope: factory.transactionScope.ITransactionScope;
-    agentId?: string;
+    agentId: string;
     sellerId: string;
 }): IOrganizationAndTransactionAndTransactionCountOperation<monapt.Option<factory.transaction.placeOrder.ITransaction>>;
 /**
