@@ -212,7 +212,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
         priceCurrency: <any>'JPY',
         price: (params.gmoAuthorization === undefined) ? 0 : params.gmoAuthorization.price,
         acceptedOffers: params.seatReservationAuthorization.assets.map(
-            (asset, index): factory.reservation.IReservation => {
+            (asset, index): factory.reservation.event.IEventReservation => {
                 const qrCodeInfo = params.qrCodesBySeatCode.find((qrCode) => qrCode.seat_code === asset.seat_code);
                 if (qrCodeInfo === undefined) {
                     throw new Error('qr not found');
@@ -240,6 +240,8 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                     mvtkSalesPrice: asset.mvtk_sales_price
                 };
 
+                // tslint:disable-next-line:no-suspicious-comment
+                // TODO 諸々まだ値微調整
                 return {
                     numSeats: 1,
                     price: asset.sale_price,
@@ -251,9 +253,10 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                     reservationNumber: `${params.inquiryKey.reserve_num}-${index.toString()}`,
                     reservationStatus: factory.reservationStatusType.ReservationConfirmed,
                     reservedTicket: {
+                        totalPrice: asset.sale_price,
                         coaTicketInfo: coaTicketInfo,
                         dateIssued: params.closedAt,
-                        issuedBy: { // todo 値セット
+                        issuedBy: {
                             typeOf: '',
                             name: ''
                         },

@@ -524,10 +524,9 @@ export function createSeatReservationAuthorization(
         // COAオーソリ追加
         debug('adding authorizations coaSeatReservation...');
         const authorization = factory.authorization.seatReservation.createFromCOATmpReserve({
-            price: offers.reduce((a, b) => a + b.ticketInfo.salePrice + b.ticketInfo.mvtkSalesPrice, 0),
             updTmpReserveSeatArgs: updTmpReserveSeatArgs,
             reserveSeatsTemporarilyResult: reserveSeatsTemporarilyResult,
-            tickets: offers.map((offer) => offer.ticketInfo),
+            offers: offers,
             individualScreeningEvent: individualScreeningEvent
         });
 
