@@ -11,6 +11,7 @@ import * as mongoose from 'mongoose';
 
 import OrderAdapter from '../adapter/order';
 import OwnershipInfoAdapter from '../adapter/ownershipInfo';
+import TransactionAdapter from '../adapter/transaction';
 
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
@@ -37,8 +38,9 @@ export function cancelSeatReservation(
 ): IOperation<void> {
     debug('executing...', data);
 
-    return async (__: mongoose.Connection) => {
-        await StockService.unauthorizeSeatReservation(data.transaction)();
+    return async (connection: mongoose.Connection) => {
+        const transactionAdapter = new TransactionAdapter(connection);
+        await StockService.unauthorizeSeatReservation(data.transactionId)(transactionAdapter);
     };
 }
 
@@ -47,8 +49,9 @@ export function cancelGMO(
 ): IOperation<void> {
     debug('executing...', data);
 
-    return async (__: mongoose.Connection) => {
-        await SalesService.cancelGMOAuth(data.transaction)();
+    return async (connection: mongoose.Connection) => {
+        const transactionAdapter = new TransactionAdapter(connection);
+        await SalesService.cancelGMOAuth(data.transactionId)(transactionAdapter);
     };
 }
 
@@ -57,8 +60,9 @@ export function cancelMvtk(
 ): IOperation<void> {
     debug('executing...', data);
 
-    return async (__: mongoose.Connection) => {
-        await SalesService.cancelMvtk(data.transaction)();
+    return async (connection: mongoose.Connection) => {
+        const transactionAdapter = new TransactionAdapter(connection);
+        await SalesService.cancelMvtk(data.transactionId)(transactionAdapter);
     };
 }
 
@@ -69,7 +73,8 @@ export function settleSeatReservation(
 
     return async (connection: mongoose.Connection) => {
         const ownershipInfoAdapter = new OwnershipInfoAdapter(connection);
-        await StockService.transferSeatReservation(data.transaction)(ownershipInfoAdapter);
+        const transactionAdapter = new TransactionAdapter(connection);
+        await StockService.transferSeatReservation(data.transactionId)(ownershipInfoAdapter, transactionAdapter);
     };
 }
 
@@ -78,8 +83,9 @@ export function settleGMO(
 ): IOperation<void> {
     debug('executing...', data);
 
-    return async (__: mongoose.Connection) => {
-        await SalesService.settleGMOAuth(data.transaction)();
+    return async (connection: mongoose.Connection) => {
+        const transactionAdapter = new TransactionAdapter(connection);
+        await SalesService.settleGMOAuth(data.transactionId)(transactionAdapter);
     };
 }
 
@@ -88,8 +94,9 @@ export function settleMvtk(
 ): IOperation<void> {
     debug('executing...', data);
 
-    return async (__: mongoose.Connection) => {
-        await SalesService.settleMvtk(data.transaction)();
+    return async (connection: mongoose.Connection) => {
+        const transactionAdapter = new TransactionAdapter(connection);
+        await SalesService.settleMvtk(data.transactionId)(transactionAdapter);
     };
 }
 
@@ -100,6 +107,7 @@ export function createOrder(
 
     return async (connection: mongoose.Connection) => {
         const orderAdapter = new OrderAdapter(connection);
-        await OrderService.createFromTransaction(data.transaction)(orderAdapter);
+        const transactionAdapter = new TransactionAdapter(connection);
+        await OrderService.createFromTransaction(data.transactionId)(orderAdapter, transactionAdapter);
     };
 }

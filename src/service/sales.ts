@@ -1,12 +1,16 @@
 /**
- * 売上サービス
- *
+ * sales service
+ * mainly handle transactions with GMO
  * @namespace service/sales
  */
 
 import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
+
+import ArgumentError from '../error/argument';
+
+import TransactionAdapter from '../adapter/transaction';
 
 const debug = createDebug('sskts-domain:service:sales');
 
@@ -17,8 +21,13 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  *
  * @memberof service/sales
  */
-export function cancelGMOAuth(transaction: IPlaceOrderTransaction) {
-    return async () => {
+export function cancelGMOAuth(transactionId: string) {
+    return async (transactionAdapter: TransactionAdapter) => {
+        const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
+        if (transaction === null) {
+            throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
+        }
+
         const authorization = <factory.authorization.gmo.IAuthorization | undefined>transaction.object.paymentInfos.find(
             (paymentInfo) => paymentInfo.group === factory.authorizationGroup.GMO
         );
@@ -45,8 +54,13 @@ export function cancelGMOAuth(transaction: IPlaceOrderTransaction) {
  *
  * @memberof service/sales
  */
-export function settleGMOAuth(transaction: IPlaceOrderTransaction) {
-    return async () => {
+export function settleGMOAuth(transactionId: string) {
+    return async (transactionAdapter: TransactionAdapter) => {
+        const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
+        if (transaction === null) {
+            throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
+        }
+
         const authorization = <factory.authorization.gmo.IAuthorization | undefined>transaction.object.paymentInfos.find(
             (paymentInfo) => paymentInfo.group === factory.authorizationGroup.GMO
         );
@@ -87,8 +101,8 @@ export function settleGMOAuth(transaction: IPlaceOrderTransaction) {
  *
  * @memberof service/sales
  */
-export function cancelMvtk(__: IPlaceOrderTransaction) {
-    return async () => {
+export function cancelMvtk(__1: string) {
+    return async (__2: TransactionAdapter) => {
         // ムビチケは実は仮押さえの仕組みがないので何もしない
     };
 }
@@ -98,8 +112,8 @@ export function cancelMvtk(__: IPlaceOrderTransaction) {
  *
  * @memberof service/sales
  */
-export function settleMvtk(__: IPlaceOrderTransaction) {
-    return async () => {
+export function settleMvtk(__1: string) {
+    return async (__2: TransactionAdapter) => {
         // 実は取引成立の前に着券済みなので何もしない
     };
 }

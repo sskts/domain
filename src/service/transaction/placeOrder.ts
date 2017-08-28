@@ -190,7 +190,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     numberOfTried: 0,
                     executionResults: [],
                     data: {
-                        transaction: transaction
+                        transactionId: transaction.id
                     }
                 }));
                 tasks.push(factory.task.settleGMO.create({
@@ -201,7 +201,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     numberOfTried: 0,
                     executionResults: [],
                     data: {
-                        transaction: transaction
+                        transactionId: transaction.id
                     }
                 }));
                 tasks.push(factory.task.settleMvtk.create({
@@ -212,7 +212,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     numberOfTried: 0,
                     executionResults: [],
                     data: {
-                        transaction: transaction
+                        transactionId: transaction.id
                     }
                 }));
                 tasks.push(factory.task.createOrder.create({
@@ -223,7 +223,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     numberOfTried: 0,
                     executionResults: [],
                     data: {
-                        transaction: transaction
+                        transactionId: transaction.id
                     }
                 }));
 
@@ -255,7 +255,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     numberOfTried: 0,
                     executionResults: [],
                     data: {
-                        transaction: transaction
+                        transactionId: transaction.id
                     }
                 }));
                 tasks.push(factory.task.cancelGMO.create({
@@ -266,7 +266,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     numberOfTried: 0,
                     executionResults: [],
                     data: {
-                        transaction: transaction
+                        transactionId: transaction.id
                     }
                 }));
                 tasks.push(factory.task.cancelMvtk.create({
@@ -277,7 +277,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     numberOfTried: 0,
                     executionResults: [],
                     data: {
-                        transaction: transaction
+                        transactionId: transaction.id
                     }
                 }));
 
