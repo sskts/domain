@@ -299,7 +299,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
 
 /**
  * タスクエクスポートリトライ
- * todo updated_atを基準にしているが、タスクエクスポートトライ日時を持たせた方が安全か？
+ * todo updatedAtを基準にしているが、タスクエクスポートトライ日時を持たせた方が安全か？
  *
  * @param {number} intervalInMinutes
  * @memberof service/transaction
@@ -309,7 +309,7 @@ export function reexportTasks(intervalInMinutes: number) {
         await transactionAdapter.transactionModel.findOneAndUpdate(
             {
                 tasksExportationStatus: factory.transactionTasksExportationStatus.Exporting,
-                updated_at: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() }
+                updatedAt: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() }
             },
             {
                 tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported

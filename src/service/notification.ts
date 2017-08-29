@@ -1,6 +1,6 @@
 /**
+ * notification service
  * 通知サービス
- *
  * @namespace service/notification
  */
 
@@ -20,23 +20,24 @@ const debug = createDebug('sskts-domain:service:notification');
 const LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify';
 
 /**
- * メール送信
+ * send an email
+ * Eメールを送信する
  * https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
- *
+ * @export
+ * @function
  * @param {EmailNotification} email
  * @returns {Operation<void>}
  * @see https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
- *
  * @memberof service/notification
  */
 export function sendEmail(email: factory.notification.email.INotification): Operation<void> {
     return async () => {
-        debug('sending email...', email.content);
+        debug('sending email...', email);
         const mail = new sendgrid.mail.Mail(
-            new sendgrid.mail.Email(email.from),
-            email.subject,
-            new sendgrid.mail.Email(email.to),
-            new sendgrid.mail.Content('text/plain', email.content)
+            new sendgrid.mail.Email(email.data.from),
+            email.data.subject,
+            new sendgrid.mail.Email(email.data.to),
+            new sendgrid.mail.Content('text/plain', email.data.content)
         );
 
         // 追跡用に通知IDをカスタムフィールドとしてセットする
@@ -69,12 +70,16 @@ export function sendEmail(email: factory.notification.email.INotification): Oper
 }
 
 /**
+ * report to developers
  * 開発者に報告する
- *
+ * @export
+ * @function
+ * @param {EmailNotification} email
+ * @returns {Operation<void>}
+ * @memberof service/notification
  * @param {string} subject
  * @param {string} content
  * @see https://notify-bot.line.me/doc/ja/
- * @memberof service/notification
  */
 export function report2developers(subject: string, content: string, imageThumbnail?: string, imageFullsize?: string): Operation<void> {
     return async () => {

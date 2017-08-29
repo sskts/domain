@@ -5,7 +5,8 @@ import IndividualScreeningEventItemAvailabilityAdapter from '../adapter/itemAvai
 import PlaceAdapter from '../adapter/place';
 export declare type IEventOperation<T> = (eventAdapter: EventAdapter, itemAvailability?: IndividualScreeningEventItemAvailabilityAdapter) => Promise<T>;
 /**
- * 上映イベントインポート
+ * import screening events from COA
+ * COAから上映イベントをインポートする
  * @export
  * @function
  * @memberof service/event

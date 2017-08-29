@@ -1,0 +1,1459 @@
+[
+    {
+        "index": 0,
+        "kubunClass": "000",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "パッケージ区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "座席印刷区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "日計処理切替区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "004",
+                "kubunName": "消費税",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "005",
+                "kubunName": "販売区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "006",
+                "kubunName": "ドロワインタフェース",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "007",
+                "kubunName": "座席指定区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "008",
+                "kubunName": "チケット種別",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "009",
+                "kubunName": "サービス区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "010",
+                "kubunName": "チケット発券単位",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "011",
+                "kubunName": "チケット制限区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "012",
+                "kubunName": "割引区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "013",
+                "kubunName": "メッセージ区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "014",
+                "kubunName": "サブシステム区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "015",
+                "kubunName": "曜日",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "016",
+                "kubunName": "会員割引区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "017",
+                "kubunName": "座席番号表示区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "018",
+                "kubunName": "座席表示色",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "019",
+                "kubunName": "予約券発券区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "020",
+                "kubunName": "チケット印刷パターン",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "021",
+                "kubunName": "担当者認証タイプ",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "022",
+                "kubunName": "消費税丸め区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "023",
+                "kubunName": "発券区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "024",
+                "kubunName": "売上集計区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "025",
+                "kubunName": "クーポン区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "026",
+                "kubunName": "使用可能権限",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "027",
+                "kubunName": "座席位置区分縦",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "028",
+                "kubunName": "座席位置区分横",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "029",
+                "kubunName": "ポイント加算区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "030",
+                "kubunName": "カード有効期限更新区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "031",
+                "kubunName": "性別",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "032",
+                "kubunName": "税計算区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "033",
+                "kubunName": "内外税区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "034",
+                "kubunName": "商品区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "035",
+                "kubunName": "単価入力区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "036",
+                "kubunName": "仕入区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "037",
+                "kubunName": "支払区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "038",
+                "kubunName": "入出庫区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "039",
+                "kubunName": "天候",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "040",
+                "kubunName": "商品種別",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "041",
+                "kubunName": "伝票区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "042",
+                "kubunName": "映像区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "043",
+                "kubunName": "字幕吹替",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "044",
+                "kubunName": "映倫区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "045",
+                "kubunName": "上映方式",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "046",
+                "kubunName": "音響区分",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "901",
+                "kubunName": "ムビチケ券種区分",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 1,
+        "kubunClass": "001",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "コアシネマ",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "ミニシネマ",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 2,
+        "kubunClass": "002",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "パターン１",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "パターン２",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "パターン３",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 3,
+        "kubunClass": "003",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "通常",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "番組別",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 4,
+        "kubunClass": "004",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "１：適用日　２：ＯＬＤ　３：ＮＥＷ",
+                "kubunAddPrice": 20140401
+            }
+        ]
+    },
+    {
+        "index": 5,
+        "kubunClass": "005",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "共通",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "コンセ",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "グッズ",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 6,
+        "kubunClass": "006",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "プリンタ接続",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "シリアル",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "USB",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 7,
+        "kubunClass": "007",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "全席指定",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "一部指定",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "自由",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 8,
+        "kubunClass": "008",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "通常",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "サービス",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "招待券",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "004",
+                "kubunName": "前売券(全国券)",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "005",
+                "kubunName": "前売券(劇場券)",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "006",
+                "kubunName": "その他(発券日)",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "007",
+                "kubunName": "その他(上映日)",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "008",
+                "kubunName": "非動員興収",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "999",
+                "kubunName": "上記以外",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 9,
+        "kubunClass": "009",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "通常",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "モーニング",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "レイト",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 10,
+        "kubunClass": "010",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "単位",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "以上",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 11,
+        "kubunClass": "011",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "タイトル別",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "時間帯別",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 12,
+        "kubunClass": "012",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "毎週",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "毎月",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "会員",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "004",
+                "kubunName": "月日指定",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 13,
+        "kubunClass": "013",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "共通",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "チケット別",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "タイトル別",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 14,
+        "kubunClass": "014",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "管理",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "発券",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "売店",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "004",
+                "kubunName": "決済",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "005",
+                "kubunName": "時間案内",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 15,
+        "kubunClass": "015",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "日曜日",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "月曜日",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "火曜日",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "004",
+                "kubunName": "水曜日",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "005",
+                "kubunName": "木曜日",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "006",
+                "kubunName": "金曜日",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "007",
+                "kubunName": "土曜日",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 16,
+        "kubunClass": "016",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "本人のみ",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "本人以外でも可",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 17,
+        "kubunClass": "017",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "英字",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "数字",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "かな",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 18,
+        "kubunClass": "018",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "通常席色",
+                "kubunAddPrice": -1
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "車椅子席色",
+                "kubunAddPrice": -23296
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "自由席色",
+                "kubunAddPrice": -6737204
+            },
+            {
+                "kubunCode": "004",
+                "kubunName": "ペア席色",
+                "kubunAddPrice": -16181
+            },
+            {
+                "kubunCode": "005",
+                "kubunName": "特別席色",
+                "kubunAddPrice": -10496
+            },
+            {
+                "kubunCode": "006",
+                "kubunName": "予備席色",
+                "kubunAddPrice": -9728477
+            },
+            {
+                "kubunCode": "007",
+                "kubunName": "左右位置左色",
+                "kubunAddPrice": -10496
+            },
+            {
+                "kubunCode": "008",
+                "kubunName": "左右位置中色",
+                "kubunAddPrice": -6737204
+            },
+            {
+                "kubunCode": "009",
+                "kubunName": "左右位置右色",
+                "kubunAddPrice": -16181
+            },
+            {
+                "kubunCode": "010",
+                "kubunName": "前後位置前色",
+                "kubunAddPrice": -10496
+            },
+            {
+                "kubunCode": "011",
+                "kubunName": "前後位置中色",
+                "kubunAddPrice": -6737204
+            },
+            {
+                "kubunCode": "012",
+                "kubunName": "前後位置後色",
+                "kubunAddPrice": -16181
+            },
+            {
+                "kubunCode": "013",
+                "kubunName": "前後位置後色",
+                "kubunAddPrice": -1
+            },
+            {
+                "kubunCode": "014",
+                "kubunName": "混合席色",
+                "kubunAddPrice": -5952982
+            },
+            {
+                "kubunCode": "015",
+                "kubunName": "ユーザー設定指定席色",
+                "kubunAddPrice": -16711872
+            }
+        ]
+    },
+    {
+        "index": 19,
+        "kubunClass": "019",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "予約発券なし",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "前売券あり",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "招待券あり",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "前売券・予約券あり",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 20,
+        "kubunClass": "020",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "基本パターン",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "パターン１",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "パターン２",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 21,
+        "kubunClass": "021",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "パスワード",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "指紋認証",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 22,
+        "kubunClass": "022",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "切り上げ",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "切り捨て",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "四捨五入",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 23,
+        "kubunClass": "023",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "窓口",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "Web",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "券売機",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 24,
+        "kubunClass": "024",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "通常",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "メンテ",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "報告",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 25,
+        "kubunClass": "025",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "商品券",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "助成券",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 26,
+        "kubunClass": "026",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "システム環境設定",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "マスタ操作(チケット)",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "マスタ操作(売店)",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "004",
+                "kubunName": "担当者登録",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "005",
+                "kubunName": "スケジュール作成",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "011",
+                "kubunName": "売上閲覧(チケット)",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "012",
+                "kubunName": "売上閲覧(売店)",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "021",
+                "kubunName": "データ削除(チケット)",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "022",
+                "kubunName": "データ削除(売店)",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "023",
+                "kubunName": "座席変更",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "031",
+                "kubunName": "会員マスタ修正",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "032",
+                "kubunName": "会員履歴照会",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "033",
+                "kubunName": "会員抽出",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "041",
+                "kubunName": "売店仕入",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "042",
+                "kubunName": "売店入出庫",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "043",
+                "kubunName": "売店棚卸",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "044",
+                "kubunName": "売店ロス入力",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "900",
+                "kubunName": "データメンテ",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 27,
+        "kubunClass": "027",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "前",
+                "kubunAddPrice": -10496
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "中",
+                "kubunAddPrice": -6737204
+            },
+            {
+                "kubunCode": "005",
+                "kubunName": "後",
+                "kubunAddPrice": -16181
+            }
+        ]
+    },
+    {
+        "index": 28,
+        "kubunClass": "028",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "左",
+                "kubunAddPrice": -10496
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "中",
+                "kubunAddPrice": -6737204
+            },
+            {
+                "kubunCode": "005",
+                "kubunName": "右",
+                "kubunAddPrice": -16181
+            }
+        ]
+    },
+    {
+        "index": 29,
+        "kubunClass": "029",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "人数",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "金額",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 30,
+        "kubunClass": "030",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "利用毎",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "固定",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 31,
+        "kubunClass": "031",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "指定なし",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "男",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "女",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 32,
+        "kubunClass": "032",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "伝票課税",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "明細課税",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "合計課税",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 33,
+        "kubunClass": "033",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "外税",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "内税",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "非課税",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 34,
+        "kubunClass": "034",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "商品",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "部材",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 35,
+        "kubunClass": "035",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "入力なし",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "入力あり",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "表示なし",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 36,
+        "kubunClass": "036",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "仕入",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "値引",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "返品",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "004",
+                "kubunName": "サービス",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 37,
+        "kubunClass": "037",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "現金",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "小切手",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "振込み",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "004",
+                "kubunName": "手形",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "006",
+                "kubunName": "相殺",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "007",
+                "kubunName": "値引き",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "008",
+                "kubunName": "手数料",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "009",
+                "kubunName": "その他",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 38,
+        "kubunClass": "038",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "入庫",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "出庫",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "999",
+                "kubunName": "棚卸",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 39,
+        "kubunClass": "039",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "晴",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "曇",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "雨",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "雪",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "004",
+                "kubunName": "晴⇒曇",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "005",
+                "kubunName": "晴⇒雨",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "006",
+                "kubunName": "晴⇒雪",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "007",
+                "kubunName": "曇⇒晴",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "008",
+                "kubunName": "曇⇒雨",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "009",
+                "kubunName": "曇⇒雪",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "010",
+                "kubunName": "雨⇒晴",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "011",
+                "kubunName": "雨⇒曇",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "012",
+                "kubunName": "雨⇒雪",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "013",
+                "kubunName": "雪⇒晴",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "014",
+                "kubunName": "雪⇒曇",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "015",
+                "kubunName": "雪⇒雨",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 40,
+        "kubunClass": "040",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "買取商品",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "委託商品",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 41,
+        "kubunClass": "041",
+        "kubunNames": [
+            {
+                "kubunCode": "001",
+                "kubunName": "売上",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "仕入",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "支払",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "999",
+                "kubunName": "棚卸",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 42,
+        "kubunClass": "042",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "なし",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "２Ｄ",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "３Ｄ",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 43,
+        "kubunClass": "043",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "なし",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "字幕",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "日本語吹き替え",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 44,
+        "kubunClass": "044",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "なし",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "PG12",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "R15+",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "R18+",
+                "kubunAddPrice": 0
+            }
+        ]
+    },
+    {
+        "index": 45,
+        "kubunClass": "045",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "通常",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "IMAX",
+                "kubunAddPrice": 400
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "4DX",
+                "kubunAddPrice": 1000
+            }
+        ]
+    },
+    {
+        "index": 46,
+        "kubunClass": "046",
+        "kubunNames": [
+            {
+                "kubunCode": "000",
+                "kubunName": "なし",
+                "kubunAddPrice": 0
+            },
+            {
+                "kubunCode": "001",
+                "kubunName": "imm",
+                "kubunAddPrice": 200
+            },
+            {
+                "kubunCode": "002",
+                "kubunName": "ATMOS",
+                "kubunAddPrice": 200
+            },
+            {
+                "kubunCode": "003",
+                "kubunName": "BESTIA",
+                "kubunAddPrice": 200
+            }
+        ]
+    }
+]

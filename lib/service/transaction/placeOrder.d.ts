@@ -34,7 +34,7 @@ export declare function exportTasks(status: factory.transactionStatusType): (tas
 export declare function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask[]>;
 /**
  * タスクエクスポートリトライ
- * todo updated_atを基準にしているが、タスクエクスポートトライ日時を持たせた方が安全か？
+ * todo updatedAtを基準にしているが、タスクエクスポートトライ日時を持たせた方が安全か？
  *
  * @param {number} intervalInMinutes
  * @memberof service/transaction

@@ -130,12 +130,13 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
     ].join('');
     const workPerformed = {
         typeOf: factory.creativeWorkType.Movie,
-        contentRating: params.film.kbn_eirin,
         duration: moment.duration(params.film.minutes, 'm').toISOString(),
         name: params.film.name_original,
         identifier: params.film.coa_title_code
     };
     const customerName = `${params.anonymous.familyName} ${params.anonymous.givenName}`;
+    // tslint:disable-next-line:no-suspicious-comment
+    // TODO COAの区分属性を追加する
     const individualScreeningEvent: factory.event.individualScreeningEvent.IEvent = {
         identifier: identifier,
         typeOf: factory.eventType.IndividualScreeningEvent,
@@ -157,8 +158,8 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
             eventStatus: <any>'EventScheduled',
             coaInfo: {
                 titleBranchNum: params.film.coa_title_branch_num,
-                kbnJoueihousiki: params.film.kbn_joueihousiki,
-                kbnJimakufukikae: params.film.kbn_jimakufukikae,
+                // kbnJoueihousiki: params.film.kbn_joueihousiki,
+                // kbnJimakufukikae: params.film.kbn_jimakufukikae,
                 flgMvtkUse: params.film.flg_mvtk_use,
                 dateMvtkBegin: params.film.date_mvtk_begin
             },
@@ -170,7 +171,6 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                 : undefined,
             duration: moment.duration(params.film.minutes, 'm').toISOString(),
             workPerformed: workPerformed,
-            videoFormat: params.film.kbn_eizou,
             location: {
                 typeOf: factory.placeType.MovieTheater,
                 branchCode: params.theater.id,
@@ -188,8 +188,6 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
             rsvStartDate: params.performance.coa_rsv_start_date,
             availableNum: params.performance.coa_available_num,
             nameServiceDay: params.performance.coa_name_service_day,
-            kbnAcoustic: params.performance.coa_kbn_acoustic,
-            kbnService: params.performance.coa_kbn_service,
             trailerTime: params.performance.coa_trailer_time,
             screenCode: params.screen.coa_screen_code,
             timeBegin: params.performance.time_start,
