@@ -45,31 +45,9 @@ export declare function reexportTasks(intervalInMinutes: number): (transactionAd
  */
 export declare function findInProgressById(transactionId: string): ITransactionOperation<monapt.Option<factory.transaction.placeOrder.ITransaction>>;
 /**
- * 生のクレジットカード情報
- */
-export interface ICreditCard4authorizationRaw {
-    cardNo: string;
-    expire: string;
-    securityCode: string;
-}
-/**
- * トークン化されたクレジットカード情報
- */
-export interface ICreditCard4authorizationTokenized {
-    token: string;
-}
-/**
- * 会員のクレジットカード情報
- */
-export interface ICreditCard4authorizationOfMember {
-    memberId: string;
-    cardSeq: number;
-    cardPass?: string;
-}
-/**
  * オーソリを取得するクレジットカード情報インターフェース
  */
-export declare type ICreditCard4authorization = ICreditCard4authorizationRaw | ICreditCard4authorizationTokenized | ICreditCard4authorizationOfMember;
+export declare type ICreditCard4authorization = factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw | factory.paymentMethod.paymentCard.creditCard.IUncheckedCardTokenized | factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember;
 /**
  * クレジットカードオーソリ取得
  */

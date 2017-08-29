@@ -12,6 +12,7 @@ import * as moment from 'moment';
 import * as monapt from 'monapt';
 
 import ArgumentError from '../../error/argument';
+import ServiceUnavailableError from '../../error/serviceUnavailable';
 
 import OrganizationAdapter from '../../adapter/organization';
 import TaskAdapter from '../../adapter/task';
@@ -337,32 +338,13 @@ export function findInProgressById(
 }
 
 /**
- * 生のクレジットカード情報
- */
-export interface ICreditCard4authorizationRaw {
-    cardNo: string;
-    expire: string;
-    securityCode: string;
-}
-/**
- * トークン化されたクレジットカード情報
- */
-export interface ICreditCard4authorizationTokenized {
-    token: string;
-}
-/**
- * 会員のクレジットカード情報
- */
-export interface ICreditCard4authorizationOfMember {
-    memberId: string;
-    cardSeq: number;
-    cardPass?: string;
-}
-/**
  * オーソリを取得するクレジットカード情報インターフェース
  */
 export type ICreditCard4authorization =
-    ICreditCard4authorizationRaw | ICreditCard4authorizationTokenized | ICreditCard4authorizationOfMember;
+    factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw |
+    factory.paymentMethod.paymentCard.creditCard.IUncheckedCardTokenized |
+    factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember;
+
 /**
  * クレジットカードオーソリ取得
  */
@@ -387,36 +369,55 @@ export function createCreditCardAuthorization(
         const movieTheater = await organizationAdapter.organizationModel.findById(transaction.seller.id).exec()
             .then((doc) => {
                 if (doc === null) {
-                    throw new Error('movieTheater not found');
+                    throw new ArgumentError('transactionId', 'movieTheater not found');
                 }
 
                 return <factory.organization.movieTheater.IOrganization>doc.toObject();
             });
 
         // GMOオーソリ取得
-        const entryTranResult = await GMO.services.credit.entryTran({
-            shopId: movieTheater.gmoInfo.shopId,
-            shopPass: movieTheater.gmoInfo.shopPass,
-            orderId: orderId,
-            jobCd: GMO.utils.util.JobCd.Auth,
-            amount: amount
-        });
-        const execTranArgs = {
-            ...{
-                accessId: entryTranResult.accessId,
-                accessPass: entryTranResult.accessPass,
+        let entryTranResult: GMO.services.credit.IEntryTranResult;
+        let execTranResult: GMO.services.credit.IExecTranResult;
+        try {
+            entryTranResult = await GMO.services.credit.entryTran({
+                shopId: movieTheater.gmoInfo.shopId,
+                shopPass: movieTheater.gmoInfo.shopPass,
                 orderId: orderId,
-                method: method,
-                siteId: <string>process.env.GMO_SITE_ID,
-                sitePass: <string>process.env.GMO_SITE_PASS
-            },
-            ...creditCard,
-            ...{
-                seqMode: GMO.utils.util.SeqMode.Physics
+                jobCd: GMO.utils.util.JobCd.Auth,
+                amount: amount
+            });
+            debug('entryTranResult:', entryTranResult);
+
+            execTranResult = await GMO.services.credit.execTran({
+                ...{
+                    accessId: entryTranResult.accessId,
+                    accessPass: entryTranResult.accessPass,
+                    orderId: orderId,
+                    method: method,
+                    siteId: <string>process.env.GMO_SITE_ID,
+                    sitePass: <string>process.env.GMO_SITE_PASS
+                },
+                ...creditCard,
+                ...{
+                    seqMode: GMO.utils.util.SeqMode.Physics
+                }
+            });
+            debug('execTranResult:', execTranResult);
+        } catch (error) {
+            console.error('fail at entryTran or execTran', error);
+            if (error.name === 'GMOServiceBadRequestError') {
+                // consider E92000001,E92000002
+                // GMO流量制限オーバーエラーの場合
+                const serviceUnavailableError = error.errors.find((gmoError: any) => gmoError.info.match(/^E92000001|E92000002$/));
+                if (serviceUnavailableError !== undefined) {
+                    throw new ServiceUnavailableError('payment service unavailable temporarily');
+                } else {
+                    throw new ArgumentError('payment');
+                }
             }
-        };
-        const execTranResult = await GMO.services.credit.execTran(execTranArgs);
-        debug(execTranResult);
+
+            throw new Error(error);
+        }
 
         // GMOオーソリ追加
         debug('adding authorizations gmo...');
