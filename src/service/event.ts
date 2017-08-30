@@ -8,9 +8,6 @@ import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
-import * as monapt from 'monapt';
-
-import ArgumentError from '../error/argument';
 
 import EventAdapter from '../adapter/event';
 import IndividualScreeningEventItemAvailabilityAdapter from '../adapter/itemAvailability/individualScreeningEvent';
@@ -231,7 +228,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
             }
         ).exec();
         if (movieTheaterDoc === null) {
-            throw new ArgumentError('movieTheater not found.');
+            throw new factory.error.Argument('movieTheater not found.');
         }
         const movieTheater = <factory.place.movieTheater.IPlace>movieTheaterDoc.toObject();
 
@@ -409,7 +406,7 @@ export function searchIndividualScreeningEvents(
  */
 export function findIndividualScreeningEventByIdentifier(
     identifier: string
-): IEventOperation<monapt.Option<factory.event.individualScreeningEvent.IEventWithOffer>> {
+): IEventOperation<factory.event.individualScreeningEvent.IEventWithOffer> {
     return async (
         eventAdapter: EventAdapter,
         itemAvailabilityAdapter?: IndividualScreeningEventItemAvailabilityAdapter
@@ -420,7 +417,7 @@ export function findIndividualScreeningEventByIdentifier(
         }).lean().exec();
 
         if (event === null) {
-            return monapt.None;
+            throw new factory.error.NotFound('individualScreeningEvent');
         }
 
         // add item availability info
@@ -433,11 +430,11 @@ export function findIndividualScreeningEventByIdentifier(
             offer.availability = await itemAvailabilityAdapter.findOne(event.coaInfo.dateJouei, event.identifier);
         }
 
-        return monapt.Option({
+        return {
             ...event,
             ...{
                 offer: offer
             }
-        });
+        };
     };
 }

@@ -4,9 +4,6 @@
  */
 
 import * as factory from '@motionpicture/sskts-factory';
-import * as monapt from 'monapt';
-
-import ArgumentError from '../error/argument';
 
 import OrderAdapter from '../adapter/order';
 import TransactionAdapter from '../adapter/transaction';
@@ -17,7 +14,7 @@ export function createFromTransaction(transactionId: string) {
     return async (orderAdapter: OrderAdapter, transactionAdapter: TransactionAdapter) => {
         const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
         if (transaction === null) {
-            throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
+            throw new factory.error.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
 
         if (transaction.result !== undefined) {
@@ -39,13 +36,18 @@ export function createFromTransaction(transactionId: string) {
  */
 export function findByOrderInquiryKey(orderInquiryKey: factory.order.IOrderInquiryKey) {
     return async (orderAdapter: OrderAdapter) => {
-        return await orderAdapter.orderModel.findOne(
+        const doc = await orderAdapter.orderModel.findOne(
             {
                 'orderInquiryKey.theaterCode': orderInquiryKey.theaterCode,
                 'orderInquiryKey.confirmationNumber': orderInquiryKey.confirmationNumber,
                 'orderInquiryKey.telephone': orderInquiryKey.telephone
             }
-        ).exec()
-            .then((doc) => (doc === null) ? monapt.None : monapt.Option(<factory.order.IOrder>doc.toObject()));
+        ).exec();
+
+        if (doc === null) {
+            throw new factory.error.NotFound('order');
+        }
+
+        return <factory.order.IOrder>doc.toObject();
     };
 }

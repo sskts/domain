@@ -1,5 +1,4 @@
 import * as factory from '@motionpicture/sskts-factory';
-import * as monapt from 'monapt';
 import PlaceAdapter from '../adapter/place';
 export declare type IPlaceOperation<T> = (placeAdapter: PlaceAdapter) => Promise<T>;
 /**
@@ -13,4 +12,4 @@ export declare function searchMovieTheaters(searchConditions: {}): IPlaceOperati
 /**
  * 枝番号で劇場検索
  */
-export declare function findMovieTheaterByBranchCode(branchCode: string): IPlaceOperation<monapt.Option<factory.place.movieTheater.IPlace>>;
+export declare function findMovieTheaterByBranchCode(branchCode: string): IPlaceOperation<factory.place.movieTheater.IPlace>;

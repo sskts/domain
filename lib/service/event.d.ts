@@ -1,5 +1,4 @@
 import * as factory from '@motionpicture/sskts-factory';
-import * as monapt from 'monapt';
 import EventAdapter from '../adapter/event';
 import IndividualScreeningEventItemAvailabilityAdapter from '../adapter/itemAvailability/individualScreeningEvent';
 import PlaceAdapter from '../adapter/place';
@@ -25,4 +24,4 @@ export declare function searchIndividualScreeningEvents(searchConditions: factor
  * @function
  * @memberof service/event
  */
-export declare function findIndividualScreeningEventByIdentifier(identifier: string): IEventOperation<monapt.Option<factory.event.individualScreeningEvent.IEventWithOffer>>;
+export declare function findIndividualScreeningEventByIdentifier(identifier: string): IEventOperation<factory.event.individualScreeningEvent.IEventWithOffer>;

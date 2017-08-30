@@ -4,7 +4,6 @@
  * @namespace service/organization
  */
 import * as factory from '@motionpicture/sskts-factory';
-import * as monapt from 'monapt';
 import OrganizationAdapter from '../adapter/organization';
 export declare type IOrganizationOperation<T> = (organizationAdapter: OrganizationAdapter) => Promise<T>;
 /**
@@ -14,4 +13,4 @@ export declare function searchMovieTheaters(searchConditions: {}): IOrganization
 /**
  * 枝番号で劇場検索
  */
-export declare function findMovieTheaterByBranchCode(branchCode: string): IOrganizationOperation<monapt.Option<factory.organization.movieTheater.IPublicFields>>;
+export declare function findMovieTheaterByBranchCode(branchCode: string): IOrganizationOperation<factory.organization.movieTheater.IPublicFields>;

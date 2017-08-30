@@ -8,8 +8,6 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import ArgumentError from '../error/argument';
-
 import TransactionAdapter from '../adapter/transaction';
 
 const debug = createDebug('sskts-domain:service:sales');
@@ -25,7 +23,7 @@ export function cancelGMOAuth(transactionId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
         const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
         if (transaction === null) {
-            throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
+            throw new factory.error.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
 
         const authorization = <factory.authorization.gmo.IAuthorization | undefined>transaction.object.paymentInfos.find(
@@ -58,7 +56,7 @@ export function settleGMOAuth(transactionId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
         const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
         if (transaction === null) {
-            throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
+            throw new factory.error.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
 
         const authorization = <factory.authorization.gmo.IAuthorization | undefined>transaction.object.paymentInfos.find(

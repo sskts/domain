@@ -8,8 +8,6 @@ import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import ArgumentError from '../error/argument';
-
 import OwnershipInfoAdapter from '../adapter/ownershipInfo';
 import TransactionAdapter from '../adapter/transaction';
 
@@ -26,7 +24,7 @@ export function unauthorizeSeatReservation(transactionId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
         const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
         if (transaction === null) {
-            throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
+            throw new factory.error.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
 
         if (transaction.object.seatReservation === undefined) {
@@ -57,7 +55,7 @@ export function transferSeatReservation(transactionId: string) {
     return async (ownershipInfoAdapter: OwnershipInfoAdapter, transactionAdapter: TransactionAdapter) => {
         const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
         if (transaction === null) {
-            throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
+            throw new factory.error.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
 
         if (transaction.object.seatReservation === undefined) {
@@ -68,7 +66,7 @@ export function transferSeatReservation(transactionId: string) {
 
         const customerContact = transaction.object.customerContact;
         if (customerContact === undefined) {
-            throw new ArgumentError('transaction', 'customer contact not created');
+            throw new factory.error.Argument('transaction', 'customer contact not created');
         }
 
         // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意

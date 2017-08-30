@@ -40,8 +40,6 @@ import TelemetryAdapter from './adapter/telemetry';
 import TransactionAdapter from './adapter/transaction';
 import TransactionCountAdapter from './adapter/transactionCount';
 
-import ErrorCode from './errorCode';
-
 (<any>mongoose).Promise = global.Promise;
 
 /**
@@ -161,5 +159,3 @@ export namespace service {
 }
 
 export import factory = ssktsFactory;
-
-export import errorCode = ErrorCode;

@@ -37,7 +37,6 @@ import TaskAdapter from './adapter/task';
 import TelemetryAdapter from './adapter/telemetry';
 import TransactionAdapter from './adapter/transaction';
 import TransactionCountAdapter from './adapter/transactionCount';
-import ErrorCode from './errorCode';
 /**
  * MongoDBクライアント`mongoose`
  *
@@ -119,4 +118,3 @@ export declare namespace service {
     }
 }
 export import factory = ssktsFactory;
-export import errorCode = ErrorCode;

@@ -7,7 +7,6 @@
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
-import * as monapt from 'monapt';
 
 import PlaceAdapter from '../adapter/place';
 
@@ -80,13 +79,17 @@ export function searchMovieTheaters(
  */
 export function findMovieTheaterByBranchCode(
     branchCode: string
-): IPlaceOperation<monapt.Option<factory.place.movieTheater.IPlace>> {
+): IPlaceOperation<factory.place.movieTheater.IPlace> {
     return async (placeAdapter: PlaceAdapter) => {
-        return await placeAdapter.placeModel.findOne({
+        const doc = await placeAdapter.placeModel.findOne({
             typeOf: factory.placeType.MovieTheater,
             branchCode: branchCode
-        }).lean()
-            .exec()
-            .then((movieTheater: factory.place.movieTheater.IPlace) => (movieTheater === null) ? monapt.None : monapt.Option(movieTheater));
+        }).exec();
+
+        if (doc === null) {
+            throw new factory.error.NotFound('movieTheater');
+        }
+
+        return <factory.place.movieTheater.IPlace>doc.toObject();
     };
 }

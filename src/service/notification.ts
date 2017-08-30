@@ -12,8 +12,6 @@ import * as sendgrid from 'sendgrid';
 import * as util from 'util';
 import * as validator from 'validator';
 
-import ArgumentError from '../error/argument';
-
 export type Operation<T> = () => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:notification');
@@ -99,14 +97,14 @@ ${content}`
         const formData: any = { message: message };
         if (imageThumbnail !== undefined) {
             if (!validator.isURL(imageThumbnail)) {
-                throw new ArgumentError('imageThumbnail', 'imageThumbnail should be URL');
+                throw new factory.error.Argument('imageThumbnail', 'imageThumbnail should be URL');
             }
 
             formData.imageThumbnail = imageThumbnail;
         }
         if (imageFullsize !== undefined) {
             if (!validator.isURL(imageFullsize)) {
-                throw new ArgumentError('imageFullsize', 'imageFullsize should be URL');
+                throw new factory.error.Argument('imageFullsize', 'imageFullsize should be URL');
             }
 
             formData.imageFullsize = imageFullsize;

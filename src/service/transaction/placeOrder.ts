@@ -9,10 +9,6 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
-import * as monapt from 'monapt';
-
-import ArgumentError from '../../error/argument';
-import ServiceUnavailableError from '../../error/serviceUnavailable';
 
 import OrganizationAdapter from '../../adapter/organization';
 import TaskAdapter from '../../adapter/task';
@@ -43,7 +39,7 @@ export function start(args: {
     scope: factory.transactionScope.ITransactionScope;
     agentId: string;
     sellerId: string;
-}): IOrganizationAndTransactionAndTransactionCountOperation<monapt.Option<factory.transaction.placeOrder.ITransaction>> {
+}): IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction> {
     return async (
         // personAdapter: PersonAdapter,
         organizationAdapter: OrganizationAdapter,
@@ -53,7 +49,7 @@ export function start(args: {
         // 利用可能かどうか
         const nextCount = await transactionCountAdapter.incr(args.scope);
         if (nextCount > args.maxCountPerUnit) {
-            return monapt.None;
+            throw new factory.error.NotFound('available transaction');
         }
 
         const agent: factory.transaction.placeOrder.IAgent = {
@@ -98,7 +94,7 @@ export function start(args: {
         // mongoDBに追加するために_id属性を拡張
         await transactionAdapter.transactionModel.create({ ...transaction, ...{ _id: transaction.id } });
 
-        return monapt.Option(transaction);
+        return transaction;
     };
 }
 
@@ -131,7 +127,7 @@ export function exportTasks(status: factory.transactionStatusType) {
     return async (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => {
         const statusesTasksExportable = [factory.transactionStatusType.Expired, factory.transactionStatusType.Confirmed];
         if (statusesTasksExportable.indexOf(status) < 0) {
-            throw new ArgumentError('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
+            throw new factory.error.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
         }
 
         const transaction = await transactionAdapter.transactionModel.findOneAndUpdate(
@@ -285,7 +281,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                 break;
 
             default:
-                throw new ArgumentError('id', 'transaction group not implemented.');
+                throw new factory.error.Argument('id', 'transaction group not implemented.');
         }
         debug('tasks prepared', tasks);
 
@@ -324,16 +320,19 @@ export function reexportTasks(intervalInMinutes: number) {
  */
 export function findInProgressById(
     transactionId: string
-): ITransactionOperation<monapt.Option<factory.transaction.placeOrder.ITransaction>> {
+): ITransactionOperation<factory.transaction.placeOrder.ITransaction> {
     return async (transactionAdapter: TransactionAdapter) => {
-        return await transactionAdapter.transactionModel.findOne({
+        const doc = await transactionAdapter.transactionModel.findOne({
             _id: transactionId,
             typeOf: factory.transactionType.PlaceOrder,
             status: factory.transactionStatusType.InProgress
-        }).exec()
-            .then((doc) => {
-                return (doc === null) ? monapt.None : monapt.Option(<factory.transaction.placeOrder.ITransaction>doc.toObject());
-            });
+        }).exec();
+
+        if (doc === null) {
+            throw new factory.error.NotFound('transaction in progress');
+        }
+
+        return <factory.transaction.placeOrder.ITransaction>doc.toObject();
     };
 }
 
@@ -356,20 +355,13 @@ export function createCreditCardAuthorization(
     creditCard: ICreditCard4authorization
 ): IOrganizationAndTransactionOperation<factory.authorization.gmo.IAuthorization> {
     return async (organizationAdapter: OrganizationAdapter, transactionAdapter: TransactionAdapter) => {
-        const transaction = await findInProgressById(transactionId)(transactionAdapter)
-            .then((option) => {
-                if (option.isEmpty) {
-                    throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
-                }
-
-                return option.get();
-            });
+        const transaction = await findInProgressById(transactionId)(transactionAdapter);
 
         // GMOショップ情報取得
         const movieTheater = await organizationAdapter.organizationModel.findById(transaction.seller.id).exec()
             .then((doc) => {
                 if (doc === null) {
-                    throw new ArgumentError('transactionId', 'movieTheater not found');
+                    throw new factory.error.Argument('transactionId', 'movieTheater not found');
                 }
 
                 return <factory.organization.movieTheater.IOrganization>doc.toObject();
@@ -410,9 +402,9 @@ export function createCreditCardAuthorization(
                 // GMO流量制限オーバーエラーの場合
                 const serviceUnavailableError = error.errors.find((gmoError: any) => gmoError.info.match(/^E92000001|E92000002$/));
                 if (serviceUnavailableError !== undefined) {
-                    throw new ServiceUnavailableError('payment service unavailable temporarily');
+                    throw new factory.error.ServiceUnavailable('payment service unavailable temporarily');
                 } else {
-                    throw new ArgumentError('payment');
+                    throw new factory.error.Argument('payment');
                 }
             }
 
@@ -448,23 +440,16 @@ export function createCreditCardAuthorization(
 
 export function cancelGMOAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await findInProgressById(transactionId)(transactionAdapter)
-            .then((option) => {
-                if (option.isEmpty) {
-                    throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
-                }
-
-                return option.get();
-            });
+        const transaction = await findInProgressById(transactionId)(transactionAdapter);
 
         const authorization = transaction.object.paymentInfos.find(
             (paymentInfo) => paymentInfo.group === factory.authorizationGroup.GMO
         );
         if (authorization === undefined) {
-            throw new ArgumentError('authorizationId', '指定されたオーソリは見つかりません');
+            throw new factory.error.Argument('authorizationId', '指定されたオーソリは見つかりません');
         }
         if (authorization.id !== authorizationId) {
-            throw new ArgumentError('authorizationId', '指定されたオーソリは見つかりません');
+            throw new factory.error.Argument('authorizationId', '指定されたオーソリは見つかりません');
         }
 
         // 決済取消
@@ -492,14 +477,7 @@ export function createSeatReservationAuthorization(
     offers: factory.offer.ISeatReservationOffer[]
 ): ITransactionOperation<factory.authorization.seatReservation.IAuthorization> {
     return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await findInProgressById(transactionId)(transactionAdapter)
-            .then((option) => {
-                if (option.isEmpty) {
-                    throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
-                }
-
-                return option.get();
-            });
+        const transaction = await findInProgressById(transactionId)(transactionAdapter);
 
         // todo 座席コードがすでにキープ済みのものかどうかチェックできる？
 
@@ -543,21 +521,14 @@ export function createSeatReservationAuthorization(
 
 export function cancelSeatReservationAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await findInProgressById(transactionId)(transactionAdapter)
-            .then((option) => {
-                if (option.isEmpty) {
-                    throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
-                }
-
-                return option.get();
-            });
+        const transaction = await findInProgressById(transactionId)(transactionAdapter);
 
         const authorization = transaction.object.seatReservation;
         if (authorization === undefined) {
-            throw new ArgumentError('authorizationId', '指定された座席予約は見つかりません');
+            throw new factory.error.Argument('authorizationId', '指定された座席予約は見つかりません');
         }
         if (authorization.id !== authorizationId) {
-            throw new ArgumentError('authorizationId', '指定された座席予約は見つかりません');
+            throw new factory.error.Argument('authorizationId', '指定された座席予約は見つかりません');
         }
 
         // 座席仮予約削除
@@ -596,14 +567,7 @@ export function createMvtkAuthorization(
     authorizationResult: factory.authorization.mvtk.IResult
 ): ITransactionOperation<factory.authorization.mvtk.IAuthorization> {
     return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await findInProgressById(transactionId)(transactionAdapter)
-            .then((option) => {
-                if (option.isEmpty) {
-                    throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
-                }
-
-                return option.get();
-            });
+        const transaction = await findInProgressById(transactionId)(transactionAdapter);
 
         const seatReservationAuthorization = transaction.object.seatReservation;
         // seatReservationAuthorization already exists?
@@ -644,33 +608,33 @@ export function createMvtkAuthorization(
         const knyknrNoExistsMvtkResult =
             Object.keys(knyknrNoNumsByNoShouldBe).every((knyknrNo) => knyknrNoNumsByNo[knyknrNo] === knyknrNoNumsByNoShouldBe[knyknrNo]);
         if (!knyknrNoExistsInSeatReservation || !knyknrNoExistsMvtkResult) {
-            throw new ArgumentError('authorizationResult', 'knyknrNoInfo not matched with seat reservation authorization');
+            throw new factory.error.Argument('authorizationResult', 'knyknrNoInfo not matched with seat reservation authorization');
         }
 
         // stCd matched? (last two figures of theater code)
         // tslint:disable-next-line:no-magic-numbers
         const stCdShouldBe = seatReservationAuthorization.object.updTmpReserveSeatArgs.theaterCode.slice(-2);
         if (authorizationResult.stCd !== stCdShouldBe) {
-            throw new ArgumentError('authorizationResult', 'stCd not matched with seat reservation authorization');
+            throw new factory.error.Argument('authorizationResult', 'stCd not matched with seat reservation authorization');
         }
 
         // skhnCd matched?
         // tslint:disable-next-line:max-line-length
         const skhnCdShouldBe = `${seatReservationAuthorization.object.updTmpReserveSeatArgs.titleCode}${seatReservationAuthorization.object.updTmpReserveSeatArgs.titleBranchNum}`;
         if (authorizationResult.skhnCd !== skhnCdShouldBe) {
-            throw new ArgumentError('authorizationResult', 'skhnCd not matched with seat reservation authorization');
+            throw new factory.error.Argument('authorizationResult', 'skhnCd not matched with seat reservation authorization');
         }
 
         // screen code matched?
         if (authorizationResult.screnCd !== seatReservationAuthorization.object.updTmpReserveSeatArgs.screenCode) {
-            throw new ArgumentError('authorizationResult', 'screnCd not matched with seat reservation authorization');
+            throw new factory.error.Argument('authorizationResult', 'screnCd not matched with seat reservation authorization');
         }
 
         // seat num matched?
         const seatNumsInSeatReservationAuthorization =
             seatReservationAuthorization.result.listTmpReserve.map((tmpReserve) => tmpReserve.seatNum);
         if (!authorizationResult.zskInfo.every((zskInfo) => seatNumsInSeatReservationAuthorization.indexOf(zskInfo.zskCd) >= 0)) {
-            throw new ArgumentError('authorizationResult', 'zskInfo not matched with seat reservation authorization');
+            throw new factory.error.Argument('authorizationResult', 'zskInfo not matched with seat reservation authorization');
         }
 
         const authorization = factory.authorization.mvtk.create({
@@ -690,23 +654,16 @@ export function createMvtkAuthorization(
 
 export function cancelMvtkAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await findInProgressById(transactionId)(transactionAdapter)
-            .then((option) => {
-                if (option.isEmpty) {
-                    throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
-                }
-
-                return option.get();
-            });
+        const transaction = await findInProgressById(transactionId)(transactionAdapter);
 
         const authorization = transaction.object.discountInfos.find(
             (discountInfo) => discountInfo.group === factory.authorizationGroup.MVTK
         );
         if (authorization === undefined) {
-            throw new ArgumentError('authorizationId', 'mvtk authorization not found');
+            throw new factory.error.Argument('authorizationId', 'mvtk authorization not found');
         }
         if (authorization.id !== authorizationId) {
-            throw new ArgumentError('authorizationId', 'mvtk authorization not found');
+            throw new factory.error.Argument('authorizationId', 'mvtk authorization not found');
         }
 
         await transactionAdapter.transactionModel.findByIdAndUpdate(
@@ -755,7 +712,7 @@ export function cancelMvtkAuthorization(transactionId: string, authorizationId: 
 //         const transaction = await findInProgressById(transactionId)(transactionAdapter)
 //             .then((option) => {
 //                 if (option.isEmpty) {
-//                     throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
+//                     throw new factory.error.Argument('transactionId', `transaction[${transactionId}] not found.`);
 //                 }
 
 //                 return option.get();
@@ -768,7 +725,7 @@ export function cancelMvtkAuthorization(transactionId: string, authorizationId: 
 //                 (<ITransactionEvent>actionEvent).notification.id === notificationId
 //         );
 //         if (addNotificationTransactionEvent === undefined) {
-//             throw new ArgumentError('notificationId', `notification [${notificationId}] not found in the transaction.`);
+//             throw new factory.error.Argument('notificationId', `notification [${notificationId}] not found in the transaction.`);
 //         }
 
 //         // イベント作成
@@ -791,14 +748,7 @@ export function setAgentProfile(
     profile: factory.transaction.placeOrder.ICustomerContact
 ) {
     return async (transactionAdapter: TransactionAdapter) => {
-        await findInProgressById(transactionId)(transactionAdapter)
-            .then((option) => {
-                if (option.isEmpty) {
-                    throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
-                }
-
-                return option.get();
-            });
+        await findInProgressById(transactionId)(transactionAdapter);
 
         // 永続化
         debug('setting person profile...');
@@ -820,14 +770,7 @@ export function setAgentProfile(
 export function confirm(transactionId: string) {
     // tslint:disable-next-line:max-func-body-length
     return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await findInProgressById(transactionId)(transactionAdapter)
-            .then((option) => {
-                if (option.isEmpty) {
-                    throw new ArgumentError('transactionId', `transaction[${transactionId}] not found.`);
-                }
-
-                return option.get();
-            });
+        const transaction = await findInProgressById(transactionId)(transactionAdapter);
 
         // 照会可能になっているかどうか
         if (!canBeClosed(transaction)) {

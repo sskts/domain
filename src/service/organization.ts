@@ -6,7 +6,6 @@
 
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
-import * as monapt from 'monapt';
 
 import OrganizationAdapter from '../adapter/organization';
 
@@ -47,18 +46,20 @@ export function searchMovieTheaters(
  */
 export function findMovieTheaterByBranchCode(
     branchCode: string
-): IOrganizationOperation<monapt.Option<factory.organization.movieTheater.IPublicFields>> {
+): IOrganizationOperation<factory.organization.movieTheater.IPublicFields> {
     return async (organizationAdapter: OrganizationAdapter) => {
-        return await organizationAdapter.organizationModel.findOne(
+        const doc = await organizationAdapter.organizationModel.findOne(
             {
                 typeOf: factory.organizationType.MovieTheater,
                 'location.branchCode': branchCode
             },
             'identifier name legalName typeOf location url branchCode parentOrganization gmoInfo.shopId'
-        )
-            .exec()
-            .then((doc) => {
-                return (doc === null) ? monapt.None : monapt.Option(<factory.organization.movieTheater.IPublicFields>doc.toObject());
-            });
+        ).exec();
+
+        if (doc === null) {
+            throw new factory.error.NotFound('movieTheater');
+        }
+
+        return <factory.organization.movieTheater.IPublicFields>doc.toObject();
     };
 }

@@ -1,6 +1,5 @@
 import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
-import * as monapt from 'monapt';
 import OrganizationAdapter from '../../adapter/organization';
 import TaskAdapter from '../../adapter/task';
 import TransactionAdapter from '../../adapter/transaction';
@@ -19,7 +18,7 @@ export declare function start(args: {
     scope: factory.transactionScope.ITransactionScope;
     agentId: string;
     sellerId: string;
-}): IOrganizationAndTransactionAndTransactionCountOperation<monapt.Option<factory.transaction.placeOrder.ITransaction>>;
+}): IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction>;
 /**
  * 取引を期限切れにする
  */
@@ -43,7 +42,7 @@ export declare function reexportTasks(intervalInMinutes: number): (transactionAd
 /**
  * 進行中の取引を取得する
  */
-export declare function findInProgressById(transactionId: string): ITransactionOperation<monapt.Option<factory.transaction.placeOrder.ITransaction>>;
+export declare function findInProgressById(transactionId: string): ITransactionOperation<factory.transaction.placeOrder.ITransaction>;
 /**
  * オーソリを取得するクレジットカード情報インターフェース
  */
