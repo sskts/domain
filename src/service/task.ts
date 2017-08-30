@@ -1,7 +1,6 @@
 /**
+ * task service
  * タスクサービス
- * タスク名ごとに、実行するファンクションをひとつずつ定義しています
- *
  * @namespace service/task
  */
 
@@ -22,14 +21,21 @@ const debug = createDebug('sskts-domain:service:task');
 
 /**
  * タスク実行時のソート条件
- *
- * @ignore
+ * @const
  */
 const sortOrder4executionOfTasks = {
     numberOfTried: 1, // トライ回数の少なさ優先
     runsAt: 1 // 実行予定日時の早さ優先
 };
 
+/**
+ * execute a task by taskName
+ * タスク名でタスクをひとつ実行する
+ * @param {factory.taskName} taskName タスク名
+ * @export
+ * @function
+ * @memberof service/task
+ */
 export function executeByName(taskName: factory.taskName): TaskAndConnectionOperation<void> {
     return async (taskAdapter: TaskAdapter, connection: mongoose.Connection) => {
         // 未実行のタスクを取得
@@ -61,7 +67,17 @@ export function executeByName(taskName: factory.taskName): TaskAndConnectionOper
     };
 }
 
+/**
+ * execute a task
+ * タスクを実行する
+ * @param {factory.task.ITask} task タスクオブジェクト
+ * @export
+ * @function
+ * @memberof service/task
+ */
 export function execute(task: factory.task.ITask): TaskAndConnectionOperation<void> {
+    debug('executing a task...', task);
+
     return async (taskAdapter: TaskAdapter, connection: mongoose.Connection) => {
         try {
             // タスク名の関数が定義されていなければ、TypeErrorとなる
@@ -94,10 +110,12 @@ export function execute(task: factory.task.ITask): TaskAndConnectionOperation<vo
 }
 
 /**
- * リトライ
- *
+ * retry tasks in running status
+ * 実行中ステータスのままになっているタスクをリトライする
  * @param {number} intervalInMinutes 最終トライ日時から何分経過したタスクをリトライするか
  * @returns {TaskOperation<void>}
+ * @export
+ * @function
  * @memberof service/task
  */
 export function retry(intervalInMinutes: number): TaskOperation<void> {
@@ -117,10 +135,12 @@ export function retry(intervalInMinutes: number): TaskOperation<void> {
 }
 
 /**
- * 実行中止
- *
+ * abort a task
+ * トライ可能回数が0に達したタスクを実行中止する
  * @param {number} intervalInMinutes 最終トライ日時から何分経過したタスクを中止するか
  * @returns {TaskOperation<void>}
+ * @export
+ * @function
  * @memberof service/task
  */
 export function abort(intervalInMinutes: number): TaskOperation<void> {
@@ -145,13 +165,13 @@ export function abort(intervalInMinutes: number): TaskOperation<void> {
         // メール通知
         const task = <factory.task.ITask>abortedTaskDoc.toObject();
         await NotificationService.report2developers(
-            'タスクの実行が中止されました',
+            'One task aboted !!!',
             `id:${task.id}
 name:${task.name}
 runsAt:${moment(task.runsAt).toISOString()}
 lastTriedAt:${moment(<Date>task.lastTriedAt).toISOString()}
 numberOfTried:${task.numberOfTried}
-最終結果:${(task.executionResults.length > 0) ? task.executionResults[task.executionResults.length - 1].error : ''}`
+lastResult:${(task.executionResults.length > 0) ? task.executionResults[task.executionResults.length - 1].error : ''}`
         )();
     };
 }

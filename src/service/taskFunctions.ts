@@ -1,12 +1,10 @@
 /**
  * タスクファンクションサービス
  * タスク名ごとに、実行するファンクションをひとつずつ定義しています
- *
  * @namespace service/taskFunctions
  */
 
 import * as factory from '@motionpicture/sskts-factory';
-import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
 
 import OrderAdapter from '../adapter/order';
@@ -18,17 +16,12 @@ import * as OrderService from '../service/order';
 import * as SalesService from '../service/sales';
 import * as StockService from '../service/stock';
 
-const debug = createDebug('sskts-domain:service:taskFunctions');
-
 export type IOperation<T> = (connection: mongoose.Connection) => Promise<T>;
 
 export function sendEmailNotification(
     data: factory.task.sendEmailNotification.IData
 ): IOperation<void> {
-    debug('executing...', data);
-
-    return async (connection: mongoose.Connection) => {
-        debug('creating adapters on connection...', connection);
+    return async (__: mongoose.Connection) => {
         await NotificationService.sendEmail(data.notification)();
     };
 }
@@ -36,8 +29,6 @@ export function sendEmailNotification(
 export function cancelSeatReservation(
     data: factory.task.cancelSeatReservation.IData
 ): IOperation<void> {
-    debug('executing...', data);
-
     return async (connection: mongoose.Connection) => {
         const transactionAdapter = new TransactionAdapter(connection);
         await StockService.unauthorizeSeatReservation(data.transactionId)(transactionAdapter);
@@ -47,8 +38,6 @@ export function cancelSeatReservation(
 export function cancelGMO(
     data: factory.task.cancelGMO.IData
 ): IOperation<void> {
-    debug('executing...', data);
-
     return async (connection: mongoose.Connection) => {
         const transactionAdapter = new TransactionAdapter(connection);
         await SalesService.cancelGMOAuth(data.transactionId)(transactionAdapter);
@@ -58,8 +47,6 @@ export function cancelGMO(
 export function cancelMvtk(
     data: factory.task.cancelMvtk.IData
 ): IOperation<void> {
-    debug('executing...', data);
-
     return async (connection: mongoose.Connection) => {
         const transactionAdapter = new TransactionAdapter(connection);
         await SalesService.cancelMvtk(data.transactionId)(transactionAdapter);
@@ -69,8 +56,6 @@ export function cancelMvtk(
 export function settleSeatReservation(
     data: factory.task.settleSeatReservation.IData
 ): IOperation<void> {
-    debug('executing...', data);
-
     return async (connection: mongoose.Connection) => {
         const ownershipInfoAdapter = new OwnershipInfoAdapter(connection);
         const transactionAdapter = new TransactionAdapter(connection);
@@ -81,8 +66,6 @@ export function settleSeatReservation(
 export function settleGMO(
     data: factory.task.settleGMO.IData
 ): IOperation<void> {
-    debug('executing...', data);
-
     return async (connection: mongoose.Connection) => {
         const transactionAdapter = new TransactionAdapter(connection);
         await SalesService.settleGMOAuth(data.transactionId)(transactionAdapter);
@@ -92,8 +75,6 @@ export function settleGMO(
 export function settleMvtk(
     data: factory.task.settleMvtk.IData
 ): IOperation<void> {
-    debug('executing...', data);
-
     return async (connection: mongoose.Connection) => {
         const transactionAdapter = new TransactionAdapter(connection);
         await SalesService.settleMvtk(data.transactionId)(transactionAdapter);
@@ -103,8 +84,6 @@ export function settleMvtk(
 export function createOrder(
     data: factory.task.createOrder.IData
 ): IOperation<void> {
-    debug('executing...', data);
-
     return async (connection: mongoose.Connection) => {
         const orderAdapter = new OrderAdapter(connection);
         const transactionAdapter = new TransactionAdapter(connection);

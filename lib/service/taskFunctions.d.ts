@@ -2,7 +2,6 @@
 /**
  * タスクファンクションサービス
  * タスク名ごとに、実行するファンクションをひとつずつ定義しています
- *
  * @namespace service/taskFunctions
  */
 import * as factory from '@motionpicture/sskts-factory';
