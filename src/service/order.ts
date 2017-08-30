@@ -14,7 +14,7 @@ export function createFromTransaction(transactionId: string) {
     return async (orderAdapter: OrderAdapter, transactionAdapter: TransactionAdapter) => {
         const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
         if (transaction === null) {
-            throw new factory.error.Argument('transactionId', `transaction[${transactionId}] not found.`);
+            throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
 
         if (transaction.result !== undefined) {
@@ -45,7 +45,7 @@ export function findByOrderInquiryKey(orderInquiryKey: factory.order.IOrderInqui
         ).exec();
 
         if (doc === null) {
-            throw new factory.error.NotFound('order');
+            throw new factory.errors.NotFound('order');
         }
 
         return <factory.order.IOrder>doc.toObject();

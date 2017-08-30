@@ -23,7 +23,7 @@ export function cancelGMOAuth(transactionId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
         const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
         if (transaction === null) {
-            throw new factory.error.Argument('transactionId', `transaction[${transactionId}] not found.`);
+            throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
 
         const authorization = <factory.authorization.gmo.IAuthorization | undefined>transaction.object.paymentInfos.find(
@@ -56,7 +56,7 @@ export function settleGMOAuth(transactionId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
         const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
         if (transaction === null) {
-            throw new factory.error.Argument('transactionId', `transaction[${transactionId}] not found.`);
+            throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
 
         const authorization = <factory.authorization.gmo.IAuthorization | undefined>transaction.object.paymentInfos.find(

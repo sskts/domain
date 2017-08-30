@@ -228,7 +228,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
             }
         ).exec();
         if (movieTheaterDoc === null) {
-            throw new factory.error.Argument('movieTheater not found.');
+            throw new factory.errors.Argument('movieTheater not found.');
         }
         const movieTheater = <factory.place.movieTheater.IPlace>movieTheaterDoc.toObject();
 
@@ -417,7 +417,7 @@ export function findIndividualScreeningEventByIdentifier(
         }).lean().exec();
 
         if (event === null) {
-            throw new factory.error.NotFound('individualScreeningEvent');
+            throw new factory.errors.NotFound('individualScreeningEvent');
         }
 
         // add item availability info

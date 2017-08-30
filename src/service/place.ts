@@ -87,7 +87,7 @@ export function findMovieTheaterByBranchCode(
         }).exec();
 
         if (doc === null) {
-            throw new factory.error.NotFound('movieTheater');
+            throw new factory.errors.NotFound('movieTheater');
         }
 
         return <factory.place.movieTheater.IPlace>doc.toObject();

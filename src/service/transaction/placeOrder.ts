@@ -49,7 +49,7 @@ export function start(args: {
         // 利用可能かどうか
         const nextCount = await transactionCountAdapter.incr(args.scope);
         if (nextCount > args.maxCountPerUnit) {
-            throw new factory.error.NotFound('available transaction');
+            throw new factory.errors.NotFound('available transaction');
         }
 
         const agent: factory.transaction.placeOrder.IAgent = {
@@ -127,7 +127,7 @@ export function exportTasks(status: factory.transactionStatusType) {
     return async (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => {
         const statusesTasksExportable = [factory.transactionStatusType.Expired, factory.transactionStatusType.Confirmed];
         if (statusesTasksExportable.indexOf(status) < 0) {
-            throw new factory.error.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
+            throw new factory.errors.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
         }
 
         const transaction = await transactionAdapter.transactionModel.findOneAndUpdate(
@@ -281,7 +281,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                 break;
 
             default:
-                throw new factory.error.Argument('id', 'transaction group not implemented.');
+                throw new factory.errors.Argument('id', 'transaction group not implemented.');
         }
         debug('tasks prepared', tasks);
 
@@ -329,7 +329,7 @@ export function findInProgressById(
         }).exec();
 
         if (doc === null) {
-            throw new factory.error.NotFound('transaction in progress');
+            throw new factory.errors.NotFound('transaction in progress');
         }
 
         return <factory.transaction.placeOrder.ITransaction>doc.toObject();
@@ -361,7 +361,7 @@ export function createCreditCardAuthorization(
         const movieTheater = await organizationAdapter.organizationModel.findById(transaction.seller.id).exec()
             .then((doc) => {
                 if (doc === null) {
-                    throw new factory.error.Argument('transactionId', 'movieTheater not found');
+                    throw new factory.errors.Argument('transactionId', 'movieTheater not found');
                 }
 
                 return <factory.organization.movieTheater.IOrganization>doc.toObject();
@@ -402,9 +402,9 @@ export function createCreditCardAuthorization(
                 // GMO流量制限オーバーエラーの場合
                 const serviceUnavailableError = error.errors.find((gmoError: any) => gmoError.info.match(/^E92000001|E92000002$/));
                 if (serviceUnavailableError !== undefined) {
-                    throw new factory.error.ServiceUnavailable('payment service unavailable temporarily');
+                    throw new factory.errors.ServiceUnavailable('payment service unavailable temporarily');
                 } else {
-                    throw new factory.error.Argument('payment');
+                    throw new factory.errors.Argument('payment');
                 }
             }
 
@@ -446,10 +446,10 @@ export function cancelGMOAuthorization(transactionId: string, authorizationId: s
             (paymentInfo) => paymentInfo.group === factory.authorizationGroup.GMO
         );
         if (authorization === undefined) {
-            throw new factory.error.Argument('authorizationId', '指定されたオーソリは見つかりません');
+            throw new factory.errors.Argument('authorizationId', '指定されたオーソリは見つかりません');
         }
         if (authorization.id !== authorizationId) {
-            throw new factory.error.Argument('authorizationId', '指定されたオーソリは見つかりません');
+            throw new factory.errors.Argument('authorizationId', '指定されたオーソリは見つかりません');
         }
 
         // 決済取消
@@ -525,10 +525,10 @@ export function cancelSeatReservationAuthorization(transactionId: string, author
 
         const authorization = transaction.object.seatReservation;
         if (authorization === undefined) {
-            throw new factory.error.Argument('authorizationId', '指定された座席予約は見つかりません');
+            throw new factory.errors.Argument('authorizationId', '指定された座席予約は見つかりません');
         }
         if (authorization.id !== authorizationId) {
-            throw new factory.error.Argument('authorizationId', '指定された座席予約は見つかりません');
+            throw new factory.errors.Argument('authorizationId', '指定された座席予約は見つかりません');
         }
 
         // 座席仮予約削除
@@ -608,33 +608,33 @@ export function createMvtkAuthorization(
         const knyknrNoExistsMvtkResult =
             Object.keys(knyknrNoNumsByNoShouldBe).every((knyknrNo) => knyknrNoNumsByNo[knyknrNo] === knyknrNoNumsByNoShouldBe[knyknrNo]);
         if (!knyknrNoExistsInSeatReservation || !knyknrNoExistsMvtkResult) {
-            throw new factory.error.Argument('authorizationResult', 'knyknrNoInfo not matched with seat reservation authorization');
+            throw new factory.errors.Argument('authorizationResult', 'knyknrNoInfo not matched with seat reservation authorization');
         }
 
         // stCd matched? (last two figures of theater code)
         // tslint:disable-next-line:no-magic-numbers
         const stCdShouldBe = seatReservationAuthorization.object.updTmpReserveSeatArgs.theaterCode.slice(-2);
         if (authorizationResult.stCd !== stCdShouldBe) {
-            throw new factory.error.Argument('authorizationResult', 'stCd not matched with seat reservation authorization');
+            throw new factory.errors.Argument('authorizationResult', 'stCd not matched with seat reservation authorization');
         }
 
         // skhnCd matched?
         // tslint:disable-next-line:max-line-length
         const skhnCdShouldBe = `${seatReservationAuthorization.object.updTmpReserveSeatArgs.titleCode}${seatReservationAuthorization.object.updTmpReserveSeatArgs.titleBranchNum}`;
         if (authorizationResult.skhnCd !== skhnCdShouldBe) {
-            throw new factory.error.Argument('authorizationResult', 'skhnCd not matched with seat reservation authorization');
+            throw new factory.errors.Argument('authorizationResult', 'skhnCd not matched with seat reservation authorization');
         }
 
         // screen code matched?
         if (authorizationResult.screnCd !== seatReservationAuthorization.object.updTmpReserveSeatArgs.screenCode) {
-            throw new factory.error.Argument('authorizationResult', 'screnCd not matched with seat reservation authorization');
+            throw new factory.errors.Argument('authorizationResult', 'screnCd not matched with seat reservation authorization');
         }
 
         // seat num matched?
         const seatNumsInSeatReservationAuthorization =
             seatReservationAuthorization.result.listTmpReserve.map((tmpReserve) => tmpReserve.seatNum);
         if (!authorizationResult.zskInfo.every((zskInfo) => seatNumsInSeatReservationAuthorization.indexOf(zskInfo.zskCd) >= 0)) {
-            throw new factory.error.Argument('authorizationResult', 'zskInfo not matched with seat reservation authorization');
+            throw new factory.errors.Argument('authorizationResult', 'zskInfo not matched with seat reservation authorization');
         }
 
         const authorization = factory.authorization.mvtk.create({
@@ -660,10 +660,10 @@ export function cancelMvtkAuthorization(transactionId: string, authorizationId: 
             (discountInfo) => discountInfo.group === factory.authorizationGroup.MVTK
         );
         if (authorization === undefined) {
-            throw new factory.error.Argument('authorizationId', 'mvtk authorization not found');
+            throw new factory.errors.Argument('authorizationId', 'mvtk authorization not found');
         }
         if (authorization.id !== authorizationId) {
-            throw new factory.error.Argument('authorizationId', 'mvtk authorization not found');
+            throw new factory.errors.Argument('authorizationId', 'mvtk authorization not found');
         }
 
         await transactionAdapter.transactionModel.findByIdAndUpdate(
@@ -712,7 +712,7 @@ export function cancelMvtkAuthorization(transactionId: string, authorizationId: 
 //         const transaction = await findInProgressById(transactionId)(transactionAdapter)
 //             .then((option) => {
 //                 if (option.isEmpty) {
-//                     throw new factory.error.Argument('transactionId', `transaction[${transactionId}] not found.`);
+//                     throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
 //                 }
 
 //                 return option.get();
@@ -725,7 +725,7 @@ export function cancelMvtkAuthorization(transactionId: string, authorizationId: 
 //                 (<ITransactionEvent>actionEvent).notification.id === notificationId
 //         );
 //         if (addNotificationTransactionEvent === undefined) {
-//             throw new factory.error.Argument('notificationId', `notification [${notificationId}] not found in the transaction.`);
+//             throw new factory.errors.Argument('notificationId', `notification [${notificationId}] not found in the transaction.`);
 //         }
 
 //         // イベント作成

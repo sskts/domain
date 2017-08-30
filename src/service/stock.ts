@@ -24,7 +24,7 @@ export function unauthorizeSeatReservation(transactionId: string) {
     return async (transactionAdapter: TransactionAdapter) => {
         const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
         if (transaction === null) {
-            throw new factory.error.Argument('transactionId', `transaction[${transactionId}] not found.`);
+            throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
 
         if (transaction.object.seatReservation === undefined) {
@@ -55,7 +55,7 @@ export function transferSeatReservation(transactionId: string) {
     return async (ownershipInfoAdapter: OwnershipInfoAdapter, transactionAdapter: TransactionAdapter) => {
         const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
         if (transaction === null) {
-            throw new factory.error.Argument('transactionId', `transaction[${transactionId}] not found.`);
+            throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
 
         if (transaction.object.seatReservation === undefined) {
@@ -66,7 +66,7 @@ export function transferSeatReservation(transactionId: string) {
 
         const customerContact = transaction.object.customerContact;
         if (customerContact === undefined) {
-            throw new factory.error.Argument('transaction', 'customer contact not created');
+            throw new factory.errors.Argument('transaction', 'customer contact not created');
         }
 
         // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
