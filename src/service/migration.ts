@@ -207,7 +207,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
         },
         confirmationNumber: params.inquiryKey.reserve_num,
         orderNumber: `${params.performance.theater.id}-${params.inquiryKey.reserve_num}`,
-        priceCurrency: <any>'JPY',
+        priceCurrency: factory.priceCurrency.JPY,
         price: (params.gmoAuthorization === undefined) ? 0 : params.gmoAuthorization.price,
         acceptedOffers: params.seatReservationAuthorization.assets.map(
             (asset, index): factory.order.IOffer => {
@@ -242,7 +242,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                 // TODO 諸々まだ値微調整
                 return {
                     price: asset.sale_price,
-                    priceCurrency: <any>'JPY',
+                    priceCurrency: factory.priceCurrency.JPY,
                     seller: {
                         typeOf: 'MovieTheater',
                         name: params.theater.name.ja
@@ -250,7 +250,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                     itemOffered: {
                         numSeats: 1,
                         price: asset.sale_price,
-                        priceCurrency: <any>'JPY',
+                        priceCurrency: factory.priceCurrency.JPY,
                         typeOf: 'Reservation',
                         additionalTicketText: '',
                         modifiedTime: params.closedAt,
@@ -265,7 +265,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                                 typeOf: '',
                                 name: ''
                             },
-                            priceCurrency: <any>'JPY',
+                            priceCurrency: factory.priceCurrency.JPY,
                             ticketedSeat: {
                                 seatingType: '',
                                 seatNumber: asset.seat_code,
@@ -292,10 +292,17 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
         orderDate: params.closedAt,
         isGift: false,
         discounts: [],
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO 値補強
         customer: {
             typeOf: 'Person',
             name: customerName,
-            url: ''
+            url: '',
+            id: '',
+            givenName: '',
+            familyName: '',
+            telephone: '',
+            email: ''
         },
         orderInquiryKey: {
             theaterCode: params.inquiryKey.theater_code,
