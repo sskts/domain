@@ -6,7 +6,7 @@ import * as TransactionEventFactory from '../factory/transactionEvent';
 import TransactionModel from './mongoose/model/transaction';
 import TransactionEventModel from './mongoose/model/transactionEvent';
 /**
- * 取引アダプター
+ * 取引レポジトリー
  *
  * todo ITransactionにIOwnerが結合しているために、デフォルトで.populate('owner')したりしている
  * Ownerをjoinするしないを必要に応じて使い分けられるようにする

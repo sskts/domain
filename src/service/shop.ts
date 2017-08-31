@@ -6,11 +6,11 @@
 
 import * as factory from '@motionpicture/sskts-factory';
 
-import OrganizationAdapter from '../adapter/organization';
+import OrganizationRepository from '../repository/organization';
 
 export function open(organization: factory.organization.movieTheater.IOrganization) {
-    return async (organizationAdapter: OrganizationAdapter) => {
-        await organizationAdapter.organizationModel.findOneAndUpdate(
+    return async (organizationRepository: OrganizationRepository) => {
+        await organizationRepository.organizationModel.findOneAndUpdate(
             {
                 identifier: organization.identifier,
                 typeOf: factory.organizationType.MovieTheater

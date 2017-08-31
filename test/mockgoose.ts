@@ -23,7 +23,7 @@ before(async () => {
 describe('...', () => {
     it('...', async () => {
         // ...
-        const eventAdapter = sskts.adapter.event(mongoose.connection);
+        const eventAdapter = sskts.repository.event(mongoose.connection);
         const event = await eventAdapter.eventModel.findOne({
             identifier: '11899100020170904102025'
         }).exec();

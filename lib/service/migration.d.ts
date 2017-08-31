@@ -1,5 +1,5 @@
 import * as factory from '@motionpicture/sskts-factory';
-import OrderAdapter from '../adapter/order';
+import OrderRepository from '../repository/order';
 import FilmAdapter from '../v22/adapter/film';
 import PerformanceAdapter from '../v22/adapter/performance';
 import ScreenAdapter from '../v22/adapter/screen';
@@ -37,5 +37,5 @@ export interface ITransactionDetail {
         qr: string;
     }[];
 }
-export declare function createFromOldTransaction(transactionId: string): (orderAdapter: OrderAdapter, transactionAdapter: TransactionAdapter, filmAdapter: FilmAdapter, performanceAdapter: PerformanceAdapter, screenAdapter: ScreenAdapter, theaterAdapter: TheaterAdapter) => Promise<void>;
-export declare function getOldTransactionDetails(transactionId: string): (transactionAdapter: TransactionAdapter, filmAdapter: FilmAdapter, performanceAdapter: PerformanceAdapter, screenAdapter: ScreenAdapter, theaterAdapter: TheaterAdapter) => Promise<ITransactionDetail>;
+export declare function createFromOldTransaction(transactionId: string): (orderRepository: OrderRepository, transactionRepository: TransactionAdapter, filmRepository: FilmAdapter, performanceRepository: PerformanceAdapter, screenRepository: ScreenAdapter, theaterRepository: TheaterAdapter) => Promise<void>;
+export declare function getOldTransactionDetails(transactionId: string): (transactionRepository: TransactionAdapter, filmRepository: FilmAdapter, performanceRepository: PerformanceAdapter, screenRepository: ScreenAdapter, theaterRepository: TheaterAdapter) => Promise<ITransactionDetail>;

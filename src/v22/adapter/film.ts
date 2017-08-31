@@ -2,7 +2,7 @@ import { Connection } from 'mongoose';
 import filmModel from './mongoose/model/film';
 
 /**
- * 作品アダプター
+ * 作品レポジトリー
  *
  * @class FilmAdapter
  */

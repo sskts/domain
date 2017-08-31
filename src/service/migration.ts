@@ -9,7 +9,7 @@ import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-import OrderAdapter from '../adapter/order';
+import OrderRepository from '../repository/order';
 
 import FilmAdapter from '../v22/adapter/film';
 import PerformanceAdapter from '../v22/adapter/performance';
@@ -60,14 +60,14 @@ export interface ITransactionDetail {
 
 export function createFromOldTransaction(transactionId: string) {
     return async (
-        orderAdapter: OrderAdapter,
-        transactionAdapter: TransactionAdapter,
-        filmAdapter: FilmAdapter,
-        performanceAdapter: PerformanceAdapter,
-        screenAdapter: ScreenAdapter,
-        theaterAdapter: TheaterAdapter
+        orderRepository: OrderRepository,
+        transactionRepository: TransactionAdapter,
+        filmRepository: FilmAdapter,
+        performanceRepository: PerformanceAdapter,
+        screenRepository: ScreenAdapter,
+        theaterRepository: TheaterAdapter
     ) => {
-        const transaction = <IOldTransaction | null>await transactionAdapter.transactionModel.findOne({
+        const transaction = <IOldTransaction | null>await transactionRepository.transactionModel.findOne({
             _id: transactionId,
             status: 'CLOSED'
         }).exec();
@@ -77,18 +77,18 @@ export function createFromOldTransaction(transactionId: string) {
         }
 
         const detail = await getOldTransactionDetails(transaction.id)(
-            transactionAdapter,
-            filmAdapter,
-            performanceAdapter,
-            screenAdapter,
-            theaterAdapter
+            transactionRepository,
+            filmRepository,
+            performanceRepository,
+            screenRepository,
+            theaterRepository
         );
         debug('detail:', detail);
 
         const order = createOrder(detail);
         debug('order:', order);
 
-        await orderAdapter.orderModel.findOneAndUpdate(
+        await orderRepository.orderModel.findOneAndUpdate(
             {
                 orderNumber: order.orderNumber
             },
@@ -315,13 +315,13 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 export function getOldTransactionDetails(transactionId: string) {
     return async (
-        transactionAdapter: TransactionAdapter,
-        filmAdapter: FilmAdapter,
-        performanceAdapter: PerformanceAdapter,
-        screenAdapter: ScreenAdapter,
-        theaterAdapter: TheaterAdapter
+        transactionRepository: TransactionAdapter,
+        filmRepository: FilmAdapter,
+        performanceRepository: PerformanceAdapter,
+        screenRepository: ScreenAdapter,
+        theaterRepository: TheaterAdapter
     ): Promise<ITransactionDetail> => {
-        const transactionDoc = await transactionAdapter.transactionModel.findById(transactionId).populate('owners').exec();
+        const transactionDoc = await transactionRepository.transactionModel.findById(transactionId).populate('owners').exec();
         if (transactionDoc === null) {
             throw new Error('transaction not found');
         }
@@ -331,7 +331,7 @@ export function getOldTransactionDetails(transactionId: string) {
         const anonymousOwner = <IOldAnonymousOwner>transaction.owners.find(
             (owner) => owner.group === 'ANONYMOUS'
         );
-        const authorizations = await transactionAdapter.findAuthorizationsById(transaction.id);
+        const authorizations = await transactionRepository.findAuthorizationsById(transaction.id);
         // GMOオーソリを取り出す
         const gmoAuthorization = <IOldGMOAuthorization | undefined>authorizations.find(
             (authorization) => authorization.group === 'GMO'
@@ -369,7 +369,7 @@ export function getOldTransactionDetails(transactionId: string) {
             }
         }
 
-        const performanceDoc = <mongoose.Document>await performanceAdapter.model.findById(
+        const performanceDoc = <mongoose.Document>await performanceRepository.model.findById(
             seatReservationAuthorization.assets[0].performance
         )
             .populate('film')
@@ -378,13 +378,13 @@ export function getOldTransactionDetails(transactionId: string) {
             .exec();
         const performance = <IPerformanceWithReferenceDetails>performanceDoc.toObject();
 
-        const theaterDoc = <mongoose.Document>await theaterAdapter.model.findById(performance.theater.id).exec();
+        const theaterDoc = <mongoose.Document>await theaterRepository.model.findById(performance.theater.id).exec();
         const theater = <ITheater>theaterDoc.toObject();
 
-        const screenDoc = <mongoose.Document>await screenAdapter.model.findById(performance.screen.id).exec();
+        const screenDoc = <mongoose.Document>await screenRepository.model.findById(performance.screen.id).exec();
         const screen = <IScreen>screenDoc.toObject();
 
-        const filmDoc = <mongoose.Document>await filmAdapter.model.findById(performance.film.id).exec();
+        const filmDoc = <mongoose.Document>await filmRepository.model.findById(performance.film.id).exec();
         const film = <IFilm>filmDoc.toObject();
 
         return {

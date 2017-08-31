@@ -7,12 +7,12 @@ import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import IndividualScreeningEventItemAvailabilityAdapter from '../adapter/itemAvailability/individualScreeningEvent';
+import IndividualScreeningEventItemAvailabilityRepository from '../repository/itemAvailability/individualScreeningEvent';
 
 const debug = createDebug('sskts-domain:service:itemAvailability');
 
 export type IItemAvailabilityOperation<T> = (
-    itemAvailabilityAdapter: IndividualScreeningEventItemAvailabilityAdapter
+    itemAvailabilityRepository: IndividualScreeningEventItemAvailabilityRepository
 ) => Promise<T>;
 
 /**
@@ -24,7 +24,7 @@ export type IItemAvailabilityOperation<T> = (
  */
 export function updatePerformanceStockStatuses(theaterCode: string, dayStart: string, dayEnd: string):
     IItemAvailabilityOperation<void> {
-    return async (itemAvailabilityAdapter: IndividualScreeningEventItemAvailabilityAdapter) => {
+    return async (itemAvailabilityRepository: IndividualScreeningEventItemAvailabilityRepository) => {
         // COAから空席状況取得
         const countFreeSeatResult = await COA.services.reserve.countFreeSeat({
             theaterCode: theaterCode,
@@ -56,7 +56,7 @@ export function updatePerformanceStockStatuses(theaterCode: string, dayStart: st
 
                     // 永続化
                     debug('saving item availability... identifier:', eventIdentifier);
-                    await itemAvailabilityAdapter.updateOne(
+                    await itemAvailabilityRepository.updateOne(
                         countFreeSeatDate.dateJouei,
                         eventIdentifier,
                         itemAvailability

@@ -1,10 +1,10 @@
-import GMONotificationAdapter from '../adapter/gmoNotification';
-import TaskAdapter from '../adapter/task';
-import TelemetryAdapter from '../adapter/telemetry';
-import TransactionAdapter from '../adapter/transaction';
-export declare type TaskAndTransactionOperation<T> = (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
-export declare type TaskAndTelemetryAndTransactionOperation<T> = (taskAdapter: TaskAdapter, telemetryAdapter: TelemetryAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
-export declare type GMONotificationOperation<T> = (gmoNotificationAdapter: GMONotificationAdapter) => Promise<T>;
+import GMONotificationRepository from '../repository/gmoNotification';
+import TaskRepository from '../repository/task';
+import TelemetryRepository from '../repository/telemetry';
+import TransactionRepository from '../repository/transaction';
+export declare type TaskAndTransactionOperation<T> = (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => Promise<T>;
+export declare type TaskAndTelemetryAndTransactionOperation<T> = (taskRepository: TaskRepository, telemetryRepository: TelemetryRepository, transactionRepository: TransactionRepository) => Promise<T>;
+export declare type GMONotificationOperation<T> = (gmoNotificationRepository: GMONotificationRepository) => Promise<T>;
 /**
  * フローデータ
  *

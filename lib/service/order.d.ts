@@ -3,12 +3,12 @@
  * @namespace service/order
  */
 import * as factory from '@motionpicture/sskts-factory';
-import OrderAdapter from '../adapter/order';
-import TransactionAdapter from '../adapter/transaction';
+import OrderRepository from '../repository/order';
+import TransactionRepository from '../repository/transaction';
 export declare type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
-export declare function createFromTransaction(transactionId: string): (orderAdapter: OrderAdapter, transactionAdapter: TransactionAdapter) => Promise<void>;
+export declare function createFromTransaction(transactionId: string): (orderRepository: OrderRepository, transactionRepository: TransactionRepository) => Promise<void>;
 /**
  * find an order by an inquiry key
  * @param {factory.order.IOrderInquiryKey} orderInquiryKey
  */
-export declare function findByOrderInquiryKey(orderInquiryKey: factory.order.IOrderInquiryKey): (orderAdapter: OrderAdapter) => Promise<factory.order.IOrder>;
+export declare function findByOrderInquiryKey(orderInquiryKey: factory.order.IOrderInquiryKey): (orderRepository: OrderRepository) => Promise<factory.order.IOrder>;

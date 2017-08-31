@@ -8,7 +8,7 @@ import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import CreativeWorkAdapter from '../adapter/creativeWork';
+import CreativeWorkRepository from '../repository/creativeWork';
 
 const debug = createDebug('sskts-domain:service:creativeWork');
 
@@ -16,7 +16,7 @@ const debug = createDebug('sskts-domain:service:creativeWork');
  * 映画作品インポート
  */
 export function importMovies(theaterCode: string) {
-    return async (creativeWorkAdapter: CreativeWorkAdapter) => {
+    return async (creativeWorkRepository: CreativeWorkRepository) => {
         // COAから作品取得
         const filmsFromCOA = await COA.services.master.title({ theaterCode: theaterCode });
 
@@ -24,7 +24,7 @@ export function importMovies(theaterCode: string) {
         await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
             const movie = factory.creativeWork.movie.createFromCOA(filmFromCOA);
             debug('storing movie...', movie);
-            await creativeWorkAdapter.creativeWorkModel.findOneAndUpdate(
+            await creativeWorkRepository.creativeWorkModel.findOneAndUpdate(
                 {
                     identifier: movie.identifier,
                     typeOf: factory.creativeWorkType.Movie

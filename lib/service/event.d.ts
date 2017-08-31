@@ -1,8 +1,8 @@
 import * as factory from '@motionpicture/sskts-factory';
-import EventAdapter from '../adapter/event';
-import IndividualScreeningEventItemAvailabilityAdapter from '../adapter/itemAvailability/individualScreeningEvent';
-import PlaceAdapter from '../adapter/place';
-export declare type IEventOperation<T> = (eventAdapter: EventAdapter, itemAvailability?: IndividualScreeningEventItemAvailabilityAdapter) => Promise<T>;
+import EventRepository from '../repository/event';
+import IndividualScreeningEventItemAvailabilityRepository from '../repository/itemAvailability/individualScreeningEvent';
+import PlaceRepository from '../repository/place';
+export declare type IEventOperation<T> = (eventRepository: EventRepository, itemAvailability?: IndividualScreeningEventItemAvailabilityRepository) => Promise<T>;
 /**
  * import screening events from COA
  * COAから上映イベントをインポートする
@@ -10,7 +10,7 @@ export declare type IEventOperation<T> = (eventAdapter: EventAdapter, itemAvaila
  * @function
  * @memberof service/event
  */
-export declare function importScreeningEvents(theaterCode: string, importFrom: Date, importThrough: Date): (eventAdapter: EventAdapter, placeAdapter: PlaceAdapter) => Promise<void>;
+export declare function importScreeningEvents(theaterCode: string, importFrom: Date, importThrough: Date): (eventRepository: EventRepository, placeRepository: PlaceRepository) => Promise<void>;
 /**
  * search individualScreeningEvents
  * @export

@@ -22,23 +22,21 @@ import * as ShopService from './service/shop';
 import * as StockService from './service/stock';
 import * as TaskService from './service/task';
 import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
-import ClientAdapter from './adapter/client';
-import CreativeWorkAdapter from './adapter/creativeWork';
-import EventAdapter from './adapter/event';
-import GMONotificationAdapter from './adapter/gmoNotification';
-import IndividualScreeningEventItemAvailabilityAdapter from './adapter/itemAvailability/individualScreeningEvent';
-import OrderAdapter from './adapter/order';
-import OrganizationAdapter from './adapter/organization';
-import OwnershipInfoAdapter from './adapter/ownershipInfo';
-import PersonAdapter from './adapter/person';
-import PlaceAdapter from './adapter/place';
-import SendGridEventAdapter from './adapter/sendGridEvent';
-import TaskAdapter from './adapter/task';
-import TelemetryAdapter from './adapter/telemetry';
-import TransactionAdapter from './adapter/transaction';
-import TransactionCountAdapter from './adapter/transactionCount';
-import TestRepository from './repository/test';
-export { TestRepository };
+import ClientRepository from './repository/client';
+import CreativeWorkRepository from './repository/creativeWork';
+import EventRepository from './repository/event';
+import GMONotificationRepository from './repository/gmoNotification';
+import IndividualScreeningEventItemAvailabilityRepository from './repository/itemAvailability/individualScreeningEvent';
+import OrderRepository from './repository/order';
+import OrganizationRepository from './repository/organization';
+import OwnershipInfoRepository from './repository/ownershipInfo';
+import PersonRepository from './repository/person';
+import PlaceRepository from './repository/place';
+import SendGridEventRepository from './repository/sendGridEvent';
+import TaskRepository from './repository/task';
+import TelemetryRepository from './repository/telemetry';
+import TransactionRepository from './repository/transaction';
+import TransactionCountRepository from './repository/transactionCount';
 /**
  * MongoDBクライアント`mongoose`
  *
@@ -82,24 +80,24 @@ export import COA = COA;
  * });
  */
 export import GMO = GMO;
-export declare namespace adapter {
-    function transaction(connection: mongoose.Connection): TransactionAdapter;
-    function client(connection: mongoose.Connection): ClientAdapter;
-    function creativeWork(connection: mongoose.Connection): CreativeWorkAdapter;
-    function event(connection: mongoose.Connection): EventAdapter;
-    function gmoNotification(connection: mongoose.Connection): GMONotificationAdapter;
-    function order(connection: mongoose.Connection): OrderAdapter;
-    function organization(connection: mongoose.Connection): OrganizationAdapter;
-    function ownershipInfo(connection: mongoose.Connection): OwnershipInfoAdapter;
-    function person(connection: mongoose.Connection): PersonAdapter;
-    function place(connection: mongoose.Connection): PlaceAdapter;
+export declare namespace repository {
+    function transaction(connection: mongoose.Connection): TransactionRepository;
+    function client(connection: mongoose.Connection): ClientRepository;
+    function creativeWork(connection: mongoose.Connection): CreativeWorkRepository;
+    function event(connection: mongoose.Connection): EventRepository;
+    function gmoNotification(connection: mongoose.Connection): GMONotificationRepository;
+    function order(connection: mongoose.Connection): OrderRepository;
+    function organization(connection: mongoose.Connection): OrganizationRepository;
+    function ownershipInfo(connection: mongoose.Connection): OwnershipInfoRepository;
+    function person(connection: mongoose.Connection): PersonRepository;
+    function place(connection: mongoose.Connection): PlaceRepository;
     namespace itemAvailability {
-        function individualScreeningEvent(redisClient: redis.RedisClient): IndividualScreeningEventItemAvailabilityAdapter;
+        function individualScreeningEvent(redisClient: redis.RedisClient): IndividualScreeningEventItemAvailabilityRepository;
     }
-    function sendGridEvent(connection: mongoose.Connection): SendGridEventAdapter;
-    function task(connection: mongoose.Connection): TaskAdapter;
-    function telemetry(connection: mongoose.Connection): TelemetryAdapter;
-    function transactionCount(redisClient: redis.RedisClient): TransactionCountAdapter;
+    function sendGridEvent(connection: mongoose.Connection): SendGridEventRepository;
+    function task(connection: mongoose.Connection): TaskRepository;
+    function telemetry(connection: mongoose.Connection): TelemetryRepository;
+    function transactionCount(redisClient: redis.RedisClient): TransactionCountRepository;
 }
 export declare namespace service {
     export import client = ClientService;

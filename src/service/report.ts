@@ -10,15 +10,15 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
-import GMONotificationAdapter from '../adapter/gmoNotification';
-import TaskAdapter from '../adapter/task';
-import TelemetryAdapter from '../adapter/telemetry';
-import TransactionAdapter from '../adapter/transaction';
+import GMONotificationRepository from '../repository/gmoNotification';
+import TaskRepository from '../repository/task';
+import TelemetryRepository from '../repository/telemetry';
+import TransactionRepository from '../repository/transaction';
 
-export type TaskAndTransactionOperation<T> = (taskAdapter: TaskAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
+export type TaskAndTransactionOperation<T> = (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => Promise<T>;
 export type TaskAndTelemetryAndTransactionOperation<T> =
-    (taskAdapter: TaskAdapter, telemetryAdapter: TelemetryAdapter, transactionAdapter: TransactionAdapter) => Promise<T>;
-export type GMONotificationOperation<T> = (gmoNotificationAdapter: GMONotificationAdapter) => Promise<T>;
+    (taskRepository: TaskRepository, telemetryRepository: TelemetryRepository, transactionRepository: TransactionRepository) => Promise<T>;
+export type GMONotificationOperation<T> = (gmoNotificationRepository: GMONotificationRepository) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:report');
 const TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS = 60; // 測定単位時間(秒)
@@ -139,23 +139,23 @@ export interface ITelemetry {
  */
 export function createTelemetry(): TaskAndTelemetryAndTransactionOperation<void> {
     return async (
-        taskAdapter: TaskAdapter,
-        telemetryAdapter: TelemetryAdapter,
-        transactionAdapter: TransactionAdapter
+        taskRepository: TaskRepository,
+        telemetryRepository: TelemetryRepository,
+        transactionRepository: TransactionRepository
     ) => {
         const dateNow = moment();
         const measuredTo = moment.unix((dateNow.unix() - (dateNow.unix() % TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS)));
         const measuredFrom = moment(measuredTo).add(-TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS, 'seconds');
         const measuredAt = moment(measuredTo);
 
-        const flowData = await createFlowTelemetry(measuredFrom.toDate(), measuredTo.toDate())(taskAdapter, transactionAdapter);
-        const stockData = await createStockTelemetry(measuredAt.toDate())(taskAdapter, transactionAdapter);
+        const flowData = await createFlowTelemetry(measuredFrom.toDate(), measuredTo.toDate())(taskRepository, transactionRepository);
+        const stockData = await createStockTelemetry(measuredAt.toDate())(taskRepository, transactionRepository);
 
         const telemetry: ITelemetry = {
             flow: flowData,
             stock: stockData
         };
-        await telemetryAdapter.telemetryModel.create(telemetry);
+        await telemetryRepository.telemetryModel.create(telemetry);
         debug('telemetry created', telemetry);
     };
 }
@@ -170,11 +170,11 @@ export function createTelemetry(): TaskAndTelemetryAndTransactionOperation<void>
 export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskAndTransactionOperation<IFlow> {
     // tslint:disable-next-line:max-func-body-length
     return async (
-        taskAdapter: TaskAdapter,
-        transactionAdapter: TransactionAdapter
+        taskRepository: TaskRepository,
+        transactionRepository: TransactionRepository
     ) => {
         // 直近{TELEMETRY_UNIT_TIME_IN_SECONDS}秒に開始された取引数を算出する
-        const numberOfTransactionsStarted = await transactionAdapter.transactionModel.count({
+        const numberOfTransactionsStarted = await transactionRepository.transactionModel.count({
             started_at: {
                 $gte: measuredFrom,
                 $lt: measuredTo
@@ -182,7 +182,7 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
         }).exec();
 
         // 平均所要時間算出(期間の成立取引リストを取得し、開始時刻と成立時刻の差を所要時間とする)
-        const closedTransactions = await transactionAdapter.transactionModel.find(
+        const closedTransactions = await transactionRepository.transactionModel.find(
             {
                 closed_at: {
                     $gte: measuredFrom,
@@ -202,21 +202,21 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
 
         // todo 金額算出
         // const amounts = await Promise.all(
-        //     closedTransactions.map(async (transaction) => await transactionAdapter.calculateAmountById(transaction.get('id')))
+        //     closedTransactions.map(async (transaction) => await transactionRepository.calculateAmountById(transaction.get('id')))
         // );
         const amounts: number[] = [];
         const totalAmount = amounts.reduce((a, b) => a + b, 0);
         const maxAmount = amounts.reduce((a, b) => Math.max(a, b), 0);
         const minAmount = amounts.reduce((a, b) => Math.min(a, b), (numberOfTransactionsClosed > 0) ? amounts[0] : 0);
 
-        const numberOfTransactionsExpired = await transactionAdapter.transactionModel.count({
+        const numberOfTransactionsExpired = await transactionRepository.transactionModel.count({
             expired_at: {
                 $gte: measuredFrom,
                 $lt: measuredTo
             }
         }).exec();
 
-        const numberOfTasksCreated = await taskAdapter.taskModel.count({
+        const numberOfTasksCreated = await taskRepository.taskModel.count({
             createdAt: {
                 $gte: measuredFrom,
                 $lt: measuredTo
@@ -224,7 +224,7 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
         }).exec();
 
         // 実行中止ステータスで、最終試行日時が範囲にあるものを実行タスク数とする
-        const numberOfTasksAborted = await taskAdapter.taskModel.count({
+        const numberOfTasksAborted = await taskRepository.taskModel.count({
             last_tried_at: {
                 $gte: measuredFrom,
                 $lt: measuredTo
@@ -233,7 +233,7 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
         }).exec();
 
         // 実行済みステータスで、最終試行日時が範囲にあるものを実行タスク数とする
-        const executedTasks = await taskAdapter.taskModel.find(
+        const executedTasks = await taskRepository.taskModel.find(
             {
                 last_tried_at: {
                     $gte: measuredFrom,
@@ -297,10 +297,10 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
 export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperation<IStock> {
     // tslint:disable-next-line:max-func-body-length
     return async (
-        taskAdapter: TaskAdapter,
-        transactionAdapter: TransactionAdapter
+        taskRepository: TaskRepository,
+        transactionRepository: TransactionRepository
     ) => {
-        const numberOfTransactionsUnderway = await transactionAdapter.transactionModel.count({
+        const numberOfTransactionsUnderway = await transactionRepository.transactionModel.count({
             $or: [
                 // {measuredAt}以前に開始し、{measuredAt}以後に成立あるいは期限切れした取引
                 {
@@ -330,7 +330,7 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
             ]
         }).exec();
 
-        const numberOfTasksUnexecuted = await taskAdapter.taskModel.count({
+        const numberOfTasksUnexecuted = await taskRepository.taskModel.count({
             $or: [
                 // {measuredAt}以前に作成され、{measuredAt}以後に実行試行されたタスク
                 {
@@ -399,9 +399,9 @@ export interface ICreditGMONotification {
  * @memberof service/report
  */
 export function searchGMOSales(dateFrom: Date, dateTo: Date): GMONotificationOperation<ICreditGMONotification[]> {
-    return async (gmoNotificationAdapter: GMONotificationAdapter) => {
+    return async (gmoNotificationRepository: GMONotificationRepository) => {
         // 'tran_date': '20170415230109'の形式
-        return <ICreditGMONotification[]>await gmoNotificationAdapter.gmoNotificationModel.find(
+        return <ICreditGMONotification[]>await gmoNotificationRepository.gmoNotificationModel.find(
             {
                 job_cd: GMO.utils.util.JobCd.Sales,
                 tran_date: {
@@ -417,7 +417,7 @@ export function searchGMOSales(dateFrom: Date, dateTo: Date): GMONotificationOpe
  * GMO実売上を診察にかける
  */
 // export function examineGMOSales(notification: ICreditGMONotification) {
-//     return async (transactionAdapter: TransactionAdapter) => {
+//     return async (transactionRepository: TransactionRepository) => {
 //         if (notification.job_cd !== GMO.Util.JOB_CD_SALES) {
 //             throw new ArgumentError('notification.job_cd', 'job_cd should be SALES');
 //         }
@@ -436,7 +436,7 @@ export function searchGMOSales(dateFrom: Date, dateTo: Date): GMONotificationOpe
 //             throw new Error('invalid orderId');
 //         }
 
-//         const transactionDoc = await transactionAdapter.transactionModel.findOne(
+//         const transactionDoc = await transactionRepository.transactionModel.findOne(
 //             {
 //                 status: TransactionStatus.CLOSED,
 //                 'inquiry_key.theater_code': theaterCode,
@@ -450,7 +450,7 @@ export function searchGMOSales(dateFrom: Date, dateTo: Date): GMONotificationOpe
 //             throw new Error('transaction not found');
 //         }
 
-//         const authorizations = await transactionAdapter.findAuthorizationsById(transactionDoc.get('id'));
+//         const authorizations = await transactionRepository.findAuthorizationsById(transactionDoc.get('id'));
 //         const gmoAuthorization = <GMOAuthorizationFactory.IAuthorization>authorizations.find(
 //             (authorization) => authorization.group === AuthorizationGroup.GMO
 //         );

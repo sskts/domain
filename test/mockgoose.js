@@ -27,7 +27,7 @@ before(() => __awaiter(this, void 0, void 0, function* () {
 describe('...', () => {
     it('...', () => __awaiter(this, void 0, void 0, function* () {
         // ...
-        const eventAdapter = sskts.adapter.event(mongoose.connection);
+        const eventAdapter = sskts.repository.event(mongoose.connection);
         const event = yield eventAdapter.eventModel.findOne({
             identifier: '11899100020170904102025'
         }).exec();

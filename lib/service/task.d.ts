@@ -6,9 +6,9 @@
  */
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
-import TaskAdapter from '../adapter/task';
-export declare type TaskOperation<T> = (taskAdapter: TaskAdapter) => Promise<T>;
-export declare type TaskAndConnectionOperation<T> = (taskAdapter: TaskAdapter, connection: mongoose.Connection) => Promise<T>;
+import TaskRepository from '../repository/task';
+export declare type TaskOperation<T> = (taskRepository: TaskRepository) => Promise<T>;
+export declare type TaskAndConnectionOperation<T> = (taskRepository: TaskRepository, connection: mongoose.Connection) => Promise<T>;
 /**
  * execute a task by taskName
  * タスク名でタスクをひとつ実行する

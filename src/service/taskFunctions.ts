@@ -7,9 +7,9 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
-import OrderAdapter from '../adapter/order';
-import OwnershipInfoAdapter from '../adapter/ownershipInfo';
-import TransactionAdapter from '../adapter/transaction';
+import OrderRepository from '../repository/order';
+import OwnershipInfoRepository from '../repository/ownershipInfo';
+import TransactionRepository from '../repository/transaction';
 
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
@@ -30,8 +30,8 @@ export function cancelSeatReservation(
     data: factory.task.cancelSeatReservation.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const transactionAdapter = new TransactionAdapter(connection);
-        await StockService.unauthorizeSeatReservation(data.transactionId)(transactionAdapter);
+        const transactionRepository = new TransactionRepository(connection);
+        await StockService.unauthorizeSeatReservation(data.transactionId)(transactionRepository);
     };
 }
 
@@ -39,8 +39,8 @@ export function cancelGMO(
     data: factory.task.cancelGMO.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const transactionAdapter = new TransactionAdapter(connection);
-        await SalesService.cancelGMOAuth(data.transactionId)(transactionAdapter);
+        const transactionRepository = new TransactionRepository(connection);
+        await SalesService.cancelGMOAuth(data.transactionId)(transactionRepository);
     };
 }
 
@@ -48,8 +48,8 @@ export function cancelMvtk(
     data: factory.task.cancelMvtk.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const transactionAdapter = new TransactionAdapter(connection);
-        await SalesService.cancelMvtk(data.transactionId)(transactionAdapter);
+        const transactionRepository = new TransactionRepository(connection);
+        await SalesService.cancelMvtk(data.transactionId)(transactionRepository);
     };
 }
 
@@ -57,9 +57,9 @@ export function settleSeatReservation(
     data: factory.task.settleSeatReservation.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const ownershipInfoAdapter = new OwnershipInfoAdapter(connection);
-        const transactionAdapter = new TransactionAdapter(connection);
-        await StockService.transferSeatReservation(data.transactionId)(ownershipInfoAdapter, transactionAdapter);
+        const ownershipInfoRepository = new OwnershipInfoRepository(connection);
+        const transactionRepository = new TransactionRepository(connection);
+        await StockService.transferSeatReservation(data.transactionId)(ownershipInfoRepository, transactionRepository);
     };
 }
 
@@ -67,8 +67,8 @@ export function settleGMO(
     data: factory.task.settleGMO.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const transactionAdapter = new TransactionAdapter(connection);
-        await SalesService.settleGMOAuth(data.transactionId)(transactionAdapter);
+        const transactionRepository = new TransactionRepository(connection);
+        await SalesService.settleGMOAuth(data.transactionId)(transactionRepository);
     };
 }
 
@@ -76,8 +76,8 @@ export function settleMvtk(
     data: factory.task.settleMvtk.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const transactionAdapter = new TransactionAdapter(connection);
-        await SalesService.settleMvtk(data.transactionId)(transactionAdapter);
+        const transactionRepository = new TransactionRepository(connection);
+        await SalesService.settleMvtk(data.transactionId)(transactionRepository);
     };
 }
 
@@ -85,8 +85,8 @@ export function createOrder(
     data: factory.task.createOrder.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const orderAdapter = new OrderAdapter(connection);
-        const transactionAdapter = new TransactionAdapter(connection);
-        await OrderService.createFromTransaction(data.transactionId)(orderAdapter, transactionAdapter);
+        const orderRepository = new OrderRepository(connection);
+        const transactionRepository = new TransactionRepository(connection);
+        await OrderService.createFromTransaction(data.transactionId)(orderRepository, transactionRepository);
     };
 }

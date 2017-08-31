@@ -2,7 +2,7 @@
 import { Connection } from 'mongoose';
 import theaterModel from './mongoose/model/theater';
 /**
- * 劇場アダプター
+ * 劇場レポジトリー
  *
  * @class TheaterAdapter
  */

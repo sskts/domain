@@ -8,7 +8,7 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import TransactionAdapter from '../adapter/transaction';
+import TransactionRepository from '../repository/transaction';
 
 const debug = createDebug('sskts-domain:service:sales');
 
@@ -20,8 +20,8 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  * @memberof service/sales
  */
 export function cancelGMOAuth(transactionId: string) {
-    return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
+    return async (transactionRepository: TransactionRepository) => {
+        const transaction = await transactionRepository.findPlaceOrderById(transactionId);
         if (transaction === null) {
             throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
@@ -53,8 +53,8 @@ export function cancelGMOAuth(transactionId: string) {
  * @memberof service/sales
  */
 export function settleGMOAuth(transactionId: string) {
-    return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
+    return async (transactionRepository: TransactionRepository) => {
+        const transaction = await transactionRepository.findPlaceOrderById(transactionId);
         if (transaction === null) {
             throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
@@ -100,7 +100,7 @@ export function settleGMOAuth(transactionId: string) {
  * @memberof service/sales
  */
 export function cancelMvtk(__1: string) {
-    return async (__2: TransactionAdapter) => {
+    return async (__2: TransactionRepository) => {
         // ムビチケは実は仮押さえの仕組みがないので何もしない
     };
 }
@@ -111,7 +111,7 @@ export function cancelMvtk(__1: string) {
  * @memberof service/sales
  */
 export function settleMvtk(__1: string) {
-    return async (__2: TransactionAdapter) => {
+    return async (__2: TransactionRepository) => {
         // 実は取引成立の前に着券済みなので何もしない
     };
 }

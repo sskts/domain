@@ -2,7 +2,7 @@ import { Connection } from 'mongoose';
 import performanceModel from './mongoose/model/performance';
 
 /**
- * パフォーマンスアダプター
+ * パフォーマンスレポジトリー
  *
  * @class PerformanceAdapter
  */

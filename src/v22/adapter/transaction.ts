@@ -12,7 +12,7 @@ import TransactionEventModel from './mongoose/model/transactionEvent';
 const debug = createDebug('sskts-domain:adapter:transaction');
 
 /**
- * 取引アダプター
+ * 取引レポジトリー
  *
  * todo ITransactionにIOwnerが結合しているために、デフォルトで.populate('owner')したりしている
  * Ownerをjoinするしないを必要に応じて使い分けられるようにする

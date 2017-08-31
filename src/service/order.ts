@@ -5,21 +5,21 @@
 
 import * as factory from '@motionpicture/sskts-factory';
 
-import OrderAdapter from '../adapter/order';
-import TransactionAdapter from '../adapter/transaction';
+import OrderRepository from '../repository/order';
+import TransactionRepository from '../repository/transaction';
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 
 export function createFromTransaction(transactionId: string) {
-    return async (orderAdapter: OrderAdapter, transactionAdapter: TransactionAdapter) => {
-        const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
+    return async (orderRepository: OrderRepository, transactionRepository: TransactionRepository) => {
+        const transaction = await transactionRepository.findPlaceOrderById(transactionId);
         if (transaction === null) {
             throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
 
         if (transaction.result !== undefined) {
             const order = transaction.result.order;
-            await orderAdapter.orderModel.findOneAndUpdate(
+            await orderRepository.orderModel.findOneAndUpdate(
                 {
                     orderNumber: order.orderNumber
                 },
@@ -35,8 +35,8 @@ export function createFromTransaction(transactionId: string) {
  * @param {factory.order.IOrderInquiryKey} orderInquiryKey
  */
 export function findByOrderInquiryKey(orderInquiryKey: factory.order.IOrderInquiryKey) {
-    return async (orderAdapter: OrderAdapter) => {
-        const doc = await orderAdapter.orderModel.findOne(
+    return async (orderRepository: OrderRepository) => {
+        const doc = await orderRepository.orderModel.findOne(
             {
                 'orderInquiryKey.theaterCode': orderInquiryKey.theaterCode,
                 'orderInquiryKey.confirmationNumber': orderInquiryKey.confirmationNumber,

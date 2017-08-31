@@ -24,27 +24,21 @@ import * as StockService from './service/stock';
 import * as TaskService from './service/task';
 import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
 
-import ClientAdapter from './adapter/client';
-import CreativeWorkAdapter from './adapter/creativeWork';
-import EventAdapter from './adapter/event';
-import GMONotificationAdapter from './adapter/gmoNotification';
-import IndividualScreeningEventItemAvailabilityAdapter from './adapter/itemAvailability/individualScreeningEvent';
-import OrderAdapter from './adapter/order';
-import OrganizationAdapter from './adapter/organization';
-import OwnershipInfoAdapter from './adapter/ownershipInfo';
-import PersonAdapter from './adapter/person';
-import PlaceAdapter from './adapter/place';
-import SendGridEventAdapter from './adapter/sendGridEvent';
-import TaskAdapter from './adapter/task';
-import TelemetryAdapter from './adapter/telemetry';
-import TransactionAdapter from './adapter/transaction';
-import TransactionCountAdapter from './adapter/transactionCount';
-
-// repositoryがディレクトリ名として予約語でないかどうか確認するため
-import TestRepository from './repository/test';
-export {
-    TestRepository
-};
+import ClientRepository from './repository/client';
+import CreativeWorkRepository from './repository/creativeWork';
+import EventRepository from './repository/event';
+import GMONotificationRepository from './repository/gmoNotification';
+import IndividualScreeningEventItemAvailabilityRepository from './repository/itemAvailability/individualScreeningEvent';
+import OrderRepository from './repository/order';
+import OrganizationRepository from './repository/organization';
+import OwnershipInfoRepository from './repository/ownershipInfo';
+import PersonRepository from './repository/person';
+import PlaceRepository from './repository/place';
+import SendGridEventRepository from './repository/sendGridEvent';
+import TaskRepository from './repository/task';
+import TelemetryRepository from './repository/telemetry';
+import TransactionRepository from './repository/transaction';
+import TransactionCountRepository from './repository/transactionCount';
 
 (<any>mongoose).Promise = global.Promise;
 
@@ -95,53 +89,53 @@ export import COA = COA;
  */
 export import GMO = GMO;
 
-export namespace adapter {
+export namespace repository {
     export function transaction(connection: mongoose.Connection) {
-        return new TransactionAdapter(connection);
+        return new TransactionRepository(connection);
     }
     export function client(connection: mongoose.Connection) {
-        return new ClientAdapter(connection);
+        return new ClientRepository(connection);
     }
     export function creativeWork(connection: mongoose.Connection) {
-        return new CreativeWorkAdapter(connection);
+        return new CreativeWorkRepository(connection);
     }
     export function event(connection: mongoose.Connection) {
-        return new EventAdapter(connection);
+        return new EventRepository(connection);
     }
     export function gmoNotification(connection: mongoose.Connection) {
-        return new GMONotificationAdapter(connection);
+        return new GMONotificationRepository(connection);
     }
     export function order(connection: mongoose.Connection) {
-        return new OrderAdapter(connection);
+        return new OrderRepository(connection);
     }
     export function organization(connection: mongoose.Connection) {
-        return new OrganizationAdapter(connection);
+        return new OrganizationRepository(connection);
     }
     export function ownershipInfo(connection: mongoose.Connection) {
-        return new OwnershipInfoAdapter(connection);
+        return new OwnershipInfoRepository(connection);
     }
     export function person(connection: mongoose.Connection) {
-        return new PersonAdapter(connection);
+        return new PersonRepository(connection);
     }
     export function place(connection: mongoose.Connection) {
-        return new PlaceAdapter(connection);
+        return new PlaceRepository(connection);
     }
     export namespace itemAvailability {
         export function individualScreeningEvent(redisClient: redis.RedisClient) {
-            return new IndividualScreeningEventItemAvailabilityAdapter(redisClient);
+            return new IndividualScreeningEventItemAvailabilityRepository(redisClient);
         }
     }
     export function sendGridEvent(connection: mongoose.Connection) {
-        return new SendGridEventAdapter(connection);
+        return new SendGridEventRepository(connection);
     }
     export function task(connection: mongoose.Connection) {
-        return new TaskAdapter(connection);
+        return new TaskRepository(connection);
     }
     export function telemetry(connection: mongoose.Connection) {
-        return new TelemetryAdapter(connection);
+        return new TelemetryRepository(connection);
     }
     export function transactionCount(redisClient: redis.RedisClient) {
-        return new TransactionCountAdapter(redisClient);
+        return new TransactionCountRepository(redisClient);
     }
 }
 

@@ -1,5 +1,5 @@
-import IndividualScreeningEventItemAvailabilityAdapter from '../adapter/itemAvailability/individualScreeningEvent';
-export declare type IItemAvailabilityOperation<T> = (itemAvailabilityAdapter: IndividualScreeningEventItemAvailabilityAdapter) => Promise<T>;
+import IndividualScreeningEventItemAvailabilityRepository from '../repository/itemAvailability/individualScreeningEvent';
+export declare type IItemAvailabilityOperation<T> = (itemAvailabilityRepository: IndividualScreeningEventItemAvailabilityRepository) => Promise<T>;
 /**
  * 劇場IDと上映日範囲からパフォーマンス在庫状況を更新する
  *

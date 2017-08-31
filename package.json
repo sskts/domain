@@ -86,7 +86,7 @@
     "build": "tsc",
     "build-tools": "tsc -p tsconfig.tools.json",
     "check": "npm run tslint && nsp check && npm run snyk",
-    "clean": "rimraf test/**/*.js lib/* npm-debug.log* docs/*",
+    "clean": "rimraf test/**/*.js ./lib npm-debug.log* ./doc",
     "jsdoc": "node_modules/.bin/jsdoc -c jsdoc.json",
     "mocha": "mocha",
     "nyc": "nyc mocha",

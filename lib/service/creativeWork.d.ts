@@ -1,5 +1,5 @@
-import CreativeWorkAdapter from '../adapter/creativeWork';
+import CreativeWorkRepository from '../repository/creativeWork';
 /**
  * 映画作品インポート
  */
-export declare function importMovies(theaterCode: string): (creativeWorkAdapter: CreativeWorkAdapter) => Promise<void>;
+export declare function importMovies(theaterCode: string): (creativeWorkRepository: CreativeWorkRepository) => Promise<void>;

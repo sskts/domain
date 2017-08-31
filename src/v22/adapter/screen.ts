@@ -2,7 +2,7 @@ import { Connection } from 'mongoose';
 import screenModel from './mongoose/model/screen';
 
 /**
- * スクリーンアダプター
+ * スクリーンレポジトリー
  *
  * @class ScreenAdapter
  */

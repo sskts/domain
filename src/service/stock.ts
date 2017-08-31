@@ -8,8 +8,8 @@ import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import OwnershipInfoAdapter from '../adapter/ownershipInfo';
-import TransactionAdapter from '../adapter/transaction';
+import OwnershipInfoRepository from '../repository/ownershipInfo';
+import TransactionRepository from '../repository/transaction';
 
 const debug = createDebug('sskts-domain:service:stock');
 
@@ -21,8 +21,8 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  * @memberof service/stock
  */
 export function unauthorizeSeatReservation(transactionId: string) {
-    return async (transactionAdapter: TransactionAdapter) => {
-        const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
+    return async (transactionRepository: TransactionRepository) => {
+        const transaction = await transactionRepository.findPlaceOrderById(transactionId);
         if (transaction === null) {
             throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
@@ -52,8 +52,8 @@ export function unauthorizeSeatReservation(transactionId: string) {
  */
 export function transferSeatReservation(transactionId: string) {
     // tslint:disable-next-line:max-func-body-length
-    return async (ownershipInfoAdapter: OwnershipInfoAdapter, transactionAdapter: TransactionAdapter) => {
-        const transaction = await transactionAdapter.findPlaceOrderById(transactionId);
+    return async (ownershipInfoRepository: OwnershipInfoRepository, transactionRepository: TransactionRepository) => {
+        const transaction = await transactionRepository.findPlaceOrderById(transactionId);
         if (transaction === null) {
             throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
@@ -104,7 +104,7 @@ export function transferSeatReservation(transactionId: string) {
         if (transaction.result !== undefined) {
             await Promise.all(transaction.result.ownershipInfos.map(async (ownershipInfo) => {
                 // 所有権永続化
-                await ownershipInfoAdapter.ownershipInfoModel.findOneAndUpdate(
+                await ownershipInfoRepository.ownershipInfoModel.findOneAndUpdate(
                     {
                         identifier: ownershipInfo.identifier
                     },

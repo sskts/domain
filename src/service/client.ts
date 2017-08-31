@@ -6,11 +6,11 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import ClientAdapter from '../adapter/client';
+import ClientRepository from '../repository/client';
 
 const debug = createDebug('sskts-domain:service:client');
 
-export type ClientOperation<T> = (clientAdapter: ClientAdapter) => Promise<T>;
+export type ClientOperation<T> = (clientRepository: ClientRepository) => Promise<T>;
 
 export interface IPushEventParams {
     client: string;
@@ -27,7 +27,7 @@ export interface IPushEventParams {
 }
 
 export function pushEvent(params: IPushEventParams): ClientOperation<factory.clientEvent.IClientEvent> {
-    return async (clientAdapter: ClientAdapter) => {
+    return async (clientRepository: ClientRepository) => {
         // tslint:disable-next-line:no-suspicious-comment
         // TODO クライアントの存在確認
 
@@ -36,7 +36,7 @@ export function pushEvent(params: IPushEventParams): ClientOperation<factory.cli
         debug('creating a clientEvent...', clientEvent);
 
         // ドキュメント作成(idが既に存在していればユニーク制約ではじかれる)
-        await clientAdapter.clientEventModel.findByIdAndUpdate(clientEvent.id, clientEvent, { upsert: true }).exec();
+        await clientRepository.clientEventModel.findByIdAndUpdate(clientEvent.id, clientEvent, { upsert: true }).exec();
 
         return clientEvent;
     };

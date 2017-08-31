@@ -9,13 +9,13 @@ import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-import TaskAdapter from '../adapter/task';
+import TaskRepository from '../repository/task';
 
 import * as NotificationService from './notification';
 import * as TaskFunctionsService from './taskFunctions';
 
-export type TaskOperation<T> = (taskAdapter: TaskAdapter) => Promise<T>;
-export type TaskAndConnectionOperation<T> = (taskAdapter: TaskAdapter, connection: mongoose.Connection) => Promise<T>;
+export type TaskOperation<T> = (taskRepository: TaskRepository) => Promise<T>;
+export type TaskAndConnectionOperation<T> = (taskRepository: TaskRepository, connection: mongoose.Connection) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:task');
 
@@ -37,9 +37,9 @@ const sortOrder4executionOfTasks = {
  * @memberof service/task
  */
 export function executeByName(taskName: factory.taskName): TaskAndConnectionOperation<void> {
-    return async (taskAdapter: TaskAdapter, connection: mongoose.Connection) => {
+    return async (taskRepository: TaskRepository, connection: mongoose.Connection) => {
         // 未実行のタスクを取得
-        const taskDoc = await taskAdapter.taskModel.findOneAndUpdate(
+        const taskDoc = await taskRepository.taskModel.findOneAndUpdate(
             {
                 status: factory.taskStatus.Ready,
                 runsAt: { $lt: new Date() },
@@ -63,7 +63,7 @@ export function executeByName(taskName: factory.taskName): TaskAndConnectionOper
         }
 
         const task = <factory.task.ITask>taskDoc.toObject();
-        await execute(task)(taskAdapter, connection);
+        await execute(task)(taskRepository, connection);
     };
 }
 
@@ -78,7 +78,7 @@ export function executeByName(taskName: factory.taskName): TaskAndConnectionOper
 export function execute(task: factory.task.ITask): TaskAndConnectionOperation<void> {
     debug('executing a task...', task);
 
-    return async (taskAdapter: TaskAdapter, connection: mongoose.Connection) => {
+    return async (taskRepository: TaskRepository, connection: mongoose.Connection) => {
         try {
             // タスク名の関数が定義されていなければ、TypeErrorとなる
             await (<any>TaskFunctionsService)[task.name](task.data)(connection);
@@ -87,7 +87,7 @@ export function execute(task: factory.task.ITask): TaskAndConnectionOperation<vo
                 executedAt: new Date(),
                 error: ''
             });
-            await taskAdapter.taskModel.findByIdAndUpdate(
+            await taskRepository.taskModel.findByIdAndUpdate(
                 task.id,
                 {
                     status: factory.taskStatus.Executed,
@@ -101,7 +101,7 @@ export function execute(task: factory.task.ITask): TaskAndConnectionOperation<vo
                 executedAt: new Date(),
                 error: error.stack
             });
-            await taskAdapter.taskModel.findByIdAndUpdate(
+            await taskRepository.taskModel.findByIdAndUpdate(
                 task.id,
                 { $push: { executionResults: result } }
             ).exec();
@@ -119,8 +119,8 @@ export function execute(task: factory.task.ITask): TaskAndConnectionOperation<vo
  * @memberof service/task
  */
 export function retry(intervalInMinutes: number): TaskOperation<void> {
-    return async (taskAdapter: TaskAdapter) => {
-        await taskAdapter.taskModel.update(
+    return async (taskRepository: TaskRepository) => {
+        await taskRepository.taskModel.update(
             {
                 status: factory.taskStatus.Running,
                 lastTriedAt: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() },
@@ -144,8 +144,8 @@ export function retry(intervalInMinutes: number): TaskOperation<void> {
  * @memberof service/task
  */
 export function abort(intervalInMinutes: number): TaskOperation<void> {
-    return async (taskAdapter: TaskAdapter) => {
-        const abortedTaskDoc = await taskAdapter.taskModel.findOneAndUpdate(
+    return async (taskRepository: TaskRepository) => {
+        const abortedTaskDoc = await taskRepository.taskModel.findOneAndUpdate(
             {
                 status: factory.taskStatus.Running,
                 lastTriedAt: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() },

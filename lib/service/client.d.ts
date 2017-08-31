@@ -3,8 +3,8 @@
  * @namespace service/client
  */
 import * as factory from '@motionpicture/sskts-factory';
-import ClientAdapter from '../adapter/client';
-export declare type ClientOperation<T> = (clientAdapter: ClientAdapter) => Promise<T>;
+import ClientRepository from '../repository/client';
+export declare type ClientOperation<T> = (clientRepository: ClientRepository) => Promise<T>;
 export interface IPushEventParams {
     client: string;
     occurredAt: Date;
