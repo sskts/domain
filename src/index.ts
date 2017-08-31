@@ -40,6 +40,12 @@ import TelemetryAdapter from './adapter/telemetry';
 import TransactionAdapter from './adapter/transaction';
 import TransactionCountAdapter from './adapter/transactionCount';
 
+// repositoryがディレクトリ名として予約語でないかどうか確認するため
+import TestRepository from './repository/test';
+export {
+    TestRepository
+};
+
 (<any>mongoose).Promise = global.Promise;
 
 /**

@@ -37,6 +37,8 @@ import TaskAdapter from './adapter/task';
 import TelemetryAdapter from './adapter/telemetry';
 import TransactionAdapter from './adapter/transaction';
 import TransactionCountAdapter from './adapter/transactionCount';
+import TestRepository from './repository/test';
+export { TestRepository };
 /**
  * MongoDBクライアント`mongoose`
  *
