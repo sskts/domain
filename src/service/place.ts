@@ -8,7 +8,7 @@ import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import PlaceRepository from '../repository/place';
+import PlaceRepository from '../repo/place';
 
 const debug = createDebug('sskts-domain:service:place');
 

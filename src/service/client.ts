@@ -6,7 +6,7 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import ClientRepository from '../repository/client';
+import ClientRepository from '../repo/client';
 
 const debug = createDebug('sskts-domain:service:client');
 

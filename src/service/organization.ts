@@ -7,7 +7,7 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import OrganizationRepository from '../repository/organization';
+import OrganizationRepository from '../repo/organization';
 
 const debug = createDebug('sskts-domain:service:organization');
 

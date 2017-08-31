@@ -8,7 +8,7 @@ import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import CreativeWorkRepository from '../repository/creativeWork';
+import CreativeWorkRepository from '../repo/creativeWork';
 
 const debug = createDebug('sskts-domain:service:creativeWork');
 

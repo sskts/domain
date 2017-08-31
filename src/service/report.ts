@@ -10,10 +10,10 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
-import GMONotificationRepository from '../repository/gmoNotification';
-import TaskRepository from '../repository/task';
-import TelemetryRepository from '../repository/telemetry';
-import TransactionRepository from '../repository/transaction';
+import GMONotificationRepository from '../repo/gmoNotification';
+import TaskRepository from '../repo/task';
+import TelemetryRepository from '../repo/telemetry';
+import TransactionRepository from '../repo/transaction';
 
 export type TaskAndTransactionOperation<T> = (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => Promise<T>;
 export type TaskAndTelemetryAndTransactionOperation<T> =

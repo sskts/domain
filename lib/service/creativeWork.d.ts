@@ -1,4 +1,4 @@
-import CreativeWorkRepository from '../repository/creativeWork';
+import CreativeWorkRepository from '../repo/creativeWork';
 /**
  * 映画作品インポート
  */

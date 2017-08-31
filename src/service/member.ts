@@ -11,8 +11,8 @@ import * as createDebug from 'debug';
 // import AlreadyInUseError from '../error/alreadyInUse';
 // import ArgumentError from '../error/argument';
 
-// import AssetRepository from '../repository/asset';
-// import OwnerRepository from '../repository/owner';
+// import AssetRepository from '../repo/asset';
+// import OwnerRepository from '../repo/owner';
 
 // import * as GMOCardFactory from '../factory/card/gmo';
 // import * as GMOCardIdFactory from '../factory/cardId/gmo';

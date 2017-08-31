@@ -1,5 +1,5 @@
 import * as factory from '@motionpicture/sskts-factory';
-import PlaceRepository from '../repository/place';
+import PlaceRepository from '../repo/place';
 export declare type IPlaceOperation<T> = (placeRepository: PlaceRepository) => Promise<T>;
 /**
  * 劇場インポート

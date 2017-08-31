@@ -3,7 +3,7 @@
  * @namespace service/client
  */
 import * as factory from '@motionpicture/sskts-factory';
-import ClientRepository from '../repository/client';
+import ClientRepository from '../repo/client';
 export declare type ClientOperation<T> = (clientRepository: ClientRepository) => Promise<T>;
 export interface IPushEventParams {
     client: string;

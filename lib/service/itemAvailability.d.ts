@@ -1,4 +1,4 @@
-import IndividualScreeningEventItemAvailabilityRepository from '../repository/itemAvailability/individualScreeningEvent';
+import IndividualScreeningEventItemAvailabilityRepository from '../repo/itemAvailability/individualScreeningEvent';
 export declare type IItemAvailabilityOperation<T> = (itemAvailabilityRepository: IndividualScreeningEventItemAvailabilityRepository) => Promise<T>;
 /**
  * 劇場IDと上映日範囲からパフォーマンス在庫状況を更新する

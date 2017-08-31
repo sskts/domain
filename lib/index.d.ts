@@ -22,21 +22,21 @@ import * as ShopService from './service/shop';
 import * as StockService from './service/stock';
 import * as TaskService from './service/task';
 import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
-import ClientRepository from './repository/client';
-import CreativeWorkRepository from './repository/creativeWork';
-import EventRepository from './repository/event';
-import GMONotificationRepository from './repository/gmoNotification';
-import IndividualScreeningEventItemAvailabilityRepository from './repository/itemAvailability/individualScreeningEvent';
-import OrderRepository from './repository/order';
-import OrganizationRepository from './repository/organization';
-import OwnershipInfoRepository from './repository/ownershipInfo';
-import PersonRepository from './repository/person';
-import PlaceRepository from './repository/place';
-import SendGridEventRepository from './repository/sendGridEvent';
-import TaskRepository from './repository/task';
-import TelemetryRepository from './repository/telemetry';
-import TransactionRepository from './repository/transaction';
-import TransactionCountRepository from './repository/transactionCount';
+import ClientRepository from './repo/client';
+import CreativeWorkRepository from './repo/creativeWork';
+import EventRepository from './repo/event';
+import GMONotificationRepository from './repo/gmoNotification';
+import IndividualScreeningEventItemAvailabilityRepository from './repo/itemAvailability/individualScreeningEvent';
+import OrderRepository from './repo/order';
+import OrganizationRepository from './repo/organization';
+import OwnershipInfoRepository from './repo/ownershipInfo';
+import PersonRepository from './repo/person';
+import PlaceRepository from './repo/place';
+import SendGridEventRepository from './repo/sendGridEvent';
+import TaskRepository from './repo/task';
+import TelemetryRepository from './repo/telemetry';
+import TransactionRepository from './repo/transaction';
+import TransactionCountRepository from './repo/transactionCount';
 /**
  * MongoDBクライアント`mongoose`
  *

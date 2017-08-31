@@ -4,7 +4,7 @@
  * @namespace service/organization
  */
 import * as factory from '@motionpicture/sskts-factory';
-import OrganizationRepository from '../repository/organization';
+import OrganizationRepository from '../repo/organization';
 export declare type IOrganizationOperation<T> = (organizationRepository: OrganizationRepository) => Promise<T>;
 /**
  * 劇場検索

@@ -1,5 +1,5 @@
 import * as factory from '@motionpicture/sskts-factory';
-import TransactionRepository from '../repository/transaction';
+import TransactionRepository from '../repo/transaction';
 export declare type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 /**
  * GMOオーソリ取消

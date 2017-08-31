@@ -9,9 +9,9 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
-import EventRepository from '../repository/event';
-import IndividualScreeningEventItemAvailabilityRepository from '../repository/itemAvailability/individualScreeningEvent';
-import PlaceRepository from '../repository/place';
+import EventRepository from '../repo/event';
+import IndividualScreeningEventItemAvailabilityRepository from '../repo/itemAvailability/individualScreeningEvent';
+import PlaceRepository from '../repo/place';
 
 const debug = createDebug('sskts-domain:service:event');
 

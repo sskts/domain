@@ -1,7 +1,7 @@
 import * as factory from '@motionpicture/sskts-factory';
-import EventRepository from '../repository/event';
-import IndividualScreeningEventItemAvailabilityRepository from '../repository/itemAvailability/individualScreeningEvent';
-import PlaceRepository from '../repository/place';
+import EventRepository from '../repo/event';
+import IndividualScreeningEventItemAvailabilityRepository from '../repo/itemAvailability/individualScreeningEvent';
+import PlaceRepository from '../repo/place';
 export declare type IEventOperation<T> = (eventRepository: EventRepository, itemAvailability?: IndividualScreeningEventItemAvailabilityRepository) => Promise<T>;
 /**
  * import screening events from COA

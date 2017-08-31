@@ -10,10 +10,10 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
-import OrganizationRepository from '../../repository/organization';
-import TaskRepository from '../../repository/task';
-import TransactionRepository from '../../repository/transaction';
-import TransactionCountRepository from '../../repository/transactionCount';
+import OrganizationRepository from '../../repo/organization';
+import TaskRepository from '../../repo/task';
+import TransactionRepository from '../../repo/transaction';
+import TransactionCountRepository from '../../repo/transactionCount';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrder');
 

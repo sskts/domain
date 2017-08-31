@@ -6,7 +6,7 @@
 
 import * as factory from '@motionpicture/sskts-factory';
 
-import OrganizationRepository from '../repository/organization';
+import OrganizationRepository from '../repo/organization';
 
 export function open(organization: factory.organization.movieTheater.IOrganization) {
     return async (organizationRepository: OrganizationRepository) => {

@@ -8,7 +8,7 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import TransactionRepository from '../repository/transaction';
+import TransactionRepository from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:sales');
 
