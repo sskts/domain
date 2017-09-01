@@ -84,6 +84,7 @@ export function execute(task: factory.task.ITask): TaskAndConnectionOperation<vo
             await (<any>TaskFunctionsService)[task.name](task.data)(connection);
 
             const result = factory.taskExecutionResult.create({
+                id: mongoose.Types.ObjectId().toString(),
                 executedAt: new Date(),
                 error: ''
             });
@@ -98,6 +99,7 @@ export function execute(task: factory.task.ITask): TaskAndConnectionOperation<vo
             // 失敗してもここでは戻さない(Runningのまま待機)
             // 実行結果追加
             const result = factory.taskExecutionResult.create({
+                id: mongoose.Types.ObjectId().toString(),
                 executedAt: new Date(),
                 error: error.stack
             });

@@ -9,6 +9,7 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
+import * as mongoose from 'mongoose';
 
 import OrganizationRepository from '../../repo/organization';
 import TaskRepository from '../../repo/task';
@@ -69,6 +70,7 @@ export function start(args: {
 
         // 取引ファクトリーで新しい進行中取引オブジェクトを作成
         const transaction = factory.transaction.placeOrder.create({
+            id: mongoose.Types.ObjectId().toString(),
             status: factory.transactionStatusType.InProgress,
             agent: agent,
             seller: {
@@ -140,6 +142,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
                 tasks.push(factory.task.settleSeatReservation.create({
+                    id: mongoose.Types.ObjectId().toString(),
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -151,6 +154,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     }
                 }));
                 tasks.push(factory.task.settleGMO.create({
+                    id: mongoose.Types.ObjectId().toString(),
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -162,6 +166,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     }
                 }));
                 tasks.push(factory.task.settleMvtk.create({
+                    id: mongoose.Types.ObjectId().toString(),
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -173,6 +178,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     }
                 }));
                 tasks.push(factory.task.createOrder.create({
+                    id: mongoose.Types.ObjectId().toString(),
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -205,6 +211,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
             // 期限切れの場合は、タスクリストを作成する
             case factory.transactionStatusType.Expired:
                 tasks.push(factory.task.cancelSeatReservation.create({
+                    id: mongoose.Types.ObjectId().toString(),
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -216,6 +223,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     }
                 }));
                 tasks.push(factory.task.cancelGMO.create({
+                    id: mongoose.Types.ObjectId().toString(),
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -227,6 +235,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     }
                 }));
                 tasks.push(factory.task.cancelMvtk.create({
+                    id: mongoose.Types.ObjectId().toString(),
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -325,6 +334,7 @@ export function createCreditCardAuthorization(
         // GMOオーソリ追加
         debug('adding authorizations gmo...');
         const gmoAuthorization = factory.authorization.gmo.create({
+            id: mongoose.Types.ObjectId().toString(),
             price: amount,
             object: {
                 shopId: movieTheater.gmoInfo.shopId,
@@ -549,6 +559,7 @@ export function createMvtkAuthorization(
         }
 
         const authorization = factory.authorization.mvtk.create({
+            id: mongoose.Types.ObjectId().toString(),
             price: authorizationResult.price,
             result: authorizationResult,
             object: {}

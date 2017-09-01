@@ -1,6 +1,6 @@
 /// <reference types="mongoose" />
 import * as factory from '@motionpicture/sskts-factory';
-import { Connection } from 'mongoose';
+import * as mongoose from 'mongoose';
 import ClientEventModel from './mongoose/model/clientEvent';
 export interface IPushEventParams {
     client: string;
@@ -22,6 +22,6 @@ export interface IPushEventParams {
  */
 export default class ClientRepository {
     readonly clientEventModel: typeof ClientEventModel;
-    constructor(connection: Connection);
+    constructor(connection: mongoose.Connection);
     pushEvent(params: IPushEventParams): Promise<factory.clientEvent.IClientEvent>;
 }
