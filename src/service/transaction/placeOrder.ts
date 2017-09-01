@@ -1,6 +1,6 @@
 /**
- * 取引サービス
- *
+ * placeOrder transaction service
+ * 注文取引サービス
  * @namespace service/transaction/placeOrder
  */
 
@@ -65,18 +65,16 @@ export function start(args: {
         }
 
         // 売り手を取得
-        const sellerDoc = await organizationRepository.organizationModel.findById(args.sellerId).exec();
-        if (sellerDoc === null) {
-            throw new Error('seller not found');
-        }
-        const seller = <factory.organization.movieTheater.IOrganization>sellerDoc.toObject();
+        const seller = await organizationRepository.findMovieTheaterById(args.sellerId);
 
         // 取引ファクトリーで新しい進行中取引オブジェクトを作成
         const transaction = factory.transaction.placeOrder.create({
             status: factory.transactionStatusType.InProgress,
             agent: agent,
             seller: {
-                typeOf: 'MovieTheater', // todo enum管理
+                // tslint:disable-next-line:no-suspicious-comment
+                // TODO enum管理
+                typeOf: 'MovieTheater',
                 id: seller.id,
                 name: seller.name.ja,
                 url: seller.url
@@ -90,33 +88,9 @@ export function start(args: {
             startDate: moment().toDate()
         });
 
-        debug('creating transaction...', transaction);
-        // mongoDBに追加するために_id属性を拡張
-        await transactionRepository.transactionModel.create({ ...transaction, ...{ _id: transaction.id } });
+        await transactionRepository.startPlaceOrder(transaction);
 
         return transaction;
-    };
-}
-
-/**
- * 取引を期限切れにする
- */
-export function makeExpired() {
-    return async (transactionRepository: TransactionRepository) => {
-        const endDate = moment().toDate();
-
-        // ステータスと期限を見て更新
-        await transactionRepository.transactionModel.update(
-            {
-                status: factory.transactionStatusType.InProgress,
-                expires: { $lt: endDate }
-            },
-            {
-                status: factory.transactionStatusType.Expired,
-                endDate: endDate
-            },
-            { multi: true }
-        ).exec();
     };
 }
 
@@ -150,14 +124,7 @@ export function exportTasks(status: factory.transactionStatusType) {
             transactionRepository
         );
 
-        await transactionRepository.transactionModel.findByIdAndUpdate(
-            transaction.id,
-            {
-                tasksExportationStatus: factory.transactionTasksExportationStatus.Exported,
-                tasksExportedAt: moment().toDate(),
-                tasks: tasks
-            }
-        ).exec();
+        await transactionRepository.setTasksExportedById(transaction.id, tasks);
     };
 }
 
@@ -167,14 +134,7 @@ export function exportTasks(status: factory.transactionStatusType) {
 export function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask[]> {
     // tslint:disable-next-line:max-func-body-length
     return async (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => {
-        const transaction = await transactionRepository.transactionModel.findById(transactionId).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new Error(`trade[${transactionId}] not found.`);
-                }
-
-                return <factory.transaction.placeOrder.ITransaction>doc.toObject();
-            });
+        const transaction = await transactionRepository.findPlaceOrderById(transactionId);
 
         const tasks: factory.task.ITask[] = [];
         switch (transaction.status) {
@@ -287,52 +247,10 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
 
         await Promise.all(tasks.map(async (task) => {
             debug('storing task...', task);
-            await taskRepository.taskModel.findByIdAndUpdate(task.id, task, { upsert: true }).exec();
+            await taskRepository.save(task);
         }));
 
         return tasks;
-    };
-}
-
-/**
- * タスクエクスポートリトライ
- * todo updatedAtを基準にしているが、タスクエクスポートトライ日時を持たせた方が安全か？
- *
- * @param {number} intervalInMinutes
- * @memberof service/transaction
- */
-export function reexportTasks(intervalInMinutes: number) {
-    return async (transactionRepository: TransactionRepository) => {
-        await transactionRepository.transactionModel.findOneAndUpdate(
-            {
-                tasksExportationStatus: factory.transactionTasksExportationStatus.Exporting,
-                updatedAt: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() }
-            },
-            {
-                tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
-            }
-        ).exec();
-    };
-}
-
-/**
- * 進行中の取引を取得する
- */
-export function findInProgressById(
-    transactionId: string
-): ITransactionOperation<factory.transaction.placeOrder.ITransaction> {
-    return async (transactionRepository: TransactionRepository) => {
-        const doc = await transactionRepository.transactionModel.findOne({
-            _id: transactionId,
-            typeOf: factory.transactionType.PlaceOrder,
-            status: factory.transactionStatusType.InProgress
-        }).exec();
-
-        if (doc === null) {
-            throw new factory.errors.NotFound('transaction in progress');
-        }
-
-        return <factory.transaction.placeOrder.ITransaction>doc.toObject();
     };
 }
 
@@ -355,17 +273,10 @@ export function createCreditCardAuthorization(
     creditCard: ICreditCard4authorization
 ): IOrganizationAndTransactionOperation<factory.authorization.gmo.IAuthorization> {
     return async (organizationRepository: OrganizationRepository, transactionRepository: TransactionRepository) => {
-        const transaction = await findInProgressById(transactionId)(transactionRepository);
+        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
 
         // GMOショップ情報取得
-        const movieTheater = await organizationRepository.organizationModel.findById(transaction.seller.id).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new factory.errors.Argument('transactionId', 'movieTheater not found');
-                }
-
-                return <factory.organization.movieTheater.IOrganization>doc.toObject();
-            });
+        const movieTheater = await organizationRepository.findMovieTheaterById(transaction.seller.id);
 
         // GMOオーソリ取得
         let entryTranResult: GMO.services.credit.IEntryTranResult;
@@ -440,7 +351,7 @@ export function createCreditCardAuthorization(
 
 export function cancelGMOAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionRepository: TransactionRepository) => {
-        const transaction = await findInProgressById(transactionId)(transactionRepository);
+        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
 
         const authorization = transaction.object.paymentInfos.find(
             (paymentInfo) => paymentInfo.group === factory.authorizationGroup.GMO
@@ -477,7 +388,7 @@ export function createSeatReservationAuthorization(
     offers: factory.offer.ISeatReservationOffer[]
 ): ITransactionOperation<factory.authorization.seatReservation.IAuthorization> {
     return async (transactionRepository: TransactionRepository) => {
-        const transaction = await findInProgressById(transactionId)(transactionRepository);
+        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
 
         // todo 座席コードがすでにキープ済みのものかどうかチェックできる？
 
@@ -521,7 +432,7 @@ export function createSeatReservationAuthorization(
 
 export function cancelSeatReservationAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionRepository: TransactionRepository) => {
-        const transaction = await findInProgressById(transactionId)(transactionRepository);
+        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
 
         const authorization = transaction.object.seatReservation;
         if (authorization === undefined) {
@@ -567,7 +478,7 @@ export function createMvtkAuthorization(
     authorizationResult: factory.authorization.mvtk.IResult
 ): ITransactionOperation<factory.authorization.mvtk.IAuthorization> {
     return async (transactionRepository: TransactionRepository) => {
-        const transaction = await findInProgressById(transactionId)(transactionRepository);
+        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
 
         const seatReservationAuthorization = transaction.object.seatReservation;
         // seatReservationAuthorization already exists?
@@ -654,7 +565,7 @@ export function createMvtkAuthorization(
 
 export function cancelMvtkAuthorization(transactionId: string, authorizationId: string) {
     return async (transactionRepository: TransactionRepository) => {
-        const transaction = await findInProgressById(transactionId)(transactionRepository);
+        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
 
         const authorization = transaction.object.discountInfos.find(
             (discountInfo) => discountInfo.group === factory.authorizationGroup.MVTK
@@ -740,37 +651,12 @@ export function cancelMvtkAuthorization(transactionId: string, authorizationId: 
 // }
 
 /**
- * 取引中の所有者プロフィールを変更する
- * 匿名所有者として開始した場合のみ想定(匿名か会員に変更可能)
- */
-export function setAgentProfile(
-    transactionId: string,
-    profile: factory.transaction.placeOrder.ICustomerContact
-) {
-    return async (transactionRepository: TransactionRepository) => {
-        await findInProgressById(transactionId)(transactionRepository);
-
-        // 永続化
-        debug('setting person profile...');
-        await transactionRepository.transactionModel.findOneAndUpdate(
-            {
-                _id: transactionId,
-                status: factory.transactionStatusType.InProgress
-            },
-            {
-                'object.customerContact': profile
-            }
-        ).exec();
-    };
-}
-
-/**
  * 取引確定
  */
 export function confirm(transactionId: string) {
     // tslint:disable-next-line:max-func-body-length
     return async (transactionRepository: TransactionRepository) => {
-        const transaction = await findInProgressById(transactionId)(transactionRepository);
+        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
 
         // 照会可能になっているかどうか
         if (!canBeClosed(transaction)) {
@@ -801,23 +687,7 @@ export function confirm(transactionId: string) {
 
         // ステータス変更
         debug('updating transaction...');
-        await transactionRepository.transactionModel.findOneAndUpdate(
-            {
-                _id: transactionId,
-                status: factory.transactionStatusType.InProgress
-            },
-            {
-                status: factory.transactionStatusType.Confirmed,
-                endDate: moment().toDate(),
-                result: result
-            },
-            { new: true }
-        ).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new Error('進行中の購入アクションはありません');
-                }
-            });
+        await transactionRepository.confirmPlaceOrder(transaction.id, result);
 
         return order;
     };

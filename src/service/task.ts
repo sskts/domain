@@ -162,7 +162,7 @@ export function abort(intervalInMinutes: number): TaskOperation<void> {
             return;
         }
 
-        // メール通知
+        // 開発者へ報告
         const task = <factory.task.ITask>abortedTaskDoc.toObject();
         await NotificationService.report2developers(
             'One task aboted !!!',

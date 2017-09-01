@@ -20,10 +20,6 @@ export declare function start(args: {
     sellerId: string;
 }): IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction>;
 /**
- * 取引を期限切れにする
- */
-export declare function makeExpired(): (transactionRepository: TransactionRepository) => Promise<void>;
-/**
  * ひとつの取引のタスクをエクスポートする
  */
 export declare function exportTasks(status: factory.transactionStatusType): (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => Promise<void>;
@@ -31,18 +27,6 @@ export declare function exportTasks(status: factory.transactionStatusType): (tas
  * ID指定で取引のタスク出力
  */
 export declare function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask[]>;
-/**
- * タスクエクスポートリトライ
- * todo updatedAtを基準にしているが、タスクエクスポートトライ日時を持たせた方が安全か？
- *
- * @param {number} intervalInMinutes
- * @memberof service/transaction
- */
-export declare function reexportTasks(intervalInMinutes: number): (transactionRepository: TransactionRepository) => Promise<void>;
-/**
- * 進行中の取引を取得する
- */
-export declare function findInProgressById(transactionId: string): ITransactionOperation<factory.transaction.placeOrder.ITransaction>;
 /**
  * オーソリを取得するクレジットカード情報インターフェース
  */
@@ -84,11 +68,6 @@ export declare function cancelMvtkAuthorization(transactionId: string, authoriza
  *
  * @memberof service/transaction/placeOrder
  */
-/**
- * 取引中の所有者プロフィールを変更する
- * 匿名所有者として開始した場合のみ想定(匿名か会員に変更可能)
- */
-export declare function setAgentProfile(transactionId: string, profile: factory.transaction.placeOrder.ICustomerContact): (transactionRepository: TransactionRepository) => Promise<void>;
 /**
  * 取引確定
  */

@@ -1,6 +1,6 @@
 /**
- * 在庫サービス
- *
+ * stock service
+ * 在庫の管理に対して責任を負うサービス
  * @namespace service/stock
  */
 
@@ -54,9 +54,6 @@ export function transferSeatReservation(transactionId: string) {
     // tslint:disable-next-line:max-func-body-length
     return async (ownershipInfoRepository: OwnershipInfoRepository, transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
-        if (transaction === null) {
-            throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
-        }
 
         if (transaction.object.seatReservation === undefined) {
             return;
@@ -104,13 +101,7 @@ export function transferSeatReservation(transactionId: string) {
         if (transaction.result !== undefined) {
             await Promise.all(transaction.result.ownershipInfos.map(async (ownershipInfo) => {
                 // 所有権永続化
-                await ownershipInfoRepository.ownershipInfoModel.findOneAndUpdate(
-                    {
-                        identifier: ownershipInfo.identifier
-                    },
-                    ownershipInfo,
-                    { upsert: true }
-                ).exec();
+                await ownershipInfoRepository.save(ownershipInfo);
             }));
         }
     };

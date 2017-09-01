@@ -1,4 +1,5 @@
 /// <reference types="mongoose" />
+import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
 import taskModel from './mongoose/model/task';
 /**
@@ -9,4 +10,5 @@ import taskModel from './mongoose/model/task';
 export default class TaskRepository {
     readonly taskModel: typeof taskModel;
     constructor(connection: Connection);
+    save(task: factory.task.ITask): Promise<void>;
 }

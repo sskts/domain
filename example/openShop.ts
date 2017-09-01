@@ -14,7 +14,7 @@ const debug = createDebug('sskts-domain:examples');
 mongoose.connect(process.env.MONGOLAB_URI);
 
 async function main() {
-    const organizationAdapter = sskts.adapter.organization(mongoose.connection);
+    const organizationRepository = sskts.repository.organization(mongoose.connection);
 
     const movieTheater = sskts.factory.organization.movieTheater.create({
         name: {
@@ -48,7 +48,7 @@ async function main() {
         url: 'http://devssktsportal.azurewebsites.net/theater/aira/'
     });
 
-    await sskts.service.shop.open(movieTheater)(organizationAdapter);
+    await organizationRepository.openMovieTheaterShop(movieTheater);
 
     mongoose.disconnect();
 }

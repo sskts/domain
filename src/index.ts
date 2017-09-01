@@ -9,17 +9,13 @@ import * as ssktsFactory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
-import * as ClientService from './service/client';
-import * as CreativeWorkService from './service/creativeWork';
 import * as EventService from './service/event';
 import * as ItemAvailabilityService from './service/itemAvailability';
+import * as MasterSyncService from './service/masterSync';
 import * as NotificationService from './service/notification';
 import * as OrderService from './service/order';
-import * as OrganizationService from './service/organization';
-import * as PlaceService from './service/place';
 import * as ReportService from './service/report';
 import * as SalesService from './service/sales';
-import * as ShopService from './service/shop';
 import * as StockService from './service/stock';
 import * as TaskService from './service/task';
 import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
@@ -140,18 +136,14 @@ export namespace repository {
 }
 
 export namespace service {
-    export import client = ClientService;
-    export import creativeWork = CreativeWorkService;
     export import event = EventService;
+    export import itemAvailability = ItemAvailabilityService;
+    export import masterSync = MasterSyncService;
     export import notification = NotificationService;
     export import order = OrderService;
-    export import organization = OrganizationService;
-    export import place = PlaceService;
     export import report = ReportService;
     export import sales = SalesService;
-    export import shop = ShopService;
     export import stock = StockService;
-    export import itemAvailability = ItemAvailabilityService;
     export import task = TaskService;
     export namespace transaction {
         export import placeOrder = PlaceOrderTransactionService;

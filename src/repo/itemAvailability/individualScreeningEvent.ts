@@ -2,7 +2,7 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as redis from 'redis';
 
-const debug = createDebug('sskts-domain:adapter:itemAvailability:individualScreeningEvent');
+const debug = createDebug('sskts-domain:repository:itemAvailability:individualScreeningEvent');
 const REDIS_KEY_PREFIX = 'sskts-domain:itemAvailability:individualScreeningEvent';
 // tslint:disable-next-line:no-suspicious-comment
 // TODO 調整？

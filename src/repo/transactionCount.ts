@@ -3,7 +3,7 @@ import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as redis from 'redis';
 
-const debug = createDebug('sskts-domain:adapter:transactionCount');
+const debug = createDebug('sskts-domain:repository:transactionCount');
 const KEY_PREFIX: string = 'sskts-domain:transactionCount';
 
 /**

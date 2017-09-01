@@ -1,4 +1,5 @@
 /// <reference types="mongoose" />
+import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
 import ownershipInfoModel from './mongoose/model/ownershipInfo';
 /**
@@ -9,4 +10,10 @@ import ownershipInfoModel from './mongoose/model/ownershipInfo';
 export default class OwnershipInfoRepository {
     readonly ownershipInfoModel: typeof ownershipInfoModel;
     constructor(connection: Connection);
+    /**
+     * save an ownershipInfo
+     * 所有権情報を保管する
+     * @param ownershipInfo ownershipInfo object
+     */
+    save(ownershipInfo: factory.ownershipInfo.IOwnershipInfo<any>): Promise<void>;
 }
