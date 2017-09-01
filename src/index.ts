@@ -19,6 +19,7 @@ import * as SalesService from './service/sales';
 import * as StockService from './service/stock';
 import * as TaskService from './service/task';
 import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
+import * as PlaceOrderInProgressTransactionService from './service/transaction/placeOrderInProgress';
 
 import ClientRepository from './repo/client';
 import CreativeWorkRepository from './repo/creativeWork';
@@ -147,6 +148,7 @@ export namespace service {
     export import task = TaskService;
     export namespace transaction {
         export import placeOrder = PlaceOrderTransactionService;
+        export import placeOrderInProgress = PlaceOrderInProgressTransactionService;
     }
 }
 

@@ -18,6 +18,7 @@ import * as SalesService from './service/sales';
 import * as StockService from './service/stock';
 import * as TaskService from './service/task';
 import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
+import * as PlaceOrderInProgressTransactionService from './service/transaction/placeOrderInProgress';
 import ClientRepository from './repo/client';
 import CreativeWorkRepository from './repo/creativeWork';
 import EventRepository from './repo/event';
@@ -107,6 +108,7 @@ export declare namespace service {
     export import task = TaskService;
     namespace transaction {
         export import placeOrder = PlaceOrderTransactionService;
+        export import placeOrderInProgress = PlaceOrderInProgressTransactionService;
     }
 }
 export import factory = ssktsFactory;

@@ -23,7 +23,7 @@ export default class TransactionRepository {
      * 取引中の所有者プロフィールを変更する
      * 匿名所有者として開始した場合のみ想定(匿名か会員に変更可能)
      */
-    setCustomerContactsOnPlaceOrderInProgress(transactionId: string, profile: factory.transaction.placeOrder.ICustomerContact): Promise<void>;
+    setCustomerContactsOnPlaceOrderInProgress(transactionId: string, contact: factory.transaction.placeOrder.ICustomerContact): Promise<void>;
     /**
      * confirm a placeOrder
      * 注文取引を確定する

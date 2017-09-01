@@ -60,7 +60,7 @@ export default class TransactionRepository {
      */
     public async setCustomerContactsOnPlaceOrderInProgress(
         transactionId: string,
-        profile: factory.transaction.placeOrder.ICustomerContact
+        contact: factory.transaction.placeOrder.ICustomerContact
     ): Promise<void> {
         const doc = await this.transactionModel.findOneAndUpdate(
             {
@@ -69,7 +69,7 @@ export default class TransactionRepository {
                 status: factory.transactionStatusType.InProgress
             },
             {
-                'object.customerContact': profile
+                'object.customerContact': contact
             }
         ).exec();
 
