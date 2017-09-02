@@ -20,26 +20,26 @@ export declare function start(args: {
 /**
  * オーソリを取得するクレジットカード情報インターフェース
  */
-export declare type ICreditCard4authorization = factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw | factory.paymentMethod.paymentCard.creditCard.IUncheckedCardTokenized | factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember;
+export declare type ICreditCard4authorizeAction = factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw | factory.paymentMethod.paymentCard.creditCard.IUncheckedCardTokenized | factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember;
 /**
  * クレジットカードオーソリ取得
  */
-export declare function createCreditCardAuthorization(agentId: string, transactionId: string, orderId: string, amount: number, method: GMO.utils.util.Method, creditCard: ICreditCard4authorization): IOrganizationAndTransactionOperation<factory.authorization.gmo.IAuthorization>;
-export declare function cancelGMOAuthorization(agentId: string, transactionId: string, authorizationId: string): (transactionRepository: TransactionRepository) => Promise<void>;
-export declare function createSeatReservationAuthorization(agentId: string, transactionId: string, individualScreeningEvent: factory.event.individualScreeningEvent.IEvent, offers: factory.offer.ISeatReservationOffer[]): ITransactionOperation<factory.authorization.seatReservation.IAuthorization>;
-export declare function cancelSeatReservationAuthorization(agentId: string, transactionId: string, authorizationId: string): (transactionRepository: TransactionRepository) => Promise<void>;
+export declare function createCreditCardAuthorization(agentId: string, transactionId: string, orderId: string, amount: number, method: GMO.utils.util.Method, creditCard: ICreditCard4authorizeAction): IOrganizationAndTransactionOperation<factory.action.authorize.creditCard.IAction>;
+export declare function cancelGMOAuthorization(agentId: string, transactionId: string, actionId: string): (transactionRepository: TransactionRepository) => Promise<void>;
+export declare function createSeatReservationAuthorization(agentId: string, transactionId: string, individualScreeningEvent: factory.event.individualScreeningEvent.IEvent, offers: factory.offer.ISeatReservationOffer[]): ITransactionOperation<factory.action.authorize.seatReservation.IAction>;
+export declare function cancelSeatReservationAuthorization(agentId: string, transactionId: string, actionId: string): (transactionRepository: TransactionRepository) => Promise<void>;
 /**
- * create a mvtk authorization
+ * create a mvtk authorizeAction
  * add the result of using a mvtk card
  * @export
  * @function
  * @param {string} transactionId
- * @param {factory.authorization.mvtk.IResult} authorizationResult
- * @return {ITransactionOperation<factory.authorization.mvtk.IAuthorization>}
+ * @param {factory.action.authorize.mvtk.IObject} authorizeActionObject
+ * @return ITransactionOperation<factory.action.authorize.mvtk.IAuthorizeAction>
  * @memberof service/transaction/placeOrder
  */
-export declare function createMvtkAuthorization(agentId: string, transactionId: string, authorizationResult: factory.authorization.mvtk.IResult): ITransactionOperation<factory.authorization.mvtk.IAuthorization>;
-export declare function cancelMvtkAuthorization(agentId: string, transactionId: string, authorizationId: string): (transactionRepository: TransactionRepository) => Promise<void>;
+export declare function createMvtkAuthorization(agentId: string, transactionId: string, authorizeObject: factory.action.authorize.mvtk.IObject): ITransactionOperation<factory.action.authorize.mvtk.IAction>;
+export declare function cancelMvtkAuthorization(agentId: string, transactionId: string, actionId: string): (transactionRepository: TransactionRepository) => Promise<void>;
 /**
  * メール追加
  *

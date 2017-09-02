@@ -15,29 +15,28 @@ const debug = createDebug('sskts-domain:service:sales');
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 
 /**
- * GMOオーソリ取消
- *
+ * クレジットカードオーソリ取消
  * @memberof service/sales
  */
-export function cancelGMOAuth(transactionId: string) {
+export function cancelCreditCardAuth(transactionId: string) {
     return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
         if (transaction === null) {
             throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
 
-        const authorization = <factory.authorization.gmo.IAuthorization | undefined>transaction.object.paymentInfos.find(
-            (paymentInfo) => paymentInfo.group === factory.authorizationGroup.GMO
+        const authorizeAction = <factory.action.authorize.creditCard.IAction | undefined>transaction.object.paymentInfos.find(
+            (paymentInfo) => paymentInfo.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard
         );
-        if (authorization !== undefined) {
+        if (authorizeAction !== undefined) {
             debug('calling alterTran...');
             await GMO.services.credit.alterTran({
-                shopId: authorization.object.shopId,
-                shopPass: authorization.object.shopPass,
-                accessId: authorization.object.accessId,
-                accessPass: authorization.object.accessPass,
+                shopId: authorizeAction.object.entryTranArgs.shopId,
+                shopPass: authorizeAction.object.entryTranArgs.shopPass,
+                accessId: authorizeAction.object.execTranArgs.accessId,
+                accessPass: authorizeAction.object.execTranArgs.accessPass,
                 jobCd: GMO.utils.util.JobCd.Void,
-                amount: authorization.object.amount
+                amount: authorizeAction.object.entryTranArgs.amount
             });
         }
 
@@ -48,26 +47,25 @@ export function cancelGMOAuth(transactionId: string) {
 }
 
 /**
- * GMO売上確定
- *
+ * クレジットカード売上確定
  * @memberof service/sales
  */
-export function settleGMOAuth(transactionId: string) {
+export function settleCreditCardAuth(transactionId: string) {
     return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
         if (transaction === null) {
             throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
         }
 
-        const authorization = <factory.authorization.gmo.IAuthorization | undefined>transaction.object.paymentInfos.find(
-            (paymentInfo) => paymentInfo.group === factory.authorizationGroup.GMO
+        const authorizeAction = <factory.action.authorize.creditCard.IAction | undefined>transaction.object.paymentInfos.find(
+            (paymentInfo) => paymentInfo.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard
         );
-        if (authorization !== undefined) {
+        if (authorizeAction !== undefined) {
             // 取引状態参照
             const searchTradeResult = await GMO.services.credit.searchTrade({
-                shopId: authorization.object.shopId,
-                shopPass: authorization.object.shopPass,
-                orderId: authorization.object.orderId
+                shopId: authorizeAction.object.entryTranArgs.shopId,
+                shopPass: authorizeAction.object.entryTranArgs.shopPass,
+                orderId: authorizeAction.object.entryTranArgs.orderId
             });
 
             if (searchTradeResult.jobCd === GMO.utils.util.JobCd.Sales) {
@@ -79,12 +77,12 @@ export function settleGMOAuth(transactionId: string) {
 
             debug('calling alterTran...');
             await GMO.services.credit.alterTran({
-                shopId: authorization.object.shopId,
-                shopPass: authorization.object.shopPass,
-                accessId: authorization.object.accessId,
-                accessPass: authorization.object.accessPass,
+                shopId: authorizeAction.object.entryTranArgs.shopId,
+                shopPass: authorizeAction.object.entryTranArgs.shopPass,
+                accessId: authorizeAction.object.execTranArgs.accessId,
+                accessPass: authorizeAction.object.execTranArgs.accessPass,
                 jobCd: GMO.utils.util.JobCd.Sales,
-                amount: authorization.object.amount
+                amount: authorizeAction.object.entryTranArgs.amount
             });
 
             // 失敗したら取引状態確認してどうこう、という処理も考えうるが、

@@ -11,7 +11,7 @@ export declare function unauthorizeSeatReservation(transactionId: string): (tran
 /**
  * 資産移動(COA座席予約)
  *
- * @param {ISeatReservationAuthorization} authorization
+ * @param {ISeatReservationAuthorization} authorizeAction
  * @memberof service/stock
  */
 export declare function transferSeatReservation(transactionId: string): (ownershipInfoRepository: OwnershipInfoRepository, transactionRepository: TransactionRepository) => Promise<void>;

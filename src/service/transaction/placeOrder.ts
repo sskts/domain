@@ -72,7 +72,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 }));
-                tasks.push(factory.task.settleGMO.create({
+                tasks.push(factory.task.settleCreditCard.create({
                     id: mongoose.Types.ObjectId().toString(),
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
@@ -141,7 +141,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 }));
-                tasks.push(factory.task.cancelGMO.create({
+                tasks.push(factory.task.cancelCreditCard.create({
                     id: mongoose.Types.ObjectId().toString(),
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行

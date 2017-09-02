@@ -35,12 +35,12 @@ export function cancelSeatReservation(
     };
 }
 
-export function cancelGMO(
-    data: factory.task.cancelGMO.IData
+export function cancelCreditCard(
+    data: factory.task.cancelCreditCard.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
         const transactionRepository = new TransactionRepository(connection);
-        await SalesService.cancelGMOAuth(data.transactionId)(transactionRepository);
+        await SalesService.cancelCreditCardAuth(data.transactionId)(transactionRepository);
     };
 }
 
@@ -63,12 +63,12 @@ export function settleSeatReservation(
     };
 }
 
-export function settleGMO(
-    data: factory.task.settleGMO.IData
+export function settleCreditCard(
+    data: factory.task.settleCreditCard.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
         const transactionRepository = new TransactionRepository(connection);
-        await SalesService.settleGMOAuth(data.transactionId)(transactionRepository);
+        await SalesService.settleCreditCardAuth(data.transactionId)(transactionRepository);
     };
 }
 

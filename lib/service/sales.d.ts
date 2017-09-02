@@ -2,17 +2,15 @@ import * as factory from '@motionpicture/sskts-factory';
 import TransactionRepository from '../repo/transaction';
 export declare type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 /**
- * GMOオーソリ取消
- *
+ * クレジットカードオーソリ取消
  * @memberof service/sales
  */
-export declare function cancelGMOAuth(transactionId: string): (transactionRepository: TransactionRepository) => Promise<void>;
+export declare function cancelCreditCardAuth(transactionId: string): (transactionRepository: TransactionRepository) => Promise<void>;
 /**
- * GMO売上確定
- *
+ * クレジットカード売上確定
  * @memberof service/sales
  */
-export declare function settleGMOAuth(transactionId: string): (transactionRepository: TransactionRepository) => Promise<void>;
+export declare function settleCreditCardAuth(transactionId: string): (transactionRepository: TransactionRepository) => Promise<void>;
 /**
  * ムビチケ着券取消し
  *

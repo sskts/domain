@@ -97,7 +97,7 @@ export function start(args: {
 /**
  * オーソリを取得するクレジットカード情報インターフェース
  */
-export type ICreditCard4authorization =
+export type ICreditCard4authorizeAction =
     factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw |
     factory.paymentMethod.paymentCard.creditCard.IUncheckedCardTokenized |
     factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember;
@@ -105,14 +105,15 @@ export type ICreditCard4authorization =
 /**
  * クレジットカードオーソリ取得
  */
+// tslint:disable-next-line:max-func-body-length
 export function createCreditCardAuthorization(
     agentId: string,
     transactionId: string,
     orderId: string,
     amount: number,
     method: GMO.utils.util.Method,
-    creditCard: ICreditCard4authorization
-): IOrganizationAndTransactionOperation<factory.authorization.gmo.IAuthorization> {
+    creditCard: ICreditCard4authorizeAction
+): IOrganizationAndTransactionOperation<factory.action.authorize.creditCard.IAction> {
     return async (organizationRepository: OrganizationRepository, transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
 
@@ -123,20 +124,25 @@ export function createCreditCardAuthorization(
         // GMOショップ情報取得
         const movieTheater = await organizationRepository.findMovieTheaterById(transaction.seller.id);
 
+        const authorizeStartDate = new Date();
+
         // GMOオーソリ取得
+        let entryTranArgs: GMO.services.credit.IEntryTranArgs;
+        let execTranArgs: GMO.services.credit.IExecTranArgs;
         let entryTranResult: GMO.services.credit.IEntryTranResult;
         let execTranResult: GMO.services.credit.IExecTranResult;
         try {
-            entryTranResult = await GMO.services.credit.entryTran({
+            entryTranArgs = {
                 shopId: movieTheater.gmoInfo.shopId,
                 shopPass: movieTheater.gmoInfo.shopPass,
                 orderId: orderId,
                 jobCd: GMO.utils.util.JobCd.Auth,
                 amount: amount
-            });
+            };
+            entryTranResult = await GMO.services.credit.entryTran(entryTranArgs);
             debug('entryTranResult:', entryTranResult);
 
-            execTranResult = await GMO.services.credit.execTran({
+            execTranArgs = {
                 ...{
                     accessId: entryTranResult.accessId,
                     accessPass: entryTranResult.accessPass,
@@ -149,7 +155,8 @@ export function createCreditCardAuthorization(
                 ...{
                     seqMode: GMO.utils.util.SeqMode.Physics
                 }
-            });
+            };
+            execTranResult = await GMO.services.credit.execTran(execTranArgs);
             debug('execTranResult:', execTranResult);
         } catch (error) {
             console.error('fail at entryTran or execTran', error);
@@ -168,37 +175,39 @@ export function createCreditCardAuthorization(
         }
 
         // GMOオーソリ追加
-        debug('adding authorizations gmo...');
-        const gmoAuthorization = factory.authorization.gmo.create({
+        debug('adding authorizeActions gmo...');
+        const authorizeAction = factory.action.authorize.creditCard.create({
             id: mongoose.Types.ObjectId().toString(),
-            price: amount,
+            actionStatus: factory.actionStatusType.CompletedActionStatus,
             object: {
-                shopId: movieTheater.gmoInfo.shopId,
-                shopPass: movieTheater.gmoInfo.shopPass,
-                orderId: orderId,
-                amount: amount,
-                accessId: entryTranResult.accessId,
-                accessPass: entryTranResult.accessPass,
-                jobCd: GMO.utils.util.JobCd.Auth,
+                entryTranArgs: entryTranArgs,
+                execTranArgs: execTranArgs,
                 payType: GMO.utils.util.PayType.Credit
             },
-            result: execTranResult
+            result: {
+                price: amount,
+                execTranResult: execTranResult
+            },
+            agent: transaction.agent,
+            recipient: transaction.seller,
+            startDate: authorizeStartDate,
+            endDate: new Date()
         });
 
         await transactionRepository.transactionModel.findByIdAndUpdate(
             transactionId,
-            { $push: { 'object.paymentInfos': gmoAuthorization } }
+            { $push: { 'object.paymentInfos': authorizeAction } }
         ).exec();
         debug('GMOAuthorization added.');
 
-        return gmoAuthorization;
+        return authorizeAction;
     };
 }
 
 export function cancelGMOAuthorization(
     agentId: string,
     transactionId: string,
-    authorizationId: string
+    actionId: string
 ) {
     return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
@@ -207,22 +216,22 @@ export function cancelGMOAuthorization(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const authorization = transaction.object.paymentInfos.find(
-            (paymentInfo) => paymentInfo.group === factory.authorizationGroup.GMO
+        const authorizeAction = transaction.object.paymentInfos.find(
+            (paymentInfo) => paymentInfo.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard
         );
-        if (authorization === undefined) {
-            throw new factory.errors.Argument('authorizationId', '指定されたオーソリは見つかりません');
+        if (authorizeAction === undefined) {
+            throw new factory.errors.Argument('actionId', '指定されたオーソリは見つかりません');
         }
-        if (authorization.id !== authorizationId) {
-            throw new factory.errors.Argument('authorizationId', '指定されたオーソリは見つかりません');
+        if (authorizeAction.id !== actionId) {
+            throw new factory.errors.Argument('actionId', '指定されたオーソリは見つかりません');
         }
 
         // 決済取消
         await GMO.services.credit.alterTran({
-            shopId: authorization.object.shopId,
-            shopPass: authorization.object.shopPass,
-            accessId: authorization.object.accessId,
-            accessPass: authorization.object.accessPass,
+            shopId: authorizeAction.object.entryTranArgs.shopId,
+            shopPass: authorizeAction.object.entryTranArgs.shopPass,
+            accessId: authorizeAction.object.execTranArgs.accessId,
+            accessPass: authorizeAction.object.execTranArgs.accessPass,
             jobCd: GMO.utils.util.JobCd.Void
         });
         debug('alterTran processed', GMO.utils.util.JobCd.Void);
@@ -230,7 +239,7 @@ export function cancelGMOAuthorization(
         await transactionRepository.transactionModel.findByIdAndUpdate(
             transaction.id,
             {
-                $pull: { 'object.paymentInfos': { id: authorizationId } }
+                $pull: { 'object.paymentInfos': { id: actionId } }
             }
         ).exec();
     };
@@ -241,13 +250,15 @@ export function createSeatReservationAuthorization(
     transactionId: string,
     individualScreeningEvent: factory.event.individualScreeningEvent.IEvent,
     offers: factory.offer.ISeatReservationOffer[]
-): ITransactionOperation<factory.authorization.seatReservation.IAuthorization> {
+): ITransactionOperation<factory.action.authorize.seatReservation.IAction> {
     return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
+
+        const authorizeStartDate = new Date();
 
         // todo 座席コードがすでにキープ済みのものかどうかチェックできる？
 
@@ -271,28 +282,33 @@ export function createSeatReservationAuthorization(
         debug('updTmpReserveSeat processed', reserveSeatsTemporarilyResult);
 
         // COAオーソリ追加
-        debug('adding authorizations coaSeatReservation...');
-        const authorization = factory.authorization.seatReservation.createFromCOATmpReserve({
+        debug('adding authorizeActions coaSeatReservation...');
+        const authorizeAction = factory.action.authorize.seatReservation.createFromCOATmpReserve({
+            actionStatus: factory.actionStatusType.CompletedActionStatus,
+            agent: transaction.seller,
+            recipient: transaction.agent,
             updTmpReserveSeatArgs: updTmpReserveSeatArgs,
             reserveSeatsTemporarilyResult: reserveSeatsTemporarilyResult,
             offers: offers,
-            individualScreeningEvent: individualScreeningEvent
+            individualScreeningEvent: individualScreeningEvent,
+            startDate: authorizeStartDate,
+            endDate: new Date()
         });
 
         await transactionRepository.transactionModel.findByIdAndUpdate(
             transaction.id,
-            { 'object.seatReservation': authorization }
+            { 'object.seatReservation': authorizeAction }
         ).exec();
         debug('coaAuthorization added.');
 
-        return authorization;
+        return authorizeAction;
     };
 }
 
 export function cancelSeatReservationAuthorization(
     agentId: string,
     transactionId: string,
-    authorizationId: string
+    actionId: string
 ) {
     return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
@@ -301,23 +317,23 @@ export function cancelSeatReservationAuthorization(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const authorization = transaction.object.seatReservation;
-        if (authorization === undefined) {
-            throw new factory.errors.Argument('authorizationId', '指定された座席予約は見つかりません');
+        const authorizeAction = transaction.object.seatReservation;
+        if (authorizeAction === undefined) {
+            throw new factory.errors.Argument('actionId', '指定された座席予約は見つかりません');
         }
-        if (authorization.id !== authorizationId) {
-            throw new factory.errors.Argument('authorizationId', '指定された座席予約は見つかりません');
+        if (authorizeAction.id !== actionId) {
+            throw new factory.errors.Argument('actionId', '指定された座席予約は見つかりません');
         }
 
         // 座席仮予約削除
-        debug('delTmpReserve processing...', authorization);
+        debug('delTmpReserve processing...', authorizeAction);
         await COA.services.reserve.delTmpReserve({
-            theaterCode: authorization.object.updTmpReserveSeatArgs.theaterCode,
-            dateJouei: authorization.object.updTmpReserveSeatArgs.dateJouei,
-            titleCode: authorization.object.updTmpReserveSeatArgs.titleCode,
-            titleBranchNum: authorization.object.updTmpReserveSeatArgs.titleBranchNum,
-            timeBegin: authorization.object.updTmpReserveSeatArgs.timeBegin,
-            tmpReserveNum: authorization.result.tmpReserveNum
+            theaterCode: authorizeAction.object.updTmpReserveSeatArgs.theaterCode,
+            dateJouei: authorizeAction.object.updTmpReserveSeatArgs.dateJouei,
+            titleCode: authorizeAction.object.updTmpReserveSeatArgs.titleCode,
+            titleBranchNum: authorizeAction.object.updTmpReserveSeatArgs.titleBranchNum,
+            timeBegin: authorizeAction.object.updTmpReserveSeatArgs.timeBegin,
+            tmpReserveNum: authorizeAction.result.updTmpReserveSeatResult.tmpReserveNum
         });
         debug('delTmpReserve processed');
 
@@ -331,20 +347,20 @@ export function cancelSeatReservationAuthorization(
 }
 
 /**
- * create a mvtk authorization
+ * create a mvtk authorizeAction
  * add the result of using a mvtk card
  * @export
  * @function
  * @param {string} transactionId
- * @param {factory.authorization.mvtk.IResult} authorizationResult
- * @return {ITransactionOperation<factory.authorization.mvtk.IAuthorization>}
+ * @param {factory.action.authorize.mvtk.IObject} authorizeActionObject
+ * @return ITransactionOperation<factory.action.authorize.mvtk.IAuthorizeAction>
  * @memberof service/transaction/placeOrder
  */
 export function createMvtkAuthorization(
     agentId: string,
     transactionId: string,
-    authorizationResult: factory.authorization.mvtk.IResult
-): ITransactionOperation<factory.authorization.mvtk.IAuthorization> {
+    authorizeObject: factory.action.authorize.mvtk.IObject
+): ITransactionOperation<factory.action.authorize.mvtk.IAction> {
     return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
 
@@ -352,10 +368,12 @@ export function createMvtkAuthorization(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
+        const authorizeStartDate = new Date();
+
         const seatReservationAuthorization = transaction.object.seatReservation;
         // seatReservationAuthorization already exists?
         if (seatReservationAuthorization === undefined) {
-            throw new Error('seat reservation authorization not created yet');
+            throw new Error('seat reservation authorizeAction not created yet');
         }
 
         // knyknrNo matched?
@@ -372,7 +390,7 @@ export function createMvtkAuthorization(
             },
             {}
         );
-        const knyknrNoNumsByNo: IKnyknrNoNumsByNo = authorizationResult.knyknrNoInfo.reduce(
+        const knyknrNoNumsByNo: IKnyknrNoNumsByNo = authorizeObject.seatInfoSyncIn.knyknrNoInfo.reduce(
             (a: IKnyknrNoNumsByNo, b) => {
                 if (a[b.knyknrNo] === undefined) {
                     a[b.knyknrNo] = 0;
@@ -391,55 +409,63 @@ export function createMvtkAuthorization(
         const knyknrNoExistsMvtkResult =
             Object.keys(knyknrNoNumsByNoShouldBe).every((knyknrNo) => knyknrNoNumsByNo[knyknrNo] === knyknrNoNumsByNoShouldBe[knyknrNo]);
         if (!knyknrNoExistsInSeatReservation || !knyknrNoExistsMvtkResult) {
-            throw new factory.errors.Argument('authorizationResult', 'knyknrNoInfo not matched with seat reservation authorization');
+            throw new factory.errors.Argument('authorizeActionResult', 'knyknrNoInfo not matched with seat reservation authorizeAction');
         }
 
         // stCd matched? (last two figures of theater code)
         // tslint:disable-next-line:no-magic-numbers
         const stCdShouldBe = seatReservationAuthorization.object.updTmpReserveSeatArgs.theaterCode.slice(-2);
-        if (authorizationResult.stCd !== stCdShouldBe) {
-            throw new factory.errors.Argument('authorizationResult', 'stCd not matched with seat reservation authorization');
+        if (authorizeObject.seatInfoSyncIn.stCd !== stCdShouldBe) {
+            throw new factory.errors.Argument('authorizeActionResult', 'stCd not matched with seat reservation authorizeAction');
         }
 
         // skhnCd matched?
         // tslint:disable-next-line:max-line-length
         const skhnCdShouldBe = `${seatReservationAuthorization.object.updTmpReserveSeatArgs.titleCode}${seatReservationAuthorization.object.updTmpReserveSeatArgs.titleBranchNum}`;
-        if (authorizationResult.skhnCd !== skhnCdShouldBe) {
-            throw new factory.errors.Argument('authorizationResult', 'skhnCd not matched with seat reservation authorization');
+        if (authorizeObject.seatInfoSyncIn.skhnCd !== skhnCdShouldBe) {
+            throw new factory.errors.Argument('authorizeActionResult', 'skhnCd not matched with seat reservation authorizeAction');
         }
 
         // screen code matched?
-        if (authorizationResult.screnCd !== seatReservationAuthorization.object.updTmpReserveSeatArgs.screenCode) {
-            throw new factory.errors.Argument('authorizationResult', 'screnCd not matched with seat reservation authorization');
+        if (authorizeObject.seatInfoSyncIn.screnCd !== seatReservationAuthorization.object.updTmpReserveSeatArgs.screenCode) {
+            throw new factory.errors.Argument('authorizeActionResult', 'screnCd not matched with seat reservation authorizeAction');
         }
 
         // seat num matched?
         const seatNumsInSeatReservationAuthorization =
-            seatReservationAuthorization.result.listTmpReserve.map((tmpReserve) => tmpReserve.seatNum);
-        if (!authorizationResult.zskInfo.every((zskInfo) => seatNumsInSeatReservationAuthorization.indexOf(zskInfo.zskCd) >= 0)) {
-            throw new factory.errors.Argument('authorizationResult', 'zskInfo not matched with seat reservation authorization');
+            seatReservationAuthorization.result.updTmpReserveSeatResult.listTmpReserve.map((tmpReserve) => tmpReserve.seatNum);
+        if (!authorizeObject.seatInfoSyncIn.zskInfo.every(
+            (zskInfo) => seatNumsInSeatReservationAuthorization.indexOf(zskInfo.zskCd) >= 0
+        )) {
+            throw new factory.errors.Argument('authorizeActionResult', 'zskInfo not matched with seat reservation authorizeAction');
         }
 
-        const authorization = factory.authorization.mvtk.create({
+        const authorizeAction = factory.action.authorize.mvtk.create({
+            actionStatus: factory.actionStatusType.CompletedActionStatus,
             id: mongoose.Types.ObjectId().toString(),
-            price: authorizationResult.price,
-            result: authorizationResult,
-            object: {}
+            result: {
+                price: authorizeObject.price
+            },
+            object: authorizeObject,
+            agent: transaction.agent,
+            recipient: transaction.seller,
+            startDate: authorizeStartDate,
+            endDate: new Date()
         });
 
         await transactionRepository.transactionModel.findByIdAndUpdate(
             transactionId,
-            { $push: { 'object.discountInfos': authorization } }
+            { $push: { 'object.discountInfos': authorizeAction } }
         ).exec();
 
-        return authorization;
+        return authorizeAction;
     };
 }
 
 export function cancelMvtkAuthorization(
     agentId: string,
     transactionId: string,
-    authorizationId: string
+    actionId: string
 ) {
     return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
@@ -448,20 +474,20 @@ export function cancelMvtkAuthorization(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const authorization = transaction.object.discountInfos.find(
-            (discountInfo) => discountInfo.group === factory.authorizationGroup.MVTK
+        const authorizeAction = transaction.object.discountInfos.find(
+            (discountInfo) => discountInfo.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk
         );
-        if (authorization === undefined) {
-            throw new factory.errors.Argument('authorizationId', 'mvtk authorization not found');
+        if (authorizeAction === undefined) {
+            throw new factory.errors.Argument('actionId', 'mvtk authorizeAction not found');
         }
-        if (authorization.id !== authorizationId) {
-            throw new factory.errors.Argument('authorizationId', 'mvtk authorization not found');
+        if (authorizeAction.id !== actionId) {
+            throw new factory.errors.Argument('actionId', 'mvtk authorizeAction not found');
         }
 
         await transactionRepository.transactionModel.findByIdAndUpdate(
             transaction.id,
             {
-                $pull: { 'object.discountInfos': { id: authorizationId } }
+                $pull: { 'object.discountInfos': { id: actionId } }
             }
         ).exec();
     };
@@ -615,8 +641,8 @@ function canBeClosed(transaction: factory.transaction.placeOrder.ITransaction) {
     const paymentInfos = transaction.object.paymentInfos;
     const discountInfos = transaction.object.discountInfos;
 
-    const priceBySeller = seatReservationAuthorization.price;
-    const priceByAgent = paymentInfos.reduce((a, b) => a + b.price, 0) + discountInfos.reduce((a, b) => a + b.price, 0);
+    const priceBySeller = seatReservationAuthorization.result.price;
+    const priceByAgent = paymentInfos.reduce((a, b) => a + b.result.price, 0) + discountInfos.reduce((a, b) => a + b.result.price, 0);
 
     // price matched between an agent and a seller?
     return priceByAgent === priceBySeller;
