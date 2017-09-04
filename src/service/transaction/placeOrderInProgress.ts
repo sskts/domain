@@ -572,7 +572,7 @@ export function setCustomerContacts(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        transactionRepository.setCustomerContactsOnPlaceOrderInProgress(transactionId, contact);
+        await transactionRepository.setCustomerContactsOnPlaceOrderInProgress(transactionId, contact);
     };
 }
 

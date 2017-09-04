@@ -48,15 +48,17 @@ export default class PlaceRepository {
 
         debug('finding places...', conditions);
 
+        // containsPlaceを含めるとデータサイズが大きくなるので、検索結果には含めない
         return await this.placeModel.find(conditions, 'typeOf branchCode name kanaName url')
             .setOptions({ maxTimeMS: 10000 })
             .exec()
             .then((docs) => {
                 return docs.map((doc) => {
-                    const movieTheater = <factory.place.movieTheater.IPlace>doc.toObject();
+                    const movieTheater = <factory.place.movieTheater.IPlaceWithoutScreeningRoom>doc.toObject();
 
                     return {
                         typeOf: movieTheater.typeOf,
+                        identifier: movieTheater.identifier,
                         screenCount: movieTheater.screenCount,
                         branchCode: movieTheater.branchCode,
                         name: movieTheater.name,

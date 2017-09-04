@@ -177,6 +177,11 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                 name: params.theater.name,
                 kanaName: params.theater.name_kana
             },
+            organizer: {
+                typeOf: factory.organization.movieTheater.toString(),
+                identifier: `MovieTheater-${params.theater.id}`,
+                name: params.theater.name
+            },
             name: params.film.name,
             kanaName: params.film.name_kana,
             alternativeHeadline: params.film.name_short,
@@ -263,7 +268,10 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                             dateIssued: params.closedAt,
                             issuedBy: {
                                 typeOf: '',
-                                name: ''
+                                name: {
+                                    en: '',
+                                    ja: ''
+                                }
                             },
                             priceCurrency: factory.priceCurrency.JPY,
                             ticketedSeat: {
@@ -276,12 +284,18 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                             ticketToken: ticketToken,
                             underName: {
                                 typeOf: 'Person',
-                                name: customerName
+                                name: {
+                                    en: customerName,
+                                    ja: customerName
+                                }
                             }
                         },
                         underName: {
                             typeOf: 'Person',
-                            name: customerName
+                            name: {
+                                en: customerName,
+                                ja: customerName
+                            }
                         }
                     }
                 };
