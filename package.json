@@ -12,6 +12,7 @@
     "@motionpicture/coa-service": "^4.0.1",
     "@motionpicture/gmo-service": "^4.0.0",
     "@motionpicture/sskts-factory": "git+https://tetsu:M0P!Xmopix@m-p.backlog.jp/git/SSKTS/factory.git#feature/SSKTS-566",
+    "@sendgrid/mail": "^6.1.2",
     "@types/mongoose": "^4.7.21",
     "@types/redis": "^0.12.36",
     "bcryptjs": "^2.4.3",
@@ -22,7 +23,6 @@
     "redis": "^2.8.0",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4",
-    "sendgrid": "^5.2.3",
     "underscore": "^1.8.3",
     "validator": "^7.2.0"
   },

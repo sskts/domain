@@ -5,10 +5,11 @@
  */
 
 import * as factory from '@motionpicture/sskts-factory';
+// tslint:disable-next-line:no-require-imports
+import sgMail = require('@sendgrid/mail');
 import * as createDebug from 'debug';
 import * as httpStatus from 'http-status';
 import * as request from 'request-promise-native';
-import * as sendgrid from 'sendgrid';
 import * as util from 'util';
 import * as validator from 'validator';
 
@@ -30,38 +31,29 @@ const LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify';
  */
 export function sendEmail(email: factory.notification.email.INotification): Operation<void> {
     return async () => {
-        debug('sending email...', email);
-        const mail = new sendgrid.mail.Mail(
-            new sendgrid.mail.Email(email.data.from),
-            email.data.subject,
-            new sendgrid.mail.Email(email.data.to),
-            new sendgrid.mail.Content('text/plain', email.data.content)
-        );
+        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+        const msg = {
+            to: email.data.to,
+            from: email.data.from,
+            subject: email.data.subject,
+            text: email.data.content,
+            // html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+            // categories: ['Transactional', 'My category'],
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 送信予定を追加することもできるが、タスクの実行予定日時でコントロールするかもしれないのでいったん保留
+            // sendAt: moment(email.send_at).unix(),
+            // 追跡用に通知IDをカスタムフィールドとしてセットする
+            customArgs: {
+                notification: email.id
+            }
+        };
 
-        // 追跡用に通知IDをカスタムフィールドとしてセットする
-        mail.addCustomArg(new sendgrid.mail.CustomArgs('notification', email.id));
-        // todo 送信予定を追加することもできるが、タスクの実行予定日時でコントロールするかもしれないのでいったん保留
-        // mail.setSendAt(moment(email.send_at).unix());
-
-        const sg = sendgrid(process.env.SENDGRID_API_KEY);
-
-        const sendGridRequest = sg.emptyRequest({
-            host: 'api.sendgrid.com',
-            method: 'POST',
-            path: '/v3/mail/send',
-            headers: {},
-            body: mail.toJSON(),
-            queryParams: {},
-            test: false,
-            port: ''
-        });
-
-        debug('requesting sendgrid api...', sendGridRequest);
-        const response = await sg.API(sendGridRequest);
+        debug('requesting sendgrid api...', msg);
+        const response = await sgMail.send(msg);
         debug('response is', response);
 
         // check the response.
-        if (response.statusCode !== httpStatus.ACCEPTED) {
+        if (response[0].statusCode !== httpStatus.ACCEPTED) {
             throw new Error(`sendgrid request not accepted. response is ${util.inspect(response)}`);
         }
     };
