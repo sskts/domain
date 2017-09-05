@@ -6,7 +6,7 @@
 import { Mockgoose } from 'mockgoose';
 import * as mongoose from 'mongoose';
 
-import * as sskts from '../lib/index';
+import * as sskts from './index';
 
 let mockgoose: Mockgoose;
 
@@ -24,9 +24,8 @@ describe('...', () => {
     it('...', async () => {
         // ...
         const eventAdapter = sskts.repository.event(mongoose.connection);
-        const event = await eventAdapter.eventModel.findOne({
+        await eventAdapter.eventModel.findOne({
             identifier: '11899100020170904102025'
         }).exec();
-        console.log('event:', event);
     });
 });

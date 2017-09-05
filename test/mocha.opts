@@ -1,3 +1,4 @@
 --no-timeouts
 --recursive
 --reporter nyan
+--compilers ts:ts-node/register
