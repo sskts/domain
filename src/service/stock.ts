@@ -23,10 +23,6 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 export function unauthorizeSeatReservation(transactionId: string) {
     return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
-        if (transaction === null) {
-            throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
-        }
-
         if (transaction.object.seatReservation === undefined) {
             return;
         }
@@ -54,7 +50,6 @@ export function transferSeatReservation(transactionId: string) {
     // tslint:disable-next-line:max-func-body-length
     return async (ownershipInfoRepository: OwnershipInfoRepository, transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
-
         if (transaction.object.seatReservation === undefined) {
             return;
         }
