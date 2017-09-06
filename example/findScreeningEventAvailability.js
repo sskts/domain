@@ -4,7 +4,7 @@
  * @ignore
  */
 
-const sskts = require('../lib/index');
+const sskts = require('../');
 const moment = require('moment');
 
 async function main() {

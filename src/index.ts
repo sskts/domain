@@ -1,3 +1,5 @@
+// tslint:disable:max-classes-per-file
+
 /**
  * sskts-domain index module
  * @module
@@ -87,52 +89,23 @@ export import COA = COA;
 export import GMO = GMO;
 
 export namespace repository {
-    export function transaction(connection: mongoose.Connection) {
-        return new TransactionRepository(connection);
-    }
-    export function client(connection: mongoose.Connection) {
-        return new ClientRepository(connection);
-    }
-    export function creativeWork(connection: mongoose.Connection) {
-        return new CreativeWorkRepository(connection);
-    }
-    export function event(connection: mongoose.Connection) {
-        return new EventRepository(connection);
-    }
-    export function gmoNotification(connection: mongoose.Connection) {
-        return new GMONotificationRepository(connection);
-    }
-    export function order(connection: mongoose.Connection) {
-        return new OrderRepository(connection);
-    }
-    export function organization(connection: mongoose.Connection) {
-        return new OrganizationRepository(connection);
-    }
-    export function ownershipInfo(connection: mongoose.Connection) {
-        return new OwnershipInfoRepository(connection);
-    }
-    export function person(connection: mongoose.Connection) {
-        return new PersonRepository(connection);
-    }
-    export function place(connection: mongoose.Connection) {
-        return new PlaceRepository(connection);
-    }
+    export class Client extends ClientRepository { }
+    export class CreativeWork extends CreativeWorkRepository { }
+    export class Event extends EventRepository { }
+    export class GMONotification extends GMONotificationRepository { }
+    export class Order extends OrderRepository { }
+    export class Organization extends OrganizationRepository { }
+    export class OwnershipInfo extends OwnershipInfoRepository { }
+    export class Person extends PersonRepository { }
+    export class Place extends PlaceRepository { }
+    export class SendGridEvent extends SendGridEventRepository { }
+    export class Task extends TaskRepository { }
+    export class Telemetry extends TelemetryRepository { }
+    export class Transaction extends TransactionRepository { }
+    export class TransactionCount extends TransactionCountRepository { }
+
     export namespace itemAvailability {
-        export function individualScreeningEvent(redisClient: redis.RedisClient) {
-            return new IndividualScreeningEventItemAvailabilityRepository(redisClient);
-        }
-    }
-    export function sendGridEvent(connection: mongoose.Connection) {
-        return new SendGridEventRepository(connection);
-    }
-    export function task(connection: mongoose.Connection) {
-        return new TaskRepository(connection);
-    }
-    export function telemetry(connection: mongoose.Connection) {
-        return new TelemetryRepository(connection);
-    }
-    export function transactionCount(redisClient: redis.RedisClient) {
-        return new TransactionCountRepository(redisClient);
+        export class IndividualScreeningEvent extends IndividualScreeningEventItemAvailabilityRepository { }
     }
 }
 

@@ -2,7 +2,7 @@
  * a sample making inquiry of an order
  */
 
-const sskts = require('../lib/index');
+const sskts = require('../');
 const readline = require('readline');
 
 const rl = readline.createInterface({
@@ -19,13 +19,14 @@ async function main() {
             rl.question('input order number: ', (orderNumber) => {
                 rl.question('input telephone: ', async (telephone) => {
                     try {
-                        const order = await sskts.service.order.findByOrderInquiryKey(
+                        const repo = new sskts.repository.Order(sskts.mongoose.connection);
+                        const order = await repo.findByOrderInquiryKey(
                             {
                                 theaterCode: theaterCode,
                                 orderNumber: parseInt(orderNumber, 10),
                                 telephone: telephone
                             }
-                        )(sskts.adapter.order(sskts.mongoose.connection));
+                        );
                         console.log('order:', order);
                         resolve();
                     } catch (error) {

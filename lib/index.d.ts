@@ -78,23 +78,38 @@ export import COA = COA;
  */
 export import GMO = GMO;
 export declare namespace repository {
-    function transaction(connection: mongoose.Connection): TransactionRepository;
-    function client(connection: mongoose.Connection): ClientRepository;
-    function creativeWork(connection: mongoose.Connection): CreativeWorkRepository;
-    function event(connection: mongoose.Connection): EventRepository;
-    function gmoNotification(connection: mongoose.Connection): GMONotificationRepository;
-    function order(connection: mongoose.Connection): OrderRepository;
-    function organization(connection: mongoose.Connection): OrganizationRepository;
-    function ownershipInfo(connection: mongoose.Connection): OwnershipInfoRepository;
-    function person(connection: mongoose.Connection): PersonRepository;
-    function place(connection: mongoose.Connection): PlaceRepository;
-    namespace itemAvailability {
-        function individualScreeningEvent(redisClient: redis.RedisClient): IndividualScreeningEventItemAvailabilityRepository;
+    class Client extends ClientRepository {
     }
-    function sendGridEvent(connection: mongoose.Connection): SendGridEventRepository;
-    function task(connection: mongoose.Connection): TaskRepository;
-    function telemetry(connection: mongoose.Connection): TelemetryRepository;
-    function transactionCount(redisClient: redis.RedisClient): TransactionCountRepository;
+    class CreativeWork extends CreativeWorkRepository {
+    }
+    class Event extends EventRepository {
+    }
+    class GMONotification extends GMONotificationRepository {
+    }
+    class Order extends OrderRepository {
+    }
+    class Organization extends OrganizationRepository {
+    }
+    class OwnershipInfo extends OwnershipInfoRepository {
+    }
+    class Person extends PersonRepository {
+    }
+    class Place extends PlaceRepository {
+    }
+    class SendGridEvent extends SendGridEventRepository {
+    }
+    class Task extends TaskRepository {
+    }
+    class Telemetry extends TelemetryRepository {
+    }
+    class Transaction extends TransactionRepository {
+    }
+    class TransactionCount extends TransactionCountRepository {
+    }
+    namespace itemAvailability {
+        class IndividualScreeningEvent extends IndividualScreeningEventItemAvailabilityRepository {
+        }
+    }
 }
 export declare namespace service {
     export import event = EventService;

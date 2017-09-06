@@ -4,15 +4,14 @@
  * @ignore
  */
 
-const sskts = require('../lib/index');
+const sskts = require('../');
 
 async function main() {
     sskts.mongoose.connect(process.env.MONGOLAB_URI);
 
-    const theaterOption = await sskts.service.place.findMovieTheaterByBranchCode(
-        '118'
-    )(sskts.adapter.place(sskts.mongoose.connection));
-    console.log('theaterOption', theaterOption);
+    const repo = new sskts.repository.Place(sskts.mongoose.connection);
+    const theater = await repo.findMovieTheaterByBranchCode('118');
+    console.log('theater:', theater);
 
     sskts.mongoose.disconnect();
 }
