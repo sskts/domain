@@ -21,10 +21,6 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 export function cancelCreditCardAuth(transactionId: string) {
     return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
-        if (transaction === null) {
-            throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
-        }
-
         const authorizeAction = <factory.action.authorize.creditCard.IAction | undefined>transaction.object.paymentInfos.find(
             (paymentInfo) => paymentInfo.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard
         );
@@ -53,10 +49,6 @@ export function cancelCreditCardAuth(transactionId: string) {
 export function settleCreditCardAuth(transactionId: string) {
     return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
-        if (transaction === null) {
-            throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
-        }
-
         const authorizeAction = <factory.action.authorize.creditCard.IAction | undefined>transaction.object.paymentInfos.find(
             (paymentInfo) => paymentInfo.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard
         );
