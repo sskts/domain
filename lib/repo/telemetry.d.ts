@@ -6,7 +6,7 @@ import telemetryModel from './mongoose/model/telemetry';
  *
  * @class TelemetryRepository
  */
-export default class TelemetryRepository {
+export declare class MongoRepository {
     readonly telemetryModel: typeof telemetryModel;
     constructor(connection: Connection);
 }

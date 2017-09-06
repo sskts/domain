@@ -8,8 +8,8 @@ import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import OwnershipInfoRepository from '../repo/ownershipInfo';
-import TransactionRepository from '../repo/transaction';
+import { MongoRepository as OwnershipInfoRepository } from '../repo/ownershipInfo';
+import { MongoRepository as TransactionRepository } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:stock');
 

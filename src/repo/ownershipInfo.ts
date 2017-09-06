@@ -7,7 +7,7 @@ import ownershipInfoModel from './mongoose/model/ownershipInfo';
  *
  * @class OwnershipInfoRepository
  */
-export default class OwnershipInfoRepository {
+export class MongoRepository {
     public readonly ownershipInfoModel: typeof ownershipInfoModel;
 
     constructor(connection: Connection) {

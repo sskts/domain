@@ -22,7 +22,7 @@ export interface IPushEventParams {
  *
  * @class ClientRepository
  */
-export default class ClientRepository {
+export class MongoRepository {
     public readonly clientEventModel: typeof ClientEventModel;
 
     constructor(connection: mongoose.Connection) {

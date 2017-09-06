@@ -8,8 +8,8 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
 
-import TaskRepository from '../../repo/task';
-import TransactionRepository from '../../repo/transaction';
+import { MongoRepository as TaskRepository } from '../../repo/task';
+import { MongoRepository as TransactionRepository } from '../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrder');
 

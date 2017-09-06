@@ -5,7 +5,7 @@ import * as redis from 'redis';
  *
  * @class TransactionCountRepository
  */
-export default class TransactionCountRepository {
+export declare class MongoRepository {
     readonly redisClient: redis.RedisClient;
     constructor(redisClient: redis.RedisClient);
     static SCOPE2KEY(scope: factory.transactionScope.ITransactionScope): string;

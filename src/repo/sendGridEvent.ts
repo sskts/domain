@@ -6,7 +6,7 @@ import SendGridEventModel from './mongoose/model/sendGridEvent';
  *
  * @class SendGridEventRepository
  */
-export default class SendGridEventRepository {
+export class MongoRepository {
     public readonly sendGridEventModel: typeof SendGridEventModel;
 
     constructor(connection: Connection) {

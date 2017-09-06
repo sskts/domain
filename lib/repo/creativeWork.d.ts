@@ -2,12 +2,17 @@
 import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
 import creativeWorkModel from './mongoose/model/creativeWork';
+export declare abstract class Repository {
+    abstract saveMovie(movie: factory.creativeWork.movie.ICreativeWork): Promise<void>;
+}
+export declare class StubRepository implements Repository {
+    saveMovie(__: factory.creativeWork.movie.ICreativeWork): Promise<void>;
+}
 /**
  * 作品レポジトリー
- *
  * @class CreativeWorkRepository
  */
-export default class CreativeWorkRepository {
+export declare class MongoRepository implements Repository {
     readonly creativeWorkModel: typeof creativeWorkModel;
     constructor(connection: Connection);
     /**

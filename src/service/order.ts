@@ -5,8 +5,8 @@
 
 import * as factory from '@motionpicture/sskts-factory';
 
-import OrderRepository from '../repo/order';
-import TransactionRepository from '../repo/transaction';
+import { MongoRepository as OrderRepository } from '../repo/order';
+import { MongoRepository as TransactionRepository } from '../repo/transaction';
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 

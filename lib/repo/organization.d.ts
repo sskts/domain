@@ -7,7 +7,7 @@ import organizationModel from './mongoose/model/organization';
  *
  * @class OrganizationRepository
  */
-export default class OrganizationRepository {
+export declare class MongoRepository {
     readonly organizationModel: typeof organizationModel;
     constructor(connection: Connection);
     /**

@@ -6,7 +6,7 @@
  */
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
-import TaskRepository from '../repo/task';
+import { MongoRepository as TaskRepository } from '../repo/task';
 export declare type TaskOperation<T> = (taskRepository: TaskRepository) => Promise<T>;
 export declare type TaskAndConnectionOperation<T> = (taskRepository: TaskRepository, connection: mongoose.Connection) => Promise<T>;
 /**

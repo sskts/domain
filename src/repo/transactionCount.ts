@@ -11,7 +11,7 @@ const KEY_PREFIX: string = 'sskts-domain:transactionCount';
  *
  * @class TransactionCountRepository
  */
-export default class TransactionCountRepository {
+export class MongoRepository {
     public readonly redisClient: redis.RedisClient;
 
     constructor(redisClient: redis.RedisClient) {
@@ -25,7 +25,7 @@ export default class TransactionCountRepository {
     public async incr(scope: factory.transactionScope.ITransactionScope) {
         return new Promise<number>((resolve, reject) => {
             // redisでカウントアップ
-            const key = TransactionCountRepository.SCOPE2KEY(scope);
+            const key = MongoRepository.SCOPE2KEY(scope);
             const expireAt = moment(scope.readyThrough).add(1, 'minutes').unix();
             const multi = this.redisClient.multi();
             multi.incr([key], debug)
@@ -48,7 +48,7 @@ export default class TransactionCountRepository {
 
     public async getByScope(scope: factory.transactionScope.ITransactionScope) {
         return new Promise<number>((resolve, reject) => {
-            const key = TransactionCountRepository.SCOPE2KEY(scope);
+            const key = MongoRepository.SCOPE2KEY(scope);
             this.redisClient.get([key], (err, replies) => {
                 debug(`get ${key}`, err, replies);
                 if (err instanceof Error) {

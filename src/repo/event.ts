@@ -3,12 +3,32 @@ import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
 import eventModel from './mongoose/model/event';
 
+export abstract class Repository {
+    public abstract async saveScreeningEvent(screeningEvent: factory.event.screeningEvent.IEvent): Promise<void>;
+    public abstract async saveIndividualScreeningEvent(
+        individualScreeningEvent: factory.event.individualScreeningEvent.IEvent
+    ): Promise<void>;
+}
+
+export class StubRepository implements Repository {
+    // tslint:disable-next-line:prefer-function-over-method
+    public async saveScreeningEvent(__: factory.event.screeningEvent.IEvent) {
+        return;
+    }
+    // tslint:disable-next-line:prefer-function-over-method
+    public async saveIndividualScreeningEvent(
+        __: factory.event.individualScreeningEvent.IEvent
+    ) {
+        return;
+    }
+}
+
 /**
  * イベントレポジトリー
  *
  * @class EventRepository
  */
-export default class EventRepository {
+export class MongoRepository implements Repository {
     public readonly eventModel: typeof eventModel;
 
     constructor(connection: Connection) {

@@ -1,6 +1,6 @@
 import * as factory from '@motionpicture/sskts-factory';
-import OwnershipInfoRepository from '../repo/ownershipInfo';
-import TransactionRepository from '../repo/transaction';
+import { MongoRepository as OwnershipInfoRepository } from '../repo/ownershipInfo';
+import { MongoRepository as TransactionRepository } from '../repo/transaction';
 export declare type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 /**
  * 資産承認解除(COA座席予約)

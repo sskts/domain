@@ -2,12 +2,20 @@
 import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
 import eventModel from './mongoose/model/event';
+export declare abstract class Repository {
+    abstract saveScreeningEvent(screeningEvent: factory.event.screeningEvent.IEvent): Promise<void>;
+    abstract saveIndividualScreeningEvent(individualScreeningEvent: factory.event.individualScreeningEvent.IEvent): Promise<void>;
+}
+export declare class StubRepository implements Repository {
+    saveScreeningEvent(__: factory.event.screeningEvent.IEvent): Promise<void>;
+    saveIndividualScreeningEvent(__: factory.event.individualScreeningEvent.IEvent): Promise<void>;
+}
 /**
  * イベントレポジトリー
  *
  * @class EventRepository
  */
-export default class EventRepository {
+export declare class MongoRepository implements Repository {
     readonly eventModel: typeof eventModel;
     constructor(connection: Connection);
     /**

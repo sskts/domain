@@ -6,7 +6,7 @@ import GMONotificationModel from './mongoose/model/gmoNotification';
  *
  * @class GMONotificationRepository
  */
-export default class GMONotificationRepository {
+export class MongoRepository {
     public readonly gmoNotificationModel: typeof GMONotificationModel;
 
     constructor(connection: Connection) {

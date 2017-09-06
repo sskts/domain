@@ -4,8 +4,8 @@
  * @namespace service/event
  */
 import * as factory from '@motionpicture/sskts-factory';
-import EventRepository from '../repo/event';
-import IndividualScreeningEventItemAvailabilityRepository from '../repo/itemAvailability/individualScreeningEvent';
+import { MongoRepository as EventRepository } from '../repo/event';
+import { MongoRepository as IndividualScreeningEventItemAvailabilityRepository } from '../repo/itemAvailability/individualScreeningEvent';
 export declare type IEventOperation<T> = (eventRepository: EventRepository, itemAvailability?: IndividualScreeningEventItemAvailabilityRepository) => Promise<T>;
 /**
  * search individualScreeningEvents

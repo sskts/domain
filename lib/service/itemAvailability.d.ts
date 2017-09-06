@@ -1,5 +1,5 @@
-import IndividualScreeningEventItemAvailabilityRepository from '../repo/itemAvailability/individualScreeningEvent';
-export declare type IItemAvailabilityOperation<T> = (itemAvailabilityRepository: IndividualScreeningEventItemAvailabilityRepository) => Promise<T>;
+import { MongoRepository as ItemAvailabilityRepository } from '../repo/itemAvailability/individualScreeningEvent';
+export declare type IItemAvailabilityOperation<T> = (itemAvailabilityRepository: ItemAvailabilityRepository) => Promise<T>;
 /**
  * 劇場IDと上映日範囲からパフォーマンス在庫状況を更新する
  *

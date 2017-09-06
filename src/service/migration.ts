@@ -9,7 +9,7 @@ import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-import OrderRepository from '../repo/order';
+import { MongoRepository as OrderRepository } from '../repo/order';
 
 import FilmAdapter from '../v22/adapter/film';
 import PerformanceAdapter from '../v22/adapter/performance';

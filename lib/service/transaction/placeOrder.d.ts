@@ -4,8 +4,8 @@
  * @namespace service/transaction/placeOrder
  */
 import * as factory from '@motionpicture/sskts-factory';
-import TaskRepository from '../../repo/task';
-import TransactionRepository from '../../repo/transaction';
+import { MongoRepository as TaskRepository } from '../../repo/task';
+import { MongoRepository as TransactionRepository } from '../../repo/transaction';
 export declare type ITaskAndTransactionOperation<T> = (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => Promise<T>;
 /**
  * ひとつの取引のタスクをエクスポートする

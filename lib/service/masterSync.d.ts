@@ -1,6 +1,6 @@
-import CreativeWorkRepository from '../repo/creativeWork';
-import EventRepository from '../repo/event';
-import PlaceRepository from '../repo/place';
+import { Repository as CreativeWorkRepository } from '../repo/creativeWork';
+import { Repository as EventRepository } from '../repo/event';
+import { Repository as PlaceRepository } from '../repo/place';
 export declare type IPlaceOperation<T> = (placeRepository: PlaceRepository) => Promise<T>;
 /**
  * 映画作品インポート

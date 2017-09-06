@@ -10,7 +10,7 @@ const debug = createDebug('sskts-domain:repository:organization');
  *
  * @class OrganizationRepository
  */
-export default class OrganizationRepository {
+export class MongoRepository {
     public readonly organizationModel: typeof organizationModel;
 
     constructor(connection: Connection) {

@@ -1,8 +1,8 @@
 import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
-import OrganizationRepository from '../../repo/organization';
-import TransactionRepository from '../../repo/transaction';
-import TransactionCountRepository from '../../repo/transactionCount';
+import { MongoRepository as OrganizationRepository } from '../../repo/organization';
+import { MongoRepository as TransactionRepository } from '../../repo/transaction';
+import { MongoRepository as TransactionCountRepository } from '../../repo/transactionCount';
 export declare type ITransactionOperation<T> = (transactionRepository: TransactionRepository) => Promise<T>;
 export declare type IOrganizationAndTransactionOperation<T> = (organizationRepository: OrganizationRepository, transactionRepository: TransactionRepository) => Promise<T>;
 export declare type IOrganizationAndTransactionAndTransactionCountOperation<T> = (organizationRepository: OrganizationRepository, transactionRepository: TransactionRepository, transactionCountRepository: TransactionCountRepository) => Promise<T>;

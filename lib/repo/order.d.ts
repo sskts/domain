@@ -7,7 +7,7 @@ import OrderModel from './mongoose/model/order';
  *
  * @class OrderRepository
  */
-export default class OrderRepository {
+export declare class MongoRepository {
     readonly orderModel: typeof OrderModel;
     constructor(connection: Connection);
     /**

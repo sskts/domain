@@ -12,7 +12,7 @@ const TIMEOUT_IN_SECONDS = 864000;
  * パフォーマンス在庫状況レポジトリー
  * @class IndividualScreeningEventItemAvailabilityRepository
  */
-export default class IndividualScreeningEventItemAvailabilityRepository {
+export class MongoRepository {
     public readonly redisClient: redis.RedisClient;
 
     constructor(redisClient: redis.RedisClient) {
@@ -43,7 +43,7 @@ export default class IndividualScreeningEventItemAvailabilityRepository {
      */
     public async findOne(screeningDay: string, eventIdentifier: string):
         Promise<factory.event.individualScreeningEvent.IItemAvailability | null> {
-        const key = IndividualScreeningEventItemAvailabilityRepository.CREATE_REDIS_KEY(screeningDay);
+        const key = MongoRepository.CREATE_REDIS_KEY(screeningDay);
 
         return new Promise<factory.event.individualScreeningEvent.IItemAvailability | null>((resolve, reject) => {
             // 劇場のパフォーマンス空席状況を取得
@@ -84,7 +84,7 @@ export default class IndividualScreeningEventItemAvailabilityRepository {
         eventIdentifier: string,
         itemAvailability: factory.event.individualScreeningEvent.IItemAvailability
     ): Promise<void> {
-        const key = IndividualScreeningEventItemAvailabilityRepository.CREATE_REDIS_KEY(screeningDay);
+        const key = MongoRepository.CREATE_REDIS_KEY(screeningDay);
 
         return new Promise<void>(async (resolve, reject) => {
             this.redisClient.hset([key, eventIdentifier, itemAvailability], (err) => {
@@ -107,7 +107,7 @@ export default class IndividualScreeningEventItemAvailabilityRepository {
      * @memberof IndividualScreeningEventItemAvailabilityRepository
      */
     public async removeByPerformaceDay(screeningDay: string): Promise<void> {
-        const key = IndividualScreeningEventItemAvailabilityRepository.CREATE_REDIS_KEY(screeningDay);
+        const key = MongoRepository.CREATE_REDIS_KEY(screeningDay);
 
         return new Promise<void>(async (resolve, reject) => {
             this.redisClient.del([key], (err) => {
@@ -130,7 +130,7 @@ export default class IndividualScreeningEventItemAvailabilityRepository {
      * @memberof IndividualScreeningEventItemAvailabilityRepository
      */
     public async setTTLIfNotExist(screeningDay: string): Promise<void> {
-        const key = IndividualScreeningEventItemAvailabilityRepository.CREATE_REDIS_KEY(screeningDay);
+        const key = MongoRepository.CREATE_REDIS_KEY(screeningDay);
 
         return new Promise<void>((resolve, reject) => {
             this.redisClient.ttl([key], (err, ttl) => {

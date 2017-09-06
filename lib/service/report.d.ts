@@ -1,7 +1,7 @@
-import GMONotificationRepository from '../repo/gmoNotification';
-import TaskRepository from '../repo/task';
-import TelemetryRepository from '../repo/telemetry';
-import TransactionRepository from '../repo/transaction';
+import { MongoRepository as GMONotificationRepository } from '../repo/gmoNotification';
+import { MongoRepository as TaskRepository } from '../repo/task';
+import { MongoRepository as TelemetryRepository } from '../repo/telemetry';
+import { MongoRepository as TransactionRepository } from '../repo/transaction';
 export declare type TaskAndTransactionOperation<T> = (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => Promise<T>;
 export declare type TaskAndTelemetryAndTransactionOperation<T> = (taskRepository: TaskRepository, telemetryRepository: TelemetryRepository, transactionRepository: TransactionRepository) => Promise<T>;
 export declare type GMONotificationOperation<T> = (gmoNotificationRepository: GMONotificationRepository) => Promise<T>;

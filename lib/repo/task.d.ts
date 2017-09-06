@@ -7,7 +7,7 @@ import taskModel from './mongoose/model/task';
  *
  * @class TaskRepository
  */
-export default class TaskRepository {
+export declare class MongoRepository {
     readonly taskModel: typeof taskModel;
     constructor(connection: Connection);
     save(task: factory.task.ITask): Promise<void>;

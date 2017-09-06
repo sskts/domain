@@ -11,9 +11,9 @@ import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-import OrganizationRepository from '../../repo/organization';
-import TransactionRepository from '../../repo/transaction';
-import TransactionCountRepository from '../../repo/transactionCount';
+import { MongoRepository as OrganizationRepository } from '../../repo/organization';
+import { MongoRepository as TransactionRepository } from '../../repo/transaction';
+import { MongoRepository as TransactionCountRepository } from '../../repo/transactionCount';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress');
 

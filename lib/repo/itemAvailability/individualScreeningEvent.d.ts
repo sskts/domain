@@ -4,7 +4,7 @@ import * as redis from 'redis';
  * パフォーマンス在庫状況レポジトリー
  * @class IndividualScreeningEventItemAvailabilityRepository
  */
-export default class IndividualScreeningEventItemAvailabilityRepository {
+export declare class MongoRepository {
     readonly redisClient: redis.RedisClient;
     constructor(redisClient: redis.RedisClient);
     /**

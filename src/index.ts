@@ -21,21 +21,21 @@ import * as TaskService from './service/task';
 import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
 import * as PlaceOrderInProgressTransactionService from './service/transaction/placeOrderInProgress';
 
-import ClientRepository from './repo/client';
-import CreativeWorkRepository from './repo/creativeWork';
-import EventRepository from './repo/event';
-import GMONotificationRepository from './repo/gmoNotification';
-import IndividualScreeningEventItemAvailabilityRepository from './repo/itemAvailability/individualScreeningEvent';
-import OrderRepository from './repo/order';
-import OrganizationRepository from './repo/organization';
-import OwnershipInfoRepository from './repo/ownershipInfo';
-import PersonRepository from './repo/person';
-import PlaceRepository from './repo/place';
-import SendGridEventRepository from './repo/sendGridEvent';
-import TaskRepository from './repo/task';
-import TelemetryRepository from './repo/telemetry';
-import TransactionRepository from './repo/transaction';
-import TransactionCountRepository from './repo/transactionCount';
+import { MongoRepository as ClientRepository } from './repo/client';
+import { MongoRepository as CreativeWorkRepository } from './repo/creativeWork';
+import { MongoRepository as EventRepository } from './repo/event';
+import { MongoRepository as GMONotificationRepository } from './repo/gmoNotification';
+import { MongoRepository as IndividualScreeningEventItemAvailabilityRepository } from './repo/itemAvailability/individualScreeningEvent';
+import { MongoRepository as OrderRepository } from './repo/order';
+import { MongoRepository as OrganizationRepository } from './repo/organization';
+import { MongoRepository as OwnershipInfoRepository } from './repo/ownershipInfo';
+import { MongoRepository as PersonRepository } from './repo/person';
+import { MongoRepository as PlaceRepository } from './repo/place';
+import { MongoRepository as SendGridEventRepository } from './repo/sendGridEvent';
+import { MongoRepository as TaskRepository } from './repo/task';
+import { MongoRepository as TelemetryRepository } from './repo/telemetry';
+import { MongoRepository as TransactionRepository } from './repo/transaction';
+import { MongoRepository as TransactionCountRepository } from './repo/transactionCount';
 
 (<any>mongoose).Promise = global.Promise;
 

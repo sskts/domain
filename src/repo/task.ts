@@ -7,7 +7,7 @@ import taskModel from './mongoose/model/task';
  *
  * @class TaskRepository
  */
-export default class TaskRepository {
+export class MongoRepository {
     public readonly taskModel: typeof taskModel;
 
     constructor(connection: Connection) {

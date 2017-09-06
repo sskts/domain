@@ -9,9 +9,9 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
-import CreativeWorkRepository from '../repo/creativeWork';
-import EventRepository from '../repo/event';
-import PlaceRepository from '../repo/place';
+import { Repository as CreativeWorkRepository } from '../repo/creativeWork';
+import { Repository as EventRepository } from '../repo/event';
+import { Repository as PlaceRepository } from '../repo/place';
 
 const debug = createDebug('sskts-domain:service:masterSync');
 
@@ -46,16 +46,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
     // tslint:disable-next-line:max-func-body-length
     return async (eventRepository: EventRepository, placeRepository: PlaceRepository) => {
         // 劇場取得
-        const movieTheaterDoc = await placeRepository.placeModel.findOne(
-            {
-                branchCode: theaterCode,
-                typeOf: factory.placeType.MovieTheater
-            }
-        ).exec();
-        if (movieTheaterDoc === null) {
-            throw new factory.errors.Argument('movieTheater not found.');
-        }
-        const movieTheater = <factory.place.movieTheater.IPlace>movieTheaterDoc.toObject();
+        const movieTheater = await placeRepository.findMovieTheaterByBranchCode(theaterCode);
 
         // COAから作品取得
         const filmsFromCOA = await COA.services.master.title({

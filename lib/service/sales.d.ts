@@ -1,5 +1,5 @@
 import * as factory from '@motionpicture/sskts-factory';
-import TransactionRepository from '../repo/transaction';
+import { MongoRepository as TransactionRepository } from '../repo/transaction';
 export declare type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 /**
  * クレジットカードオーソリ取消

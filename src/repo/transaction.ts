@@ -8,7 +8,7 @@ import TransactionModel from './mongoose/model/transaction';
  * transaction repository
  * @class
  */
-export default class TransactionRepository {
+export class MongoRepository {
     public readonly transactionModel: typeof TransactionModel;
 
     constructor(connection: Connection) {

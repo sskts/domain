@@ -20,7 +20,7 @@ export interface IPushEventParams {
  *
  * @class ClientRepository
  */
-export default class ClientRepository {
+export declare class MongoRepository {
     readonly clientEventModel: typeof ClientEventModel;
     constructor(connection: mongoose.Connection);
     pushEvent(params: IPushEventParams): Promise<factory.clientEvent.IClientEvent>;

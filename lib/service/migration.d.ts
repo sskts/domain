@@ -1,5 +1,5 @@
 import * as factory from '@motionpicture/sskts-factory';
-import OrderRepository from '../repo/order';
+import { MongoRepository as OrderRepository } from '../repo/order';
 import FilmAdapter from '../v22/adapter/film';
 import PerformanceAdapter from '../v22/adapter/performance';
 import ScreenAdapter from '../v22/adapter/screen';

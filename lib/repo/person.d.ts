@@ -6,7 +6,7 @@ import personModel from './mongoose/model/person';
  *
  * @class PersonRepository
  */
-export default class PersonRepository {
+export declare class MongoRepository {
     readonly personModel: typeof personModel;
     constructor(connection: Connection);
 }

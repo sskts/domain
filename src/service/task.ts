@@ -9,7 +9,7 @@ import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-import TaskRepository from '../repo/task';
+import { MongoRepository as TaskRepository } from '../repo/task';
 
 import * as NotificationService from './notification';
 import * as TaskFunctionsService from './taskFunctions';

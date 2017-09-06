@@ -5,12 +5,35 @@ import placeModel from './mongoose/model/place';
 
 const debug = createDebug('sskts-domain:repository:place');
 
+export abstract class Repository {
+    public abstract async saveMovieTheater(movieTheater: factory.place.movieTheater.IPlace): Promise<void>;
+    public abstract async searchMovieTheaters(searchConditions: {}): Promise<factory.place.movieTheater.IPlaceWithoutScreeningRoom[]>;
+    public abstract async findMovieTheaterByBranchCode(branchCode: string): Promise<factory.place.movieTheater.IPlace>;
+}
+
+export class StubRepository implements Repository {
+    // tslint:disable-next-line:prefer-function-over-method
+    public async saveMovieTheater(__: factory.place.movieTheater.IPlace) {
+        return;
+    }
+    // tslint:disable-next-line:prefer-function-over-method
+    public async searchMovieTheaters(__: {}) {
+        return [<any>{}];
+    }
+    // tslint:disable-next-line:prefer-function-over-method
+    public async findMovieTheaterByBranchCode(__: string) {
+        return <any>{
+            containsPlace: []
+        };
+    }
+}
+
 /**
  * 場所レポジトリー
  *
  * @class PlaceRepository
  */
-export default class PlaceRepository {
+export class MongoRepository {
     public readonly placeModel: typeof placeModel;
 
     constructor(connection: Connection) {

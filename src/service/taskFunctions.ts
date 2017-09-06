@@ -7,9 +7,9 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
-import OrderRepository from '../repo/order';
-import OwnershipInfoRepository from '../repo/ownershipInfo';
-import TransactionRepository from '../repo/transaction';
+import { MongoRepository as OrderRepository } from '../repo/order';
+import { MongoRepository as OwnershipInfoRepository } from '../repo/ownershipInfo';
+import { MongoRepository as TransactionRepository } from '../repo/transaction';
 
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
