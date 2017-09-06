@@ -27,7 +27,7 @@ describe('searchIndividualScreeningEvents()', () => {
             identifier: 'identifier'
         };
         const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
-        const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(sskts.redis.createClient());
+        const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(<any>{});
 
         sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').once()
             .returns(Array.from(Array(numberOfEvents)).map(() => event));
@@ -57,7 +57,7 @@ describe('findIndividualScreeningEventByIdentifier()', () => {
             identifier: 'identifier'
         };
         const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
-        const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(sskts.redis.createClient());
+        const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(<any>{});
 
         sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().returns(event);
         // tslint:disable-next-line:no-magic-numbers

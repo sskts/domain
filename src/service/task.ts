@@ -20,15 +20,6 @@ export type TaskAndConnectionOperation<T> = (taskRepository: TaskRepository, con
 const debug = createDebug('sskts-domain:service:task');
 
 /**
- * タスク実行時のソート条件
- * @const
- */
-const sortOrder4executionOfTasks = {
-    numberOfTried: 1, // トライ回数の少なさ優先
-    runsAt: 1 // 実行予定日時の早さ優先
-};
-
-/**
  * execute a task by taskName
  * タスク名でタスクをひとつ実行する
  * @param {factory.taskName} taskName タスク名
@@ -39,31 +30,18 @@ const sortOrder4executionOfTasks = {
 export function executeByName(taskName: factory.taskName): TaskAndConnectionOperation<void> {
     return async (taskRepository: TaskRepository, connection: mongoose.Connection) => {
         // 未実行のタスクを取得
-        const taskDoc = await taskRepository.taskModel.findOneAndUpdate(
-            {
-                status: factory.taskStatus.Ready,
-                runsAt: { $lt: new Date() },
-                name: taskName
-            },
-            {
-                status: factory.taskStatus.Running, // 実行中に変更
-                lastTriedAt: new Date(),
-                $inc: {
-                    remainingNumberOfTries: -1, // 残りトライ可能回数減らす
-                    numberOfTried: 1 // トライ回数増やす
-                }
-            },
-            { new: true }
-        ).sort(sortOrder4executionOfTasks).exec();
-        debug('taskDoc found', taskDoc);
-
-        // タスクがなければ終了
-        if (taskDoc === null) {
-            return;
+        let task: factory.task.ITask | null = null;
+        try {
+            task = await taskRepository.executeOneByName(taskName);
+            debug('task found', task);
+        } catch (error) {
+            console.error(error);
         }
 
-        const task = <factory.task.ITask>taskDoc.toObject();
-        await execute(task)(taskRepository, connection);
+        // タスクがなければ終了
+        if (task !== null) {
+            await execute(task)(taskRepository, connection);
+        }
     };
 }
 
@@ -122,17 +100,8 @@ export function execute(task: factory.task.ITask): TaskAndConnectionOperation<vo
  */
 export function retry(intervalInMinutes: number): TaskOperation<void> {
     return async (taskRepository: TaskRepository) => {
-        await taskRepository.taskModel.update(
-            {
-                status: factory.taskStatus.Running,
-                lastTriedAt: { $lt: moment().add(-intervalInMinutes, 'minutes').toISOString() },
-                remainingNumberOfTries: { $gt: 0 }
-            },
-            {
-                status: factory.taskStatus.Ready // 実行前に変更
-            },
-            { multi: true }
-        ).exec();
+        const lastTriedAt = moment().add(-intervalInMinutes, 'minutes').toDate();
+        await taskRepository.retry(lastTriedAt);
     };
 }
 

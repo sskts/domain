@@ -11,4 +11,6 @@ export declare class MongoRepository {
     readonly taskModel: typeof taskModel;
     constructor(connection: Connection);
     save(task: factory.task.ITask): Promise<void>;
+    executeOneByName(taskName: factory.taskName): Promise<factory.task.ITask>;
+    retry(lastTriedAt: Date): Promise<void>;
 }
