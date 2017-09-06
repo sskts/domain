@@ -16,7 +16,8 @@ import * as validator from 'validator';
 export type Operation<T> = () => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:notification');
-const LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify';
+
+export const LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify';
 
 /**
  * send an email

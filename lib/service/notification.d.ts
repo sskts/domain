@@ -5,6 +5,7 @@
  */
 import * as factory from '@motionpicture/sskts-factory';
 export declare type Operation<T> = () => Promise<T>;
+export declare const LINE_NOTIFY_URL = "https://notify-api.line.me/api/notify";
 /**
  * send an email
  * Eメールを送信する
