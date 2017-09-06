@@ -11,13 +11,13 @@ import { StubRepository as CreativeWorkRepository } from '../repo/creativeWork';
 import { StubRepository as EventRepository } from '../repo/event';
 import { StubRepository as PlaceRepository } from '../repo/place';
 
+let sandbox: sinon.SinonSandbox;
+
+before(() => {
+    sandbox = sinon.sandbox.create();
+});
+
 describe('importMovies()', () => {
-    let sandbox: sinon.SinonSandbox;
-
-    beforeEach(() => {
-        sandbox = sinon.sandbox.create();
-    });
-
     afterEach(() => {
         sandbox.restore();
     });
@@ -25,23 +25,19 @@ describe('importMovies()', () => {
     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
         const numberOfWorks = 3;
         const creativeWorkRepo = new CreativeWorkRepository();
-        const spy = sandbox.spy(creativeWorkRepo, 'saveMovie');
-        sandbox.stub(sskts.COA.services.master, 'title').returns(Promise.resolve(Array.from(Array(numberOfWorks))));
-        sandbox.stub(sskts.factory.creativeWork.movie, 'createFromCOA').returns({});
+
+        sandbox.mock(creativeWorkRepo).expects('saveMovie').exactly(numberOfWorks);
+        sandbox.mock(sskts.COA.services.master).expects('title').once().returns(Promise.resolve(Array.from(Array(numberOfWorks))));
+        sandbox.mock(sskts.factory.creativeWork.movie).expects('createFromCOA').exactly(numberOfWorks).returns({});
 
         const result = await sskts.service.masterSync.importMovies('123')(creativeWorkRepo);
+
         assert.equal(result, undefined);
-        assert.equal(spy.callCount, numberOfWorks);
+        sandbox.verify();
     });
 });
 
 describe('importScreeningEvents()', () => {
-    let sandbox: sinon.SinonSandbox;
-
-    beforeEach(() => {
-        sandbox = sinon.sandbox.create();
-    });
-
     afterEach(() => {
         sandbox.restore();
     });
@@ -51,15 +47,15 @@ describe('importScreeningEvents()', () => {
         const eventRepo = new EventRepository();
         const placeRepo = new PlaceRepository();
 
-        const spy = sandbox.spy(eventRepo, 'saveIndividualScreeningEvent');
-        sandbox.stub(sskts.COA.services.master, 'title').returns(Promise.resolve(
+        sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').exactly(numberOfEvents);
+        sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns({ containsPlace: [] });
+        sandbox.mock(sskts.COA.services.master).expects('title').once().returns(Promise.resolve([{}]));
+        sandbox.mock(sskts.COA.services.master).expects('schedule').once().returns(Promise.resolve(
             Array.from(Array(numberOfEvents)).map(() => new Object())
         ));
-        // tslint:disable-next-line:max-line-length
         // tslint:disable-next-line:no-magic-numbers
-        sandbox.stub(sskts.COA.services.master, 'schedule').returns(Promise.resolve(Array.from(Array(3)).map(() => new Object())));
-        // tslint:disable-next-line:no-magic-numbers
-        sandbox.stub(sskts.COA.services.master, 'kubunName').returns(Promise.resolve(Array.from(Array(3)).map(() => new Object())));
+        sandbox.mock(sskts.COA.services.master).expects('kubunName').exactly(6).returns(Promise.resolve([{}]));
+
         sandbox.stub(sskts.factory.event.screeningEvent, 'createFromCOA').returns({});
         sandbox.stub(sskts.factory.event.screeningEvent, 'createIdentifier').returns('');
         sandbox.stub(sskts.factory.event.individualScreeningEvent, 'createFromCOA').returns({});
@@ -68,18 +64,13 @@ describe('importScreeningEvents()', () => {
         const result = await sskts.service.masterSync.importScreeningEvents(
             '123', new Date(), new Date()
         )(eventRepo, placeRepo);
+
         assert.equal(result, undefined);
-        assert.equal(spy.callCount, numberOfEvents);
+        sandbox.verify();
     });
 });
 
 describe('importMovieTheater()', () => {
-    let sandbox: sinon.SinonSandbox;
-
-    beforeEach(() => {
-        sandbox = sinon.sandbox.create();
-    });
-
     afterEach(() => {
         sandbox.restore();
     });
@@ -87,13 +78,14 @@ describe('importMovieTheater()', () => {
     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
         const placeRepo = new PlaceRepository();
 
-        const spy = sandbox.spy(placeRepo, 'saveMovieTheater');
+        sandbox.mock(placeRepo).expects('saveMovieTheater').once();
         sandbox.stub(sskts.COA.services.master, 'theater').returns({});
         sandbox.stub(sskts.COA.services.master, 'screen').returns({});
         sandbox.stub(sskts.factory.place.movieTheater, 'createFromCOA').returns({});
 
         const result = await sskts.service.masterSync.importMovieTheater('123')(placeRepo);
+
         assert.equal(result, undefined);
-        assert(spy.calledOnce);
+        sandbox.verify();
     });
 });

@@ -30,4 +30,6 @@ export declare class MongoRepository implements Repository {
      * @param individualScreeningEvent individualScreeningEvent object
      */
     saveIndividualScreeningEvent(individualScreeningEvent: factory.event.individualScreeningEvent.IEvent): Promise<void>;
+    searchIndividualScreeningEvents(searchConditions: factory.event.individualScreeningEvent.ISearchConditions): Promise<factory.event.individualScreeningEvent.IEvent[]>;
+    findIndividualScreeningEventByIdentifier(identifier: string): Promise<factory.event.individualScreeningEvent.IEvent>;
 }
