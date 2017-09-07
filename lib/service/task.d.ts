@@ -9,6 +9,7 @@ import * as mongoose from 'mongoose';
 import { MongoRepository as TaskRepository } from '../repo/task';
 export declare type TaskOperation<T> = (taskRepository: TaskRepository) => Promise<T>;
 export declare type TaskAndConnectionOperation<T> = (taskRepository: TaskRepository, connection: mongoose.Connection) => Promise<T>;
+export declare const ABORT_REPORT_SUBJECT = "One task aboted !!!";
 /**
  * execute a task by taskName
  * タスク名でタスクをひとつ実行する

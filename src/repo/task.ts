@@ -1,4 +1,5 @@
 import * as factory from '@motionpicture/sskts-factory';
+import * as moment from 'moment';
 import { Connection } from 'mongoose';
 import taskModel from './mongoose/model/task';
 
@@ -45,7 +46,6 @@ export class MongoRepository {
             { new: true }
         ).sort(sortOrder4executionOfTasks).exec();
 
-        // タスクがなければ終了
         if (doc === null) {
             throw new factory.errors.NotFound('executable task');
         }
@@ -53,17 +53,54 @@ export class MongoRepository {
         return <factory.task.ITask>doc.toObject();
     }
 
-    public async retry(lastTriedAt: Date) {
+    public async retry(intervalInMinutes: number) {
+        const lastTriedAtShoudBeLessThan = moment().add(-intervalInMinutes, 'minutes').toDate();
         await this.taskModel.update(
             {
                 status: factory.taskStatus.Running,
-                lastTriedAt: { $lt: lastTriedAt },
+                lastTriedAt: { $lt: lastTriedAtShoudBeLessThan },
                 remainingNumberOfTries: { $gt: 0 }
             },
             {
                 status: factory.taskStatus.Ready // 実行前に変更
             },
             { multi: true }
+        ).exec();
+    }
+
+    public async abortOne(intervalInMinutes: number): Promise<factory.task.ITask> {
+        const lastTriedAtShoudBeLessThan = moment().add(-intervalInMinutes, 'minutes').toDate();
+
+        const doc = await this.taskModel.findOneAndUpdate(
+            {
+                status: factory.taskStatus.Running,
+                lastTriedAt: { $lt: lastTriedAtShoudBeLessThan },
+                remainingNumberOfTries: 0
+            },
+            {
+                status: factory.taskStatus.Aborted
+            },
+            { new: true }
+        ).exec();
+
+        if (doc === null) {
+            throw new factory.errors.NotFound('abortable task');
+        }
+
+        return <factory.task.ITask>doc.toObject();
+    }
+
+    public async pushExecutionResultById(
+        id: string,
+        status: factory.taskStatus,
+        executionResult: factory.taskExecutionResult.ITaskExecutionResult
+    ): Promise<void> {
+        await this.taskModel.findByIdAndUpdate(
+            id,
+            {
+                status: status, // 失敗してもここでは戻さない(Runningのまま待機)
+                $push: { executionResults: executionResult }
+            }
         ).exec();
     }
 }

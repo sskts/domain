@@ -138,7 +138,6 @@ describe('transferSeatReservation()', () => {
         const transferSeatReservationError = await sskts.service.stock.transferSeatReservation(
             transaction.id
         )(ownershipInfoRepo, transactionRepo).catch((err) => err);
-        console.error(transferSeatReservationError);
 
         assert(transferSeatReservationError instanceof sskts.factory.errors.Argument);
         sandbox.verify();
