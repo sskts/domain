@@ -7,7 +7,6 @@ import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../index';
 
-import { StubRepository as CreativeWorkRepository } from '../repo/creativeWork';
 import { StubRepository as EventRepository } from '../repo/event';
 import { StubRepository as PlaceRepository } from '../repo/place';
 
@@ -24,7 +23,7 @@ describe('importMovies()', () => {
 
     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
         const numberOfWorks = 3;
-        const creativeWorkRepo = new CreativeWorkRepository();
+        const creativeWorkRepo = new sskts.repository.CreativeWork(sskts.mongoose.connection);
 
         sandbox.mock(creativeWorkRepo).expects('saveMovie').exactly(numberOfWorks);
         sandbox.mock(sskts.COA.services.master).expects('title').once().returns(Promise.resolve(Array.from(Array(numberOfWorks))));

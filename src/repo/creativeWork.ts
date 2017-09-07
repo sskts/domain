@@ -6,13 +6,6 @@ export abstract class Repository {
     public abstract async saveMovie(movie: factory.creativeWork.movie.ICreativeWork): Promise<void>;
 }
 
-export class StubRepository implements Repository {
-    // tslint:disable-next-line:prefer-function-over-method
-    public async saveMovie(__: factory.creativeWork.movie.ICreativeWork) {
-        return;
-    }
-}
-
 /**
  * 作品レポジトリー
  * @class CreativeWorkRepository
