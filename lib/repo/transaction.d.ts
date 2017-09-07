@@ -48,4 +48,8 @@ export declare class MongoRepository {
      * 取引を期限切れにする
      */
     makeExpired(): Promise<void>;
+    pushPaymentInfo(transactionId: string, authorizeAction: factory.action.authorize.creditCard.IAction): Promise<void>;
+    pullPaymentInfo(transactionId: string, actionId: string): Promise<void>;
+    addSeatReservation(transactionId: string, authorizeAction: factory.action.authorize.seatReservation.IAction): Promise<void>;
+    removeSeatReservation(transactionId: string): Promise<void>;
 }

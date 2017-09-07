@@ -194,11 +194,8 @@ export function createCreditCardAuthorization(
             endDate: new Date()
         });
 
-        await transactionRepository.transactionModel.findByIdAndUpdate(
-            transactionId,
-            { $push: { 'object.paymentInfos': authorizeAction } }
-        ).exec();
-        debug('GMOAuthorization added.');
+        await transactionRepository.pushPaymentInfo(transactionId, authorizeAction);
+        debug('GMOAuthorizeAction pushed.');
 
         return authorizeAction;
     };
@@ -236,12 +233,7 @@ export function cancelGMOAuthorization(
         });
         debug('alterTran processed', GMO.utils.util.JobCd.Void);
 
-        await transactionRepository.transactionModel.findByIdAndUpdate(
-            transaction.id,
-            {
-                $pull: { 'object.paymentInfos': { id: actionId } }
-            }
-        ).exec();
+        await transactionRepository.pullPaymentInfo(transactionId, actionId);
     };
 }
 
@@ -282,7 +274,7 @@ export function createSeatReservationAuthorization(
         debug('updTmpReserveSeat processed', reserveSeatsTemporarilyResult);
 
         // COAオーソリ追加
-        debug('adding authorizeActions coaSeatReservation...');
+        debug('adding authorizeActions seatReservation...');
         const authorizeAction = factory.action.authorize.seatReservation.createFromCOATmpReserve({
             actionStatus: factory.actionStatusType.CompletedActionStatus,
             agent: transaction.seller,
@@ -295,11 +287,8 @@ export function createSeatReservationAuthorization(
             endDate: new Date()
         });
 
-        await transactionRepository.transactionModel.findByIdAndUpdate(
-            transaction.id,
-            { 'object.seatReservation': authorizeAction }
-        ).exec();
-        debug('coaAuthorization added.');
+        await transactionRepository.addSeatReservation(transactionId, authorizeAction);
+        debug('SeatReservationAuthorizeAction added.');
 
         return authorizeAction;
     };
@@ -337,12 +326,7 @@ export function cancelSeatReservationAuthorization(
         });
         debug('delTmpReserve processed');
 
-        await transactionRepository.transactionModel.findByIdAndUpdate(
-            transaction.id,
-            {
-                $unset: { 'object.seatReservation': 1 }
-            }
-        ).exec();
+        await transactionRepository.removeSeatReservation(transactionId);
     };
 }
 

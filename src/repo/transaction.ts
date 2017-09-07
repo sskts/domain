@@ -157,4 +157,38 @@ export class MongoRepository {
             { multi: true }
         ).exec();
     }
+
+    public async pushPaymentInfo(
+        transactionId: string,
+        authorizeAction: factory.action.authorize.creditCard.IAction
+    ): Promise<void> {
+        await this.transactionModel.findByIdAndUpdate(
+            transactionId,
+            { $push: { 'object.paymentInfos': authorizeAction } }
+        ).exec();
+    }
+
+    public async pullPaymentInfo(transactionId: string, actionId: string): Promise<void> {
+        await this.transactionModel.findByIdAndUpdate(
+            transactionId,
+            { $pull: { 'object.paymentInfos': { id: actionId } } }
+        ).exec();
+    }
+
+    public async addSeatReservation(
+        transactionId: string,
+        authorizeAction: factory.action.authorize.seatReservation.IAction
+    ): Promise<void> {
+        await this.transactionModel.findByIdAndUpdate(
+            transactionId,
+            { 'object.seatReservation': authorizeAction }
+        ).exec();
+    }
+
+    public async removeSeatReservation(transactionId: string): Promise<void> {
+        await this.transactionModel.findByIdAndUpdate(
+            transactionId,
+            { $unset: { 'object.seatReservation': 1 } }
+        ).exec();
+    }
 }
