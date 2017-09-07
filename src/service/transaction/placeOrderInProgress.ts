@@ -437,10 +437,7 @@ export function createMvtkAuthorization(
             endDate: new Date()
         });
 
-        await transactionRepository.transactionModel.findByIdAndUpdate(
-            transactionId,
-            { $push: { 'object.discountInfos': authorizeAction } }
-        ).exec();
+        await transactionRepository.pushDiscountInfo(transactionId, authorizeAction);
 
         return authorizeAction;
     };
@@ -468,12 +465,7 @@ export function cancelMvtkAuthorization(
             throw new factory.errors.Argument('actionId', 'mvtk authorizeAction not found');
         }
 
-        await transactionRepository.transactionModel.findByIdAndUpdate(
-            transaction.id,
-            {
-                $pull: { 'object.discountInfos': { id: actionId } }
-            }
-        ).exec();
+        await transactionRepository.pullDiscountInfo(transactionId, actionId);
     };
 }
 

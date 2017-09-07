@@ -52,4 +52,6 @@ export declare class MongoRepository {
     pullPaymentInfo(transactionId: string, actionId: string): Promise<void>;
     addSeatReservation(transactionId: string, authorizeAction: factory.action.authorize.seatReservation.IAction): Promise<void>;
     removeSeatReservation(transactionId: string): Promise<void>;
+    pushDiscountInfo(transactionId: string, authorizeAction: factory.action.authorize.mvtk.IAction): Promise<void>;
+    pullDiscountInfo(transactionId: string, actionId: string): Promise<void>;
 }

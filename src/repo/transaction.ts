@@ -191,4 +191,21 @@ export class MongoRepository {
             { $unset: { 'object.seatReservation': 1 } }
         ).exec();
     }
+
+    public async pushDiscountInfo(
+        transactionId: string,
+        authorizeAction: factory.action.authorize.mvtk.IAction
+    ): Promise<void> {
+        await this.transactionModel.findByIdAndUpdate(
+            transactionId,
+            { $push: { 'object.discountInfos': authorizeAction } }
+        ).exec();
+    }
+
+    public async pullDiscountInfo(transactionId: string, actionId: string): Promise<void> {
+        await this.transactionModel.findByIdAndUpdate(
+            transactionId,
+            { $pull: { 'object.discountInfos': { id: actionId } } }
+        ).exec();
+    }
 }
