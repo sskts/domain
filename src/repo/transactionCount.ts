@@ -28,11 +28,12 @@ export class MongoRepository {
             const key = MongoRepository.SCOPE2KEY(scope);
             const expireAt = moment(scope.readyThrough).add(1, 'minutes').unix();
             const multi = this.redisClient.multi();
-            multi.incr([key], debug)
+            multi
+                .incr([key], debug)
                 // unix timestampで期限セット
                 .expireat([key, expireAt], debug)
-                .exec(async (err, replies) => {
-                    debug('incr:', err, replies);
+                .exec((err, replies) => {
+                    debug('incr executed.', key, err, replies);
                     if (err instanceof Error) {
                         reject(err);
 
@@ -42,7 +43,6 @@ export class MongoRepository {
                     // tslint:disable-next-line:no-magic-numbers
                     resolve(parseInt(replies[0], 10));
                 });
-
         });
     }
 

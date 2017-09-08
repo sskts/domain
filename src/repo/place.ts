@@ -11,23 +11,6 @@ export abstract class Repository {
     public abstract async findMovieTheaterByBranchCode(branchCode: string): Promise<factory.place.movieTheater.IPlace>;
 }
 
-export class StubRepository implements Repository {
-    // tslint:disable-next-line:prefer-function-over-method
-    public async saveMovieTheater(__: factory.place.movieTheater.IPlace) {
-        return;
-    }
-    // tslint:disable-next-line:prefer-function-over-method
-    public async searchMovieTheaters(__: {}) {
-        return [<any>{}];
-    }
-    // tslint:disable-next-line:prefer-function-over-method
-    public async findMovieTheaterByBranchCode(__: string) {
-        return <any>{
-            containsPlace: []
-        };
-    }
-}
-
 /**
  * 場所レポジトリー
  *

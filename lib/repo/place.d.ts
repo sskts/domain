@@ -7,11 +7,6 @@ export declare abstract class Repository {
     abstract searchMovieTheaters(searchConditions: {}): Promise<factory.place.movieTheater.IPlaceWithoutScreeningRoom[]>;
     abstract findMovieTheaterByBranchCode(branchCode: string): Promise<factory.place.movieTheater.IPlace>;
 }
-export declare class StubRepository implements Repository {
-    saveMovieTheater(__: factory.place.movieTheater.IPlace): Promise<void>;
-    searchMovieTheaters(__: {}): Promise<any[]>;
-    findMovieTheaterByBranchCode(__: string): Promise<any>;
-}
 /**
  * 場所レポジトリー
  *

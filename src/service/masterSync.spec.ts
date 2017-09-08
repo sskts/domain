@@ -8,7 +8,6 @@ import * as sinon from 'sinon';
 import * as sskts from '../index';
 
 import { StubRepository as EventRepository } from '../repo/event';
-import { StubRepository as PlaceRepository } from '../repo/place';
 
 let sandbox: sinon.SinonSandbox;
 
@@ -44,7 +43,7 @@ describe('importScreeningEvents()', () => {
     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
         const numberOfEvents = 3;
         const eventRepo = new EventRepository();
-        const placeRepo = new PlaceRepository();
+        const placeRepo = new sskts.repository.Place(sskts.mongoose.connection);
 
         sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').exactly(numberOfEvents);
         sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns({ containsPlace: [] });
@@ -75,7 +74,7 @@ describe('importMovieTheater()', () => {
     });
 
     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
-        const placeRepo = new PlaceRepository();
+        const placeRepo = new sskts.repository.Place(sskts.mongoose.connection);
 
         sandbox.mock(placeRepo).expects('saveMovieTheater').once();
         sandbox.stub(sskts.COA.services.master, 'theater').returns({});
