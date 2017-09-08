@@ -6,10 +6,6 @@ export declare abstract class Repository {
     abstract saveScreeningEvent(screeningEvent: factory.event.screeningEvent.IEvent): Promise<void>;
     abstract saveIndividualScreeningEvent(individualScreeningEvent: factory.event.individualScreeningEvent.IEvent): Promise<void>;
 }
-export declare class StubRepository implements Repository {
-    saveScreeningEvent(__: factory.event.screeningEvent.IEvent): Promise<void>;
-    saveIndividualScreeningEvent(__: factory.event.individualScreeningEvent.IEvent): Promise<void>;
-}
 /**
  * イベントレポジトリー
  *

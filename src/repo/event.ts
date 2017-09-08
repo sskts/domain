@@ -11,19 +11,6 @@ export abstract class Repository {
     ): Promise<void>;
 }
 
-export class StubRepository implements Repository {
-    // tslint:disable-next-line:prefer-function-over-method
-    public async saveScreeningEvent(__: factory.event.screeningEvent.IEvent) {
-        return;
-    }
-    // tslint:disable-next-line:prefer-function-over-method
-    public async saveIndividualScreeningEvent(
-        __: factory.event.individualScreeningEvent.IEvent
-    ) {
-        return;
-    }
-}
-
 /**
  * イベントレポジトリー
  *

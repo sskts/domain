@@ -7,8 +7,6 @@ import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../index';
 
-import { StubRepository as EventRepository } from '../repo/event';
-
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
@@ -41,18 +39,22 @@ describe('importScreeningEvents()', () => {
     });
 
     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
-        const numberOfEvents = 3;
-        const eventRepo = new EventRepository();
+        const numberOfScreeningEvents = 3;
+        const numberOfIndividualScreeningEvents = 123;
+        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
         const placeRepo = new sskts.repository.Place(sskts.mongoose.connection);
 
-        sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').exactly(numberOfEvents);
-        sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns({ containsPlace: [] });
-        sandbox.mock(sskts.COA.services.master).expects('title').once().returns(Promise.resolve([{}]));
+        sandbox.mock(sskts.COA.services.master).expects('title').once().returns(Promise.resolve(
+            Array.from(Array(numberOfScreeningEvents)).map(() => new Object())
+        ));
         sandbox.mock(sskts.COA.services.master).expects('schedule').once().returns(Promise.resolve(
-            Array.from(Array(numberOfEvents)).map(() => new Object())
+            Array.from(Array(numberOfIndividualScreeningEvents)).map(() => new Object())
         ));
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(sskts.COA.services.master).expects('kubunName').exactly(6).returns(Promise.resolve([{}]));
+        sandbox.mock(eventRepo).expects('saveScreeningEvent').exactly(numberOfScreeningEvents);
+        sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').exactly(numberOfIndividualScreeningEvents);
+        sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns({ containsPlace: [] });
 
         sandbox.stub(sskts.factory.event.screeningEvent, 'createFromCOA').returns({});
         sandbox.stub(sskts.factory.event.screeningEvent, 'createIdentifier').returns('');
