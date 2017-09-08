@@ -150,6 +150,7 @@ export class MongoRepository {
 
                 // 期限セット
                 this.redisClient.expire([key, TIMEOUT_IN_SECONDS], () => {
+                    debug('set expire.', key, TIMEOUT_IN_SECONDS);
                     resolve();
                 });
             });
