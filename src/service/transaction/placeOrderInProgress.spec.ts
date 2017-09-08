@@ -144,6 +144,53 @@ describe('createCreditCardAuthorization()', () => {
         assert.notEqual(result, undefined);
         sandbox.verify();
     });
+
+    it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' },
+            gmoInfo: {
+                shopId: 'shopId',
+                shopPass: 'shopPass'
+            }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: {
+                id: 'anotherAgentId'
+            },
+            seller: seller
+        };
+        const orderId = 'orderId';
+        const amount = 1234;
+        const creditCard = <any>{};
+
+        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+        sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
+        sandbox.mock(sskts.GMO.services.credit).expects('entryTran').never();
+        sandbox.mock(sskts.GMO.services.credit).expects('execTran').never();
+        sandbox.mock(transactionRepo).expects('pushPaymentInfo').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.createCreditCardAuthorization(
+            agent.id,
+            transaction.id,
+            orderId,
+            amount,
+            sskts.GMO.utils.util.Method.Lump,
+            creditCard
+        )(organizationRepo, transactionRepo)
+            .catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Forbidden);
+        sandbox.verify();
+    });
 });
 
 describe('cancelGMOAuthorization()', () => {
@@ -200,6 +247,143 @@ describe('cancelGMOAuthorization()', () => {
         assert.equal(result, undefined);
         sandbox.verify();
     });
+
+    it('アクションが存在しなければ、NotFoundエラーが投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' },
+            gmoInfo: {
+                shopId: 'shopId',
+                shopPass: 'shopPass'
+            }
+        };
+        const actionId = 'actionId';
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller,
+            object: {
+                paymentInfos: []
+            }
+        };
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+        sandbox.mock(sskts.GMO.services.credit).expects('alterTran').never();
+        sandbox.mock(transactionRepo).expects('pullPaymentInfo').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.cancelGMOAuthorization(
+            agent.id,
+            transaction.id,
+            actionId
+        )(transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+
+    it('アクションが存在しなければ、NotFoundエラーが投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' },
+            gmoInfo: {
+                shopId: 'shopId',
+                shopPass: 'shopPass'
+            }
+        };
+        const actionId = 'actionId';
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller,
+            object: {
+                paymentInfos: [{
+                    id: 'anotherActionId',
+                    purpose: {
+                        typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard
+                    },
+                    object: {
+                        entryTranArgs: {},
+                        execTranArgs: {}
+                    }
+                }]
+            }
+        };
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+        sandbox.mock(sskts.GMO.services.credit).expects('alterTran').never();
+        sandbox.mock(transactionRepo).expects('pullPaymentInfo').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.cancelGMOAuthorization(
+            agent.id,
+            transaction.id,
+            actionId
+        )(transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+
+    it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' },
+            gmoInfo: {
+                shopId: 'shopId',
+                shopPass: 'shopPass'
+            }
+        };
+        const actionId = 'actionId';
+        const transaction = {
+            id: 'transactionId',
+            agent: {
+                id: 'anotherAgentId'
+            },
+            seller: seller,
+            object: {
+                paymentInfos: [{
+                    id: actionId,
+                    purpose: {
+                        typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard
+                    },
+                    object: {
+                        entryTranArgs: {},
+                        execTranArgs: {}
+                    }
+                }]
+            }
+        };
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+        sandbox.mock(sskts.GMO.services.credit).expects('alterTran').never();
+        sandbox.mock(transactionRepo).expects('pullPaymentInfo').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.cancelGMOAuthorization(
+            agent.id,
+            transaction.id,
+            actionId
+        )(transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Forbidden);
+        sandbox.verify();
+    });
 });
 
 describe('createSeatReservationAuthorization()', () => {
@@ -249,6 +433,48 @@ describe('createSeatReservationAuthorization()', () => {
         )(transactionRepo);
 
         assert.notEqual(result, undefined);
+        sandbox.verify();
+    });
+
+    it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: {
+                id: 'anotherAgentId'
+            },
+            seller: seller
+        };
+        const individualScreeningEvent = {
+            coaInfo: {}
+        };
+        const offers = [{
+            seatSection: 'seatSection',
+            seatNumber: 'seatNumber'
+        }];
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+        sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').never();
+        sandbox.mock(sskts.factory.action.authorize.seatReservation).expects('createFromCOATmpReserve').never();
+        sandbox.mock(transactionRepo).expects('addSeatReservation').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.createSeatReservationAuthorization(
+            agent.id,
+            transaction.id,
+            <any>individualScreeningEvent,
+            <any>offers
+        )(transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
     });
 });
@@ -303,6 +529,134 @@ describe('cancelSeatReservationAuthorization()', () => {
         )(transactionRepo);
 
         assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('アクションが存在しなければ、NotFoundエラーが投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const actionId = 'actionId';
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller,
+            object: {
+                seatReservation: {
+                    id: 'anotherActionId',
+                    purpose: {
+                        typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation
+                    },
+                    object: {
+                        updTmpReserveSeatArgs: {}
+                    },
+                    result: {
+                        updTmpReserveSeatResult: {}
+                    }
+                }
+            }
+        };
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+        sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').never();
+        sandbox.mock(transactionRepo).expects('removeSeatReservation').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.cancelSeatReservationAuthorization(
+            agent.id,
+            transaction.id,
+            actionId
+        )(transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+
+    it('アクションが存在しなければ、NotFoundエラーが投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const actionId = 'actionId';
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller,
+            object: {
+            }
+        };
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+        sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').never();
+        sandbox.mock(transactionRepo).expects('removeSeatReservation').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.cancelSeatReservationAuthorization(
+            agent.id,
+            transaction.id,
+            actionId
+        )(transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+
+    it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const actionId = 'actionId';
+        const transaction = {
+            id: 'transactionId',
+            agent: {
+                id: 'anotherAgentId'
+            },
+            seller: seller,
+            object: {
+                seatReservation: {
+                    id: actionId,
+                    purpose: {
+                        typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation
+                    },
+                    object: {
+                        updTmpReserveSeatArgs: {}
+                    },
+                    result: {
+                        updTmpReserveSeatResult: {}
+                    }
+                }
+            }
+        };
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+        sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').never();
+        sandbox.mock(transactionRepo).expects('removeSeatReservation').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.cancelSeatReservationAuthorization(
+            agent.id,
+            transaction.id,
+            actionId
+        )(transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
     });
 });
@@ -369,6 +723,63 @@ describe('createMvtkAuthorization()', () => {
         assert.notEqual(result, undefined);
         sandbox.verify();
     });
+
+    it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: { id: 'anotherAgentId' },
+            seller: seller,
+            object: {
+                seatReservation: {
+                    object: {
+                        acceptedOffers: [],
+                        updTmpReserveSeatArgs: {
+                            theaterCode: '118',
+                            titleCode: '12345',
+                            titleBranchNum: '0',
+                            screenCode: '01'
+                        }
+                    },
+                    result: {
+                        updTmpReserveSeatResult: {
+                            listTmpReserve: []
+                        }
+                    }
+                }
+            }
+        };
+        const authorizeObject = {
+            seatInfoSyncIn: {
+                stCd: '18',
+                skhnCd: '123450',
+                screnCd: '01',
+                knyknrNoInfo: [],
+                zskInfo: []
+            }
+        };
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+        sandbox.mock(transactionRepo).expects('pushDiscountInfo').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.createMvtkAuthorization(
+            agent.id,
+            transaction.id,
+            <any>authorizeObject
+        )(transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Forbidden);
+        sandbox.verify();
+    });
 });
 
 describe('cancelMvtkAuthorization()', () => {
@@ -417,6 +828,88 @@ describe('cancelMvtkAuthorization()', () => {
         assert.equal(result, undefined);
         sandbox.verify();
     });
+
+    it('アクションが存在しなければ、NotFoundエラーが投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const actionId = 'actionId';
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller,
+            object: {
+                discountInfos: [{
+                    id: 'anotherActionId',
+                    purpose: {
+                        typeOf: sskts.factory.action.authorize.authorizeActionPurpose.Mvtk
+                    },
+                    object: {
+                    }
+                }]
+            }
+        };
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+        sandbox.mock(transactionRepo).expects('pullDiscountInfo').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.cancelMvtkAuthorization(
+            agent.id,
+            transaction.id,
+            actionId
+        )(transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+
+    it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const actionId = 'actionId';
+        const transaction = {
+            id: 'transactionId',
+            agent: { id: 'anotherAgentId' },
+            seller: seller,
+            object: {
+                discountInfos: [{
+                    id: actionId,
+                    purpose: {
+                        typeOf: sskts.factory.action.authorize.authorizeActionPurpose.Mvtk
+                    },
+                    object: {
+                    }
+                }]
+            }
+        };
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+        sandbox.mock(transactionRepo).expects('pullDiscountInfo').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.cancelMvtkAuthorization(
+            agent.id,
+            transaction.id,
+            actionId
+        )(transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Forbidden);
+        sandbox.verify();
+    });
 });
 
 describe('setCustomerContacts()', () => {
@@ -455,6 +948,39 @@ describe('setCustomerContacts()', () => {
         )(transactionRepo);
 
         assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: { id: 'anotherAgentId' },
+            seller: seller,
+            object: {
+            }
+        };
+        const contact = {};
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+        sandbox.mock(transactionRepo).expects('setCustomerContactsOnPlaceOrderInProgress').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContacts(
+            agent.id,
+            transaction.id,
+            <any>contact
+        )(transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
     });
 });
@@ -519,6 +1045,39 @@ describe('confirm()', () => {
         )(transactionRepo);
 
         assert.deepEqual(result, order);
+        sandbox.verify();
+    });
+
+    it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: { id: 'anotherAgentId' },
+            seller: seller,
+            object: {
+            }
+        };
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+        sandbox.mock(sskts.factory.order).expects('createFromPlaceOrderTransaction').never();
+        sandbox.mock(sskts.factory.ownershipInfo).expects('create').never();
+        sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.confirm(
+            agent.id,
+            transaction.id
+        )(transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
     });
 });

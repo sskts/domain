@@ -37,6 +37,37 @@ describe('findOne()', () => {
         assert.equal(result, availability);
         sandbox.verify();
     });
+
+    it('データが存在しなければ、nullが返却されるはず', async () => {
+        const screeningDay = 'screeningDay';
+        const eventIdentifier = 'eventIdentifier';
+
+        const repository = new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.createClient());
+        (<any>repository.redisClient.hget) = (__: any, cb: Function) => {
+            cb(null, null);
+        };
+
+        const result = await repository.findOne(screeningDay, eventIdentifier);
+
+        assert.equal(result, null);
+        sandbox.verify();
+    });
+
+    it('Redisが正常でなければ、エラーが投げられるはず', async () => {
+        const screeningDay = 'screeningDay';
+        const eventIdentifier = 'eventIdentifier';
+        const redisError = new Error('manual error');
+
+        const repository = new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.createClient());
+        (<any>repository.redisClient.hget) = (__: any, cb: Function) => {
+            cb(redisError);
+        };
+
+        const result = await repository.findOne(screeningDay, eventIdentifier).catch((err) => err);
+
+        assert.equal(result, redisError);
+        sandbox.verify();
+    });
 });
 
 describe('updateOne()', () => {
@@ -59,6 +90,23 @@ describe('updateOne()', () => {
         assert.equal(result, undefined);
         sandbox.verify();
     });
+
+    it('Redisが正常でなければ、エラーが投げられるはず', async () => {
+        const screeningDay = 'screeningDay';
+        const eventIdentifier = 'eventIdentifier';
+        const availability = 99;
+        const redisError = new Error('manual error');
+
+        const repository = new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.createClient());
+        (<any>repository.redisClient.hset) = (__: any, cb: Function) => {
+            cb(redisError);
+        };
+
+        const result = await repository.updateOne(screeningDay, eventIdentifier, availability).catch((err) => err);
+
+        assert.equal(result, redisError);
+        sandbox.verify();
+    });
 });
 
 describe('removeByPerformaceDay()', () => {
@@ -79,6 +127,21 @@ describe('removeByPerformaceDay()', () => {
         assert.equal(result, undefined);
         sandbox.verify();
     });
+
+    it('Redisが正常でなければ、エラーが投げられるはず', async () => {
+        const screeningDay = 'screeningDay';
+        const redisError = new Error('manual error');
+
+        const repository = new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.createClient());
+        (<any>repository.redisClient.del) = (__: any, cb: Function) => {
+            cb(redisError);
+        };
+
+        const result = await repository.removeByPerformaceDay(screeningDay).catch((err) => err);
+
+        assert.equal(result, redisError);
+        sandbox.verify();
+    });
 });
 
 describe('setTTLIfNotExist()', () => {
@@ -95,6 +158,39 @@ describe('setTTLIfNotExist()', () => {
         };
         (<any>repository.redisClient.expire) = (__: any, cb: Function) => {
             cb(null);
+        };
+
+        const result = await repository.setTTLIfNotExist(screeningDay);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('redisClient.ttlが正常でなければ、エラーが投げられるはず', async () => {
+        const screeningDay = 'screeningDay';
+        const redisError = new Error('manual error');
+
+        const repository = new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.createClient());
+        (<any>repository.redisClient.ttl) = (__: any, cb: Function) => {
+            cb(redisError);
+        };
+        (<any>repository.redisClient.expire) = (__: any, cb: Function) => {
+            cb(null);
+        };
+
+        const result = await repository.setTTLIfNotExist(screeningDay).catch((err) => err);
+
+        assert.equal(result, redisError);
+        sandbox.verify();
+    });
+
+    it('期限設定済であれば、セットしないはず', async () => {
+        const screeningDay = 'screeningDay';
+        const ttl = 10;
+
+        const repository = new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.createClient());
+        (<any>repository.redisClient.ttl) = (__: any, cb: Function) => {
+            cb(null, ttl);
         };
 
         const result = await repository.setTTLIfNotExist(screeningDay);

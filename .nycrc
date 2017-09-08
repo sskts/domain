@@ -4,7 +4,9 @@
         ".ts"
     ],
     "exclude": [
-        "**/*.spec.ts"
+        "**/*.spec.ts",
+        "src/service/report.ts",
+        "src/v22/**/*.ts"
     ],
     "include": [
         "src/**/*.ts"

@@ -214,13 +214,13 @@ export function cancelGMOAuthorization(
         }
 
         const authorizeAction = transaction.object.paymentInfos.find(
-            (paymentInfo) => paymentInfo.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard
+            (paymentInfo) => (
+                paymentInfo.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard &&
+                paymentInfo.id === actionId
+            )
         );
         if (authorizeAction === undefined) {
-            throw new factory.errors.Argument('actionId', '指定されたオーソリは見つかりません');
-        }
-        if (authorizeAction.id !== actionId) {
-            throw new factory.errors.Argument('actionId', '指定されたオーソリは見つかりません');
+            throw new factory.errors.NotFound('actionId', '指定されたオーソリは見つかりません');
         }
 
         // 決済取消
@@ -308,10 +308,10 @@ export function cancelSeatReservationAuthorization(
 
         const authorizeAction = transaction.object.seatReservation;
         if (authorizeAction === undefined) {
-            throw new factory.errors.Argument('actionId', '指定された座席予約は見つかりません');
+            throw new factory.errors.NotFound('actionId', '指定された座席予約は見つかりません');
         }
         if (authorizeAction.id !== actionId) {
-            throw new factory.errors.Argument('actionId', '指定された座席予約は見つかりません');
+            throw new factory.errors.NotFound('actionId', '指定された座席予約は見つかりません');
         }
 
         // 座席仮予約削除
@@ -456,13 +456,13 @@ export function cancelMvtkAuthorization(
         }
 
         const authorizeAction = transaction.object.discountInfos.find(
-            (discountInfo) => discountInfo.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk
+            (discountInfo) => (
+                discountInfo.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk &&
+                discountInfo.id === actionId
+            )
         );
         if (authorizeAction === undefined) {
-            throw new factory.errors.Argument('actionId', 'mvtk authorizeAction not found');
-        }
-        if (authorizeAction.id !== actionId) {
-            throw new factory.errors.Argument('actionId', 'mvtk authorizeAction not found');
+            throw new factory.errors.NotFound('actionId', 'mvtk authorizeAction not found');
         }
 
         await transactionRepository.pullDiscountInfo(transactionId, actionId);
