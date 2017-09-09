@@ -290,15 +290,17 @@ export function createSeatReservationAuthorization(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        let action = factory.action.authorize.seatReservation.createFromCOATmpReserve({
+        let action = factory.action.authorize.seatReservation.create({
             id: mongoose.Types.ObjectId().toString(),
-            transactionId: transactionId,
+            object: {
+                transactionId: transactionId,
+                offers: offers,
+                individualScreeningEvent: individualScreeningEvent
+            },
             agent: transaction.seller,
             recipient: transaction.agent,
             actionStatus: factory.actionStatusType.ActiveActionStatus,
-            startDate: new Date(),
-            offers: offers,
-            individualScreeningEvent: individualScreeningEvent
+            startDate: new Date()
         });
         await actionRepository.actionModel.create({ ...action, ...{ _id: action.id } });
 
@@ -327,28 +329,12 @@ export function createSeatReservationAuthorization(
         // アクションを完了
         debug('ending authorize action...');
         const price = offers.reduce((a, b) => a + b.ticketInfo.salePrice + b.ticketInfo.mvtkSalesPrice, 0);
-        const acceptedOffers = factory.reservation.event.createFromCOATmpReserve({
-            reserveSeatsTemporarilyResult: updTmpReserveSeatResult,
-            offers: offers,
-            individualScreeningEvent: individualScreeningEvent
-        }).map((eventReservation) => {
-            return {
-                itemOffered: eventReservation,
-                price: eventReservation.price,
-                priceCurrency: factory.priceCurrency.JPY,
-                seller: {
-                    typeOf: individualScreeningEvent.superEvent.location.typeOf,
-                    name: individualScreeningEvent.superEvent.location.name.ja
-                }
-            };
-        });
         action = await actionRepository.actionModel.findByIdAndUpdate(
             action.id,
             {
                 actionStatus: factory.actionStatusType.CompletedActionStatus,
                 result: {
                     price: price,
-                    acceptedOffers: acceptedOffers,
                     updTmpReserveSeatArgs: updTmpReserveSeatArgs,
                     updTmpReserveSeatResult: updTmpReserveSeatResult
                 },

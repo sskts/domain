@@ -60,7 +60,7 @@ export function transferSeatReservation(transactionId: string) {
         const authorizeAction = transaction.object.seatReservation;
         const updTmpReserveSeatArgs = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatArgs;
         const updTmpReserveSeatResult = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatResult;
-        const acceptedOffers = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).acceptedOffers;
+        const acceptedOffers = (<factory.transaction.placeOrder.IResult>transaction.result).order.acceptedOffers;
 
         const customerContact = transaction.object.customerContact;
         if (customerContact === undefined) {

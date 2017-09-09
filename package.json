@@ -31,7 +31,7 @@
     "@types/bcryptjs": "^2.4.1",
     "@types/debug": "0.0.29",
     "@types/http-status": "^0.2.30",
-    "@types/mocha": "^2.2.42",
+    "@types/mocha": "^2.2.43",
     "@types/nock": "^8.2.1",
     "@types/power-assert": "^1.4.29",
     "@types/redis-mock": "^0.17.0",
