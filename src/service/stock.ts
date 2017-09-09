@@ -29,13 +29,16 @@ export function unauthorizeSeatReservation(transactionId: string) {
 
         debug('calling deleteTmpReserve...');
         const authorizeAction = transaction.object.seatReservation;
+        const updTmpReserveSeatArgs = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatArgs;
+        const updTmpReserveSeatResult = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatResult;
+
         await COA.services.reserve.delTmpReserve({
-            theaterCode: authorizeAction.object.updTmpReserveSeatArgs.theaterCode,
-            dateJouei: authorizeAction.object.updTmpReserveSeatArgs.dateJouei,
-            titleCode: authorizeAction.object.updTmpReserveSeatArgs.titleCode,
-            titleBranchNum: authorizeAction.object.updTmpReserveSeatArgs.titleBranchNum,
-            timeBegin: authorizeAction.object.updTmpReserveSeatArgs.timeBegin,
-            tmpReserveNum: authorizeAction.result.updTmpReserveSeatResult.tmpReserveNum
+            theaterCode: updTmpReserveSeatArgs.theaterCode,
+            dateJouei: updTmpReserveSeatArgs.dateJouei,
+            titleCode: updTmpReserveSeatArgs.titleCode,
+            titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
+            timeBegin: updTmpReserveSeatArgs.timeBegin,
+            tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum
         });
     };
 }
@@ -55,6 +58,9 @@ export function transferSeatReservation(transactionId: string) {
         }
 
         const authorizeAction = transaction.object.seatReservation;
+        const updTmpReserveSeatArgs = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatArgs;
+        const updTmpReserveSeatResult = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatResult;
+        const acceptedOffers = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).acceptedOffers;
 
         const customerContact = transaction.object.customerContact;
         if (customerContact === undefined) {
@@ -64,8 +70,8 @@ export function transferSeatReservation(transactionId: string) {
         // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
         // すでに本予約済みかどうか確認
         const stateReserveResult = await COA.services.reserve.stateReserve({
-            theaterCode: authorizeAction.object.updTmpReserveSeatArgs.theaterCode,
-            reserveNum: authorizeAction.result.updTmpReserveSeatResult.tmpReserveNum,
+            theaterCode: updTmpReserveSeatArgs.theaterCode,
+            reserveNum: updTmpReserveSeatResult.tmpReserveNum,
             telNum: customerContact.telephone
         });
 
@@ -74,21 +80,21 @@ export function transferSeatReservation(transactionId: string) {
         let updReserveResult: COA.services.reserve.IUpdReserveResult;
         if (stateReserveResult === null) {
             updReserveResult = await COA.services.reserve.updReserve({
-                theaterCode: authorizeAction.object.updTmpReserveSeatArgs.theaterCode,
-                dateJouei: authorizeAction.object.updTmpReserveSeatArgs.dateJouei,
-                titleCode: authorizeAction.object.updTmpReserveSeatArgs.titleCode,
-                titleBranchNum: authorizeAction.object.updTmpReserveSeatArgs.titleBranchNum,
-                timeBegin: authorizeAction.object.updTmpReserveSeatArgs.timeBegin,
-                tmpReserveNum: authorizeAction.result.updTmpReserveSeatResult.tmpReserveNum,
+                theaterCode: updTmpReserveSeatArgs.theaterCode,
+                dateJouei: updTmpReserveSeatArgs.dateJouei,
+                titleCode: updTmpReserveSeatArgs.titleCode,
+                titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
+                timeBegin: updTmpReserveSeatArgs.timeBegin,
+                tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum,
                 reserveName: `${customerContact.familyName}　${customerContact.givenName}`,
                 reserveNameJkana: `${customerContact.familyName}　${customerContact.givenName}`,
                 telNum: customerContact.telephone,
                 mailAddr: customerContact.email,
-                reserveAmount: authorizeAction.object.acceptedOffers.reduce(
+                reserveAmount: acceptedOffers.reduce(
                     (a, b) => a + b.price,
                     0
                 ),
-                listTicket: authorizeAction.object.acceptedOffers.map((offer) => offer.itemOffered.reservedTicket.coaTicketInfo)
+                listTicket: acceptedOffers.map((offer) => offer.itemOffered.reservedTicket.coaTicketInfo)
             });
         }
 

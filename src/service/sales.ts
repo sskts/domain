@@ -25,14 +25,17 @@ export function cancelCreditCardAuth(transactionId: string) {
             (paymentInfo) => paymentInfo.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard
         );
         if (authorizeAction !== undefined) {
+            const entryTranArgs = (<factory.action.authorize.creditCard.IResult>authorizeAction.result).entryTranArgs;
+            const execTranArgs = (<factory.action.authorize.creditCard.IResult>authorizeAction.result).execTranArgs;
+
             debug('calling alterTran...');
             await GMO.services.credit.alterTran({
-                shopId: authorizeAction.object.entryTranArgs.shopId,
-                shopPass: authorizeAction.object.entryTranArgs.shopPass,
-                accessId: authorizeAction.object.execTranArgs.accessId,
-                accessPass: authorizeAction.object.execTranArgs.accessPass,
+                shopId: entryTranArgs.shopId,
+                shopPass: entryTranArgs.shopPass,
+                accessId: execTranArgs.accessId,
+                accessPass: execTranArgs.accessPass,
                 jobCd: GMO.utils.util.JobCd.Void,
-                amount: authorizeAction.object.entryTranArgs.amount
+                amount: entryTranArgs.amount
             });
         }
 
@@ -53,11 +56,14 @@ export function settleCreditCardAuth(transactionId: string) {
             (paymentInfo) => paymentInfo.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard
         );
         if (authorizeAction !== undefined) {
+            const entryTranArgs = (<factory.action.authorize.creditCard.IResult>authorizeAction.result).entryTranArgs;
+            const execTranArgs = (<factory.action.authorize.creditCard.IResult>authorizeAction.result).execTranArgs;
+
             // 取引状態参照
             const searchTradeResult = await GMO.services.credit.searchTrade({
-                shopId: authorizeAction.object.entryTranArgs.shopId,
-                shopPass: authorizeAction.object.entryTranArgs.shopPass,
-                orderId: authorizeAction.object.entryTranArgs.orderId
+                shopId: entryTranArgs.shopId,
+                shopPass: entryTranArgs.shopPass,
+                orderId: entryTranArgs.orderId
             });
 
             if (searchTradeResult.jobCd === GMO.utils.util.JobCd.Sales) {
@@ -69,12 +75,12 @@ export function settleCreditCardAuth(transactionId: string) {
 
             debug('calling alterTran...');
             await GMO.services.credit.alterTran({
-                shopId: authorizeAction.object.entryTranArgs.shopId,
-                shopPass: authorizeAction.object.entryTranArgs.shopPass,
-                accessId: authorizeAction.object.execTranArgs.accessId,
-                accessPass: authorizeAction.object.execTranArgs.accessPass,
+                shopId: entryTranArgs.shopId,
+                shopPass: entryTranArgs.shopPass,
+                accessId: execTranArgs.accessId,
+                accessPass: execTranArgs.accessPass,
                 jobCd: GMO.utils.util.JobCd.Sales,
-                amount: authorizeAction.object.entryTranArgs.amount
+                amount: entryTranArgs.amount
             });
 
             // 失敗したら取引状態確認してどうこう、という処理も考えうるが、
