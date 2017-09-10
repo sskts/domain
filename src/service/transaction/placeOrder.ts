@@ -1,7 +1,7 @@
 /**
  * placeOrder transaction service
  * 注文取引サービス
- * @namespace service/transaction/placeOrder
+ * @namespace service.transaction.placeOrder
  */
 
 import * as factory from '@motionpicture/sskts-factory';
@@ -97,6 +97,18 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     }
                 }));
                 tasks.push(factory.task.createOrder.create({
+                    id: mongoose.Types.ObjectId().toString(),
+                    status: factory.taskStatus.Ready,
+                    runsAt: new Date(), // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transaction.id
+                    }
+                }));
+                tasks.push(factory.task.createOwnershipInfos.create({
                     id: mongoose.Types.ObjectId().toString(),
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行

@@ -1,7 +1,7 @@
 /**
  * タスクファンクションサービス
  * タスク名ごとに、実行するファンクションをひとつずつ定義しています
- * @namespace service/taskFunctions
+ * @namespace service.taskFunctions
  */
 
 import * as factory from '@motionpicture/sskts-factory';
@@ -13,6 +13,7 @@ import { MongoRepository as TransactionRepository } from '../repo/transaction';
 
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
+import * as OwnershipInfoService from '../service/ownershipInfo';
 import * as SalesService from '../service/sales';
 import * as StockService from '../service/stock';
 
@@ -57,9 +58,8 @@ export function settleSeatReservation(
     data: factory.task.settleSeatReservation.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const ownershipInfoRepository = new OwnershipInfoRepository(connection);
         const transactionRepository = new TransactionRepository(connection);
-        await StockService.transferSeatReservation(data.transactionId)(ownershipInfoRepository, transactionRepository);
+        await StockService.transferSeatReservation(data.transactionId)(transactionRepository);
     };
 }
 
@@ -88,5 +88,15 @@ export function createOrder(
         const orderRepository = new OrderRepository(connection);
         const transactionRepository = new TransactionRepository(connection);
         await OrderService.createFromTransaction(data.transactionId)(orderRepository, transactionRepository);
+    };
+}
+
+export function createOwnershipInfos(
+    data: factory.task.createOrder.IData
+): IOperation<void> {
+    return async (connection: mongoose.Connection) => {
+        const ownershipInfoRepository = new OwnershipInfoRepository(connection);
+        const transactionRepository = new TransactionRepository(connection);
+        await OwnershipInfoService.createFromTransaction(data.transactionId)(ownershipInfoRepository, transactionRepository);
     };
 }

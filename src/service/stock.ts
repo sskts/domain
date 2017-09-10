@@ -1,14 +1,13 @@
 /**
  * stock service
  * 在庫の管理に対して責任を負うサービス
- * @namespace service/stock
+ * @namespace service.stock
  */
 
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import { MongoRepository as OwnershipInfoRepository } from '../repo/ownershipInfo';
 import { MongoRepository as TransactionRepository } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:stock');
@@ -23,12 +22,14 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 export function unauthorizeSeatReservation(transactionId: string) {
     return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
-        if (transaction.object.seatReservation === undefined) {
+        const authorizeAction = transaction.object.authorizeActions.find((action) => {
+            return action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation;
+        });
+        if (authorizeAction === undefined) {
             return;
         }
 
         debug('calling deleteTmpReserve...');
-        const authorizeAction = transaction.object.seatReservation;
         const updTmpReserveSeatArgs = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatArgs;
         const updTmpReserveSeatResult = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatResult;
 
@@ -50,14 +51,15 @@ export function unauthorizeSeatReservation(transactionId: string) {
  * @memberof service/stock
  */
 export function transferSeatReservation(transactionId: string) {
-    // tslint:disable-next-line:max-func-body-length
-    return async (ownershipInfoRepository: OwnershipInfoRepository, transactionRepository: TransactionRepository) => {
+    return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
-        if (transaction.object.seatReservation === undefined) {
+        const authorizeAction = transaction.object.authorizeActions.find((action) => {
+            return action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation;
+        });
+        if (authorizeAction === undefined) {
             return;
         }
 
-        const authorizeAction = transaction.object.seatReservation;
         const updTmpReserveSeatArgs = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatArgs;
         const updTmpReserveSeatResult = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatResult;
         const acceptedOffers = (<factory.transaction.placeOrder.IResult>transaction.result).order.acceptedOffers;
@@ -88,7 +90,8 @@ export function transferSeatReservation(transactionId: string) {
                 tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum,
                 reserveName: `${customerContact.familyName}　${customerContact.givenName}`,
                 reserveNameJkana: `${customerContact.familyName}　${customerContact.givenName}`,
-                telNum: customerContact.telephone,
+                // tslint:disable-next-line:no-suspicious-comment
+                telNum: customerContact.telephone, // TODO 電話番号のフォーマット調整
                 mailAddr: customerContact.email,
                 reserveAmount: acceptedOffers.reduce(
                     (a, b) => a + b.price,
@@ -96,14 +99,6 @@ export function transferSeatReservation(transactionId: string) {
                 ),
                 listTicket: acceptedOffers.map((offer) => offer.itemOffered.reservedTicket.coaTicketInfo)
             });
-        }
-
-        // 資産永続化(リトライできるように)
-        if (transaction.result !== undefined) {
-            await Promise.all(transaction.result.ownershipInfos.map(async (ownershipInfo) => {
-                // 所有権永続化
-                await ownershipInfoRepository.save(ownershipInfo);
-            }));
         }
     };
 }

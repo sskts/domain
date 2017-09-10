@@ -2,7 +2,7 @@
 /**
  * タスクファンクションサービス
  * タスク名ごとに、実行するファンクションをひとつずつ定義しています
- * @namespace service/taskFunctions
+ * @namespace service.taskFunctions
  */
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
@@ -15,3 +15,4 @@ export declare function settleSeatReservation(data: factory.task.settleSeatReser
 export declare function settleCreditCard(data: factory.task.settleCreditCard.IData): IOperation<void>;
 export declare function settleMvtk(data: factory.task.settleMvtk.IData): IOperation<void>;
 export declare function createOrder(data: factory.task.createOrder.IData): IOperation<void>;
+export declare function createOwnershipInfos(data: factory.task.createOrder.IData): IOperation<void>;

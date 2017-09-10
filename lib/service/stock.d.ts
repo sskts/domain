@@ -1,5 +1,4 @@
 import * as factory from '@motionpicture/sskts-factory';
-import { MongoRepository as OwnershipInfoRepository } from '../repo/ownershipInfo';
 import { MongoRepository as TransactionRepository } from '../repo/transaction';
 export declare type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 /**
@@ -14,4 +13,4 @@ export declare function unauthorizeSeatReservation(transactionId: string): (tran
  * @param {ISeatReservationAuthorization} authorizeAction
  * @memberof service/stock
  */
-export declare function transferSeatReservation(transactionId: string): (ownershipInfoRepository: OwnershipInfoRepository, transactionRepository: TransactionRepository) => Promise<void>;
+export declare function transferSeatReservation(transactionId: string): (transactionRepository: TransactionRepository) => Promise<void>;

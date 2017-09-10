@@ -39,7 +39,7 @@ export declare function cancelSeatReservationAuthorization(agentId: string, tran
  * @param {string} transactionId
  * @param {factory.action.authorize.mvtk.IObject} authorizeActionObject
  * @return ITransactionOperation<factory.action.authorize.mvtk.IAuthorizeAction>
- * @memberof service/transaction/placeOrder
+ * @memberof service.transaction.placeOrderInProgress
  */
 export declare function createMvtkAuthorization(agentId: string, transactionId: string, authorizeObject: factory.action.authorize.mvtk.IObject): IActionAndTransactionOperation<factory.action.authorize.mvtk.IAction>;
 export declare function cancelMvtkAuthorization(agentId: string, transactionId: string, actionId: string): (actionRepository: ActionRepository, transactionRepository: TransactionRepository) => Promise<void>;
@@ -50,7 +50,7 @@ export declare function cancelMvtkAuthorization(agentId: string, transactionId: 
  * @param {EmailNotification} notification
  * @returns {TransactionOperation<void>}
  *
- * @memberof service/transaction/placeOrder
+ * @memberof service.transaction.placeOrderInProgress
  */
 /**
  * メール削除
@@ -59,7 +59,7 @@ export declare function cancelMvtkAuthorization(agentId: string, transactionId: 
  * @param {string} notificationId
  * @returns {TransactionOperation<void>}
  *
- * @memberof service/transaction/placeOrder
+ * @memberof service.transaction.placeOrderInProgress
  */
 /**
  * 取引中の購入者情報を変更する
@@ -68,4 +68,4 @@ export declare function setCustomerContacts(agentId: string, transactionId: stri
 /**
  * 取引確定
  */
-export declare function confirm(agentId: string, transactionId: string): (actionRepository: ActionRepository, transactionRepository: TransactionRepository) => Promise<false | factory.order.IOrder>;
+export declare function confirm(agentId: string, transactionId: string): (actionRepository: ActionRepository, transactionRepository: TransactionRepository) => Promise<factory.order.IOrder>;

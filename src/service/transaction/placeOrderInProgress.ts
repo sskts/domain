@@ -1,7 +1,7 @@
 /**
  * placeOrder in progress transaction service
  * 進行中注文取引サービス
- * @namespace service/transaction/placeOrderInProgress
+ * @namespace service.transaction.placeOrderInProgress
  */
 
 import * as COA from '@motionpicture/coa-service';
@@ -91,11 +91,10 @@ export function start(args: {
             },
             object: {
                 clientUser: args.clientUser,
-                paymentInfos: [],
-                discountInfos: []
+                authorizeActions: []
             },
             expires: args.expires,
-            startDate: moment().toDate()
+            startDate: new Date()
         });
 
         await transactionRepository.startPlaceOrder(transaction);
@@ -404,7 +403,7 @@ export function cancelSeatReservationAuthorization(
  * @param {string} transactionId
  * @param {factory.action.authorize.mvtk.IObject} authorizeActionObject
  * @return ITransactionOperation<factory.action.authorize.mvtk.IAuthorizeAction>
- * @memberof service/transaction/placeOrder
+ * @memberof service.transaction.placeOrderInProgress
  */
 export function createMvtkAuthorization(
     agentId: string,
@@ -559,7 +558,7 @@ export function cancelMvtkAuthorization(
  * @param {EmailNotification} notification
  * @returns {TransactionOperation<void>}
  *
- * @memberof service/transaction/placeOrder
+ * @memberof service.transaction.placeOrderInProgress
  */
 // export function addEmail(transactionId: string, notification: EmailNotificationFactory.INotification) {
 //     return async (transactionRepository: TransactionRepository) => {
@@ -582,7 +581,7 @@ export function cancelMvtkAuthorization(
  * @param {string} notificationId
  * @returns {TransactionOperation<void>}
  *
- * @memberof service/transaction/placeOrder
+ * @memberof service.transaction.placeOrderInProgress
  */
 // export function removeEmail(transactionId: string, notificationId: string) {
 //     return async (transactionRepository: TransactionRepository) => {
@@ -644,36 +643,20 @@ export function confirm(
 ) {
     // tslint:disable-next-line:max-func-body-length
     return async (actionRepository: ActionRepository, transactionRepository: TransactionRepository) => {
+        const now = new Date();
         const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
-
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
         // authorizeActionsを取得
-        const authorizeActions = <any[]>await actionRepository.actionModel.find({
+        const authorizeActions = await actionRepository.actionModel.find({
             'object.transactionId': transactionId,
             typeOf: factory.actionType.AuthorizeAction,
-            actionStatus: factory.actionStatusType.CompletedActionStatus
-        }).lean().exec();
-
-        const seatReservationAuthorizeAction = authorizeActions.find((action) => {
-            return action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation;
-        });
-        if (seatReservationAuthorizeAction === undefined) {
-            return false;
-        }
-
-        const creditCardAuthorizeActions = authorizeActions.filter((action) => {
-            return action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard;
-        });
-        const mvtkAuthorizeActions = authorizeActions.filter((action) => {
-            return action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk;
-        });
-
-        transaction.object.seatReservation = seatReservationAuthorizeAction;
-        transaction.object.paymentInfos = creditCardAuthorizeActions;
-        transaction.object.discountInfos = mvtkAuthorizeActions;
+            actionStatus: factory.actionStatusType.CompletedActionStatus,
+            endDate: { $lt: now } // 万が一このプロセス中に他処理が発生しても無視するように
+        }).exec().then((docs) => docs.map((doc) => <any>doc.toObject()));
+        transaction.object.authorizeActions = authorizeActions;
 
         // 照会可能になっているかどうか
         if (!canBeClosed(transaction)) {
@@ -692,8 +675,9 @@ export function confirm(
                     name: order.customer.name
                 },
                 acquiredFrom: transaction.seller,
-                ownedFrom: new Date(),
-                ownedThrough: moment().add(1, 'month').toDate(),
+                ownedFrom: now,
+                // tslint:disable-next-line:no-suspicious-comment
+                ownedThrough: moment().add(1, 'month').toDate(), // TODO 所有権の有効期間調整
                 typeOfGood: acceptedOffer.itemOffered
             });
         });
@@ -712,8 +696,8 @@ export function confirm(
             },
             {
                 status: factory.transactionStatusType.Confirmed, // ステータス変更
-                endDate: moment().toDate(),
-                object: transaction.object, // objectを更新
+                endDate: now,
+                'object.authorizeActions': authorizeActions, // 認可アクションリストを更新
                 result: result // resultを更新
             },
             { new: true }
@@ -730,18 +714,24 @@ export function confirm(
  */
 function canBeClosed(transaction: factory.transaction.placeOrder.ITransaction) {
     // seatReservation exists?
-    const seatReservationAuthorization = transaction.object.seatReservation;
-    if (seatReservationAuthorization === undefined) {
+    const seatReservationAuthorizeAction = transaction.object.authorizeActions.find((action) => {
+        return action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation;
+    });
+    if (seatReservationAuthorizeAction === undefined) {
         return false;
     }
 
-    const paymentInfos = transaction.object.paymentInfos;
-    const discountInfos = transaction.object.discountInfos;
+    const creditCardAuthorizeActions = transaction.object.authorizeActions.filter((action) => {
+        return action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard;
+    });
+    const mvtkAuthorizeActions = transaction.object.authorizeActions.filter((action) => {
+        return action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk;
+    });
 
-    const priceBySeller = (<factory.action.authorize.seatReservation.IResult>seatReservationAuthorization.result).price;
+    const priceBySeller = (<factory.action.authorize.seatReservation.IResult>seatReservationAuthorizeAction.result).price;
     const priceByAgent =
-        paymentInfos.reduce((a, b) => a + (<factory.action.authorize.creditCard.IResult>b.result).price, 0) +
-        discountInfos.reduce((a, b) => a + (<factory.action.authorize.mvtk.IResult>b.result).price, 0);
+        creditCardAuthorizeActions.reduce((a, b) => a + (<factory.action.authorize.creditCard.IResult>b.result).price, 0) +
+        mvtkAuthorizeActions.reduce((a, b) => a + (<factory.action.authorize.mvtk.IResult>b.result).price, 0);
 
     // price matched between an agent and a seller?
     return priceByAgent === priceBySeller;

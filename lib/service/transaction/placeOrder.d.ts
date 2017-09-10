@@ -1,7 +1,7 @@
 /**
  * placeOrder transaction service
  * 注文取引サービス
- * @namespace service/transaction/placeOrder
+ * @namespace service.transaction.placeOrder
  */
 import * as factory from '@motionpicture/sskts-factory';
 import { MongoRepository as TaskRepository } from '../../repo/task';
