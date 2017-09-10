@@ -199,10 +199,17 @@ export function createCreditCardAuthorization(
                 // GMO流量制限オーバーエラーの場合
                 const serviceUnavailableError = error.errors.find((gmoError: any) => gmoError.info.match(/^E92000001|E92000002$/));
                 if (serviceUnavailableError !== undefined) {
-                    throw new factory.errors.ServiceUnavailable('payment service unavailable temporarily');
-                } else {
-                    throw new factory.errors.Argument('payment');
+                    throw new factory.errors.ServiceUnavailable(serviceUnavailableError.userMessage);
                 }
+
+                // オーダーID重複エラーの場合
+                const duplicateError = error.errors.find((gmoError: any) => gmoError.info.match(/^E01040010$/));
+                if (duplicateError !== undefined) {
+                    throw new factory.errors.AlreadyInUse('action.object', ['orderId'], duplicateError.userMessage);
+                }
+
+                // その他のGMOエラーに場合、なんらかのクライアントエラー
+                throw new factory.errors.Argument('payment');
             }
 
             throw new Error(error);
@@ -266,6 +273,9 @@ export function cancelGMOAuthorization(
             jobCd: GMO.utils.util.JobCd.Void
         });
         debug('alterTran processed', GMO.utils.util.JobCd.Void);
+
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO GMO混雑エラーを判別
 
         await actionRepository.actionModel.findByIdAndUpdate(
             actionId,
