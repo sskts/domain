@@ -12,7 +12,7 @@ export declare type IActionAndOrganizationAndTransactionOperation<T> = (actionRe
 /**
  * 取引開始
  */
-export declare function start(args: {
+export declare function start(params: {
     expires: Date;
     maxCountPerUnit: number;
     clientUser: factory.clientUser.IClientUser;
