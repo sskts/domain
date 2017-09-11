@@ -15,3 +15,15 @@ export declare function exportTasks(status: factory.transactionStatusType): (tas
  * ID指定で取引のタスク出力
  */
 export declare function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask[]>;
+/**
+ * フォーマット指定でダウンロード
+ * @export
+ * @function
+ * @memberof service.transaction.placeOrder
+ * @param conditions 検索条件
+ * @param format フォーマット
+ */
+export declare function download(conditions: {
+    startFrom: Date;
+    startThrough: Date;
+}, format: 'csv'): (transactionRepo: TransactionRepository) => Promise<string>;

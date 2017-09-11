@@ -23,6 +23,7 @@ set SSKTS_DEVELOPER_EMAIL=**********本apiで使用される開発者メール�
 set SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN=**********開発者へのLINE通知に必要なアクセストークン**********
 set GMO_SITE_ID=**********システムで契約するGMOサイトID**********
 set GMO_SITE_PASS=**********システムで契約するGMOサイトパス**********
+set AZURE_STORAGE_CONNECTION_STRING=**********csv等ファイル保管に使用するBlobStorage接続文字列**********
 ```
 
 only for test  
