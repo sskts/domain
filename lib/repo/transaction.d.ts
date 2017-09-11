@@ -9,7 +9,7 @@ import TransactionModel from './mongoose/model/transaction';
 export declare class MongoRepository {
     readonly transactionModel: typeof TransactionModel;
     constructor(connection: Connection);
-    startPlaceOrder(transaction: factory.transaction.placeOrder.ITransaction): Promise<void>;
+    startPlaceOrder(transactionAttributes: factory.transaction.placeOrder.IAttributes): Promise<factory.transaction.placeOrder.ITransaction>;
     /**
      * find placeOrder transaction by id
      * @param {string} transactionId transaction id

@@ -6,7 +6,6 @@
 
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
-import * as mongoose from 'mongoose';
 
 import { MongoRepository as TaskRepository } from '../../repo/task';
 import { MongoRepository as TransactionRepository } from '../../repo/transaction';
@@ -57,11 +56,10 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
     return async (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
 
-        const tasks: factory.task.ITask[] = [];
+        const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
-                tasks.push(factory.task.settleSeatReservation.create({
-                    id: mongoose.Types.ObjectId().toString(),
+                taskAttributes.push(factory.task.settleSeatReservation.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -72,8 +70,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 }));
-                tasks.push(factory.task.settleCreditCard.create({
-                    id: mongoose.Types.ObjectId().toString(),
+                taskAttributes.push(factory.task.settleCreditCard.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -84,8 +81,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 }));
-                tasks.push(factory.task.settleMvtk.create({
-                    id: mongoose.Types.ObjectId().toString(),
+                taskAttributes.push(factory.task.settleMvtk.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -96,8 +92,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 }));
-                tasks.push(factory.task.createOrder.create({
-                    id: mongoose.Types.ObjectId().toString(),
+                taskAttributes.push(factory.task.createOrder.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -108,8 +103,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 }));
-                tasks.push(factory.task.createOwnershipInfos.create({
-                    id: mongoose.Types.ObjectId().toString(),
+                taskAttributes.push(factory.task.createOwnershipInfos.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -123,7 +117,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
 
                 // notifications.forEach((notification) => {
                 //     if (notification.group === NotificationGroup.EMAIL) {
-                //         tasks.push(SendEmailNotificationTaskFactory.create({
+                //         taskAttributes.push(SendEmailNotificationTaskFactory.create({
                 //             status: factory.taskStatus.Ready,
                 //             runsAt: new Date(), // todo emailのsent_atを指定
                 //             remainingNumberOfTries: 10,
@@ -141,8 +135,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
 
             // 期限切れの場合は、タスクリストを作成する
             case factory.transactionStatusType.Expired:
-                tasks.push(factory.task.cancelSeatReservation.create({
-                    id: mongoose.Types.ObjectId().toString(),
+                taskAttributes.push(factory.task.cancelSeatReservation.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -153,8 +146,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 }));
-                tasks.push(factory.task.cancelCreditCard.create({
-                    id: mongoose.Types.ObjectId().toString(),
+                taskAttributes.push(factory.task.cancelCreditCard.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -165,8 +157,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 }));
-                tasks.push(factory.task.cancelMvtk.create({
-                    id: mongoose.Types.ObjectId().toString(),
+                taskAttributes.push(factory.task.cancelMvtk.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -183,13 +174,8 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
             default:
                 throw new factory.errors.Argument('id', 'transaction group not implemented.');
         }
-        debug('tasks prepared', tasks);
+        debug('taskAttributes prepared', taskAttributes);
 
-        await Promise.all(tasks.map(async (task) => {
-            debug('storing task...', task);
-            await taskRepository.save(task);
-        }));
-
-        return tasks;
+        return await Promise.all(taskAttributes.map(taskRepository.save));
     };
 }

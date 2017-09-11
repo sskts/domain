@@ -15,9 +15,12 @@ export class MongoRepository {
         this.transactionModel = connection.model(TransactionModel.modelName);
     }
 
-    public async startPlaceOrder(transaction: factory.transaction.placeOrder.ITransaction) {
-        // mongoDBに追加するために_id属性を拡張
-        await this.transactionModel.create({ ...transaction, ...{ _id: transaction.id } });
+    public async startPlaceOrder(
+        transactionAttributes: factory.transaction.placeOrder.IAttributes
+    ): Promise<factory.transaction.placeOrder.ITransaction> {
+        return await this.transactionModel.create(transactionAttributes).then(
+            (doc) => <factory.transaction.placeOrder.ITransaction>doc.toObject()
+        );
     }
 
     /**

@@ -50,7 +50,6 @@ export function start(args: {
     sellerId: string;
 }): IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction> {
     return async (
-        // personRepository: PersonRepository,
         organizationRepository: OrganizationRepository,
         transactionRepository: TransactionRepository,
         transactionCountRepository: TransactionCountRepository
@@ -77,8 +76,7 @@ export function start(args: {
         const seller = await organizationRepository.findMovieTheaterById(args.sellerId);
 
         // 取引ファクトリーで新しい進行中取引オブジェクトを作成
-        const transaction = factory.transaction.placeOrder.create({
-            id: mongoose.Types.ObjectId().toString(),
+        const transactionAttributes = factory.transaction.placeOrder.createAttributes({
             status: factory.transactionStatusType.InProgress,
             agent: agent,
             seller: {
@@ -97,9 +95,7 @@ export function start(args: {
             startDate: new Date()
         });
 
-        await transactionRepository.startPlaceOrder(transaction);
-
-        return transaction;
+        return await transactionRepository.startPlaceOrder(transactionAttributes);
     };
 }
 
@@ -139,8 +135,7 @@ export function createCreditCardAuthorization(
         const movieTheater = await organizationRepository.findMovieTheaterById(transaction.seller.id);
 
         // 承認アクションを開始する
-        let action = factory.action.authorize.creditCard.create({
-            id: mongoose.Types.ObjectId().toString(),
+        const actionAttributes = factory.action.authorize.creditCard.createAttributes({
             actionStatus: factory.actionStatusType.ActiveActionStatus,
             object: {
                 transactionId: transactionId,
@@ -154,7 +149,10 @@ export function createCreditCardAuthorization(
             recipient: transaction.seller,
             startDate: new Date()
         });
-        await actionRepository.actionModel.create({ ...action, ...{ _id: action.id } });
+
+        let action = await actionRepository.actionModel.create(actionAttributes).then(
+            (doc) => <factory.action.authorize.creditCard.IAction>doc.toObject()
+        );
 
         // GMOオーソリ取得
         let entryTranArgs: GMO.services.credit.IEntryTranArgs;
@@ -299,8 +297,7 @@ export function createSeatReservationAuthorization(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        let action = factory.action.authorize.seatReservation.create({
-            id: mongoose.Types.ObjectId().toString(),
+        const actionAttributes = factory.action.authorize.seatReservation.createAttributes({
             object: {
                 transactionId: transactionId,
                 offers: offers,
@@ -311,7 +308,10 @@ export function createSeatReservationAuthorization(
             actionStatus: factory.actionStatusType.ActiveActionStatus,
             startDate: new Date()
         });
-        await actionRepository.actionModel.create({ ...action, ...{ _id: action.id } });
+
+        let action = await actionRepository.actionModel.create(actionAttributes).then((doc) => {
+            return <factory.action.authorize.seatReservation.IAction>doc.toObject();
+        });
 
         // todo 座席コードがすでにキープ済みのものかどうかチェックできる？
 
@@ -505,8 +505,7 @@ export function createMvtkAuthorization(
         //     throw new factory.errors.Argument('authorizeActionResult', 'zskInfo not matched with seat reservation authorizeAction');
         // }
 
-        const action = factory.action.authorize.mvtk.create({
-            id: mongoose.Types.ObjectId().toString(),
+        const actionAttributes = factory.action.authorize.mvtk.createAttributes({
             actionStatus: factory.actionStatusType.CompletedActionStatus,
             result: {
                 price: authorizeObject.price
@@ -518,10 +517,10 @@ export function createMvtkAuthorization(
             endDate: new Date()
 
         });
-        await actionRepository.actionModel.create({ ...action, ...{ _id: action.id } });
-        // await transactionRepository.pushDiscountInfo(transactionId, authorizeAction);
 
-        return action;
+        return await actionRepository.actionModel.create(actionAttributes).then(
+            (doc) => <factory.action.authorize.mvtk.IAction>doc.toObject()
+        );
     };
 }
 

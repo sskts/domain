@@ -10,9 +10,9 @@ import taskModel from './mongoose/model/task';
 export declare class MongoRepository {
     readonly taskModel: typeof taskModel;
     constructor(connection: Connection);
-    save(task: factory.task.ITask): Promise<void>;
+    save(taskAttributes: factory.task.IAttributes): Promise<factory.task.ITask>;
     executeOneByName(taskName: factory.taskName): Promise<factory.task.ITask>;
     retry(intervalInMinutes: number): Promise<void>;
     abortOne(intervalInMinutes: number): Promise<factory.task.ITask>;
-    pushExecutionResultById(id: string, status: factory.taskStatus, executionResult: factory.taskExecutionResult.ITaskExecutionResult): Promise<void>;
+    pushExecutionResultById(id: string, status: factory.taskStatus, executionResult: factory.taskExecutionResult.IAttributes): Promise<void>;
 }

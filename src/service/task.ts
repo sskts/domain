@@ -57,25 +57,24 @@ export function executeByName(taskName: factory.taskName): TaskAndConnectionOper
  */
 export function execute(task: factory.task.ITask): TaskAndConnectionOperation<void> {
     debug('executing a task...', task);
+    const now = new Date();
 
     return async (taskRepository: TaskRepository, connection: mongoose.Connection) => {
         try {
             // タスク名の関数が定義されていなければ、TypeErrorとなる
             await (<any>TaskFunctionsService)[task.name](task.data)(connection);
 
-            const result = factory.taskExecutionResult.create({
-                id: mongoose.Types.ObjectId().toString(),
-                executedAt: new Date(),
+            const result = {
+                executedAt: now,
                 error: ''
-            });
+            };
             await taskRepository.pushExecutionResultById(task.id, factory.taskStatus.Executed, result);
         } catch (error) {
             // 実行結果追加
-            const result = factory.taskExecutionResult.create({
-                id: mongoose.Types.ObjectId().toString(),
-                executedAt: new Date(),
+            const result = {
+                executedAt: now,
                 error: error.stack
-            });
+            };
             // 失敗してもここではステータスを戻さない(Runningのまま待機)
             await taskRepository.pushExecutionResultById(task.id, task.status, result);
         }

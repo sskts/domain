@@ -24,8 +24,10 @@ export class MongoRepository {
         this.taskModel = connection.model(taskModel.modelName);
     }
 
-    public async save(task: factory.task.ITask) {
-        await this.taskModel.findByIdAndUpdate(task.id, task, { upsert: true }).exec();
+    public async save(taskAttributes: factory.task.IAttributes): Promise<factory.task.ITask> {
+        return await this.taskModel.create(taskAttributes).then(
+            (doc) => <factory.task.ITask>doc.toObject()
+        );
     }
 
     public async executeOneByName(taskName: factory.taskName): Promise<factory.task.ITask> {
@@ -93,7 +95,7 @@ export class MongoRepository {
     public async pushExecutionResultById(
         id: string,
         status: factory.taskStatus,
-        executionResult: factory.taskExecutionResult.ITaskExecutionResult
+        executionResult: factory.taskExecutionResult.IAttributes
     ): Promise<void> {
         await this.taskModel.findByIdAndUpdate(
             id,
