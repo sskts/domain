@@ -69,7 +69,8 @@ export class MongoRepository {
                         branchCode: movieTheater.branchCode,
                         name: movieTheater.name,
                         kanaName: movieTheater.kanaName,
-                        url: movieTheater.url
+                        url: movieTheater.url,
+                        telephone: movieTheater.telephone
                     };
                 });
 
