@@ -1,20 +1,14 @@
 /**
  * 企業作成サンプル
- *
  * @ignore
  */
 
-import * as createDebug from 'debug';
-import * as mongoose from 'mongoose';
-import * as sskts from '../lib/index';
+const sskts = require('../');
 
-const debug = createDebug('sskts-domain:examples');
-
-(<any>mongoose).Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI);
+sskts.mongoose.connect(process.env.MONGOLAB_URI);
 
 async function main() {
-    const organizationAdapter = sskts.adapter.organization(mongoose.connection);
+    const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
     const corporation = sskts.factory.organization.corporation.create({
         identifier: sskts.factory.organizationIdentifier.corporation.SasakiKogyo,
@@ -27,7 +21,7 @@ async function main() {
             en: 'Cinema Sunshine Co., Ltd.'
         }
     });
-    await organizationAdapter.organizationModel.findOneAndUpdate(
+    await organizationRepo.organizationModel.findOneAndUpdate(
         {
             identifier: corporation.identifier,
             typeOf: sskts.factory.organizationType.Corporation
@@ -36,11 +30,11 @@ async function main() {
         { upsert: true }
     ).exec();
 
-    mongoose.disconnect();
+    sskts.mongoose.disconnect();
 }
 
 main().then(() => {
-    debug('success!');
+    console.log('success!');
 }).catch((err) => {
     console.error(err);
     process.exit(1);
