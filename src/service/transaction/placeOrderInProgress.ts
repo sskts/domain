@@ -19,10 +19,6 @@ import { MongoRepository as TransactionCountRepository } from '../../repo/transa
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress');
 
 export type ITransactionOperation<T> = (transactionRepository: TransactionRepository) => Promise<T>;
-export type IOrganizationAndTransactionOperation<T> = (
-    organizationRepository: OrganizationRepository,
-    transactionRepository: TransactionRepository
-) => Promise<T>;
 export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (
     organizationRepository: OrganizationRepository,
     transactionRepository: TransactionRepository,
@@ -110,7 +106,7 @@ export type ICreditCard4authorizeAction =
 /**
  * クレジットカードオーソリ取得
  */
-export function createCreditCardAuthorization(
+export function authorizeCreditCard(
     agentId: string,
     transactionId: string,
     orderId: string,
@@ -148,7 +144,7 @@ export function createCreditCardAuthorization(
             startDate: new Date()
         });
 
-        let action = await actionRepository.actionModel.create(actionAttributes).then(
+        const action = await actionRepository.actionModel.create(actionAttributes).then(
             (doc) => <factory.action.authorize.creditCard.IAction>doc.toObject()
         );
 
@@ -223,7 +219,8 @@ export function createCreditCardAuthorization(
 
         // アクションを完了
         debug('ending authorize action...');
-        action = await actionRepository.actionModel.findByIdAndUpdate(
+
+        return await actionRepository.actionModel.findByIdAndUpdate(
             action.id,
             {
                 actionStatus: factory.actionStatusType.CompletedActionStatus,
@@ -237,13 +234,10 @@ export function createCreditCardAuthorization(
             },
             { new: true }
         ).exec().then((doc) => <factory.action.authorize.creditCard.IAction>(<mongoose.Document>doc).toObject());
-        debug('GMO authorize action ended.');
-
-        return action;
     };
 }
 
-export function cancelGMOAuthorization(
+export function cancelCreditCardAuth(
     agentId: string,
     transactionId: string,
     actionId: string
@@ -255,44 +249,48 @@ export function cancelGMOAuthorization(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const action = await actionRepository.actionModel.findOne({
-            _id: actionId,
-            typeOf: factory.actionType.AuthorizeAction,
-            'object.transactionId': transactionId,
-            'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.CreditCard
-        }).exec()
+        const action = await actionRepository.actionModel.findOneAndUpdate(
+            {
+                _id: actionId,
+                typeOf: factory.actionType.AuthorizeAction,
+                'object.transactionId': transactionId,
+                'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.CreditCard
+            },
+            { actionStatus: factory.actionStatusType.CanceledActionStatus },
+            { new: true }
+        ).exec()
             .then((doc) => {
                 if (doc === null) {
-                    throw new factory.errors.NotFound('actionId', '指定されたオーソリは見つかりません');
+                    throw new factory.errors.NotFound('actionId', 'AuthorizeAction not found.');
 
                 }
 
-                return <any>doc.toObject();
+                return <factory.action.authorize.creditCard.IAction>doc.toObject();
             });
 
-        // 決済取消
-        await GMO.services.credit.alterTran({
-            shopId: action.result.entryTranArgs.shopId,
-            shopPass: action.result.entryTranArgs.shopPass,
-            accessId: action.result.execTranArgs.accessId,
-            accessPass: action.result.execTranArgs.accessPass,
-            jobCd: GMO.utils.util.JobCd.Void
-        });
-        debug('alterTran processed', GMO.utils.util.JobCd.Void);
+        const actionResult = <factory.action.authorize.creditCard.IResult>action.result;
 
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO GMO混雑エラーを判別
-
-        await actionRepository.actionModel.findByIdAndUpdate(
-            actionId,
-            {
-                actionStatus: factory.actionStatusType.CanceledActionStatus
-            }
-        ).exec();
+        // オーソリ取消
+        // 現時点では、ここで失敗したらオーソリ取消をあきらめる
+        // リトライするには処理を非同期に変更する必要あり
+        try {
+            await GMO.services.credit.alterTran({
+                shopId: actionResult.entryTranArgs.shopId,
+                shopPass: actionResult.entryTranArgs.shopPass,
+                accessId: actionResult.execTranArgs.accessId,
+                accessPass: actionResult.execTranArgs.accessPass,
+                jobCd: GMO.utils.util.JobCd.Void
+            });
+            debug('alterTran processed', GMO.utils.util.JobCd.Void);
+        } catch (error) {
+            console.error('GMO alterTran to Void error:', error);
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO GMO混雑エラーを判別(取消処理でも混雑エラーが発生することは確認済)
+        }
     };
 }
 
-export function createSeatReservationAuthorization(
+export function authorizeSeatReservation(
     agentId: string,
     transactionId: string,
     individualScreeningEvent: factory.event.individualScreeningEvent.IEvent,
@@ -317,7 +315,7 @@ export function createSeatReservationAuthorization(
             startDate: new Date()
         });
 
-        let action = await actionRepository.actionModel.create(actionAttributes).then((doc) => {
+        const action = await actionRepository.actionModel.create(actionAttributes).then((doc) => {
             return <factory.action.authorize.seatReservation.IAction>doc.toObject();
         });
 
@@ -371,7 +369,8 @@ export function createSeatReservationAuthorization(
         // アクションを完了
         debug('ending authorize action...');
         const price = offers.reduce((a, b) => a + b.ticketInfo.salePrice + b.ticketInfo.mvtkSalesPrice, 0);
-        action = await actionRepository.actionModel.findByIdAndUpdate(
+
+        return await actionRepository.actionModel.findByIdAndUpdate(
             action.id,
             {
                 actionStatus: factory.actionStatusType.CompletedActionStatus,
@@ -384,13 +383,10 @@ export function createSeatReservationAuthorization(
             },
             { new: true }
         ).exec().then((doc) => <factory.action.authorize.seatReservation.IAction>(<mongoose.Document>doc).toObject());
-        debug('SeatReservation authorize action ended.');
-
-        return action;
     };
 }
 
-export function cancelSeatReservationAuthorization(
+export function cancelSeatReservationAuth(
     agentId: string,
     transactionId: string,
     actionId: string
@@ -402,39 +398,40 @@ export function cancelSeatReservationAuthorization(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const action = await actionRepository.actionModel.findOne({
-            _id: actionId,
-            typeOf: factory.actionType.AuthorizeAction,
-            'object.transactionId': transactionId,
-            'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.SeatReservation
-        }).exec()
+        // MongoDBでcompleteステータスであるにも関わらず、COAでは削除されている、というのが最悪の状況
+        // それだけは回避するためにMongoDBを先に変更
+        const action = await actionRepository.actionModel.findOneAndUpdate(
+            {
+                _id: actionId,
+                typeOf: factory.actionType.AuthorizeAction,
+                'object.transactionId': transactionId,
+                'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.SeatReservation
+            },
+            { actionStatus: factory.actionStatusType.CanceledActionStatus },
+            { new: true }
+        ).exec()
             .then((doc) => {
                 if (doc === null) {
-                    throw new factory.errors.NotFound('actionId', '指定された座席予約は見つかりません');
+                    throw new factory.errors.NotFound('actionId', 'AuthorizeAction not found.');
 
                 }
 
-                return <any>doc.toObject();
+                return <factory.action.authorize.seatReservation.IAction>doc.toObject();
             });
+
+        const actionResult = <factory.action.authorize.seatReservation.IResult>action.result;
 
         // 座席仮予約削除
         debug('delTmpReserve processing...', action);
         await COA.services.reserve.delTmpReserve({
-            theaterCode: action.result.updTmpReserveSeatArgs.theaterCode,
-            dateJouei: action.result.updTmpReserveSeatArgs.dateJouei,
-            titleCode: action.result.updTmpReserveSeatArgs.titleCode,
-            titleBranchNum: action.result.updTmpReserveSeatArgs.titleBranchNum,
-            timeBegin: action.result.updTmpReserveSeatArgs.timeBegin,
-            tmpReserveNum: action.result.updTmpReserveSeatResult.tmpReserveNum
+            theaterCode: actionResult.updTmpReserveSeatArgs.theaterCode,
+            dateJouei: actionResult.updTmpReserveSeatArgs.dateJouei,
+            titleCode: actionResult.updTmpReserveSeatArgs.titleCode,
+            titleBranchNum: actionResult.updTmpReserveSeatArgs.titleBranchNum,
+            timeBegin: actionResult.updTmpReserveSeatArgs.timeBegin,
+            tmpReserveNum: actionResult.updTmpReserveSeatResult.tmpReserveNum
         });
         debug('delTmpReserve processed');
-
-        await actionRepository.actionModel.findByIdAndUpdate(
-            actionId,
-            {
-                actionStatus: factory.actionStatusType.CanceledActionStatus
-            }
-        ).exec();
     };
 }
 
@@ -443,12 +440,9 @@ export function cancelSeatReservationAuthorization(
  * add the result of using a mvtk card
  * @export
  * @function
- * @param {string} transactionId
- * @param {factory.action.authorize.mvtk.IObject} authorizeActionObject
- * @return ITransactionOperation<factory.action.authorize.mvtk.IAuthorizeAction>
  * @memberof service.transaction.placeOrderInProgress
  */
-export function createMvtkAuthorization(
+export function authorizeMvtk(
     agentId: string,
     transactionId: string,
     authorizeObject: factory.action.authorize.mvtk.IObject
@@ -545,25 +539,36 @@ export function createMvtkAuthorization(
         }
 
         const actionAttributes = factory.action.authorize.mvtk.createAttributes({
-            actionStatus: factory.actionStatusType.CompletedActionStatus,
-            result: {
-                price: authorizeObject.price
-            },
+            actionStatus: factory.actionStatusType.ActiveActionStatus,
             object: authorizeObject,
             agent: transaction.agent,
             recipient: transaction.seller,
-            startDate: new Date(),
-            endDate: new Date()
-
+            startDate: new Date()
         });
 
-        return await actionRepository.actionModel.create(actionAttributes).then(
+        // start action
+        const action = await actionRepository.actionModel.create(actionAttributes).then(
             (doc) => <factory.action.authorize.mvtk.IAction>doc.toObject()
         );
+
+        // 特に何もしない
+
+        // アクションを完了
+        return await actionRepository.actionModel.findByIdAndUpdate(
+            action.id,
+            {
+                actionStatus: factory.actionStatusType.CompletedActionStatus,
+                result: {
+                    price: authorizeObject.price
+                },
+                endDate: new Date()
+            },
+            { new: true }
+        ).exec().then((doc) => <factory.action.authorize.mvtk.IAction>(<mongoose.Document>doc).toObject());
     };
 }
 
-export function cancelMvtkAuthorization(
+export function cancelMvtkAuth(
     agentId: string,
     transactionId: string,
     actionId: string
@@ -575,27 +580,26 @@ export function cancelMvtkAuthorization(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        await actionRepository.actionModel.findOne({
-            _id: actionId,
-            typeOf: factory.actionType.AuthorizeAction,
-            'object.transactionId': transactionId,
-            'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.Mvtk
-        }).exec()
+        await actionRepository.actionModel.findOneAndUpdate(
+            {
+                _id: actionId,
+                typeOf: factory.actionType.AuthorizeAction,
+                'object.transactionId': transactionId,
+                'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.Mvtk
+            },
+            { actionStatus: factory.actionStatusType.CanceledActionStatus },
+            { new: true }
+        ).exec()
             .then((doc) => {
                 if (doc === null) {
-                    throw new factory.errors.NotFound('actionId', '指定されたムビチケは見つかりません');
+                    throw new factory.errors.NotFound('actionId', 'AuthorizeAction not found.');
 
                 }
 
-                return <any>doc.toObject();
+                return <factory.action.authorize.mvtk.IAction>doc.toObject();
             });
 
-        await actionRepository.actionModel.findByIdAndUpdate(
-            actionId,
-            {
-                actionStatus: factory.actionStatusType.CanceledActionStatus
-            }
-        ).exec();
+        // 特に何もしない
     };
 }
 
@@ -701,9 +705,8 @@ export function confirm(
         const authorizeActions = await actionRepository.actionModel.find({
             'object.transactionId': transactionId,
             typeOf: factory.actionType.AuthorizeAction,
-            actionStatus: factory.actionStatusType.CompletedActionStatus,
             endDate: { $lt: now } // 万が一このプロセス中に他処理が発生しても無視するように
-        }).exec().then((docs) => docs.map((doc) => <any>doc.toObject()));
+        }).exec().then((docs) => docs.map((doc) => <factory.action.authorize.IAction>doc.toObject()));
         transaction.object.authorizeActions = authorizeActions;
 
         // 照会可能になっているかどうか
@@ -767,9 +770,11 @@ function canBeClosed(transaction: factory.transaction.placeOrder.ITransaction) {
         factory.action.authorize.seatReservation.IResult;
 
     const priceByAgent = transaction.object.authorizeActions
+        .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((action) => action.agent.id === transaction.agent.id)
         .reduce((a, b) => a + (<IAuthorizeActionResult>b.result).price, 0);
     const priceBySeller = transaction.object.authorizeActions
+        .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((action) => action.agent.id === transaction.seller.id)
         .reduce((a, b) => a + (<IAuthorizeActionResult>b.result).price, 0);
 

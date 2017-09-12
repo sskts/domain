@@ -22,12 +22,14 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 export function unauthorizeSeatReservation(transactionId: string) {
     return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
-        const authorizeAction = transaction.object.authorizeActions.find((action) => {
-            return action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation;
-        });
-        if (authorizeAction === undefined) {
-            return;
+        const authorizeActions = transaction.object.authorizeActions
+            .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation);
+        if (authorizeActions.length !== 1) {
+            throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
         }
+
+        const authorizeAction = authorizeActions[0];
 
         debug('calling deleteTmpReserve...');
         const updTmpReserveSeatArgs = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatArgs;
@@ -53,12 +55,14 @@ export function unauthorizeSeatReservation(transactionId: string) {
 export function transferSeatReservation(transactionId: string) {
     return async (transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
-        const authorizeAction = transaction.object.authorizeActions.find((action) => {
-            return action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation;
-        });
-        if (authorizeAction === undefined) {
-            return;
+        const authorizeActions = transaction.object.authorizeActions
+            .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation);
+        if (authorizeActions.length !== 1) {
+            throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
         }
+
+        const authorizeAction = authorizeActions[0];
 
         const updTmpReserveSeatArgs = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatArgs;
         const updTmpReserveSeatResult = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatResult;

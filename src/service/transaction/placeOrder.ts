@@ -177,11 +177,13 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                 break;
 
             default:
-                throw new factory.errors.Argument('id', 'transaction group not implemented.');
+                throw new factory.errors.NotImplemented(`Transaction status "${transaction.status}" not implemented.`);
         }
         debug('taskAttributes prepared', taskAttributes);
 
-        return await Promise.all(taskAttributes.map(taskRepository.save));
+        return await Promise.all(taskAttributes.map(async (taskAttribute) => {
+            return await taskRepository.save(taskAttribute);
+        }));
     };
 }
 
