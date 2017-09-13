@@ -14,54 +14,38 @@ export class MongoRepository {
         this.actionModel = connection.model(ActionModel.modelName);
     }
 
-    public async pushPaymentInfo(
-        transactionId: string,
-        authorizeAction: factory.action.authorize.creditCard.IAction
-    ): Promise<void> {
-        await this.actionModel.findByIdAndUpdate(
-            transactionId,
-            { $push: { 'object.paymentInfos': authorizeAction } }
-        ).exec();
+    public async printTicket(
+        agentId: string,
+        ticket: factory.action.transfer.print.ticket.ITicket
+    ): Promise<factory.action.transfer.print.IAction> {
+        const now = new Date();
+        const actionAttributes = factory.action.transfer.print.ticket.createAttributes({
+            actionStatus: factory.actionStatusType.CompletedActionStatus,
+            object: {
+                typeOf: 'Ticket',
+                ticketToken: ticket.ticketToken
+            },
+            agent: {
+                typeOf: 'Person',
+                id: agentId
+            },
+            startDate: now,
+            endDate: now
+        });
+
+        return await this.actionModel.create(actionAttributes).then((doc) => <factory.action.transfer.print.IAction>doc.toObject());
     }
 
-    public async pullPaymentInfo(transactionId: string, actionId: string): Promise<void> {
-        await this.actionModel.findByIdAndUpdate(
-            transactionId,
-            { $pull: { 'object.paymentInfos': { id: actionId } } }
-        ).exec();
-    }
-
-    public async addSeatReservation(
-        transactionId: string,
-        authorizeAction: factory.action.authorize.seatReservation.IAction
-    ): Promise<void> {
-        await this.actionModel.findByIdAndUpdate(
-            transactionId,
-            { 'object.seatReservation': authorizeAction }
-        ).exec();
-    }
-
-    public async removeSeatReservation(transactionId: string): Promise<void> {
-        await this.actionModel.findByIdAndUpdate(
-            transactionId,
-            { $unset: { 'object.seatReservation': 1 } }
-        ).exec();
-    }
-
-    public async pushDiscountInfo(
-        transactionId: string,
-        authorizeAction: factory.action.authorize.mvtk.IAction
-    ): Promise<void> {
-        await this.actionModel.findByIdAndUpdate(
-            transactionId,
-            { $push: { 'object.discountInfos': authorizeAction } }
-        ).exec();
-    }
-
-    public async pullDiscountInfo(transactionId: string, actionId: string): Promise<void> {
-        await this.actionModel.findByIdAndUpdate(
-            transactionId,
-            { $pull: { 'object.discountInfos': { id: actionId } } }
-        ).exec();
+    public async searchPrintTicket(
+        conditions: factory.action.transfer.print.ticket.ISearchConditions
+    ): Promise<factory.action.transfer.print.IAction[]> {
+        return await this.actionModel.find(
+            {
+                typeOf: factory.actionType.PrintAction,
+                'agent.id': conditions.agentId,
+                'object.typeOf': 'Ticket',
+                'object.ticketToken': conditions.ticketToken
+            }
+        ).then((docs) => docs.map((doc) => <factory.action.transfer.print.IAction>doc.toObject()));
     }
 }

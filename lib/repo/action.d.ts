@@ -9,10 +9,6 @@ import ActionModel from './mongoose/model/action';
 export declare class MongoRepository {
     readonly actionModel: typeof ActionModel;
     constructor(connection: Connection);
-    pushPaymentInfo(transactionId: string, authorizeAction: factory.action.authorize.creditCard.IAction): Promise<void>;
-    pullPaymentInfo(transactionId: string, actionId: string): Promise<void>;
-    addSeatReservation(transactionId: string, authorizeAction: factory.action.authorize.seatReservation.IAction): Promise<void>;
-    removeSeatReservation(transactionId: string): Promise<void>;
-    pushDiscountInfo(transactionId: string, authorizeAction: factory.action.authorize.mvtk.IAction): Promise<void>;
-    pullDiscountInfo(transactionId: string, actionId: string): Promise<void>;
+    printTicket(agentId: string, ticket: factory.action.transfer.print.ticket.ITicket): Promise<factory.action.transfer.print.IAction>;
+    searchPrintTicket(conditions: factory.action.transfer.print.ticket.ISearchConditions): Promise<factory.action.transfer.print.IAction[]>;
 }

@@ -263,6 +263,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                         reservationNumber: `${params.inquiryKey.reserve_num}-${index.toString()}`,
                         reservationStatus: factory.reservationStatusType.ReservationConfirmed,
                         reservedTicket: {
+                            typeOf: 'Ticket',
                             totalPrice: asset.sale_price,
                             coaTicketInfo: coaTicketInfo,
                             dateIssued: params.closedAt,
@@ -275,6 +276,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                             },
                             priceCurrency: factory.priceCurrency.JPY,
                             ticketedSeat: {
+                                typeOf: 'Seat',
                                 seatingType: '',
                                 seatNumber: asset.seat_code,
                                 seatRow: '',
