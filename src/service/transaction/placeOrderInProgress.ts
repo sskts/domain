@@ -779,5 +779,9 @@ function canBeClosed(transaction: factory.transaction.placeOrder.ITransaction) {
         .reduce((a, b) => a + (<IAuthorizeActionResult>b.result).price, 0);
 
     // price matched between an agent and a seller?
+    if (priceByAgent <= 0 || priceByAgent !== priceBySeller) {
+        throw new Error(`cannot be confirmed. ${priceByAgent}${priceBySeller}`);
+    }
+
     return (priceByAgent > 0 && priceByAgent === priceBySeller);
 }
