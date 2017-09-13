@@ -705,7 +705,8 @@ export function confirm(
         const authorizeActions = await actionRepository.actionModel.find({
             'object.transactionId': transactionId,
             typeOf: factory.actionType.AuthorizeAction,
-            endDate: { $lt: now } // 万が一このプロセス中に他処理が発生しても無視するように
+            // tslint:disable-next-line:no-suspicious-comment
+            // endDate: { $lt: now } // TODO 万が一このプロセス中に他処理が発生しても無視するように
         }).exec().then((docs) => docs.map((doc) => <factory.action.authorize.IAction>doc.toObject()));
         transaction.object.authorizeActions = authorizeActions;
 
