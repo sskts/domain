@@ -706,13 +706,13 @@ export function confirm(
             'object.transactionId': transactionId,
             typeOf: factory.actionType.AuthorizeAction,
             // tslint:disable-next-line:no-suspicious-comment
-            // endDate: { $lt: now } // TODO 万が一このプロセス中に他処理が発生しても無視するように
+            endDate: { $lte: now } // TODO 万が一このプロセス中に他処理が発生しても無視するように
         }).exec().then((docs) => docs.map((doc) => <factory.action.authorize.IAction>doc.toObject()));
         transaction.object.authorizeActions = authorizeActions;
 
         // 照会可能になっているかどうか
         if (!canBeClosed(transaction)) {
-            throw new factory.errors.Argument('transactionId', 'transaction cannot be closed');
+            throw new factory.errors.Argument('transactionId', 'Transaction cannot be confirmed because prices are not matched.');
         }
 
         // 結果作成
@@ -778,12 +778,6 @@ function canBeClosed(transaction: factory.transaction.placeOrder.ITransaction) {
         .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((action) => action.agent.id === transaction.seller.id)
         .reduce((a, b) => a + (<IAuthorizeActionResult>b.result).price, 0);
-
-    // price matched between an agent and a seller?
-    if (priceByAgent <= 0 || priceByAgent !== priceBySeller) {
-        // tslint:disable-next-line:max-line-length
-        throw new Error(`cannot be confirmed. ${priceByAgent} ${priceBySeller} ${transaction.object.authorizeActions.map((action) => action.id).join(',')}`);
-    }
 
     return (priceByAgent > 0 && priceByAgent === priceBySeller);
 }
