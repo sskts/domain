@@ -1,5 +1,5 @@
 /**
- * example
+ * download transactions csv example
  * @ignore
  */
 
@@ -10,11 +10,13 @@ sskts.mongoose.connect(process.env.MONGOLAB_URI);
 
 sskts.service.transaction.placeOrder.download(
     {
-        dateFrom: moment().add(-1, 'day').toDate(),
-        dateTo: moment().add(-1, 'day').toDate(),
+        startFrom: moment().add(-1, 'day').toDate(),
+        startThrough: moment().toDate(),
     },
     'csv'
 )(new sskts.repository.Transaction(sskts.mongoose.connection))
-    .then((url) => {
+    .then(async (csv) => {
+        const fileName = `sskts-line-assistant-transactions-${moment().format('YYYYMMDDHHmmss')}.csv`;
+        const url = await sskts.service.util.uploadFile(fileName, csv)();
         console.log('url:', url);
     });

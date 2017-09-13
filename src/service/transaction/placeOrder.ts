@@ -5,7 +5,6 @@
  */
 
 import * as factory from '@motionpicture/sskts-factory';
-import * as azureStorage from 'azure-storage';
 import * as createDebug from 'debug';
 import * as json2csv from 'json2csv';
 import * as moment from 'moment';
@@ -265,7 +264,7 @@ export function download(
         debug('data:', data);
 
         if (format === 'csv') {
-            return await new Promise<string>((resolve, reject) => {
+            return await new Promise<string>((resolve) => {
                 const fields = [
                     'id', 'status', 'startDate', 'endDate', 'theater', 'reserveNum',
                     'name', 'email', 'telephone',
@@ -285,53 +284,7 @@ export function download(
                 });
                 debug('output:', output);
 
-                // save to blob
-                const blobService = azureStorage.createBlobService();
-                const CONTAINER = 'transactions-csvs';
-                blobService.createContainerIfNotExists(
-                    CONTAINER,
-                    {
-                        // publicAccessLevel: 'blob'
-                    },
-                    (createContainerError) => {
-                        if (createContainerError instanceof Error) {
-                            reject(createContainerError);
-
-                            return;
-                        }
-
-                        const blob = `sskts-line-assistant-transactions-${moment().format('YYYYMMDDHHmmss')}.csv`;
-                        blobService.createBlockBlobFromText(
-                            CONTAINER, blob, jconv.convert(output, 'UTF8', 'SJIS'), (createBlockBlobError, result, response) => {
-                                debug(createBlockBlobError, result, response);
-                                if (createBlockBlobError instanceof Error) {
-                                    reject(createBlockBlobError);
-
-                                    return;
-                                }
-
-                                // 期限つきのURLを発行する
-                                const startDate = new Date();
-                                const expiryDate = new Date(startDate);
-                                // tslint:disable-next-line:no-magic-numbers
-                                expiryDate.setMinutes(startDate.getMinutes() + 10);
-                                // tslint:disable-next-line:no-magic-numbers
-                                startDate.setMinutes(startDate.getMinutes() - 10);
-                                const sharedAccessPolicy = {
-                                    AccessPolicy: {
-                                        Permissions: azureStorage.BlobUtilities.SharedAccessPermissions.READ,
-                                        Start: startDate,
-                                        Expiry: expiryDate
-                                    }
-                                };
-                                const token = blobService.generateSharedAccessSignature(
-                                    result.container, result.name, sharedAccessPolicy
-                                );
-                                resolve(blobService.getUrl(result.container, result.name, token));
-                            }
-                        );
-                    }
-                );
+                resolve(jconv.convert(output, 'UTF8', 'SJIS'));
             });
         } else {
             throw new factory.errors.NotImplemented('specified format not implemented.');

@@ -20,6 +20,7 @@ import * as StockService from './service/stock';
 import * as TaskService from './service/task';
 import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
 import * as PlaceOrderInProgressTransactionService from './service/transaction/placeOrderInProgress';
+import * as UtilService from './service/util';
 import { MongoRepository as ActionRepository } from './repo/action';
 import { MongoRepository as ClientRepository } from './repo/client';
 import { MongoRepository as CreativeWorkRepository } from './repo/creativeWork';
@@ -130,5 +131,6 @@ export declare namespace service {
         export import placeOrder = PlaceOrderTransactionService;
         export import placeOrderInProgress = PlaceOrderInProgressTransactionService;
     }
+    export import util = UtilService;
 }
 export import factory = ssktsFactory;
