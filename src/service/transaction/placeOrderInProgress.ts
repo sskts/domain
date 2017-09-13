@@ -780,7 +780,8 @@ function canBeClosed(transaction: factory.transaction.placeOrder.ITransaction) {
 
     // price matched between an agent and a seller?
     if (priceByAgent <= 0 || priceByAgent !== priceBySeller) {
-        throw new Error(`cannot be confirmed. ${priceByAgent}${priceBySeller}`);
+        // tslint:disable-next-line:max-line-length
+        throw new Error(`cannot be confirmed. ${priceByAgent} ${priceBySeller} ${transaction.object.authorizeActions.map((action) => action.id).join(',')}`);
     }
 
     return (priceByAgent > 0 && priceByAgent === priceBySeller);
