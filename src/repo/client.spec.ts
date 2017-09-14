@@ -23,21 +23,16 @@ describe('pushEvent()', () => {
 
     it('repositoryの状態が正常であれば、objectが返却されるはず', async () => {
         const params = {};
-        const clientEvent = {
-            id: 'clientEventId'
-        };
 
         const repository = new sskts.repository.Client(sskts.mongoose.connection);
 
-        sandbox.mock(sskts.factory.clientEvent).expects('create').once()
-            .returns(clientEvent);
         sandbox.mock(repository.clientEventModel)
-            .expects('findByIdAndUpdate').once().withArgs(clientEvent.id)
-            .chain('exec').resolves();
+            .expects('create').once()
+            .resolves(new repository.clientEventModel());
 
         const result = await repository.pushEvent(<any>params);
 
-        assert.deepEqual(result, clientEvent);
+        assert.notEqual(result, undefined);
         sandbox.verify();
     });
 });

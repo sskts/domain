@@ -9,29 +9,28 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
-import * as mongoose from 'mongoose';
 
-import { MongoRepository as ActionRepository } from '../../repo/action';
+import { MongoRepository as AuthorizeActionRepository } from '../../repo/action/authorize';
 import { MongoRepository as OrganizationRepository } from '../../repo/organization';
 import { MongoRepository as TransactionRepository } from '../../repo/transaction';
 import { MongoRepository as TransactionCountRepository } from '../../repo/transactionCount';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress');
 
-export type ITransactionOperation<T> = (transactionRepository: TransactionRepository) => Promise<T>;
+export type ITransactionOperation<T> = (transactionRepo: TransactionRepository) => Promise<T>;
 export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (
-    organizationRepository: OrganizationRepository,
-    transactionRepository: TransactionRepository,
+    organizationRepo: OrganizationRepository,
+    transactionRepo: TransactionRepository,
     transactionCountRepository: TransactionCountRepository
 ) => Promise<T>;
 export type IActionAndTransactionOperation<T> = (
-    actionRepository: ActionRepository,
-    transactionRepository: TransactionRepository
+    authorizeActionRepo: AuthorizeActionRepository,
+    transactionRepo: TransactionRepository
 ) => Promise<T>;
 export type IActionAndOrganizationAndTransactionOperation<T> = (
-    actionRepository: ActionRepository,
-    organizationRepository: OrganizationRepository,
-    transactionRepository: TransactionRepository
+    authorizeActionRepo: AuthorizeActionRepository,
+    organizationRepo: OrganizationRepository,
+    transactionRepo: TransactionRepository
 ) => Promise<T>;
 
 /**
@@ -46,8 +45,8 @@ export function start(params: {
     sellerId: string;
 }): IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction> {
     return async (
-        organizationRepository: OrganizationRepository,
-        transactionRepository: TransactionRepository,
+        organizationRepo: OrganizationRepository,
+        transactionRepo: TransactionRepository,
         transactionCountRepository: TransactionCountRepository
     ) => {
         // 利用可能かどうか
@@ -69,7 +68,7 @@ export function start(params: {
         }
 
         // 売り手を取得
-        const seller = await organizationRepository.findMovieTheaterById(params.sellerId);
+        const seller = await organizationRepo.findMovieTheaterById(params.sellerId);
 
         // 取引ファクトリーで新しい進行中取引オブジェクトを作成
         const transactionAttributes = factory.transaction.placeOrder.createAttributes({
@@ -91,7 +90,7 @@ export function start(params: {
             startDate: new Date()
         });
 
-        return await transactionRepository.startPlaceOrder(transactionAttributes);
+        return await transactionRepo.startPlaceOrder(transactionAttributes);
     };
 }
 
@@ -116,36 +115,30 @@ export function authorizeCreditCard(
 ): IActionAndOrganizationAndTransactionOperation<factory.action.authorize.creditCard.IAction> {
     // tslint:disable-next-line:max-func-body-length
     return async (
-        actionRepository: ActionRepository,
-        organizationRepository: OrganizationRepository,
-        transactionRepository: TransactionRepository
+        authorizeActionRepo: AuthorizeActionRepository,
+        organizationRepo: OrganizationRepository,
+        transactionRepo: TransactionRepository
     ) => {
-        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
+        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
         // GMOショップ情報取得
-        const movieTheater = await organizationRepository.findMovieTheaterById(transaction.seller.id);
+        const movieTheater = await organizationRepo.findMovieTheaterById(transaction.seller.id);
 
         // 承認アクションを開始する
-        const actionAttributes = factory.action.authorize.creditCard.createAttributes({
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
-            object: {
+        const action = await authorizeActionRepo.startCreditCard(
+            transaction.agent,
+            transaction.seller,
+            {
                 transactionId: transactionId,
                 orderId: orderId,
                 amount: amount,
                 method: method,
                 payType: GMO.utils.util.PayType.Credit
-            },
-            agent: transaction.agent,
-            recipient: transaction.seller,
-            startDate: new Date()
-        });
-
-        const action = await actionRepository.actionModel.create(actionAttributes).then(
-            (doc) => <factory.action.authorize.creditCard.IAction>doc.toObject()
+            }
         );
 
         // GMOオーソリ取得
@@ -183,15 +176,7 @@ export function authorizeCreditCard(
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                await actionRepository.actionModel.findByIdAndUpdate(
-                    action.id,
-                    {
-                        actionStatus: factory.actionStatusType.FailedActionStatus,
-                        error: error,
-                        endDate: new Date()
-                    },
-                    { new: true }
-                ).exec();
+                await authorizeActionRepo.giveUp(action.id, error);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -220,20 +205,15 @@ export function authorizeCreditCard(
         // アクションを完了
         debug('ending authorize action...');
 
-        return await actionRepository.actionModel.findByIdAndUpdate(
+        return await authorizeActionRepo.completeCreditCard(
             action.id,
             {
-                actionStatus: factory.actionStatusType.CompletedActionStatus,
-                result: {
-                    price: amount,
-                    entryTranArgs: entryTranArgs,
-                    execTranArgs: execTranArgs,
-                    execTranResult: execTranResult
-                },
-                endDate: new Date()
-            },
-            { new: true }
-        ).exec().then((doc) => <factory.action.authorize.creditCard.IAction>(<mongoose.Document>doc).toObject());
+                price: amount,
+                entryTranArgs: entryTranArgs,
+                execTranArgs: execTranArgs,
+                execTranResult: execTranResult
+            }
+        );
     };
 }
 
@@ -242,32 +222,14 @@ export function cancelCreditCardAuth(
     transactionId: string,
     actionId: string
 ) {
-    return async (actionRepository: ActionRepository, transactionRepository: TransactionRepository) => {
-        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
+    return async (authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const action = await actionRepository.actionModel.findOneAndUpdate(
-            {
-                _id: actionId,
-                typeOf: factory.actionType.AuthorizeAction,
-                'object.transactionId': transactionId,
-                'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.CreditCard
-            },
-            { actionStatus: factory.actionStatusType.CanceledActionStatus },
-            { new: true }
-        ).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new factory.errors.NotFound('actionId', 'AuthorizeAction not found.');
-
-                }
-
-                return <factory.action.authorize.creditCard.IAction>doc.toObject();
-            });
-
+        const action = await authorizeActionRepo.cancelCreditCard(actionId, transactionId);
         const actionResult = <factory.action.authorize.creditCard.IResult>action.result;
 
         // オーソリ取消
@@ -296,28 +258,22 @@ export function authorizeSeatReservation(
     individualScreeningEvent: factory.event.individualScreeningEvent.IEvent,
     offers: factory.offer.ISeatReservationOffer[]
 ): IActionAndTransactionOperation<factory.action.authorize.seatReservation.IAction> {
-    return async (actionRepository: ActionRepository, transactionRepository: TransactionRepository) => {
-        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
+    return async (authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const actionAttributes = factory.action.authorize.seatReservation.createAttributes({
-            object: {
+        const action = await authorizeActionRepo.startSeatReservation(
+            transaction.seller,
+            transaction.agent,
+            {
                 transactionId: transactionId,
                 offers: offers,
                 individualScreeningEvent: individualScreeningEvent
-            },
-            agent: transaction.seller,
-            recipient: transaction.agent,
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
-            startDate: new Date()
-        });
-
-        const action = await actionRepository.actionModel.create(actionAttributes).then((doc) => {
-            return <factory.action.authorize.seatReservation.IAction>doc.toObject();
-        });
+            }
+        );
 
         // todo 座席コードがすでにキープ済みのものかどうかチェックできる？
 
@@ -344,15 +300,7 @@ export function authorizeSeatReservation(
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                await actionRepository.actionModel.findByIdAndUpdate(
-                    action.id,
-                    {
-                        actionStatus: factory.actionStatusType.FailedActionStatus,
-                        error: error,
-                        endDate: new Date()
-                    },
-                    { new: true }
-                ).exec();
+                await authorizeActionRepo.giveUp(action.id, error);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -370,19 +318,14 @@ export function authorizeSeatReservation(
         debug('ending authorize action...');
         const price = offers.reduce((a, b) => a + b.ticketInfo.salePrice + b.ticketInfo.mvtkSalesPrice, 0);
 
-        return await actionRepository.actionModel.findByIdAndUpdate(
+        return await authorizeActionRepo.completeSeatReservation(
             action.id,
             {
-                actionStatus: factory.actionStatusType.CompletedActionStatus,
-                result: {
-                    price: price,
-                    updTmpReserveSeatArgs: updTmpReserveSeatArgs,
-                    updTmpReserveSeatResult: updTmpReserveSeatResult
-                },
-                endDate: new Date()
-            },
-            { new: true }
-        ).exec().then((doc) => <factory.action.authorize.seatReservation.IAction>(<mongoose.Document>doc).toObject());
+                price: price,
+                updTmpReserveSeatArgs: updTmpReserveSeatArgs,
+                updTmpReserveSeatResult: updTmpReserveSeatResult
+            }
+        );
     };
 }
 
@@ -391,8 +334,8 @@ export function cancelSeatReservationAuth(
     transactionId: string,
     actionId: string
 ) {
-    return async (actionRepository: ActionRepository, transactionRepository: TransactionRepository) => {
-        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
+    return async (authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -400,25 +343,7 @@ export function cancelSeatReservationAuth(
 
         // MongoDBでcompleteステータスであるにも関わらず、COAでは削除されている、というのが最悪の状況
         // それだけは回避するためにMongoDBを先に変更
-        const action = await actionRepository.actionModel.findOneAndUpdate(
-            {
-                _id: actionId,
-                typeOf: factory.actionType.AuthorizeAction,
-                'object.transactionId': transactionId,
-                'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.SeatReservation
-            },
-            { actionStatus: factory.actionStatusType.CanceledActionStatus },
-            { new: true }
-        ).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new factory.errors.NotFound('actionId', 'AuthorizeAction not found.');
-
-                }
-
-                return <factory.action.authorize.seatReservation.IAction>doc.toObject();
-            });
-
+        const action = await authorizeActionRepo.cancelSeatReservation(actionId, transactionId);
         const actionResult = <factory.action.authorize.seatReservation.IResult>action.result;
 
         // 座席仮予約削除
@@ -448,28 +373,16 @@ export function authorizeMvtk(
     authorizeObject: factory.action.authorize.mvtk.IObject
 ): IActionAndTransactionOperation<factory.action.authorize.mvtk.IAction> {
     // tslint:disable-next-line:max-func-body-length
-    return async (actionRepository: ActionRepository, transactionRepository: TransactionRepository) => {
-        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
+    return async (authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
         // 座席予約承認を取得
-        const seatReservationAuthorizeAction = await actionRepository.actionModel.findOne({
-            'object.transactionId': transactionId,
-            'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.SeatReservation,
-            typeOf: factory.actionType.AuthorizeAction,
-            actionStatus: factory.actionStatusType.CompletedActionStatus
-        }).exec().then((doc) => {
-            // seatReservationAuthorization already exists?
-            if (doc === null) {
-                throw new factory.errors.NotFound('action.object', 'seat reservation authorizeAction not created yet');
-            }
-
-            return <factory.action.authorize.seatReservation.IAction>doc.toObject();
-        });
-
+        // seatReservationAuthorization already exists?
+        const seatReservationAuthorizeAction = await authorizeActionRepo.findSeatReservationByTransactionId(transactionId);
         const seatReservationAuthorizeActionObject = seatReservationAuthorizeAction.object;
         const seatReservationAuthorizeActionResult =
             <factory.action.authorize.seatReservation.IResult>seatReservationAuthorizeAction.result;
@@ -538,33 +451,21 @@ export function authorizeMvtk(
             throw new factory.errors.Argument('authorizeActionResult', 'zskInfo not matched with seat reservation authorizeAction');
         }
 
-        const actionAttributes = factory.action.authorize.mvtk.createAttributes({
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
-            object: authorizeObject,
-            agent: transaction.agent,
-            recipient: transaction.seller,
-            startDate: new Date()
-        });
-
-        // start action
-        const action = await actionRepository.actionModel.create(actionAttributes).then(
-            (doc) => <factory.action.authorize.mvtk.IAction>doc.toObject()
+        const action = await authorizeActionRepo.startMvtk(
+            transaction.seller,
+            transaction.agent,
+            authorizeObject
         );
 
         // 特に何もしない
 
         // アクションを完了
-        return await actionRepository.actionModel.findByIdAndUpdate(
+        return await authorizeActionRepo.completeMvtk(
             action.id,
             {
-                actionStatus: factory.actionStatusType.CompletedActionStatus,
-                result: {
-                    price: authorizeObject.price
-                },
-                endDate: new Date()
-            },
-            { new: true }
-        ).exec().then((doc) => <factory.action.authorize.mvtk.IAction>(<mongoose.Document>doc).toObject());
+                price: authorizeObject.price
+            }
+        );
     };
 }
 
@@ -573,31 +474,14 @@ export function cancelMvtkAuth(
     transactionId: string,
     actionId: string
 ) {
-    return async (actionRepository: ActionRepository, transactionRepository: TransactionRepository) => {
-        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
+    return async (authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        await actionRepository.actionModel.findOneAndUpdate(
-            {
-                _id: actionId,
-                typeOf: factory.actionType.AuthorizeAction,
-                'object.transactionId': transactionId,
-                'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.Mvtk
-            },
-            { actionStatus: factory.actionStatusType.CanceledActionStatus },
-            { new: true }
-        ).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new factory.errors.NotFound('actionId', 'AuthorizeAction not found.');
-
-                }
-
-                return <factory.action.authorize.mvtk.IAction>doc.toObject();
-            });
+        await authorizeActionRepo.cancelMvtk(actionId, transactionId);
 
         // 特に何もしない
     };
@@ -613,7 +497,7 @@ export function cancelMvtkAuth(
  * @memberof service.transaction.placeOrderInProgress
  */
 // export function addEmail(transactionId: string, notification: EmailNotificationFactory.INotification) {
-//     return async (transactionRepository: TransactionRepository) => {
+//     return async (transactionRepo: TransactionRepository) => {
 //         // イベント作成
 //         const event = AddNotificationTransactionEventFactory.create({
 //             occurredAt: new Date(),
@@ -622,7 +506,7 @@ export function cancelMvtkAuth(
 
 //         // 永続化
 //         debug('adding an event...', event);
-//         await pushEvent(transactionId, event)(transactionRepository);
+//         await pushEvent(transactionId, event)(transactionRepo);
 //     };
 // }
 
@@ -636,8 +520,8 @@ export function cancelMvtkAuth(
  * @memberof service.transaction.placeOrderInProgress
  */
 // export function removeEmail(transactionId: string, notificationId: string) {
-//     return async (transactionRepository: TransactionRepository) => {
-//         const transaction = await findInProgressById(transactionId)(transactionRepository)
+//     return async (transactionRepo: TransactionRepository) => {
+//         const transaction = await findInProgressById(transactionId)(transactionRepo)
 //             .then((option) => {
 //                 if (option.isEmpty) {
 //                     throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
@@ -663,7 +547,7 @@ export function cancelMvtkAuth(
 //         });
 
 //         // 永続化
-//         await pushEvent(transactionId, event)(transactionRepository);
+//         await pushEvent(transactionId, event)(transactionRepo);
 //     };
 // }
 
@@ -675,14 +559,14 @@ export function setCustomerContacts(
     transactionId: string,
     contact: factory.transaction.placeOrder.ICustomerContact
 ): ITransactionOperation<void> {
-    return async (transactionRepository: TransactionRepository) => {
-        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
+    return async (transactionRepo: TransactionRepository) => {
+        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        await transactionRepository.setCustomerContactsOnPlaceOrderInProgress(transactionId, contact);
+        await transactionRepo.setCustomerContactsOnPlaceOrderInProgress(transactionId, contact);
     };
 }
 
@@ -694,19 +578,17 @@ export function confirm(
     transactionId: string
 ) {
     // tslint:disable-next-line:max-func-body-length
-    return async (actionRepository: ActionRepository, transactionRepository: TransactionRepository) => {
+    return async (authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
         const now = new Date();
-        const transaction = await transactionRepository.findPlaceOrderInProgressById(transactionId);
+        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
         // authorizeActionsを取得
-        const authorizeActions = await actionRepository.actionModel.find({
-            'object.transactionId': transactionId,
-            typeOf: factory.actionType.AuthorizeAction,
-            endDate: { $lt: now } // 万が一このプロセス中に他処理が発生しても無視するように
-        }).exec().then((docs) => docs.map((doc) => <factory.action.authorize.IAction>doc.toObject()));
+        let authorizeActions = await authorizeActionRepo.findByTransactionId(transactionId);
+        // 万が一このプロセス中に他処理が発生しても無視するように
+        authorizeActions = authorizeActions.filter((action) => (action.endDate !== undefined && action.endDate < now));
         transaction.object.authorizeActions = authorizeActions;
 
         // 照会可能になっているかどうか
@@ -739,20 +621,12 @@ export function confirm(
 
         // ステータス変更
         debug('updating transaction...');
-        await transactionRepository.transactionModel.findOneAndUpdate(
-            {
-                _id: transactionId,
-                typeOf: factory.transactionType.PlaceOrder,
-                status: factory.transactionStatusType.InProgress
-            },
-            {
-                status: factory.transactionStatusType.Confirmed, // ステータス変更
-                endDate: now,
-                'object.authorizeActions': authorizeActions, // 認可アクションリストを更新
-                result: result // resultを更新
-            },
-            { new: true }
-        ).exec();
+        await transactionRepo.confirmPlaceOrder(
+            transactionId,
+            now,
+            authorizeActions,
+            result
+        );
 
         return order;
     };

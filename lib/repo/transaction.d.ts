@@ -27,10 +27,12 @@ export declare class MongoRepository {
     /**
      * confirm a placeOrder
      * 注文取引を確定する
-     * @param transactionId transaction id
-     * @param result transaction result
+     * @param {string} transactionId transaction id
+     * @param {Date} endDate end date
+     * @param {factory.action.authorize.IAction[]} authorizeActions authorize actions
+     * @param {factory.transaction.placeOrder.IResult} result transaction result
      */
-    confirmPlaceOrder(transactionId: string, result: factory.transaction.placeOrder.IResult): Promise<void>;
+    confirmPlaceOrder(transactionId: string, endDate: Date, authorizeActions: factory.action.authorize.IAction[], result: factory.transaction.placeOrder.IResult): Promise<factory.transaction.placeOrder.ITransaction>;
     /**
      * タスクエクスポートリトライ
      * todo updatedAtを基準にしているが、タスクエクスポートトライ日時を持たせた方が安全か？
@@ -48,10 +50,4 @@ export declare class MongoRepository {
      * 取引を期限切れにする
      */
     makeExpired(): Promise<void>;
-    pushPaymentInfo(transactionId: string, authorizeAction: factory.action.authorize.creditCard.IAction): Promise<void>;
-    pullPaymentInfo(transactionId: string, actionId: string): Promise<void>;
-    addSeatReservation(transactionId: string, authorizeAction: factory.action.authorize.seatReservation.IAction): Promise<void>;
-    removeSeatReservation(transactionId: string): Promise<void>;
-    pushDiscountInfo(transactionId: string, authorizeAction: factory.action.authorize.mvtk.IAction): Promise<void>;
-    pullDiscountInfo(transactionId: string, actionId: string): Promise<void>;
 }

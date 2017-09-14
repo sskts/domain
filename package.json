@@ -20,7 +20,7 @@
     "debug": "^2.6.8",
     "http-status": "^1.0.1",
     "jconv": "^0.1.5",
-    "json2csv": "^3.11.1",
+    "json2csv": "^3.11.2",
     "moment": "^2.18.1",
     "mongoose": "^4.11.11",
     "redis": "^2.8.0",
@@ -85,7 +85,7 @@
   "scripts": {
     "build": "tsc",
     "check": "npm run tslint && nsp check && npm run snyk",
-    "clean": "rimraf test/**/*.js ./lib npm-debug.log* ./doc ./coverage",
+    "clean": "rimraf test/**/*.js ./lib npm-debug.log* ./doc ./coverage ./.nyc_output",
     "doc": "node_modules/.bin/jsdoc -c jsdoc.json",
     "mocha": "mocha",
     "coverage": "nyc mocha src/**/*.spec.ts",

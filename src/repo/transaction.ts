@@ -84,10 +84,17 @@ export class MongoRepository {
     /**
      * confirm a placeOrder
      * 注文取引を確定する
-     * @param transactionId transaction id
-     * @param result transaction result
+     * @param {string} transactionId transaction id
+     * @param {Date} endDate end date
+     * @param {factory.action.authorize.IAction[]} authorizeActions authorize actions
+     * @param {factory.transaction.placeOrder.IResult} result transaction result
      */
-    public async confirmPlaceOrder(transactionId: string, result: factory.transaction.placeOrder.IResult) {
+    public async confirmPlaceOrder(
+        transactionId: string,
+        endDate: Date,
+        authorizeActions: factory.action.authorize.IAction[],
+        result: factory.transaction.placeOrder.IResult
+    ): Promise<factory.transaction.placeOrder.ITransaction> {
         const doc = await this.transactionModel.findOneAndUpdate(
             {
                 _id: transactionId,
@@ -95,9 +102,10 @@ export class MongoRepository {
                 status: factory.transactionStatusType.InProgress
             },
             {
-                status: factory.transactionStatusType.Confirmed,
-                endDate: moment().toDate(),
-                result: result
+                status: factory.transactionStatusType.Confirmed, // ステータス変更
+                endDate: endDate,
+                'object.authorizeActions': authorizeActions, // 認可アクションリストを更新
+                result: result // resultを更新
             },
             { new: true }
         ).exec();
@@ -105,6 +113,8 @@ export class MongoRepository {
         if (doc === null) {
             throw new factory.errors.NotFound('transaction in progress');
         }
+
+        return <factory.transaction.placeOrder.ITransaction>doc.toObject();
     }
 
     /**
@@ -158,57 +168,6 @@ export class MongoRepository {
                 endDate: endDate
             },
             { multi: true }
-        ).exec();
-    }
-
-    public async pushPaymentInfo(
-        transactionId: string,
-        authorizeAction: factory.action.authorize.creditCard.IAction
-    ): Promise<void> {
-        await this.transactionModel.findByIdAndUpdate(
-            transactionId,
-            { $push: { 'object.paymentInfos': authorizeAction } }
-        ).exec();
-    }
-
-    public async pullPaymentInfo(transactionId: string, actionId: string): Promise<void> {
-        await this.transactionModel.findByIdAndUpdate(
-            transactionId,
-            { $pull: { 'object.paymentInfos': { id: actionId } } }
-        ).exec();
-    }
-
-    public async addSeatReservation(
-        transactionId: string,
-        authorizeAction: factory.action.authorize.seatReservation.IAction
-    ): Promise<void> {
-        await this.transactionModel.findByIdAndUpdate(
-            transactionId,
-            { 'object.seatReservation': authorizeAction }
-        ).exec();
-    }
-
-    public async removeSeatReservation(transactionId: string): Promise<void> {
-        await this.transactionModel.findByIdAndUpdate(
-            transactionId,
-            { $unset: { 'object.seatReservation': 1 } }
-        ).exec();
-    }
-
-    public async pushDiscountInfo(
-        transactionId: string,
-        authorizeAction: factory.action.authorize.mvtk.IAction
-    ): Promise<void> {
-        await this.transactionModel.findByIdAndUpdate(
-            transactionId,
-            { $push: { 'object.discountInfos': authorizeAction } }
-        ).exec();
-    }
-
-    public async pullDiscountInfo(transactionId: string, actionId: string): Promise<void> {
-        await this.transactionModel.findByIdAndUpdate(
-            transactionId,
-            { $pull: { 'object.discountInfos': { id: actionId } } }
         ).exec();
     }
 }

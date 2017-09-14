@@ -27,13 +27,12 @@ describe('save()', () => {
         const repository = new sskts.repository.Task(sskts.mongoose.connection);
 
         sandbox.mock(repository.taskModel)
-            .expects('findByIdAndUpdate').once()
-            .chain('exec')
+            .expects('create').once()
             .resolves(new repository.taskModel());
 
         const result = await repository.save(<any>ownershipInfo);
 
-        assert.equal(result, undefined);
+        assert.equal(typeof result, 'object');
         sandbox.verify();
     });
 });

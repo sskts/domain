@@ -15,14 +15,17 @@ before(() => {
     existingTransaction = {
         id: '123',
         object: {
-            paymentInfos: [
+            authorizeActions: [
                 {
-                    object: {
-                        entryTranArgs: {},
-                        execTranArgs: {}
-                    },
+                    id: 'actionId',
+                    actionStatus: 'CompletedActionStatus',
                     purpose: {
                         typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard
+                    },
+                    result: {
+                        price: 123,
+                        entryTranArgs: {},
+                        execTranArgs: {}
                     }
                 }
             ]

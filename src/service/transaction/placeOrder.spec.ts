@@ -80,8 +80,8 @@ describe('exportTasksById()', () => {
         sandbox.restore();
     });
 
-    it('確定取引であれば4つのタスクがエクスポートされるはず', async () => {
-        const numberOfTasks = 4;
+    it('確定取引であれば5つのタスクがエクスポートされるはず', async () => {
+        const numberOfTasks = 5;
         const transaction = {
             id: 'transactionId',
             status: sskts.factory.transactionStatusType.Confirmed

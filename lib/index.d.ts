@@ -21,7 +21,8 @@ import * as TaskService from './service/task';
 import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
 import * as PlaceOrderInProgressTransactionService from './service/transaction/placeOrderInProgress';
 import * as UtilService from './service/util';
-import { MongoRepository as ActionRepository } from './repo/action';
+import { MongoRepository as AuthorizeActionRepository } from './repo/action/authorize';
+import { MongoRepository as PrintActionRepository } from './repo/action/print';
 import { MongoRepository as ClientRepository } from './repo/client';
 import { MongoRepository as CreativeWorkRepository } from './repo/creativeWork';
 import { MongoRepository as EventRepository } from './repo/event';
@@ -81,7 +82,11 @@ export import COA = COA;
  */
 export import GMO = GMO;
 export declare namespace repository {
-    class Action extends ActionRepository {
+    namespace action {
+        class Authorize extends AuthorizeActionRepository {
+        }
+        class Print extends PrintActionRepository {
+        }
     }
     class Client extends ClientRepository {
     }

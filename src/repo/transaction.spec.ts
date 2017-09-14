@@ -28,11 +28,11 @@ describe('startPlaceOrder()', () => {
 
         sandbox.mock(repository.transactionModel)
             .expects('create').once()
-            .resolves();
+            .resolves(new repository.transactionModel());
 
         const result = await repository.startPlaceOrder(<any>transaction);
 
-        assert.equal(result, undefined);
+        assert.equal(typeof result, 'object');
         sandbox.verify();
     });
 });
@@ -111,6 +111,8 @@ describe('confirmPlaceOrder()', () => {
 
     it('取引が存在すれば、エラーにならないはず', async () => {
         const transactionId = 'transactionId';
+        const endDate = new Date();
+        const authorizeActions: any[] = [];
         const transactionResult = {};
 
         const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
@@ -120,9 +122,9 @@ describe('confirmPlaceOrder()', () => {
             .chain('exec')
             .resolves(new repository.transactionModel());
 
-        const result = await repository.confirmPlaceOrder(transactionId, <any>transactionResult);
+        const result = await repository.confirmPlaceOrder(transactionId, endDate, authorizeActions, <any>transactionResult);
 
-        assert.equal(result, undefined);
+        assert.equal(typeof result, 'object');
         sandbox.verify();
     });
 });
@@ -186,143 +188,6 @@ describe('makeExpired()', () => {
             .resolves();
 
         const result = await repository.makeExpired();
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
-describe('pushPaymentInfo()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('MongoDBの状態が正常であれば、エラーにならないはず', async () => {
-        const transactionId = 'transactionId';
-        const authorizeAction = {};
-
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
-
-        sandbox.mock(repository.transactionModel)
-            .expects('findByIdAndUpdate').once().withArgs(transactionId)
-            .chain('exec')
-            .resolves(new repository.transactionModel());
-
-        const result = await repository.pushPaymentInfo(transactionId, <any>authorizeAction);
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
-describe('pullPaymentInfo()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('MongoDBの状態が正常であれば、エラーにならないはず', async () => {
-        const transactionId = 'transactionId';
-        const actionId = 'actionId';
-
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
-
-        sandbox.mock(repository.transactionModel)
-            .expects('findByIdAndUpdate').once().withArgs(transactionId)
-            .chain('exec')
-            .resolves(new repository.transactionModel());
-
-        const result = await repository.pullPaymentInfo(transactionId, actionId);
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
-describe('addSeatReservation()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('MongoDBの状態が正常であれば、エラーにならないはず', async () => {
-        const transactionId = 'transactionId';
-        const authorizeAction = {};
-
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
-
-        sandbox.mock(repository.transactionModel)
-            .expects('findByIdAndUpdate').once().withArgs(transactionId)
-            .chain('exec')
-            .resolves(new repository.transactionModel());
-
-        const result = await repository.addSeatReservation(transactionId, <any>authorizeAction);
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
-describe('removeSeatReservation()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('MongoDBの状態が正常であれば、エラーにならないはず', async () => {
-        const transactionId = 'transactionId';
-
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
-
-        sandbox.mock(repository.transactionModel)
-            .expects('findByIdAndUpdate').once().withArgs(transactionId)
-            .chain('exec')
-            .resolves(new repository.transactionModel());
-
-        const result = await repository.removeSeatReservation(transactionId);
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
-describe('pushDiscountInfo()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('MongoDBの状態が正常であれば、エラーにならないはず', async () => {
-        const transactionId = 'transactionId';
-        const authorizeAction = {};
-
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
-
-        sandbox.mock(repository.transactionModel)
-            .expects('findByIdAndUpdate').once().withArgs(transactionId)
-            .chain('exec')
-            .resolves(new repository.transactionModel());
-
-        const result = await repository.pushDiscountInfo(transactionId, <any>authorizeAction);
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
-describe('pullDiscountInfo()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('MongoDBの状態が正常であれば、エラーにならないはず', async () => {
-        const transactionId = 'transactionId';
-        const actionId = 'actionId';
-
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
-
-        sandbox.mock(repository.transactionModel)
-            .expects('findByIdAndUpdate').once().withArgs(transactionId)
-            .chain('exec')
-            .resolves(new repository.transactionModel());
-
-        const result = await repository.pullDiscountInfo(transactionId, actionId);
 
         assert.equal(result, undefined);
         sandbox.verify();

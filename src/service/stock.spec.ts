@@ -16,24 +16,33 @@ before(() => {
         id: '123',
         object: {
             customerContact: {},
-            seatReservation: {
-                object: {
-                    updTmpReserveSeatArgs: {},
-                    acceptedOffers: [
-                        {
-                            price: 123,
-                            itemOffered: {
-                                reservedTicket: {}
+            authorizeActions: [
+                {
+                    id: 'actionId',
+                    actionStatus: 'CompletedActionStatus',
+                    purpose: {
+                        typeOf: 'SeatReservation'
+                    },
+                    result: {
+                        price: 123,
+                        acceptedOffers: [
+                            {
+                                price: 123,
+                                itemOffered: {
+                                    reservedTicket: {}
+                                }
                             }
-                        }
-                    ]
-                },
-                result: {
-                    updTmpReserveSeatResult: {}
+                        ],
+                        updTmpReserveSeatArgs: {},
+                        updTmpReserveSeatResult: {}
+                    }
                 }
-            }
+            ]
         },
         result: {
+            order: {
+                acceptedOffers: []
+            },
             ownershipInfos: [{}, {}]
         }
     };
@@ -57,10 +66,12 @@ describe('unauthorizeSeatReservation()', () => {
         sandbox.verify();
     });
 
-    it('取引に座席予約が存在しなければ、仮予約解除は実行されないはず', async () => {
+    it('取引に座席予約が存在しなければ、未実装エラーが投げられるはず', async () => {
         const transaction = {
             id: '123',
-            object: {}
+            object: {
+                authorizeActions: []
+            }
         };
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
@@ -68,9 +79,10 @@ describe('unauthorizeSeatReservation()', () => {
             .withArgs(transaction.id).returns(Promise.resolve(transaction));
         sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').never();
 
-        const result = await sskts.service.stock.unauthorizeSeatReservation(transaction.id)(transactionRepo);
+        const result = await sskts.service.stock.unauthorizeSeatReservation(transaction.id)(transactionRepo)
+            .catch((err) => err);
 
-        assert.equal(result, undefined);
+        assert(result instanceof sskts.factory.errors.NotImplemented);
         sandbox.verify();
     });
 });
@@ -81,19 +93,16 @@ describe('transferSeatReservation()', () => {
     });
 
     it('COA未本予約であれば、本予約が実行されるはず', async () => {
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
             .withArgs(existingTransaction.id).returns(Promise.resolve(existingTransaction));
         sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').once().returns(Promise.resolve(null));
         sandbox.mock(sskts.COA.services.reserve).expects('updReserve').once().returns(Promise.resolve());
-        sandbox.mock(ownershipInfoRepo).expects('save').exactly(existingTransaction.result.ownershipInfos.length)
-            .returns(Promise.resolve());
 
         const result = await sskts.service.stock.transferSeatReservation(
             existingTransaction.id
-        )(ownershipInfoRepo, transactionRepo);
+        )(transactionRepo);
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -102,9 +111,10 @@ describe('transferSeatReservation()', () => {
     it('取引に座席予約が存在しなければ、本予約は実行されないはず', async () => {
         const transaction = {
             id: '123',
-            object: {}
+            object: {
+                authorizeActions: []
+            }
         };
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
@@ -114,9 +124,9 @@ describe('transferSeatReservation()', () => {
 
         const result = await sskts.service.stock.transferSeatReservation(
             transaction.id
-        )(ownershipInfoRepo, transactionRepo);
+        )(transactionRepo).catch((err) => err);
 
-        assert.equal(result, undefined);
+        assert(result instanceof sskts.factory.errors.NotImplemented);
         sandbox.verify();
     });
 
@@ -124,10 +134,26 @@ describe('transferSeatReservation()', () => {
         const transaction = {
             id: '123',
             object: {
-                seatReservation: {}
+                authorizeActions: [
+                    {
+                        id: 'actionId',
+                        actionStatus: 'CompletedActionStatus',
+                        purpose: {
+                            typeOf: 'SeatReservation'
+                        },
+                        result: {
+                            updTmpReserveSeatArgs: {},
+                            updTmpReserveSeatResult: {}
+                        }
+                    }
+                ]
+            },
+            result: {
+                order: {
+                    acceptedOffers: []
+                }
             }
         };
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
@@ -137,7 +163,7 @@ describe('transferSeatReservation()', () => {
 
         const transferSeatReservationError = await sskts.service.stock.transferSeatReservation(
             transaction.id
-        )(ownershipInfoRepo, transactionRepo).catch((err) => err);
+        )(transactionRepo).catch((err) => err);
 
         assert(transferSeatReservationError instanceof sskts.factory.errors.Argument);
         sandbox.verify();

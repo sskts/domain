@@ -1,9 +1,9 @@
 /// <reference types="mongoose" />
 import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
-import ActionModel from './mongoose/model/action';
+import ActionModel from '../mongoose/model/action';
 /**
- * action repository
+ * print action repository
  * @class
  */
 export declare class MongoRepository {
