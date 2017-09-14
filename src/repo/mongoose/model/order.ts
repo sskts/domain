@@ -4,6 +4,7 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
 /**
  * 注文スキーマ
+ * @ignore
  */
 const schema = new mongoose.Schema(
     {
@@ -38,6 +39,11 @@ const schema = new mongoose.Schema(
         toJSON: { getters: true },
         toObject: { getters: true }
     }
+);
+
+// 注文番号からの注文取得に使用
+schema.index(
+    { orderNumber: 1 }
 );
 
 export default mongoose.model('Order', schema);

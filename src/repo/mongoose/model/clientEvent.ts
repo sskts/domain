@@ -6,7 +6,6 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
 /**
  * アプリケーションクライアントイベントスキーマ
- *
  * @ignore
  */
 const schema = new mongoose.Schema(

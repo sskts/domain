@@ -6,6 +6,7 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
 /**
  * 組織スキーマ
+ * @ignore
  */
 const schema = new mongoose.Schema(
     {
@@ -35,6 +36,11 @@ const schema = new mongoose.Schema(
         toJSON: { getters: true },
         toObject: { getters: true }
     }
+);
+
+// 組織取得に使用
+schema.index(
+    { typeOf: 1, _id: 1 }
 );
 
 export default mongoose.model('Organization', schema);

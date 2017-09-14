@@ -6,6 +6,7 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
 /**
  * イベント(公演など)スキーマ
+ * @ignore
  */
 const schema = new mongoose.Schema(
     {
@@ -41,6 +42,16 @@ const schema = new mongoose.Schema(
         toJSON: { getters: true },
         toObject: { getters: true }
     }
+);
+
+// 上映イベント検索に使用
+schema.index(
+    { 'superEvent.location.branchCode': 1, typeOf: 1, startDate: 1 }
+);
+
+// 上映イベント取得に使用
+schema.index(
+    { identifier: 1, typeOf: 1 }
 );
 
 export default mongoose.model('Event', schema);

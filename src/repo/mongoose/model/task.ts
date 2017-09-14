@@ -4,7 +4,6 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
 /**
  * タスクスキーマ
- *
  * @ignore
  */
 const schema = new mongoose.Schema(
@@ -37,6 +36,16 @@ const schema = new mongoose.Schema(
     }
 );
 
+// ID指定でタスク実行に使用
+schema.index(
+    { _id: 1 }
+);
+
+// 取引のタスク検索に使用
+schema.index(
+    { 'data.transactionId': 1 }
+);
+
 // 基本的にグループごとに、ステータスと実行日時を見て、タスクは実行される
 schema.index(
     { name: 1, status: 1, numberOfTried: 1, runsAt: 1 }
@@ -44,7 +53,7 @@ schema.index(
 
 // ステータス&最終トライ日時&残りトライ可能回数を見て、リトライor中止を決定する
 schema.index(
-    { status: 1, lastTriedAt: 1, remainingNumberOfTries: 1 }
+    { remainingNumberOfTries: 1, status: 1, lastTriedAt: 1 }
 );
 
 export default mongoose.model('Task', schema);

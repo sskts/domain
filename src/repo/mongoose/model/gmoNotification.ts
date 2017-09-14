@@ -4,7 +4,6 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
 /**
  * GMO通知スキーマ
- *
  * @ignore
  */
 const schema = new mongoose.Schema(
