@@ -170,4 +170,26 @@ export class MongoRepository {
             { multi: true }
         ).exec();
     }
+
+    /**
+     * 注文取引を検索する
+     * @param conditions 検索条件
+     */
+    public async searchPlaceOrder(
+        conditions: {
+            startFrom: Date;
+            startThrough: Date;
+        }
+    ): Promise<factory.transaction.placeOrder.ITransaction[]> {
+        return await this.transactionModel.find(
+            {
+                typeOf: factory.transactionType.PlaceOrder,
+                startDate: {
+                    $gte: conditions.startFrom,
+                    $lte: conditions.startThrough
+                }
+            }
+        ).exec()
+            .then((docs) => docs.map((doc) => <factory.transaction.placeOrder.ITransaction>doc.toObject()));
+    }
 }

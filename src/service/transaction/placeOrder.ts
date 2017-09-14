@@ -7,9 +7,8 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as json2csv from 'json2csv';
-import * as moment from 'moment';
 // tslint:disable-next-line:no-require-imports no-var-requires
-const jconv = require('jconv');
+// const jconv = require('jconv');
 
 import { MongoRepository as TaskRepository } from '../../repo/task';
 import { MongoRepository as TransactionRepository } from '../../repo/transaction';
@@ -203,91 +202,97 @@ export function download(
 ) {
     return async (transactionRepo: TransactionRepository): Promise<string> => {
         // 取引検索
-        const transactionDocs = await transactionRepo.transactionModel.find(
-            {
-                typeOf: factory.transactionType.PlaceOrder,
-                startDate: {
-                    $gte: conditions.startFrom,
-                    $lte: conditions.startThrough
-                }
-            }
-        ).exec();
-        debug('transactionDocs:', transactionDocs);
+        const transactions = await transactionRepo.searchPlaceOrder(conditions);
+        debug('transactions:', transactions);
 
         // 取引ごとに詳細を検索し、csvを作成する
-        // tslint:disable-next-line:max-func-body-length
-        const data = await Promise.all(transactionDocs.map(async (transactionDoc) => {
-            const transaction = <factory.transaction.placeOrder.ITransaction>transactionDoc.toObject();
-
-            if (transaction.result !== undefined) {
-                const order = transaction.result.order;
-                const paymentMethodCredit = order.paymentMethods.find((paymentMethod) => paymentMethod.paymentMethod === 'CreditCard');
-                const mvtkDiscounts = order.discounts.filter((discount) => discount.name === 'ムビチケカード');
-
-                return {
-                    id: transaction.id,
-                    status: transaction.status,
-                    startDate: moment(transaction.startDate).format('YYYY-MM-DD HH:mm:ss'),
-                    endDate: (transaction.endDate !== undefined) ? moment(transaction.endDate).format('YYYY-MM-DD HH:mm:ss') : '',
-                    theater: transaction.seller.name,
-                    reserveNum: order.orderInquiryKey.confirmationNumber,
-                    name: order.customer.name,
-                    email: order.customer.email,
-                    telephone: order.customer.telephone,
-                    price: order.price,
-                    gmoOrderId: `${(paymentMethodCredit !== undefined) ? paymentMethodCredit.paymentMethodId : ''}`,
-                    mvtkKnyknrNos: `${mvtkDiscounts.map((mvtkDiscount) => mvtkDiscount.discountCode).join('|')}`,
-                    mvtkPrice: order.discounts.reduce((a, b) => a + b.discount, 0)
-                };
-            } else {
-                const name = (transaction.object.customerContact !== undefined)
-                    ? `${transaction.object.customerContact.familyName} ${transaction.object.customerContact.givenName}`
-                    : '';
-
-                return {
-                    id: transaction.id,
-                    status: transaction.status,
-                    startDate: moment(transaction.startDate).format('YYYY-MM-DD HH:mm:ss'),
-                    endDate: (transaction.endDate !== undefined) ? moment(transaction.endDate).format('YYYY-MM-DD HH:mm:ss') : '',
-                    theater: transaction.seller.name,
-                    reserveNum: '',
-                    name: name,
-                    email: (transaction.object.customerContact !== undefined) ? transaction.object.customerContact.email : '',
-                    telephone: (transaction.object.customerContact !== undefined) ? transaction.object.customerContact.telephone : '',
-                    price: '',
-                    gmoOrderId: '',
-                    mvtkKnyknrNos: '',
-                    mvtkPrice: ''
-                };
-            }
-        }));
+        const data = await Promise.all(transactions.map(async (transaction) => transaction2report(transaction)));
         debug('data:', data);
 
         if (format === 'csv') {
             return await new Promise<string>((resolve) => {
-                const fields = [
-                    'id', 'status', 'startDate', 'endDate', 'theater', 'reserveNum',
-                    'name', 'email', 'telephone',
-                    'price', 'gmoOrderId', 'mvtkKnyknrNos', 'mvtkPrice'
-                ];
-                const fieldNames = [
-                    'transaction ID', 'status', 'start at', 'end at', '劇場', 'COA reserve number',
-                    'customer name', 'customer email', 'customer telephone',
-                    'price', 'GMO OrderId', 'mvtk No', 'mvtk price'
-                ];
-
-                const output = json2csv({
+                const fields = Object.keys(data[0]);
+                const fieldNames = Object.keys(data[0]);
+                const output = json2csv(<any>{
                     data: data,
                     fields: fields,
                     fieldNames: fieldNames,
-                    del: ','
+                    del: ',',
+                    newLine: '\n',
+                    preserveNewLinesInValues: true
                 });
                 debug('output:', output);
 
-                resolve(jconv.convert(output, 'UTF8', 'SJIS'));
+                resolve(output);
+                // resolve(jconv.convert(output, 'UTF8', 'SJIS'));
             });
         } else {
             throw new factory.errors.NotImplemented('specified format not implemented.');
         }
     };
+}
+
+export function transaction2report(transaction: factory.transaction.placeOrder.ITransaction) {
+    if (transaction.result !== undefined) {
+        const order = transaction.result.order;
+        const orderItems = order.acceptedOffers;
+        const screeningEvent = orderItems[0].itemOffered.reservationFor;
+        const ticketsStr = orderItems.map(
+            // tslint:disable-next-line:max-line-length
+            (orderItem) => `${orderItem.itemOffered.reservedTicket.ticketedSeat.seatNumber} ${orderItem.itemOffered.reservedTicket.coaTicketInfo.ticketName} ￥${orderItem.itemOffered.reservedTicket.coaTicketInfo.salePrice}`
+        ).join('\n');
+
+        return {
+            id: transaction.id,
+            status: transaction.status,
+            startDate: (transaction.startDate !== undefined) ? transaction.startDate.toISOString() : '',
+            endDate: (transaction.endDate !== undefined) ? transaction.endDate.toISOString() : '',
+            name: order.customer.name,
+            email: order.customer.email,
+            telephone: order.customer.telephone,
+            eventName: screeningEvent.superEvent.workPerformed.name,
+            eventStartDate: screeningEvent.startDate.toISOString(),
+            eventEndDate: screeningEvent.endDate.toISOString(),
+            superEventLocationBranchCode: `${screeningEvent.superEvent.location.branchCode}`,
+            superEventLocation: screeningEvent.superEvent.location.name.ja,
+            eventLocation: screeningEvent.location.name.ja,
+            reservedTickets: ticketsStr,
+            orderNumber: order.orderNumber,
+            confirmationNumber: order.confirmationNumber,
+            paymentMethod: order.paymentMethods.map((method) => method.name).join('\n'),
+            paymentMethodId: order.paymentMethods.map((method) => method.paymentMethodId).join('\n'),
+            price: order.price,
+            discounts: order.discounts.map((discount) => discount.name).join('\n'),
+            discountCodes: order.discounts.map((discount) => discount.discountCode).join('\n'),
+            discountPrices: order.discounts.map((discount) => `${discount.discount} ${discount.discountCurrency}`).join('\n')
+        };
+    } else {
+        const customerContact = transaction.object.customerContact;
+
+        return {
+            id: transaction.id,
+            status: transaction.status,
+            reserveNum: '',
+            startDate: (transaction.startDate !== undefined) ? transaction.startDate.toISOString() : '',
+            endDate: (transaction.endDate !== undefined) ? transaction.endDate.toISOString() : '',
+            name: (customerContact !== undefined) ? `${customerContact.familyName} ${customerContact.givenName}` : '',
+            email: (customerContact !== undefined) ? customerContact.email : '',
+            telephone: (customerContact !== undefined) ? customerContact.telephone : '',
+            eventName: '',
+            eventStartDate: '',
+            eventEndDate: '',
+            superEventLocationBranchCode: '',
+            superEventLocation: '',
+            eventLocation: '',
+            reservedTickets: '',
+            orderNumber: '',
+            confirmationNumber: '',
+            paymentMethod: '',
+            paymentMethodId: '',
+            price: '',
+            discounts: '',
+            discountCodes: '',
+            discountPrices: ''
+        };
+    }
 }
