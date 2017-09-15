@@ -36,38 +36,25 @@ export declare function download(conditions: {
     startFrom: Date;
     startThrough: Date;
 }, format: 'csv'): (transactionRepo: TransactionRepository) => Promise<string>;
-export declare function transaction2report(transaction: factory.transaction.placeOrder.ITransaction): {
+/**
+ * 取引レポートインターフェース
+ * @export
+ * @interface
+ * @memberof service.transaction.placeOrder
+ */
+export interface ITransactionReport {
     id: string;
-    status: factory.transactionStatusType;
+    status: string;
     startDate: string;
     endDate: string;
-    name: string;
-    email: string;
-    telephone: string;
-    eventName: string;
-    eventStartDate: string;
-    eventEndDate: string;
-    superEventLocationBranchCode: string;
-    superEventLocation: string;
-    eventLocation: string;
-    reservedTickets: string;
-    orderNumber: string;
-    confirmationNumber: number;
-    paymentMethod: string;
-    paymentMethodId: string;
-    price: number;
-    discounts: string;
-    discountCodes: string;
-    discountPrices: string;
-} | {
-    id: string;
-    status: factory.transactionStatusType;
-    reserveNum: string;
-    startDate: string;
-    endDate: string;
-    name: string;
-    email: string;
-    telephone: string;
+    customer: {
+        name: string;
+        email: string;
+        telephone: string;
+        memberOf?: {
+            membershipNumber: string;
+        };
+    };
     eventName: string;
     eventStartDate: string;
     eventEndDate: string;
@@ -77,10 +64,11 @@ export declare function transaction2report(transaction: factory.transaction.plac
     reservedTickets: string;
     orderNumber: string;
     confirmationNumber: string;
-    paymentMethod: string;
-    paymentMethodId: string;
     price: string;
-    discounts: string;
-    discountCodes: string;
-    discountPrices: string;
-};
+    paymentMethod: string[];
+    paymentMethodId: string[];
+    discounts: string[];
+    discountCodes: string[];
+    discountPrices: string[];
+}
+export declare function transaction2report(transaction: factory.transaction.placeOrder.ITransaction): ITransactionReport;

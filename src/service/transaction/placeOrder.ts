@@ -263,14 +263,35 @@ export function download(
 
         if (format === 'csv') {
             return await new Promise<string>((resolve) => {
-                const fields = Object.keys(data[0]);
-                const fieldNames = Object.keys(data[0]);
+                const fields = [
+                    'id', 'status', 'startDate', 'endDate',
+                    'customer.name', 'customer.email', 'customer.telephone', 'customer.memberOf.membershipNumber',
+                    'eventName', 'eventStartDate', 'eventEndDate', 'superEventLocationBranchCode', 'superEventLocation', 'eventLocation',
+                    'reservedTickets', 'orderNumber', 'confirmationNumber', 'price',
+                    'paymentMethod.0', 'paymentMethodId.0',
+                    'paymentMethod.1', 'paymentMethodId.1',
+                    'paymentMethod.2', 'paymentMethodId.2',
+                    'paymentMethod.3', 'paymentMethodId.3',
+                    'discounts.0', 'discountCodes.0', 'discountPrices.0',
+                    'discounts.1', 'discountCodes.1', 'discountPrices.1',
+                    'discounts.2', 'discountCodes.2', 'discountPrices.2',
+                    'discounts.3', 'discountCodes.3', 'discountPrices.3'
+                ];
+                const fieldNames = [
+                    '取引ID', '取引ステータス', '開始日時', '終了日時',
+                    'お名前', 'メールアドレス', '電話番号', '会員ID',
+                    'イベント名', 'イベント開始日時', 'イベント終了日時', '劇場コード', '劇場名', 'スクリーン名',
+                    '予約座席チケット', '注文番号', '確認番号', '金額',
+                    '決済方法1', '決済ID1', '決済方法2', '決済ID2', '決済方法3', '決済ID3', '決済方法4', '決済ID4',
+                    '割引1', '割引コード1', '割引金額1', '割引2', '割引コード2', '割引金額2', '割引3', '割引コード3', '割引金額3', '割引4', '割引コード4', '割引金額4'
+                ];
                 const output = json2csv(<any>{
                     data: data,
                     fields: fields,
                     fieldNames: fieldNames,
                     del: ',',
                     newLine: '\n',
+                    flatten: true,
                     preserveNewLinesInValues: true
                 });
                 debug('output:', output);
@@ -284,7 +305,43 @@ export function download(
     };
 }
 
-export function transaction2report(transaction: factory.transaction.placeOrder.ITransaction) {
+/**
+ * 取引レポートインターフェース
+ * @export
+ * @interface
+ * @memberof service.transaction.placeOrder
+ */
+export interface ITransactionReport {
+    id: string;
+    status: string;
+    startDate: string;
+    endDate: string;
+    customer: {
+        name: string;
+        email: string;
+        telephone: string;
+        memberOf?: {
+            membershipNumber: string;
+        }
+    };
+    eventName: string;
+    eventStartDate: string;
+    eventEndDate: string;
+    superEventLocationBranchCode: string;
+    superEventLocation: string;
+    eventLocation: string;
+    reservedTickets: string;
+    orderNumber: string;
+    confirmationNumber: string;
+    price: string;
+    paymentMethod: string[];
+    paymentMethodId: string[];
+    discounts: string[];
+    discountCodes: string[];
+    discountPrices: string[];
+}
+
+export function transaction2report(transaction: factory.transaction.placeOrder.ITransaction): ITransactionReport {
     if (transaction.result !== undefined) {
         const order = transaction.result.order;
         const orderItems = order.acceptedOffers;
@@ -299,9 +356,7 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
             status: transaction.status,
             startDate: (transaction.startDate !== undefined) ? transaction.startDate.toISOString() : '',
             endDate: (transaction.endDate !== undefined) ? transaction.endDate.toISOString() : '',
-            name: order.customer.name,
-            email: order.customer.email,
-            telephone: order.customer.telephone,
+            customer: order.customer,
             eventName: screeningEvent.superEvent.workPerformed.name,
             eventStartDate: screeningEvent.startDate.toISOString(),
             eventEndDate: screeningEvent.endDate.toISOString(),
@@ -310,13 +365,13 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
             eventLocation: screeningEvent.location.name.ja,
             reservedTickets: ticketsStr,
             orderNumber: order.orderNumber,
-            confirmationNumber: order.confirmationNumber,
-            paymentMethod: order.paymentMethods.map((method) => method.name).join('\n'),
-            paymentMethodId: order.paymentMethods.map((method) => method.paymentMethodId).join('\n'),
-            price: order.price,
-            discounts: order.discounts.map((discount) => discount.name).join('\n'),
-            discountCodes: order.discounts.map((discount) => discount.discountCode).join('\n'),
-            discountPrices: order.discounts.map((discount) => `${discount.discount} ${discount.discountCurrency}`).join('\n')
+            confirmationNumber: order.confirmationNumber.toString(),
+            price: `${order.price} ${order.priceCurrency}`,
+            paymentMethod: order.paymentMethods.map((method) => method.name),
+            paymentMethodId: order.paymentMethods.map((method) => method.paymentMethodId),
+            discounts: order.discounts.map((discount) => discount.name),
+            discountCodes: order.discounts.map((discount) => discount.discountCode),
+            discountPrices: order.discounts.map((discount) => `${discount.discount} ${discount.discountCurrency}`)
         };
     } else {
         const customerContact = transaction.object.customerContact;
@@ -324,12 +379,16 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
         return {
             id: transaction.id,
             status: transaction.status,
-            reserveNum: '',
             startDate: (transaction.startDate !== undefined) ? transaction.startDate.toISOString() : '',
             endDate: (transaction.endDate !== undefined) ? transaction.endDate.toISOString() : '',
-            name: (customerContact !== undefined) ? `${customerContact.familyName} ${customerContact.givenName}` : '',
-            email: (customerContact !== undefined) ? customerContact.email : '',
-            telephone: (customerContact !== undefined) ? customerContact.telephone : '',
+            customer: {
+                name: (customerContact !== undefined) ? `${customerContact.familyName} ${customerContact.givenName}` : '',
+                email: (customerContact !== undefined) ? customerContact.email : '',
+                telephone: (customerContact !== undefined) ? customerContact.telephone : '',
+                memberOf: {
+                    membershipNumber: (transaction.agent.memberOf !== undefined) ? transaction.agent.memberOf.membershipNumber : ''
+                }
+            },
             eventName: '',
             eventStartDate: '',
             eventEndDate: '',
@@ -339,12 +398,12 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
             reservedTickets: '',
             orderNumber: '',
             confirmationNumber: '',
-            paymentMethod: '',
-            paymentMethodId: '',
             price: '',
-            discounts: '',
-            discountCodes: '',
-            discountPrices: ''
+            paymentMethod: [],
+            paymentMethodId: [],
+            discounts: [],
+            discountCodes: [],
+            discountPrices: []
         };
     }
 }

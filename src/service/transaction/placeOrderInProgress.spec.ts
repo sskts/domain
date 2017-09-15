@@ -536,7 +536,7 @@ describe('authorizeMvtk()', () => {
         sandbox.mock(authorizeActionRepo).expects('findSeatReservationByTransactionId').once()
             .withExactArgs(transaction.id).returns(Promise.resolve(seatReservationAuthorizeAction));
         sandbox.mock(authorizeActionRepo).expects('startMvtk').once()
-            .withArgs(transaction.seller, transaction.agent).returns(Promise.resolve(action));
+            .withArgs(transaction.agent, transaction.seller).returns(Promise.resolve(action));
         sandbox.mock(authorizeActionRepo).expects('completeMvtk').once()
             .withArgs(action.id).returns(Promise.resolve(action));
 
@@ -779,7 +779,7 @@ describe('confirm()', () => {
         ];
         const order = {
             orderNumber: 'orderNumber',
-            acceptedOffers: [{}, {}],
+            acceptedOffers: [{ itemOffered: {} }, { itemOffered: {} }],
             customer: {
                 name: 'name'
             }
@@ -793,7 +793,7 @@ describe('confirm()', () => {
         sandbox.mock(authorizeActionRepo).expects('findByTransactionId').once()
             .withExactArgs(transaction.id).returns(Promise.resolve(authorizeActions));
         sandbox.mock(sskts.factory.order).expects('createFromPlaceOrderTransaction').once()
-            .withExactArgs({ transaction: transaction }).returns(order);
+            .returns(order);
         sandbox.mock(sskts.factory.ownershipInfo).expects('create').exactly(order.acceptedOffers.length)
             .returns([]);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once()

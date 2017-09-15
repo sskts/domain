@@ -452,8 +452,8 @@ export function authorizeMvtk(
         }
 
         const action = await authorizeActionRepo.startMvtk(
-            transaction.seller,
             transaction.agent,
+            transaction.seller,
             authorizeObject
         );
 
@@ -660,6 +660,7 @@ function canBeClosed(transaction: factory.transaction.placeOrder.ITransaction) {
         .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((action) => action.agent.id === transaction.seller.id)
         .reduce((a, b) => a + (<IAuthorizeActionResult>b.result).price, 0);
+    debug('priceByAgent priceBySeller:', priceByAgent, priceBySeller);
 
     return (priceByAgent > 0 && priceByAgent === priceBySeller);
 }
