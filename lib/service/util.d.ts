@@ -1,7 +1,15 @@
 /// <reference types="node" />
 /**
  * ファイルをアップロードする
- * @param fileName ファイル
- * @param text ファイルコンテンツ
+ * @export
+ * @function
+ * @memberof service.util
+ * @param {string} params.fileName ファイル
+ * @param {string | Buffer} params.text ファイルコンテンツ
+ * @param {Date} [params.expiryDate] ファイルコンテンツ
  */
-export declare function uploadFile(fileName: string, text: string | Buffer): () => Promise<string>;
+export declare function uploadFile(params: {
+    fileName: string;
+    text: string | Buffer;
+    expiryDate?: Date;
+}): () => Promise<string>;

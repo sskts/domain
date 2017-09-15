@@ -11,12 +11,19 @@ const debug = createDebug('sskts-domain:service:util');
 
 /**
  * ファイルをアップロードする
- * @param fileName ファイル
- * @param text ファイルコンテンツ
+ * @export
+ * @function
+ * @memberof service.util
+ * @param {string} params.fileName ファイル
+ * @param {string | Buffer} params.text ファイルコンテンツ
+ * @param {Date} [params.expiryDate] ファイルコンテンツ
  */
 export function uploadFile(
-    fileName: string,
-    text: string | Buffer
+    params: {
+        fileName: string;
+        text: string | Buffer;
+        expiryDate?: Date;
+    }
 ) {
     return async () => {
         return await new Promise<string>((resolve, reject) => {
@@ -36,7 +43,7 @@ export function uploadFile(
                     }
 
                     blobService.createBlockBlobFromText(
-                        CONTAINER, fileName, text, (createBlockBlobError, result, response) => {
+                        CONTAINER, params.fileName, params.text, (createBlockBlobError, result, response) => {
                             debug(createBlockBlobError, result, response);
                             if (createBlockBlobError instanceof Error) {
                                 reject(createBlockBlobError);
@@ -46,7 +53,7 @@ export function uploadFile(
 
                             // 期限つきのURLを発行する
                             const startDate = new Date();
-                            const expiryDate = new Date(startDate);
+                            const expiryDate = (params.expiryDate === undefined) ? new Date(startDate) : params.expiryDate;
                             // tslint:disable-next-line:no-magic-numbers
                             expiryDate.setMinutes(startDate.getMinutes() + 10);
                             // tslint:disable-next-line:no-magic-numbers
