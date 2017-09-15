@@ -598,10 +598,19 @@ export function confirm(
 
         // 結果作成
         const order = factory.order.createFromPlaceOrderTransaction({
-            transaction: transaction
+            transaction: transaction,
+            orderDate: now,
+            orderStatus: factory.orderStatus.OrderDelivered,
+            isGift: false
         });
         const ownershipInfos = order.acceptedOffers.map((acceptedOffer) => {
+            // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
+            // ひとまず十分にuniqueにしておく
+            const identifier =
+                `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservationNumber}-${now.valueOf().toString()}`;
+
             return factory.ownershipInfo.create({
+                identifier: identifier,
                 ownedBy: {
                     id: transaction.agent.id,
                     typeOf: transaction.agent.typeOf,
@@ -610,7 +619,7 @@ export function confirm(
                 acquiredFrom: transaction.seller,
                 ownedFrom: now,
                 // tslint:disable-next-line:no-suspicious-comment
-                ownedThrough: moment().add(1, 'month').toDate(), // TODO 所有権の有効期間調整
+                ownedThrough: moment(now).add(1, 'month').toDate(), // TODO 所有権の有効期間調整
                 typeOfGood: acceptedOffer.itemOffered
             });
         });
