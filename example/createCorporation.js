@@ -5,9 +5,9 @@
 
 const sskts = require('../');
 
-sskts.mongoose.connect(process.env.MONGOLAB_URI);
-
 async function main() {
+    sskts.mongoose.connect(process.env.MONGOLAB_URI);
+
     const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
     const corporation = sskts.factory.organization.corporation.create({

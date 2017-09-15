@@ -15,10 +15,10 @@ async function main() {
         tls: { servername: process.env.TEST_REDIS_HOST }
     });
 
-    const performanceStockStatusAdapter = sskts.adapter.itemAvailability.individualScreeningEvent(redisClient);
+    const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(redisClient);
 
     try {
-        const availability = await performanceStockStatusAdapter.findOne('20170830', '11899300020170830402035');
+        const availability = await itemAvailabilityRepo.findOne('20170830', '11899300020170830402035');
         console.log('availability:', availability);
     } catch (error) {
         console.error(error);

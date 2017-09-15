@@ -1,5 +1,6 @@
 /**
- * 映画作品インポートサンプル
+ * 個々の上映イベント取得
+ *
  * @ignore
  */
 
@@ -8,9 +9,10 @@ const sskts = require('../');
 async function main() {
     sskts.mongoose.connect(process.env.MONGOLAB_URI);
 
-    await sskts.service.masterSync.importMovies('118')(
-        new sskts.repository.CreativeWork(sskts.mongoose.connection)
+    const event = await sskts.service.event.findIndividualScreeningEventByIdentifier('11816221020170720301300')(
+        new sskts.repository.Event(sskts.mongoose.connection)
     );
+    console.log('event:', event);
 
     sskts.mongoose.disconnect();
 }

@@ -1,5 +1,5 @@
 /**
- * 映画作品インポートサンプル
+ * タスク名でタスクを実行するサンプル
  * @ignore
  */
 
@@ -8,8 +8,9 @@ const sskts = require('../');
 async function main() {
     sskts.mongoose.connect(process.env.MONGOLAB_URI);
 
-    await sskts.service.masterSync.importMovies('118')(
-        new sskts.repository.CreativeWork(sskts.mongoose.connection)
+    await sskts.service.task.executeByName(sskts.factory.taskName.SettleMvtk)(
+        new sskts.repository.Task(sskts.mongoose.connection),
+        sskts.mongoose.connection
     );
 
     sskts.mongoose.disconnect();

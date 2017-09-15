@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 const MigrationService = require('../lib/service/migration');
-const OrderAdapter = require('../lib/adapter/order');
-const FilmAdapter = require('../lib/v22/adapter/film');
-const PerformanceAdapter = require('../lib/v22/adapter/performance');
-const ScreenAdapter = require('../lib/v22/adapter/screen');
-const TheaterAdapter = require('../lib/v22/adapter/theater');
-const TransactionAdapter = require('../lib/v22/adapter/transaction');
+const OrderRepo = require('../lib/repo/order').MongoRepository;
+const FilmAdapter = require('../lib/v22/adapter/film').default;
+const PerformanceAdapter = require('../lib/v22/adapter/performance').default;
+const ScreenAdapter = require('../lib/v22/adapter/screen').default;
+const TheaterAdapter = require('../lib/v22/adapter/theater').default;
+const TransactionAdapter = require('../lib/v22/adapter/transaction').default;
 
 async function main() {
     mongoose.connect(process.env.MONGOLAB_URI);
@@ -16,12 +16,12 @@ async function main() {
     // const transactionId = '59673c4c6d16372074052cce'; // GMO & MVTK
 
     await MigrationService.createFromOldTransaction(transactionId)(
-        new OrderAdapter.default(connection),
-        new TransactionAdapter.default(connection),
-        new FilmAdapter.default(connection),
-        new PerformanceAdapter.default(connection),
-        new ScreenAdapter.default(connection),
-        new TheaterAdapter.default(connection)
+        new OrderRepo(connection),
+        new TransactionAdapter(connection),
+        new FilmAdapter(connection),
+        new PerformanceAdapter(connection),
+        new ScreenAdapter(connection),
+        new TheaterAdapter(connection)
     );
 
     mongoose.disconnect();

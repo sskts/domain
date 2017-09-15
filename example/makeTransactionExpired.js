@@ -1,5 +1,5 @@
 /**
- * 映画作品インポートサンプル
+ * 取引を期限切れにするサンプル
  * @ignore
  */
 
@@ -8,9 +8,8 @@ const sskts = require('../');
 async function main() {
     sskts.mongoose.connect(process.env.MONGOLAB_URI);
 
-    await sskts.service.masterSync.importMovies('118')(
-        new sskts.repository.CreativeWork(sskts.mongoose.connection)
-    );
+    const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+    await repository.makeExpired();
 
     sskts.mongoose.disconnect();
 }

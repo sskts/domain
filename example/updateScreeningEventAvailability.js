@@ -1,6 +1,5 @@
 /**
  * a samples updating item availability of screening events
- *
  * @ignore
  */
 
@@ -16,7 +15,7 @@ async function main() {
     });
 
     const IMPORT_TERMS_IN_DAYS = 7;
-    const itemAvailabilityAdapter = sskts.adapter.itemAvailability.individualScreeningEvent(redisClient);
+    const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(redisClient);
 
     // update by branchCode
     const dayStart = moment();
@@ -28,7 +27,7 @@ async function main() {
             '118',
             dayStart.format('YYYYMMDD'),
             dayEnd.format('YYYYMMDD')
-        )(itemAvailabilityAdapter);
+        )(itemAvailabilityRepo);
         console.log('item availability updated');
     } catch (error) {
         console.error(error);

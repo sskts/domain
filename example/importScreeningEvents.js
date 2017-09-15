@@ -1,6 +1,5 @@
 /**
  * a sample importing screening events
- *
  * @ignore
  */
 
@@ -8,18 +7,23 @@ const sskts = require('../');
 const moment = require('moment');
 
 async function main() {
-    try {
-        const connection = sskts.mongoose.createConnection(process.env.MONGOLAB_URI);
-        await sskts.service.event.importScreeningEvents(
-            '118',
-            moment().toDate(),
-            moment().add(7, 'days').toDate(),
-        )(sskts.adapter.event(connection), sskts.adapter.place(connection));
-    } catch (error) {
-        console.error(error);
-    }
+    sskts.mongoose.connect(process.env.MONGOLAB_URI);
+
+    await sskts.service.masterSync.importScreeningEvents(
+        '118',
+        moment().toDate(),
+        moment().add(7, 'days').toDate(),
+    )(
+        new sskts.repository.Event(sskts.mongoose.connection),
+        new sskts.repository.Place(sskts.mongoose.connection)
+        );
 
     sskts.mongoose.disconnect();
 }
 
-main();
+main().then(() => {
+    console.log('success!');
+}).catch((err) => {
+    console.error(err);
+    process.exit(1);
+});

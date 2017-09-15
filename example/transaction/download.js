@@ -10,7 +10,7 @@ sskts.mongoose.connect(process.env.MONGOLAB_URI);
 
 sskts.service.transaction.placeOrder.download(
     {
-        startFrom: moment().add(-1, 'hours').toDate(),
+        startFrom: moment().add(-6, 'hours').toDate(),
         startThrough: moment().toDate(),
     },
     'csv'
@@ -21,5 +21,7 @@ sskts.service.transaction.placeOrder.download(
             fileName: fileName,
             text: csv
         })();
-        console.log('url:', url);
+        console.log('csv is here:\n', url);
+
+        sskts.mongoose.disconnect();
     });
