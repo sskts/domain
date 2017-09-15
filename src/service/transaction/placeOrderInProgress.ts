@@ -52,7 +52,7 @@ export function start(params: {
         // 利用可能かどうか
         const nextCount = await transactionCountRepository.incr(params.scope);
         if (nextCount > params.maxCountPerUnit) {
-            throw new factory.errors.NotFound('available transaction');
+            throw new factory.errors.ServiceUnavailable('Transactions temporarily unavailable.');
         }
 
         const agent: factory.transaction.placeOrder.IAgent = {

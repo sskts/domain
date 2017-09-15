@@ -16,6 +16,15 @@ export declare function exportTasks(status: factory.transactionStatusType): (tas
  */
 export declare function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask[]>;
 /**
+ * 確定取引についてメールを送信する
+ * @export
+ * @function
+ * @memberof service.transaction.placeOrder
+ * @param transactionId 取引ID
+ * @param emailMessageAttributes Eメールメッセージ属性
+ */
+export declare function sendEmail(transactionId: string, emailMessageAttributes: factory.creativeWork.message.email.IAttributes): ITaskAndTransactionOperation<factory.task.sendEmailNotification.ITask>;
+/**
  * フォーマット指定でダウンロード
  * @export
  * @function

@@ -86,7 +86,7 @@ describe('start()', () => {
         })(organizationRepo, transactionRepo, transactioCountRepo)
             .catch((err) => err);
 
-        assert(startError instanceof sskts.factory.errors.NotFound);
+        assert(startError instanceof sskts.factory.errors.ServiceUnavailable);
         sandbox.verify();
     });
 });

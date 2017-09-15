@@ -22,11 +22,11 @@ describe('sendEmailNotification()', () => {
 
     it('通知サービスが正常であれば、エラーにならないはず', async () => {
         const data = {
-            notification: { dataKey: 'dataValue' }
+            emailMessage: { dataKey: 'dataValue' }
         };
 
         sandbox.mock(sskts.service.notification).expects('sendEmail').once()
-            .withArgs(data.notification).returns(async () => { return; });
+            .withArgs(data.emailMessage).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.sendEmailNotification(<any>data)(sskts.mongoose.connection);
 

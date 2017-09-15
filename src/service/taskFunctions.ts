@@ -23,7 +23,7 @@ export function sendEmailNotification(
     data: factory.task.sendEmailNotification.IData
 ): IOperation<void> {
     return async (__: mongoose.Connection) => {
-        await NotificationService.sendEmail(data.notification)();
+        await NotificationService.sendEmail(data.emailMessage)();
     };
 }
 

@@ -23,32 +23,32 @@ describe('sendEmail()', () => {
     });
 
     it('SendGridの状態が正常であれば、エラーにならないはず', async () => {
-        const notification = {
-            id: 'id',
-            group: 'group',
-            data: <any>{}
+        const emailMessage = {
+            identifier: 'identifier',
+            sender: {},
+            toRecipient: {}
         };
         const sendResponse = [{ statusCode: ACCEPTED }];
 
         sandbox.mock(sgMail).expects('send').once().returns(Promise.resolve(sendResponse));
 
-        const result = await sskts.service.notification.sendEmail(notification)();
+        const result = await sskts.service.notification.sendEmail(<any>emailMessage)();
 
         assert.equal(result, undefined);
         sandbox.verify();
     });
 
     it('SendGridAPIのステータスコードがACCEPTEDでなｋれば、エラーになるはず', async () => {
-        const notification = {
-            id: 'id',
-            group: 'group',
-            data: <any>{}
+        const emailMessage = {
+            identifier: 'identifier',
+            sender: {},
+            toRecipient: {}
         };
         const sendResponse = [{ statusCode: BAD_REQUEST }];
 
         sandbox.mock(sgMail).expects('send').once().returns(Promise.resolve(sendResponse));
 
-        const sendEmailError = await sskts.service.notification.sendEmail(notification)()
+        const sendEmailError = await sskts.service.notification.sendEmail(<any>emailMessage)()
             .catch((err) => err);
 
         assert(sendEmailError instanceof Error);

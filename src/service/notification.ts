@@ -25,19 +25,25 @@ export const LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify';
  * https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
  * @export
  * @function
- * @param {EmailNotification} email
+ * @param {factory.creativeWork.message.email.ICreativeWork} emailMessage
  * @returns {Operation<void>}
  * @see https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
  * @memberof service/notification
  */
-export function sendEmail(email: factory.notification.email.INotification): Operation<void> {
+export function sendEmail(emailMessage: factory.creativeWork.message.email.ICreativeWork): Operation<void> {
     return async () => {
         sgMail.setApiKey(process.env.SENDGRID_API_KEY);
         const msg = {
-            to: email.data.to,
-            from: email.data.from,
-            subject: email.data.subject,
-            text: email.data.content,
+            to: {
+                name: emailMessage.toRecipient.name,
+                email: emailMessage.toRecipient.email
+            },
+            from: {
+                name: emailMessage.sender.name,
+                email: emailMessage.sender.email
+            },
+            subject: emailMessage.about,
+            text: emailMessage.text,
             // html: '<strong>and easy to do anywhere, even with Node.js</strong>',
             // categories: ['Transactional', 'My category'],
             // tslint:disable-next-line:no-suspicious-comment
@@ -45,7 +51,7 @@ export function sendEmail(email: factory.notification.email.INotification): Oper
             // sendAt: moment(email.send_at).unix(),
             // 追跡用に通知IDをカスタムフィールドとしてセットする
             customArgs: {
-                notification: email.id
+                emailMessage: emailMessage.identifier
             }
         };
 

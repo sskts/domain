@@ -12,12 +12,12 @@ export declare const LINE_NOTIFY_URL = "https://notify-api.line.me/api/notify";
  * https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
  * @export
  * @function
- * @param {EmailNotification} email
+ * @param {factory.creativeWork.message.email.ICreativeWork} emailMessage
  * @returns {Operation<void>}
  * @see https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
  * @memberof service/notification
  */
-export declare function sendEmail(email: factory.notification.email.INotification): Operation<void>;
+export declare function sendEmail(emailMessage: factory.creativeWork.message.email.ICreativeWork): Operation<void>;
 /**
  * report to developers
  * 開発者に報告する
