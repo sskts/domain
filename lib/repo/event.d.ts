@@ -8,7 +8,6 @@ export declare abstract class Repository {
 }
 /**
  * イベントレポジトリー
- *
  * @class EventRepository
  */
 export declare class MongoRepository implements Repository {
@@ -26,6 +25,18 @@ export declare class MongoRepository implements Repository {
      * @param individualScreeningEvent individualScreeningEvent object
      */
     saveIndividualScreeningEvent(individualScreeningEvent: factory.event.individualScreeningEvent.IEvent): Promise<void>;
-    searchIndividualScreeningEvents(searchConditions: factory.event.individualScreeningEvent.ISearchConditions): Promise<factory.event.individualScreeningEvent.IEvent[]>;
+    /**
+     * 個々の上映イベントを検索する
+     * @param {Object} searchConditions 検索条件
+     */
+    searchIndividualScreeningEvents(searchConditions: {
+        branchCode?: string;
+        startFrom?: Date;
+        startThrough?: Date;
+    }): Promise<factory.event.individualScreeningEvent.IEvent[]>;
+    /**
+     * identifierで上映イベントを取得する
+     * @param {string} identifier
+     */
     findIndividualScreeningEventByIdentifier(identifier: string): Promise<factory.event.individualScreeningEvent.IEvent>;
 }

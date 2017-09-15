@@ -1,6 +1,5 @@
 
 import * as factory from '@motionpicture/sskts-factory';
-import * as moment from 'moment';
 import { Connection } from 'mongoose';
 import eventModel from './mongoose/model/event';
 
@@ -13,7 +12,6 @@ export abstract class Repository {
 
 /**
  * イベントレポジトリー
- *
  * @class EventRepository
  */
 export class MongoRepository implements Repository {
@@ -55,31 +53,51 @@ export class MongoRepository implements Repository {
         ).exec();
     }
 
+    /**
+     * 個々の上映イベントを検索する
+     * @param {Object} searchConditions 検索条件
+     */
     public async searchIndividualScreeningEvents(
-        searchConditions: factory.event.individualScreeningEvent.ISearchConditions
+        searchConditions: {
+            branchCode?: string;
+            startFrom?: Date;
+            startThrough?: Date;
+        }
     ): Promise<factory.event.individualScreeningEvent.IEvent[]> {
-        const conditions: any = {
-            typeOf: factory.eventType.IndividualScreeningEvent
-        };
+        const andConditions: any[] = [
+            {
+                typeOf: factory.eventType.IndividualScreeningEvent
+            }
+        ];
 
-        if (searchConditions.day !== undefined) {
-            conditions.startDate = {
-                $gte: moment(`${searchConditions.day} +09:00`, 'YYYYMMDD Z').toDate(),
-                $lt: moment(`${searchConditions.day} +09:00`, 'YYYYMMDD Z').add(1, 'day').toDate()
-            };
+        if (searchConditions.branchCode !== undefined) {
+            andConditions.push({
+                'superEvent.location.branchCode': searchConditions.branchCode
+            });
         }
 
-        if (searchConditions.theater !== undefined) {
-            conditions['superEvent.location.branchCode'] = searchConditions.theater;
+        if (searchConditions.startFrom !== undefined) {
+            andConditions.push({
+                startDate: { $gte: searchConditions.startFrom }
+            });
+        }
+        if (searchConditions.startThrough !== undefined) {
+            andConditions.push({
+                startDate: { $lt: searchConditions.startThrough }
+            });
         }
 
-        return <factory.event.individualScreeningEvent.IEvent[]>await this.eventModel.find(conditions)
+        return <factory.event.individualScreeningEvent.IEvent[]>await this.eventModel.find({ $and: andConditions })
             .sort({ startDate: 1 })
             .setOptions({ maxTimeMS: 10000 })
             .lean()
             .exec();
     }
 
+    /**
+     * identifierで上映イベントを取得する
+     * @param {string} identifier
+     */
     public async findIndividualScreeningEventByIdentifier(identifier: string): Promise<factory.event.individualScreeningEvent.IEvent> {
         const event = await this.eventModel.findOne({
             typeOf: factory.eventType.IndividualScreeningEvent,

@@ -6,6 +6,7 @@
 
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
+import * as moment from 'moment';
 
 import { MongoRepository as EventRepository } from '../repo/event';
 import { MongoRepository as IndividualScreeningEventItemAvailabilityRepository } from '../repo/itemAvailability/individualScreeningEvent';
@@ -31,10 +32,15 @@ export function searchIndividualScreeningEvents(
         itemAvailabilityRepository?: IndividualScreeningEventItemAvailabilityRepository
     ) => {
         debug('finding individualScreeningEvents...', searchConditions);
-        const events = await eventRepository.searchIndividualScreeningEvents(searchConditions);
+        const conditions = {
+            branchCode: searchConditions.theater,
+            startFrom: moment(`${searchConditions.day} +09:00`, 'YYYYMMDD Z').toDate(),
+            startThrough: moment(`${searchConditions.day} +09:00`, 'YYYYMMDD Z').add(1, 'day').toDate()
+        };
+        const events = await eventRepository.searchIndividualScreeningEvents(conditions);
 
         return await Promise.all(events.map(async (event) => {
-            // add item availability info
+            // 空席状況情報を追加
             const offer: factory.event.individualScreeningEvent.IOffer = {
                 typeOf: 'Offer',
                 availability: null,

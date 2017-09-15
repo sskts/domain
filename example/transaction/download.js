@@ -17,6 +17,9 @@ sskts.service.transaction.placeOrder.download(
 )(new sskts.repository.Transaction(sskts.mongoose.connection))
     .then(async (csv) => {
         const fileName = `sskts-line-assistant-transactions-${moment().format('YYYYMMDDHHmmss')}.csv`;
-        const url = await sskts.service.util.uploadFile(fileName, csv)();
+        const url = await sskts.service.util.uploadFile({
+            fileName: fileName,
+            text: csv
+        })();
         console.log('url:', url);
     });
