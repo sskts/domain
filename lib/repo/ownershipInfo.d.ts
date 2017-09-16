@@ -2,6 +2,9 @@
 import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
 import ownershipInfoModel from './mongoose/model/ownershipInfo';
+export declare type IScreeningEvent = factory.event.individualScreeningEvent.IEvent;
+export declare type IScreeningEventReservation = factory.reservation.event.IEventReservation<IScreeningEvent>;
+export declare type IScreeningEventReservationOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<IScreeningEventReservation>;
 /**
  * 所有権レポジトリー
  *
@@ -16,4 +19,11 @@ export declare class MongoRepository {
      * @param ownershipInfo ownershipInfo object
      */
     save(ownershipInfo: factory.ownershipInfo.IOwnershipInfo<any>): Promise<void>;
+    /**
+     * 上映イベント予約の所有権を検索する
+     */
+    searchScreeningEventReservation(searchConditions: {
+        ownedBy?: string;
+        ownedAt?: Date;
+    }): Promise<IScreeningEventReservationOwnershipInfo[]>;
 }

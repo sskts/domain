@@ -2,6 +2,10 @@ import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
 import ownershipInfoModel from './mongoose/model/ownershipInfo';
 
+export type IScreeningEvent = factory.event.individualScreeningEvent.IEvent;
+export type IScreeningEventReservation = factory.reservation.event.IEventReservation<IScreeningEvent>;
+export type IScreeningEventReservationOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<IScreeningEventReservation>;
+
 /**
  * 所有権レポジトリー
  *
@@ -27,5 +31,38 @@ export class MongoRepository {
             ownershipInfo,
             { upsert: true }
         ).exec();
+    }
+
+    /**
+     * 上映イベント予約の所有権を検索する
+     */
+    public async searchScreeningEventReservation(searchConditions: {
+        ownedBy?: string;
+        ownedAt?: Date;
+    }): Promise<IScreeningEventReservationOwnershipInfo[]> {
+        const andConditions: any[] = [
+            { 'typeOfGood.typeOf': 'EventReservation' }, // 所有対象がイベント予約
+            { 'typeOfGood.reservationFor.typeOf': 'IndividualScreeningEvent' } // 予約対象が個々の上映イベント
+        ];
+
+        // 誰の所有か
+        if (searchConditions.ownedBy !== undefined) {
+            andConditions.push({
+                'ownedBy.id': searchConditions.ownedBy
+            });
+        }
+
+        // いつの時点での所有か
+        if (searchConditions.ownedAt instanceof Date) {
+            andConditions.push({
+                ownedFrom: { $lte: searchConditions.ownedAt },
+                ownedThrough: { $gte: searchConditions.ownedAt }
+            });
+        }
+
+        return await this.ownershipInfoModel.find({ $and: andConditions })
+            .sort({ ownedFrom: 1 })
+            .exec()
+            .then((docs) => docs.map((doc) => <IScreeningEventReservationOwnershipInfo>doc.toObject()));
     }
 }
