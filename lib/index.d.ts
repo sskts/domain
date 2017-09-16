@@ -14,6 +14,7 @@ import * as MasterSyncService from './service/masterSync';
 import * as NotificationService from './service/notification';
 import * as OrderService from './service/order';
 import * as OwnershipInfoService from './service/ownershipInfo';
+import * as PersonCreditCardService from './service/person/creditCard';
 import * as ReportService from './service/report';
 import * as SalesService from './service/sales';
 import * as StockService from './service/stock';
@@ -128,6 +129,9 @@ export declare namespace service {
     export import notification = NotificationService;
     export import order = OrderService;
     export import ownershipInfo = OwnershipInfoService;
+    namespace person {
+        export import creditCard = PersonCreditCardService;
+    }
     export import report = ReportService;
     export import sales = SalesService;
     export import stock = StockService;
