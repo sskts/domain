@@ -17,6 +17,7 @@ import * as MasterSyncService from './service/masterSync';
 import * as NotificationService from './service/notification';
 import * as OrderService from './service/order';
 import * as OwnershipInfoService from './service/ownershipInfo';
+import * as PersonContactService from './service/person/contact';
 import * as PersonCreditCardService from './service/person/creditCard';
 import * as ReportService from './service/report';
 import * as SalesService from './service/sales';
@@ -126,6 +127,7 @@ export namespace service {
     export import order = OrderService;
     export import ownershipInfo = OwnershipInfoService;
     export namespace person {
+        export import contact = PersonContactService;
         export import creditCard = PersonCreditCardService;
     }
     export import report = ReportService;
