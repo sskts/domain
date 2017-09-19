@@ -2,6 +2,11 @@ import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
 import creativeWorkModel from './mongoose/model/creativeWork';
 
+/**
+ * 作品抽象リポジトリー
+ * @class
+ * @abstract
+ */
 export abstract class Repository {
     public abstract async saveMovie(movie: factory.creativeWork.movie.ICreativeWork): Promise<void>;
 }

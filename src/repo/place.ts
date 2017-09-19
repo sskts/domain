@@ -5,6 +5,11 @@ import placeModel from './mongoose/model/place';
 
 const debug = createDebug('sskts-domain:repository:place');
 
+/**
+ * 場所抽象リポジトリー
+ * @class
+ * @abstract
+ */
 export abstract class Repository {
     public abstract async saveMovieTheater(movieTheater: factory.place.movieTheater.IPlace): Promise<void>;
     public abstract async searchMovieTheaters(searchConditions: {}): Promise<factory.place.movieTheater.IPlaceWithoutScreeningRoom[]>;

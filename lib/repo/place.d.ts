@@ -2,6 +2,11 @@
 import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
 import placeModel from './mongoose/model/place';
+/**
+ * 場所抽象リポジトリー
+ * @class
+ * @abstract
+ */
 export declare abstract class Repository {
     abstract saveMovieTheater(movieTheater: factory.place.movieTheater.IPlace): Promise<void>;
     abstract searchMovieTheaters(searchConditions: {}): Promise<factory.place.movieTheater.IPlaceWithoutScreeningRoom[]>;

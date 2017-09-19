@@ -1,4 +1,4 @@
-// tslint:disable:max-classes-per-file
+// tslint:disable:max-classes-per-file completed-docs
 
 /**
  * sskts-domain index module

@@ -3,6 +3,11 @@ import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
 import eventModel from './mongoose/model/event';
 
+/**
+ * イベント抽象リポジトリー
+ * @class
+ * @abstract
+ */
 export abstract class Repository {
     public abstract async saveScreeningEvent(screeningEvent: factory.event.screeningEvent.IEvent): Promise<void>;
     public abstract async saveIndividualScreeningEvent(
