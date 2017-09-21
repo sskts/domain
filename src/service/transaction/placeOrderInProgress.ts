@@ -392,10 +392,13 @@ export function authorizeMvtk(
         const knyknrNoNumsByNoShouldBe: IKnyknrNoNumsByNo = seatReservationAuthorizeActionObject.offers.reduce(
             (a: IKnyknrNoNumsByNo, b) => {
                 const knyknrNo = b.ticketInfo.mvtkNum;
-                if (a[knyknrNo] === undefined) {
-                    a[knyknrNo] = 0;
+                // 券種情報にムビチケ購入管理番号があれば、枚数を追加
+                if (typeof knyknrNo === 'string' && knyknrNo !== '') {
+                    if (a[knyknrNo] === undefined) {
+                        a[knyknrNo] = 0;
+                    }
+                    a[knyknrNo] += 1;
                 }
-                a[knyknrNo] += 1;
 
                 return a;
             },

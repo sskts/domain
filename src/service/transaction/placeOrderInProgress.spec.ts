@@ -502,14 +502,34 @@ describe('authorizeMvtk()', () => {
                 stCd: '18',
                 skhnCd: '1234500',
                 screnCd: '01',
-                knyknrNoInfo: [],
+                knyknrNoInfo: [
+                    {
+                        knyknrNo: '12345',
+                        knshInfo: [
+                            {
+                                miNum: 1
+                            }
+                        ]
+                    }
+                ],
                 zskInfo: []
             }
         };
         const seatReservationAuthorizeAction = {
             id: 'actionId',
             object: {
-                offers: []
+                offers: [
+                    {
+                        ticketInfo: {
+                            mvtkNum: '12345'
+                        }
+                    },
+                    {
+                        ticketInfo: {
+                            mvtkNum: ''
+                        }
+                    }
+                ]
             },
             result: {
                 acceptedOffers: [],
