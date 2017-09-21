@@ -500,7 +500,7 @@ describe('authorizeMvtk()', () => {
         const authorizeObject = {
             seatInfoSyncIn: {
                 stCd: '18',
-                skhnCd: '123450',
+                skhnCd: '1234500',
                 screnCd: '01',
                 knyknrNoInfo: [],
                 zskInfo: []
