@@ -81,4 +81,4 @@ workflows:
             - test
           filters:
             branches:
-              only: release/1.0.0-alpha
+              only: release/23.0.0-alpha
