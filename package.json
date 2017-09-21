@@ -89,7 +89,7 @@
     "build": "tsc",
     "check": "npm run tslint && nsp check && snyk test",
     "clean": "rimraf test/**/*.js ./lib npm-debug.log* ./doc ./coverage ./.nyc_output",
-    "doc": "node_modules/.bin/jsdoc -c jsdoc.json",
+    "doc": "jsdoc -c jsdoc.json",
     "mocha": "mocha",
     "coverage": "nyc mocha src/**/*.spec.ts",
     "snyk": "snyk wizard",
