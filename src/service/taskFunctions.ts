@@ -7,6 +7,7 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
+import { MongoRepository as AuthorizeActionRepository } from '../repo/action/authorize';
 import { MongoRepository as OrderRepository } from '../repo/order';
 import { MongoRepository as OwnershipInfoRepository } from '../repo/ownershipInfo';
 import { MongoRepository as TransactionRepository } from '../repo/transaction';
@@ -31,8 +32,8 @@ export function cancelSeatReservation(
     data: factory.task.cancelSeatReservation.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const transactionRepository = new TransactionRepository(connection);
-        await StockService.unauthorizeSeatReservation(data.transactionId)(transactionRepository);
+        const authorizeActionRepo = new AuthorizeActionRepository(connection);
+        await StockService.cancelSeatReservationAuth(data.transactionId)(authorizeActionRepo);
     };
 }
 
@@ -40,17 +41,16 @@ export function cancelCreditCard(
     data: factory.task.cancelCreditCard.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const transactionRepository = new TransactionRepository(connection);
-        await SalesService.cancelCreditCardAuth(data.transactionId)(transactionRepository);
+        const authorizeActionRepo = new AuthorizeActionRepository(connection);
+        await SalesService.cancelCreditCardAuth(data.transactionId)(authorizeActionRepo);
     };
 }
 
 export function cancelMvtk(
     data: factory.task.cancelMvtk.IData
 ): IOperation<void> {
-    return async (connection: mongoose.Connection) => {
-        const transactionRepository = new TransactionRepository(connection);
-        await SalesService.cancelMvtk(data.transactionId)(transactionRepository);
+    return async (__: mongoose.Connection) => {
+        await SalesService.cancelMvtk(data.transactionId)();
     };
 }
 
@@ -75,9 +75,8 @@ export function settleCreditCard(
 export function settleMvtk(
     data: factory.task.settleMvtk.IData
 ): IOperation<void> {
-    return async (connection: mongoose.Connection) => {
-        const transactionRepository = new TransactionRepository(connection);
-        await SalesService.settleMvtk(data.transactionId)(transactionRepository);
+    return async (__: mongoose.Connection) => {
+        await SalesService.settleMvtk(data.transactionId)();
     };
 }
 
