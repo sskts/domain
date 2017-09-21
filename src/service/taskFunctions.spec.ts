@@ -45,8 +45,8 @@ describe('cancelSeatReservation()', () => {
             transactionId: 'transactionId'
         };
 
-        sandbox.mock(sskts.service.stock).expects('unauthorizeSeatReservation').once()
-            .withArgs(data.transactionId).returns(async () => { return; });
+        sandbox.mock(sskts.service.stock).expects('cancelSeatReservationAuth').once()
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.cancelSeatReservation(<any>data)(sskts.mongoose.connection);
 

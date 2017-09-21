@@ -48,41 +48,34 @@ before(() => {
     };
 });
 
-describe('unauthorizeSeatReservation()', () => {
+describe('cancelSeatReservationAuth()', () => {
     afterEach(() => {
         sandbox.restore();
     });
 
     it('取引に座席予約が存在すれば、仮予約解除が実行されるはず', async () => {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const authorizeActions = [
+            {
+                id: 'actionId',
+                actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+                purpose: {
+                    typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation
+                },
+                result: {
+                    updTmpReserveSeatArgs: {},
+                    updTmpReserveSeatResult: {}
+                }
+            }
+        ];
+        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withArgs(existingTransaction.id).returns(Promise.resolve(existingTransaction));
+        sandbox.mock(authorizeActionRepo).expects('findByTransactionId').once()
+            .withExactArgs(existingTransaction.id).returns(Promise.resolve(authorizeActions));
         sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').once().returns(Promise.resolve());
 
-        const result = await sskts.service.stock.unauthorizeSeatReservation(existingTransaction.id)(transactionRepo);
+        const result = await sskts.service.stock.cancelSeatReservationAuth(existingTransaction.id)(authorizeActionRepo);
 
         assert.equal(result, undefined);
-        sandbox.verify();
-    });
-
-    it('取引に座席予約が存在しなければ、未実装エラーが投げられるはず', async () => {
-        const transaction = {
-            id: '123',
-            object: {
-                authorizeActions: []
-            }
-        };
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withArgs(transaction.id).returns(Promise.resolve(transaction));
-        sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').never();
-
-        const result = await sskts.service.stock.unauthorizeSeatReservation(transaction.id)(transactionRepo)
-            .catch((err) => err);
-
-        assert(result instanceof sskts.factory.errors.NotImplemented);
         sandbox.verify();
     });
 });

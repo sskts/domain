@@ -39,12 +39,26 @@ describe('cancelCreditCardAuth()', () => {
     });
 
     it('repositoryとGMOの状態が正常であれば、エラーにならないはず', async () => {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const authorizeActions = [
+            {
+                id: 'actionId',
+                actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+                purpose: {
+                    typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard
+                },
+                result: {
+                    entryTranArgs: {},
+                    execTranArgs: {}
+                }
+            }
+        ];
+        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withArgs(existingTransaction.id).returns(Promise.resolve(existingTransaction));
+        sandbox.mock(authorizeActionRepo).expects('findByTransactionId').once()
+            .withExactArgs(existingTransaction.id).returns(Promise.resolve(authorizeActions));
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().returns(Promise.resolve());
-        const result = await sskts.service.sales.cancelCreditCardAuth(existingTransaction.id)(transactionRepo);
+
+        const result = await sskts.service.sales.cancelCreditCardAuth(existingTransaction.id)(authorizeActionRepo);
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -96,9 +110,7 @@ describe('cancelMvtk()', () => {
     });
 
     it('何もしないので、エラーにならないはず', async () => {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-
-        const result = await sskts.service.sales.cancelMvtk(existingTransaction.id)(transactionRepo);
+        const result = await sskts.service.sales.cancelMvtk(existingTransaction.id)();
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -111,9 +123,7 @@ describe('settleMvtk()', () => {
     });
 
     it('何もしないので、エラーにならないはず', async () => {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-
-        const result = await sskts.service.sales.settleMvtk(existingTransaction.id)(transactionRepo);
+        const result = await sskts.service.sales.settleMvtk(existingTransaction.id)();
 
         assert.equal(result, undefined);
         sandbox.verify();

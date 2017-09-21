@@ -8,6 +8,7 @@ import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
+import { MongoRepository as AuthorizeActionRepository } from '../repo/action/authorize';
 import { MongoRepository as TransactionRepository } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:stock');
@@ -16,41 +17,45 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 
 /**
  * 資産承認解除(COA座席予約)
- *
- * @memberof service/stock
+ * @export
+ * @function
+ * @memberof service.stock
+ * @param {string} transactionId 取引ID
  */
-export function unauthorizeSeatReservation(transactionId: string) {
-    return async (transactionRepository: TransactionRepository) => {
-        const transaction = await transactionRepository.findPlaceOrderById(transactionId);
-        const authorizeActions = transaction.object.authorizeActions
-            .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation);
-        if (authorizeActions.length !== 1) {
-            throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
-        }
+export function cancelSeatReservationAuth(transactionId: string) {
+    return async (authorizeActionRepo: AuthorizeActionRepository) => {
+        // 座席仮予約アクションを取得
+        const authorizeActions: factory.action.authorize.seatReservation.IAction[] =
+            await authorizeActionRepo.findByTransactionId(transactionId)
+                .then((actions) => {
+                    return actions
+                        .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                        .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation);
+                });
 
-        const authorizeAction = authorizeActions[0];
+        await Promise.all(authorizeActions.map(async (action) => {
+            debug('calling deleteTmpReserve...');
+            const updTmpReserveSeatArgs = (<factory.action.authorize.seatReservation.IResult>action.result).updTmpReserveSeatArgs;
+            const updTmpReserveSeatResult = (<factory.action.authorize.seatReservation.IResult>action.result).updTmpReserveSeatResult;
 
-        debug('calling deleteTmpReserve...');
-        const updTmpReserveSeatArgs = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatArgs;
-        const updTmpReserveSeatResult = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatResult;
-
-        await COA.services.reserve.delTmpReserve({
-            theaterCode: updTmpReserveSeatArgs.theaterCode,
-            dateJouei: updTmpReserveSeatArgs.dateJouei,
-            titleCode: updTmpReserveSeatArgs.titleCode,
-            titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
-            timeBegin: updTmpReserveSeatArgs.timeBegin,
-            tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum
-        });
+            await COA.services.reserve.delTmpReserve({
+                theaterCode: updTmpReserveSeatArgs.theaterCode,
+                dateJouei: updTmpReserveSeatArgs.dateJouei,
+                titleCode: updTmpReserveSeatArgs.titleCode,
+                titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
+                timeBegin: updTmpReserveSeatArgs.timeBegin,
+                tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum
+            });
+        }));
     };
 }
 
 /**
  * 資産移動(COA座席予約)
- *
- * @param {ISeatReservationAuthorization} authorizeAction
- * @memberof service/stock
+ * @export
+ * @function
+ * @memberof service.stock
+ * @param {string} transactionId 取引ID
  */
 export function transferSeatReservation(transactionId: string) {
     return async (transactionRepository: TransactionRepository) => {

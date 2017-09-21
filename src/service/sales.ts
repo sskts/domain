@@ -1,13 +1,14 @@
 /**
  * sales service
  * mainly handle transactions with GMO
- * @namespace service/sales
+ * @namespace service.sales
  */
 
 import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
+import { MongoRepository as AuthorizeActionRepository } from '../repo/action/authorize';
 import { MongoRepository as TransactionRepository } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:sales');
@@ -16,18 +17,25 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 
 /**
  * クレジットカードオーソリ取消
- * @memberof service/sales
+ * @export
+ * @function
+ * @memberof service.sales
+ * @param {string} transactionId 取引ID
  */
 export function cancelCreditCardAuth(transactionId: string) {
-    return async (transactionRepository: TransactionRepository) => {
-        const transaction = await transactionRepository.findPlaceOrderById(transactionId);
-        const authorizeActions = transaction.object.authorizeActions
-            .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+    return async (authorizeActionRepo: AuthorizeActionRepository) => {
+        // クレジットカード仮売上アクションを取得
+        const authorizeActions: factory.action.authorize.creditCard.IAction[] =
+            await authorizeActionRepo.findByTransactionId(transactionId)
+                .then((actions) => {
+                    return actions
+                        .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                        .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+                });
 
-        await Promise.all(authorizeActions.map(async (authorizeAction) => {
-            const entryTranArgs = (<factory.action.authorize.creditCard.IResult>authorizeAction.result).entryTranArgs;
-            const execTranArgs = (<factory.action.authorize.creditCard.IResult>authorizeAction.result).execTranArgs;
+        await Promise.all(authorizeActions.map(async (action) => {
+            const entryTranArgs = (<factory.action.authorize.creditCard.IResult>action.result).entryTranArgs;
+            const execTranArgs = (<factory.action.authorize.creditCard.IResult>action.result).execTranArgs;
 
             debug('calling alterTran...');
             await GMO.services.credit.alterTran({
@@ -48,7 +56,10 @@ export function cancelCreditCardAuth(transactionId: string) {
 
 /**
  * クレジットカード売上確定
- * @memberof service/sales
+ * @export
+ * @function
+ * @memberof service.sales
+ * @param {string} transactionId 取引ID
  */
 export function settleCreditCardAuth(transactionId: string) {
     return async (transactionRepository: TransactionRepository) => {
@@ -94,22 +105,28 @@ export function settleCreditCardAuth(transactionId: string) {
 
 /**
  * ムビチケ着券取消し
- *
- * @memberof service/sales
+ * @export
+ * @function
+ * @memberof service.sales
+ * @param {string} transactionId 取引ID
  */
-export function cancelMvtk(__1: string) {
-    return async (__2: TransactionRepository) => {
+export function cancelMvtk(transactionId: string) {
+    return async () => {
+        debug('canceling mvtk...transactionId:', transactionId);
         // ムビチケは実は仮押さえの仕組みがないので何もしない
     };
 }
 
 /**
  * ムビチケ資産移動
- *
- * @memberof service/sales
+ * @export
+ * @function
+ * @memberof service.sales
+ * @param {string} transactionId 取引ID
  */
-export function settleMvtk(__1: string) {
-    return async (__2: TransactionRepository) => {
+export function settleMvtk(transactionId: string) {
+    return async () => {
+        debug('settling mvtk...transactionId:', transactionId);
         // 実は取引成立の前に着券済みなので何もしない
     };
 }
