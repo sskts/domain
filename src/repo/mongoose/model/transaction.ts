@@ -19,8 +19,7 @@ const schema = new mongoose.Schema(
         startDate: Date,
         endDate: Date,
         tasksExportedAt: Date,
-        tasksExportationStatus: String,
-        tasks: [mongoose.Schema.Types.Mixed]
+        tasksExportationStatus: String
     },
     {
         collection: 'transactions',

@@ -87,7 +87,8 @@ export function start(params: {
                 authorizeActions: []
             },
             expires: params.expires,
-            startDate: new Date()
+            startDate: new Date(),
+            tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
         });
 
         return await transactionRepo.startPlaceOrder(transactionAttributes);

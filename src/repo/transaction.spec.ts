@@ -158,7 +158,6 @@ describe('setTasksExportedById()', () => {
 
     it('MongoDBの状態が正常であれば、エラーにならないはず', async () => {
         const transactionId = 'transactionId';
-        const tasks: any[] = [];
 
         const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
 
@@ -167,7 +166,7 @@ describe('setTasksExportedById()', () => {
             .chain('exec')
             .resolves(new repository.transactionModel());
 
-        const result = await repository.setTasksExportedById(transactionId, tasks);
+        const result = await repository.setTasksExportedById(transactionId);
 
         assert.equal(result, undefined);
         sandbox.verify();

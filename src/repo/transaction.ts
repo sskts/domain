@@ -138,15 +138,13 @@ export class MongoRepository {
      * set task status exported by transaction id
      * IDでタスクをエクスポート済に変更する
      * @param transactionId transaction id
-     * @param tasks task list
      */
-    public async setTasksExportedById(transactionId: string, tasks: factory.task.ITask[]) {
+    public async setTasksExportedById(transactionId: string) {
         await this.transactionModel.findByIdAndUpdate(
             transactionId,
             {
                 tasksExportationStatus: factory.transactionTasksExportationStatus.Exported,
-                tasksExportedAt: moment().toDate(),
-                tasks: tasks
+                tasksExportedAt: moment().toDate()
             }
         ).exec();
     }

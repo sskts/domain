@@ -42,12 +42,12 @@ export function exportTasks(status: factory.transactionStatusType) {
         }
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
-        const tasks = await exportTasksById(transaction.id)(
+        await exportTasksById(transaction.id)(
             taskRepository,
             transactionRepository
         );
 
-        await transactionRepository.setTasksExportedById(transaction.id, tasks);
+        await transactionRepository.setTasksExportedById(transaction.id);
     };
 }
 
