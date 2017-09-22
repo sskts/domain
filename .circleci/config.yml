@@ -50,6 +50,18 @@ jobs:
       # - store_artifacts:
       #     path: coverage
       #     prefix: coverage
+  doc:
+    docker:
+      - image: circleci/node:8.4
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: Generate docs
+          command: |
+            npm run build
+            npm run doc
   prerelease:
     docker:
       - image: circleci/node:latest
@@ -76,9 +88,12 @@ workflows:
       - test:
           requires:
             - build
-      - prerelease:
+      - doc:
           requires:
             - test
+      - prerelease:
+          requires:
+            - doc
           filters:
             branches:
               only: release/1.0.0-alpha

@@ -11,12 +11,12 @@
   "dependencies": {
     "@motionpicture/coa-service": "^4.0.1",
     "@motionpicture/gmo-service": "^4.0.0",
-    "@motionpicture/sskts-factory": "^1.0.0-alpha.5",
+    "@motionpicture/sskts-factory": "^1.0.0-alpha.6",
     "@sendgrid/mail": "^6.1.4",
     "@types/google-libphonenumber": "^7.4.12",
     "@types/mongoose": "^4.7.21",
     "@types/redis": "^0.12.36",
-    "aws-sdk": "^2.120.0",
+    "aws-sdk": "^2.121.0",
     "azure-storage": "^2.5.0",
     "bcryptjs": "^2.4.3",
     "debug": "^3.0.1",
@@ -59,7 +59,7 @@
     "rimraf": "^2.6.2",
     "sinon": "^3.3.0",
     "sinon-mongoose": "^2.0.2",
-    "snyk": "^1.40.4",
+    "snyk": "^1.41.1",
     "ts-node": "^3.3.0",
     "tslint": "^5.7.0",
     "tslint-microsoft-contrib": "^5.0.1",
@@ -87,7 +87,7 @@
   "repository": {},
   "scripts": {
     "build": "tsc",
-    "check": "npm run tslint && nsp check && snyk test",
+    "check": "npm run tslint && nsp check",
     "clean": "rimraf test/**/*.js ./lib npm-debug.log* ./doc ./coverage ./.nyc_output",
     "doc": "jsdoc -c jsdoc.json",
     "mocha": "mocha",
@@ -99,7 +99,7 @@
     "preversion": "npm run clean && npm run build && npm test && npm run doc",
     "version": "git add -A",
     "postversion": "git push origin --tags",
-    "prepublishOnly": "npm run clean && npm run build && npm test"
+    "prepublishOnly": "npm run clean && npm run build && npm test && npm run doc"
   },
   "version": "22.0.0"
 }
