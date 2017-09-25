@@ -9,8 +9,8 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/coa-service": "^4.0.2",
-    "@motionpicture/gmo-service": "^4.0.0",
+    "@motionpicture/coa-service": "^4.0.3",
+    "@motionpicture/gmo-service": "^4.0.1",
     "@motionpicture/sskts-factory": "^1.0.1",
     "@sendgrid/mail": "^6.1.4",
     "@types/google-libphonenumber": "^7.4.12",
@@ -52,7 +52,7 @@
     "jsdoc": "^3.5.5",
     "mocha": "^3.5.3",
     "mockgoose": "^7.3.3",
-    "nock": "^9.0.19",
+    "nock": "^9.0.20",
     "nsp": "^2.8.0",
     "nyc": "^11.2.1",
     "power-assert": "^1.4.4",
@@ -75,6 +75,7 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "files": [
+    "doc",
     "example",
     "lib"
   ],
@@ -91,7 +92,7 @@
     "check": "npm run tslint && nsp check",
     "clean": "rimraf ./lib npm-debug.log* ./doc ./coverage ./.nyc_output",
     "doc": "jsdoc -c jsdoc.json",
-    "mocha": "mocha",
+    "mocha": "mocha src/**/*.spec.ts",
     "coverage": "nyc mocha src/**/*.spec.ts",
     "snyk": "snyk wizard",
     "test": "npm run check && npm run coverage",
