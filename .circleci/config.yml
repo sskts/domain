@@ -41,15 +41,6 @@ jobs:
       - run:
           name: run npm test
           command: npm test
-      # - run:
-      #     name: Generate code coverage
-      #     command: './node_modules/.bin/nyc report --reporter=text-lcov'
-      # - store_artifacts:
-      #     path: test-results.xml
-      #     prefix: tests
-      # - store_artifacts:
-      #     path: coverage
-      #     prefix: coverage
   doc:
     docker:
       - image: circleci/node:8.4
@@ -91,7 +82,7 @@ jobs:
             npm config set //registry.npmjs.org/:_authToken=$NPM_TOKEN
             npm whoami
       - run:
-          command: npm publish --access public
+          command: npm publish
 # Used for orchestrating all jobs.
 workflows:
   version: 2

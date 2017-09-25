@@ -1,4 +1,8 @@
-# 佐々木興行ドメインライブラリ for Node.js
+<img src="https://motionpicture.jp/images/common/logo_01.svg" alt="motionpicture" title="motionpicture" align="right" height="56" width="98"/>
+
+# SSKTS Domain Library for Node.js
+
+[![Build status](https://circleci.com/gh/ilovegadd/sskts-domain.png?style=shield&circletoken=26025d5a2df8ffd61173c72bbc1257fc6a2ad66d)](https://circleci.com/gh/ilovegadd/sskts-domain)
 
 佐々木興行のサービスをnode.jsで簡単に使用するためのパッケージを提供します。
 
@@ -14,6 +18,7 @@ npm install @motionpicture/sskts-domain
 
 ## Required environment variables
 ```shell
+set NPM_TOKEN=**********private packageをインストールするためのトークン**********
 set NODE_ENV=**********環境名**********
 set SENDGRID_API_KEY=**********sendgrid api key**********
 set GMO_ENDPOINT=**********gmo apiのエンドポイント**********
