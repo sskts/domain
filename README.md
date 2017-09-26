@@ -6,8 +6,6 @@
 
 佐々木興行のサービスをnode.jsで簡単に使用するためのパッケージを提供します。
 
-# Features
-
 # Getting Started
 
 ## Install
@@ -47,18 +45,18 @@ var sskts = require('@motionpicture/sskts-domain');
 
 ## Code Samples
 
-コードサンプルは./examplesにあります。
+コードサンプルは./exampleにあります。
 
 ## JsDoc
 
-`npm run jsdoc`でjsdocを作成できます。./docsに出力されます。
+`npm run doc`でjsdocを作成できます。./docに出力されます。
 
 ## Test
 
 `npm test`
 
 [mocha](https://mochajs.org/)
-[istanbul](https://istanbul.js.org/)
+[nyc](https://www.npmjs.com/package/nyc)
 
 
 # License

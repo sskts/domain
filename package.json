@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/coa-service": "^4.0.3",
+    "@motionpicture/coa-service": "^4.0.4",
     "@motionpicture/gmo-service": "^4.0.1",
     "@motionpicture/sskts-factory": "^1.0.1",
     "@sendgrid/mail": "^6.1.4",
@@ -25,7 +25,7 @@
     "jconv": "^0.1.5",
     "json2csv": "^3.11.2",
     "moment": "^2.18.1",
-    "mongoose": "^4.11.12",
+    "mongoose": "^4.11.13",
     "redis": "^2.8.0",
     "request": "^2.82.0",
     "request-promise-native": "^1.0.5",
@@ -52,7 +52,7 @@
     "jsdoc": "^3.5.5",
     "mocha": "^3.5.3",
     "mockgoose": "^7.3.3",
-    "nock": "^9.0.20",
+    "nock": "^9.0.21",
     "nsp": "^2.8.0",
     "nyc": "^11.2.1",
     "power-assert": "^1.4.4",
@@ -86,7 +86,10 @@
     "test": "./test"
   },
   "name": "@motionpicture/sskts-domain",
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ilovegadd/sskts-domain.git"
+  },
   "scripts": {
     "build": "tsc",
     "check": "npm run tslint && nsp check",
