@@ -39,7 +39,7 @@ const schema = new mongoose.Schema(
         send_at: Number
     },
     {
-        collection: 'sendgrid_events',
+        collection: 'sendGridEvents',
         id: true,
         read: 'primaryPreferred',
         safe: safe,

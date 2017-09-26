@@ -27,7 +27,7 @@ const schema = new mongoose.Schema(
         pay_type: String // 決済方法
     },
     {
-        collection: 'gmo_notifications',
+        collection: 'gmoNotifications',
         id: true,
         read: 'primaryPreferred',
         safe: safe,
