@@ -2,20 +2,27 @@
 
 # SSKTS Domain Library for Node.js
 
-[![Build status](https://circleci.com/gh/ilovegadd/sskts-domain.png?style=shield&circletoken=26025d5a2df8ffd61173c72bbc1257fc6a2ad66d)](https://circleci.com/gh/ilovegadd/sskts-domain)
+[![Build status](https://circleci.com/gh/motionpicture/sskts-domain.png?style=shield&circletoken=26025d5a2df8ffd61173c72bbc1257fc6a2ad66d)](https://circleci.com/gh/motionpicture/sskts-domain)
 
-佐々木興行のサービスをnode.jsで簡単に使用するためのパッケージを提供します。
+SSKTSのバックエンドサービスをnode.jsで簡単に使用するためのパッケージを提供します。
 
-# Getting Started
 
-## Install
+## Table of contents
 
-```shell
+* [Usage](#usage)
+* [Code Samples](#code-samples)
+* [Jsdoc](#jsdoc)
+* [License](#license)
+
+
+## Usage
+
+``` shell
 npm install @motionpicture/sskts-domain
 ```
 
 ## Required environment variables
-```shell
+``` shell
 set NPM_TOKEN=**********private packageをインストールするためのトークン**********
 set NODE_ENV=**********環境名**********
 set SENDGRID_API_KEY=**********sendgrid api key**********
@@ -30,34 +37,24 @@ set AZURE_STORAGE_CONNECTION_STRING=**********csv等ファイル保管に使用�
 ```
 
 only for test  
-```shell
+``` shell
 set TEST_REDIS_HOST=**********テスト時に使用するredis情報**********
 set TEST_REDIS_PORT=**********テスト時に使用するredis情報**********
 set TEST_REDIS_KEY=**********テスト時に使用するredis情報**********
 ```
 
-## Usage
-
-```Javascript
-var sskts = require('@motionpicture/sskts-domain');
+``` js
+const sskts = require('@motionpicture/sskts-domain');
 ```
-
 
 ## Code Samples
 
-コードサンプルは./exampleにあります。
+コードサンプルは [example](https://github.com/motionpicture/sskts-domain/tree/master/example) にあります。
 
-## JsDoc
+## Jsdoc
 
 `npm run doc`でjsdocを作成できます。./docに出力されます。
 
-## Test
-
-`npm test`
-
-[mocha](https://mochajs.org/)
-[nyc](https://www.npmjs.com/package/nyc)
-
-
 # License
+
 UNLICENSED
