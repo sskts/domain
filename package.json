@@ -104,6 +104,5 @@
     "postversion": "git push origin --tags",
     "prepublishOnly": "npm run clean && npm run build && npm test && npm run doc"
   },
-  "version": "23.0.0-alpha.10",
-  "private": true
+  "version": "23.0.0-alpha.10"
 }
