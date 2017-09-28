@@ -196,9 +196,13 @@ export function authorizeCreditCard(
                     throw new factory.errors.AlreadyInUse('action.object', ['orderId'], duplicateError.userMessage);
                 }
 
+                console.error('authorizeCreditCard threw', error);
+
                 // その他のGMOエラーに場合、なんらかのクライアントエラー
                 throw new factory.errors.Argument('payment');
             }
+
+            console.error('authorizeCreditCard threw', error);
 
             throw new Error(error);
         }
@@ -246,7 +250,7 @@ export function cancelCreditCardAuth(
             });
             debug('alterTran processed', GMO.utils.util.JobCd.Void);
         } catch (error) {
-            console.error('GMO alterTran to Void error:', error);
+            console.error('cancelCreditCardAuth threw', error);
             // tslint:disable-next-line:no-suspicious-comment
             // TODO GMO混雑エラーを判別(取消処理でも混雑エラーが発生することは確認済)
         }
@@ -310,6 +314,8 @@ export function authorizeSeatReservation(
             if (error.message === '座席取得失敗') {
                 throw new factory.errors.AlreadyInUse('action.object', ['offers'], error.message);
             }
+
+            console.error('authorizeSeatReservation threw', error);
 
             throw new factory.errors.ServiceUnavailable('reserve service temporarily unavailable.');
         }

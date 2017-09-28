@@ -39,4 +39,8 @@ ignore:
     - '@motionpicture/sskts-factory > @motionpicture/gmo-service > request > tough-cookie':
         reason: waiting a fix.
         expires: '2017-10-21T10:58:42.086Z'
+  'npm:debug:20170905':
+    - mongoose > mquery > debug:
+        reason: waiting update
+        expires: '2017-10-28T04:32:06.533Z'
 patch: {}
