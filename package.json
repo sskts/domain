@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/coa-service": "^4.0.4",
+    "@motionpicture/coa-service": "^4.0.6",
     "@motionpicture/gmo-service": "^4.0.2",
     "@motionpicture/sskts-factory": "^1.0.2",
     "@sendgrid/mail": "^6.1.4",

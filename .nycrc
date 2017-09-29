@@ -19,6 +19,5 @@
         "lcov",
         "text-lcov",
         "text-summary"
-    ],
-    "all": true
+    ]
 }
