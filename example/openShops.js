@@ -38,9 +38,8 @@ async function main() {
                     ja: 'シネマサンシャイン１１８'
                 }
             },
-            telephone: '0312345678',
             // tslint:disable-next-line:no-http-string
-            url: 'http://devssktsportal.azurewebsites.net/theater/aira/'
+            url: 'http://testssktsportal.azurewebsites.net/theater/aira/'
         }),
         sskts.factory.organization.movieTheater.create({
             name: {
@@ -69,7 +68,6 @@ async function main() {
                     ja: 'シネマサンシャイン北島テスト'
                 }
             },
-            telephone: '0312345678',
             // tslint:disable-next-line:no-http-string
             url: 'http://testssktsportal.azurewebsites.net/theater/kitajima/'
         }),

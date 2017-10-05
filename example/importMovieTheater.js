@@ -8,9 +8,11 @@ const sskts = require('../');
 async function main() {
     sskts.mongoose.connect(process.env.MONGOLAB_URI);
 
-    await sskts.service.masterSync.importMovieTheater('118')(
-        new sskts.repository.Place(sskts.mongoose.connection
-        ));
+    await Promise.all(['118', '112'].map(async (theaterCode) => {
+        await sskts.service.masterSync.importMovieTheater(theaterCode)(
+            new sskts.repository.Place(sskts.mongoose.connection)
+        );
+    }));
 
     sskts.mongoose.disconnect();
 }
