@@ -680,7 +680,7 @@ describe('cancelMvtkAuth()', () => {
     });
 });
 
-describe('setCustomerContacts()', () => {
+describe('setCustomerContact()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -700,22 +700,27 @@ describe('setCustomerContacts()', () => {
             object: {
             }
         };
-        const contact = {};
+        const contact = {
+            givenName: 'givenName',
+            familyName: 'familyName',
+            telephone: '09012345678',
+            email: 'john@example.com'
+        };
 
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
-        sandbox.mock(transactionRepo).expects('setCustomerContactsOnPlaceOrderInProgress').once()
-            .withExactArgs(transaction.id, contact).returns(Promise.resolve());
+        sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').once()
+            .withArgs(transaction.id).returns(Promise.resolve());
 
-        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContacts(
+        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact(
             agent.id,
             transaction.id,
             <any>contact
         )(transactionRepo);
 
-        assert.equal(result, undefined);
+        assert.equal(typeof result, 'object');
         sandbox.verify();
     });
 
@@ -734,15 +739,20 @@ describe('setCustomerContacts()', () => {
             object: {
             }
         };
-        const contact = {};
+        const contact = {
+            givenName: 'givenName',
+            familyName: 'familyName',
+            telephone: '09012345678',
+            email: 'john@example.com'
+        };
 
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
-        sandbox.mock(transactionRepo).expects('setCustomerContactsOnPlaceOrderInProgress').never();
+        sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContacts(
+        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact(
             agent.id,
             transaction.id,
             <any>contact
