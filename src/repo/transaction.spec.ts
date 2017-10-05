@@ -81,7 +81,7 @@ describe('findPlaceOrderInProgressById()', () => {
     });
 });
 
-describe('setCustomerContactsOnPlaceOrderInProgress()', () => {
+describe('setCustomerContactOnPlaceOrderInProgress()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -97,7 +97,7 @@ describe('setCustomerContactsOnPlaceOrderInProgress()', () => {
             .chain('exec')
             .resolves(new repository.transactionModel());
 
-        const result = await repository.setCustomerContactsOnPlaceOrderInProgress(transactionId, <any>contact);
+        const result = await repository.setCustomerContactOnPlaceOrderInProgress(transactionId, <any>contact);
 
         assert.equal(result, undefined);
         sandbox.verify();

@@ -8,6 +8,7 @@ import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as moment from 'moment';
 
 import { MongoRepository as AuthorizeActionRepository } from '../../repo/action/authorize';
@@ -566,19 +567,35 @@ export function cancelMvtkAuth(
 /**
  * 取引中の購入者情報を変更する
  */
-export function setCustomerContacts(
+export function setCustomerContact(
     agentId: string,
     transactionId: string,
     contact: factory.transaction.placeOrder.ICustomerContact
-): ITransactionOperation<void> {
+): ITransactionOperation<factory.transaction.placeOrder.ICustomerContact> {
     return async (transactionRepo: TransactionRepository) => {
+        const phoneUtil = PhoneNumberUtil.getInstance();
+        const phoneNumber = phoneUtil.parse(contact.telephone, 'JP'); // 日本の電話番号前提仕様
+        if (!phoneUtil.isValidNumber(phoneNumber)) {
+            throw new factory.errors.Argument('contact.telephone', 'invalid phone number format.');
+        }
+
+        // 連絡先を再生成(validationの意味も含めて)
+        contact = {
+            familyName: contact.familyName,
+            givenName: contact.givenName,
+            email: contact.email,
+            telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
+        };
+
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        await transactionRepo.setCustomerContactsOnPlaceOrderInProgress(transactionId, contact);
+        await transactionRepo.setCustomerContactOnPlaceOrderInProgress(transactionId, contact);
+
+        return contact;
     };
 }
 

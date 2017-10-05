@@ -61,7 +61,7 @@ export class MongoRepository {
      * 取引中の所有者プロフィールを変更する
      * 匿名所有者として開始した場合のみ想定(匿名か会員に変更可能)
      */
-    public async setCustomerContactsOnPlaceOrderInProgress(
+    public async setCustomerContactOnPlaceOrderInProgress(
         transactionId: string,
         contact: factory.transaction.placeOrder.ICustomerContact
     ): Promise<void> {
