@@ -46,4 +46,10 @@ schema.index(
     { orderNumber: 1 }
 );
 
+// 注文番号はユニークなはず
+schema.index(
+    { orderNumber: 1 },
+    { unique: true }
+);
+
 export default mongoose.model('Order', schema);

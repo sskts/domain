@@ -58,11 +58,20 @@ schema.index(
 // 購入番号から照会の際に使用
 schema.index(
     {
-        'result.order.orderInquiryKey.reserveNum': 1,
+        'result.order.orderInquiryKey.confirmationNumber': 1,
         'result.order.orderInquiryKey.telephone': 1,
         'result.order.orderInquiryKey.theaterCode': 1,
         status: 1
     }
+);
+
+// 結果の注文番号はユニークなはず
+schema.index(
+    {
+        'result.order.orderNumber': 1,
+        typeOf: 1
+    },
+    { unique: true }
 );
 
 // レポート作成時に使用
