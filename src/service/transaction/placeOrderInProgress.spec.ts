@@ -809,7 +809,10 @@ describe('confirm()', () => {
         ];
         const order = {
             orderNumber: 'orderNumber',
-            acceptedOffers: [{ itemOffered: {} }, { itemOffered: {} }],
+            acceptedOffers: [
+                { itemOffered: { reservedTicket: { ticketToken: 'ticketToken1' } } },
+                { itemOffered: { reservedTicket: { ticketToken: 'ticketToken2' } } }
+            ],
             customer: {
                 name: 'name'
             }
