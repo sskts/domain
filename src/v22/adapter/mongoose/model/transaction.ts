@@ -25,7 +25,20 @@ const schema = new mongoose.Schema(
         closed_at: Date, // 成立日時
         tasks_exported_at: Date,
         tasks_exportation_status: String,
-        tasks: [mongoose.Schema.Types.Mixed]
+        tasks: [mongoose.Schema.Types.Mixed],
+
+        // 以下v23の型。migrationサービスでデータを更新できるように型を追加しておく。
+        typeOf: String,
+        agent: mongoose.Schema.Types.Mixed,
+        seller: mongoose.Schema.Types.Mixed,
+        error: mongoose.Schema.Types.Mixed,
+        result: mongoose.Schema.Types.Mixed,
+        object: mongoose.Schema.Types.Mixed,
+        expires: Date,
+        startDate: Date,
+        endDate: Date,
+        tasksExportedAt: Date,
+        tasksExportationStatus: String
     },
     {
         collection: 'transactions',

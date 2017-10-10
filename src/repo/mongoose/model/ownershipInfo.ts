@@ -33,4 +33,10 @@ const schema = new mongoose.Schema(
     }
 );
 
+// identifierはユニーク
+schema.index(
+    { identifier: 1 },
+    { unique: true }
+);
+
 export default mongoose.model('OwnershipInfo', schema);

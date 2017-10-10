@@ -634,9 +634,8 @@ export function confirm(
         });
         const ownershipInfos = order.acceptedOffers.map((acceptedOffer) => {
             // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
-            // ひとまず十分にuniqueにしておく
-            const identifier =
-                `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservationNumber}-${now.valueOf().toString()}`;
+            // saveする際に、identifierでfindOneAndUpdateしている
+            const identifier = `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservedTicket.ticketToken}`;
 
             return factory.ownershipInfo.create({
                 identifier: identifier,
