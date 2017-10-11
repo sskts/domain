@@ -266,7 +266,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                         numSeats: 1,
                         price: asset.sale_price,
                         priceCurrency: factory.priceCurrency.JPY,
-                        typeOf: 'Reservation',
+                        typeOf: 'EventReservation',
                         additionalTicketText: '',
                         modifiedTime: params.endDate,
                         reservationFor: individualScreeningEvent,
