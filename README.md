@@ -2,7 +2,7 @@
 
 # SSKTS Domain Library for Node.js
 
-[![Build status](https://circleci.com/gh/motionpicture/sskts-domain.png?style=shield&circletoken=26025d5a2df8ffd61173c72bbc1257fc6a2ad66d)](https://circleci.com/gh/motionpicture/sskts-domain)
+[![CircleCI](https://circleci.com/gh/motionpicture/sskts-domain.svg?style=svg&circle-token=26025d5a2df8ffd61173c72bbc1257fc6a2ad66d)](https://circleci.com/gh/motionpicture/sskts-domain)
 
 SSKTSのバックエンドサービスをnode.jsで簡単に使用するためのパッケージを提供します。
 
