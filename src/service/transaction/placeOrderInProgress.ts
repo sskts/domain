@@ -303,12 +303,15 @@ async function preAuthorizeSeatReservation(
         availableSalesTickets.push(...salesTickets4member);
     }
 
+    debug('availableSalesTickets:', availableSalesTickets);
+
     // 利用可能でないチケットコードが供給情報に含まれていれば引数エラー
     // 供給情報ごとに確認
     await Promise.all(offers.map(async (offer) => {
         // ムビチケの場合
         if (offer.ticketInfo.mvtkAppPrice > 0) {
             // ムビチケ情報をCOA券種に変換
+            debug('finding mvtkTicket...', offer.ticketInfo.ticketCode);
             const mvtkTicket = await COA.services.master.mvtkTicketcode({
                 theaterCode: individualScreeningEvent.coaInfo.theaterCode,
                 kbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
@@ -348,6 +351,12 @@ async function preAuthorizeSeatReservation(
             offer.ticketInfo.addPrice = availableSalesTicket.addPrice;
             offer.ticketInfo.salePrice = availableSalesTicket.salePrice;
             offer.ticketInfo.addGlasses = availableSalesTicket.addGlasses;
+            offer.ticketInfo.mvtkAppPrice = 0; // ムビチケを使用しない場合の初期値をセット
+            offer.ticketInfo.mvtkKbnDenshiken = '00'; // ムビチケを使用しない場合の初期値をセット
+            offer.ticketInfo.mvtkKbnKensyu = '00'; // ムビチケを使用しない場合の初期値をセット
+            offer.ticketInfo.mvtkKbnMaeuriken = '00'; // ムビチケを使用しない場合の初期値をセット
+            offer.ticketInfo.mvtkNum = ''; // ムビチケを使用しない場合の初期値をセット
+            offer.ticketInfo.mvtkSalesPrice = 0; // ムビチケを使用しない場合の初期値をセット
         }
     }));
 }
@@ -509,6 +518,8 @@ export function authorizeMvtk(
                 const knyknrNo = b.ticketInfo.mvtkNum;
                 // 券種情報にムビチケ購入管理番号があれば、枚数を追加
                 if (typeof knyknrNo === 'string' && knyknrNo !== '') {
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore else */
                     if (a[knyknrNo] === undefined) {
                         a[knyknrNo] = 0;
                     }
@@ -521,6 +532,8 @@ export function authorizeMvtk(
         );
         const knyknrNoNumsByNo: IKnyknrNoNumsByNo = authorizeObject.seatInfoSyncIn.knyknrNoInfo.reduce(
             (a: IKnyknrNoNumsByNo, b) => {
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore else */
                 if (a[b.knyknrNo] === undefined) {
                     a[b.knyknrNo] = 0;
                 }
@@ -680,10 +693,17 @@ export function setCustomerContact(
     contact: factory.transaction.placeOrder.ICustomerContact
 ): ITransactionOperation<factory.transaction.placeOrder.ICustomerContact> {
     return async (transactionRepo: TransactionRepository) => {
-        const phoneUtil = PhoneNumberUtil.getInstance();
-        const phoneNumber = phoneUtil.parse(contact.telephone, 'JP'); // 日本の電話番号前提仕様
-        if (!phoneUtil.isValidNumber(phoneNumber)) {
-            throw new factory.errors.Argument('contact.telephone', 'invalid phone number format.');
+        let formattedTelephone: string;
+        try {
+            const phoneUtil = PhoneNumberUtil.getInstance();
+            const phoneNumber = phoneUtil.parse(contact.telephone, 'JP'); // 日本の電話番号前提仕様
+            if (!phoneUtil.isValidNumber(phoneNumber)) {
+                throw new Error('invalid phone number format.');
+            }
+
+            formattedTelephone = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
+        } catch (error) {
+            throw new factory.errors.Argument('contact.telephone', error.message);
         }
 
         // 連絡先を再生成(validationの意味も含めて)
@@ -691,7 +711,7 @@ export function setCustomerContact(
             familyName: contact.familyName,
             givenName: contact.givenName,
             email: contact.email,
-            telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
+            telephone: formattedTelephone
         };
 
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
