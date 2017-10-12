@@ -258,6 +258,111 @@ export function cancelCreditCardAuth(
     };
 }
 
+/**
+ * 座席予約に対する承認アクションを開始する前の処理
+ * 供給情報の有効性の確認などを行う。
+ * この処理次第で、どのような供給情報を受け入れられるかが決定するので、とても大事な処理です。
+ * バグ、不足等あれば、随時更新することが望ましい。
+ * @function
+ * @param transaction 注文取引オブジェクト
+ * @param individualScreeningEvent 上映イベント
+ * @param offers 供給情報
+ */
+async function preAuthorizeSeatReservation(
+    transaction: factory.transaction.placeOrder.ITransaction,
+    individualScreeningEvent: factory.event.individualScreeningEvent.IEvent,
+    offers: factory.offer.ISeatReservationOffer[]
+): Promise<void> {
+    // 会員？
+    const isMember = (transaction.agent.memberOf !== undefined);
+
+    // 供給情報が適切かどうか確認
+    const availableSalesTickets: COA.services.reserve.ISalesTicketResult[] = [];
+
+    // COA券種取得(非会員)
+    const salesTickets4nonMember = await COA.services.reserve.salesTicket({
+        theaterCode: individualScreeningEvent.coaInfo.theaterCode,
+        dateJouei: individualScreeningEvent.coaInfo.dateJouei,
+        titleCode: individualScreeningEvent.coaInfo.titleCode,
+        titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum,
+        timeBegin: individualScreeningEvent.coaInfo.timeBegin,
+        flgMember: COA.services.reserve.FlgMember.NonMember
+    });
+    availableSalesTickets.push(...salesTickets4nonMember);
+
+    // COA券種取得(会員)
+    if (isMember) {
+        const salesTickets4member = await COA.services.reserve.salesTicket({
+            theaterCode: individualScreeningEvent.coaInfo.theaterCode,
+            dateJouei: individualScreeningEvent.coaInfo.dateJouei,
+            titleCode: individualScreeningEvent.coaInfo.titleCode,
+            titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum,
+            timeBegin: individualScreeningEvent.coaInfo.timeBegin,
+            flgMember: COA.services.reserve.FlgMember.Member
+        });
+        availableSalesTickets.push(...salesTickets4member);
+    }
+
+    // 利用可能でないチケットコードが供給情報に含まれていれば引数エラー
+    // 供給情報ごとに確認
+    await Promise.all(offers.map(async (offer) => {
+        // ムビチケの場合
+        if (offer.ticketInfo.mvtkAppPrice > 0) {
+            // ムビチケ情報をCOA券種に変換
+            const mvtkTicket = await COA.services.master.mvtkTicketcode({
+                theaterCode: individualScreeningEvent.coaInfo.theaterCode,
+                kbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
+                kbnMaeuriken: offer.ticketInfo.mvtkKbnMaeuriken,
+                kbnKensyu: offer.ticketInfo.mvtkKbnKensyu,
+                salesPrice: offer.ticketInfo.mvtkSalesPrice,
+                appPrice: offer.ticketInfo.mvtkAppPrice,
+                kbnEisyahousiki: offer.ticketInfo.kbnEisyahousiki,
+                titleCode: individualScreeningEvent.coaInfo.titleCode,
+                titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum
+            });
+
+            if (offer.ticketInfo.ticketCode !== mvtkTicket.ticketCode) {
+                throw new factory.errors.NotFound('offers', `ticketCode ${offer.ticketInfo.ticketCode} not found.`);
+            }
+
+            offer.ticketInfo.ticketName = mvtkTicket.ticketName;
+            offer.ticketInfo.ticketNameEng = mvtkTicket.ticketNameEng;
+            offer.ticketInfo.ticketNameKana = mvtkTicket.ticketNameKana;
+            offer.ticketInfo.stdPrice = 0;
+            offer.ticketInfo.addPrice = mvtkTicket.addPrice;
+            offer.ticketInfo.disPrice = 0;
+            offer.ticketInfo.salePrice = mvtkTicket.addPrice;
+            offer.ticketInfo.addGlasses = mvtkTicket.addPriceGlasses;
+        } else {
+            const availableSalesTicket = availableSalesTickets.find(
+                (salesTicket) => salesTicket.ticketCode === offer.ticketInfo.ticketCode
+            );
+            if (availableSalesTicket === undefined) {
+                throw new factory.errors.NotFound('offers', `ticketCode ${offer.ticketInfo.ticketCode} not found.`);
+            }
+
+            offer.ticketInfo.ticketName = availableSalesTicket.ticketName;
+            offer.ticketInfo.ticketNameEng = availableSalesTicket.ticketNameEng;
+            offer.ticketInfo.ticketNameKana = availableSalesTicket.ticketNameKana;
+            offer.ticketInfo.stdPrice = availableSalesTicket.stdPrice;
+            offer.ticketInfo.addPrice = availableSalesTicket.addPrice;
+            offer.ticketInfo.salePrice = availableSalesTicket.salePrice;
+            offer.ticketInfo.addGlasses = availableSalesTicket.addGlasses;
+        }
+    }));
+}
+
+/**
+ * 座席を仮予約する
+ * 承認アクションオブジェクトが返却されます。
+ * @export
+ * @function
+ * @memberof service.transaction.placeOrderInProgress
+ * @param {string} agentId 取引主体ID
+ * @param {string} transactionId 取引ID
+ * @param {factory.event.individualScreeningEvent.IEvent} individualScreeningEvent 上映イベント
+ * @param {factory.offer.ISeatReservationOffer[]} offers 供給情報
+ */
 export function authorizeSeatReservation(
     agentId: string,
     transactionId: string,
@@ -271,6 +376,10 @@ export function authorizeSeatReservation(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
+        // 供給情報の有効性を確認
+        await preAuthorizeSeatReservation(transaction, individualScreeningEvent, offers);
+
+        // 承認アクションを開始
         const action = await authorizeActionRepo.startSeatReservation(
             transaction.seller,
             transaction.agent,
@@ -280,8 +389,6 @@ export function authorizeSeatReservation(
                 individualScreeningEvent: individualScreeningEvent
             }
         );
-
-        // todo 座席コードがすでにキープ済みのものかどうかチェックできる？
 
         // COA仮予約
         const updTmpReserveSeatArgs = {
