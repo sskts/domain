@@ -9,6 +9,7 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
+import { INTERNAL_SERVER_ERROR } from 'http-status';
 import * as moment from 'moment';
 
 import { MongoRepository as AuthorizeActionRepository } from '../../repo/action/authorize';
@@ -427,14 +428,25 @@ export function authorizeSeatReservation(
                 // 失敗したら仕方ない
             }
 
-            // COAはクライアントエラーかサーバーエラーかに関わらずステータスコード500を返却する。メッセージ「座席取得失敗」の場合は、座席の重複とみなす
+            // メッセージ「座席取得失敗」の場合は、座席の重複とみなす
             if (error.message === '座席取得失敗') {
                 throw new factory.errors.AlreadyInUse('action.object', ['offers'], error.message);
             }
 
-            console.error('authorizeSeatReservation threw', error);
+            // COAはクライアントエラーかサーバーエラーかに関わらずステータスコード200 or 500を返却する。
+            const coaServiceHttpStatusCode = error.code;
 
-            throw new factory.errors.ServiceUnavailable('reserve service temporarily unavailable.');
+            // 500未満であればクライアントエラーとみなす
+            if (Number.isInteger(coaServiceHttpStatusCode)) {
+                if (coaServiceHttpStatusCode < INTERNAL_SERVER_ERROR) {
+                    throw new factory.errors.Argument('individualScreeningEvent', error.message);
+                } else {
+                    throw new factory.errors.ServiceUnavailable('Reservation service temporarily unavailable.');
+                }
+            }
+
+            console.error('authorizeSeatReservation threw', error);
+            throw new factory.errors.ServiceUnavailable('Unexepected error occurred.');
         }
 
         // COAオーソリ追加

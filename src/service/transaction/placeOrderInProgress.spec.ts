@@ -1001,6 +1001,110 @@ describe('authorizeSeatReservation()', () => {
         assert(result instanceof sskts.factory.errors.AlreadyInUse);
         sandbox.verify();
     });
+
+    it('COA仮予約が500未満のエラーであれば、承認アクションを諦めて、Argumentエラーになるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const individualScreeningEvent = {
+            coaInfo: {}
+        };
+        const offers = [{
+            seatSection: 'seatSection',
+            seatNumber: 'seatNumber',
+            ticketInfo: {
+                ticketCode: 'ticketCode',
+                salePrice: 123
+            }
+        }];
+        const salesTickets = [{ ticketCode: 'ticketCode' }];
+        const action = {
+            id: 'actionId'
+        };
+        const updTmpReserveSeatResult = { code: 200 };
+
+        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
+        sandbox.mock(authorizeActionRepo).expects('startSeatReservation').once().resolves(action);
+        // COAが座席取得失敗エラーを返してきた場合
+        sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().rejects(updTmpReserveSeatResult);
+        // giveUpが呼ばれて、completeは呼ばれないはず
+        sandbox.mock(authorizeActionRepo).expects('giveUp').once().withArgs(action.id).resolves(action);
+        sandbox.mock(authorizeActionRepo).expects('completeSeatReservation').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.authorizeSeatReservation(
+            agent.id,
+            transaction.id,
+            <any>individualScreeningEvent,
+            <any>offers
+        )(authorizeActionRepo, transactionRepo).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.Argument);
+        sandbox.verify();
+    });
+
+    it('COA仮予約が500以上のエラーであれば、承認アクションを諦めて、Argumentエラーになるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const individualScreeningEvent = {
+            coaInfo: {}
+        };
+        const offers = [{
+            seatSection: 'seatSection',
+            seatNumber: 'seatNumber',
+            ticketInfo: {
+                ticketCode: 'ticketCode',
+                salePrice: 123
+            }
+        }];
+        const salesTickets = [{ ticketCode: 'ticketCode' }];
+        const action = {
+            id: 'actionId'
+        };
+        const updTmpReserveSeatResult = { code: 500 };
+
+        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
+        sandbox.mock(authorizeActionRepo).expects('startSeatReservation').once().resolves(action);
+        // COAが座席取得失敗エラーを返してきた場合
+        sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().rejects(updTmpReserveSeatResult);
+        // giveUpが呼ばれて、completeは呼ばれないはず
+        sandbox.mock(authorizeActionRepo).expects('giveUp').once().withArgs(action.id).resolves(action);
+        sandbox.mock(authorizeActionRepo).expects('completeSeatReservation').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.authorizeSeatReservation(
+            agent.id,
+            transaction.id,
+            <any>individualScreeningEvent,
+            <any>offers
+        )(authorizeActionRepo, transactionRepo).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.ServiceUnavailable);
+        sandbox.verify();
+    });
 });
 
 describe('cancelSeatReservationAuth()', () => {

@@ -1,5 +1,5 @@
 /**
- * notification service test
+ * 通知サービステスト
  * @ignore
  */
 
@@ -57,12 +57,32 @@ describe('sendEmail()', () => {
 });
 
 describe('report2developers()', () => {
+    beforeEach(() => {
+        process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN = 'accessToken';
+    });
+
     afterEach(() => {
+        process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN = 'accessToken';
+        nock.cleanAll();
         sandbox.restore();
     });
 
-    it('LINE Notifyの状態が正常であれば、エラーにならないはず', async () => {
-        const scope = nock('https://notify-api.line.me').post('/api/notify').reply(OK);
+    it('LINE Notifyのアクセストークンを環境変数に未設定であれば、エラーになるはず', async () => {
+        delete process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN;
+
+        const scope = nock('https://notify-api.line.me').post('/api/notify').reply(OK, {});
+        const imageThumbnail = 'https://example.com';
+        const imageFullsize = 'https://example.com';
+
+        const result = await sskts.service.notification.report2developers('', '', imageThumbnail, imageFullsize)()
+            .catch((err) => err);
+
+        assert(result instanceof Error);
+        assert(!scope.isDone());
+    });
+
+    it('LINE Notifyが200を返せば、エラーにならないはず', async () => {
+        const scope = nock('https://notify-api.line.me').post('/api/notify').reply(OK, {});
         const imageThumbnail = 'https://example.com';
         const imageFullsize = 'https://example.com';
 
@@ -72,13 +92,24 @@ describe('report2developers()', () => {
         assert(scope.isDone());
     });
 
-    it('LINE Notifyの状態が正常でなければ、エラーになるはず', async () => {
-        const scope = nock('https://notify-api.line.me').post('/api/notify').reply(BAD_REQUEST);
+    it('LINE Notifyの200を返さなければ、エラーになるはず', async () => {
+        const scope = nock('https://notify-api.line.me').post('/api/notify').reply(BAD_REQUEST, { message: 'message' });
 
-        const reportError = await sskts.service.notification.report2developers('', '')()
+        const result = await sskts.service.notification.report2developers('', '')()
             .catch((err) => err);
 
-        assert(reportError instanceof Error);
+        assert(result instanceof Error);
+        assert(scope.isDone());
+    });
+
+    it('LINE Notifyの状態が正常でなければ、エラーになるはず', async () => {
+        const scope = nock('https://notify-api.line.me').post('/api/notify').replyWithError(new Error('lineError'));
+
+        const result = await sskts.service.notification.report2developers('', '')()
+            .catch((err) => err);
+
+        assert(result instanceof Error);
+        console.error(result);
         assert(scope.isDone());
     });
 
@@ -86,10 +117,10 @@ describe('report2developers()', () => {
         const scope = nock('https://notify-api.line.me').post('/api/notify').reply(OK);
         const imageThumbnail = 'invalidUrl';
 
-        const reportError = await sskts.service.notification.report2developers('', '', imageThumbnail)()
+        const result = await sskts.service.notification.report2developers('', '', imageThumbnail)()
             .catch((err) => err);
 
-        assert(reportError instanceof sskts.factory.errors.Argument);
+        assert(result instanceof sskts.factory.errors.Argument);
         assert(!scope.isDone());
     });
 
@@ -98,10 +129,10 @@ describe('report2developers()', () => {
         const imageThumbnail = 'https://example.com';
         const imageFullsize = 'invalidUrl';
 
-        const reportError = await sskts.service.notification.report2developers('', '', imageThumbnail, imageFullsize)()
+        const result = await sskts.service.notification.report2developers('', '', imageThumbnail, imageFullsize)()
             .catch((err) => err);
 
-        assert(reportError instanceof sskts.factory.errors.Argument);
+        assert(result instanceof sskts.factory.errors.Argument);
         assert(!scope.isDone());
     });
 });

@@ -1,7 +1,6 @@
 /**
- * notification service
  * 通知サービス
- * @namespace service/notification
+ * @namespace service.notification
  */
 
 import * as factory from '@motionpicture/sskts-factory';
@@ -9,7 +8,7 @@ import * as factory from '@motionpicture/sskts-factory';
 import sgMail = require('@sendgrid/mail');
 import * as createDebug from 'debug';
 import * as httpStatus from 'http-status';
-import * as request from 'request-promise-native';
+import * as request from 'request';
 import * as util from 'util';
 import * as validator from 'validator';
 
@@ -28,7 +27,7 @@ export const LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify';
  * @param {factory.creativeWork.message.email.ICreativeWork} emailMessage
  * @returns {Operation<void>}
  * @see https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
- * @memberof service/notification
+ * @memberof service.notification
  */
 export function sendEmail(emailMessage: factory.creativeWork.message.email.ICreativeWork): Operation<void> {
     return async () => {
@@ -73,7 +72,7 @@ export function sendEmail(emailMessage: factory.creativeWork.message.email.ICrea
  * @function
  * @param {EmailNotification} email
  * @returns {Operation<void>}
- * @memberof service/notification
+ * @memberof service.notification
  * @param {string} subject
  * @param {string} content
  * @see https://notify-bot.line.me/doc/ja/
@@ -85,10 +84,10 @@ export function report2developers(subject: string, content: string, imageThumbna
         }
 
         const message = `
-環境[${process.env.NODE_ENV}]
---------
+env[${process.env.NODE_ENV}]
+------------------------
 ${subject}
---------
+------------------------
 ${content}`
             ;
 
@@ -109,19 +108,27 @@ ${content}`
             formData.imageFullsize = imageFullsize;
         }
 
-        const response = await request.post(
-            {
-                url: LINE_NOTIFY_URL,
-                auth: { bearer: process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN },
-                form: formData,
-                json: true,
-                simple: false,
-                resolveWithFullResponse: true
-            }
-        ).promise();
-
-        if (response.statusCode !== httpStatus.OK) {
-            throw new Error(response.body.message);
-        }
+        return new Promise<void>((resolve, reject) => {
+            request.post(
+                {
+                    url: LINE_NOTIFY_URL,
+                    auth: { bearer: process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN },
+                    form: formData,
+                    json: true
+                },
+                (error, response, body) => {
+                    debug('posted to LINE Notify.', error, body);
+                    if (error !== null) {
+                        reject(error);
+                    } else {
+                        if (response.statusCode !== httpStatus.OK) {
+                            reject(new Error(body.message));
+                        } else {
+                            resolve();
+                        }
+                    }
+                }
+            );
+        });
     };
 }
