@@ -23,7 +23,7 @@ describe('importMovies()', () => {
         const creativeWorkRepo = new sskts.repository.CreativeWork(sskts.mongoose.connection);
 
         sandbox.mock(creativeWorkRepo).expects('saveMovie').exactly(numberOfWorks);
-        sandbox.mock(sskts.COA.services.master).expects('title').once().returns(Promise.resolve(Array.from(Array(numberOfWorks))));
+        sandbox.mock(sskts.COA.services.master).expects('title').once().resolves(Array.from(Array(numberOfWorks)));
         sandbox.mock(sskts.factory.creativeWork.movie).expects('createFromCOA').exactly(numberOfWorks).returns({});
 
         const result = await sskts.service.masterSync.importMovies('123')(creativeWorkRepo);
@@ -44,14 +44,14 @@ describe('importScreeningEvents()', () => {
         const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
         const placeRepo = new sskts.repository.Place(sskts.mongoose.connection);
 
-        sandbox.mock(sskts.COA.services.master).expects('title').once().returns(Promise.resolve(
+        sandbox.mock(sskts.COA.services.master).expects('title').once().resolves(
             Array.from(Array(numberOfScreeningEvents)).map(() => new Object())
-        ));
-        sandbox.mock(sskts.COA.services.master).expects('schedule').once().returns(Promise.resolve(
+        );
+        sandbox.mock(sskts.COA.services.master).expects('schedule').once().resolves(
             Array.from(Array(numberOfIndividualScreeningEvents)).map(() => new Object())
-        ));
+        );
         // tslint:disable-next-line:no-magic-numbers
-        sandbox.mock(sskts.COA.services.master).expects('kubunName').exactly(6).returns(Promise.resolve([{}]));
+        sandbox.mock(sskts.COA.services.master).expects('kubunName').exactly(6).resolves([{}]);
         sandbox.mock(eventRepo).expects('saveScreeningEvent').exactly(numberOfScreeningEvents);
         sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').exactly(numberOfIndividualScreeningEvents);
         sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns({ containsPlace: [] });

@@ -66,7 +66,7 @@ describe('cancelCreditCard()', () => {
         };
 
         sandbox.mock(sskts.service.sales).expects('cancelCreditCardAuth').once()
-            .withArgs(data.transactionId).returns(async () => { return; });
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.cancelCreditCard(<any>data)(sskts.mongoose.connection);
 
@@ -86,7 +86,7 @@ describe('cancelMvtk()', () => {
         };
 
         sandbox.mock(sskts.service.sales).expects('cancelMvtk').once()
-            .withArgs(data.transactionId).returns(async () => { return; });
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.cancelMvtk(<any>data)(sskts.mongoose.connection);
 
@@ -106,7 +106,7 @@ describe('settleSeatReservation()', () => {
         };
 
         sandbox.mock(sskts.service.stock).expects('transferSeatReservation').once()
-            .withArgs(data.transactionId).returns(async () => { return; });
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.settleSeatReservation(<any>data)(sskts.mongoose.connection);
 
@@ -126,7 +126,7 @@ describe('settleCreditCard()', () => {
         };
 
         sandbox.mock(sskts.service.sales).expects('settleCreditCardAuth').once()
-            .withArgs(data.transactionId).returns(async () => { return; });
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.settleCreditCard(<any>data)(sskts.mongoose.connection);
 
@@ -146,7 +146,7 @@ describe('settleMvtk()', () => {
         };
 
         sandbox.mock(sskts.service.sales).expects('settleMvtk').once()
-            .withArgs(data.transactionId).returns(async () => { return; });
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.settleMvtk(<any>data)(sskts.mongoose.connection);
 
@@ -166,7 +166,7 @@ describe('createOrder()', () => {
         };
 
         sandbox.mock(sskts.service.order).expects('createFromTransaction').once()
-            .withArgs(data.transactionId).returns(async () => { return; });
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.createOrder(<any>data)(sskts.mongoose.connection);
 

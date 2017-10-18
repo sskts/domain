@@ -70,8 +70,8 @@ describe('cancelSeatReservationAuth()', () => {
         const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
 
         sandbox.mock(authorizeActionRepo).expects('findByTransactionId').once()
-            .withExactArgs(existingTransaction.id).returns(Promise.resolve(authorizeActions));
-        sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').once().returns(Promise.resolve());
+            .withExactArgs(existingTransaction.id).resolves(authorizeActions);
+        sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').once().resolves();
 
         const result = await sskts.service.stock.cancelSeatReservationAuth(existingTransaction.id)(authorizeActionRepo);
 
@@ -89,9 +89,9 @@ describe('transferSeatReservation()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withArgs(existingTransaction.id).returns(Promise.resolve(existingTransaction));
-        sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').once().returns(Promise.resolve(null));
-        sandbox.mock(sskts.COA.services.reserve).expects('updReserve').once().returns(Promise.resolve());
+            .withArgs(existingTransaction.id).resolves(existingTransaction);
+        sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').once().resolves(null);
+        sandbox.mock(sskts.COA.services.reserve).expects('updReserve').once().resolves();
 
         const result = await sskts.service.stock.transferSeatReservation(
             existingTransaction.id
@@ -111,7 +111,7 @@ describe('transferSeatReservation()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withArgs(transaction.id).returns(Promise.resolve(transaction));
+            .withArgs(transaction.id).resolves(transaction);
         sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').never();
         sandbox.mock(sskts.COA.services.reserve).expects('updReserve').never();
 
@@ -150,7 +150,7 @@ describe('transferSeatReservation()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withArgs(transaction.id).returns(Promise.resolve(transaction));
+            .withArgs(transaction.id).resolves(transaction);
         sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').never();
         sandbox.mock(sskts.COA.services.reserve).expects('updReserve').never();
 

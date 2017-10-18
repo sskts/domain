@@ -74,7 +74,7 @@ describe('searchIndividualScreeningEvents()', () => {
         sandbox.mock(repository.eventModel)
             .expects('find').once()
             .chain('exec')
-            .resolves(Promise.resolve(Array.from(Array(numberOfEvents).map(() => new Object()))));
+            .resolves(Array.from(Array(numberOfEvents).map(() => new Object())));
 
         const result = await repository.searchIndividualScreeningEvents(<any>conditions);
 
@@ -97,7 +97,7 @@ describe('findIndividualScreeningEventByIdentifier()', () => {
         sandbox.mock(repository.eventModel)
             .expects('findOne').once()
             .chain('exec')
-            .resolves(Promise.resolve(new Object()));
+            .resolves(new Object());
 
         const result = await repository.findIndividualScreeningEventByIdentifier(identifier);
 

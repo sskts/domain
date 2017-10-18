@@ -28,10 +28,10 @@ describe('executeByName()', () => {
     //     const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
     //     sandbox.mock(taskRepo).expects('executeOneByName').once()
-    //         .withArgs(taskName).returns(Promise.resolve(task));
+    //         .withArgs(taskName).resolves(task);
     //     sandbox.mock(sskts.service.task).expects('execute').once()
     //         .withArgs(task)
-    //         .returns(async () => { return; });
+    //         .returns(async () => Promise.resolve());
 
     //     const result = await sskts.service.task.executeByName(taskName)(taskRepo, sskts.mongoose.connection);
 
@@ -44,7 +44,7 @@ describe('executeByName()', () => {
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
         sandbox.mock(taskRepo).expects('executeOneByName').once()
-            .withArgs(taskName).returns(Promise.reject(new sskts.factory.errors.NotFound('task')));
+            .withArgs(taskName).rejects(new sskts.factory.errors.NotFound('task'));
         sandbox.mock(sskts.service.task).expects('execute').never();
 
         const result = await sskts.service.task.executeByName(taskName)(taskRepo, sskts.mongoose.connection);
@@ -64,7 +64,7 @@ describe('retry()', () => {
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
         sandbox.mock(taskRepo).expects('retry').once()
-            .withArgs(INTERVAL).returns(Promise.resolve());
+            .withArgs(INTERVAL).resolves();
 
         const result = await sskts.service.task.retry(INTERVAL)(taskRepo);
 
@@ -86,10 +86,9 @@ describe('abort()', () => {
         };
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(taskRepo).expects('abortOne').once()
-            .withArgs(INTERVAL).returns(Promise.resolve(task));
+        sandbox.mock(taskRepo).expects('abortOne').once().withArgs(INTERVAL).resolves(task);
         sandbox.mock(sskts.service.notification).expects('report2developers').once()
-            .withArgs(sskts.service.task.ABORT_REPORT_SUBJECT).returns(async () => { return; });
+            .withArgs(sskts.service.task.ABORT_REPORT_SUBJECT).returns(async () => Promise.resolve());
 
         const result = await sskts.service.task.abort(INTERVAL)(taskRepo);
 
@@ -112,10 +111,8 @@ describe('execute()', () => {
         };
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(TaskFunctionsService).expects(task.name).once()
-            .withArgs(task.data).returns(async () => { return; });
-        sandbox.mock(taskRepo).expects('pushExecutionResultById').once()
-            .withArgs(task.id, sskts.factory.taskStatus.Executed).returns(Promise.resolve());
+        sandbox.mock(TaskFunctionsService).expects(task.name).once().withArgs(task.data).returns(async () => Promise.resolve());
+        sandbox.mock(taskRepo).expects('pushExecutionResultById').once().withArgs(task.id, sskts.factory.taskStatus.Executed).resolves();
 
         const result = await sskts.service.task.execute(<any>task)(taskRepo, sskts.mongoose.connection);
 
@@ -132,8 +129,7 @@ describe('execute()', () => {
         };
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(taskRepo).expects('pushExecutionResultById').once()
-            .withArgs(task.id, task.status).returns(Promise.resolve());
+        sandbox.mock(taskRepo).expects('pushExecutionResultById').once().withArgs(task.id, task.status).resolves();
 
         const result = await sskts.service.task.execute(<any>task)(taskRepo, sskts.mongoose.connection);
 

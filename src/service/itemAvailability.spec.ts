@@ -46,11 +46,11 @@ describe('updatePerformanceStockStatuses()', () => {
                 theaterCode: theaterCode,
                 begin: dayStart,
                 end: dayEnd
-            }).returns(Promise.resolve(countFreeSeatResult));
+            }).resolves(countFreeSeatResult);
         sandbox.mock(sskts.factory.event.individualScreeningEvent).expects('createItemAvailability').exactly(numberOfEvents)
             .returns(availability);
         sandbox.mock(itemAvailabilityRepo).expects('updateOne').exactly(numberOfEvents)
-            .returns(Promise.resolve());
+            .resolves();
 
         const result = await sskts.service.itemAvailability.updatePerformanceStockStatuses(
             theaterCode,

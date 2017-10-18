@@ -13,6 +13,7 @@ import { INTERNAL_SERVER_ERROR } from 'http-status';
 import * as moment from 'moment';
 
 import { MongoRepository as AuthorizeActionRepository } from '../../repo/action/authorize';
+import { MongoRepository as EventRepository } from '../../repo/event';
 import { MongoRepository as OrganizationRepository } from '../../repo/organization';
 import { MongoRepository as TransactionRepository } from '../../repo/transaction';
 import { MongoRepository as TransactionCountRepository } from '../../repo/transactionCount';
@@ -24,6 +25,11 @@ export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (
     organizationRepo: OrganizationRepository,
     transactionRepo: TransactionRepository,
     transactionCountRepository: TransactionCountRepository
+) => Promise<T>;
+export type IEventAndActionAndTransactionOperation<T> = (
+    eventRepo: EventRepository,
+    authorizeActionRepo: AuthorizeActionRepository,
+    transactionRepo: TransactionRepository
 ) => Promise<T>;
 export type IActionAndTransactionOperation<T> = (
     authorizeActionRepo: AuthorizeActionRepository,
@@ -269,11 +275,13 @@ export function cancelCreditCardAuth(
  * @param individualScreeningEvent 上映イベント
  * @param offers 供給情報
  */
+// tslint:disable-next-line:max-func-body-length
 async function preAuthorizeSeatReservation(
     transaction: factory.transaction.placeOrder.ITransaction,
     individualScreeningEvent: factory.event.individualScreeningEvent.IEvent,
     offers: factory.offer.ISeatReservationOffer[]
 ): Promise<void> {
+    debug('individualScreeningEvent:', individualScreeningEvent);
     // 会員？
     const isMember = (transaction.agent.memberOf !== undefined);
 
@@ -312,21 +320,51 @@ async function preAuthorizeSeatReservation(
         // ムビチケの場合
         if (offer.ticketInfo.mvtkAppPrice > 0) {
             // ムビチケ情報をCOA券種に変換
-            debug('finding mvtkTicket...', offer.ticketInfo.ticketCode);
-            const mvtkTicket = await COA.services.master.mvtkTicketcode({
-                theaterCode: individualScreeningEvent.coaInfo.theaterCode,
-                kbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
-                kbnMaeuriken: offer.ticketInfo.mvtkKbnMaeuriken,
-                kbnKensyu: offer.ticketInfo.mvtkKbnKensyu,
-                salesPrice: offer.ticketInfo.mvtkSalesPrice,
-                appPrice: offer.ticketInfo.mvtkAppPrice,
-                kbnEisyahousiki: offer.ticketInfo.kbnEisyahousiki,
-                titleCode: individualScreeningEvent.coaInfo.titleCode,
-                titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum
-            });
+            let mvtkTicket: COA.services.master.IMvtkTicketcodeResult;
+            try {
+                debug('finding mvtkTicket...', offer.ticketInfo.ticketCode, {
+                    theaterCode: individualScreeningEvent.coaInfo.theaterCode,
+                    kbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
+                    kbnMaeuriken: offer.ticketInfo.mvtkKbnMaeuriken,
+                    kbnKensyu: offer.ticketInfo.mvtkKbnKensyu,
+                    salesPrice: offer.ticketInfo.mvtkSalesPrice,
+                    appPrice: offer.ticketInfo.mvtkAppPrice,
+                    kbnEisyahousiki: offer.ticketInfo.kbnEisyahousiki,
+                    titleCode: individualScreeningEvent.coaInfo.titleCode,
+                    titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum
+                });
+                mvtkTicket = await COA.services.master.mvtkTicketcode({
+                    theaterCode: individualScreeningEvent.coaInfo.theaterCode,
+                    kbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
+                    kbnMaeuriken: offer.ticketInfo.mvtkKbnMaeuriken,
+                    kbnKensyu: offer.ticketInfo.mvtkKbnKensyu,
+                    salesPrice: offer.ticketInfo.mvtkSalesPrice,
+                    appPrice: offer.ticketInfo.mvtkAppPrice,
+                    kbnEisyahousiki: offer.ticketInfo.kbnEisyahousiki,
+                    titleCode: individualScreeningEvent.coaInfo.titleCode,
+                    titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum
+                });
+            } catch (error) {
+                // COAサービスエラーの場合ハンドリング
+                if (error.name === 'COAServiceError') {
+                    // COAはクライアントエラーかサーバーエラーかに関わらずステータスコード200 or 500を返却する。
+                    // 500未満であればクライアントエラーとみなす
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore else */
+                    if (error.code < INTERNAL_SERVER_ERROR) {
+                        throw new factory.errors.NotFound(
+                            'offers',
+                            `ticketCode ${offer.ticketInfo.ticketCode} not found. ${error.message}`
+                        );
+                    }
+                }
 
+                throw error;
+            }
+
+            // COA券種が見つかっても、指定された券種コードと異なればエラー
             if (offer.ticketInfo.ticketCode !== mvtkTicket.ticketCode) {
-                throw new factory.errors.NotFound('offers', `ticketCode ${offer.ticketInfo.ticketCode} not found.`);
+                throw new factory.errors.NotFound('offers', `ticketInfo of ticketCode ${offer.ticketInfo.ticketCode} is invalid.`);
             }
 
             offer.ticketInfo.ticketName = mvtkTicket.ticketName;
@@ -370,21 +408,24 @@ async function preAuthorizeSeatReservation(
  * @memberof service.transaction.placeOrderInProgress
  * @param {string} agentId 取引主体ID
  * @param {string} transactionId 取引ID
- * @param {factory.event.individualScreeningEvent.IEvent} individualScreeningEvent 上映イベント
+ * @param {string} eventIdentifier イベント識別子
  * @param {factory.offer.ISeatReservationOffer[]} offers 供給情報
  */
 export function authorizeSeatReservation(
     agentId: string,
     transactionId: string,
-    individualScreeningEvent: factory.event.individualScreeningEvent.IEvent,
+    eventIdentifier: string,
     offers: factory.offer.ISeatReservationOffer[]
-): IActionAndTransactionOperation<factory.action.authorize.seatReservation.IAction> {
-    return async (authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+): IEventAndActionAndTransactionOperation<factory.action.authorize.seatReservation.IAction> {
+    return async (eventRepo: EventRepository, authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
+
+        // 上映イベントを取得
+        const individualScreeningEvent = await eventRepo.findIndividualScreeningEventByIdentifier(eventIdentifier);
 
         // 供給情報の有効性を確認
         await preAuthorizeSeatReservation(transaction, individualScreeningEvent, offers);
