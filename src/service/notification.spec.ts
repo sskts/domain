@@ -107,9 +107,7 @@ describe('report2developers()', () => {
 
         const result = await sskts.service.notification.report2developers('', '')()
             .catch((err) => err);
-
         assert(result instanceof Error);
-        console.error(result);
         assert(scope.isDone());
     });
 

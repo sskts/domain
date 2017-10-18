@@ -1277,6 +1277,173 @@ describe('authorizeSeatReservation()', () => {
         assert(result instanceof sskts.factory.errors.ServiceUnavailable);
         sandbox.verify();
     });
+
+    it('制限単位がn人単位の券種が指定された場合、割引条件を満たしていなければ、Argumentエラー配列が投げられるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const eventIdentifier = 'eventIdentifier';
+        const event = {
+            identifier: eventIdentifier,
+            coaInfo: {
+                theaterCode: 'theaterCode'
+            }
+        };
+        const offers = [
+            {
+                seatSection: 'seatSection',
+                seatNumber: 'seatNumber1',
+                ticketInfo: {
+                    ticketCode: 'ticketCode',
+                    salePrice: 123
+                }
+            },
+            {
+                seatSection: 'seatSection',
+                seatNumber: 'seatNumber2',
+                ticketInfo: {
+                    ticketCode: 'ticketCode',
+                    salePrice: 123
+                }
+            },
+            {
+                seatSection: 'seatSection',
+                seatNumber: 'seatNumber3',
+                ticketInfo: {
+                    ticketCode: 'ticketCode2',
+                    salePrice: 123
+                }
+            },
+            {
+                seatSection: 'seatSection',
+                seatNumber: 'seatNumber4',
+                ticketInfo: {
+                    ticketCode: 'ticketCode',
+                    salePrice: 123
+                }
+            }
+        ];
+        const salesTickets = [{
+            ticketCode: 'ticketCode',
+            limitUnit: '001',
+            limitCount: 2 // 2枚単位の制限
+        }];
+
+        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
+            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
+        sandbox.mock(authorizeActionRepo).expects('startSeatReservation').never();
+        sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').never();
+        sandbox.mock(authorizeActionRepo).expects('giveUp').never();
+        sandbox.mock(authorizeActionRepo).expects('completeSeatReservation').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.authorizeSeatReservation(
+            agent.id,
+            transaction.id,
+            eventIdentifier,
+            <any>offers
+        )(eventRepo, authorizeActionRepo, transactionRepo).catch((err) => err);
+        assert(Array.isArray(result));
+        assert(result[0] instanceof sskts.factory.errors.Argument);
+        sandbox.verify();
+    });
+
+    it('制限単位がn人単位の券種が指定された場合、割引条件を満たしていれば、承認アクションを取得できるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const eventIdentifier = 'eventIdentifier';
+        const event = {
+            identifier: eventIdentifier,
+            coaInfo: {
+                theaterCode: 'theaterCode'
+            }
+        };
+        const offers = [
+            {
+                seatSection: 'seatSection',
+                seatNumber: 'seatNumber1',
+                ticketInfo: {
+                    ticketCode: 'ticketCode',
+                    salePrice: 123
+                }
+            },
+            {
+                seatSection: 'seatSection',
+                seatNumber: 'seatNumber2',
+                ticketInfo: {
+                    ticketCode: 'ticketCode',
+                    salePrice: 123
+                }
+            },
+            {
+                seatSection: 'seatSection',
+                seatNumber: 'seatNumber4',
+                ticketInfo: {
+                    ticketCode: 'ticketCode2',
+                    salePrice: 123
+                }
+            }
+        ];
+        const salesTickets = [
+            {
+                ticketCode: 'ticketCode',
+                limitUnit: '001',
+                limitCount: 2 // 2枚単位の制限
+            },
+            {
+                ticketCode: 'ticketCode2'
+            }
+        ];
+        const updTmpReserveSeatResult = {};
+        const action = {
+            id: 'actionId'
+        };
+
+        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
+            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
+        sandbox.mock(authorizeActionRepo).expects('startSeatReservation').once().resolves(action);
+        sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().resolves(updTmpReserveSeatResult);
+        sandbox.mock(authorizeActionRepo).expects('completeSeatReservation').once().resolves(action);
+
+        const result = await sskts.service.transaction.placeOrderInProgress.authorizeSeatReservation(
+            agent.id,
+            transaction.id,
+            eventIdentifier,
+            <any>offers
+        )(eventRepo, authorizeActionRepo, transactionRepo);
+        assert.deepEqual(result, action);
+        sandbox.verify();
+    });
 });
 
 describe('cancelSeatReservationAuth()', () => {
@@ -1674,8 +1841,6 @@ describe('setCustomerContact()', () => {
             transaction.id,
             <any>contact
         )(transactionRepo).catch((err) => err);
-        console.error(result);
-
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
     });

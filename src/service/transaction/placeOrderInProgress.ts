@@ -316,7 +316,8 @@ async function preAuthorizeSeatReservation(
 
     // 利用可能でないチケットコードが供給情報に含まれていれば引数エラー
     // 供給情報ごとに確認
-    await Promise.all(offers.map(async (offer) => {
+    // tslint:disable-next-line:max-func-body-length
+    await Promise.all(offers.map(async (offer, offerIndex) => {
         // ムビチケの場合
         if (offer.ticketInfo.mvtkAppPrice > 0) {
             // ムビチケ情報をCOA券種に変換
@@ -353,7 +354,7 @@ async function preAuthorizeSeatReservation(
                     /* istanbul ignore else */
                     if (error.code < INTERNAL_SERVER_ERROR) {
                         throw new factory.errors.NotFound(
-                            'offers',
+                            `offers.${offerIndex}`,
                             `ticketCode ${offer.ticketInfo.ticketCode} not found. ${error.message}`
                         );
                     }
@@ -364,7 +365,9 @@ async function preAuthorizeSeatReservation(
 
             // COA券種が見つかっても、指定された券種コードと異なればエラー
             if (offer.ticketInfo.ticketCode !== mvtkTicket.ticketCode) {
-                throw new factory.errors.NotFound('offers', `ticketInfo of ticketCode ${offer.ticketInfo.ticketCode} is invalid.`);
+                throw new factory.errors.NotFound(
+                    `offers.${offerIndex}`,
+                    `ticketInfo of ticketCode ${offer.ticketInfo.ticketCode} is invalid.`);
             }
 
             offer.ticketInfo.ticketName = mvtkTicket.ticketName;
@@ -379,8 +382,33 @@ async function preAuthorizeSeatReservation(
             const availableSalesTicket = availableSalesTickets.find(
                 (salesTicket) => salesTicket.ticketCode === offer.ticketInfo.ticketCode
             );
+
+            // 利用可能な券種が見つからなければエラー
             if (availableSalesTicket === undefined) {
-                throw new factory.errors.NotFound('offers', `ticketCode ${offer.ticketInfo.ticketCode} not found.`);
+                throw new factory.errors.NotFound(`offers.${offerIndex}`, `ticketCode ${offer.ticketInfo.ticketCode} not found.`);
+            }
+
+            // {
+            //     "kubunCode": "011",
+            //     "kubunName": "チケット制限区分",
+            //     "kubunAddPrice": 0
+            // },
+            // 制限単位がn人単位(例えば夫婦割り)の場合、同一券種の数を確認
+            if (availableSalesTicket.limitUnit === '001') {
+                const numberOfSameOffer = offers.filter((o) => o.ticketInfo.ticketCode === availableSalesTicket.ticketCode).length;
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore else */
+                if (numberOfSameOffer % availableSalesTicket.limitCount !== 0) {
+                    // 割引条件が満たされていません
+                    // 選択した券種の中に、割引券が含まれています。
+                    // 割引券の適用条件を再度ご確認ください。
+                    const invalidOfferIndexes = offers.reduce<number[]>(
+                        (a, b, index) => (b.ticketInfo.ticketCode === availableSalesTicket.ticketCode) ? [...a, ...[index]] : a,
+                        []
+                    );
+
+                    throw invalidOfferIndexes.map((index) => new factory.errors.Argument(`offers.${index}`, '割引条件が満たされていません。'));
+                }
             }
 
             offer.ticketInfo.ticketName = availableSalesTicket.ticketName;
