@@ -30,7 +30,7 @@ describe('sendEmail()', () => {
         };
         const sendResponse = [{ statusCode: ACCEPTED }];
 
-        sandbox.mock(sgMail).expects('send').once().returns(Promise.resolve(sendResponse));
+        sandbox.mock(sgMail).expects('send').once().resolves(sendResponse);
 
         const result = await sskts.service.notification.sendEmail(<any>emailMessage)();
 
@@ -46,7 +46,7 @@ describe('sendEmail()', () => {
         };
         const sendResponse = [{ statusCode: BAD_REQUEST }];
 
-        sandbox.mock(sgMail).expects('send').once().returns(Promise.resolve(sendResponse));
+        sandbox.mock(sgMail).expects('send').once().resolves(sendResponse);
 
         const sendEmailError = await sskts.service.notification.sendEmail(<any>emailMessage)()
             .catch((err) => err);

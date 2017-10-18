@@ -55,8 +55,8 @@ describe('cancelCreditCardAuth()', () => {
         const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
 
         sandbox.mock(authorizeActionRepo).expects('findByTransactionId').once()
-            .withExactArgs(existingTransaction.id).returns(Promise.resolve(authorizeActions));
-        sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().returns(Promise.resolve());
+            .withExactArgs(existingTransaction.id).resolves(authorizeActions);
+        sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().resolves();
 
         const result = await sskts.service.sales.cancelCreditCardAuth(existingTransaction.id)(authorizeActionRepo);
 
@@ -75,11 +75,9 @@ describe('settleCreditCardAuth()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withArgs(existingTransaction.id).returns(Promise.resolve(existingTransaction));
-        sandbox.mock(sskts.GMO.services.credit).expects('searchTrade').once()
-            .returns(Promise.resolve(searchTradeResult));
-        sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once()
-            .returns(Promise.resolve());
+            .withArgs(existingTransaction.id).resolves(existingTransaction);
+        sandbox.mock(sskts.GMO.services.credit).expects('searchTrade').once().resolves(searchTradeResult);
+        sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().resolves();
 
         const result = await sskts.service.sales.settleCreditCardAuth(existingTransaction.id)(transactionRepo);
 
@@ -92,9 +90,8 @@ describe('settleCreditCardAuth()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withArgs(existingTransaction.id).returns(Promise.resolve(existingTransaction));
-        sandbox.mock(sskts.GMO.services.credit).expects('searchTrade').once()
-            .returns(Promise.resolve(searchTradeResult));
+            .withArgs(existingTransaction.id).resolves(existingTransaction);
+        sandbox.mock(sskts.GMO.services.credit).expects('searchTrade').once().resolves(searchTradeResult);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').never();
 
         const result = await sskts.service.sales.settleCreditCardAuth(existingTransaction.id)(transactionRepo);

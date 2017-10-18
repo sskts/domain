@@ -29,9 +29,9 @@ describe('createFromTransaction()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(transaction.id).returns(Promise.resolve(transaction));
+            .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(orderRepo).expects('save').once()
-            .withExactArgs(transaction.result.order).returns(Promise.resolve());
+            .withExactArgs(transaction.result.order).resolves();
 
         const result = await sskts.service.order.createFromTransaction(transaction.id)(orderRepo, transactionRepo);
 
