@@ -208,6 +208,63 @@ export class MongoRepository {
             });
     }
 
+    /**
+     * 座席予約承認アクションの供給情報を変更する
+     * 座席仮予約ができている状態で券種だけ変更する場合に使用
+     */
+    public async updateSeatReservation(
+        actionId: string,
+        transactionId: string,
+        object: factory.action.authorize.seatReservation.IObject,
+        result: factory.action.authorize.seatReservation.IResult
+    ): Promise<factory.action.authorize.seatReservation.IAction> {
+        return await this.actionModel.findOneAndUpdate(
+            {
+                _id: actionId,
+                typeOf: factory.actionType.AuthorizeAction,
+                'object.transactionId': transactionId,
+                'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.SeatReservation,
+                actionStatus: factory.actionStatusType.CompletedActionStatus // 完了ステータスのアクションのみ
+            },
+            {
+                object: object,
+                result: result
+            },
+            { new: true }
+        ).exec()
+            .then((doc) => {
+                if (doc === null) {
+                    throw new factory.errors.NotFound('authorizeAction');
+
+                }
+
+                return <factory.action.authorize.seatReservation.IAction>doc.toObject();
+            });
+    }
+
+    /**
+     * 座席予約承認アクションの供給情報を変更する
+     * 座席仮予約ができている状態で券種だけ変更する場合に使用
+     */
+    public async findSeatReservationById(
+        actionId: string
+    ): Promise<factory.action.authorize.seatReservation.IAction> {
+        return await this.actionModel.findOne(
+            {
+                _id: actionId,
+                typeOf: factory.actionType.AuthorizeAction
+            }
+        ).exec()
+            .then((doc) => {
+                if (doc === null) {
+                    throw new factory.errors.NotFound('authorizeAction');
+
+                }
+
+                return <factory.action.authorize.seatReservation.IAction>doc.toObject();
+            });
+    }
+
     public async findSeatReservationByTransactionId(
         transactionId: string
     ): Promise<factory.action.authorize.seatReservation.IAction> {
