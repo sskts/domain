@@ -30,20 +30,17 @@ export type IActionAndTransactionOperation<T> = (
  * この処理次第で、どのような供給情報を受け入れられるかが決定するので、とても大事な処理です。
  * バグ、不足等あれば、随時更新することが望ましい。
  * @function
- * @param transaction 注文取引オブジェクト
- * @param individualScreeningEvent 上映イベント
- * @param offers 供給情報
+ * @param {boolean} isMember 会員かどうか
+ * @param {factory.event.individualScreeningEvent.IEvent} individualScreeningEvent 上映イベント
+ * @param {factory.offer.ISeatReservationOffer[]} offers 供給情報
  */
 // tslint:disable-next-line:max-func-body-length
-async function preCreate(
-    transaction: factory.transaction.placeOrder.ITransaction,
+async function validateOffers(
+    isMember: boolean,
     individualScreeningEvent: factory.event.individualScreeningEvent.IEvent,
     offers: factory.offer.ISeatReservationOffer[]
 ): Promise<void> {
     debug('individualScreeningEvent:', individualScreeningEvent);
-    // 会員？
-    const isMember = (transaction.agent.memberOf !== undefined);
-
     // 供給情報が適切かどうか確認
     const availableSalesTickets: COA.services.reserve.ISalesTicketResult[] = [];
 
@@ -188,11 +185,20 @@ async function preCreate(
 }
 
 /**
+ * 供給情報から承認アクションの価格を導き出す
+ * @function
+ * @param {factory.offer.ISeatReservationOffer[]} offers 供給情報
+ */
+function offers2resultPrice(offers: factory.offer.ISeatReservationOffer[]) {
+    return offers.reduce((a, b) => a + b.ticketInfo.salePrice + b.ticketInfo.mvtkSalesPrice, 0);
+}
+
+/**
  * 座席を仮予約する
  * 承認アクションオブジェクトが返却されます。
  * @export
  * @function
- * @memberof service.transaction.placeOrderInProgress
+ * @memberof service.transaction.placeOrderInProgress.action.authorize.seatReservation
  * @param {string} agentId 取引主体ID
  * @param {string} transactionId 取引ID
  * @param {string} eventIdentifier イベント識別子
@@ -215,7 +221,7 @@ export function create(
         const individualScreeningEvent = await eventRepo.findIndividualScreeningEventByIdentifier(eventIdentifier);
 
         // 供給情報の有効性を確認
-        await preCreate(transaction, individualScreeningEvent, offers);
+        await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
 
         // 承認アクションを開始
         const action = await authorizeActionRepo.startSeatReservation(
@@ -277,15 +283,13 @@ export function create(
             throw new factory.errors.ServiceUnavailable('Unexepected error occurred.');
         }
 
-        // COAオーソリ追加
         // アクションを完了
         debug('ending authorize action...');
-        const price = offers.reduce((a, b) => a + b.ticketInfo.salePrice + b.ticketInfo.mvtkSalesPrice, 0);
 
         return await authorizeActionRepo.completeSeatReservation(
             action.id,
             {
-                price: price,
+                price: offers2resultPrice(offers),
                 updTmpReserveSeatArgs: updTmpReserveSeatArgs,
                 updTmpReserveSeatResult: updTmpReserveSeatResult
             }
@@ -293,6 +297,15 @@ export function create(
     };
 }
 
+/**
+ * 座席予約承認アクションをキャンセルする
+ * @export
+ * @function
+ * @memberof service.transaction.placeOrderInProgress.action.authorize.seatReservation
+ * @param agentId アクション主体ID
+ * @param transactionId 取引ID
+ * @param actionId アクションID
+ */
 export function cancel(
     agentId: string,
     transactionId: string,
@@ -321,5 +334,67 @@ export function cancel(
             tmpReserveNum: actionResult.updTmpReserveSeatResult.tmpReserveNum
         });
         debug('delTmpReserve processed');
+    };
+}
+
+/**
+ * 座席予約承認アクションの供給情報を変更する
+ * @export
+ * @function
+ * @memberof service.transaction.placeOrderInProgress.action.authorize.seatReservation
+ * @param {string} agentId アクション主体ID
+ * @param {string} transactionId 取引ID
+ * @param {string} actionId アクションID
+ * @param {string} eventIdentifier イベント識別子
+ * @param {factory.offer.ISeatReservationOffer[]} offers 供給情報
+ */
+export function changeOffers(
+    agentId: string,
+    transactionId: string,
+    actionId: string,
+    eventIdentifier: string,
+    offers: factory.offer.ISeatReservationOffer[]
+): IEventAndActionAndTransactionOperation<factory.action.authorize.seatReservation.IAction> {
+    return async (eventRepo: EventRepository, authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+
+        if (transaction.agent.id !== agentId) {
+            throw new factory.errors.Forbidden('A specified transaction is not yours.');
+        }
+
+        // アクション中のイベント識別子と座席リストが合っているかどうか確認
+        const authorizeAction = await authorizeActionRepo.findSeatReservationById(actionId);
+        // 完了ステータスのアクションのみ更新可能
+        if (authorizeAction.actionStatus !== factory.actionStatusType.CompletedActionStatus) {
+            throw new factory.errors.NotFound('authorizeAction');
+        }
+        // 上映イベントが一致しているかどうか
+        if (authorizeAction.object.individualScreeningEvent.identifier !== eventIdentifier) {
+            throw new factory.errors.Argument('eventIdentifier', 'eventIdentifier not matched.');
+        }
+        // 座席セクションと座席番号が一致しているかどうか
+        const allSeatsMatched = authorizeAction.object.offers.every((offer, index) => {
+            return (offer.seatSection === offers[index].seatSection && offer.seatNumber === offers[index].seatNumber);
+        });
+        if (!allSeatsMatched) {
+            throw new factory.errors.Argument('offers', 'seatSection or seatNumber not matched.');
+        }
+
+        // 上映イベントを取得
+        const individualScreeningEvent = await eventRepo.findIndividualScreeningEventByIdentifier(eventIdentifier);
+
+        // 供給情報の有効性を確認
+        await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
+
+        // 供給情報と価格を変更してからDB更新
+        authorizeAction.object.offers = offers;
+        (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).price = offers2resultPrice(offers);
+
+        return await authorizeActionRepo.updateSeatReservation(
+            actionId,
+            transactionId,
+            authorizeAction.object,
+            (<factory.action.authorize.seatReservation.IResult>authorizeAction.result)
+        );
     };
 }

@@ -949,3 +949,301 @@ describe('action.authorize.seatReservation.cancel()', () => {
         sandbox.verify();
     });
 });
+
+describe('action.authorize.seatReservation.changeOffers()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('COAが正常であれば、エラーにならないはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const eventIdentifier = 'eventIdentifier';
+        const event = {
+            identifier: eventIdentifier,
+            coaInfo: {}
+        };
+        const offers = [{
+            seatSection: 'seatSection',
+            seatNumber: 'seatNumber',
+            ticketInfo: {
+                ticketCode: 'ticketCode',
+                salePrice: 123
+            }
+        }];
+        const salesTickets = [{ ticketCode: offers[0].ticketInfo.ticketCode }];
+        const action = {
+            id: 'actionId',
+            actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+            object: {
+                individualScreeningEvent: event,
+                offers: offers
+            },
+            result: {}
+        };
+
+        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
+            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(authorizeActionRepo).expects('findSeatReservationById').once().withArgs(action.id).resolves(action);
+        sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
+        sandbox.mock(authorizeActionRepo).expects('updateSeatReservation').once().withArgs(action.id).resolves(action);
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(
+            agent.id,
+            transaction.id,
+            action.id,
+            eventIdentifier,
+            <any>offers
+        )(eventRepo, authorizeActionRepo, transactionRepo);
+
+        assert.deepEqual(result, action);
+        sandbox.verify();
+    });
+
+    it('取引主体が一致しなければ、Forbiddenエラーになるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: { id: 'invalidAgentId' },
+            seller: seller
+        };
+        const eventIdentifier = 'eventIdentifier';
+        const event = {
+            identifier: eventIdentifier,
+            coaInfo: {}
+        };
+        const offers = [{
+            seatSection: 'seatSection',
+            seatNumber: 'seatNumber',
+            ticketInfo: {
+                ticketCode: 'ticketCode',
+                salePrice: 123
+            }
+        }];
+        const action = {
+            id: 'actionId',
+            actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+            object: {
+                individualScreeningEvent: event,
+                offers: offers
+            },
+            result: {}
+        };
+
+        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').never();
+        sandbox.mock(authorizeActionRepo).expects('findSeatReservationById').never();
+        sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').never();
+        sandbox.mock(authorizeActionRepo).expects('updateSeatReservation').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(
+            agent.id,
+            transaction.id,
+            action.id,
+            eventIdentifier,
+            <any>offers
+        )(eventRepo, authorizeActionRepo, transactionRepo).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.Forbidden);
+        sandbox.verify();
+    });
+
+    it('アクションが完了ステータスでなければ、NotFoundエラーになるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const eventIdentifier = 'eventIdentifier';
+        const event = {
+            identifier: eventIdentifier,
+            coaInfo: {}
+        };
+        const offers = [{
+            seatSection: 'seatSection',
+            seatNumber: 'seatNumber',
+            ticketInfo: {
+                ticketCode: 'ticketCode',
+                salePrice: 123
+            }
+        }];
+        const action = {
+            id: 'actionId',
+            actionStatus: sskts.factory.actionStatusType.ActiveActionStatus,
+            object: {
+                individualScreeningEvent: event,
+                offers: offers
+            },
+            result: {}
+        };
+
+        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(authorizeActionRepo).expects('findSeatReservationById').once().withArgs(action.id).resolves(action);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').never();
+        sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').never();
+        sandbox.mock(authorizeActionRepo).expects('updateSeatReservation').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(
+            agent.id,
+            transaction.id,
+            action.id,
+            eventIdentifier,
+            <any>offers
+        )(eventRepo, authorizeActionRepo, transactionRepo).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.NotFound);
+        assert.equal((<sskts.factory.errors.NotFound>result).entityName, 'authorizeAction');
+        sandbox.verify();
+    });
+
+    it('イベント識別子が一致しなければ、Argumentエラーになるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const eventIdentifier = 'eventIdentifier';
+        const offers = [{
+            seatSection: 'seatSection',
+            seatNumber: 'seatNumber',
+            ticketInfo: {
+                ticketCode: 'ticketCode',
+                salePrice: 123
+            }
+        }];
+        const action = {
+            id: 'actionId',
+            actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+            object: {
+                individualScreeningEvent: {
+                    identifier: 'invalidEventIdentifier'
+                },
+                offers: offers
+            },
+            result: {}
+        };
+
+        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(authorizeActionRepo).expects('findSeatReservationById').once().withArgs(action.id).resolves(action);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').never();
+        sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').never();
+        sandbox.mock(authorizeActionRepo).expects('updateSeatReservation').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(
+            agent.id,
+            transaction.id,
+            action.id,
+            eventIdentifier,
+            <any>offers
+        )(eventRepo, authorizeActionRepo, transactionRepo).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.Argument);
+        assert.equal((<sskts.factory.errors.Argument>result).argumentName, 'eventIdentifier');
+        sandbox.verify();
+    });
+
+    it('座席が一致していなければ、Argumentエラーになるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const eventIdentifier = 'eventIdentifier';
+        const event = {
+            identifier: eventIdentifier,
+            coaInfo: {}
+        };
+        const offers = [{
+            seatSection: 'seatSection',
+            seatNumber: 'seatNumber',
+            ticketInfo: {
+                ticketCode: 'ticketCode',
+                salePrice: 123
+            }
+        }];
+        const action = {
+            id: 'actionId',
+            actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+            object: {
+                individualScreeningEvent: event,
+                offers: [{
+                    seatSection: 'seatSection',
+                    seatNumber: 'invalidSeatNumber'
+                }]
+            },
+            result: {}
+        };
+
+        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(authorizeActionRepo).expects('findSeatReservationById').once().withArgs(action.id).resolves(action);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').never();
+        sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').never();
+        sandbox.mock(authorizeActionRepo).expects('updateSeatReservation').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(
+            agent.id,
+            transaction.id,
+            action.id,
+            eventIdentifier,
+            <any>offers
+        )(eventRepo, authorizeActionRepo, transactionRepo).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.Argument);
+        assert.equal((<sskts.factory.errors.Argument>result).argumentName, 'offers');
+        sandbox.verify();
+    });
+});
