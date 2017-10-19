@@ -8,7 +8,7 @@ const sskts = require('../../');
 
 sskts.mongoose.connect(process.env.MONGOLAB_URI);
 
-sskts.service.transaction.placeOrderInProgress.authorizeSeatReservation(
+sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
     '7q442so1c2hvcj8v5afr8k7ij',
     '59e5b5eeac9fea1f700d65ba',
     '11816221020171017301805',
