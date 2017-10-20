@@ -8,9 +8,11 @@ const KEY_PREFIX: string = 'sskts-domain:transactionCount';
 
 /**
  * 取引数redisレポジトリー
- *
  * @class TransactionCountRepository
  */
+// waiterに移行予定なのでテストコード省略
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 export class MongoRepository {
     public readonly redisClient: redis.RedisClient;
 
@@ -18,10 +20,14 @@ export class MongoRepository {
         this.redisClient = redisClient;
     }
 
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
     public static SCOPE2KEY(scope: factory.transactionScope.ITransactionScope): string {
         return `${KEY_PREFIX}:${factory.transactionScope.scope2String(scope)}`;
     }
 
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
     public async incr(scope: factory.transactionScope.ITransactionScope) {
         return new Promise<number>((resolve, reject) => {
             // redisでカウントアップ
@@ -46,6 +52,8 @@ export class MongoRepository {
         });
     }
 
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
     public async getByScope(scope: factory.transactionScope.ITransactionScope) {
         return new Promise<number>((resolve, reject) => {
             const key = MongoRepository.SCOPE2KEY(scope);

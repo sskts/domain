@@ -264,7 +264,19 @@ describe('confirm()', () => {
                 customerContact: {}
             }
         };
-        const authorizeActions = [
+        const creditCardAuthorizeActions = [
+            {
+                id: 'actionId2',
+                actionStatus: 'CompletedActionStatus',
+                agent: transaction.agent,
+                object: {},
+                result: {
+                    price: 1234
+                },
+                endDate: new Date()
+            }
+        ];
+        const seatReservationAuthorizeActions = [
             {
                 id: 'actionId1',
                 actionStatus: 'CompletedActionStatus',
@@ -272,16 +284,6 @@ describe('confirm()', () => {
                 object: {},
                 result: {
                     updTmpReserveSeatArgs: {},
-                    price: 1234
-                },
-                endDate: new Date()
-            },
-            {
-                id: 'actionId2',
-                actionStatus: 'CompletedActionStatus',
-                agent: transaction.agent,
-                object: {},
-                result: {
                     price: 1234
                 },
                 endDate: new Date()
@@ -306,11 +308,11 @@ describe('confirm()', () => {
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(creditCardAuthorizeActionRepo).expects('findByTransactionId').once()
-            .withExactArgs(transaction.id).resolves(authorizeActions);
+            .withExactArgs(transaction.id).resolves(creditCardAuthorizeActions);
         sandbox.mock(mvtkAuthorizeActionRepo).expects('findByTransactionId').once()
-            .withExactArgs(transaction.id).resolves(authorizeActions);
+            .withExactArgs(transaction.id).resolves([]);
         sandbox.mock(seatReservationAuthorizeActionRepo).expects('findByTransactionId').once()
-            .withExactArgs(transaction.id).resolves(authorizeActions);
+            .withExactArgs(transaction.id).resolves(seatReservationAuthorizeActions);
         sandbox.mock(sskts.factory.order).expects('createFromPlaceOrderTransaction').once().returns(order);
         sandbox.mock(sskts.factory.ownershipInfo).expects('create').exactly(order.acceptedOffers.length).returns([]);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();

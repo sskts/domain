@@ -46,6 +46,8 @@ export class MongoRepository {
         ];
 
         // 誰の所有か
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (searchConditions.ownedBy !== undefined) {
             andConditions.push({
                 'ownedBy.id': searchConditions.ownedBy
@@ -53,6 +55,8 @@ export class MongoRepository {
         }
 
         // いつの時点での所有か
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (searchConditions.ownedAt instanceof Date) {
             andConditions.push({
                 ownedFrom: { $lte: searchConditions.ownedAt },

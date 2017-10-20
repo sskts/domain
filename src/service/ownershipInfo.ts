@@ -5,8 +5,8 @@
 
 import * as factory from '@motionpicture/sskts-factory';
 
-import { MongoRepository as OwnershipInfoRepository } from '../repo/ownershipInfo';
-import { MongoRepository as TransactionRepository } from '../repo/transaction';
+import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
+import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 
@@ -17,7 +17,7 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  * @memberof service.ownershipInfo
  */
 export function createFromTransaction(transactionId: string) {
-    return async (ownershipInfoRepository: OwnershipInfoRepository, transactionRepository: TransactionRepository) => {
+    return async (ownershipInfoRepository: OwnershipInfoRepo, transactionRepository: TransactionRepo) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
 
         if (transaction.result !== undefined) {

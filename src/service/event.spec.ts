@@ -1,11 +1,15 @@
 /**
- * event service test
+ * イベントサービステスト
  * @ignore
  */
 
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
-import * as sskts from '../index';
+
+import { MongoRepository as EventRepo } from '../repo/event';
+import { MongoRepository as ScreeningEventItemAvailabilityRepo } from '../repo/itemAvailability/individualScreeningEvent';
+import * as EventService from './event';
 
 let sandbox: sinon.SinonSandbox;
 
@@ -19,27 +23,27 @@ describe('searchIndividualScreeningEvents()', () => {
     });
 
     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
-        const numberOfEvents = 3;
         const event = {
             coaInfo: {
                 dateJouei: '20170831'
             },
             identifier: 'identifier'
         };
-        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
-        const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(<any>{});
-
-        sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').once()
-            .returns(Array.from(Array(numberOfEvents)).map(() => event));
-        // tslint:disable-next-line:no-magic-numbers
-        sandbox.mock(itemAvailabilityRepo).expects('findOne').exactly(numberOfEvents).returns(100);
-
-        const result = await sskts.service.event.searchIndividualScreeningEvents({
+        const events = [event];
+        const searchConditions = {
             day: 'day',
             theater: 'theater'
-        })(eventRepo, itemAvailabilityRepo);
+        };
+        const eventRepo = new EventRepo(mongoose.connection);
+        const itemAvailabilityRepo = new ScreeningEventItemAvailabilityRepo(<any>{});
 
+        sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').once().resolves(events);
+        // tslint:disable-next-line:no-magic-numbers
+        sandbox.mock(itemAvailabilityRepo).expects('findOne').exactly(events.length).resolves(100);
+
+        const result = await EventService.searchIndividualScreeningEvents(searchConditions)(eventRepo, itemAvailabilityRepo);
         assert(Array.isArray(result));
+        assert.equal(result.length, events.length);
         sandbox.verify();
     });
 });
@@ -56,14 +60,14 @@ describe('findIndividualScreeningEventByIdentifier()', () => {
             },
             identifier: 'identifier'
         };
-        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
-        const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(<any>{});
+        const eventRepo = new EventRepo(mongoose.connection);
+        const itemAvailabilityRepo = new ScreeningEventItemAvailabilityRepo(<any>{});
 
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().returns(event);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().resolves(event);
         // tslint:disable-next-line:no-magic-numbers
-        sandbox.mock(itemAvailabilityRepo).expects('findOne').once().returns(100);
+        sandbox.mock(itemAvailabilityRepo).expects('findOne').once().resolves(100);
 
-        const result = await sskts.service.event.findIndividualScreeningEventByIdentifier(
+        const result = await EventService.findIndividualScreeningEventByIdentifier(
             event.identifier
         )(eventRepo, itemAvailabilityRepo);
 
