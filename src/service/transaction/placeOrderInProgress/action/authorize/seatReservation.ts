@@ -8,20 +8,20 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { INTERNAL_SERVER_ERROR } from 'http-status';
 
-import { MongoRepository as AuthorizeActionRepository } from '../../../../../repo/action/authorize';
-import { MongoRepository as EventRepository } from '../../../../../repo/event';
-import { MongoRepository as TransactionRepository } from '../../../../../repo/transaction';
+import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../../../../../repo/action/authorize/seatReservation';
+import { MongoRepository as EventRepo } from '../../../../../repo/event';
+import { MongoRepository as TransactionRepo } from '../../../../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:seatReservation');
 
 export type IEventAndActionAndTransactionOperation<T> = (
-    eventRepo: EventRepository,
-    authorizeActionRepo: AuthorizeActionRepository,
-    transactionRepo: TransactionRepository
+    eventRepo: EventRepo,
+    seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
+    transactionRepo: TransactionRepo
 ) => Promise<T>;
 export type IActionAndTransactionOperation<T> = (
-    authorizeActionRepo: AuthorizeActionRepository,
-    transactionRepo: TransactionRepository
+    seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
+    transactionRepo: TransactionRepo
 ) => Promise<T>;
 
 /**
@@ -210,7 +210,11 @@ export function create(
     eventIdentifier: string,
     offers: factory.offer.ISeatReservationOffer[]
 ): IEventAndActionAndTransactionOperation<factory.action.authorize.seatReservation.IAction> {
-    return async (eventRepo: EventRepository, authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+    return async (
+        eventRepo: EventRepo,
+        seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
+        transactionRepo: TransactionRepo
+    ) => {
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
@@ -224,7 +228,7 @@ export function create(
         await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
 
         // 承認アクションを開始
-        const action = await authorizeActionRepo.startSeatReservation(
+        const action = await seatReservationAuthorizeActionRepo.start(
             transaction.seller,
             transaction.agent,
             {
@@ -257,7 +261,7 @@ export function create(
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                await authorizeActionRepo.giveUp(action.id, error);
+                await seatReservationAuthorizeActionRepo.giveUp(action.id, error);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -286,7 +290,7 @@ export function create(
         // アクションを完了
         debug('ending authorize action...');
 
-        return await authorizeActionRepo.completeSeatReservation(
+        return await seatReservationAuthorizeActionRepo.complete(
             action.id,
             {
                 price: offers2resultPrice(offers),
@@ -311,7 +315,7 @@ export function cancel(
     transactionId: string,
     actionId: string
 ) {
-    return async (authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+    return async (seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo, transactionRepo: TransactionRepo) => {
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
@@ -320,7 +324,7 @@ export function cancel(
 
         // MongoDBでcompleteステータスであるにも関わらず、COAでは削除されている、というのが最悪の状況
         // それだけは回避するためにMongoDBを先に変更
-        const action = await authorizeActionRepo.cancelSeatReservation(actionId, transactionId);
+        const action = await seatReservationAuthorizeActionRepo.cancel(actionId, transactionId);
         const actionResult = <factory.action.authorize.seatReservation.IResult>action.result;
 
         // 座席仮予約削除
@@ -355,7 +359,11 @@ export function changeOffers(
     eventIdentifier: string,
     offers: factory.offer.ISeatReservationOffer[]
 ): IEventAndActionAndTransactionOperation<factory.action.authorize.seatReservation.IAction> {
-    return async (eventRepo: EventRepository, authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+    return async (
+        eventRepo: EventRepo,
+        seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
+        transactionRepo: TransactionRepo
+    ) => {
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
@@ -363,7 +371,7 @@ export function changeOffers(
         }
 
         // アクション中のイベント識別子と座席リストが合っているかどうか確認
-        const authorizeAction = await authorizeActionRepo.findSeatReservationById(actionId);
+        const authorizeAction = await seatReservationAuthorizeActionRepo.findById(actionId);
         // 完了ステータスのアクションのみ更新可能
         if (authorizeAction.actionStatus !== factory.actionStatusType.CompletedActionStatus) {
             throw new factory.errors.NotFound('authorizeAction');
@@ -390,7 +398,7 @@ export function changeOffers(
         authorizeAction.object.offers = offers;
         (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).price = offers2resultPrice(offers);
 
-        return await authorizeActionRepo.updateSeatReservation(
+        return await seatReservationAuthorizeActionRepo.updateObjectAndResultById(
             actionId,
             transactionId,
             authorizeAction.object,

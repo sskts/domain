@@ -46,17 +46,17 @@ describe('action.authorize.creditCard.create()', () => {
             recipient: seller
         };
 
-        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('startCreditCard').once().resolves(action);
+        sandbox.mock(authorizeActionRepo).expects('start').once().resolves(action);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(sskts.GMO.services.credit).expects('entryTran').once().resolves(entryTranResult);
         sandbox.mock(sskts.GMO.services.credit).expects('execTran').once().resolves(execTranResult);
-        sandbox.mock(authorizeActionRepo).expects('completeCreditCard').once().resolves(action);
+        sandbox.mock(authorizeActionRepo).expects('complete').once().resolves(action);
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
             agent.id,
@@ -94,13 +94,13 @@ describe('action.authorize.creditCard.create()', () => {
         const amount = 1234;
         const creditCard = <any>{};
 
-        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('startCreditCard').never();
+        sandbox.mock(authorizeActionRepo).expects('start').never();
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
         sandbox.mock(sskts.GMO.services.credit).expects('entryTran').never();
         sandbox.mock(sskts.GMO.services.credit).expects('execTran').never();
@@ -146,18 +146,18 @@ describe('action.authorize.creditCard.create()', () => {
         };
         const entryTranResult = new Error('entryTranResultError');
 
-        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('startCreditCard').once().resolves(action);
+        sandbox.mock(authorizeActionRepo).expects('start').once().resolves(action);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(sskts.GMO.services.credit).expects('entryTran').once().rejects(entryTranResult);
         sandbox.mock(sskts.GMO.services.credit).expects('execTran').never();
         sandbox.mock(authorizeActionRepo).expects('giveUp').once().resolves(action);
-        sandbox.mock(authorizeActionRepo).expects('completeCreditCard').never();
+        sandbox.mock(authorizeActionRepo).expects('complete').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
             agent.id,
@@ -204,18 +204,18 @@ describe('action.authorize.creditCard.create()', () => {
             }]
         };
 
-        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('startCreditCard').once().resolves(action);
+        sandbox.mock(authorizeActionRepo).expects('start').once().resolves(action);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(sskts.GMO.services.credit).expects('entryTran').once().rejects(entryTranResult);
         sandbox.mock(sskts.GMO.services.credit).expects('execTran').never();
         sandbox.mock(authorizeActionRepo).expects('giveUp').once().resolves(action);
-        sandbox.mock(authorizeActionRepo).expects('completeCreditCard').never();
+        sandbox.mock(authorizeActionRepo).expects('complete').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
             agent.id,
@@ -262,18 +262,18 @@ describe('action.authorize.creditCard.create()', () => {
             }]
         };
 
-        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('startCreditCard').once().resolves(action);
+        sandbox.mock(authorizeActionRepo).expects('start').once().resolves(action);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(sskts.GMO.services.credit).expects('entryTran').once().rejects(entryTranResult);
         sandbox.mock(sskts.GMO.services.credit).expects('execTran').never();
         sandbox.mock(authorizeActionRepo).expects('giveUp').once().resolves(action);
-        sandbox.mock(authorizeActionRepo).expects('completeCreditCard').never();
+        sandbox.mock(authorizeActionRepo).expects('complete').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
             agent.id,
@@ -320,18 +320,18 @@ describe('action.authorize.creditCard.create()', () => {
             }]
         };
 
-        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('startCreditCard').once().resolves(action);
+        sandbox.mock(authorizeActionRepo).expects('start').once().resolves(action);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(sskts.GMO.services.credit).expects('entryTran').once().rejects(entryTranResult);
         sandbox.mock(sskts.GMO.services.credit).expects('execTran').never();
         sandbox.mock(authorizeActionRepo).expects('giveUp').once().resolves(action);
-        sandbox.mock(authorizeActionRepo).expects('completeCreditCard').never();
+        sandbox.mock(authorizeActionRepo).expects('complete').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
             agent.id,
@@ -377,12 +377,12 @@ describe('action.authorize.creditCard.cancel()', () => {
             seller: seller
         };
 
-        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('cancelCreditCard').once()
+        sandbox.mock(authorizeActionRepo).expects('cancel').once()
             .withExactArgs(action.id, transaction.id).resolves(action);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().resolves();
 
@@ -417,12 +417,12 @@ describe('action.authorize.creditCard.cancel()', () => {
             seller: seller
         };
 
-        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('cancelCreditCard').never();
+        sandbox.mock(authorizeActionRepo).expects('cancel').never();
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(
@@ -460,12 +460,12 @@ describe('action.authorize.creditCard.cancel()', () => {
             seller: seller
         };
 
-        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('cancelCreditCard').once()
+        sandbox.mock(authorizeActionRepo).expects('cancel').once()
             .withExactArgs(action.id, transaction.id).resolves(action);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().rejects();
 

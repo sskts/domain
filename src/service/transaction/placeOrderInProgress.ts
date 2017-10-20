@@ -9,10 +9,12 @@ import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as moment from 'moment';
 
-import { MongoRepository as AuthorizeActionRepository } from '../../repo/action/authorize';
-import { MongoRepository as OrganizationRepository } from '../../repo/organization';
-import { MongoRepository as TransactionRepository } from '../../repo/transaction';
-import { MongoRepository as TransactionCountRepository } from '../../repo/transactionCount';
+import { MongoRepository as CreditCardAuthorizeActionRepo } from '../../repo/action/authorize/creditCard';
+import { MongoRepository as MvtkAuthorizeActionRepo } from '../../repo/action/authorize/mvtk';
+import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../../repo/action/authorize/seatReservation';
+import { MongoRepository as OrganizationRepo } from '../../repo/organization';
+import { MongoRepository as TransactionRepo } from '../../repo/transaction';
+import { MongoRepository as TransactionCountRepo } from '../../repo/transactionCount';
 
 import * as CreditCardAuthorizeActionService from './placeOrderInProgress/action/authorize/creditCard';
 import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/authorize/mvtk';
@@ -20,11 +22,11 @@ import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/a
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress');
 
-export type ITransactionOperation<T> = (transactionRepo: TransactionRepository) => Promise<T>;
+export type ITransactionOperation<T> = (transactionRepo: TransactionRepo) => Promise<T>;
 export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (
-    organizationRepo: OrganizationRepository,
-    transactionRepo: TransactionRepository,
-    transactionCountRepository: TransactionCountRepository
+    organizationRepo: OrganizationRepo,
+    transactionRepo: TransactionRepo,
+    transactionCountRepository: TransactionCountRepo
 ) => Promise<T>;
 
 /**
@@ -39,9 +41,9 @@ export function start(params: {
     sellerId: string;
 }): IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction> {
     return async (
-        organizationRepo: OrganizationRepository,
-        transactionRepo: TransactionRepository,
-        transactionCountRepository: TransactionCountRepository
+        organizationRepo: OrganizationRepo,
+        transactionRepo: TransactionRepo,
+        transactionCountRepository: TransactionCountRepo
     ) => {
         // 利用可能かどうか
         const nextCount = await transactionCountRepository.incr(params.scope);
@@ -132,7 +134,7 @@ export namespace action {
  * @memberof service.transaction.placeOrderInProgress
  */
 // export function addEmail(transactionId: string, notification: EmailNotificationFactory.INotification) {
-//     return async (transactionRepo: TransactionRepository) => {
+//     return async (transactionRepo: TransactionRepo) => {
 //         // イベント作成
 //         const event = AddNotificationTransactionEventFactory.create({
 //             occurredAt: new Date(),
@@ -155,7 +157,7 @@ export namespace action {
  * @memberof service.transaction.placeOrderInProgress
  */
 // export function removeEmail(transactionId: string, notificationId: string) {
-//     return async (transactionRepo: TransactionRepository) => {
+//     return async (transactionRepo: TransactionRepo) => {
 //         const transaction = await findInProgressById(transactionId)(transactionRepo)
 //             .then((option) => {
 //                 if (option.isEmpty) {
@@ -194,7 +196,7 @@ export function setCustomerContact(
     transactionId: string,
     contact: factory.transaction.placeOrder.ICustomerContact
 ): ITransactionOperation<factory.transaction.placeOrder.ICustomerContact> {
-    return async (transactionRepo: TransactionRepository) => {
+    return async (transactionRepo: TransactionRepo) => {
         let formattedTelephone: string;
         try {
             const phoneUtil = PhoneNumberUtil.getInstance();
@@ -235,17 +237,26 @@ export function confirm(
     agentId: string,
     transactionId: string
 ) {
-    // tslint:disable-next-line:max-func-body-length
-    return async (authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+    return async (
+        creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo,
+        mvtkAuthorizeActionRepo: MvtkAuthorizeActionRepo,
+        seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
+        transactionRepo: TransactionRepo
+    ) => {
         const now = new Date();
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        // authorizeActionsを取得
-        let authorizeActions = await authorizeActionRepo.findByTransactionId(transactionId);
-        // 万が一このプロセス中に他処理が発生しても無視するように
+        // 取引に対する全ての承認アクションをマージ
+        let authorizeActions = [
+            ... await creditCardAuthorizeActionRepo.findByTransactionId(transactionId),
+            ... await mvtkAuthorizeActionRepo.findByTransactionId(transactionId),
+            ... await seatReservationAuthorizeActionRepo.findByTransactionId(transactionId)
+        ];
+
+        // 万が一このプロセス中に他処理が発生してもそれらを無視するように、endDateでフィルタリング
         authorizeActions = authorizeActions.filter(
             (authorizeAction) => (authorizeAction.endDate !== undefined && authorizeAction.endDate < now)
         );
@@ -301,7 +312,7 @@ export function confirm(
 }
 
 /**
- * whether a transaction can be closed
+ * 取引が確定可能な状態かどうかをチェックする
  * @function
  * @returns {boolean}
  */
@@ -311,6 +322,7 @@ function canBeClosed(transaction: factory.transaction.placeOrder.ITransaction) {
         factory.action.authorize.mvtk.IResult |
         factory.action.authorize.seatReservation.IResult;
 
+    // agentとsellerで、承認アクションの金額が合うかどうか
     const priceByAgent = transaction.object.authorizeActions
         .filter((authorizeAction) => authorizeAction.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((authorizeAction) => authorizeAction.agent.id === transaction.agent.id)

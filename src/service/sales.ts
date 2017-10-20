@@ -8,8 +8,8 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import { MongoRepository as AuthorizeActionRepository } from '../repo/action/authorize';
-import { MongoRepository as TransactionRepository } from '../repo/transaction';
+import { MongoRepository as CreditCardAuthorizeActionRepo } from '../repo/action/authorize/creditCard';
+import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:sales');
 
@@ -23,15 +23,11 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  * @param {string} transactionId 取引ID
  */
 export function cancelCreditCardAuth(transactionId: string) {
-    return async (authorizeActionRepo: AuthorizeActionRepository) => {
+    return async (creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo) => {
         // クレジットカード仮売上アクションを取得
         const authorizeActions: factory.action.authorize.creditCard.IAction[] =
-            await authorizeActionRepo.findByTransactionId(transactionId)
-                .then((actions) => {
-                    return actions
-                        .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                        .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
-                });
+            await creditCardAuthorizeActionRepo.findByTransactionId(transactionId)
+                .then((actions) => actions.filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus));
 
         await Promise.all(authorizeActions.map(async (action) => {
             const entryTranArgs = (<factory.action.authorize.creditCard.IResult>action.result).entryTranArgs;
@@ -62,7 +58,7 @@ export function cancelCreditCardAuth(transactionId: string) {
  * @param {string} transactionId 取引ID
  */
 export function settleCreditCardAuth(transactionId: string) {
-    return async (transactionRepository: TransactionRepository) => {
+    return async (transactionRepository: TransactionRepo) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
         const authorizeActions = transaction.object.authorizeActions
             .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)

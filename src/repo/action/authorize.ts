@@ -3,283 +3,22 @@ import { Connection } from 'mongoose';
 
 import ActionModel from '../mongoose/model/action';
 
-export type IObject =
-    factory.action.authorize.creditCard.IObject |
-    factory.action.authorize.mvtk.IObject |
-    factory.action.authorize.seatReservation.IObject;
+// export type IObject =
+//     factory.action.authorize.creditCard.IObject |
+//     factory.action.authorize.mvtk.IObject |
+//     factory.action.authorize.seatReservation.IObject;
 
 /**
- * authorize action repository
+ * 承認アクションMongoレポジトリー
+ * @export
  * @class
  */
 export class MongoRepository {
     public readonly actionModel: typeof ActionModel;
+    protected readonly purpose: string;
 
     constructor(connection: Connection) {
         this.actionModel = connection.model(ActionModel.modelName);
-    }
-
-    public async startCreditCard(
-        agent: factory.action.IParticipant,
-        recipient: factory.action.IParticipant,
-        object: factory.action.authorize.creditCard.IObject
-    ): Promise<factory.action.authorize.creditCard.IAction> {
-        const actionAttributes = factory.action.authorize.creditCard.createAttributes({
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
-            object: object,
-            agent: agent,
-            recipient: recipient,
-            startDate: new Date()
-        });
-
-        return await this.actionModel.create(actionAttributes).then(
-            (doc) => <factory.action.authorize.creditCard.IAction>doc.toObject()
-        );
-    }
-
-    public async completeCreditCard(
-        actionId: string,
-        result: factory.action.authorize.creditCard.IResult
-    ): Promise<factory.action.authorize.creditCard.IAction> {
-        return await this.actionModel.findByIdAndUpdate(
-            actionId,
-            {
-                actionStatus: factory.actionStatusType.CompletedActionStatus,
-                result: result,
-                endDate: new Date()
-            },
-            { new: true }
-        ).exec().then((doc) => {
-            if (doc === null) {
-                throw new factory.errors.NotFound('authorizeAction');
-            }
-
-            return <factory.action.authorize.creditCard.IAction>doc.toObject();
-        });
-    }
-
-    public async cancelCreditCard(
-        actionId: string,
-        transactionId: string
-    ): Promise<factory.action.authorize.creditCard.IAction> {
-        return await this.actionModel.findOneAndUpdate(
-            {
-                _id: actionId,
-                typeOf: factory.actionType.AuthorizeAction,
-                'object.transactionId': transactionId,
-                'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.CreditCard
-            },
-            { actionStatus: factory.actionStatusType.CanceledActionStatus },
-            { new: true }
-        ).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new factory.errors.NotFound('authorizeAction');
-
-                }
-
-                return <factory.action.authorize.creditCard.IAction>doc.toObject();
-            });
-    }
-
-    public async startMvtk(
-        agent: factory.action.IParticipant,
-        recipient: factory.action.IParticipant,
-        object: factory.action.authorize.mvtk.IObject
-    ): Promise<factory.action.authorize.creditCard.IAction> {
-        const actionAttributes = factory.action.authorize.mvtk.createAttributes({
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
-            object: object,
-            agent: agent,
-            recipient: recipient,
-            startDate: new Date()
-        });
-
-        return await this.actionModel.create(actionAttributes).then(
-            (doc) => <factory.action.authorize.creditCard.IAction>doc.toObject()
-        );
-    }
-
-    public async completeMvtk(
-        actionId: string,
-        result: factory.action.authorize.mvtk.IResult
-    ): Promise<factory.action.authorize.mvtk.IAction> {
-        return await this.actionModel.findByIdAndUpdate(
-            actionId,
-            {
-                actionStatus: factory.actionStatusType.CompletedActionStatus,
-                result: result,
-                endDate: new Date()
-            },
-            { new: true }
-        ).exec().then((doc) => {
-            if (doc === null) {
-                throw new factory.errors.NotFound('authorizeAction');
-            }
-
-            return <factory.action.authorize.mvtk.IAction>doc.toObject();
-        });
-    }
-
-    public async cancelMvtk(
-        actionId: string,
-        transactionId: string
-    ): Promise<factory.action.authorize.mvtk.IAction> {
-        return await this.actionModel.findOneAndUpdate(
-            {
-                _id: actionId,
-                typeOf: factory.actionType.AuthorizeAction,
-                'object.transactionId': transactionId,
-                'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.Mvtk
-            },
-            { actionStatus: factory.actionStatusType.CanceledActionStatus },
-            { new: true }
-        ).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new factory.errors.NotFound('authorizeAction');
-
-                }
-
-                return <factory.action.authorize.mvtk.IAction>doc.toObject();
-            });
-    }
-
-    public async startSeatReservation(
-        agent: factory.action.IParticipant,
-        recipient: factory.action.IParticipant,
-        object: factory.action.authorize.seatReservation.IObject
-    ): Promise<factory.action.authorize.creditCard.IAction> {
-        const actionAttributes = factory.action.authorize.seatReservation.createAttributes({
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
-            object: object,
-            agent: agent,
-            recipient: recipient,
-            startDate: new Date()
-        });
-
-        return await this.actionModel.create(actionAttributes).then(
-            (doc) => <factory.action.authorize.creditCard.IAction>doc.toObject()
-        );
-    }
-
-    public async completeSeatReservation(
-        actionId: string,
-        result: factory.action.authorize.seatReservation.IResult
-    ): Promise<factory.action.authorize.seatReservation.IAction> {
-        return await this.actionModel.findByIdAndUpdate(
-            actionId,
-            {
-                actionStatus: factory.actionStatusType.CompletedActionStatus,
-                result: result,
-                endDate: new Date()
-            },
-            { new: true }
-        ).exec().then((doc) => {
-            if (doc === null) {
-                throw new factory.errors.NotFound('authorizeAction');
-            }
-
-            return <factory.action.authorize.seatReservation.IAction>doc.toObject();
-        });
-    }
-
-    public async cancelSeatReservation(
-        actionId: string,
-        transactionId: string
-    ): Promise<factory.action.authorize.seatReservation.IAction> {
-        return await this.actionModel.findOneAndUpdate(
-            {
-                _id: actionId,
-                typeOf: factory.actionType.AuthorizeAction,
-                'object.transactionId': transactionId,
-                'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.SeatReservation
-            },
-            { actionStatus: factory.actionStatusType.CanceledActionStatus },
-            { new: true }
-        ).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new factory.errors.NotFound('authorizeAction');
-
-                }
-
-                return <factory.action.authorize.seatReservation.IAction>doc.toObject();
-            });
-    }
-
-    /**
-     * 座席予約承認アクションの供給情報を変更する
-     * 座席仮予約ができている状態で券種だけ変更する場合に使用
-     */
-    public async updateSeatReservation(
-        actionId: string,
-        transactionId: string,
-        object: factory.action.authorize.seatReservation.IObject,
-        result: factory.action.authorize.seatReservation.IResult
-    ): Promise<factory.action.authorize.seatReservation.IAction> {
-        return await this.actionModel.findOneAndUpdate(
-            {
-                _id: actionId,
-                typeOf: factory.actionType.AuthorizeAction,
-                'object.transactionId': transactionId,
-                'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.SeatReservation,
-                actionStatus: factory.actionStatusType.CompletedActionStatus // 完了ステータスのアクションのみ
-            },
-            {
-                object: object,
-                result: result
-            },
-            { new: true }
-        ).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new factory.errors.NotFound('authorizeAction');
-
-                }
-
-                return <factory.action.authorize.seatReservation.IAction>doc.toObject();
-            });
-    }
-
-    /**
-     * 座席予約承認アクションの供給情報を変更する
-     * 座席仮予約ができている状態で券種だけ変更する場合に使用
-     */
-    public async findSeatReservationById(
-        actionId: string
-    ): Promise<factory.action.authorize.seatReservation.IAction> {
-        return await this.actionModel.findOne(
-            {
-                _id: actionId,
-                typeOf: factory.actionType.AuthorizeAction
-            }
-        ).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new factory.errors.NotFound('authorizeAction');
-
-                }
-
-                return <factory.action.authorize.seatReservation.IAction>doc.toObject();
-            });
-    }
-
-    public async findSeatReservationByTransactionId(
-        transactionId: string
-    ): Promise<factory.action.authorize.seatReservation.IAction> {
-        return await this.actionModel.findOne({
-            'object.transactionId': transactionId,
-            'purpose.typeOf': factory.action.authorize.authorizeActionPurpose.SeatReservation,
-            typeOf: factory.actionType.AuthorizeAction,
-            actionStatus: factory.actionStatusType.CompletedActionStatus
-        }).exec().then((doc) => {
-            if (doc === null) {
-                throw new factory.errors.NotFound('seatReservation authorizeAction');
-            }
-
-            return <factory.action.authorize.seatReservation.IAction>doc.toObject();
-        });
     }
 
     public async giveUp(
@@ -303,10 +42,15 @@ export class MongoRepository {
         });
     }
 
+    /**
+     * 取引内の承認アクションを取得する
+     * @param transactionId 取引ID
+     */
     public async findByTransactionId(transactionId: string): Promise<factory.action.authorize.IAction[]> {
         return await this.actionModel.find({
+            typeOf: factory.actionType.AuthorizeAction,
             'object.transactionId': transactionId,
-            typeOf: factory.actionType.AuthorizeAction
+            'purpose.typeOf': this.purpose
         }).exec().then((docs) => docs.map((doc) => <factory.action.authorize.IAction>doc.toObject()));
     }
 }

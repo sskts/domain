@@ -27,23 +27,25 @@ import * as PlaceOrderTransactionService from './service/transaction/placeOrder'
 import * as PlaceOrderInProgressTransactionService from './service/transaction/placeOrderInProgress';
 import * as UtilService from './service/util';
 
-import { MongoRepository as AuthorizeActionRepository } from './repo/action/authorize';
-import { MongoRepository as PrintActionRepository } from './repo/action/print';
-import { MongoRepository as ClientRepository } from './repo/client';
-import { MongoRepository as CreativeWorkRepository } from './repo/creativeWork';
-import { MongoRepository as EventRepository } from './repo/event';
-import { MongoRepository as GMONotificationRepository } from './repo/gmoNotification';
-import { MongoRepository as IndividualScreeningEventItemAvailabilityRepository } from './repo/itemAvailability/individualScreeningEvent';
-import { MongoRepository as OrderRepository } from './repo/order';
-import { MongoRepository as OrganizationRepository } from './repo/organization';
-import { MongoRepository as OwnershipInfoRepository } from './repo/ownershipInfo';
-import { MongoRepository as PersonRepository } from './repo/person';
-import { MongoRepository as PlaceRepository } from './repo/place';
-import { MongoRepository as SendGridEventRepository } from './repo/sendGridEvent';
-import { MongoRepository as TaskRepository } from './repo/task';
-import { MongoRepository as TelemetryRepository } from './repo/telemetry';
-import { MongoRepository as TransactionRepository } from './repo/transaction';
-import { MongoRepository as TransactionCountRepository } from './repo/transactionCount';
+import { MongoRepository as CreditCardAuthorizeActionRepo } from './repo/action/authorize/creditCard';
+import { MongoRepository as MvtkAuthorizeActionRepo } from './repo/action/authorize/mvtk';
+import { MongoRepository as SeatReservationAuthorizeActionRepo } from './repo/action/authorize/seatReservation';
+import { MongoRepository as PrintActionRepo } from './repo/action/print';
+import { MongoRepository as ClientRepo } from './repo/client';
+import { MongoRepository as CreativeWorkRepo } from './repo/creativeWork';
+import { MongoRepository as EventRepo } from './repo/event';
+import { MongoRepository as GMONotificationRepo } from './repo/gmoNotification';
+import { MongoRepository as IndividualScreeningEventItemAvailabilityRepo } from './repo/itemAvailability/individualScreeningEvent';
+import { MongoRepository as OrderRepo } from './repo/order';
+import { MongoRepository as OrganizationRepo } from './repo/organization';
+import { MongoRepository as OwnershipInfoRepo } from './repo/ownershipInfo';
+import { MongoRepository as PersonRepo } from './repo/person';
+import { MongoRepository as PlaceRepo } from './repo/place';
+import { MongoRepository as SendGridEventRepo } from './repo/sendGridEvent';
+import { MongoRepository as TaskRepo } from './repo/task';
+import { MongoRepository as TelemetryRepo } from './repo/telemetry';
+import { MongoRepository as TransactionRepo } from './repo/transaction';
+import { MongoRepository as TransactionCountRepo } from './repo/transactionCount';
 
 (<any>mongoose).Promise = global.Promise;
 
@@ -96,26 +98,30 @@ export import GMO = GMO;
 
 export namespace repository {
     export namespace action {
-        export class Authorize extends AuthorizeActionRepository { }
-        export class Print extends PrintActionRepository { }
+        export namespace authorize {
+            export class CreditCard extends CreditCardAuthorizeActionRepo { }
+            export class Mvtk extends MvtkAuthorizeActionRepo { }
+            export class SeatReservation extends SeatReservationAuthorizeActionRepo { }
+        }
+        export class Print extends PrintActionRepo { }
     }
-    export class Client extends ClientRepository { }
-    export class CreativeWork extends CreativeWorkRepository { }
-    export class Event extends EventRepository { }
-    export class GMONotification extends GMONotificationRepository { }
-    export class Order extends OrderRepository { }
-    export class Organization extends OrganizationRepository { }
-    export class OwnershipInfo extends OwnershipInfoRepository { }
-    export class Person extends PersonRepository { }
-    export class Place extends PlaceRepository { }
-    export class SendGridEvent extends SendGridEventRepository { }
-    export class Task extends TaskRepository { }
-    export class Telemetry extends TelemetryRepository { }
-    export class Transaction extends TransactionRepository { }
-    export class TransactionCount extends TransactionCountRepository { }
+    export class Client extends ClientRepo { }
+    export class CreativeWork extends CreativeWorkRepo { }
+    export class Event extends EventRepo { }
+    export class GMONotification extends GMONotificationRepo { }
+    export class Order extends OrderRepo { }
+    export class Organization extends OrganizationRepo { }
+    export class OwnershipInfo extends OwnershipInfoRepo { }
+    export class Person extends PersonRepo { }
+    export class Place extends PlaceRepo { }
+    export class SendGridEvent extends SendGridEventRepo { }
+    export class Task extends TaskRepo { }
+    export class Telemetry extends TelemetryRepo { }
+    export class Transaction extends TransactionRepo { }
+    export class TransactionCount extends TransactionCountRepo { }
 
     export namespace itemAvailability {
-        export class IndividualScreeningEvent extends IndividualScreeningEventItemAvailabilityRepository { }
+        export class IndividualScreeningEvent extends IndividualScreeningEventItemAvailabilityRepo { }
     }
 }
 

@@ -7,10 +7,11 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
-import { MongoRepository as AuthorizeActionRepository } from '../repo/action/authorize';
-import { MongoRepository as OrderRepository } from '../repo/order';
-import { MongoRepository as OwnershipInfoRepository } from '../repo/ownershipInfo';
-import { MongoRepository as TransactionRepository } from '../repo/transaction';
+import { MongoRepository as CreditCardAuthorizeActionRepo } from '../repo/action/authorize/creditCard';
+import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../repo/action/authorize/seatReservation';
+import { MongoRepository as OrderRepo } from '../repo/order';
+import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
+import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
@@ -32,7 +33,7 @@ export function cancelSeatReservation(
     data: factory.task.cancelSeatReservation.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const authorizeActionRepo = new AuthorizeActionRepository(connection);
+        const authorizeActionRepo = new SeatReservationAuthorizeActionRepo(connection);
         await StockService.cancelSeatReservationAuth(data.transactionId)(authorizeActionRepo);
     };
 }
@@ -41,7 +42,7 @@ export function cancelCreditCard(
     data: factory.task.cancelCreditCard.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const authorizeActionRepo = new AuthorizeActionRepository(connection);
+        const authorizeActionRepo = new CreditCardAuthorizeActionRepo(connection);
         await SalesService.cancelCreditCardAuth(data.transactionId)(authorizeActionRepo);
     };
 }
@@ -58,7 +59,7 @@ export function settleSeatReservation(
     data: factory.task.settleSeatReservation.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const transactionRepository = new TransactionRepository(connection);
+        const transactionRepository = new TransactionRepo(connection);
         await StockService.transferSeatReservation(data.transactionId)(transactionRepository);
     };
 }
@@ -67,7 +68,7 @@ export function settleCreditCard(
     data: factory.task.settleCreditCard.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const transactionRepository = new TransactionRepository(connection);
+        const transactionRepository = new TransactionRepo(connection);
         await SalesService.settleCreditCardAuth(data.transactionId)(transactionRepository);
     };
 }
@@ -84,8 +85,8 @@ export function createOrder(
     data: factory.task.createOrder.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const orderRepository = new OrderRepository(connection);
-        const transactionRepository = new TransactionRepository(connection);
+        const orderRepository = new OrderRepo(connection);
+        const transactionRepository = new TransactionRepo(connection);
         await OrderService.createFromTransaction(data.transactionId)(orderRepository, transactionRepository);
     };
 }
@@ -94,8 +95,8 @@ export function createOwnershipInfos(
     data: factory.task.createOrder.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const ownershipInfoRepository = new OwnershipInfoRepository(connection);
-        const transactionRepository = new TransactionRepository(connection);
+        const ownershipInfoRepository = new OwnershipInfoRepo(connection);
+        const transactionRepository = new TransactionRepo(connection);
         await OwnershipInfoService.createFromTransaction(data.transactionId)(ownershipInfoRepository, transactionRepository);
     };
 }

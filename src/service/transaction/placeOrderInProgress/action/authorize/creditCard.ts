@@ -7,16 +7,16 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import { MongoRepository as AuthorizeActionRepository } from '../../../../../repo/action/authorize';
-import { MongoRepository as OrganizationRepository } from '../../../../../repo/organization';
-import { MongoRepository as TransactionRepository } from '../../../../../repo/transaction';
+import { MongoRepository as CreditCardAuthorizeActionRepo } from '../../../../../repo/action/authorize/creditCard';
+import { MongoRepository as OrganizationRepo } from '../../../../../repo/organization';
+import { MongoRepository as TransactionRepo } from '../../../../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:creditCard');
 
 export type IActionAndOrganizationAndTransactionOperation<T> = (
-    authorizeActionRepo: AuthorizeActionRepository,
-    organizationRepo: OrganizationRepository,
-    transactionRepo: TransactionRepository
+    creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo,
+    organizationRepo: OrganizationRepo,
+    transactionRepo: TransactionRepo
 ) => Promise<T>;
 
 /**
@@ -40,9 +40,9 @@ export function create(
 ): IActionAndOrganizationAndTransactionOperation<factory.action.authorize.creditCard.IAction> {
     // tslint:disable-next-line:max-func-body-length
     return async (
-        authorizeActionRepo: AuthorizeActionRepository,
-        organizationRepo: OrganizationRepository,
-        transactionRepo: TransactionRepository
+        creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo,
+        organizationRepo: OrganizationRepo,
+        transactionRepo: TransactionRepo
     ) => {
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
@@ -54,7 +54,7 @@ export function create(
         const movieTheater = await organizationRepo.findMovieTheaterById(transaction.seller.id);
 
         // 承認アクションを開始する
-        const action = await authorizeActionRepo.startCreditCard(
+        const action = await creditCardAuthorizeActionRepo.start(
             transaction.agent,
             transaction.seller,
             {
@@ -101,7 +101,7 @@ export function create(
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                await authorizeActionRepo.giveUp(action.id, error);
+                await creditCardAuthorizeActionRepo.giveUp(action.id, error);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -134,7 +134,7 @@ export function create(
         // アクションを完了
         debug('ending authorize action...');
 
-        return await authorizeActionRepo.completeCreditCard(
+        return await creditCardAuthorizeActionRepo.complete(
             action.id,
             {
                 price: amount,
@@ -151,14 +151,14 @@ export function cancel(
     transactionId: string,
     actionId: string
 ) {
-    return async (authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+    return async (creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo, transactionRepo: TransactionRepo) => {
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const action = await authorizeActionRepo.cancelCreditCard(actionId, transactionId);
+        const action = await creditCardAuthorizeActionRepo.cancel(actionId, transactionId);
         const actionResult = <factory.action.authorize.creditCard.IResult>action.result;
 
         // オーソリ取消
