@@ -49,8 +49,9 @@ describe('action.authorize.mvtk.create()', () => {
                 zskInfo: []
             }
         };
-        const seatReservationAuthorizeAction = {
+        const seatReservationAuthorizeActions = [{
             id: 'actionId',
+            actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
             object: {
                 offers: [
                     {
@@ -77,27 +78,28 @@ describe('action.authorize.mvtk.create()', () => {
                     listTmpReserve: []
                 }
             }
-        };
+        }];
         const action = {
             id: 'actionId'
         };
 
-        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const mvtkAuthorizeActionRepo = new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection);
+        const seatReservationAuthorizeActionRepo = new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('findSeatReservationByTransactionId').once()
-            .withExactArgs(transaction.id).resolves(seatReservationAuthorizeAction);
-        sandbox.mock(authorizeActionRepo).expects('startMvtk').once()
+        sandbox.mock(seatReservationAuthorizeActionRepo).expects('findByTransactionId').once()
+            .withExactArgs(transaction.id).resolves(seatReservationAuthorizeActions);
+        sandbox.mock(mvtkAuthorizeActionRepo).expects('start').once()
             .withArgs(transaction.agent, transaction.seller).resolves(action);
-        sandbox.mock(authorizeActionRepo).expects('completeMvtk').once().withArgs(action.id).resolves(action);
+        sandbox.mock(mvtkAuthorizeActionRepo).expects('complete').once().withArgs(action.id).resolves(action);
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
             agent.id,
             transaction.id,
             <any>authorizeObject
-        )(authorizeActionRepo, transactionRepo);
+        )(seatReservationAuthorizeActionRepo, mvtkAuthorizeActionRepo, transactionRepo);
 
         assert.deepEqual(result, action);
         sandbox.verify();
@@ -118,20 +120,21 @@ describe('action.authorize.mvtk.create()', () => {
         };
         const authorizeObject = {};
 
-        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const mvtkAuthorizeActionRepo = new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection);
+        const seatReservationAuthorizeActionRepo = new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('findSeatReservationByTransactionId').never();
-        sandbox.mock(authorizeActionRepo).expects('startMvtk').never();
-        sandbox.mock(authorizeActionRepo).expects('completeMvtk').never();
+        sandbox.mock(seatReservationAuthorizeActionRepo).expects('findByTransactionId').never();
+        sandbox.mock(mvtkAuthorizeActionRepo).expects('start').never();
+        sandbox.mock(mvtkAuthorizeActionRepo).expects('complete').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
             agent.id,
             transaction.id,
             <any>authorizeObject
-        )(authorizeActionRepo, transactionRepo).catch((err) => err);
+        )(seatReservationAuthorizeActionRepo, mvtkAuthorizeActionRepo, transactionRepo).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
@@ -160,12 +163,12 @@ describe('action.authorize.mvtk.cancel()', () => {
             seller: seller
         };
 
-        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('cancelMvtk').once().withExactArgs(action.id, transaction.id).resolves();
+        sandbox.mock(authorizeActionRepo).expects('cancel').once().withExactArgs(action.id, transaction.id).resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.cancel(
             agent.id,
@@ -194,12 +197,12 @@ describe('action.authorize.mvtk.cancel()', () => {
             seller: seller
         };
 
-        const authorizeActionRepo = new sskts.repository.action.Authorize(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('cancelMvtk').never();
+        sandbox.mock(authorizeActionRepo).expects('cancel').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.cancel(
             agent.id,

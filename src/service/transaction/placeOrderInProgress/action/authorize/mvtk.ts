@@ -6,14 +6,16 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import { MongoRepository as AuthorizeActionRepository } from '../../../../../repo/action/authorize';
-import { MongoRepository as TransactionRepository } from '../../../../../repo/transaction';
+import { MongoRepository as MvtkAuthorizeActionRepo } from '../../../../../repo/action/authorize/mvtk';
+import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../../../../../repo/action/authorize/seatReservation';
+import { MongoRepository as TransactionRepo } from '../../../../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:mvtk');
 
-export type IActionAndTransactionOperation<T> = (
-    authorizeActionRepo: AuthorizeActionRepository,
-    transactionRepo: TransactionRepository
+export type ISeatAndMvtkAndTransactionOperation<T> = (
+    seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
+    mvtkAuthorizeActionRepo: MvtkAuthorizeActionRepo,
+    transactionRepo: TransactionRepo
 ) => Promise<T>;
 
 /**
@@ -27,9 +29,13 @@ export function create(
     agentId: string,
     transactionId: string,
     authorizeObject: factory.action.authorize.mvtk.IObject
-): IActionAndTransactionOperation<factory.action.authorize.mvtk.IAction> {
+): ISeatAndMvtkAndTransactionOperation<factory.action.authorize.mvtk.IAction> {
     // tslint:disable-next-line:max-func-body-length
-    return async (authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+    return async (
+        seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
+        mvtkAuthorizeActionRepo: MvtkAuthorizeActionRepo,
+        transactionRepo: TransactionRepo
+    ) => {
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
@@ -37,13 +43,21 @@ export function create(
         }
 
         // 座席予約承認を取得
-        // seatReservationAuthorization already exists?
-        const seatReservationAuthorizeAction = await authorizeActionRepo.findSeatReservationByTransactionId(transactionId);
+        // 座席予約承認アクションが存在していなければエラー
+        const seatReservationAuthorizeActions = await seatReservationAuthorizeActionRepo.findByTransactionId(transactionId)
+            .then((actions) => actions.filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus));
+        if (seatReservationAuthorizeActions.length === 0) {
+            throw new factory.errors.Argument('transactionId', '座席予約が見つかりません。');
+        }
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO 座席予約承認はひとつしかない仕様ではあるが、万が一データとして複数存在した場合の挙動を考慮できていない
+        const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
+
         const seatReservationAuthorizeActionObject = seatReservationAuthorizeAction.object;
         const seatReservationAuthorizeActionResult =
             <factory.action.authorize.seatReservation.IResult>seatReservationAuthorizeAction.result;
 
-        // knyknrNo matched?
+        // 購入管理番号が一致しているか
         interface IKnyknrNoNumsByNo { [knyknrNo: string]: number; }
         const knyknrNoNumsByNoShouldBe: IKnyknrNoNumsByNo = seatReservationAuthorizeActionObject.offers.reduce(
             (a: IKnyknrNoNumsByNo, b) => {
@@ -86,14 +100,14 @@ export function create(
             throw new factory.errors.Argument('authorizeActionResult', 'knyknrNoInfo not matched with seat reservation authorizeAction');
         }
 
-        // stCd matched? (last two figures of theater code)
+        // サイトコードが一致しているか (last two figures of theater code)
         // tslint:disable-next-line:no-magic-numbers
         const stCdShouldBe = seatReservationAuthorizeActionResult.updTmpReserveSeatArgs.theaterCode.slice(-2);
         if (authorizeObject.seatInfoSyncIn.stCd !== stCdShouldBe) {
             throw new factory.errors.Argument('authorizeActionResult', 'stCd not matched with seat reservation authorizeAction');
         }
 
-        // skhnCd matched?
+        // 作品コードが一致しているか
         // ムビチケに渡す作品枝番号は、COAの枝番号を0埋めで二桁に揃えたもの、というのが、ムビチケ側の仕様なので、そのようにバリデーションをかけます。
         // tslint:disable-next-line:no-magic-numbers
         const titleBranchNum4mvtk = `0${seatReservationAuthorizeActionResult.updTmpReserveSeatArgs.titleBranchNum}`.slice(-2);
@@ -102,12 +116,12 @@ export function create(
             throw new factory.errors.Argument('authorizeActionResult', 'skhnCd not matched with seat reservation authorizeAction');
         }
 
-        // screen code matched?
+        // スクリーンコードが一致しているか
         if (authorizeObject.seatInfoSyncIn.screnCd !== seatReservationAuthorizeActionResult.updTmpReserveSeatArgs.screenCode) {
             throw new factory.errors.Argument('authorizeActionResult', 'screnCd not matched with seat reservation authorizeAction');
         }
 
-        // seat num matched?
+        // 座席番号が一致しているか
         const seatNumsInSeatReservationAuthorization =
             seatReservationAuthorizeActionResult.updTmpReserveSeatResult.listTmpReserve.map((tmpReserve) => tmpReserve.seatNum);
         if (!authorizeObject.seatInfoSyncIn.zskInfo.every(
@@ -116,7 +130,7 @@ export function create(
             throw new factory.errors.Argument('authorizeActionResult', 'zskInfo not matched with seat reservation authorizeAction');
         }
 
-        const action = await authorizeActionRepo.startMvtk(
+        const mvtkAuthorizeAction = await mvtkAuthorizeActionRepo.start(
             transaction.agent,
             transaction.seller,
             authorizeObject
@@ -125,8 +139,8 @@ export function create(
         // 特に何もしない
 
         // アクションを完了
-        return await authorizeActionRepo.completeMvtk(
-            action.id,
+        return await mvtkAuthorizeActionRepo.complete(
+            mvtkAuthorizeAction.id,
             {
                 price: authorizeObject.price
             }
@@ -139,14 +153,14 @@ export function cancel(
     transactionId: string,
     actionId: string
 ) {
-    return async (authorizeActionRepo: AuthorizeActionRepository, transactionRepo: TransactionRepository) => {
+    return async (mvtkAuthorizeActionRepo: MvtkAuthorizeActionRepo, transactionRepo: TransactionRepo) => {
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        await authorizeActionRepo.cancelMvtk(actionId, transactionId);
+        await mvtkAuthorizeActionRepo.cancel(actionId, transactionId);
 
         // 特に何もしない
     };

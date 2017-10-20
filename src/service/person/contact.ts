@@ -16,7 +16,7 @@ const debug = createDebug('sskts-domain:service:person:contact');
  * @function
  * @memberof service.person.contact
  */
-export function getContact(accessToken: string) {
+export function retrieve(accessToken: string) {
     return async () => {
         return new Promise<factory.person.IContact>((resolve, reject) => {
             const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
@@ -52,6 +52,8 @@ export function getContact(accessToken: string) {
                                     contact.email = (userAttribute.Value !== undefined) ? userAttribute.Value : '';
                                     break;
                                 case 'phone_number':
+                                    // tslint:disable-next-line:no-single-line-block-comment
+                                    /* istanbul ignore else */
                                     if (userAttribute.Value !== undefined) {
                                         // format a phone number to a Japanese style
                                         const phoneUtil = PhoneNumberUtil.getInstance();
@@ -78,16 +80,23 @@ export function getContact(accessToken: string) {
  * @function
  * @memberof service.person.contact
  */
-export function updateContact(
+export function update(
     accessToken: string,
     contact: factory.person.IContact
 ) {
     return async () => {
         return new Promise<void>((resolve, reject) => {
-            const phoneUtil = PhoneNumberUtil.getInstance();
-            const phoneNumber = phoneUtil.parse(contact.telephone, 'JP');
-            debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
-            if (!phoneUtil.isValidNumber(phoneNumber)) {
+            let formatedPhoneNumber: string;
+            try {
+                const phoneUtil = PhoneNumberUtil.getInstance();
+                const phoneNumber = phoneUtil.parse(contact.telephone, 'JP');
+                debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
+                if (!phoneUtil.isValidNumber(phoneNumber)) {
+                    throw new Error('Invalid phone number format.');
+                }
+
+                formatedPhoneNumber = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
+            } catch (error) {
                 reject(new factory.errors.Argument('telephone', 'invalid phone number format'));
 
                 return;
@@ -112,7 +121,7 @@ export function updateContact(
                         },
                         {
                             Name: 'phone_number',
-                            Value: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
+                            Value: formatedPhoneNumber
                         },
                         {
                             Name: 'email',

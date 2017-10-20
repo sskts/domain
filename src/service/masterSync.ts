@@ -1,7 +1,7 @@
 /**
  * master data synchronization service
  * マスターデータ同期サービス
- * @namespace service/masterSync
+ * @namespace service.masterSync
  */
 
 import * as COA from '@motionpicture/coa-service';

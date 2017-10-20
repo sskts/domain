@@ -46,16 +46,21 @@ export function searchIndividualScreeningEvents(
                 availability: null,
                 url: ''
             };
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
             if (itemAvailabilityRepository !== undefined) {
                 offer.availability = await itemAvailabilityRepository.findOne(event.coaInfo.dateJouei, event.identifier);
             }
 
-            return {
-                ...event,
+            const eventWithOffer = {
                 ...{
                     offer: offer
-                }
+                },
+                ...event
             };
+            debug('eventWithOffer:', eventWithOffer);
+
+            return eventWithOffer;
         }));
     };
 }
@@ -81,15 +86,20 @@ export function findIndividualScreeningEventByIdentifier(
             availability: null,
             url: ''
         };
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (itemAvailabilityRepository !== undefined) {
             offer.availability = await itemAvailabilityRepository.findOne(event.coaInfo.dateJouei, event.identifier);
         }
 
-        return {
-            ...event,
+        const eventWithOffer = {
             ...{
                 offer: offer
-            }
+            },
+            ...event
         };
+        debug('eventWithOffer:', eventWithOffer);
+
+        return eventWithOffer;
     };
 }
