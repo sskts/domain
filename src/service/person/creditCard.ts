@@ -139,7 +139,7 @@ export function find(
             debug('GMO saveMember processed', saveMemberResult);
         }
 
-        return await GMO.services.card.searchCard({
+        return GMO.services.card.searchCard({
             siteId: <string>process.env.GMO_SITE_ID,
             sitePass: <string>process.env.GMO_SITE_PASS,
             memberId: memberId,

@@ -232,7 +232,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                 }
                 const ticketToken = qrCodeInfo.qr;
 
-                const coaTicketInfo: factory.offer.ICOATicketInfo = {
+                const coaTicketInfo: factory.offer.seatReservation.ICOATicketInfoWithDetails = {
                     ticketName: asset.ticket_name.ja,
                     ticketNameKana: asset.ticket_name_kana,
                     ticketNameEng: asset.ticket_name.en,

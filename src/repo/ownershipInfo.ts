@@ -64,7 +64,7 @@ export class MongoRepository {
             });
         }
 
-        return await this.ownershipInfoModel.find({ $and: andConditions })
+        return this.ownershipInfoModel.find({ $and: andConditions })
             .sort({ ownedFrom: 1 })
             .exec()
             .then((docs) => docs.map((doc) => <IScreeningEventReservationOwnershipInfo>doc.toObject()));

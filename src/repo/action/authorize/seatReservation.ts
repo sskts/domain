@@ -23,7 +23,7 @@ export class MongoRepository extends AuthorizeActionRepository {
             startDate: new Date()
         });
 
-        return await this.actionModel.create(actionAttributes).then(
+        return this.actionModel.create(actionAttributes).then(
             (doc) => <factory.action.authorize.creditCard.IAction>doc.toObject()
         );
     }
@@ -32,7 +32,7 @@ export class MongoRepository extends AuthorizeActionRepository {
         actionId: string,
         result: factory.action.authorize.seatReservation.IResult
     ): Promise<factory.action.authorize.seatReservation.IAction> {
-        return await this.actionModel.findByIdAndUpdate(
+        return this.actionModel.findByIdAndUpdate(
             actionId,
             {
                 actionStatus: factory.actionStatusType.CompletedActionStatus,
@@ -53,7 +53,7 @@ export class MongoRepository extends AuthorizeActionRepository {
         actionId: string,
         transactionId: string
     ): Promise<factory.action.authorize.seatReservation.IAction> {
-        return await this.actionModel.findOneAndUpdate(
+        return this.actionModel.findOneAndUpdate(
             {
                 _id: actionId,
                 typeOf: factory.actionType.AuthorizeAction,
@@ -83,7 +83,7 @@ export class MongoRepository extends AuthorizeActionRepository {
         object: factory.action.authorize.seatReservation.IObject,
         result: factory.action.authorize.seatReservation.IResult
     ): Promise<factory.action.authorize.seatReservation.IAction> {
-        return await this.actionModel.findOneAndUpdate(
+        return this.actionModel.findOneAndUpdate(
             {
                 _id: actionId,
                 typeOf: factory.actionType.AuthorizeAction,
@@ -110,7 +110,7 @@ export class MongoRepository extends AuthorizeActionRepository {
     public async findById(
         actionId: string
     ): Promise<factory.action.authorize.seatReservation.IAction> {
-        return await this.actionModel.findOne(
+        return this.actionModel.findOne(
             {
                 _id: actionId,
                 typeOf: factory.actionType.AuthorizeAction

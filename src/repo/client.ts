@@ -19,6 +19,6 @@ export class MongoRepository {
         // TODO クライアントの存在確認?
 
         // ドキュメント作成(idが既に存在していればユニーク制約ではじかれる)
-        return await this.clientEventModel.create(clientAttributes).then((doc) => <factory.clientEvent.IClientEvent>doc.toObject());
+        return this.clientEventModel.create(clientAttributes).then((doc) => <factory.clientEvent.IClientEvent>doc.toObject());
     }
 }

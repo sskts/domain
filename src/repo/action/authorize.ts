@@ -25,7 +25,7 @@ export class MongoRepository {
         actionId: string,
         error: any
     ): Promise<factory.action.authorize.IAction> {
-        return await this.actionModel.findByIdAndUpdate(
+        return this.actionModel.findByIdAndUpdate(
             actionId,
             {
                 actionStatus: factory.actionStatusType.FailedActionStatus,
@@ -47,7 +47,7 @@ export class MongoRepository {
      * @param transactionId 取引ID
      */
     public async findByTransactionId(transactionId: string): Promise<factory.action.authorize.IAction[]> {
-        return await this.actionModel.find({
+        return this.actionModel.find({
             typeOf: factory.actionType.AuthorizeAction,
             'object.transactionId': transactionId,
             'purpose.typeOf': this.purpose

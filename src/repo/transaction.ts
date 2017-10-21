@@ -18,7 +18,7 @@ export class MongoRepository {
     public async startPlaceOrder(
         transactionAttributes: factory.transaction.placeOrder.IAttributes
     ): Promise<factory.transaction.placeOrder.ITransaction> {
-        return await this.transactionModel.create(transactionAttributes).then(
+        return this.transactionModel.create(transactionAttributes).then(
             (doc) => <factory.transaction.placeOrder.ITransaction>doc.toObject()
         );
     }
@@ -179,7 +179,7 @@ export class MongoRepository {
             startThrough: Date;
         }
     ): Promise<factory.transaction.placeOrder.ITransaction[]> {
-        return await this.transactionModel.find(
+        return this.transactionModel.find(
             {
                 typeOf: factory.transactionType.PlaceOrder,
                 startDate: {

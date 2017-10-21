@@ -60,7 +60,7 @@ export class MongoRepository {
         debug('finding places...', conditions);
 
         // containsPlaceを含めるとデータサイズが大きくなるので、検索結果には含めない
-        return await this.placeModel.find(conditions, 'typeOf branchCode name kanaName url')
+        return this.placeModel.find(conditions, 'typeOf branchCode name kanaName url')
             .setOptions({ maxTimeMS: 10000 })
             .exec()
             .then((docs) => {

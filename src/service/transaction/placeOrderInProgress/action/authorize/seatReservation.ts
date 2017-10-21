@@ -38,9 +38,13 @@ export type IActionAndTransactionOperation<T> = (
 async function validateOffers(
     isMember: boolean,
     individualScreeningEvent: factory.event.individualScreeningEvent.IEvent,
-    offers: factory.offer.ISeatReservationOffer[]
-): Promise<void> {
+    offers: factory.offer.seatReservation.IOffer[]
+): Promise<factory.offer.seatReservation.IOfferWithDetails[]> {
     debug('individualScreeningEvent:', individualScreeningEvent);
+    // 詳細情報ありの供給情報リストを初期化
+    // 要求された各供給情報について、バリデーションをかけながら、このリストに追加していく
+    const offersWithDetails: factory.offer.seatReservation.IOfferWithDetails[] = [];
+
     // 供給情報が適切かどうか確認
     const availableSalesTickets: COA.services.reserve.ISalesTicketResult[] = [];
 
@@ -126,14 +130,33 @@ async function validateOffers(
                     `ticketInfo of ticketCode ${offer.ticketInfo.ticketCode} is invalid.`);
             }
 
-            offer.ticketInfo.ticketName = mvtkTicket.ticketName;
-            offer.ticketInfo.ticketNameEng = mvtkTicket.ticketNameEng;
-            offer.ticketInfo.ticketNameKana = mvtkTicket.ticketNameKana;
-            offer.ticketInfo.stdPrice = 0;
-            offer.ticketInfo.addPrice = mvtkTicket.addPrice;
-            offer.ticketInfo.disPrice = 0;
-            offer.ticketInfo.salePrice = mvtkTicket.addPrice;
-            offer.ticketInfo.addGlasses = mvtkTicket.addPriceGlasses;
+            offersWithDetails.push({
+                price: offer.ticketInfo.mvtkSalesPrice + mvtkTicket.addPrice,
+                priceCurrency: factory.priceCurrency.JPY,
+                seatNumber: offer.seatNumber,
+                seatSection: offer.seatSection,
+                ticketInfo: {
+                    ticketCode: mvtkTicket.ticketCode,
+                    ticketName: mvtkTicket.ticketName,
+                    ticketNameEng: mvtkTicket.ticketNameEng,
+                    ticketNameKana: mvtkTicket.ticketNameKana,
+                    stdPrice: 0,
+                    addPrice: mvtkTicket.addPrice,
+                    disPrice: 0,
+                    salePrice: mvtkTicket.addPrice,
+                    // tslint:disable-next-line:no-suspicious-comment
+                    addGlasses: mvtkTicket.addPriceGlasses, // TODO メガネ代込みかどうかを考慮
+                    mvtkAppPrice: offer.ticketInfo.mvtkAppPrice,
+                    ticketCount: 1,
+                    seatNum: offer.seatNumber,
+                    kbnEisyahousiki: offer.ticketInfo.kbnEisyahousiki,
+                    mvtkNum: offer.ticketInfo.mvtkNum,
+                    mvtkKbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
+                    mvtkKbnMaeuriken: offer.ticketInfo.mvtkKbnMaeuriken,
+                    mvtkKbnKensyu: offer.ticketInfo.mvtkKbnKensyu,
+                    mvtkSalesPrice: offer.ticketInfo.mvtkSalesPrice
+                }
+            });
         } else {
             const availableSalesTicket = availableSalesTickets.find(
                 (salesTicket) => salesTicket.ticketCode === offer.ticketInfo.ticketCode
@@ -167,21 +190,48 @@ async function validateOffers(
                 }
             }
 
-            offer.ticketInfo.ticketName = availableSalesTicket.ticketName;
-            offer.ticketInfo.ticketNameEng = availableSalesTicket.ticketNameEng;
-            offer.ticketInfo.ticketNameKana = availableSalesTicket.ticketNameKana;
-            offer.ticketInfo.stdPrice = availableSalesTicket.stdPrice;
-            offer.ticketInfo.addPrice = availableSalesTicket.addPrice;
-            offer.ticketInfo.salePrice = availableSalesTicket.salePrice;
-            offer.ticketInfo.addGlasses = availableSalesTicket.addGlasses;
-            offer.ticketInfo.mvtkAppPrice = 0; // ムビチケを使用しない場合の初期値をセット
-            offer.ticketInfo.mvtkKbnDenshiken = '00'; // ムビチケを使用しない場合の初期値をセット
-            offer.ticketInfo.mvtkKbnKensyu = '00'; // ムビチケを使用しない場合の初期値をセット
-            offer.ticketInfo.mvtkKbnMaeuriken = '00'; // ムビチケを使用しない場合の初期値をセット
-            offer.ticketInfo.mvtkNum = ''; // ムビチケを使用しない場合の初期値をセット
-            offer.ticketInfo.mvtkSalesPrice = 0; // ムビチケを使用しない場合の初期値をセット
+            const offerWithDetails: factory.offer.seatReservation.IOfferWithDetails = {
+                price: availableSalesTicket.salePrice,
+                priceCurrency: factory.priceCurrency.JPY,
+                seatNumber: offer.seatNumber,
+                seatSection: offer.seatSection,
+                ticketInfo: {
+                    ticketCode: availableSalesTicket.ticketCode,
+                    ticketName: availableSalesTicket.ticketName,
+                    ticketNameEng: availableSalesTicket.ticketNameEng,
+                    ticketNameKana: availableSalesTicket.ticketNameKana,
+                    stdPrice: availableSalesTicket.stdPrice,
+                    addPrice: availableSalesTicket.addPrice,
+                    disPrice: 0,
+                    salePrice: availableSalesTicket.salePrice,
+                    // tslint:disable-next-line:no-suspicious-comment
+                    addGlasses: 0, // TODO メガネ代込みかどうかを考慮
+                    mvtkAppPrice: 0,
+                    ticketCount: 1,
+                    seatNum: offer.seatNumber,
+                    kbnEisyahousiki: '00', // ムビチケを使用しない場合の初期値をセット
+                    mvtkNum: '', // ムビチケを使用しない場合の初期値をセット
+                    mvtkKbnDenshiken: '00', // ムビチケを使用しない場合の初期値をセット
+                    mvtkKbnMaeuriken: '00', // ムビチケを使用しない場合の初期値をセット
+                    mvtkKbnKensyu: '00', // ムビチケを使用しない場合の初期値をセット
+                    mvtkSalesPrice: 0 // ムビチケを使用しない場合の初期値をセット
+                }
+            };
+
+            // メガネ代込みの要求の場合は、販売単価調整&メガネ代をセット
+            const includeGlasses = (offer.ticketInfo.addGlasses > 0);
+            if (includeGlasses) {
+                offerWithDetails.ticketInfo.ticketName = `${availableSalesTicket.ticketName}メガネ込み`;
+                offerWithDetails.price += availableSalesTicket.addGlasses;
+                offerWithDetails.ticketInfo.salePrice += availableSalesTicket.addGlasses;
+                offerWithDetails.ticketInfo.addGlasses = availableSalesTicket.addGlasses;
+            }
+
+            offersWithDetails.push(offerWithDetails);
         }
     }));
+
+    return offersWithDetails;
 }
 
 /**
@@ -189,8 +239,8 @@ async function validateOffers(
  * @function
  * @param {factory.offer.ISeatReservationOffer[]} offers 供給情報
  */
-function offers2resultPrice(offers: factory.offer.ISeatReservationOffer[]) {
-    return offers.reduce((a, b) => a + b.ticketInfo.salePrice + b.ticketInfo.mvtkSalesPrice, 0);
+function offers2resultPrice(offers: factory.offer.seatReservation.IOfferWithDetails[]) {
+    return offers.reduce((a, b) => a + b.price, 0);
 }
 
 /**
@@ -208,7 +258,7 @@ export function create(
     agentId: string,
     transactionId: string,
     eventIdentifier: string,
-    offers: factory.offer.ISeatReservationOffer[]
+    offers: factory.offer.seatReservation.IOffer[]
 ): IEventAndActionAndTransactionOperation<factory.action.authorize.seatReservation.IAction> {
     return async (
         eventRepo: EventRepo,
@@ -225,7 +275,7 @@ export function create(
         const individualScreeningEvent = await eventRepo.findIndividualScreeningEventByIdentifier(eventIdentifier);
 
         // 供給情報の有効性を確認
-        await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
+        const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
 
         // 承認アクションを開始
         const action = await seatReservationAuthorizeActionRepo.start(
@@ -233,7 +283,7 @@ export function create(
             transaction.agent,
             {
                 transactionId: transactionId,
-                offers: offers,
+                offers: offersWithDetails,
                 individualScreeningEvent: individualScreeningEvent
             }
         );
@@ -290,10 +340,10 @@ export function create(
         // アクションを完了
         debug('ending authorize action...');
 
-        return await seatReservationAuthorizeActionRepo.complete(
+        return seatReservationAuthorizeActionRepo.complete(
             action.id,
             {
-                price: offers2resultPrice(offers),
+                price: offers2resultPrice(offersWithDetails),
                 updTmpReserveSeatArgs: updTmpReserveSeatArgs,
                 updTmpReserveSeatResult: updTmpReserveSeatResult
             }
@@ -350,14 +400,14 @@ export function cancel(
  * @param {string} transactionId 取引ID
  * @param {string} actionId アクションID
  * @param {string} eventIdentifier イベント識別子
- * @param {factory.offer.ISeatReservationOffer[]} offers 供給情報
+ * @param {factory.offer.seatReservation.IOffer[]} offers 供給情報
  */
 export function changeOffers(
     agentId: string,
     transactionId: string,
     actionId: string,
     eventIdentifier: string,
-    offers: factory.offer.ISeatReservationOffer[]
+    offers: factory.offer.seatReservation.IOffer[]
 ): IEventAndActionAndTransactionOperation<factory.action.authorize.seatReservation.IAction> {
     return async (
         eventRepo: EventRepo,
@@ -392,13 +442,13 @@ export function changeOffers(
         const individualScreeningEvent = await eventRepo.findIndividualScreeningEventByIdentifier(eventIdentifier);
 
         // 供給情報の有効性を確認
-        await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
+        const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
 
         // 供給情報と価格を変更してからDB更新
-        authorizeAction.object.offers = offers;
-        (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).price = offers2resultPrice(offers);
+        authorizeAction.object.offers = offersWithDetails;
+        (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).price = offers2resultPrice(offersWithDetails);
 
-        return await seatReservationAuthorizeActionRepo.updateObjectAndResultById(
+        return seatReservationAuthorizeActionRepo.updateObjectAndResultById(
             actionId,
             transactionId,
             authorizeAction.object,

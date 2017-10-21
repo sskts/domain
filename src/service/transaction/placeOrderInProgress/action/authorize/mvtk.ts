@@ -139,7 +139,7 @@ export function create(
         // 特に何もしない
 
         // アクションを完了
-        return await mvtkAuthorizeActionRepo.complete(
+        return mvtkAuthorizeActionRepo.complete(
             mvtkAuthorizeAction.id,
             {
                 price: authorizeObject.price

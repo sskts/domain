@@ -26,7 +26,7 @@ export function uploadFile(
     }
 ) {
     return async () => {
-        return await new Promise<string>((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
             // save to blob
             const blobService = azureStorage.createBlobService();
             const CONTAINER = 'files-from-sskts-domain-util-service';

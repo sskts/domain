@@ -179,8 +179,8 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         }
         debug('taskAttributes prepared', taskAttributes);
 
-        return await Promise.all(taskAttributes.map(async (taskAttribute) => {
-            return await taskRepository.save(taskAttribute);
+        return Promise.all(taskAttributes.map(async (taskAttribute) => {
+            return taskRepository.save(taskAttribute);
         }));
     };
 }
@@ -262,7 +262,7 @@ export function download(
         debug('data:', data);
 
         if (format === 'csv') {
-            return await new Promise<string>((resolve) => {
+            return new Promise<string>((resolve) => {
                 const fields = [
                     'id', 'status', 'startDate', 'endDate',
                     'customer.name', 'customer.email', 'customer.telephone', 'customer.memberOf.membershipNumber',

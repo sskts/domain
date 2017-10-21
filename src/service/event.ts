@@ -39,7 +39,7 @@ export function searchIndividualScreeningEvents(
         };
         const events = await eventRepository.searchIndividualScreeningEvents(conditions);
 
-        return await Promise.all(events.map(async (event) => {
+        return Promise.all(events.map(async (event) => {
             // 空席状況情報を追加
             const offer: factory.event.individualScreeningEvent.IOffer = {
                 typeOf: 'Offer',

@@ -134,7 +134,7 @@ export function create(
         // アクションを完了
         debug('ending authorize action...');
 
-        return await creditCardAuthorizeActionRepo.complete(
+        return creditCardAuthorizeActionRepo.complete(
             action.id,
             {
                 price: amount,

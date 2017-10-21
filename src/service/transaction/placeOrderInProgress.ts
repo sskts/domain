@@ -87,7 +87,7 @@ export function start(params: {
             tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
         });
 
-        return await transactionRepo.startPlaceOrder(transactionAttributes);
+        return transactionRepo.startPlaceOrder(transactionAttributes);
     };
 }
 

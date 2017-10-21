@@ -25,7 +25,7 @@ export class MongoRepository {
     }
 
     public async save(taskAttributes: factory.task.IAttributes): Promise<factory.task.ITask> {
-        return await this.taskModel.create(taskAttributes).then(
+        return this.taskModel.create(taskAttributes).then(
             (doc) => <factory.task.ITask>doc.toObject()
         );
     }

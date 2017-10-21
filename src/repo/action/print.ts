@@ -33,13 +33,13 @@ export class MongoRepository {
             endDate: now
         });
 
-        return await this.actionModel.create(actionAttributes).then((doc) => <factory.action.transfer.print.IAction>doc.toObject());
+        return this.actionModel.create(actionAttributes).then((doc) => <factory.action.transfer.print.IAction>doc.toObject());
     }
 
     public async searchPrintTicket(
         conditions: factory.action.transfer.print.ticket.ISearchConditions
     ): Promise<factory.action.transfer.print.IAction[]> {
-        return await this.actionModel.find(
+        return this.actionModel.find(
             {
                 typeOf: factory.actionType.PrintAction,
                 'agent.id': conditions.agentId,
