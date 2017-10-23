@@ -53,7 +53,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
             theaterCode: theaterCode
         });
 
-        // COAからパフォーマンス取得
+        // COAから上映イベント取得
         const schedulesFromCOA = await COA.services.master.schedule({
             theaterCode: theaterCode,
             begin: moment(importFrom).locale('ja').format('YYYYMMDD'),
@@ -104,11 +104,13 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
             return screeningEvent;
         }));
 
-        // パフォーマンスごとに永続化トライ
+        // 上映イベントごとに永続化トライ
         await Promise.all(schedulesFromCOA.map(async (scheduleFromCOA) => {
-            const screeningEventIdentifier = factory.event.screeningEvent.createIdentifier(
-                theaterCode, scheduleFromCOA.titleCode, scheduleFromCOA.titleBranchNum
-            );
+            const screeningEventIdentifier = factory.event.screeningEvent.createIdentifier({
+                theaterCode: theaterCode,
+                titleCode: scheduleFromCOA.titleCode,
+                titleBranchNum: scheduleFromCOA.titleBranchNum
+            });
 
             // スクリーン存在チェック
             const screenRoom = movieTheater.containsPlace.find(

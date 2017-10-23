@@ -4,12 +4,13 @@ import * as redis from 'redis';
 
 const debug = createDebug('sskts-domain:repository:itemAvailability:individualScreeningEvent');
 const REDIS_KEY_PREFIX = 'sskts-domain:itemAvailability:individualScreeningEvent';
-// tslint:disable-next-line:no-suspicious-comment
-// TODO 調整？
+/**
+ * 上映イベント在庫状況のRedisで有効期間
+ */
 const TIMEOUT_IN_SECONDS = 864000;
 
 /**
- * パフォーマンス在庫状況レポジトリー
+ * 上映イベント在庫状況レポジトリー
  * @class IndividualScreeningEventItemAvailabilityRepository
  */
 export class MongoRepository {
@@ -20,12 +21,10 @@ export class MongoRepository {
     }
 
     /**
-     * パフォーマンス上映日からredisキーを生成する
-     *
+     * 上映イベントの上映日からredisキーを生成する
      * @static
      * @param {string} screeningDay 上映日
      * @returns {string} redis key
-     *
      * @memberof IndividualScreeningEventItemAvailabilityRepository
      */
     public static CREATE_REDIS_KEY(screeningDay: string): string {
@@ -34,11 +33,9 @@ export class MongoRepository {
 
     /**
      * 在庫状況をひとつ取得する
-     *
      * @param {string} screeningDay 上映日
-     * @param {string} eventIdentifier パフォーマンスID
+     * @param {string} eventIdentifier 上映イベント識別子
      * @returns {(Promise<factory.event.individualScreeningEvent.ItemAvailability | null>)}
-     *
      * @memberof IndividualScreeningEventItemAvailabilityRepository
      */
     public async findOne(screeningDay: string, eventIdentifier: string):
@@ -46,7 +43,7 @@ export class MongoRepository {
         const key = MongoRepository.CREATE_REDIS_KEY(screeningDay);
 
         return new Promise<factory.event.individualScreeningEvent.IItemAvailability | null>((resolve, reject) => {
-            // 劇場のパフォーマンス空席状況を取得
+            // 上映イベント在庫状況を取得
             this.redisClient.hget([key, eventIdentifier], (err, res) => {
                 debug('hget processed.', err, res);
                 if (err instanceof Error) {
@@ -71,12 +68,10 @@ export class MongoRepository {
 
     /**
      * 在庫状況をひとつ更新する
-     *
      * @param {string} screeningDay 上映日
-     * @param {string} eventIdentifier パフォーマンスID
+     * @param {string} eventIdentifier 上映イベント識別子
      * @param {factory.event.individualScreeningEvent.IItemAvailability} itemAvailability 在庫状況表現
      * @returns {Promise<void>}
-     *
      * @memberof IndividualScreeningEventItemAvailabilityRepository
      */
     public async updateOne(

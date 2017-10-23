@@ -20,24 +20,23 @@ describe('executeByName()', () => {
         sandbox.restore();
     });
 
-    // tslint:disable-next-line:no-suspicious-comment
-    // TODO write test
-    // it('未実行タスクが存在すれば、実行されるはず', async () => {
-    //     const task = {};
-    //     const taskName = sskts.factory.taskName.CreateOrder;
-    //     const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+    it('未実行タスクが存在すれば、実行されるはず', async () => {
+        const task = {
+            id: 'id',
+            name: sskts.factory.taskName.CreateOrder,
+            data: { datakey: 'dataValue' },
+            status: sskts.factory.taskStatus.Running
+        };
+        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        sandbox.mock(taskRepo).expects('executeOneByName').once().withArgs(task.name).resolves(task);
+        sandbox.mock(TaskFunctionsService).expects(task.name).once().withArgs(task.data).returns(async () => Promise.resolve());
+        sandbox.mock(taskRepo).expects('pushExecutionResultById').once().withArgs(task.id, sskts.factory.taskStatus.Executed).resolves();
 
-    //     sandbox.mock(taskRepo).expects('executeOneByName').once()
-    //         .withArgs(taskName).resolves(task);
-    //     sandbox.mock(sskts.service.task).expects('execute').once()
-    //         .withArgs(task)
-    //         .returns(async () => Promise.resolve());
+        const result = await sskts.service.task.executeByName(task.name)(taskRepo, sskts.mongoose.connection);
 
-    //     const result = await sskts.service.task.executeByName(taskName)(taskRepo, sskts.mongoose.connection);
-
-    //     assert.equal(result, undefined);
-    //     sandbox.verify();
-    // });
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
 
     it('未実行タスクが存在しなければ、実行されないはず', async () => {
         const taskName = sskts.factory.taskName.CreateOrder;

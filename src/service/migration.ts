@@ -6,7 +6,6 @@
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
-import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import { MongoRepository as EventRepository } from '../repo/event';
@@ -108,7 +107,7 @@ export function createFromOldTransaction(transactionId: string) {
                 identifier: identifier,
                 ownedBy: {
                     id: '',
-                    typeOf: 'Person',
+                    typeOf: factory.personType.Person,
                     name: order.customer.name
                 },
                 acquiredFrom: {
@@ -117,8 +116,7 @@ export function createFromOldTransaction(transactionId: string) {
                     name: detail.seller.name.ja
                 },
                 ownedFrom: order.orderDate,
-                // tslint:disable-next-line:no-suspicious-comment
-                ownedThrough: moment(order.orderDate).add(1, 'month').toDate(), // TODO 所有権の有効期間調整
+                ownedThrough: order.acceptedOffers[0].itemOffered.reservationFor.endDate,
                 typeOfGood: acceptedOffer.itemOffered
             });
         });
@@ -280,7 +278,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                             issuedBy: params.event.superEvent.organizer,
                             priceCurrency: factory.priceCurrency.JPY,
                             ticketedSeat: {
-                                typeOf: 'Seat',
+                                typeOf: factory.placeType.Seat,
                                 seatingType: '',
                                 seatNumber: asset.seat_code,
                                 seatRow: '',
@@ -289,7 +287,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                             ticketNumber: ticketToken,
                             ticketToken: ticketToken,
                             underName: {
-                                typeOf: 'Person',
+                                typeOf: factory.personType.Person,
                                 name: {
                                     en: customerName,
                                     ja: customerName
@@ -297,7 +295,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                             }
                         },
                         underName: {
-                            typeOf: 'Person',
+                            typeOf: factory.personType.Person,
                             name: {
                                 en: customerName,
                                 ja: customerName
@@ -313,7 +311,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
         isGift: false,
         discounts: discounts,
         customer: {
-            typeOf: 'Person',
+            typeOf: factory.personType.Person,
             name: customerName,
             url: '',
             id: '',

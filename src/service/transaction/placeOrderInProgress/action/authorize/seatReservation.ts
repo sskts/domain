@@ -210,8 +210,7 @@ async function validateOffers(
                     addPrice: availableSalesTicket.addPrice,
                     disPrice: 0,
                     salePrice: availableSalesTicket.salePrice,
-                    // tslint:disable-next-line:no-suspicious-comment
-                    addGlasses: 0, // TODO メガネ代込みかどうかを考慮
+                    addGlasses: 0,
                     mvtkAppPrice: 0,
                     ticketCount: 1,
                     seatNum: offer.seatNumber,

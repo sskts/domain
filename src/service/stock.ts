@@ -7,6 +7,7 @@
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 
 import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../repo/action/authorize/seatReservation';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
@@ -74,12 +75,17 @@ export function transferSeatReservation(transactionId: string) {
             throw new factory.errors.Argument('transaction', 'customer contact not created');
         }
 
+        // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
+        const phoneUtil = PhoneNumberUtil.getInstance();
+        const phoneNumber = phoneUtil.parse(customerContact.telephone, 'JP');
+        const telNum = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
+
         // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
         // すでに本予約済みかどうか確認
         const stateReserveResult = await COA.services.reserve.stateReserve({
             theaterCode: updTmpReserveSeatArgs.theaterCode,
             reserveNum: updTmpReserveSeatResult.tmpReserveNum,
-            telNum: customerContact.telephone
+            telNum: telNum
         });
 
         // COA本予約
@@ -95,8 +101,7 @@ export function transferSeatReservation(transactionId: string) {
                 tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum,
                 reserveName: `${customerContact.familyName}　${customerContact.givenName}`,
                 reserveNameJkana: `${customerContact.familyName}　${customerContact.givenName}`,
-                // tslint:disable-next-line:no-suspicious-comment
-                telNum: customerContact.telephone, // TODO 電話番号のフォーマット調整
+                telNum: telNum,
                 mailAddr: customerContact.email,
                 reserveAmount: acceptedOffers.reduce(
                     (a, b) => a + b.price,

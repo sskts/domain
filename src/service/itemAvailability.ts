@@ -1,6 +1,6 @@
 /**
  * itemAvailability service
- * @namespace service/itemAvailability
+ * @namespace service.itemAvailability
  */
 
 import * as COA from '@motionpicture/coa-service';
@@ -16,8 +16,10 @@ export type IItemAvailabilityOperation<T> = (
 ) => Promise<T>;
 
 /**
- * 劇場IDと上映日範囲からパフォーマンス在庫状況を更新する
- *
+ * 劇場IDと上映日範囲から上映イベント在庫状況を更新する
+ * @export
+ * @function
+ * @memberof service.itemAvailability
  * @param {string} theaterCode 劇場コード
  * @param {string} dayStart 開始上映日(YYYYMMDD)
  * @param {string} dayEnd 終了上映日(YYYYMMDD)
@@ -35,19 +37,17 @@ export function updatePerformanceStockStatuses(theaterCode: string, dayStart: st
         // 上映日ごとに
         await Promise.all(countFreeSeatResult.listDate.map(async (countFreeSeatDate) => {
             debug('saving individualScreeningEvent item availability... day:', countFreeSeatDate.dateJouei);
-            // パフォーマンスごとに空席状況を生成して保管
+            // 上映イベントごとに空席状況を生成して保管
             await Promise.all(
                 countFreeSeatDate.listPerformance.map(async (countFreeSeatPerformance) => {
-                    // tslint:disable-next-line:no-suspicious-comment
-                    // TODO ID生成メソッドを利用する
-                    const eventIdentifier = [
-                        countFreeSeatResult.theaterCode,
-                        countFreeSeatPerformance.titleCode,
-                        countFreeSeatPerformance.titleBranchNum,
-                        countFreeSeatDate.dateJouei,
-                        countFreeSeatPerformance.screenCode,
-                        countFreeSeatPerformance.timeBegin
-                    ].join('');
+                    const eventIdentifier = factory.event.individualScreeningEvent.createIdentifierFromCOA({
+                        theaterCode: countFreeSeatResult.theaterCode,
+                        titleCode: countFreeSeatPerformance.titleCode,
+                        titleBranchNum: countFreeSeatPerformance.titleBranchNum,
+                        dateJouei: countFreeSeatDate.dateJouei,
+                        screenCode: countFreeSeatPerformance.screenCode,
+                        timeBegin: countFreeSeatPerformance.timeBegin
+                    });
 
                     const itemAvailability = factory.event.individualScreeningEvent.createItemAvailability(
                         countFreeSeatPerformance.cntReserveFree,

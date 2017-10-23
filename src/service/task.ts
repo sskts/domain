@@ -111,6 +111,12 @@ export function abort(intervalInMinutes: number): TaskOperation<void> {
         debug('abortedTask found', abortedTask);
 
         // 開発者へ報告
+        const lastResult = (abortedTask.executionResults.length > 0) ?
+            abortedTask.executionResults[abortedTask.executionResults.length - 1].error :
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore next */
+            '';
+
         await NotificationService.report2developers(
             ABORT_REPORT_SUBJECT,
             `id:${abortedTask.id}
@@ -118,7 +124,7 @@ name:${abortedTask.name}
 runsAt:${moment(abortedTask.runsAt).toISOString()}
 lastTriedAt:${moment(<Date>abortedTask.lastTriedAt).toISOString()}
 numberOfTried:${abortedTask.numberOfTried}
-lastResult:${(abortedTask.executionResults.length > 0) ? abortedTask.executionResults[abortedTask.executionResults.length - 1].error : ''}`
+lastResult:${lastResult}`
         )();
     };
 }

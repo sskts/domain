@@ -163,7 +163,9 @@ export function cancel(
 
         // オーソリ取消
         // 現時点では、ここで失敗したらオーソリ取消をあきらめる
-        // リトライするには処理を非同期に変更する必要あり
+        // GMO混雑エラーはここでも発生する(取消処理でも混雑エラーが発生することは確認済)
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO リトライするためにも、処理を非同期に変更する
         try {
             await GMO.services.credit.alterTran({
                 shopId: actionResult.entryTranArgs.shopId,
@@ -175,8 +177,6 @@ export function cancel(
             debug('alterTran processed', GMO.utils.util.JobCd.Void);
         } catch (error) {
             console.error('cancelCreditCardAuth threw', error);
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO GMO混雑エラーを判別(取消処理でも混雑エラーが発生することは確認済)
         }
     };
 }

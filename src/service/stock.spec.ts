@@ -15,7 +15,9 @@ before(() => {
     existingTransaction = {
         id: '123',
         object: {
-            customerContact: {},
+            customerContact: {
+                telephone: '+819012345678'
+            },
             authorizeActions: [
                 {
                     id: 'actionId',

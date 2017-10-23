@@ -26,7 +26,7 @@ export class MongoRepository {
                 ticketToken: ticket.ticketToken
             },
             agent: {
-                typeOf: 'Person',
+                typeOf: factory.personType.Person,
                 id: agentId
             },
             startDate: now,

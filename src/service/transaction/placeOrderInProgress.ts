@@ -7,7 +7,6 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
-import * as moment from 'moment';
 
 import { MongoRepository as CreditCardAuthorizeActionRepo } from '../../repo/action/authorize/creditCard';
 import { MongoRepository as MvtkAuthorizeActionRepo } from '../../repo/action/authorize/mvtk';
@@ -52,7 +51,7 @@ export function start(params: {
         }
 
         const agent: factory.transaction.placeOrder.IAgent = {
-            typeOf: 'Person',
+            typeOf: factory.personType.Person,
             id: params.agentId,
             url: ''
         };
@@ -71,9 +70,7 @@ export function start(params: {
             status: factory.transactionStatusType.InProgress,
             agent: agent,
             seller: {
-                // tslint:disable-next-line:no-suspicious-comment
-                // TODO enum管理
-                typeOf: 'MovieTheater',
+                typeOf: factory.organizationType.MovieTheater,
                 id: seller.id,
                 name: seller.name.ja,
                 url: seller.url
@@ -288,8 +285,10 @@ export function confirm(
                 },
                 acquiredFrom: transaction.seller,
                 ownedFrom: now,
-                // tslint:disable-next-line:no-suspicious-comment
-                ownedThrough: moment(now).add(1, 'month').toDate(), // TODO 所有権の有効期間調整
+                // イベント予約に対する所有権の有効期限はイベント終了日時までで十分だろう
+                // 現時点では所有権対象がイベント予約のみなので、これで問題ないが、
+                // 対象が他に広がれば、有効期間のコントロールは別でしっかり行う必要があるだろう
+                ownedThrough: acceptedOffer.itemOffered.reservationFor.endDate,
                 typeOfGood: acceptedOffer.itemOffered
             });
         });

@@ -292,8 +292,18 @@ describe('confirm()', () => {
         const order = {
             orderNumber: 'orderNumber',
             acceptedOffers: [
-                { itemOffered: { reservedTicket: { ticketToken: 'ticketToken1' } } },
-                { itemOffered: { reservedTicket: { ticketToken: 'ticketToken2' } } }
+                {
+                    itemOffered: {
+                        reservationFor: { endDate: new Date() },
+                        reservedTicket: { ticketToken: 'ticketToken1' }
+                    }
+                },
+                {
+                    itemOffered: {
+                        reservationFor: { endDate: new Date() },
+                        reservedTicket: { ticketToken: 'ticketToken2' }
+                    }
+                }
             ],
             customer: {
                 name: 'name'

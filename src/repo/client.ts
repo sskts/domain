@@ -15,9 +15,6 @@ export class MongoRepository {
     }
 
     public async pushEvent(clientAttributes: factory.clientEvent.IAttributes): Promise<factory.clientEvent.IClientEvent> {
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO クライアントの存在確認?
-
         // ドキュメント作成(idが既に存在していればユニーク制約ではじかれる)
         return this.clientEventModel.create(clientAttributes).then((doc) => <factory.clientEvent.IClientEvent>doc.toObject());
     }
