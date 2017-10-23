@@ -81,7 +81,7 @@ async function validateOffers(
         // ムビチケの場合
         if (offer.ticketInfo.mvtkAppPrice > 0) {
             // ムビチケ情報をCOA券種に変換
-            let mvtkTicket: COA.services.master.IMvtkTicketcodeResult;
+            let availableSalesTicket: COA.services.master.IMvtkTicketcodeResult;
             try {
                 debug('finding mvtkTicket...', offer.ticketInfo.ticketCode, {
                     theaterCode: individualScreeningEvent.coaInfo.theaterCode,
@@ -94,7 +94,7 @@ async function validateOffers(
                     titleCode: individualScreeningEvent.coaInfo.titleCode,
                     titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum
                 });
-                mvtkTicket = await COA.services.master.mvtkTicketcode({
+                availableSalesTicket = await COA.services.master.mvtkTicketcode({
                     theaterCode: individualScreeningEvent.coaInfo.theaterCode,
                     kbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
                     kbnMaeuriken: offer.ticketInfo.mvtkKbnMaeuriken,
@@ -124,28 +124,27 @@ async function validateOffers(
             }
 
             // COA券種が見つかっても、指定された券種コードと異なればエラー
-            if (offer.ticketInfo.ticketCode !== mvtkTicket.ticketCode) {
+            if (offer.ticketInfo.ticketCode !== availableSalesTicket.ticketCode) {
                 throw new factory.errors.NotFound(
                     `offers.${offerIndex}`,
                     `ticketInfo of ticketCode ${offer.ticketInfo.ticketCode} is invalid.`);
             }
 
-            offersWithDetails.push({
-                price: offer.ticketInfo.mvtkSalesPrice + mvtkTicket.addPrice,
+            const offerWithDetails: factory.offer.seatReservation.IOfferWithDetails = {
+                price: offer.ticketInfo.mvtkSalesPrice + availableSalesTicket.addPrice,
                 priceCurrency: factory.priceCurrency.JPY,
                 seatNumber: offer.seatNumber,
                 seatSection: offer.seatSection,
                 ticketInfo: {
-                    ticketCode: mvtkTicket.ticketCode,
-                    ticketName: mvtkTicket.ticketName,
-                    ticketNameEng: mvtkTicket.ticketNameEng,
-                    ticketNameKana: mvtkTicket.ticketNameKana,
+                    ticketCode: availableSalesTicket.ticketCode,
+                    ticketName: availableSalesTicket.ticketName,
+                    ticketNameEng: availableSalesTicket.ticketNameEng,
+                    ticketNameKana: availableSalesTicket.ticketNameKana,
                     stdPrice: 0,
-                    addPrice: mvtkTicket.addPrice,
+                    addPrice: availableSalesTicket.addPrice,
                     disPrice: 0,
-                    salePrice: mvtkTicket.addPrice,
-                    // tslint:disable-next-line:no-suspicious-comment
-                    addGlasses: mvtkTicket.addPriceGlasses, // TODO メガネ代込みかどうかを考慮
+                    salePrice: availableSalesTicket.addPrice,
+                    addGlasses: availableSalesTicket.addPriceGlasses,
                     mvtkAppPrice: offer.ticketInfo.mvtkAppPrice,
                     ticketCount: 1,
                     seatNum: offer.seatNumber,
@@ -156,7 +155,18 @@ async function validateOffers(
                     mvtkKbnKensyu: offer.ticketInfo.mvtkKbnKensyu,
                     mvtkSalesPrice: offer.ticketInfo.mvtkSalesPrice
                 }
-            });
+            };
+
+            // メガネ代込みの要求の場合は、販売単価調整&メガネ代をセット
+            const includeGlasses = (offer.ticketInfo.addGlasses > 0);
+            if (includeGlasses) {
+                offerWithDetails.ticketInfo.ticketName = `${availableSalesTicket.ticketName}メガネ込み`;
+                offerWithDetails.price += availableSalesTicket.addPriceGlasses;
+                offerWithDetails.ticketInfo.salePrice += availableSalesTicket.addPriceGlasses;
+                offerWithDetails.ticketInfo.addGlasses = availableSalesTicket.addPriceGlasses;
+            }
+
+            offersWithDetails.push(offerWithDetails);
         } else {
             const availableSalesTicket = availableSalesTickets.find(
                 (salesTicket) => salesTicket.ticketCode === offer.ticketInfo.ticketCode
@@ -167,12 +177,8 @@ async function validateOffers(
                 throw new factory.errors.NotFound(`offers.${offerIndex}`, `ticketCode ${offer.ticketInfo.ticketCode} not found.`);
             }
 
-            // {
-            //     "kubunCode": "011",
-            //     "kubunName": "チケット制限区分",
-            //     "kubunAddPrice": 0
-            // },
             // 制限単位がn人単位(例えば夫婦割り)の場合、同一券種の数を確認
+            // '001'の値は、区分マスター取得APIにて、"kubunCode": "011"を指定すると取得できる
             if (availableSalesTicket.limitUnit === '001') {
                 const numberOfSameOffer = offers.filter((o) => o.ticketInfo.ticketCode === availableSalesTicket.ticketCode).length;
                 // tslint:disable-next-line:no-single-line-block-comment

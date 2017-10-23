@@ -40,9 +40,7 @@ describe('action.authorize.seatReservation.create()', () => {
             seatSection: 'seatSection',
             seatNumber: 'seatNumber',
             ticketInfo: {
-                ticketCode: 'ticketCode',
-                salePrice: 123
-                // mvtkAppPrice: 123
+                ticketCode: 'ticketCode'
             }
         }];
         const salesTickets = [{ ticketCode: offers[0].ticketInfo.ticketCode }];
@@ -56,13 +54,76 @@ describe('action.authorize.seatReservation.create()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
-        sandbox.mock(authorizeActionRepo).expects('start').once()
-            .withArgs(transaction.seller, transaction.agent).resolves(action);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
+        sandbox.mock(authorizeActionRepo).expects('start').once().withArgs(transaction.seller, transaction.agent).resolves(action);
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().resolves(reserveSeatsTemporarilyResult);
         sandbox.mock(authorizeActionRepo).expects('complete').once().withArgs(action.id).resolves(action);
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+            agent.id,
+            transaction.id,
+            eventIdentifier,
+            <any>offers
+        )(eventRepo, authorizeActionRepo, transactionRepo);
+
+        assert.deepEqual(result, action);
+        sandbox.verify();
+    });
+
+    it('メガネ代込みを指定された場合、メガネ代込みの承認アクションを取得できるはず(ムビチケなし)', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const eventIdentifier = 'eventIdentifier';
+        const event = {
+            identifier: eventIdentifier,
+            coaInfo: {}
+        };
+        const offers = [{
+            seatSection: 'seatSection',
+            seatNumber: 'seatNumber',
+            ticketInfo: {
+                ticketCode: 'ticketCode',
+                addGlasses: 100
+            }
+        }];
+        const salesTickets = [{
+            ticketCode: 'ticketCode',
+            salePrice: 1000,
+            addGlasses: 100
+        }];
+        const reserveSeatsTemporarilyResult = <any>{};
+        const action = {
+            id: 'actionId'
+        };
+
+        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
+        sandbox.mock(authorizeActionRepo).expects('start').once().withArgs(transaction.seller, transaction.agent).resolves(action);
+        sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().resolves(reserveSeatsTemporarilyResult);
+        sandbox.mock(authorizeActionRepo).expects('complete').once().withArgs(
+            action.id,
+            {
+                price: salesTickets[0].salePrice + salesTickets[0].addGlasses,
+                updTmpReserveSeatArgs: sinon.match.any,
+                updTmpReserveSeatResult: reserveSeatsTemporarilyResult
+            }
+        ).resolves(action);
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
             agent.id,
@@ -100,7 +161,6 @@ describe('action.authorize.seatReservation.create()', () => {
             seatNumber: 'seatNumber',
             ticketInfo: {
                 ticketCode: 'ticketCode',
-                salePrice: 123,
                 mvtkAppPrice: 123
             }
         }];
@@ -118,14 +178,83 @@ describe('action.authorize.seatReservation.create()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
-        sandbox.mock(authorizeActionRepo).expects('start').once()
-            .withArgs(transaction.seller, transaction.agent).resolves(action);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         sandbox.mock(sskts.COA.services.master).expects('mvtkTicketcode').once().resolves(mvtkTicket);
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
+        sandbox.mock(authorizeActionRepo).expects('start').once().withArgs(transaction.seller, transaction.agent).resolves(action);
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().resolves(reserveSeatsTemporarilyResult);
         sandbox.mock(authorizeActionRepo).expects('complete').once().withArgs(action.id).resolves(action);
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+            agent.id,
+            transaction.id,
+            eventIdentifier,
+            <any>offers
+        )(eventRepo, authorizeActionRepo, transactionRepo);
+
+        assert.deepEqual(result, action);
+        sandbox.verify();
+    });
+
+    it('ムビチケでメガネ代込みを指定された場合、メガネ代込みの承認アクションを取得できるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const eventIdentifier = 'eventIdentifier';
+        const event = {
+            identifier: eventIdentifier,
+            coaInfo: {
+                theaterCode: 'theaterCode'
+            }
+        };
+        const offers = [{
+            seatSection: 'seatSection',
+            seatNumber: 'seatNumber',
+            ticketInfo: {
+                ticketCode: 'ticketCode',
+                addGlasses: 100,
+                mvtkAppPrice: 800,
+                mvtkSalesPrice: 1000
+            }
+        }];
+        const salesTickets = [];
+        const reserveSeatsTemporarilyResult = <any>{};
+        const action = {
+            id: 'actionId'
+        };
+        const mvtkTicket = {
+            ticketCode: 'ticketCode',
+            addPrice: 0,
+            addPriceGlasses: 100
+        };
+
+        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(sskts.COA.services.master).expects('mvtkTicketcode').once().resolves(mvtkTicket);
+        sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
+        sandbox.mock(authorizeActionRepo).expects('start').once().withArgs(transaction.seller, transaction.agent).resolves(action);
+        sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().resolves(reserveSeatsTemporarilyResult);
+        sandbox.mock(authorizeActionRepo).expects('complete').once().withArgs(
+            action.id,
+            {
+                price: offers[0].ticketInfo.mvtkSalesPrice + mvtkTicket.addPriceGlasses,
+                updTmpReserveSeatArgs: sinon.match.any,
+                updTmpReserveSeatResult: reserveSeatsTemporarilyResult
+            }
+        ).resolves(action);
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
             agent.id,
@@ -163,8 +292,7 @@ describe('action.authorize.seatReservation.create()', () => {
             seatSection: 'seatSection',
             seatNumber: 'seatNumber',
             ticketInfo: {
-                ticketCode: 'ticketCode',
-                salePrice: 123
+                ticketCode: 'ticketCode'
             }
         }];
         const salesTickets = [{ ticketCode: offers[0].ticketInfo.ticketCode }];
@@ -178,12 +306,10 @@ describe('action.authorize.seatReservation.create()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
-        sandbox.mock(authorizeActionRepo).expects('start').once()
-            .withArgs(transaction.seller, transaction.agent).resolves(action);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         // 会員と非会員で2回呼ばれるはず
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').twice().resolves(salesTickets);
+        sandbox.mock(authorizeActionRepo).expects('start').once().withArgs(transaction.seller, transaction.agent).resolves(action);
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().resolves(reserveSeatsTemporarilyResult);
         sandbox.mock(authorizeActionRepo).expects('complete').once().withArgs(action.id).resolves(action);
 
@@ -223,7 +349,6 @@ describe('action.authorize.seatReservation.create()', () => {
             seatNumber: 'seatNumber',
             ticketInfo: {
                 ticketCode: 'invalidTicketCode',
-                salePrice: 123,
                 mvtkAppPrice: 123
             }
         }];
@@ -238,8 +363,7 @@ describe('action.authorize.seatReservation.create()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         // ムビチケを券種に変換で失敗する場合
         sandbox.mock(sskts.COA.services.master).expects('mvtkTicketcode').once().rejects(mvtkTicketResult);
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
@@ -282,7 +406,6 @@ describe('action.authorize.seatReservation.create()', () => {
             seatNumber: 'seatNumber',
             ticketInfo: {
                 ticketCode: 'invalidTicketCode',
-                salePrice: 123,
                 mvtkAppPrice: 123
             }
         }];
@@ -294,8 +417,7 @@ describe('action.authorize.seatReservation.create()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         // ムビチケを券種に変換でサーバーエラーの場合
         sandbox.mock(sskts.COA.services.master).expects('mvtkTicketcode').once().rejects(mvtkTicketResult);
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
@@ -338,7 +460,6 @@ describe('action.authorize.seatReservation.create()', () => {
             seatNumber: 'seatNumber',
             ticketInfo: {
                 ticketCode: 'invalidTicketCode',
-                salePrice: 123,
                 mvtkAppPrice: 123
             }
         }];
@@ -352,8 +473,7 @@ describe('action.authorize.seatReservation.create()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         sandbox.mock(sskts.COA.services.master).expects('mvtkTicketcode').once().resolves(mvtkTicket);
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
         sandbox.mock(authorizeActionRepo).expects('start').never();
@@ -394,8 +514,7 @@ describe('action.authorize.seatReservation.create()', () => {
             seatSection: 'seatSection',
             seatNumber: 'seatNumber',
             ticketInfo: {
-                ticketCode: 'invalidTicketCode',
-                salePrice: 123
+                ticketCode: 'invalidTicketCode'
             }
         }];
         const salesTickets = [{ ticketCode: 'ticketCode' }];
@@ -405,8 +524,7 @@ describe('action.authorize.seatReservation.create()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
         sandbox.mock(authorizeActionRepo).expects('start').never();
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').never();
@@ -442,7 +560,6 @@ describe('action.authorize.seatReservation.create()', () => {
             seatSection: 'seatSection',
             seatNumber: 'seatNumber',
             ticketInfo: {
-                salePrice: 123,
                 mvtkSalesPrice: 123
             }
         }];
@@ -451,8 +568,7 @@ describe('action.authorize.seatReservation.create()', () => {
         const authorizeActionRepo = new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').never();
         sandbox.mock(authorizeActionRepo).expects('start').never();
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').never();
@@ -492,8 +608,7 @@ describe('action.authorize.seatReservation.create()', () => {
             seatSection: 'seatSection',
             seatNumber: 'seatNumber',
             ticketInfo: {
-                ticketCode: 'ticketCode',
-                salePrice: 123
+                ticketCode: 'ticketCode'
             }
         }];
         const salesTickets = [{ ticketCode: 'ticketCode' }];
@@ -506,8 +621,7 @@ describe('action.authorize.seatReservation.create()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
         sandbox.mock(authorizeActionRepo).expects('start').once().resolves(action);
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().rejects();
@@ -549,8 +663,7 @@ describe('action.authorize.seatReservation.create()', () => {
             seatSection: 'seatSection',
             seatNumber: 'seatNumber',
             ticketInfo: {
-                ticketCode: 'ticketCode',
-                salePrice: 123
+                ticketCode: 'ticketCode'
             }
         }];
         const salesTickets = [{ ticketCode: 'ticketCode' }];
@@ -563,8 +676,7 @@ describe('action.authorize.seatReservation.create()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
         sandbox.mock(authorizeActionRepo).expects('start').once().resolves(action);
         // COAが座席取得失敗エラーを返してきた場合
@@ -607,8 +719,7 @@ describe('action.authorize.seatReservation.create()', () => {
             seatSection: 'seatSection',
             seatNumber: 'seatNumber',
             ticketInfo: {
-                ticketCode: 'ticketCode',
-                salePrice: 123
+                ticketCode: 'ticketCode'
             }
         }];
         const salesTickets = [{ ticketCode: 'ticketCode' }];
@@ -622,8 +733,7 @@ describe('action.authorize.seatReservation.create()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
         sandbox.mock(authorizeActionRepo).expects('start').once().resolves(action);
         // COAが座席取得失敗エラーを返してきた場合
@@ -666,8 +776,7 @@ describe('action.authorize.seatReservation.create()', () => {
             seatSection: 'seatSection',
             seatNumber: 'seatNumber',
             ticketInfo: {
-                ticketCode: 'ticketCode',
-                salePrice: 123
+                ticketCode: 'ticketCode'
             }
         }];
         const salesTickets = [{ ticketCode: 'ticketCode' }];
@@ -681,8 +790,7 @@ describe('action.authorize.seatReservation.create()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
         sandbox.mock(authorizeActionRepo).expects('start').once().resolves(action);
         // COAが座席取得失敗エラーを返してきた場合
@@ -726,32 +834,28 @@ describe('action.authorize.seatReservation.create()', () => {
                 seatSection: 'seatSection',
                 seatNumber: 'seatNumber1',
                 ticketInfo: {
-                    ticketCode: 'ticketCode',
-                    salePrice: 123
+                    ticketCode: 'ticketCode'
                 }
             },
             {
                 seatSection: 'seatSection',
                 seatNumber: 'seatNumber2',
                 ticketInfo: {
-                    ticketCode: 'ticketCode',
-                    salePrice: 123
+                    ticketCode: 'ticketCode'
                 }
             },
             {
                 seatSection: 'seatSection',
                 seatNumber: 'seatNumber3',
                 ticketInfo: {
-                    ticketCode: 'ticketCode2',
-                    salePrice: 123
+                    ticketCode: 'ticketCode2'
                 }
             },
             {
                 seatSection: 'seatSection',
                 seatNumber: 'seatNumber4',
                 ticketInfo: {
-                    ticketCode: 'ticketCode',
-                    salePrice: 123
+                    ticketCode: 'ticketCode'
                 }
             }
         ];
@@ -766,8 +870,7 @@ describe('action.authorize.seatReservation.create()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
         sandbox.mock(authorizeActionRepo).expects('start').never();
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').never();
@@ -810,24 +913,21 @@ describe('action.authorize.seatReservation.create()', () => {
                 seatSection: 'seatSection',
                 seatNumber: 'seatNumber1',
                 ticketInfo: {
-                    ticketCode: 'ticketCode',
-                    salePrice: 123
+                    ticketCode: 'ticketCode'
                 }
             },
             {
                 seatSection: 'seatSection',
                 seatNumber: 'seatNumber2',
                 ticketInfo: {
-                    ticketCode: 'ticketCode',
-                    salePrice: 123
+                    ticketCode: 'ticketCode'
                 }
             },
             {
                 seatSection: 'seatSection',
                 seatNumber: 'seatNumber4',
                 ticketInfo: {
-                    ticketCode: 'ticketCode2',
-                    salePrice: 123
+                    ticketCode: 'ticketCode2'
                 }
             }
         ];
@@ -851,8 +951,7 @@ describe('action.authorize.seatReservation.create()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
         sandbox.mock(authorizeActionRepo).expects('start').once().resolves(action);
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().resolves(updTmpReserveSeatResult);
@@ -977,8 +1076,7 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
             seatSection: 'seatSection',
             seatNumber: 'seatNumber',
             ticketInfo: {
-                ticketCode: 'ticketCode',
-                salePrice: 123
+                ticketCode: 'ticketCode'
             }
         }];
         const salesTickets = [{ ticketCode: offers[0].ticketInfo.ticketCode }];
@@ -997,8 +1095,7 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once()
-            .withExactArgs(eventIdentifier).resolves(event);
+        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().withExactArgs(eventIdentifier).resolves(event);
         sandbox.mock(authorizeActionRepo).expects('findById').once().withArgs(action.id).resolves(action);
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
         sandbox.mock(authorizeActionRepo).expects('updateObjectAndResultById').once().withArgs(action.id).resolves(action);
@@ -1037,8 +1134,7 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
             seatSection: 'seatSection',
             seatNumber: 'seatNumber',
             ticketInfo: {
-                ticketCode: 'ticketCode',
-                salePrice: 123
+                ticketCode: 'ticketCode'
             }
         }];
         const action = {
@@ -1094,8 +1190,7 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
             seatSection: 'seatSection',
             seatNumber: 'seatNumber',
             ticketInfo: {
-                ticketCode: 'ticketCode',
-                salePrice: 123
+                ticketCode: 'ticketCode'
             }
         }];
         const action = {
@@ -1148,8 +1243,7 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
             seatSection: 'seatSection',
             seatNumber: 'seatNumber',
             ticketInfo: {
-                ticketCode: 'ticketCode',
-                salePrice: 123
+                ticketCode: 'ticketCode'
             }
         }];
         const action = {
@@ -1208,8 +1302,7 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
             seatSection: 'seatSection',
             seatNumber: 'seatNumber',
             ticketInfo: {
-                ticketCode: 'ticketCode',
-                salePrice: 123
+                ticketCode: 'ticketCode'
             }
         }];
         const action = {
