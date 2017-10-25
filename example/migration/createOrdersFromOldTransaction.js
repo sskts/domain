@@ -18,18 +18,30 @@ const PerformanceAdapter = require('../../lib/v22/adapter/performance').default;
 const TransactionAdapter = require('../../lib/v22/adapter/transaction').default;
 
 async function main() {
-    mongoose.connect(process.env.MONGOLAB_URI);
+    mongoose.connect(process.env.MONGOLAB_URI, {
+        useMongoClient: true,
+        autoReconnect: true,
+        keepAlive: 120000,
+        connectTimeoutMS: 30000,
+        socketTimeoutMS: 0,
+        reconnectTries: 30,
+        reconnectInterval: 1000
+    });
     const connection = mongoose.connection;
 
     const transactionAdapter = new TransactionAdapter(connection);
     // 最近の成立取引リストを取得
     const transactionIds = await transactionAdapter.transactionModel.find(
         {
-            closed_at: { $gt: moment('2017-08-01T00:00:00+09:00').toDate() },
+            closed_at: {
+                $gt: moment('2017-07-01T00:00:00+09:00').toDate(),
+                $lt: moment('2017-07-05T00:00:00+09:00').toDate()
+            },
             status: 'CLOSED'
         },
         'id'
     ).exec().then((docs) => docs.map((doc) => doc.get('id')));
+    console.log('number of transactionIds:', transactionIds.length);
 
     await Promise.all(transactionIds.map(async (transactionId) => {
         // テスト環境

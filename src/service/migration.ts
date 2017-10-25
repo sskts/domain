@@ -3,9 +3,9 @@
  * @namespace service.migration
  */
 
-import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as mongoose from 'mongoose';
 
 import { MongoRepository as EventRepository } from '../repo/event';
@@ -40,7 +40,7 @@ export interface ITransactionDetail {
     startDate: Date;
     endDate: Date;
     status: string;
-    inquiryKey: IOldTransactionInquiryKey;
+    orderInquiryKey: factory.order.IOrderInquiryKey;
     anonymous: {
         givenName: string;
         familyName: string;
@@ -96,7 +96,6 @@ export function createFromOldTransaction(transactionId: string) {
         // v23の注文を作成
         const order = createOrder(detail);
         debug('order:', order);
-        debug('orderRepo.findByOrderInquiryKey:', orderRepo.findByOrderInquiryKey);
 
         const ownershipInfos = order.acceptedOffers.map((acceptedOffer) => {
             // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
@@ -198,17 +197,11 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
     const customerName = `${params.anonymous.familyName} ${params.anonymous.givenName}`;
     const individualScreeningEvent = params.event;
 
-    const orderInquiryKey = {
-        theaterCode: params.inquiryKey.theater_code,
-        confirmationNumber: params.inquiryKey.reserve_num,
-        telephone: params.inquiryKey.tel
-    };
-
     const orderNumber = [
         // tslint:disable-next-line:no-magic-numbers
         params.endDate.toISOString().slice(0, 10),
-        orderInquiryKey.theaterCode,
-        orderInquiryKey.confirmationNumber
+        params.orderInquiryKey.theaterCode,
+        params.orderInquiryKey.confirmationNumber
     ].join('-');
 
     return {
@@ -218,7 +211,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
             name: params.seller.name.ja,
             url: params.seller.url
         },
-        confirmationNumber: orderInquiryKey.confirmationNumber,
+        confirmationNumber: params.orderInquiryKey.confirmationNumber,
         orderNumber: orderNumber,
         priceCurrency: factory.priceCurrency.JPY,
         price: (params.gmoAuthorization === undefined) ? 0 : params.gmoAuthorization.price,
@@ -268,7 +261,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                         additionalTicketText: '',
                         modifiedTime: params.endDate,
                         reservationFor: individualScreeningEvent,
-                        reservationNumber: `${params.inquiryKey.reserve_num}-${index.toString()}`,
+                        reservationNumber: `${params.orderInquiryKey.confirmationNumber}-${index.toString()}`,
                         reservationStatus: factory.reservationStatusType.ReservationConfirmed,
                         reservedTicket: {
                             typeOf: 'Ticket',
@@ -304,7 +297,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                     }
                 };
             }),
-        url: `/inquiry/login?theater=${orderInquiryKey.theaterCode}&reserve=${orderInquiryKey.confirmationNumber}`,
+        url: `/inquiry/login?theater=${params.orderInquiryKey.theaterCode}&reserve=${params.orderInquiryKey.confirmationNumber}`,
         orderStatus: factory.orderStatus.OrderDelivered,
         paymentMethods: paymentMethods,
         orderDate: params.endDate,
@@ -320,12 +313,13 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
             telephone: params.anonymous.telephone,
             email: params.anonymous.email
         },
-        orderInquiryKey: orderInquiryKey
+        orderInquiryKey: params.orderInquiryKey
     };
 }
 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 export function getOldTransactionDetails(transactionId: string) {
+    // tslint:disable-next-line:max-func-body-length
     return async (
         eventRepo: EventRepository,
         organizationRepo: OrganizationRepository,
@@ -353,38 +347,35 @@ export function getOldTransactionDetails(transactionId: string) {
         const seatReservationAuthorization = <IOldSeatReservationAuthorization>authorizations.find(
             (authorization) => authorization.group === 'COA_SEAT_RESERVATION'
         );
-        let qrCodesBySeatCode: {
-            seat_code: string;
-            qr: string;
-        }[] = [];
-        if (transaction.inquiry_key !== undefined) {
-            // COAからQRを取得
-            const stateReserveResult = await COA.services.reserve.stateReserve(
-                {
-                    theaterCode: transaction.inquiry_key.theater_code,
-                    reserveNum: transaction.inquiry_key.reserve_num,
-                    telNum: transaction.inquiry_key.tel
-                }
-            );
-
-            // 本予約済みのはず
-            if (stateReserveResult === null) {
-                throw new Error('COA本予約が未実行です。');
-            }
-
-            qrCodesBySeatCode = stateReserveResult.listTicket.map((ticket) => {
-                return {
-                    seat_code: ticket.seatNum,
-                    qr: ticket.seatQrcode
-                };
-            });
-        }
 
         const performanceDoc = <mongoose.Document>await performanceAdapter.model.findById(
             seatReservationAuthorization.assets[0].performance
         ).populate('film theater screen').exec();
         const performance = <any>performanceDoc.toObject();
         debug('performance from v22 is', performance);
+
+        let qrCodesBySeatCode: {
+            seat_code: string;
+            qr: string;
+        }[] = [];
+        if (transaction.inquiry_key !== undefined) {
+            // チケットトークン(QRコード文字列)を作成
+            qrCodesBySeatCode = seatReservationAuthorization.assets.map((asset, index) => {
+                const ticketToken = [
+                    performance.theater.id,
+                    performance.day,
+                    // tslint:disable-next-line:no-magic-numbers
+                    (`00000000${(<IOldTransactionInquiryKey>transaction.inquiry_key).reserve_num}`).slice(-8),
+                    // tslint:disable-next-line:no-magic-numbers
+                    (`000${index + 1}`).slice(-3)
+                ].join('');
+
+                return {
+                    seat_code: asset.seat_code,
+                    qr: ticketToken
+                };
+            });
+        }
 
         // v23でのイベント識別子
         const eventIdentifier = [
@@ -400,18 +391,39 @@ export function getOldTransactionDetails(transactionId: string) {
 
         const organization = await organizationRepo.findMovieTheaterByBranchCode(performance.theater.id);
 
+        // 電話番号フォーマットが間違っていてもスルー(ログは出力しておく)
+        let formatedPhoneNumber: string = '';
+        try {
+            const phoneUtil = PhoneNumberUtil.getInstance();
+            const phoneNumber = phoneUtil.parse(anonymousOwner.tel, 'JP');
+            debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
+            if (!phoneUtil.isValidNumber(phoneNumber)) {
+                console.error('Invalid phone number format.', anonymousOwner.tel, transaction.id);
+            }
+
+            formatedPhoneNumber = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
+        } catch (error) {
+            console.error(error, 'Invalid phone number format.', anonymousOwner.tel, transaction.id);
+        }
+
+        const orderInquiryKey = {
+            theaterCode: (<IOldTransactionInquiryKey>transaction.inquiry_key).theater_code,
+            confirmationNumber: (<IOldTransactionInquiryKey>transaction.inquiry_key).reserve_num,
+            telephone: formatedPhoneNumber
+        };
+
         return {
             id: transaction.id,
             expires: <Date>transaction.expires_at,
             startDate: <Date>transaction.started_at,
             endDate: <Date>transaction.closed_at,
             status: transaction.status,
-            inquiryKey: <IOldTransactionInquiryKey>transaction.inquiry_key,
+            orderInquiryKey: orderInquiryKey,
             anonymous: {
                 givenName: anonymousOwner.name_first,
                 familyName: anonymousOwner.name_last,
                 email: anonymousOwner.email,
-                telephone: anonymousOwner.tel
+                telephone: formatedPhoneNumber
             },
             seller: organization,
             event: event,

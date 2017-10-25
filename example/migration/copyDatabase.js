@@ -1,11 +1,11 @@
-const sskts = require('../');
+const sskts = require('../../');
 
 async function main() {
     await sskts.mongoose.connect(process.env.MONGOLAB_URI, { useMongoClient: true });
 
     const db = sskts.mongoose.connection.db;
 
-    const mongoCommand = { copydb: 1, fromdb: 'sskts-development', todb: 'sskts-development-v2' };
+    const mongoCommand = { copydb: 1, fromdb: 'testsasakiticketmongodb', todb: 'sskts-test-v2' };
     const result = await db.admin().command(mongoCommand);
     console.log('result:', result);
 
