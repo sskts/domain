@@ -10,11 +10,6 @@ const schema = new mongoose.Schema(
     {
         name: String,
         status: String,
-        runs_at: Date,
-        remaining_number_of_tries: Number,
-        last_tried_at: Date,
-        number_of_tried: Number,
-        execution_results: [mongoose.Schema.Types.Mixed],
         runsAt: Date,
         remainingNumberOfTries: Number,
         lastTriedAt: Date,

@@ -1,6 +1,6 @@
 /**
  * レポートサービス
- * todo 実験的実装中
+ * 実験的実装中
  * @namespace service.report
  */
 
@@ -107,8 +107,8 @@ export interface IFlow {
          */
         minNumberOfTrials: number;
     };
-    measured_from: Date;
-    measured_to: Date;
+    measuredFrom: Date;
+    measuredThrough: Date;
 }
 
 /**
@@ -124,12 +124,34 @@ export interface IStock {
     tasks: {
         numberOfUnexecuted: number;
     };
-    measured_at: Date;
+    measuredAt: Date;
 }
 
 export interface ITelemetry {
     flow: IFlow;
     stock: IStock;
+}
+
+/**
+ * 計測データを検索する
+ * @export
+ * @function
+ * @param searchConditions 検索条件
+ */
+export function searchTelemetries(searchConditions: {
+    measuredFrom: Date,
+    measuredThrough: Date
+}) {
+    return async (telemetryRepo: TelemetryRepo) => {
+        return <ITelemetry[]>await telemetryRepo.telemetryModel.find(
+            {
+                'stock.measuredAt': {
+                    $gte: searchConditions.measuredFrom,
+                    $lt: searchConditions.measuredThrough
+                }
+            }
+        ).sort({ 'stock.measuredAt': 1 }).lean().exec();
+    };
 }
 
 /**
@@ -146,11 +168,11 @@ export function createTelemetry(): TaskAndTelemetryAndTransactionOperation<void>
         transactionRepository: TransactionRepo
     ) => {
         const dateNow = moment();
-        const measuredTo = moment.unix((dateNow.unix() - (dateNow.unix() % TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS)));
-        const measuredFrom = moment(measuredTo).add(-TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS, 'seconds');
-        const measuredAt = moment(measuredTo);
+        const measuredThrough = moment.unix((dateNow.unix() - (dateNow.unix() % TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS)));
+        const measuredFrom = moment(measuredThrough).add(-TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS, 'seconds');
+        const measuredAt = moment(measuredThrough);
 
-        const flowData = await createFlowTelemetry(measuredFrom.toDate(), measuredTo.toDate())(taskRepository, transactionRepository);
+        const flowData = await createFlowTelemetry(measuredFrom.toDate(), measuredThrough.toDate())(taskRepository, transactionRepository);
         const stockData = await createStockTelemetry(measuredAt.toDate())(taskRepository, transactionRepository);
 
         const telemetry: ITelemetry = {
@@ -167,10 +189,10 @@ export function createTelemetry(): TaskAndTelemetryAndTransactionOperation<void>
  * @export
  * @function
  * @param {Date} measuredFrom 計測開始日時
- * @param {Date} measuredTo 計測終了日時
+ * @param {Date} measuredThrough 計測終了日時
  * @returns {TaskAndTransactionOperation<IFlow>}
  */
-export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskAndTransactionOperation<IFlow> {
+export function createFlowTelemetry(measuredFrom: Date, measuredThrough: Date): TaskAndTransactionOperation<IFlow> {
     // tslint:disable-next-line:max-func-body-length
     return async (
         taskRepository: TaskRepo,
@@ -178,25 +200,26 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
     ) => {
         // 直近{TELEMETRY_UNIT_TIME_IN_SECONDS}秒に開始された取引数を算出する
         const numberOfTransactionsStarted = await transactionRepository.transactionModel.count({
-            started_at: {
+            startDate: {
                 $gte: measuredFrom,
-                $lt: measuredTo
+                $lt: measuredThrough
             }
         }).exec();
 
         // 平均所要時間算出(期間の成立取引リストを取得し、開始時刻と成立時刻の差を所要時間とする)
         const closedTransactions = await transactionRepository.transactionModel.find(
             {
-                closed_at: {
+                endDate: {
                     $gte: measuredFrom,
-                    $lt: measuredTo
-                }
+                    $lt: measuredThrough
+                },
+                status: factory.transactionStatusType.Confirmed
             },
-            'started_at closed_at'
+            'startDate endDate'
         ).exec();
         const numberOfTransactionsClosed = closedTransactions.length;
         const requiredTimes = closedTransactions.map(
-            (transaction) => moment(transaction.get('closed_at')).diff(moment(transaction.get('started_at'), 'milliseconds'))
+            (transaction) => moment(transaction.get('endDate')).diff(moment(transaction.get('startDate'), 'milliseconds'))
         );
         const totalRequiredTimeInMilliseconds = requiredTimes.reduce((a, b) => a + b, 0);
         const maxRequiredTimeInMilliseconds = requiredTimes.reduce((a, b) => Math.max(a, b), 0);
@@ -213,24 +236,25 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
         const minAmount = amounts.reduce((a, b) => Math.min(a, b), (numberOfTransactionsClosed > 0) ? amounts[0] : 0);
 
         const numberOfTransactionsExpired = await transactionRepository.transactionModel.count({
-            expired_at: {
+            endDate: {
                 $gte: measuredFrom,
-                $lt: measuredTo
-            }
+                $lt: measuredThrough
+            },
+            status: factory.transactionStatusType.Expired
         }).exec();
 
         const numberOfTasksCreated = await taskRepository.taskModel.count({
             createdAt: {
                 $gte: measuredFrom,
-                $lt: measuredTo
+                $lt: measuredThrough
             }
         }).exec();
 
         // 実行中止ステータスで、最終試行日時が範囲にあるものを実行タスク数とする
         const numberOfTasksAborted = await taskRepository.taskModel.count({
-            last_tried_at: {
+            lastTriedAt: {
                 $gte: measuredFrom,
-                $lt: measuredTo
+                $lt: measuredThrough
             },
             status: factory.taskStatus.Aborted
         }).exec();
@@ -238,26 +262,26 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
         // 実行済みステータスで、最終試行日時が範囲にあるものを実行タスク数とする
         const executedTasks = await taskRepository.taskModel.find(
             {
-                last_tried_at: {
+                lastTriedAt: {
                     $gte: measuredFrom,
-                    $lt: measuredTo
+                    $lt: measuredThrough
                 },
                 status: factory.taskStatus.Executed
             },
-            'runs_at last_tried_at number_of_tried'
+            'runsAt lastTriedAt numberOfTried'
         ).exec();
         const numberOfTasksExecuted = executedTasks.length;
 
         const latencies = await Promise.all(
             executedTasks.map(
-                (task) => moment(task.get('last_tried_at')).diff(moment(task.get('runs_at'), 'milliseconds'))
+                (task) => moment(task.get('lastTriedAt')).diff(moment(task.get('runsAt'), 'milliseconds'))
             )
         );
         const totalLatency = latencies.reduce((a, b) => a + b, 0);
         const maxLatency = latencies.reduce((a, b) => Math.max(a, b), 0);
         const minLatency = latencies.reduce((a, b) => Math.min(a, b), (numberOfTasksExecuted > 0) ? latencies[0] : 0);
 
-        const numbersOfTrials = await Promise.all(executedTasks.map((task) => <number>task.get('number_of_tried')));
+        const numbersOfTrials = await Promise.all(executedTasks.map((task) => <number>task.get('numberOfTried')));
         const totalNumberOfTrials = numbersOfTrials.reduce((a, b) => a + b, 0);
         const maxNumberOfTrials = numbersOfTrials.reduce((a, b) => Math.max(a, b), 0);
         const minNumberOfTrials = numbersOfTrials.reduce((a, b) => Math.min(a, b), (numberOfTasksExecuted > 0) ? numbersOfTrials[0] : 0);
@@ -285,8 +309,8 @@ export function createFlowTelemetry(measuredFrom: Date, measuredTo: Date): TaskA
                 maxNumberOfTrials: maxNumberOfTrials,
                 minNumberOfTrials: minNumberOfTrials
             },
-            measured_from: measuredFrom,
-            measured_to: measuredTo
+            measuredFrom: measuredFrom,
+            measuredThrough: measuredThrough
         };
     };
 }
@@ -308,25 +332,16 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
             $or: [
                 // {measuredAt}以前に開始し、{measuredAt}以後に成立あるいは期限切れした取引
                 {
-                    started_at: {
+                    startDate: {
                         $lte: measuredAt
                     },
-                    $or: [
-                        {
-                            closed_at: {
-                                $gt: measuredAt
-                            }
-                        },
-                        {
-                            expired_at: {
-                                $gt: measuredAt
-                            }
-                        }
-                    ]
+                    endDate: {
+                        $gt: measuredAt
+                    }
                 },
                 // {measuredAt}以前に開始し、いまだに進行中の取引
                 {
-                    started_at: {
+                    startDate: {
                         $lte: measuredAt
                     },
                     status: factory.transactionStatusType.InProgress
@@ -341,13 +356,9 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
                     createdAt: {
                         $lte: measuredAt
                     },
-                    $or: [
-                        {
-                            last_tried_at: {
-                                $gt: measuredAt
-                            }
-                        }
-                    ]
+                    lastTriedAt: {
+                        $gt: measuredAt
+                    }
                 },
                 // {measuredAt}以前に作成され、いまだに未実行のタスク
                 {
@@ -366,7 +377,7 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
             tasks: {
                 numberOfUnexecuted: numberOfTasksUnexecuted
             },
-            measured_at: measuredAt
+            measuredAt: measuredAt
         };
     };
 }
