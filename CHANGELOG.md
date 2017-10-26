@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v23.0.1 - 2017-10-27
+### Changed
+- gmoNotificationsのスキーマを調整。
+
 ## v23.0.0 - 2017-10-26
 ### Added
 - 創作物、イベント、組織、人物、所有権、場所、注文、予約スキーマを新たに追加。

@@ -396,23 +396,23 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
  * @interface
  */
 export interface ICreditGMONotification {
-    shop_id: string; // ショップID
-    access_id: string; // 取引ID
-    order_id: string; // オーダーID
+    shopId: string; // ショップID
+    accessId: string; // 取引ID
+    orderId: string; // オーダーID
     status: string; // 現状態
-    job_cd: string; // 処理区分
-    amount: string; // 利用金額
-    tax: string; // 税送料
+    jobCd: string; // 処理区分
+    amount: number; // 利用金額
+    tax: number; // 税送料
     currency: string; // 通貨コード
     forward: string; // 仕向先会社コード
     method: string; // 支払方法
-    pay_times: string; // 支払回数
-    tran_id: string; // トランザクションID
+    payTimes: string; // 支払回数
+    tranId: string; // トランザクションID
     approve: string; // 承認番号
-    tran_date: string; // 処理日付
-    err_code: string; // エラーコード
-    err_info: string; // エラー詳細コード
-    pay_type: string; // 決済方法
+    tranDate: string; // 処理日付
+    errCode: string; // エラーコード
+    errInfo: string; // エラー詳細コード
+    payType: string; // 決済方法
 }
 
 /**
@@ -473,12 +473,11 @@ export function checkHealthOfGMOSales(madeFrom: Date, madeThrough: Date) {
         const gmoSales = await searchGMOSales(madeFrom, madeThrough)(gmoNotificationRepo);
         debug('gmoSales:', gmoSales);
 
-        // tslint:disable-next-line:no-magic-numbers
-        const totalAmount = gmoSales.reduce((a, b) => a + parseInt(b.amount, 10), 0);
+        const totalAmount = gmoSales.reduce((a, b) => a + b.amount, 0);
 
         // オーダーIDごとに有効性確認すると、コマンド過多でMongoDBにある程度の負荷をかけてしまう
         // まとめて検索してから、ローカルで有効性を確認する必要がある
-        const orderIds = gmoSales.map((gmoSale) => gmoSale.order_id);
+        const orderIds = gmoSales.map((gmoSale) => gmoSale.orderId);
 
         // オーダーIDが承認アクションに含まれる注文取引を参照
         const transactions = <factory.transaction.placeOrder.ITransaction[]>await transactionRepo.transactionModel.find(
@@ -497,7 +496,7 @@ export function checkHealthOfGMOSales(madeFrom: Date, madeThrough: Date) {
                 const transactionByOrderId = transactions.find((transaction) => {
                     const authorizeActionByOrderId = transaction.object.authorizeActions.find(
                         (authorizeAction: factory.action.authorize.creditCard.IAction) => {
-                            return authorizeAction.object.orderId === gmoSale.order_id;
+                            return authorizeAction.object.orderId === gmoSale.orderId;
                         }
                     );
 
@@ -511,30 +510,28 @@ export function checkHealthOfGMOSales(madeFrom: Date, madeThrough: Date) {
                 const creditCardAuthorizeAction =
                     <factory.action.authorize.creditCard.IAction>transactionByOrderId.object.authorizeActions.find(
                         (authorizeAction: factory.action.authorize.creditCard.IAction) => {
-                            return authorizeAction.object.orderId === gmoSale.order_id;
+                            return authorizeAction.object.orderId === gmoSale.orderId;
                         }
                     );
                 debug('creditCardAuthorizeAction is', creditCardAuthorizeAction);
 
                 const authorizeActionResult = <factory.action.authorize.creditCard.IResult>creditCardAuthorizeAction.result;
-                if (authorizeActionResult.execTranArgs.accessId !== gmoSale.access_id) {
-                    throw new Error('gmo_access_id not matched');
+                if (authorizeActionResult.execTranArgs.accessId !== gmoSale.accessId) {
+                    throw new Error('accessId not matched');
                 }
 
-                if (creditCardAuthorizeAction.object.payType !== gmoSale.pay_type) {
-                    throw new Error('gmo_pay_type not matched');
+                if (creditCardAuthorizeAction.object.payType !== gmoSale.payType) {
+                    throw new Error('payType not matched');
                 }
 
                 // オーソリの金額と同一かどうか
-                // tslint:disable-next-line:no-magic-numbers
-                if (creditCardAuthorizeAction.object.amount !== parseInt(gmoSale.amount, 10)) {
+                if (creditCardAuthorizeAction.object.amount !== gmoSale.amount) {
                     throw new Error('amount not matched');
                 }
             } catch (error) {
                 errors.push({
-                    orderId: gmoSale.order_id,
-                    // tslint:disable-next-line:no-magic-numbers
-                    amount: parseInt(gmoSale.amount, 10),
+                    orderId: gmoSale.orderId,
+                    amount: gmoSale.amount,
                     reason: error.message
                 });
             }
