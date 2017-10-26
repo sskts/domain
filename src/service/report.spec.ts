@@ -93,12 +93,12 @@ describe('service.report.checkHealthOfGMOSales()', () => {
         const madeFrom = new Date();
         const madeThrough = new Date();
         const notifications = [{
-            access_id: 'accessId',
-            order_id: 'orderId',
+            accessId: 'accessId',
+            orderId: 'orderId',
             status: 'status',
-            job_cd: 'Sales',
+            jobCd: 'jobCd',
             amount: 1234,
-            pay_type: 'payType'
+            payType: 'payType'
         }];
         const transactions = [{
             object: {
@@ -134,12 +134,12 @@ describe('service.report.checkHealthOfGMOSales()', () => {
         const madeFrom = new Date();
         const madeThrough = new Date();
         const notifications = [{
-            access_id: 'accessId',
-            order_id: 'orderId',
+            accessId: 'accessId',
+            orderId: 'orderId',
             status: 'status',
-            job_cd: 'Sales',
+            jobCd: 'jobCd',
             amount: 1234,
-            pay_type: 'payType'
+            payType: 'payType'
         }];
         const transactions = [{
             object: {
@@ -174,12 +174,12 @@ describe('service.report.checkHealthOfGMOSales()', () => {
         const madeFrom = new Date();
         const madeThrough = new Date();
         const notifications = [{
-            access_id: 'invalidAccessId',
-            order_id: 'orderId',
+            accessId: 'invalidAccessId',
+            orderId: 'orderId',
             status: 'status',
-            job_cd: 'Sales',
+            jobCd: 'jobCd',
             amount: 1234,
-            pay_type: 'payType'
+            payType: 'payType'
         }];
         const transactions = [{
             object: {
@@ -215,12 +215,12 @@ describe('service.report.checkHealthOfGMOSales()', () => {
         const madeFrom = new Date();
         const madeThrough = new Date();
         const notifications = [{
-            access_id: 'accessId',
-            order_id: 'orderId',
+            accessId: 'accessId',
+            orderId: 'orderId',
             status: 'status',
-            job_cd: 'Sales',
+            jobCd: 'jobCd',
             amount: 1234,
-            pay_type: 'invalidPayType'
+            payType: 'invalidPayType'
         }];
         const transactions = [{
             object: {
@@ -256,12 +256,12 @@ describe('service.report.checkHealthOfGMOSales()', () => {
         const madeFrom = new Date();
         const madeThrough = new Date();
         const notifications = [{
-            access_id: 'accessId',
-            order_id: 'orderId',
+            accessId: 'accessId',
+            orderId: 'orderId',
             status: 'status',
-            job_cd: 'Sales',
+            jobCd: 'jobCd',
             amount: 9999,
-            pay_type: 'payType'
+            payType: 'payType'
         }];
         const transactions = [{
             object: {
