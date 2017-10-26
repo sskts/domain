@@ -16,6 +16,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+
+## v23.0.0 - 2017-10-26
+### Added
+- 創作物、イベント、組織、人物、所有権、場所、注文、予約スキーマを新たに追加。
+- 取引タイプを追加。
+- イベントサービスを追加。
+- 場所サービスを追加。
+- 組織サービスを追加。
+- 注文サービスを追加。
+
+### Changed
+- 注文作成取引に対するタスクに渡すデータを取引オブジェクトに変更。
+- indexモジュールを再構成。
+- update package [@motionpicture/gmo-service](https://www.npmjs.com/package/@motionpicture/gmo-service)
+- Amazon Cognitoでの会員管理に対応
+- migrate factories as @motionpicture/sskts-factory.
+
+### Removed
+- 劇場、スクリーン、作品、パフォーマンススキーマを削除。
+- 所有者、資産、取引スキーマを削除。
+- マスターサービスを削除。
+
 ## v22.0.0 - 2017-07-06
 ### Changed
 - タスクの最大試行回数フィールドを、残り試行可能回数に変更。これによって、リトライor中止を判断する際に、MongoDBへの操作に$whereオペレーターを使う必要がなくなった(indexが効くようになる)
