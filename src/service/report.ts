@@ -161,6 +161,8 @@ export function searchTelemetries(searchConditions: {
  * @returns {TaskAndTelemetryAndTransactionOperation<void>}
  * @memberof service.report
  */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 export function createTelemetry(): TaskAndTelemetryAndTransactionOperation<void> {
     return async (
         taskRepository: TaskRepo,
@@ -192,6 +194,8 @@ export function createTelemetry(): TaskAndTelemetryAndTransactionOperation<void>
  * @param {Date} measuredThrough 計測終了日時
  * @returns {TaskAndTransactionOperation<IFlow>}
  */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 export function createFlowTelemetry(measuredFrom: Date, measuredThrough: Date): TaskAndTransactionOperation<IFlow> {
     // tslint:disable-next-line:max-func-body-length
     return async (
@@ -322,6 +326,8 @@ export function createFlowTelemetry(measuredFrom: Date, measuredThrough: Date): 
  * @param {Date} measuredAt 計測日時
  * @returns {TaskAndTransactionOperation<IStock>}
  */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperation<IStock> {
     // tslint:disable-next-line:max-func-body-length
     return async (

@@ -12,7 +12,6 @@
     ],
     "exclude": [
         "**/*.spec.ts",
-        "src/service/report.ts",
         "src/service/util.ts",
         "src/v22/**/*.ts"
     ],

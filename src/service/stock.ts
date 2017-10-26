@@ -91,6 +91,8 @@ export function transferSeatReservation(transactionId: string) {
         // COA本予約
         // 未本予約であれば実行(COA本予約は一度成功すると成功できない)
         let updReserveResult: COA.services.reserve.IUpdReserveResult;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (stateReserveResult === null) {
             updReserveResult = await COA.services.reserve.updReserve({
                 theaterCode: updTmpReserveSeatArgs.theaterCode,

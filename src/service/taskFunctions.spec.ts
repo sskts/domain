@@ -15,7 +15,7 @@ before(() => {
     sandbox = sinon.sandbox.create();
 });
 
-describe('sendEmailNotification()', () => {
+describe('TaskFunctionsService.sendEmailNotification()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -35,7 +35,7 @@ describe('sendEmailNotification()', () => {
     });
 });
 
-describe('cancelSeatReservation()', () => {
+describe('TaskFunctionsService.cancelSeatReservation()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -55,7 +55,7 @@ describe('cancelSeatReservation()', () => {
     });
 });
 
-describe('cancelCreditCard()', () => {
+describe('TaskFunctionsService.cancelCreditCard()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -75,7 +75,7 @@ describe('cancelCreditCard()', () => {
     });
 });
 
-describe('cancelMvtk()', () => {
+describe('TaskFunctionsService.cancelMvtk()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -95,7 +95,7 @@ describe('cancelMvtk()', () => {
     });
 });
 
-describe('settleSeatReservation()', () => {
+describe('TaskFunctionsService.settleSeatReservation()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -115,7 +115,7 @@ describe('settleSeatReservation()', () => {
     });
 });
 
-describe('settleCreditCard()', () => {
+describe('TaskFunctionsService.settleCreditCard()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -135,7 +135,7 @@ describe('settleCreditCard()', () => {
     });
 });
 
-describe('settleMvtk()', () => {
+describe('TaskFunctionsService.settleMvtk()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -155,7 +155,7 @@ describe('settleMvtk()', () => {
     });
 });
 
-describe('createOrder()', () => {
+describe('TaskFunctionsService.createOrder()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -169,6 +169,26 @@ describe('createOrder()', () => {
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.createOrder(<any>data)(sskts.mongoose.connection);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
+
+describe('TaskFunctionsService.createOwnershipInfos()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('所有権作成サービスが正常であれば、エラーにならないはず', async () => {
+        const data = {
+            transactionId: 'transactionId'
+        };
+
+        sandbox.mock(sskts.service.ownershipInfo).expects('createFromTransaction').once()
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
+
+        const result = await TaskFunctionsService.createOwnershipInfos(<any>data)(sskts.mongoose.connection);
 
         assert.equal(result, undefined);
         sandbox.verify();

@@ -43,7 +43,14 @@ before(() => {
         },
         result: {
             order: {
-                acceptedOffers: []
+                acceptedOffers: [
+                    {
+                        price: 123,
+                        itemOffered: {
+                            reservedTicket: {}
+                        }
+                    }
+                ]
             },
             ownershipInfos: [{}, {}]
         }
