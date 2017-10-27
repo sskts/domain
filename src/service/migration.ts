@@ -136,12 +136,12 @@ export function createFromOldTransaction(transactionId: string) {
             {
                 typeOf: factory.transactionType.PlaceOrder,
                 agent: {
-                    typeOf: 'Person',
+                    typeOf: factory.personType.Person,
                     id: '',
                     url: ''
                 },
                 seller: {
-                    typeOf: 'MovieTheater',
+                    typeOf: factory.organizationType.MovieTheater,
                     id: detail.seller.id,
                     name: detail.seller.name.ja,
                     url: detail.seller.url
@@ -244,8 +244,6 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
                     mvtkSalesPrice: asset.mvtk_sales_price
                 };
 
-                // tslint:disable-next-line:no-suspicious-comment
-                // TODO 諸々まだ値微調整
                 return {
                     price: asset.sale_price,
                     priceCurrency: factory.priceCurrency.JPY,
@@ -317,7 +315,6 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
     };
 }
 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 export function getOldTransactionDetails(transactionId: string) {
     // tslint:disable-next-line:max-func-body-length
     return async (
