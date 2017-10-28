@@ -63,27 +63,6 @@ describe('service.report.searchTelemetries()', () => {
 //     });
 // });
 
-describe('service.report.searchGMOSales()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('DBが正常であれば、配列を取得できるはず', async () => {
-        const madeFrom = new Date();
-        const madeThrough = new Date();
-        const notifications = [];
-        const gmoNotificationRepo = new sskts.repository.GMONotification(sskts.mongoose.connection);
-
-        sandbox.mock(gmoNotificationRepo.gmoNotificationModel).expects('find').once()
-            .chain('lean').chain('exec').resolves(notifications);
-
-        const result = await sskts.service.report.searchGMOSales(madeFrom, madeThrough)(gmoNotificationRepo);
-
-        assert(Array.isArray(result));
-        sandbox.verify();
-    });
-});
-
 describe('service.report.checkHealthOfGMOSales()', () => {
     afterEach(() => {
         sandbox.restore();

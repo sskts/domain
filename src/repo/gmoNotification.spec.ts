@@ -44,3 +44,22 @@ describe('GMONotificationRepo.save()', () => {
         sandbox.verify();
     });
 });
+
+describe('GMONotificationRepo.searchSales()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('repositoryの状態が正常であれば、配列を取得できるはず', async () => {
+        const conditions = {};
+        const notifications = [];
+        const gmoNotificationRepo = new sskts.repository.GMONotification(sskts.mongoose.connection);
+
+        sandbox.mock(gmoNotificationRepo.gmoNotificationModel).expects('find').once()
+            .chain('lean').chain('exec').resolves(notifications);
+
+        const result = await gmoNotificationRepo.searchSales(<any>conditions);
+        assert(Array.isArray(result));
+        sandbox.verify();
+    });
+});

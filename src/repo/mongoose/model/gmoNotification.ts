@@ -9,7 +9,9 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 const schema = new mongoose.Schema(
     {
         shopId: String, // ショップID
+        shopPass: String, // ショップパスワード
         accessId: String, // 取引ID
+        accessPass: String, // 取引パスワード
         orderId: String, // オーダーID
         status: String, // 現状態
         jobCd: String, // 処理区分
