@@ -8,8 +8,6 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
-// tslint:disable-next-line:no-require-imports no-var-requires
-require('moment-timezone');
 
 import { MongoRepository as GMONotificationRepo } from '../repo/gmoNotification';
 import { MongoRepository as TaskRepo } from '../repo/task';
@@ -29,6 +27,7 @@ const TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS = 60; // 測定単位時間(秒)
  * フローデータ
  * @export
  * @interface IFlow
+ * @memberof service.report
  * @see https://en.wikipedia.org/wiki/Stock_and_flow
  */
 export interface IFlow {
@@ -116,6 +115,7 @@ export interface IFlow {
  * ストックデータ
  * @export
  * @interface IStock
+ * @memberof service.report
  * @see https://en.wikipedia.org/wiki/Stock_and_flow
  */
 export interface IStock {
@@ -137,7 +137,9 @@ export interface ITelemetry {
  * 計測データを検索する
  * @export
  * @function
- * @param searchConditions 検索条件
+ * @memberof service.report
+ * @param {Date} searchConditions.measuredFrom 計測日時from
+ * @param {Date} searchConditions.measuredThrough 計測日時through
  */
 export function searchTelemetries(searchConditions: {
     measuredFrom: Date,
@@ -191,6 +193,7 @@ export function createTelemetry(): TaskAndTelemetryAndTransactionOperation<void>
  * フロー計測データーを作成する
  * @export
  * @function
+ * @memberof service.report
  * @param {Date} measuredFrom 計測開始日時
  * @param {Date} measuredThrough 計測終了日時
  * @returns {TaskAndTransactionOperation<IFlow>}
@@ -324,6 +327,7 @@ export function createFlowTelemetry(measuredFrom: Date, measuredThrough: Date): 
  * ストック計測データを作成する
  * @export
  * @function
+ * @memberof service.report
  * @param {Date} measuredAt 計測日時
  * @returns {TaskAndTransactionOperation<IStock>}
  */
@@ -390,32 +394,10 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
 }
 
 /**
- * GMO実売上検索
- * todo webhookで失敗した場合に通知は重複して入ってくる
- * そのケースをどう対処するか
- * @export
- * @function
- * @memberof service.report
- */
-export function searchGMOSales(dateFrom: Date, dateTo: Date): GMONotificationOperation<IGMOResultNotification[]> {
-    return async (gmoNotificationRepository: GMONotificationRepo) => {
-        // 'tran_date': '20170415230109'の形式
-        return <IGMOResultNotification[]>await gmoNotificationRepository.gmoNotificationModel.find(
-            {
-                job_cd: GMO.utils.util.JobCd.Sales,
-                tran_date: {
-                    $gte: moment(dateFrom).tz('Asia/Tokyo').format('YYYYMMDDHHmmss'),
-                    $lte: moment(dateTo).tz('Asia/Tokyo').format('YYYYMMDDHHmmss')
-                }
-            }
-        ).lean().exec();
-    };
-}
-
-/**
  * GMO売上健康診断レポートインターフェース
  * @export
  * @interface
+ * @memberof service.report
  */
 export interface IReportOfGMOSalesHealthCheck {
     madeFrom: Date;
@@ -430,6 +412,7 @@ export interface IReportOfGMOSalesHealthCheck {
  * 不健康なGMO売上インターフェース
  * @export
  * @interface
+ * @memberof service.report
  */
 export interface IUnhealthGMOSale {
     orderId: string;
@@ -441,17 +424,21 @@ export interface IUnhealthGMOSale {
  * 期間指定でGMO実売上の健康診断を実施する
  * @export
  * @function
+ * @memberof service.report
  */
 export function checkHealthOfGMOSales(madeFrom: Date, madeThrough: Date) {
     return async (gmoNotificationRepo: GMONotificationRepo, transactionRepo: TransactionRepo): Promise<IReportOfGMOSalesHealthCheck> => {
-        const gmoSales = await searchGMOSales(madeFrom, madeThrough)(gmoNotificationRepo);
-        debug('gmoSales:', gmoSales);
+        const sales = await gmoNotificationRepo.searchSales({
+            tranDateFrom: madeFrom,
+            tranDateThrough: madeThrough
+        });
+        debug('sales:', sales);
 
-        const totalAmount = gmoSales.reduce((a, b) => a + b.amount, 0);
+        const totalAmount = sales.reduce((a, b) => a + b.amount, 0);
 
         // オーダーIDごとに有効性確認すると、コマンド過多でMongoDBにある程度の負荷をかけてしまう
         // まとめて検索してから、ローカルで有効性を確認する必要がある
-        const orderIds = gmoSales.map((gmoSale) => gmoSale.orderId);
+        const orderIds = sales.map((sale) => sale.orderId);
 
         // オーダーIDが承認アクションに含まれる注文取引を参照
         const transactions = <factory.transaction.placeOrder.ITransaction[]>await transactionRepo.transactionModel.find(
@@ -464,7 +451,7 @@ export function checkHealthOfGMOSales(madeFrom: Date, madeThrough: Date) {
         debug('transactions are', transactions);
 
         const errors: IUnhealthGMOSale[] = [];
-        gmoSales.forEach((gmoSale) => {
+        sales.forEach((gmoSale) => {
             try {
                 // オーダーIDに該当する取引がなければエラー
                 const transactionByOrderId = transactions.find((transaction) => {
@@ -514,7 +501,7 @@ export function checkHealthOfGMOSales(madeFrom: Date, madeThrough: Date) {
         return {
             madeFrom: madeFrom,
             madeThrough: madeThrough,
-            numberOfSales: gmoSales.length,
+            numberOfSales: sales.length,
             totalAmount: totalAmount,
             totalAmountCurrency: factory.priceCurrency.JPY,
             unhealthGMOSales: errors
