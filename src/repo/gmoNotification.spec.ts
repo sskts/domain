@@ -27,3 +27,20 @@ describe('constructor()', () => {
         assert.notEqual(creativeWorkRepo.gmoNotificationModel, undefined);
     });
 });
+
+describe('GMONotificationRepo.save()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
+        const notification = {};
+        const gmoNotificationRepo = new sskts.repository.GMONotification(sskts.mongoose.connection);
+
+        sandbox.mock(gmoNotificationRepo.gmoNotificationModel).expects('create').once().resolves();
+
+        const result = await gmoNotificationRepo.save(<any>notification);
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});

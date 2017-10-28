@@ -20,6 +20,7 @@ export type TaskAndTransactionOperation<T> = (taskRepository: TaskRepo, transact
 export type TaskAndTelemetryAndTransactionOperation<T> =
     (taskRepository: TaskRepo, telemetryRepository: TelemetryRepo, transactionRepository: TransactionRepo) => Promise<T>;
 export type GMONotificationOperation<T> = (gmoNotificationRepository: GMONotificationRepo) => Promise<T>;
+export type IGMOResultNotification = GMO.factory.resultNotification.creditCard.IResultNotification;
 
 const debug = createDebug('sskts-domain:service:report');
 const TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS = 60; // 測定単位時間(秒)
@@ -388,33 +389,6 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
     };
 }
 
-// tslint:disable-next-line:no-suspicious-comment
-/**
- * カード決済GMO通知インターフェース
- * TODO そのうち仕様が固まってきたらfactoryに移動
- * @export
- * @interface
- */
-export interface ICreditGMONotification {
-    shopId: string; // ショップID
-    accessId: string; // 取引ID
-    orderId: string; // オーダーID
-    status: string; // 現状態
-    jobCd: string; // 処理区分
-    amount: number; // 利用金額
-    tax: number; // 税送料
-    currency: string; // 通貨コード
-    forward: string; // 仕向先会社コード
-    method: string; // 支払方法
-    payTimes: string; // 支払回数
-    tranId: string; // トランザクションID
-    approve: string; // 承認番号
-    tranDate: string; // 処理日付
-    errCode: string; // エラーコード
-    errInfo: string; // エラー詳細コード
-    payType: string; // 決済方法
-}
-
 /**
  * GMO実売上検索
  * todo webhookで失敗した場合に通知は重複して入ってくる
@@ -423,10 +397,10 @@ export interface ICreditGMONotification {
  * @function
  * @memberof service.report
  */
-export function searchGMOSales(dateFrom: Date, dateTo: Date): GMONotificationOperation<ICreditGMONotification[]> {
+export function searchGMOSales(dateFrom: Date, dateTo: Date): GMONotificationOperation<IGMOResultNotification[]> {
     return async (gmoNotificationRepository: GMONotificationRepo) => {
         // 'tran_date': '20170415230109'の形式
-        return <ICreditGMONotification[]>await gmoNotificationRepository.gmoNotificationModel.find(
+        return <IGMOResultNotification[]>await gmoNotificationRepository.gmoNotificationModel.find(
             {
                 job_cd: GMO.utils.util.JobCd.Sales,
                 tran_date: {
