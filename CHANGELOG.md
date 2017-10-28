@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- GMO結果通知レポジトリーに保管メソッドを追加。
 
 ### Changed
 
