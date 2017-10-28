@@ -5,7 +5,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
-- GMO結果通知レポジトリーに検索メソッドを追加。
 
 ### Changed
 
@@ -14,10 +13,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 ### Fixed
-- GMO実売上を検索できないバグを解消。
 
 ### Security
 
+
+## v23.1.1 - 2017-10-28
+### Added
+- GMO結果通知レポジトリーに検索メソッドを追加。
+
+### Fixed
+- GMO実売上を検索できないバグを解消。
 
 ## v23.1.0 - 2017-10-28
 ### Added
