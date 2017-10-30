@@ -34,8 +34,8 @@ async function main() {
     const transactionIds = await transactionAdapter.transactionModel.find(
         {
             closed_at: {
-                $gt: moment('2017-07-01T00:00:00+09:00').toDate(),
-                $lt: moment('2017-07-05T00:00:00+09:00').toDate()
+                $gt: moment('2017-07-20T00:00:00+09:00').toDate(),
+                $lt: moment('2017-08-30T00:00:00+09:00').toDate()
             },
             status: 'CLOSED'
         },
@@ -44,14 +44,6 @@ async function main() {
     console.log('number of transactionIds:', transactionIds.length);
 
     await Promise.all(transactionIds.map(async (transactionId) => {
-        // テスト環境
-        // const transactionId = '5959fedbd5aeb81bc0236a16'; // GMO
-        // const transactionId = '595a0030d5aeb81bc0236acd'; // GMO & MVTK
-        // const transactionId = '595a0ef5d5aeb81bc0236b27'; // MVTK
-
-        // 開発環境
-        // const transactionId = '59b40b6a654267167cad0ed0'; // GMO
-
         await MigrationService.createFromOldTransaction(transactionId)(
             new EventRepo(connection),
             new OrderRepo(connection),
@@ -61,7 +53,6 @@ async function main() {
             new PerformanceAdapter(connection)
         );
     }));
-
     console.log('migrated.', transactionIds);
 
     mongoose.disconnect();

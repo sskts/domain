@@ -8,10 +8,10 @@ import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as mongoose from 'mongoose';
 
-import { MongoRepository as EventRepository } from '../repo/event';
-import { MongoRepository as OrderRepository } from '../repo/order';
-import { MongoRepository as OrganizationRepository } from '../repo/organization';
-import { MongoRepository as OwnershipInfoRepository } from '../repo/ownershipInfo';
+import { MongoRepository as EventRepo } from '../repo/event';
+import { MongoRepository as OrderRepo } from '../repo/order';
+import { MongoRepository as OrganizationRepo } from '../repo/organization';
+import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 
 import PerformanceAdapter from '../v22/adapter/performance';
 import TransactionAdapter from '../v22/adapter/transaction';
@@ -41,12 +41,7 @@ export interface ITransactionDetail {
     endDate: Date;
     status: string;
     orderInquiryKey: factory.order.IOrderInquiryKey;
-    anonymous: {
-        givenName: string;
-        familyName: string;
-        email: string;
-        telephone: string;
-    };
+    customerContact: factory.transaction.placeOrder.ICustomerContact;
     seller: factory.organization.movieTheater.IPublicFields;
     event: factory.event.individualScreeningEvent.IEvent;
     seatReservationAuthorization: IOldSeatReservationAuthorization;
@@ -57,7 +52,7 @@ export interface ITransactionDetail {
         qr: string;
     }[];
     tasksExportedAt: Date;
-    tasksExportationStatus: string;
+    tasksExportationStatus: factory.transactionTasksExportationStatus;
 }
 
 /**
@@ -67,11 +62,12 @@ export interface ITransactionDetail {
  * @memberof service.migration
  */
 export function createFromOldTransaction(transactionId: string) {
+    // tslint:disable-next-line:max-func-body-length
     return async (
-        eventRepo: EventRepository,
-        orderRepo: OrderRepository,
-        ownershipInfoRepository: OwnershipInfoRepository,
-        organizationRepo: OrganizationRepository,
+        eventRepo: EventRepo,
+        orderRepo: OrderRepo,
+        ownershipInfoRepository: OwnershipInfoRepo,
+        organizationRepo: OrganizationRepo,
         transactionRepository: TransactionAdapter, // 旧レポジトリー
         performanceRepository: PerformanceAdapter // 旧レポジトリー
     ) => {
@@ -119,6 +115,39 @@ export function createFromOldTransaction(transactionId: string) {
                 typeOfGood: acceptedOffer.itemOffered
             });
         });
+        debug('ownershipInfos:', ownershipInfos);
+
+        const newTransaction: factory.transaction.placeOrder.ITransaction = {
+            typeOf: factory.transactionType.PlaceOrder,
+            status: factory.transactionStatusType.Confirmed,
+            id: transactionId,
+            agent: {
+                typeOf: factory.personType.Person,
+                id: '',
+                url: ''
+            },
+            seller: {
+                typeOf: factory.organizationType.MovieTheater,
+                id: detail.seller.id,
+                name: detail.seller.name.ja,
+                url: detail.seller.url
+            },
+            object: {
+                customerContact: detail.customerContact,
+                clientUser: <any>{},
+                authorizeActions: []
+            },
+            expires: detail.expires,
+            startDate: detail.startDate,
+            endDate: detail.endDate,
+            result: {
+                order: order,
+                ownershipInfos: ownershipInfos
+            },
+            tasksExportedAt: detail.tasksExportedAt,
+            tasksExportationStatus: detail.tasksExportationStatus
+        };
+        debug('newTransaction:', newTransaction);
 
         // 注文保管
         // orderNumberとorderInquiryKeyだけは間違わないように
@@ -134,31 +163,16 @@ export function createFromOldTransaction(transactionId: string) {
         await transactionRepository.transactionModel.findByIdAndUpdate(
             transactionId,
             {
-                typeOf: factory.transactionType.PlaceOrder,
-                agent: {
-                    typeOf: factory.personType.Person,
-                    id: '',
-                    url: ''
-                },
-                seller: {
-                    typeOf: factory.organizationType.MovieTheater,
-                    id: detail.seller.id,
-                    name: detail.seller.name.ja,
-                    url: detail.seller.url
-                },
-                object: {
-                    // clientUser: params.clientUser,
-                    // authorizeActions: []
-                },
-                expires: detail.expires,
-                startDate: detail.startDate,
-                endDate: detail.endDate,
-                result: {
-                    order: order,
-                    ownershipInfos: ownershipInfos
-                },
-                tasksExportedAt: detail.tasksExportedAt,
-                tasksExportationStatus: detail.tasksExportationStatus
+                typeOf: newTransaction.typeOf,
+                agent: newTransaction.agent,
+                seller: newTransaction.seller,
+                object: newTransaction.object,
+                expires: newTransaction.expires,
+                startDate: newTransaction.startDate,
+                endDate: newTransaction.endDate,
+                result: newTransaction.result,
+                tasksExportedAt: newTransaction.tasksExportedAt,
+                tasksExportationStatus: newTransaction.tasksExportationStatus
             }
         ).exec();
     };
@@ -194,7 +208,7 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
         });
     }
 
-    const customerName = `${params.anonymous.familyName} ${params.anonymous.givenName}`;
+    const customerName = `${params.customerContact.familyName} ${params.customerContact.givenName}`;
     const individualScreeningEvent = params.event;
 
     const orderNumber = [
@@ -306,10 +320,10 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
             name: customerName,
             url: '',
             id: '',
-            givenName: params.anonymous.givenName,
-            familyName: params.anonymous.familyName,
-            telephone: params.anonymous.telephone,
-            email: params.anonymous.email
+            givenName: params.customerContact.givenName,
+            familyName: params.customerContact.familyName,
+            telephone: params.customerContact.telephone,
+            email: params.customerContact.email
         },
         orderInquiryKey: params.orderInquiryKey
     };
@@ -318,8 +332,8 @@ function createOrder(params: ITransactionDetail): factory.order.IOrder {
 export function getOldTransactionDetails(transactionId: string) {
     // tslint:disable-next-line:max-func-body-length
     return async (
-        eventRepo: EventRepository,
-        organizationRepo: OrganizationRepository,
+        eventRepo: EventRepo,
+        organizationRepo: OrganizationRepo,
         transactionAdapter: TransactionAdapter,
         performanceAdapter: PerformanceAdapter
     ): Promise<ITransactionDetail> => {
@@ -345,10 +359,8 @@ export function getOldTransactionDetails(transactionId: string) {
             (authorization) => authorization.group === 'COA_SEAT_RESERVATION'
         );
 
-        const performanceDoc = <mongoose.Document>await performanceAdapter.model.findById(
-            seatReservationAuthorization.assets[0].performance
-        ).populate('film theater screen').exec();
-        const performance = <any>performanceDoc.toObject();
+        const performance = <any>await performanceAdapter.model.findById(seatReservationAuthorization.assets[0].performance)
+            .exec().then((doc: mongoose.Document) => doc.toObject());
         debug('performance from v22 is', performance);
 
         let qrCodesBySeatCode: {
@@ -359,7 +371,7 @@ export function getOldTransactionDetails(transactionId: string) {
             // チケットトークン(QRコード文字列)を作成
             qrCodesBySeatCode = seatReservationAuthorization.assets.map((asset, index) => {
                 const ticketToken = [
-                    performance.theater.id,
+                    performance.theater,
                     performance.day,
                     // tslint:disable-next-line:no-magic-numbers
                     (`00000000${(<IOldTransactionInquiryKey>transaction.inquiry_key).reserve_num}`).slice(-8),
@@ -374,19 +386,34 @@ export function getOldTransactionDetails(transactionId: string) {
             });
         }
 
+        const theaterCode = performance.theater;
+        // tslint:disable-next-line:no-magic-numbers
+        const titleCode = (<string>performance.film).slice(3, 8);
+        const titleBranchNum = (<string>performance.film).slice(-1);
+        const dateJouei = performance.day;
+        // tslint:disable-next-line:no-magic-numbers
+        const screenCode = (<string>performance.screen).slice(3);
+        const timeBegin = performance.time_start;
         // v23でのイベント識別子
-        const eventIdentifier = [
-            performance.theater.id,
-            performance.film.coa_title_code,
-            performance.film.coa_title_branch_num,
-            performance.day,
-            performance.screen.coa_screen_code,
-            performance.time_start
-        ].join('');
+        debug('event COA infos:', {
+            theaterCode: theaterCode,
+            titleCode: titleCode,
+            titleBranchNum: titleBranchNum,
+            dateJouei: dateJouei,
+            screenCode: screenCode,
+            timeBegin: timeBegin
+        });
+        const eventIdentifier = factory.event.individualScreeningEvent.createIdentifierFromCOA({
+            theaterCode: theaterCode,
+            titleCode: titleCode,
+            titleBranchNum: titleBranchNum,
+            dateJouei: dateJouei,
+            screenCode: screenCode,
+            timeBegin: timeBegin
+        });
         debug('new eventIdentifier is', eventIdentifier);
         const event = await eventRepo.findIndividualScreeningEventByIdentifier(eventIdentifier);
-
-        const organization = await organizationRepo.findMovieTheaterByBranchCode(performance.theater.id);
+        const organization = await organizationRepo.findMovieTheaterByBranchCode(performance.theater);
 
         // 電話番号フォーマットが間違っていてもスルー(ログは出力しておく)
         let formatedPhoneNumber: string = '';
@@ -416,7 +443,7 @@ export function getOldTransactionDetails(transactionId: string) {
             endDate: <Date>transaction.closed_at,
             status: transaction.status,
             orderInquiryKey: orderInquiryKey,
-            anonymous: {
+            customerContact: {
                 givenName: anonymousOwner.name_first,
                 familyName: anonymousOwner.name_last,
                 email: anonymousOwner.email,
