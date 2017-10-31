@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Deprecated
 
 ### Removed
+- 旧データ移行のためのv22ソースを削除。
 
 ### Fixed
 
