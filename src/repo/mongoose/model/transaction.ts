@@ -37,7 +37,7 @@ const schema = new mongoose.Schema(
 
 // タスクエクスポート時の検索で使用
 schema.index(
-    { status: 1, tasksExportationStatus: 1 }
+    { tasksExportationStatus: 1, status: 1 }
 );
 
 // 取引期限切れ確認等に使用
@@ -62,6 +62,14 @@ schema.index(
         'result.order.orderInquiryKey.telephone': 1,
         'result.order.orderInquiryKey.theaterCode': 1,
         status: 1
+    }
+);
+
+// LINEアシスタントでの取引照会に使用
+schema.index(
+    {
+        'result.order.orderInquiryKey.theaterCode': 1,
+        'result.order.orderInquiryKey.confirmationNumber': 1
     }
 );
 
