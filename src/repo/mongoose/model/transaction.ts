@@ -76,10 +76,12 @@ schema.index(
 // 結果の注文番号はユニークなはず
 schema.index(
     {
-        typeOf: 1,
         'result.order.orderNumber': 1
     },
-    { unique: true }
+    {
+        unique: true,
+        sparse: true
+    }
 );
 
 // レポート作成時に使用
