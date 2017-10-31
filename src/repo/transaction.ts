@@ -1,4 +1,5 @@
 import * as factory from '@motionpicture/sskts-factory';
+// import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as moment from 'moment';
 import { Connection } from 'mongoose';
 
@@ -174,20 +175,80 @@ export class MongoRepository {
      * @param conditions 検索条件
      */
     public async searchPlaceOrder(
-        conditions: {
+        searchConditions: {
             startFrom: Date;
             startThrough: Date;
-        }
-    ): Promise<factory.transaction.placeOrder.ITransaction[]> {
-        return this.transactionModel.find(
-            {
-                typeOf: factory.transactionType.PlaceOrder,
-                startDate: {
-                    $gte: conditions.startFrom,
-                    $lte: conditions.startThrough
+            status?: factory.transactionStatusType;
+            agentId?: string;
+            sellerId?: string;
+            object?: {
+                customerContact?: {
+                    name?: string;
+                    telephone?: string;
+                    email?: string;
                 }
             }
-        ).exec()
+            result?: {
+                order?: {
+                    confirmationNumber?: string
+                }
+            }
+        }
+    ): Promise<factory.transaction.placeOrder.ITransaction[]> {
+        const andConditions: any[] = [{
+            typeOf: factory.transactionType.PlaceOrder
+        }];
+        andConditions.push({
+            startDate: {
+                $gte: searchConditions.startFrom,
+                $lte: searchConditions.startThrough
+            }
+        });
+
+        if (searchConditions.status !== undefined) {
+            andConditions.push({ status: searchConditions.status });
+        }
+
+        if (searchConditions.agentId !== undefined) {
+            andConditions.push({ 'agent.id': searchConditions.agentId });
+        }
+
+        if (searchConditions.sellerId !== undefined) {
+            andConditions.push({ 'seller.id': searchConditions.sellerId });
+        }
+
+        if (searchConditions.object !== undefined) {
+            if (searchConditions.object.customerContact !== undefined) {
+                if (searchConditions.object.customerContact.email !== undefined) {
+                    // メールアドレスはCase-Insensitiveで検索
+                    const regex = new RegExp(searchConditions.object.customerContact.email, 'i');
+                    andConditions.push({ 'object.customerContact.email': regex });
+                }
+
+                if (searchConditions.object.customerContact.name !== undefined) {
+                    // 名前はCase-Insensitiveで検索
+                    const regex = new RegExp(searchConditions.object.customerContact.name, 'i');
+                    andConditions.push({
+                        $or: [
+                            { 'object.customerContact.givenName': regex },
+                            { 'object.customerContact.familyName': regex }
+                        ]
+                    });
+                }
+
+                // if (searchConditions.object.customerContact.telephone !== undefined) {
+                //     // 名前はCase-Insensitiveで検索
+                //     const regex = new RegExp(searchConditions.object.customerContact.telephone, 'i');
+                //     andConditions.push({
+                //         $or: [
+                //             { 'object.customerContact.telephone': regex }
+                //         ]
+                //     });
+                // }
+            }
+        }
+
+        return this.transactionModel.find({ $and: andConditions }).exec()
             .then((docs) => docs.map((doc) => <factory.transaction.placeOrder.ITransaction>doc.toObject()));
     }
 }
