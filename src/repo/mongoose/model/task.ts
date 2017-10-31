@@ -51,4 +51,10 @@ schema.index(
     { remainingNumberOfTries: 1, status: 1, lastTriedAt: 1 }
 );
 
+// 測定データ作成時に使用
+schema.index({ status: 1, lastTriedAt: 1 });
+schema.index({ createdAt: 1, lastTriedAt: 1 });
+schema.index({ status: 1, createdAt: 1 });
+schema.index({ createdAt: 1 });
+
 export default mongoose.model('Task', schema);

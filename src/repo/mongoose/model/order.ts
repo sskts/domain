@@ -52,4 +52,13 @@ schema.index(
     { unique: true }
 );
 
+// 注文照会に使用
+schema.index(
+    {
+        'orderInquiryKey.telephone': 1,
+        'orderInquiryKey.confirmationNumber': 1,
+        'orderInquiryKey.theaterCode': 1
+    }
+);
+
 export default mongoose.model('Order', schema);
