@@ -43,4 +43,9 @@ const schema = new mongoose.Schema(
     }
 );
 
+// 劇場検索に使用
+schema.index(
+    { branchCode: 1, typeOf: 1 }
+);
+
 export default mongoose.model('Place', schema);

@@ -4,6 +4,7 @@
  */
 
 import * as assert from 'power-assert';
+import * as redis from 'redis-mock';
 import * as sinon from 'sinon';
 import * as sskts from '../../index';
 
@@ -32,7 +33,7 @@ describe('start()', () => {
 
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const transactioCountRepo = new sskts.repository.TransactionCount(sskts.redis.createClient());
+        const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
 
         sandbox.mock(transactioCountRepo).expects('incr').once().withExactArgs(scope).resolves(maxCountPerUnit - 1);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
@@ -69,7 +70,7 @@ describe('start()', () => {
 
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const transactioCountRepo = new sskts.repository.TransactionCount(sskts.redis.createClient());
+        const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
 
         sandbox.mock(transactioCountRepo).expects('incr').once().withExactArgs(scope).resolves(maxCountPerUnit - 1);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
@@ -102,7 +103,7 @@ describe('start()', () => {
 
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const transactioCountRepo = new sskts.repository.TransactionCount(sskts.redis.createClient());
+        const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
 
         sandbox.mock(transactioCountRepo).expects('incr').once().withExactArgs(scope).resolves(maxCountPerUnit + 1);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();

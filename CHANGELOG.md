@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v23.1.2 - 2017-10-31
+### Changed
+- MongoDBのコレクションのいくつかのインデックスを追加。
+
 ## v23.1.1 - 2017-10-28
 ### Added
 - GMO結果通知レポジトリーに検索メソッドを追加。
