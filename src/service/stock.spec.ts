@@ -35,8 +35,12 @@ before(() => {
                                 }
                             }
                         ],
-                        updTmpReserveSeatArgs: {},
-                        updTmpReserveSeatResult: {}
+                        updTmpReserveSeatArgs: {
+                            theaterCode: '123'
+                        },
+                        updTmpReserveSeatResult: {
+                            tmpReserveNum: 123
+                        }
                     }
                 }
             ]
@@ -99,7 +103,12 @@ describe('transferSeatReservation()', () => {
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
             .withArgs(existingTransaction.id).resolves(existingTransaction);
-        sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').once().resolves(null);
+        sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').once()
+            .withExactArgs({
+                theaterCode: '123',
+                reserveNum: 123,
+                telNum: '09012345678' // 電話番号は数字のみで本予約されるはず
+            }).resolves(null);
         sandbox.mock(sskts.COA.services.reserve).expects('updReserve').once().resolves();
 
         const result = await sskts.service.stock.transferSeatReservation(

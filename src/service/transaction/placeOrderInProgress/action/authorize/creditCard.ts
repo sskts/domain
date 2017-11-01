@@ -99,9 +99,11 @@ export function create(
             execTranResult = await GMO.services.credit.execTran(execTranArgs);
             debug('execTranResult:', execTranResult);
         } catch (error) {
+            console.error(error);
             // actionにエラー結果を追加
             try {
-                await creditCardAuthorizeActionRepo.giveUp(action.id, error);
+                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                await creditCardAuthorizeActionRepo.giveUp(action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
