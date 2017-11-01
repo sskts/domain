@@ -58,7 +58,8 @@ schema.index(
         'orderInquiryKey.telephone': 1,
         'orderInquiryKey.confirmationNumber': 1,
         'orderInquiryKey.theaterCode': 1
-    }
+    },
+    { name: 'orderInquiryKey' }
 );
 
 export default mongoose.model('Order', schema);

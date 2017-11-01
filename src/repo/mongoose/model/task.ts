@@ -38,7 +38,10 @@ schema.index(
 
 // 取引のタスク検索に使用
 schema.index(
-    { 'data.transactionId': 1 }
+    { 'data.transactionId': 1 },
+    {
+        sparse: true
+    }
 );
 
 // 基本的にグループごとに、ステータスと実行日時を見て、タスクは実行される

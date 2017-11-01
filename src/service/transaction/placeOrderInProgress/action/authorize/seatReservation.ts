@@ -316,7 +316,8 @@ export function create(
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                await seatReservationAuthorizeActionRepo.giveUp(action.id, error);
+                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                await seatReservationAuthorizeActionRepo.giveUp(action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
