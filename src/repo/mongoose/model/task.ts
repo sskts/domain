@@ -38,7 +38,10 @@ schema.index(
 
 // 取引のタスク検索に使用
 schema.index(
-    { 'data.transactionId': 1 }
+    { 'data.transactionId': 1 },
+    {
+        sparse: true
+    }
 );
 
 // 基本的にグループごとに、ステータスと実行日時を見て、タスクは実行される
@@ -50,5 +53,11 @@ schema.index(
 schema.index(
     { remainingNumberOfTries: 1, status: 1, lastTriedAt: 1 }
 );
+
+// 測定データ作成時に使用
+schema.index({ status: 1, lastTriedAt: 1 });
+schema.index({ createdAt: 1, lastTriedAt: 1 });
+schema.index({ status: 1, createdAt: 1 });
+schema.index({ createdAt: 1 });
 
 export default mongoose.model('Task', schema);

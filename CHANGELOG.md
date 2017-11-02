@@ -17,6 +17,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v23.1.3 - 2017-11-01
+### Changed
+- COA本予約時に渡す電話番号から数字以外の文字列を除去。
+- COA仮予約時とGMOオーソリ取得時の承認アクションエラー結果にメッセージが含まれるように調整。
+
+## v23.1.2 - 2017-10-31
+### Changed
+- MongoDBのコレクションのいくつかのインデックスを追加。
+
 ## v23.1.1 - 2017-10-28
 ### Added
 - GMO結果通知レポジトリーに検索メソッドを追加。

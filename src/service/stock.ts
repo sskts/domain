@@ -78,7 +78,10 @@ export function transferSeatReservation(transactionId: string) {
         // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
         const phoneUtil = PhoneNumberUtil.getInstance();
         const phoneNumber = phoneUtil.parse(customerContact.telephone, 'JP');
-        const telNum = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
+        let telNum = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
+
+        // COAでは数字のみ受け付けるので数字以外を除去
+        telNum = telNum.replace(/[^\d]/g, '');
 
         // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
         // すでに本予約済みかどうか確認
