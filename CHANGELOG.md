@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 測定データに項目を追加。期限切れ取引に関する情報や、平均値等。
 
 ### Changed
 

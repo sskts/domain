@@ -86,8 +86,10 @@ schema.index(
 
 // レポート作成時に使用
 schema.index({ startDate: 1 });
+schema.index({ endDate: 1 });
 schema.index({ startDate: 1, endDate: 1 });
 schema.index({ status: 1, startDate: 1 });
+schema.index({ status: 1, endDate: 1 });
 
 // 取引タイプ指定で取得する場合に使用
 schema.index(
