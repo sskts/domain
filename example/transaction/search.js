@@ -6,7 +6,7 @@
 const moment = require('moment');
 const sskts = require('../../');
 
-sskts.mongoose.connect(process.env.MONGOLAB_URI);
+sskts.mongoose.connect(process.env.MONGOLAB_URI, { useMongoClient: true });
 
 const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 const conditions = {
@@ -18,13 +18,23 @@ const conditions = {
         customerContact: {
             name: 'john',
             email: 'motionpicture.JP',
-            telephone: '09012345678'
+            telephone: '12345678'
+        }
+    },
+    result: {
+        order: {
+            confirmationNumber: 51097,
+            paymentMethods: [sskts.factory.paymentMethodType.CreditCard]
         }
     }
 };
-transactionRepo.searchPlaceOrder(conditions).then(async (transactions) => {
-    console.log('transactions are', transactions);
-    console.log('transactions length is', transactions.length);
 
-    sskts.mongoose.disconnect();
-});
+transactionRepo.searchPlaceOrder(conditions)
+    .then(async (transactions) => {
+        console.log('transactions are', transactions);
+        console.log('transactions length is', transactions.length);
+    }).catch((err) => {
+        console.error(err);
+    }).then(() => {
+        sskts.mongoose.disconnect();
+    });

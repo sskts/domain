@@ -1,5 +1,4 @@
 import * as factory from '@motionpicture/sskts-factory';
-// import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as moment from 'moment';
 import { Connection } from 'mongoose';
 
@@ -172,17 +171,17 @@ export class MongoRepository {
 
     /**
      * 注文取引を検索する
-     * @param conditions 検索条件
+     * @param searchConditions 検索条件
      */
     public async searchPlaceOrder(
         searchConditions: {
-            startFrom: Date;
-            startThrough: Date;
-            status?: factory.transactionStatusType;
-            agentId?: string;
-            sellerId?: string;
+            startFrom: Date; // 取引開始日時fomr
+            startThrough: Date; // 取引開始日時through
+            status?: factory.transactionStatusType; // 取引ステータス
+            agentId?: string; // 取引主体ID
+            sellerId?: string; // 販売者ID
             object?: {
-                customerContact?: {
+                customerContact?: { // 購入者連絡先情報
                     name?: string;
                     telephone?: string;
                     email?: string;
@@ -190,7 +189,8 @@ export class MongoRepository {
             }
             result?: {
                 order?: {
-                    confirmationNumber?: string
+                    confirmationNumber?: number // 成立取引の場合、注文の確認番号
+                    paymentMethods?: factory.paymentMethodType[] // 決済方法リスト(or検索)
                 }
             }
         }
@@ -236,19 +236,49 @@ export class MongoRepository {
                     });
                 }
 
-                // if (searchConditions.object.customerContact.telephone !== undefined) {
-                //     // 名前はCase-Insensitiveで検索
-                //     const regex = new RegExp(searchConditions.object.customerContact.telephone, 'i');
-                //     andConditions.push({
-                //         $or: [
-                //             { 'object.customerContact.telephone': regex }
-                //         ]
-                //     });
-                // }
+                if (searchConditions.object.customerContact.telephone !== undefined) {
+                    // DBにはE164フォーマットで保管されているので、生文字列と、頭の0を除いた文字列の両方でor検索
+                    const telephoneTrimmedZero = searchConditions.object.customerContact.telephone.replace(/^0/, '');
+                    // Case-Insensitiveで検索
+                    const regex = new RegExp(`${searchConditions.object.customerContact.telephone}|${telephoneTrimmedZero}`, 'i');
+                    andConditions.push({ 'object.customerContact.telephone': regex });
+                }
             }
         }
 
-        return this.transactionModel.find({ $and: andConditions }).exec()
+        if (searchConditions.result !== undefined) {
+            if (searchConditions.result.order !== undefined) {
+                if (searchConditions.result.order.confirmationNumber !== undefined) {
+                    // 確認番号は完全一致検索
+                    andConditions.push({ 'result.order.confirmationNumber': searchConditions.result.order.confirmationNumber });
+                }
+
+                if (searchConditions.result.order.paymentMethods !== undefined) {
+                    if (searchConditions.result.order.paymentMethods.length > 0) {
+                        // 確認番号は完全一致検索
+                        andConditions.push(
+                            { 'result.order.paymentMethods.paymentMethod': { $in: searchConditions.result.order.paymentMethods } }
+                        );
+                    }
+                }
+            }
+        }
+
+        const limit = 100;
+        const page = 1;
+        const sort = { startDate: 1 };
+        const select = {
+            createdAt: 0,
+            updatedAt: 0,
+            __v: 0
+        };
+
+        return this.transactionModel.find({ $and: andConditions })
+            .limit(limit)
+            .skip(limit * (page - 1))
+            .sort(sort)
+            .select(select)
+            .exec()
             .then((docs) => docs.map((doc) => <factory.transaction.placeOrder.ITransaction>doc.toObject()));
     }
 }
