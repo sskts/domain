@@ -12,8 +12,7 @@
     ],
     "exclude": [
         "**/*.spec.ts",
-        "src/service/util.ts",
-        "src/v22/**/*.ts"
+        "src/service/util.ts"
     ],
     "reporter": [
         "lcov",
