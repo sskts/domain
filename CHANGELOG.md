@@ -17,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v23.2.0 - 2017-11-06
+### Added
+- 測定データに項目を追加。期限切れ取引に関する情報や、平均値等。
+
+### Removed
+- 旧データ移行のためのv22ソースを削除。
+
 ## v23.1.3 - 2017-11-01
 ### Changed
 - COA本予約時に渡す電話番号から数字以外の文字列を除去。
