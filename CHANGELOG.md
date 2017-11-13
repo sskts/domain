@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 上映イベントと、その空席状況のインポートと時に、COAに対して渡す上映日を確実に日本時間で算出するように変更。
 
 ### Deprecated
 
@@ -15,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+- coverage threshold 80% -> 90%.
 
 
 ## v23.2.0 - 2017-11-06

@@ -46,6 +46,6 @@ export class MongoRepository {
                 'object.typeOf': 'Ticket',
                 'object.ticketToken': conditions.ticketToken
             }
-        ).then((docs) => docs.map((doc) => <factory.action.transfer.print.IAction>doc.toObject()));
+        ).exec().then((docs) => docs.map((doc) => <factory.action.transfer.print.IAction>doc.toObject()));
     }
 }

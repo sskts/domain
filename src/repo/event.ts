@@ -75,17 +75,23 @@ export class MongoRepository implements Repository {
             }
         ];
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (searchConditions.branchCode !== undefined) {
             andConditions.push({
                 'superEvent.location.branchCode': searchConditions.branchCode
             });
         }
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (searchConditions.startFrom !== undefined) {
             andConditions.push({
                 startDate: { $gte: searchConditions.startFrom }
             });
         }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (searchConditions.startThrough !== undefined) {
             andConditions.push({
                 startDate: { $lt: searchConditions.startThrough }
