@@ -17,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v23.2.1 - 2017-11-13
+### Changed
+- 上映イベントと、その空席状況のインポートと時に、COAに対して渡す上映日を確実に日本時間で算出するように変更。
+
+### Security
+- coverage threshold 80% -> 90%.
+
 ## v23.2.0 - 2017-11-06
 ### Added
 - 測定データに項目を追加。期限切れ取引に関する情報や、平均値等。
