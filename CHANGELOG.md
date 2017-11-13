@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v23.2.2 - 2017-11-14
+### Fixed
+- COAの認証エラーが頻出するバグ対応として[coa-service](https://www.npmjs.com/package/@motionpicture/coa-service)をアップデート。
+
 ## v23.2.1 - 2017-11-13
 ### Changed
 - 上映イベントと、その空席状況のインポートと時に、COAに対して渡す上映日を確実に日本時間で算出するように変更。
