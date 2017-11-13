@@ -25,7 +25,7 @@ npm install @motionpicture/sskts-domain
 
 | Name                                       | Required              | Value                 | Purpose                           
 |--------------------------------------------|-----------------------|-----------------------|-----------------------------------
-| `DEBUG`                                    | false                 | sskts-domain:*        |  Debug                             
+| `DEBUG`                                    | false                 | sskts-domain:*        | Debug                             
 | `NPM_TOKEN`                                | true                  |                       | NPM auth token
 | `NODE_ENV`                                 | true                  |                       | environment name
 | `MONGOLAB_URI`                             | true                  |                       | MongoDB connection URI
