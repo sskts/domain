@@ -13,10 +13,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 ### Fixed
-- COAの認証エラーが頻出するバグ対応として[coa-service](https://www.npmjs.com/package/@motionpicture/coa-service)をアップデート。
 
 ### Security
 
+
+## v23.2.2 - 2017-11-14
+### Fixed
+- COAの認証エラーが頻出するバグ対応として[coa-service](https://www.npmjs.com/package/@motionpicture/coa-service)をアップデート。
 
 ## v23.2.1 - 2017-11-13
 ### Changed
