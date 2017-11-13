@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+- coverage threshold 80% -> 90%.
 
 
 ## v23.2.0 - 2017-11-06
