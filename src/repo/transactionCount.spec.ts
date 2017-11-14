@@ -1,4 +1,4 @@
-// tslint:disable:no-useless-files
+// tslint:disable:no-useless-files no-implicit-dependencies
 
 /**
  * transactionCount repository test
