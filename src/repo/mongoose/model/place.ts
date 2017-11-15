@@ -14,6 +14,7 @@ const schema = new mongoose.Schema(
             type: String,
             required: true
         },
+        identifier: String,
         name: MultilingualStringSchemaType,
         description: MultilingualStringSchemaType,
         address: MultilingualStringSchemaType,

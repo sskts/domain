@@ -29,6 +29,7 @@
         "preserveConstEnums": false,
         "pretty": false,
         "removeComments": false,
+        "skipLibCheck": true,
         "sourceMap": false,
         "strictNullChecks": true,
         "stripInternal": false,
