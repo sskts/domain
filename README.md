@@ -23,19 +23,19 @@ npm install @motionpicture/sskts-domain
 
 ### Environment variables
 
-| Name                                       | Required              | Value                 | Purpose                           
-|--------------------------------------------|-----------------------|-----------------------|-----------------------------------
-| `DEBUG`                                    | false                 | sskts-domain:*        | Debug                             
-| `NPM_TOKEN`                                | true                  |                       | NPM auth token
-| `NODE_ENV`                                 | true                  |                       | environment name
-| `MONGOLAB_URI`                             | true                  |                       | MongoDB connection URI
-| `SENDGRID_API_KEY`                         | true                  |                       | SendGrid API Key
-| `GMO_ENDPOINT`                             | true                  |                       | GMO API endpoint
-| `GMO_SITE_ID`                              | true                  |                       | GMO SiteID
-| `GMO_SITE_PASS`                            | true                  |                       | GMO SitePass
-| `COA_ENDPOINT`                             | true                  |                       | COA API endpoint
-| `COA_REFRESH_TOKEN`                        | true                  |                       | COA API refresh token
-| `SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN` | true                  |                       | 開発者通知用LINEアクセストークン
+| Name                                       | Required | Value          | Purpose                  |
+| ------------------------------------------ | -------- | -------------- | ------------------------ |
+| `DEBUG`                                    | false    | sskts-domain:* | Debug                    |
+| `NPM_TOKEN`                                | true     |                | NPM auth token           |
+| `NODE_ENV`                                 | true     |                | environment name         |
+| `MONGOLAB_URI`                             | true     |                | MongoDB connection URI   |
+| `SENDGRID_API_KEY`                         | true     |                | SendGrid API Key         |
+| `GMO_ENDPOINT`                             | true     |                | GMO API endpoint         |
+| `GMO_SITE_ID`                              | true     |                | GMO SiteID               |
+| `GMO_SITE_PASS`                            | true     |                | GMO SitePass             |
+| `COA_ENDPOINT`                             | true     |                | COA API endpoint         |
+| `COA_REFRESH_TOKEN`                        | true     |                | COA API refresh token    |
+| `SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN` | true     |                | 開発者通知用LINEアクセストークン |
 
 ### 上映イベント検索サンプル
 
@@ -54,8 +54,9 @@ const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
 const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(redisClient);
 
 sskts.service.event.searchIndividualScreeningEvents({
-    day: '20171106',
-    theater: '118'
+    superEventLocationIdentifiers:['MovieTheater-118'],
+    startFrom: new Date(),
+    startThrough: new Date(),
 })(eventRepo, itemAvailabilityRepo)
     .then((events) => {
         console.log('events:', events);
