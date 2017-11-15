@@ -83,18 +83,19 @@ export function create(
             debug('entryTranResult:', entryTranResult);
 
             execTranArgs = {
-                ...{
-                    accessId: entryTranResult.accessId,
-                    accessPass: entryTranResult.accessPass,
-                    orderId: orderId,
-                    method: method,
-                    siteId: <string>process.env.GMO_SITE_ID,
-                    sitePass: <string>process.env.GMO_SITE_PASS
-                },
-                ...creditCard,
-                ...{
-                    seqMode: GMO.utils.util.SeqMode.Physics
-                }
+                accessId: entryTranResult.accessId,
+                accessPass: entryTranResult.accessPass,
+                orderId: orderId,
+                method: method,
+                siteId: <string>process.env.GMO_SITE_ID,
+                sitePass: <string>process.env.GMO_SITE_PASS,
+                cardNo: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw>creditCard).cardNo,
+                cardPass: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw>creditCard).cardPass,
+                expire: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw>creditCard).expire,
+                token: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardTokenized>creditCard).token,
+                memberId: (<factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember>creditCard).memberId,
+                cardSeq: (<factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember>creditCard).cardSeq,
+                seqMode: GMO.utils.util.SeqMode.Physics
             };
             execTranResult = await GMO.services.credit.execTran(execTranArgs);
             debug('execTranResult:', execTranResult);

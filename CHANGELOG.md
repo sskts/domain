@@ -5,18 +5,37 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 個々の上映イベントの検索条件にプロパティを追加。
 
 ### Changed
 
 ### Deprecated
 
 ### Removed
-- 旧データ移行のためのv22ソースを削除。
 
 ### Fixed
 
 ### Security
+- テストコードを補強。
 
+
+## v23.2.2 - 2017-11-14
+### Fixed
+- COAの認証エラーが頻出するバグ対応として[coa-service](https://www.npmjs.com/package/@motionpicture/coa-service)をアップデート。
+
+## v23.2.1 - 2017-11-13
+### Changed
+- 上映イベントと、その空席状況のインポートと時に、COAに対して渡す上映日を確実に日本時間で算出するように変更。
+
+### Security
+- coverage threshold 80% -> 90%.
+
+## v23.2.0 - 2017-11-06
+### Added
+- 測定データに項目を追加。期限切れ取引に関する情報や、平均値等。
+
+### Removed
+- 旧データ移行のためのv22ソースを削除。
 
 ## v23.1.3 - 2017-11-01
 ### Changed

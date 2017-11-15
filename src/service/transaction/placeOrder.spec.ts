@@ -5,8 +5,7 @@
 
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
-// tslint:disable-next-line:no-var-requires
-// tslint:disable-next-line:no-require-imports
+// tslint:disable-next-line:no-require-imports no-var-requires
 require('sinon-mongoose');
 import * as sskts from '../../index';
 

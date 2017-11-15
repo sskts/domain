@@ -20,8 +20,8 @@ describe('updatePerformanceStockStatuses()', () => {
 
     it('COAから取得したイベントの数だけ在庫が更新されるはず', async () => {
         const theaterCode = 'theaterCode';
-        const dayStart = 'dayStart';
-        const dayEnd = 'dayEnd';
+        const startFrom = new Date();
+        const startThrough = new Date();
         const countFreeSeatResult = {
             theaterCode: theaterCode,
             listDate: [
@@ -42,20 +42,16 @@ describe('updatePerformanceStockStatuses()', () => {
         );
 
         sandbox.mock(sskts.COA.services.reserve).expects('countFreeSeat').once()
-            .withExactArgs({
-                theaterCode: theaterCode,
-                begin: dayStart,
-                end: dayEnd
-            }).resolves(countFreeSeatResult);
+            .withArgs(sinon.match({ theaterCode: theaterCode })).resolves(countFreeSeatResult);
         sandbox.mock(sskts.factory.event.individualScreeningEvent).expects('createItemAvailability').exactly(numberOfEvents)
             .returns(availability);
         sandbox.mock(itemAvailabilityRepo).expects('updateOne').exactly(numberOfEvents)
             .resolves();
 
-        const result = await sskts.service.itemAvailability.updatePerformanceStockStatuses(
+        const result = await sskts.service.itemAvailability.updateIndividualScreeningEvents(
             theaterCode,
-            dayStart,
-            dayEnd
+            startFrom,
+            startThrough
         )(itemAvailabilityRepo);
 
         assert.equal(result, undefined);

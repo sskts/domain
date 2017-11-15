@@ -1,12 +1,15 @@
+// tslint:disable:no-implicit-dependencies
+
 /**
  * event repository test
  * @ignore
  */
 
+import { } from 'mocha';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
-// tslint:disable-next-line:no-require-imports
-// tslint:disable-next-line:no-var-requires
+import { } from 'sinon-mongoose';
+// tslint:disable-next-line:no-require-imports no-var-requires
 require('sinon-mongoose');
 import * as sskts from '../index';
 
@@ -26,10 +29,8 @@ describe('saveScreeningEvent()', () => {
 
         const repository = new sskts.repository.Event(sskts.mongoose.connection);
 
-        sandbox.mock(repository.eventModel)
-            .expects('findOneAndUpdate').once()
-            .chain('exec')
-            .resolves();
+        sandbox.mock(repository.eventModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves();
 
         const result = await repository.saveScreeningEvent(<any>event);
 
@@ -48,10 +49,8 @@ describe('saveIndividualScreeningEvent()', () => {
 
         const repository = new sskts.repository.Event(sskts.mongoose.connection);
 
-        sandbox.mock(repository.eventModel)
-            .expects('findOneAndUpdate').once()
-            .chain('exec')
-            .resolves();
+        sandbox.mock(repository.eventModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves();
 
         const result = await repository.saveIndividualScreeningEvent(<any>event);
 
@@ -66,15 +65,24 @@ describe('searchIndividualScreeningEvents()', () => {
     });
 
     it('repositoryの状態が正常であれば、配列が返却されるはず', async () => {
-        const conditions = {};
+        const conditions = {
+            theater: 'theater',
+            day: '20171114',
+            superEventLocationIdentifiers: ['superEventLocationIdentifier'],
+            eventStatuses: ['eventStatus'],
+            workPerformedIdentifiers: ['workPerformedIdentifier'],
+            startFrom: new Date(),
+            startThrough: new Date(),
+            endFrom: new Date(),
+            endThrough: new Date()
+        };
         const numberOfEvents = 123;
 
         const repository = new sskts.repository.Event(sskts.mongoose.connection);
+        const docs = Array.from(Array(numberOfEvents).map(() => new repository.eventModel()));
 
-        sandbox.mock(repository.eventModel)
-            .expects('find').once()
-            .chain('exec')
-            .resolves(Array.from(Array(numberOfEvents).map(() => new Object())));
+        sandbox.mock(repository.eventModel).expects('find').once()
+            .chain('exec').resolves(docs);
 
         const result = await repository.searchIndividualScreeningEvents(<any>conditions);
 
@@ -93,15 +101,27 @@ describe('findIndividualScreeningEventByIdentifier()', () => {
         const identifier = 'identifier';
 
         const repository = new sskts.repository.Event(sskts.mongoose.connection);
+        const doc = new repository.eventModel();
 
-        sandbox.mock(repository.eventModel)
-            .expects('findOne').once()
-            .chain('exec')
-            .resolves(new Object());
+        sandbox.mock(repository.eventModel).expects('findOne').once()
+            .chain('exec').resolves(doc);
 
         const result = await repository.findIndividualScreeningEventByIdentifier(identifier);
 
         assert.equal(typeof result, 'object');
+        sandbox.verify();
+    });
+
+    it('上映イベントが存在しなければ、NotFoundエラーとなるはず', async () => {
+        const identifier = 'identifier';
+
+        const repository = new sskts.repository.Event(sskts.mongoose.connection);
+
+        sandbox.mock(repository.eventModel).expects('findOne').once()
+            .chain('exec').resolves(null);
+
+        const result = await repository.findIndividualScreeningEventByIdentifier(identifier).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
 });

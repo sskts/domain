@@ -17,34 +17,49 @@ SSKTSのバックエンドサービスをnode.jsで簡単に使用するため�
 
 ## Usage
 
-``` shell
+```shell
 npm install @motionpicture/sskts-domain
 ```
 
-## Required environment variables
-``` shell
-set NPM_TOKEN=**********private packageをインストールするためのトークン**********
-set NODE_ENV=**********環境名**********
-set SENDGRID_API_KEY=**********sendgrid api key**********
-set GMO_ENDPOINT=**********gmo apiのエンドポイント**********
-set COA_ENDPOINT=**********coa apiのエンドポイント**********
-set COA_REFRESH_TOKEN=**********coa apiのリフレッシュトークン**********
-set SSKTS_DEVELOPER_EMAIL=**********本apiで使用される開発者メールアドレス**********
-set SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN=**********開発者へのLINE通知に必要なアクセストークン**********
-set GMO_SITE_ID=**********システムで契約するGMOサイトID**********
-set GMO_SITE_PASS=**********システムで契約するGMOサイトパス**********
-set AZURE_STORAGE_CONNECTION_STRING=**********csv等ファイル保管に使用するBlobStorage接続文字列**********
-```
+### Environment variables
 
-only for test  
-``` shell
-set TEST_REDIS_HOST=**********テスト時に使用するredis情報**********
-set TEST_REDIS_PORT=**********テスト時に使用するredis情報**********
-set TEST_REDIS_KEY=**********テスト時に使用するredis情報**********
-```
+| Name                                       | Required              | Value                 | Purpose                           
+|--------------------------------------------|-----------------------|-----------------------|-----------------------------------
+| `DEBUG`                                    | false                 | sskts-domain:*        | Debug                             
+| `NPM_TOKEN`                                | true                  |                       | NPM auth token
+| `NODE_ENV`                                 | true                  |                       | environment name
+| `MONGOLAB_URI`                             | true                  |                       | MongoDB connection URI
+| `SENDGRID_API_KEY`                         | true                  |                       | SendGrid API Key
+| `GMO_ENDPOINT`                             | true                  |                       | GMO API endpoint
+| `GMO_SITE_ID`                              | true                  |                       | GMO SiteID
+| `GMO_SITE_PASS`                            | true                  |                       | GMO SitePass
+| `COA_ENDPOINT`                             | true                  |                       | COA API endpoint
+| `COA_REFRESH_TOKEN`                        | true                  |                       | COA API refresh token
+| `SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN` | true                  |                       | 開発者通知用LINEアクセストークン
 
-``` js
+### 上映イベント検索サンプル
+
+```js
 const sskts = require('@motionpicture/sskts-domain');
+
+sskts.mongoose.connect('MONGOLAB_URI');
+const redisClient = sskts.redis.createClient({
+    host: '*****',
+    port: 6380,
+    password: '*****',
+    tls: { servername: 6380 }
+});
+
+const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(redisClient);
+
+sskts.service.event.searchIndividualScreeningEvents({
+    day: '20171106',
+    theater: '118'
+})(eventRepo, itemAvailabilityRepo)
+    .then((events) => {
+        console.log('events:', events);
+    });
 ```
 
 ## Code Samples
@@ -55,6 +70,6 @@ const sskts = require('@motionpicture/sskts-domain');
 
 `npm run doc`でjsdocを作成できます。./docに出力されます。
 
-# License
+## License
 
 UNLICENSED

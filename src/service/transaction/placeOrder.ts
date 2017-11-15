@@ -7,8 +7,6 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as json2csv from 'json2csv';
-// tslint:disable-next-line:no-require-imports no-var-requires
-// const jconv = require('jconv');
 
 import { MongoRepository as TaskRepository } from '../../repo/task';
 import { MongoRepository as TransactionRepository } from '../../repo/transaction';

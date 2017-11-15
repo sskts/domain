@@ -56,8 +56,8 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
         // COAから上映イベント取得
         const schedulesFromCOA = await COA.services.master.schedule({
             theaterCode: theaterCode,
-            begin: moment(importFrom).locale('ja').format('YYYYMMDD'),
-            end: moment(importThrough).locale('ja').format('YYYYMMDD')
+            begin: moment(importFrom).tz('Asia/Tokyo').format('YYYYMMDD'), // COAは日本時間で判断
+            end: moment(importThrough).tz('Asia/Tokyo').format('YYYYMMDD') // COAは日本時間で判断
         });
 
         // COAから区分マスター抽出
@@ -113,7 +113,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
             });
 
             // スクリーン存在チェック
-            const screenRoom = movieTheater.containsPlace.find(
+            const screenRoom = <factory.place.movieTheater.IScreeningRoom | undefined>movieTheater.containsPlace.find(
                 (place) => place.branchCode === scheduleFromCOA.screenCode
             );
             if (screenRoom === undefined) {
