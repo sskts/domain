@@ -68,7 +68,7 @@ describe('searchIndividualScreeningEvents()', () => {
         const conditions = {
             theater: 'theater',
             day: '20171114',
-            locationBranchCodes: ['locationBranchCode'],
+            superEventLocationIdentifiers: ['superEventLocationIdentifier'],
             eventStatuses: ['eventStatus'],
             workPerformedIdentifiers: ['workPerformedIdentifier'],
             startFrom: new Date(),

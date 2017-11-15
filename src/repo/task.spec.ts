@@ -28,8 +28,7 @@ describe('save()', () => {
 
         const repository = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(repository.taskModel)
-            .expects('create').once()
+        sandbox.mock(repository.taskModel).expects('create').once()
             .resolves(new repository.taskModel());
 
         const result = await repository.save(<any>ownershipInfo);
@@ -49,14 +48,25 @@ describe('executeOneByName()', () => {
 
         const repository = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(repository.taskModel)
-            .expects('findOneAndUpdate').once()
-            .chain('exec')
-            .resolves(new repository.taskModel());
+        sandbox.mock(repository.taskModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves(new repository.taskModel());
 
         const result = await repository.executeOneByName(taskName);
 
         assert.equal(typeof result, 'object');
+        sandbox.verify();
+    });
+
+    it('存在しなければ、NotFoundエラーとなるはず', async () => {
+        const taskName = sskts.factory.taskName.CreateOrder;
+
+        const repository = new sskts.repository.Task(sskts.mongoose.connection);
+
+        sandbox.mock(repository.taskModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves(null);
+
+        const result = await repository.executeOneByName(taskName).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
 });
@@ -71,10 +81,8 @@ describe('retry()', () => {
 
         const repository = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(repository.taskModel)
-            .expects('update').once()
-            .chain('exec')
-            .resolves();
+        sandbox.mock(repository.taskModel).expects('update').once()
+            .chain('exec').resolves();
 
         const result = await repository.retry(intervalInMinutes);
 
@@ -93,14 +101,25 @@ describe('abortOne()', () => {
 
         const repository = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(repository.taskModel)
-            .expects('findOneAndUpdate').once()
-            .chain('exec')
-            .resolves(new repository.taskModel());
+        sandbox.mock(repository.taskModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves(new repository.taskModel());
 
         const result = await repository.abortOne(intervalInMinutes);
 
         assert.equal(typeof result, 'object');
+        sandbox.verify();
+    });
+
+    it('存在しなければ、NotFoundエラーとなるはず', async () => {
+        const intervalInMinutes = 10;
+
+        const repository = new sskts.repository.Task(sskts.mongoose.connection);
+
+        sandbox.mock(repository.taskModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves(null);
+
+        const result = await repository.abortOne(intervalInMinutes).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
 });
@@ -117,10 +136,8 @@ describe('pushExecutionResultById()', () => {
 
         const repository = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(repository.taskModel)
-            .expects('findByIdAndUpdate').once()
-            .chain('exec')
-            .resolves(new repository.taskModel());
+        sandbox.mock(repository.taskModel).expects('findByIdAndUpdate').once()
+            .chain('exec').resolves(new repository.taskModel());
 
         const result = await repository.pushExecutionResultById(taskId, status, <any>executionResult);
 

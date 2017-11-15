@@ -28,14 +28,25 @@ describe('findMovieTheaterById()', () => {
 
         const repository = new sskts.repository.Organization(sskts.mongoose.connection);
 
-        sandbox.mock(repository.organizationModel)
-            .expects('findOne').once()
-            .chain('exec')
-            .resolves(new repository.organizationModel());
+        sandbox.mock(repository.organizationModel).expects('findOne').once()
+            .chain('exec').resolves(new repository.organizationModel());
 
         const result = await repository.findMovieTheaterById(theaterId);
 
         assert.notEqual(result, undefined);
+        sandbox.verify();
+    });
+
+    it('存在しなければ、NotFoundエラーとなるはず', async () => {
+        const theaterId = 'theaterId';
+
+        const repository = new sskts.repository.Organization(sskts.mongoose.connection);
+
+        sandbox.mock(repository.organizationModel).expects('findOne').once()
+            .chain('exec').resolves(null);
+
+        const result = await repository.findMovieTheaterById(theaterId).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
 });
@@ -50,10 +61,8 @@ describe('openMovieTheaterShop()', () => {
 
         const repository = new sskts.repository.Organization(sskts.mongoose.connection);
 
-        sandbox.mock(repository.organizationModel)
-            .expects('findOneAndUpdate').once()
-            .chain('exec')
-            .resolves(new repository.organizationModel());
+        sandbox.mock(repository.organizationModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves(new repository.organizationModel());
 
         const result = await repository.openMovieTheaterShop(<any>movieTheater);
 
@@ -72,10 +81,8 @@ describe('searchMovieTheaters()', () => {
 
         const repository = new sskts.repository.Organization(sskts.mongoose.connection);
 
-        sandbox.mock(repository.organizationModel)
-            .expects('find').once()
-            .chain('exec')
-            .resolves([new repository.organizationModel()]);
+        sandbox.mock(repository.organizationModel).expects('find').once()
+            .chain('exec').resolves([new repository.organizationModel()]);
 
         const result = await repository.searchMovieTheaters(conditions);
 
@@ -94,14 +101,25 @@ describe('findMovieTheaterByBranchCode()', () => {
 
         const repository = new sskts.repository.Organization(sskts.mongoose.connection);
 
-        sandbox.mock(repository.organizationModel)
-            .expects('findOne').once()
-            .chain('exec')
-            .resolves(new repository.organizationModel());
+        sandbox.mock(repository.organizationModel).expects('findOne').once()
+            .chain('exec').resolves(new repository.organizationModel());
 
         const result = await repository.findMovieTheaterByBranchCode(branchCode);
 
         assert.notEqual(result, undefined);
+        sandbox.verify();
+    });
+
+    it('存在しなければ、NotFoundエラーとなるはず', async () => {
+        const branchCode = 'branchCode';
+
+        const repository = new sskts.repository.Organization(sskts.mongoose.connection);
+
+        sandbox.mock(repository.organizationModel).expects('findOne').once()
+            .chain('exec').resolves(null);
+
+        const result = await repository.findMovieTheaterByBranchCode(branchCode).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
 });

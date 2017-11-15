@@ -45,9 +45,9 @@ const schema = new mongoose.Schema(
 );
 
 // 上映イベント検索に使用
-schema.index(
-    { 'superEvent.location.branchCode': 1, typeOf: 1, startDate: 1 }
-);
+schema.index({ typeOf: 1, 'superEvent.location.branchCode': 1, startDate: 1 });
+schema.index({ typeOf: 1, startDate: 1 });
+schema.index({ typeOf: 1, endDate: 1 });
 
 // 上映イベント取得に使用
 schema.index(

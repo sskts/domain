@@ -66,13 +66,6 @@ export class MongoRepository implements Repository {
     public async searchIndividualScreeningEvents(
         searchConditions: factory.event.individualScreeningEvent.ISearchConditions
     ): Promise<factory.event.individualScreeningEvent.IEvent[]> {
-        // theaterプロパティがあればlocationBranchCodeに変換(互換性維持のため)
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (searchConditions.theater !== undefined) {
-            searchConditions.locationBranchCodes = [searchConditions.theater];
-        }
-
         // dayプロパティがあればstartFrom & startThroughに変換(互換性維持のため)
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
@@ -88,12 +81,21 @@ export class MongoRepository implements Repository {
             }
         ];
 
+        // theaterプロパティがあればbranchCodeで検索(互換性維持のため)
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (searchConditions.theater !== undefined) {
+            andConditions.push({
+                'superEvent.location.branchCode': searchConditions.theater
+            });
+        }
+
         // 場所の枝番号条件
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (Array.isArray(searchConditions.locationBranchCodes)) {
+        if (Array.isArray(searchConditions.superEventLocationIdentifiers)) {
             andConditions.push({
-                'superEvent.location.branchCode': { $in: searchConditions.locationBranchCodes }
+                'superEvent.location.identifier': { $in: searchConditions.superEventLocationIdentifiers }
             });
         }
 

@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+- テストコードを補強。
 
 
 ## v23.2.2 - 2017-11-14
