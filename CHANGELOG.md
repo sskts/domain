@@ -17,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v23.3.0 - 2017-11-15
+### Added
+- 個々の上映イベントの検索条件にプロパティを追加。
+- placeコレクションにidentifierフィールドを追加。
+
+### Security
+- テストコードを補強。
+
 ## v23.2.2 - 2017-11-14
 ### Fixed
 - COAの認証エラーが頻出するバグ対応として[coa-service](https://www.npmjs.com/package/@motionpicture/coa-service)をアップデート。

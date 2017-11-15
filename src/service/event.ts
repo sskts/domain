@@ -1,12 +1,11 @@
 /**
  * event service
  * イベントサービス
- * @namespace service/event
+ * @namespace service.event
  */
 
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
-import * as moment from 'moment';
 
 import { MongoRepository as EventRepository } from '../repo/event';
 import { MongoRepository as IndividualScreeningEventItemAvailabilityRepository } from '../repo/itemAvailability/individualScreeningEvent';
@@ -19,10 +18,11 @@ export type IEventOperation<T> = (
 ) => Promise<T>;
 
 /**
- * search individualScreeningEvents
+ * 個々の上映イベントを検索する
+ * 在庫状況リポジトリーをパラメーターとして渡せば、在庫状況も取得してくれる
  * @export
  * @function
- * @memberof service/event
+ * @memberof service.event
  */
 export function searchIndividualScreeningEvents(
     searchConditions: factory.event.individualScreeningEvent.ISearchConditions
@@ -32,12 +32,7 @@ export function searchIndividualScreeningEvents(
         itemAvailabilityRepository?: IndividualScreeningEventItemAvailabilityRepository
     ) => {
         debug('finding individualScreeningEvents...', searchConditions);
-        const conditions = {
-            branchCode: searchConditions.theater,
-            startFrom: moment(`${searchConditions.day} +09:00`, 'YYYYMMDD Z').toDate(),
-            startThrough: moment(`${searchConditions.day} +09:00`, 'YYYYMMDD Z').add(1, 'day').toDate()
-        };
-        const events = await eventRepository.searchIndividualScreeningEvents(conditions);
+        const events = await eventRepository.searchIndividualScreeningEvents(searchConditions);
 
         return Promise.all(events.map(async (event) => {
             // 空席状況情報を追加
@@ -52,24 +47,16 @@ export function searchIndividualScreeningEvents(
                 offer.availability = await itemAvailabilityRepository.findOne(event.coaInfo.dateJouei, event.identifier);
             }
 
-            const eventWithOffer = {
-                ...{
-                    offer: offer
-                },
-                ...event
-            };
-            debug('eventWithOffer:', eventWithOffer);
-
-            return eventWithOffer;
+            return { ...event, ...{ offer: offer } };
         }));
     };
 }
 
 /**
- * find individualScreeningEvent by identifier
+ * 個々の上映イベントを識別子で取得する
  * @export
  * @function
- * @memberof service/event
+ * @memberof service.event
  */
 export function findIndividualScreeningEventByIdentifier(
     identifier: string
@@ -92,14 +79,6 @@ export function findIndividualScreeningEventByIdentifier(
             offer.availability = await itemAvailabilityRepository.findOne(event.coaInfo.dateJouei, event.identifier);
         }
 
-        const eventWithOffer = {
-            ...{
-                offer: offer
-            },
-            ...event
-        };
-        debug('eventWithOffer:', eventWithOffer);
-
-        return eventWithOffer;
+        return { ...event, ...{ offer: offer } };
     };
 }

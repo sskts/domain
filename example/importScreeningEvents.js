@@ -12,8 +12,8 @@ async function main() {
     await Promise.all(['118', '112'].map(async (theaterCode) => {
         await sskts.service.masterSync.importScreeningEvents(
             theaterCode,
-            moment().add(-4, 'month').toDate(),
             moment().toDate(),
+            moment().add(1, 'week').toDate(),
         )(
             new sskts.repository.Event(sskts.mongoose.connection),
             new sskts.repository.Place(sskts.mongoose.connection)

@@ -1,8 +1,11 @@
+// tslint:disable:no-implicit-dependencies
+
 /**
  * individualScreeningEvent itemAvailability repository test
  * @ignore
  */
 
+import { } from 'mocha';
 import * as assert from 'power-assert';
 import * as redis from 'redis-mock';
 import * as sinon from 'sinon';

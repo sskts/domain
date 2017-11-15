@@ -113,7 +113,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
             });
 
             // スクリーン存在チェック
-            const screenRoom = movieTheater.containsPlace.find(
+            const screenRoom = <factory.place.movieTheater.IScreeningRoom | undefined>movieTheater.containsPlace.find(
                 (place) => place.branchCode === scheduleFromCOA.screenCode
             );
             if (screenRoom === undefined) {
