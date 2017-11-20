@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- WAITER許可証で注文取引を開始することができるように対応。
 
 ### Changed
 

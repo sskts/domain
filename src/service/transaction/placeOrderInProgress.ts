@@ -5,6 +5,7 @@
  */
 
 import * as factory from '@motionpicture/sskts-factory';
+import * as waiter from '@motionpicture/waiter-domain';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 
@@ -25,29 +26,89 @@ export type ITransactionOperation<T> = (transactionRepo: TransactionRepo) => Pro
 export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (
     organizationRepo: OrganizationRepo,
     transactionRepo: TransactionRepo,
-    transactionCountRepository: TransactionCountRepo
+    transactionCountRepo?: TransactionCountRepo
 ) => Promise<T>;
 
 /**
- * 取引開始
+ * 取引開始パラメーターインターフェース
+ * @interface
+ * @memberof service.transaction.placeOrderInProgress
  */
-export function start(params: {
+export interface IStartParams {
+    /**
+     * 取引期限
+     */
     expires: Date;
-    maxCountPerUnit: number;
-    clientUser: factory.clientUser.IClientUser;
-    scope: factory.transactionScope.ITransactionScope;
+    /**
+     * 取引主体ID
+     */
     agentId: string;
+    /**
+     * 販売者ID
+     */
     sellerId: string;
-}): IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction> {
+    /**
+     * APIクライアント
+     */
+    clientUser: factory.clientUser.IClientUser;
+    /**
+     * WAITERの許可証必須にするまで互換性担保
+     * @deprecated since v24.0.0
+     */
+    maxCountPerUnit?: number;
+    /**
+     * WAITERの許可証必須にするまで互換性担保
+     * @deprecated since v24.0.0
+     */
+    scope?: factory.transactionScope.ITransactionScope;
+    /**
+     * WAITER許可証トークン
+     */
+    passportToken?: waiter.factory.passport.IEncodedPassport;
+}
+
+/**
+ * 取引開始
+ * @function
+ * @memberof service.transaction.placeOrderInProgress
+ */
+export function start(params: IStartParams):
+    IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction> {
     return async (
         organizationRepo: OrganizationRepo,
         transactionRepo: TransactionRepo,
-        transactionCountRepository: TransactionCountRepo
+        transactionCountRepo?: TransactionCountRepo
     ) => {
-        // 利用可能かどうか
-        const nextCount = await transactionCountRepository.incr(params.scope);
-        if (nextCount > params.maxCountPerUnit) {
-            throw new factory.errors.ServiceUnavailable('Transactions temporarily unavailable.');
+        let passport: waiter.factory.passport.IPassport | undefined;
+
+        // WAITER許可証トークンがあれば検証する
+        if (params.passportToken !== undefined) {
+            try {
+                passport = await waiter.service.passport.verify(params.passportToken, <string>process.env.WAITER_SECRET);
+            } catch (error) {
+                console.error(error);
+                throw new factory.errors.Argument('passportToken', `Invalid token. ${error.message}`);
+            }
+
+            // スコープを判別
+            if (!validatePassport(passport, params.sellerId)) {
+                throw new factory.errors.Argument('passportToken', 'Invalid passport.');
+            }
+        } else {
+            if (params.scope === undefined) {
+                throw new factory.errors.ArgumentNull('scope');
+            }
+            if (params.maxCountPerUnit === undefined) {
+                throw new factory.errors.ArgumentNull('maxCountPerUnit');
+            }
+            if (transactionCountRepo === undefined) {
+                throw new factory.errors.ArgumentNull('transactionCountRepo');
+            }
+
+            const nextCount = await transactionCountRepo.incr(params.scope);
+            if (nextCount > params.maxCountPerUnit) {
+                throw new factory.errors.ServiceUnavailable('Transactions temporarily unavailable.');
+            }
         }
 
         const agent: factory.transaction.placeOrder.IAgent = {
@@ -76,6 +137,8 @@ export function start(params: {
                 url: seller.url
             },
             object: {
+                passportToken: params.passportToken,
+                passport: passport,
                 clientUser: params.clientUser,
                 authorizeActions: []
             },
@@ -86,6 +149,23 @@ export function start(params: {
 
         return transactionRepo.startPlaceOrder(transactionAttributes);
     };
+}
+
+/**
+ * WAITER許可証の有効性チェック
+ * @param passport WAITER許可証
+ * @param sellerId 販売者ID
+ */
+function validatePassport(passport: waiter.factory.passport.IPassport, sellerId: string) {
+    // スコープのフォーマットは、placeOrderTransaction.{sellerId}でひとまず十分か
+    const explodedScopeStrings = passport.scope.split('.');
+
+    return (
+        // tslint:disable-next-line:no-magic-numbers
+        explodedScopeStrings.length === 2 &&
+        explodedScopeStrings[0] === 'placeOrderTransaction' &&
+        explodedScopeStrings[1] === sellerId
+    );
 }
 
 /**

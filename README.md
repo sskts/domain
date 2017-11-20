@@ -36,6 +36,7 @@ npm install @motionpicture/sskts-domain
 | `COA_ENDPOINT`                             | true     |                | COA API endpoint         |
 | `COA_REFRESH_TOKEN`                        | true     |                | COA API refresh token    |
 | `SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN` | true     |                | 開発者通知用LINEアクセストークン |
+| `WAITER_SECRET`                            | true     |                | WAITER許可証トークン秘密鍵   |
 
 ### 上映イベント検索サンプル
 

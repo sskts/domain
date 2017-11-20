@@ -11,7 +11,8 @@
   "dependencies": {
     "@motionpicture/coa-service": "^4.0.8",
     "@motionpicture/gmo-service": "^4.1.0",
-    "@motionpicture/sskts-factory": "^2.2.0",
+    "@motionpicture/sskts-factory": "^2.3.0-alpha.0",
+    "@motionpicture/waiter-domain": "^2.0.0-alpha.4",
     "@sendgrid/mail": "^6.1.4",
     "@types/google-libphonenumber": "^7.4.12",
     "@types/mongoose": "^4.7.27",
