@@ -86,7 +86,6 @@ export function start(params: IStartParams):
             try {
                 passport = await waiter.service.passport.verify(params.passportToken, <string>process.env.WAITER_SECRET);
             } catch (error) {
-                console.error(error);
                 throw new factory.errors.Argument('passportToken', `Invalid token. ${error.message}`);
             }
 
@@ -153,18 +152,20 @@ export function start(params: IStartParams):
 
 /**
  * WAITER許可証の有効性チェック
+ * @function
  * @param passport WAITER許可証
  * @param sellerId 販売者ID
  */
 function validatePassport(passport: waiter.factory.passport.IPassport, sellerId: string) {
-    // スコープのフォーマットは、placeOrderTransaction.{sellerId}でひとまず十分か
+    // スコープのフォーマットは、placeOrderTransaction.{sellerId}
     const explodedScopeStrings = passport.scope.split('.');
 
     return (
+        passport.iss === <string>process.env.WAITER_PASSPORT_ISSUER && // 許可証発行者確認
         // tslint:disable-next-line:no-magic-numbers
         explodedScopeStrings.length === 2 &&
-        explodedScopeStrings[0] === 'placeOrderTransaction' &&
-        explodedScopeStrings[1] === sellerId
+        explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
+        explodedScopeStrings[1] === sellerId // 販売者ID確認
     );
 }
 
