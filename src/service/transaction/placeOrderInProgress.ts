@@ -146,7 +146,28 @@ export function start(params: IStartParams):
             tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
         });
 
-        return transactionRepo.startPlaceOrder(transactionAttributes);
+        let transaction: factory.transaction.placeOrder.ITransaction;
+        try {
+            transaction = await transactionRepo.startPlaceOrder(transactionAttributes);
+        } catch (error) {
+            if (error.name === 'MongoError') {
+                // 許可証を重複使用しようとすると、MongoDBでE11000 duplicate key errorが発生する
+                // name: 'MongoError',
+                // message: 'E11000 duplicate key error collection: sskts-development-v2.transactions...',
+                // code: 11000,
+
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore else */
+                // tslint:disable-next-line:no-magic-numbers
+                if (error.code === 11000) {
+                    throw new factory.errors.AlreadyInUse('transaction', ['passportToken'], 'Passport already used.');
+                }
+            }
+
+            throw error;
+        }
+
+        return transaction;
     };
 }
 

@@ -298,6 +298,78 @@ describe('start()', () => {
         sandbox.verify();
     });
 
+    it('取引作成時に何かしらエラーが発生すれば、そのままのエラーになるはず', async () => {
+        process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
+        const agentId = 'agentId';
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const expires = new Date();
+        const startResult = new Error('startError');
+        const passportToken = 'passportToken';
+        const passport = {
+            scope: `placeOrderTransaction.${seller.id}`,
+            iat: 123,
+            exp: 123,
+            iss: process.env.WAITER_PASSPORT_ISSUER,
+            issueUnit: {}
+        };
+
+        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
+        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
+        sandbox.mock(transactionRepo).expects('startPlaceOrder').once().rejects(startResult);
+
+        const result = await sskts.service.transaction.placeOrderInProgress.start({
+            expires: expires,
+            passportToken: passportToken,
+            clientUser: <any>{},
+            agentId: agentId,
+            sellerId: seller.id
+        })(organizationRepo, transactionRepo).catch((err) => err);
+        assert.deepEqual(result, startResult);
+        sandbox.verify();
+    });
+
+    it('許可証を重複使用しようとすれば、AlreadyInUseエラーとなるはず', async () => {
+        process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
+        const agentId = 'agentId';
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const expires = new Date();
+        const startResult = sskts.mongoose.mongo.MongoError.create({ code: 11000 });
+        const passportToken = 'passportToken';
+        const passport = {
+            scope: `placeOrderTransaction.${seller.id}`,
+            iat: 123,
+            exp: 123,
+            iss: process.env.WAITER_PASSPORT_ISSUER,
+            issueUnit: {}
+        };
+
+        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
+        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
+        sandbox.mock(transactionRepo).expects('startPlaceOrder').once().rejects(startResult);
+
+        const result = await sskts.service.transaction.placeOrderInProgress.start({
+            expires: expires,
+            passportToken: passportToken,
+            clientUser: <any>{},
+            agentId: agentId,
+            sellerId: seller.id
+        })(organizationRepo, transactionRepo).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.AlreadyInUse);
+        sandbox.verify();
+    });
+
     it('取引数制限を超えていれば、エラーが投げられるはず', async () => {
         const agentId = 'agentId';
         const seller = {
