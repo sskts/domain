@@ -15,10 +15,16 @@ import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TelemetryRepo } from '../repo/telemetry';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
+export type TaskOperation<T> =
+    (taskRepo: TaskRepo) => Promise<T>;
+export type TransactionOperation<T> =
+    (transactionRepo: TransactionRepo) => Promise<T>;
 export type TaskAndTransactionOperation<T> =
-    (taskRepo: TaskRepo, transactionRep: TransactionRepo) => Promise<T>;
+    (taskRepo: TaskRepo, transactionRepo: TransactionRepo) => Promise<T>;
 export type TaskAndTransactionAndAuthorizeActionOperation<T> =
-    (taskRepo: TaskRepo, transactionRep: TransactionRepo, authorizeActionRepo: AuthorizeActionRepo) => Promise<T>;
+    (taskRepo: TaskRepo, transactionRepo: TransactionRepo, authorizeActionRepo: AuthorizeActionRepo) => Promise<T>;
+export type TransactionAndAuthorizeActionOperation<T> =
+    (transactionRepo: TransactionRepo, authorizeActionRepo: AuthorizeActionRepo) => Promise<T>;
 export type TaskAndTelemetryAndTransactionOperation<T> = (
     taskRepo: TaskRepo,
     telemetryRepo: TelemetryRepo,
@@ -34,11 +40,74 @@ const TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS = 60; // 測定単位時間(秒)
 /**
  * フローデータ
  * @export
- * @interface IFlow
+ * @interface IFlowGlobal
  * @memberof service.report
  * @see https://en.wikipedia.org/wiki/Stock_and_flow
  */
-export interface IFlow {
+export interface IFlowGlobal {
+    tasks: {
+        /**
+         * 集計期間中に作成されたタスク数
+         */
+        numberOfCreated: number;
+        /**
+         * 集計期間中に実行されたタスク数
+         */
+        numberOfExecuted: number;
+        /**
+         * 集計期間中に中止されたタスク数
+         */
+        numberOfAborted: number;
+        /**
+         * 合計待ち時間
+         */
+        totalLatencyInMilliseconds: number;
+        /**
+         * 最大待ち時間
+         */
+        maxLatencyInMilliseconds: number;
+        /**
+         * 最小待ち時間
+         */
+        minLatencyInMilliseconds: number;
+        /**
+         * 合計試行回数
+         */
+        totalNumberOfTrials: number;
+        /**
+         * 最大試行回数
+         */
+        maxNumberOfTrials: number;
+        /**
+         * 最小試行回数
+         */
+        minNumberOfTrials: number;
+    };
+    measuredFrom: Date;
+    measuredThrough: Date;
+}
+
+/**
+ * ストックデータ
+ * @export
+ * @interface IStockGlobal
+ * @memberof service.report
+ * @see https://en.wikipedia.org/wiki/Stock_and_flow
+ */
+export interface IStockGlobal {
+    tasks: {
+        numberOfUnexecuted: number;
+    };
+    measuredAt: Date;
+}
+
+/**
+ * 販売者が対象のフローデータ
+ * @export
+ * @interface IFlowSeller
+ * @memberof service.report
+ */
+export interface IFlowSeller {
     transactions: {
         /**
          * 集計期間中に開始された取引数
@@ -141,68 +210,68 @@ export interface IFlow {
          */
         averageNumberOfOrderItems: number;
     };
-    tasks: {
-        /**
-         * 集計期間中に作成されたタスク数
-         */
-        numberOfCreated: number;
-        /**
-         * 集計期間中に実行されたタスク数
-         */
-        numberOfExecuted: number;
-        /**
-         * 集計期間中に中止されたタスク数
-         */
-        numberOfAborted: number;
-        /**
-         * 合計待ち時間
-         */
-        totalLatencyInMilliseconds: number;
-        /**
-         * 最大待ち時間
-         */
-        maxLatencyInMilliseconds: number;
-        /**
-         * 最小待ち時間
-         */
-        minLatencyInMilliseconds: number;
-        /**
-         * 合計試行回数
-         */
-        totalNumberOfTrials: number;
-        /**
-         * 最大試行回数
-         */
-        maxNumberOfTrials: number;
-        /**
-         * 最小試行回数
-         */
-        minNumberOfTrials: number;
-    };
     measuredFrom: Date;
     measuredThrough: Date;
 }
 
 /**
- * ストックデータ
+ * 販売者が対象のストックデータ
  * @export
- * @interface IStock
+ * @interface IStockSeller
  * @memberof service.report
- * @see https://en.wikipedia.org/wiki/Stock_and_flow
  */
-export interface IStock {
+export interface IStockSeller {
     transactions: {
         numberOfUnderway: number;
-    };
-    tasks: {
-        numberOfUnexecuted: number;
     };
     measuredAt: Date;
 }
 
+export interface IResultGlobal {
+    flow: IFlowGlobal;
+    stock: IStockGlobal;
+}
+
+export interface IResultSeller {
+    flow: IFlowSeller;
+    stock: IStockSeller;
+}
+
+export enum TelemetryScope {
+    Global = 'Global',
+    Seller = 'Seller'
+}
+
+export interface IObectGlobal {
+    scope: TelemetryScope;
+    measuredAt: Date;
+}
+
+export interface IObectSeller {
+    scope: TelemetryScope;
+    measuredAt: Date;
+    sellerId: string;
+}
+
+/**
+ * 測定データインターフェース
+ * @interface
+ */
 export interface ITelemetry {
-    flow: IFlow;
-    stock: IStock;
+    object: any;
+    result: any;
+    startDate: Date;
+    endDate: Date;
+}
+
+export interface ITelemetryGlobal extends ITelemetry {
+    object: IObectGlobal;
+    result: IResultGlobal;
+}
+
+export interface ITelemetrySeller extends ITelemetry {
+    object: IObectSeller;
+    result: IResultSeller;
 }
 
 /**
@@ -215,17 +284,21 @@ export interface ITelemetry {
  */
 export function searchTelemetries(searchConditions: {
     measuredFrom: Date,
-    measuredThrough: Date
+    measuredThrough: Date,
+    scope: TelemetryScope
 }) {
     return async (telemetryRepo: TelemetryRepo) => {
         return <ITelemetry[]>await telemetryRepo.telemetryModel.find(
             {
-                'stock.measuredAt': {
+                'object.scope': searchConditions.scope,
+                'object.measuredAt': {
                     $gte: searchConditions.measuredFrom,
                     $lt: searchConditions.measuredThrough
                 }
             }
-        ).sort({ 'stock.measuredAt': 1 }).lean().exec();
+        ).sort({ 'object.measuredAt': 1 })
+            .lean()
+            .exec();
     };
 }
 
@@ -238,27 +311,66 @@ export function searchTelemetries(searchConditions: {
  */
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
-export function createTelemetry(measuredAt: Date): TaskAndTelemetryAndTransactionOperation<void> {
+export function createTelemetry(target: {
+    measuredAt: Date,
+    sellerId?: string
+}): TaskAndTelemetryAndTransactionOperation<void> {
     return async (
         taskRepo: TaskRepo,
         telemetryRepo: TelemetryRepo,
-        transactionRep: TransactionRepo,
+        transactionRepo: TransactionRepo,
         authorizeActionRepository: AuthorizeActionRepo
     ) => {
-        const measuredThrough = moment(measuredAt);
+        const startDate = new Date();
+        const measuredThrough = moment(target.measuredAt);
         const measuredFrom = moment(measuredThrough).add(-TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS, 'seconds');
 
-        const flowData = await createFlowTelemetry(measuredFrom.toDate(), measuredThrough.toDate())(
-            taskRepo, transactionRep, authorizeActionRepository
-        );
-        debug('flowData created.', flowData);
-        const stockData = await createStockTelemetry(measuredAt)(taskRepo, transactionRep);
-        debug('stockData created.', stockData);
+        let telemetry: ITelemetry;
+        if (target.sellerId !== undefined) {
+            const flowData = await createSellerFlowTelemetry(measuredFrom.toDate(), measuredThrough.toDate(), target.sellerId)(
+                transactionRepo, authorizeActionRepository
+            );
+            debug('flowData created.', flowData);
+            const stockData = await createSellerStockTelemetry(target.measuredAt, target.sellerId)(
+                transactionRepo
+            );
+            debug('stockData created.', stockData);
 
-        const telemetry: ITelemetry = {
-            flow: flowData,
-            stock: stockData
-        };
+            telemetry = {
+                object: {
+                    scope: TelemetryScope.Seller,
+                    measuredAt: target.measuredAt,
+                    sellerId: target.sellerId
+                },
+                result: {
+                    flow: flowData,
+                    stock: stockData
+                },
+                startDate: startDate,
+                endDate: new Date()
+            };
+        } else {
+            const flowData = await createGlobalFlowTelemetry(measuredFrom.toDate(), measuredThrough.toDate())(
+                taskRepo
+            );
+            debug('flowData created.', flowData);
+            const stockData = await createGlobalStockTelemetry(target.measuredAt)(taskRepo);
+            debug('stockData created.', stockData);
+
+            telemetry = {
+                object: {
+                    scope: TelemetryScope.Global,
+                    measuredAt: target.measuredAt
+                },
+                result: {
+                    flow: flowData,
+                    stock: stockData
+                },
+                startDate: startDate,
+                endDate: new Date()
+            };
+        }
+
         await telemetryRepo.telemetryModel.create(telemetry);
         debug('telemetry saved.', telemetry);
     };
@@ -271,27 +383,32 @@ export function createTelemetry(measuredAt: Date): TaskAndTelemetryAndTransactio
  * @memberof service.report
  * @param {Date} measuredFrom 計測開始日時
  * @param {Date} measuredThrough 計測終了日時
- * @returns {TaskAndTransactionAndAuthorizeActionOperation<IFlow>}
+ * @returns {TransactionAndAuthorizeActionOperation<IFlowSeller>}
  */
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
-export function createFlowTelemetry(measuredFrom: Date, measuredThrough: Date): TaskAndTransactionAndAuthorizeActionOperation<IFlow> {
+export function createSellerFlowTelemetry(
+    measuredFrom: Date,
+    measuredThrough: Date,
+    sellerId: string
+): TransactionAndAuthorizeActionOperation<IFlowSeller> {
     // tslint:disable-next-line:max-func-body-length
     return async (
-        taskRepo: TaskRepo,
-        transactionRep: TransactionRepo,
+        transactionRepo: TransactionRepo,
         authorizeActionRepo: AuthorizeActionRepo
     ) => {
         // 直近{TELEMETRY_UNIT_TIME_IN_SECONDS}秒に開始された取引数を算出する
-        const numberOfTransactionsStarted = await transactionRep.transactionModel.count({
+        const numberOfTransactionsStarted = await transactionRepo.transactionModel.count({
+            'seller.id': sellerId,
             startDate: {
                 $gte: measuredFrom,
                 $lt: measuredThrough
             }
         }).exec();
 
-        const endedTransactions = await transactionRep.transactionModel.find(
+        const endedTransactions = await transactionRepo.transactionModel.find(
             {
+                'seller.id': sellerId,
                 endDate: {
                     $gte: measuredFrom,
                     $lt: measuredThrough
@@ -364,6 +481,111 @@ export function createFlowTelemetry(measuredFrom: Date, measuredThrough: Date): 
         const averageNumberOfActionsOnExpired =
             (numberOfTransactionsExpired > 0) ? totalNumberOfActionsOnExpired / numberOfTransactionsExpired : 0;
 
+        return {
+            transactions: {
+                numberOfStarted: numberOfTransactionsStarted,
+                numberOfConfirmed: numberOfTransactionsConfirmed,
+                numberOfExpired: numberOfTransactionsExpired,
+                // tslint:disable-next-line:no-suspicious-comment
+                numberOfPaymentCreditCard: 0, // TODO 実装
+                // tslint:disable-next-line:no-suspicious-comment
+                numberOfDiscountMvtk: 0, // TODO 実装
+                totalRequiredTimeInMilliseconds: totalRequiredTimeInMilliseconds,
+                maxRequiredTimeInMilliseconds: maxRequiredTimeInMilliseconds,
+                minRequiredTimeInMilliseconds: minRequiredTimeInMilliseconds,
+                averageRequiredTimeInMilliseconds: parseFloat(averageRequiredTimeInMilliseconds.toFixed(1)),
+                totalAmount: totalAmount,
+                maxAmount: maxAmount,
+                minAmount: minAmount,
+                averageAmount: parseFloat(averageAmount.toFixed(1)),
+                totalNumberOfActionsOnConfirmed: totalNumberOfActions,
+                maxNumberOfActionsOnConfirmed: maxNumberOfActions,
+                minNumberOfActionsOnConfirmed: minNumberOfActions,
+                averageNumberOfActionsOnConfirmed: parseFloat(averageNumberOfActions.toFixed(1)),
+                totalNumberOfActionsOnExpired: totalNumberOfActionsOnExpired,
+                maxNumberOfActionsOnExpired: maxNumberOfActionsOnExpired,
+                minNumberOfActionsOnExpired: minNumberOfActionsOnExpired,
+                averageNumberOfActionsOnExpired: parseFloat(averageNumberOfActionsOnExpired.toFixed(1)),
+                // tslint:disable-next-line:no-suspicious-comment
+                totalNumberOfOrderItems: 0, // TODO 実装
+                // tslint:disable-next-line:no-suspicious-comment
+                maxNumberOfOrderItems: 0, // TODO 実装
+                // tslint:disable-next-line:no-suspicious-comment
+                minNumberOfOrderItems: 0, // TODO 実装
+                // tslint:disable-next-line:no-suspicious-comment
+                averageNumberOfOrderItems: 0 // TODO 実装
+            },
+            measuredFrom: measuredFrom,
+            measuredThrough: measuredThrough
+        };
+    };
+}
+
+/**
+ * ストック計測データを作成する
+ * @export
+ * @function
+ * @memberof service.report
+ * @param {Date} measuredAt 計測日時
+ * @returns {TaskAndTransactionAndAuthorizeActionOperation<IStockSeller>}
+ */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+export function createSellerStockTelemetry(measuredAt: Date, sellerId: string): TransactionOperation<IStockSeller> {
+    // tslint:disable-next-line:max-func-body-length
+    return async (
+        transactionRepo: TransactionRepo
+    ) => {
+        const numberOfTransactionsUnderway = await transactionRepo.transactionModel.count({
+            'seller.id': sellerId,
+            $or: [
+                // {measuredAt}以前に開始し、{measuredAt}以後に成立あるいは期限切れした取引
+                {
+                    startDate: {
+                        $lte: measuredAt
+                    },
+                    endDate: {
+                        $gt: measuredAt
+                    }
+                },
+                // {measuredAt}以前に開始し、いまだに進行中の取引
+                {
+                    startDate: {
+                        $lte: measuredAt
+                    },
+                    status: factory.transactionStatusType.InProgress
+                }
+            ]
+        }).exec();
+
+        return {
+            transactions: {
+                numberOfUnderway: numberOfTransactionsUnderway
+            },
+            measuredAt: measuredAt
+        };
+    };
+}
+
+/**
+ * フロー計測データーを作成する
+ * @export
+ * @function
+ * @memberof service.report
+ * @param {Date} measuredFrom 計測開始日時
+ * @param {Date} measuredThrough 計測終了日時
+ * @returns {TaskAndTransactionAndAuthorizeActionOperation<IFlowGlobal>}
+ */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+export function createGlobalFlowTelemetry(
+    measuredFrom: Date,
+    measuredThrough: Date
+): TaskOperation<IFlowGlobal> {
+    // tslint:disable-next-line:max-func-body-length
+    return async (
+        taskRepo: TaskRepo
+    ) => {
         const numberOfTasksCreated = await taskRepo.taskModel.count({
             createdAt: {
                 $gte: measuredFrom,
@@ -404,39 +626,6 @@ export function createFlowTelemetry(measuredFrom: Date, measuredThrough: Date): 
         const minNumberOfTrials = numbersOfTrials.reduce((a, b) => Math.min(a, b), (numberOfTasksExecuted > 0) ? numbersOfTrials[0] : 0);
 
         return {
-            transactions: {
-                numberOfStarted: numberOfTransactionsStarted,
-                numberOfConfirmed: numberOfTransactionsConfirmed,
-                numberOfExpired: numberOfTransactionsExpired,
-                // tslint:disable-next-line:no-suspicious-comment
-                numberOfPaymentCreditCard: 0, // TODO 実装
-                // tslint:disable-next-line:no-suspicious-comment
-                numberOfDiscountMvtk: 0, // TODO 実装
-                totalRequiredTimeInMilliseconds: totalRequiredTimeInMilliseconds,
-                maxRequiredTimeInMilliseconds: maxRequiredTimeInMilliseconds,
-                minRequiredTimeInMilliseconds: minRequiredTimeInMilliseconds,
-                averageRequiredTimeInMilliseconds: parseFloat(averageRequiredTimeInMilliseconds.toFixed(1)),
-                totalAmount: totalAmount,
-                maxAmount: maxAmount,
-                minAmount: minAmount,
-                averageAmount: parseFloat(averageAmount.toFixed(1)),
-                totalNumberOfActionsOnConfirmed: totalNumberOfActions,
-                maxNumberOfActionsOnConfirmed: maxNumberOfActions,
-                minNumberOfActionsOnConfirmed: minNumberOfActions,
-                averageNumberOfActionsOnConfirmed: parseFloat(averageNumberOfActions.toFixed(1)),
-                totalNumberOfActionsOnExpired: totalNumberOfActionsOnExpired,
-                maxNumberOfActionsOnExpired: maxNumberOfActionsOnExpired,
-                minNumberOfActionsOnExpired: minNumberOfActionsOnExpired,
-                averageNumberOfActionsOnExpired: parseFloat(averageNumberOfActionsOnExpired.toFixed(1)),
-                // tslint:disable-next-line:no-suspicious-comment
-                totalNumberOfOrderItems: 0, // TODO 実装
-                // tslint:disable-next-line:no-suspicious-comment
-                maxNumberOfOrderItems: 0, // TODO 実装
-                // tslint:disable-next-line:no-suspicious-comment
-                minNumberOfOrderItems: 0, // TODO 実装
-                // tslint:disable-next-line:no-suspicious-comment
-                averageNumberOfOrderItems: 0 // TODO 実装
-            },
             tasks: {
                 numberOfCreated: numberOfTasksCreated,
                 numberOfExecuted: numberOfTasksExecuted,
@@ -460,37 +649,15 @@ export function createFlowTelemetry(measuredFrom: Date, measuredThrough: Date): 
  * @function
  * @memberof service.report
  * @param {Date} measuredAt 計測日時
- * @returns {TaskAndTransactionAndAuthorizeActionOperation<IStock>}
+ * @returns {TaskAndTransactionAndAuthorizeActionOperation<IStockGlobal>}
  */
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
-export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperation<IStock> {
+export function createGlobalStockTelemetry(measuredAt: Date): TaskOperation<IStockGlobal> {
     // tslint:disable-next-line:max-func-body-length
     return async (
-        taskRepo: TaskRepo,
-        transactionRep: TransactionRepo
+        taskRepo: TaskRepo
     ) => {
-        const numberOfTransactionsUnderway = await transactionRep.transactionModel.count({
-            $or: [
-                // {measuredAt}以前に開始し、{measuredAt}以後に成立あるいは期限切れした取引
-                {
-                    startDate: {
-                        $lte: measuredAt
-                    },
-                    endDate: {
-                        $gt: measuredAt
-                    }
-                },
-                // {measuredAt}以前に開始し、いまだに進行中の取引
-                {
-                    startDate: {
-                        $lte: measuredAt
-                    },
-                    status: factory.transactionStatusType.InProgress
-                }
-            ]
-        }).exec();
-
         const numberOfTasksUnexecuted = await taskRepo.taskModel.count({
             $or: [
                 // {measuredAt}以前に作成され、{measuredAt}以後に実行試行されたタスク
@@ -513,9 +680,6 @@ export function createStockTelemetry(measuredAt: Date): TaskAndTransactionOperat
         }).exec();
 
         return {
-            transactions: {
-                numberOfUnderway: numberOfTransactionsUnderway
-            },
             tasks: {
                 numberOfUnexecuted: numberOfTasksUnexecuted
             },
