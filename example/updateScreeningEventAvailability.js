@@ -17,16 +17,11 @@ async function main() {
     const IMPORT_TERMS_IN_DAYS = 7;
     const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(redisClient);
 
-    // update by branchCode
-    const dayStart = moment();
-    const dayEnd = moment(dayStart).add(IMPORT_TERMS_IN_DAYS, 'days');
-
     try {
-        console.log('updating item availability...');
-        await sskts.service.itemAvailability.updatePerformanceStockStatuses(
+        await sskts.service.itemAvailability.updateIndividualScreeningEvents(
             '118',
-            dayStart.format('YYYYMMDD'),
-            dayEnd.format('YYYYMMDD')
+            moment().toDate(),
+            moment().add(IMPORT_TERMS_IN_DAYS, 'days').toDate()
         )(itemAvailabilityRepo);
         console.log('item availability updated');
     } catch (error) {

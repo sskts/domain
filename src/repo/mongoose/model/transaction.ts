@@ -2,6 +2,16 @@ import * as mongoose from 'mongoose';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
+const objectSchema = new mongoose.Schema(
+    {},
+    { strict: false }
+);
+
+const resultSchema = new mongoose.Schema(
+    {},
+    { strict: false }
+);
+
 /**
  * 取引スキーマ
  * @ignore
@@ -13,8 +23,8 @@ const schema = new mongoose.Schema(
         agent: mongoose.Schema.Types.Mixed,
         seller: mongoose.Schema.Types.Mixed,
         error: mongoose.Schema.Types.Mixed,
-        result: mongoose.Schema.Types.Mixed,
-        object: mongoose.Schema.Types.Mixed,
+        result: resultSchema,
+        object: objectSchema,
         expires: Date,
         startDate: Date,
         endDate: Date,
@@ -26,6 +36,8 @@ const schema = new mongoose.Schema(
         id: true,
         read: 'primaryPreferred',
         safe: safe,
+        strict: true,
+        useNestedStrict: true,
         timestamps: {
             createdAt: 'createdAt',
             updatedAt: 'updatedAt'
@@ -55,13 +67,34 @@ schema.index(
     { status: 1, typeOf: 1, _id: 1 }
 );
 
+// 許可証でユニークに
+schema.index(
+    {
+        'object.passportToken': 1
+    },
+    {
+        unique: true,
+        partialFilterExpression: {
+            'object.passportToken': { $exists: true }
+        }
+    }
+);
+
 // 購入番号から照会の際に使用
 schema.index(
     {
         'result.order.orderInquiryKey.confirmationNumber': 1,
-        'result.order.orderInquiryKey.telephone': 1,
         'result.order.orderInquiryKey.theaterCode': 1,
+        'result.order.orderInquiryKey.telephone': 1,
         status: 1
+    },
+    {
+        name: 'orderInquiryKey',
+        partialFilterExpression: {
+            'result.order.orderInquiryKey.confirmationNumber': { $exists: true },
+            'result.order.orderInquiryKey.theaterCode': { $exists: true },
+            'result.order.orderInquiryKey.telephone': { $exists: true }
+        }
     }
 );
 
@@ -70,6 +103,12 @@ schema.index(
     {
         'result.order.orderInquiryKey.theaterCode': 1,
         'result.order.orderInquiryKey.confirmationNumber': 1
+    },
+    {
+        partialFilterExpression: {
+            'result.order.orderInquiryKey.theaterCode': { $exists: true },
+            'result.order.orderInquiryKey.confirmationNumber': { $exists: true }
+        }
     }
 );
 
@@ -80,7 +119,9 @@ schema.index(
     },
     {
         unique: true,
-        sparse: true
+        partialFilterExpression: {
+            'result.order.orderNumber': { $exists: true }
+        }
     }
 );
 
