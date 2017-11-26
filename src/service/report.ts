@@ -114,6 +114,14 @@ export interface IFlowSeller {
          */
         numberOfStarted: number;
         /**
+         * 集計期間中に開始されてその後成立した取引数
+         */
+        numberOfStartedAndConfirmed: number;
+        /**
+         * 集計期間中に開始されてその後期限切れになった取引数
+         */
+        numberOfStartedAndExpired: number;
+        /**
          * 集計期間中に成立した取引数
          */
         numberOfConfirmed: number;
@@ -413,7 +421,7 @@ export function createSellerFlowTelemetry(
         transactionRepo: TransactionRepo,
         authorizeActionRepo: AuthorizeActionRepo
     ) => {
-        // 直近{TELEMETRY_UNIT_TIME_IN_SECONDS}秒に開始された取引数を算出する
+        // 計測期間内に開始された取引数を算出する
         const numberOfTransactionsStarted = await transactionRepo.transactionModel.count({
             'seller.id': sellerId,
             startDate: {
@@ -421,6 +429,23 @@ export function createSellerFlowTelemetry(
                 $lt: measuredThrough
             }
         }).exec();
+
+        // 計測期間内に開始され、かつ、すでに終了している取引を検索
+        const startedAndEndedTransactions = await transactionRepo.transactionModel.find({
+            'seller.id': sellerId,
+            startDate: {
+                $gte: measuredFrom,
+                $lt: measuredThrough
+            },
+            endDate: { $exists: true }
+        }).exec().then((docs) => docs.map((doc) => <factory.transaction.placeOrder.ITransaction>doc.toObject()));
+
+        const numberOfStartedAndConfirmed = startedAndEndedTransactions.filter(
+            (transaction) => transaction.status === factory.transactionStatusType.Confirmed
+        ).length;
+        const numberOfStartedAndExpired = startedAndEndedTransactions.filter(
+            (transaction) => transaction.status === factory.transactionStatusType.Expired
+        ).length;
 
         const endedTransactions = await transactionRepo.transactionModel.find(
             {
@@ -516,6 +541,8 @@ export function createSellerFlowTelemetry(
         return {
             transactions: {
                 numberOfStarted: numberOfTransactionsStarted,
+                numberOfStartedAndConfirmed: numberOfStartedAndConfirmed,
+                numberOfStartedAndExpired: numberOfStartedAndExpired,
                 numberOfConfirmed: numberOfTransactionsConfirmed,
                 numberOfExpired: numberOfTransactionsExpired,
                 // tslint:disable-next-line:no-suspicious-comment
