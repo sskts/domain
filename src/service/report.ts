@@ -146,6 +146,22 @@ export interface IFlowSeller {
          */
         averageRequiredTimeInMilliseconds: number;
         /**
+         * イベントまでの合計残り時間(ミリ秒)
+         */
+        totalTimeLeftUntilEventInMilliseconds: number;
+        /**
+         * イベントまでの最大残り時間(ミリ秒)
+         */
+        maxTimeLeftUntilEventInMilliseconds: number;
+        /**
+         * イベントまでの最小残り時間(ミリ秒)
+         */
+        minTimeLeftUntilEventInMilliseconds: number;
+        /**
+         * イベントまでの平均残り時間(ミリ秒)
+         */
+        averageTimeLeftUntilEventInMilliseconds: number;
+        /**
          * 取引の合計金額(yen)
          */
         totalAmount: number;
@@ -319,7 +335,7 @@ export function createTelemetry(target: {
         taskRepo: TaskRepo,
         telemetryRepo: TelemetryRepo,
         transactionRepo: TransactionRepo,
-        authorizeActionRepository: AuthorizeActionRepo
+        authorizeActionRepo: AuthorizeActionRepo
     ) => {
         const startDate = new Date();
         const measuredThrough = moment(target.measuredAt);
@@ -328,7 +344,7 @@ export function createTelemetry(target: {
         let telemetry: ITelemetry;
         if (target.sellerId !== undefined) {
             const flowData = await createSellerFlowTelemetry(measuredFrom.toDate(), measuredThrough.toDate(), target.sellerId)(
-                transactionRepo, authorizeActionRepository
+                transactionRepo, authorizeActionRepo
             );
             debug('flowData created.', flowData);
             const stockData = await createSellerStockTelemetry(target.measuredAt, target.sellerId)(
@@ -438,6 +454,22 @@ export function createSellerFlowTelemetry(
         const averageRequiredTimeInMilliseconds =
             (numberOfTransactionsConfirmed > 0) ? totalRequiredTimeInMilliseconds / numberOfTransactionsConfirmed : 0;
 
+        // イベントまでの残り時間算出(イベント開始日時と成立日時の差)
+        const timesLeftUntilEvent = confirmedTransactions.map((transaction) => {
+            // 座席予約は必ず存在する
+            const seatReservation = <factory.action.authorize.seatReservation.IAction>transaction.object.authorizeActions.find(
+                (action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation
+            );
+
+            return moment(seatReservation.object.individualScreeningEvent.startDate).diff(moment(transaction.endDate), 'milliseconds');
+        });
+        const totalTimeLeftUntilEventInMilliseconds = timesLeftUntilEvent.reduce((a, b) => a + b, 0);
+        const maxTimeLeftUntilEventInMilliseconds = timesLeftUntilEvent.reduce((a, b) => Math.max(a, b), 0);
+        const minTimeLeftUntilEventInMilliseconds =
+            timesLeftUntilEvent.reduce((a, b) => Math.min(a, b), (numberOfTransactionsConfirmed > 0) ? timesLeftUntilEvent[0] : 0);
+        const averageTimeLeftUntilEventInMilliseconds =
+            (numberOfTransactionsConfirmed > 0) ? totalTimeLeftUntilEventInMilliseconds / numberOfTransactionsConfirmed : 0;
+
         // 金額算出
         const amounts = confirmedTransactions.map(
             (transaction) => (<factory.transaction.placeOrder.IResult>transaction.result).order.price
@@ -494,6 +526,10 @@ export function createSellerFlowTelemetry(
                 maxRequiredTimeInMilliseconds: maxRequiredTimeInMilliseconds,
                 minRequiredTimeInMilliseconds: minRequiredTimeInMilliseconds,
                 averageRequiredTimeInMilliseconds: parseFloat(averageRequiredTimeInMilliseconds.toFixed(1)),
+                totalTimeLeftUntilEventInMilliseconds: totalTimeLeftUntilEventInMilliseconds,
+                maxTimeLeftUntilEventInMilliseconds: maxTimeLeftUntilEventInMilliseconds,
+                minTimeLeftUntilEventInMilliseconds: minTimeLeftUntilEventInMilliseconds,
+                averageTimeLeftUntilEventInMilliseconds: averageTimeLeftUntilEventInMilliseconds,
                 totalAmount: totalAmount,
                 maxAmount: maxAmount,
                 minAmount: minAmount,

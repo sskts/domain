@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ## Unreleased
 ### Added
 - WAITER許可証で注文取引を開始することができるように対応。許可証については発行者の確認を行う。許可証の重複使用は禁止。
+- 取引成立からイベント開始までの残り時間を計測。
 
 ### Changed
 - 測定データにスコープ(測定対象)をプロパティとして追加(Global,Seller)
