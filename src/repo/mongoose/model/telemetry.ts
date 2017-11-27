@@ -2,6 +2,13 @@ import * as mongoose from 'mongoose';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
+const purposeSchema = new mongoose.Schema(
+    {
+        typeOf: String
+    },
+    { strict: false }
+);
+
 const objectSchema = new mongoose.Schema(
     {
         measuredAt: Date
@@ -37,7 +44,8 @@ const schema = new mongoose.Schema(
         error: errorSchema,
         object: objectSchema,
         startDate: Date,
-        endDate: Date
+        endDate: Date,
+        purpose: purposeSchema
     },
     {
         collection: 'telemetries',
