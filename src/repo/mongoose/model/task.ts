@@ -2,6 +2,24 @@ import * as mongoose from 'mongoose';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
+const executionResultSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const dataSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
 /**
  * タスクスキーマ
  * @ignore
@@ -14,14 +32,16 @@ const schema = new mongoose.Schema(
         remainingNumberOfTries: Number,
         lastTriedAt: Date,
         numberOfTried: Number,
-        executionResults: [mongoose.Schema.Types.Mixed],
-        data: mongoose.Schema.Types.Mixed
+        executionResults: [executionResultSchema],
+        data: dataSchema
     },
     {
         collection: 'tasks',
         id: true,
         read: 'primaryPreferred',
         safe: safe,
+        strict: true,
+        useNestedStrict: true,
         timestamps: {
             createdAt: 'createdAt',
             updatedAt: 'updatedAt'
@@ -40,7 +60,9 @@ schema.index(
 schema.index(
     { 'data.transactionId': 1 },
     {
-        sparse: true
+        partialFilterExpression: {
+            'data.transactionId': { $exists: true }
+        }
     }
 );
 
@@ -55,7 +77,6 @@ schema.index(
 );
 
 // 測定データ作成時に使用
-schema.index({ status: 1, lastTriedAt: 1 });
 schema.index({ createdAt: 1, lastTriedAt: 1 });
 schema.index({ status: 1, createdAt: 1 });
 schema.index({ createdAt: 1 });

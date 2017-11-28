@@ -2,6 +2,33 @@ import * as mongoose from 'mongoose';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
+const ownedBySchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const acquiredFromSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const typeOfGoodSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
 /**
  * 所有権スキーマ
  * @ignore
@@ -13,17 +40,19 @@ const schema = new mongoose.Schema(
             required: true
         },
         identifier: String,
-        ownedBy: mongoose.SchemaTypes.Mixed,
-        acquiredFrom: mongoose.SchemaTypes.Mixed,
+        ownedBy: ownedBySchema,
+        acquiredFrom: acquiredFromSchema,
         ownedFrom: Date,
         ownedThrough: Date,
-        typeOfGood: mongoose.SchemaTypes.Mixed
+        typeOfGood: typeOfGoodSchema
     },
     {
         collection: 'ownershipInfos',
         id: true,
         read: 'primaryPreferred',
         safe: safe,
+        strict: true,
+        useNestedStrict: true,
         timestamps: {
             createdAt: 'createdAt',
             updatedAt: 'updatedAt'

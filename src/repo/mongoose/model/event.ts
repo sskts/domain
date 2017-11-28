@@ -4,6 +4,51 @@ import MultilingualStringSchemaType from '../schemaTypes/multilingualString';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
+const locationSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const workPerformedSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const superEventSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const videoFormatSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const coaInfoSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
 /**
  * イベント(公演など)スキーマ
  * @ignore
@@ -21,20 +66,22 @@ const schema = new mongoose.Schema(
         duration: String,
         endDate: Date,
         eventStatus: String,
-        location: mongoose.SchemaTypes.Mixed,
+        location: locationSchema,
         startDate: Date,
-        workPerformed: mongoose.SchemaTypes.Mixed,
-        superEvent: mongoose.SchemaTypes.Mixed,
-        videoFormat: mongoose.SchemaTypes.Mixed,
+        workPerformed: workPerformedSchema,
+        superEvent: superEventSchema,
+        videoFormat: videoFormatSchema,
         kanaName: String,
         alternativeHeadline: String,
-        coaInfo: mongoose.SchemaTypes.Mixed
+        coaInfo: coaInfoSchema
     },
     {
         collection: 'events',
         id: true,
         read: 'primaryPreferred',
         safe: safe,
+        strict: true,
+        useNestedStrict: true,
         timestamps: {
             createdAt: 'createdAt',
             updatedAt: 'updatedAt'
@@ -45,7 +92,14 @@ const schema = new mongoose.Schema(
 );
 
 // 上映イベント検索に使用
-schema.index({ typeOf: 1, 'superEvent.location.branchCode': 1, startDate: 1 });
+schema.index(
+    { typeOf: 1, 'superEvent.location.branchCode': 1, startDate: 1 },
+    {
+        partialFilterExpression: {
+            'superEvent.location.branchCode': { $exists: true }
+        }
+    }
+);
 schema.index({ typeOf: 1, startDate: 1 });
 schema.index({ typeOf: 1, endDate: 1 });
 

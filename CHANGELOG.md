@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 - 測定データにスコープ(測定対象)をプロパティとして追加(Global,Seller)
 - レポートサービスをヘルスチェックサービスと測定サービスに分割。
+- mongoose.SchemaTypes.Mixedで定義されているmongooseのスキーマを、全てChild Schemaとして定義するように変更。
 
 ### Deprecated
 

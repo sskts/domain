@@ -6,32 +6,40 @@ const purposeSchema = new mongoose.Schema(
     {
         typeOf: String
     },
-    { strict: false }
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
 );
 
 const objectSchema = new mongoose.Schema(
     {
         measuredAt: Date
     },
-    { strict: false }
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
 );
 
 const resultSchema = new mongoose.Schema(
+    {},
     {
-        flow: {
-            measuredFrom: Date,
-            measuredThrough: Date
-        },
-        stock: {
-            measuredAt: Date
-        }
-    },
-    { strict: false }
+        id: false,
+        _id: false,
+        strict: false
+    }
 );
 
 const errorSchema = new mongoose.Schema(
     {},
-    { strict: false }
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
 );
 
 /**
@@ -65,7 +73,12 @@ const schema = new mongoose.Schema(
 
 // レポート参照時に使用
 schema.index(
-    { 'object.measuredAt': 1 }
+    { 'object.measuredAt': 1 },
+    {
+        partialFilterExpression: {
+            'object.measuredAt': { $exists: true }
+        }
+    }
 );
 
 export default mongoose.model('Telemetry', schema);

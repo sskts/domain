@@ -4,6 +4,33 @@ import MultilingualStringSchemaType from '../schemaTypes/multilingualString';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
+const gmoInfoSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const parentOrganizationSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const locationSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
 /**
  * 組織スキーマ
  * @ignore
@@ -19,16 +46,18 @@ const schema = new mongoose.Schema(
         legalName: MultilingualStringSchemaType,
         sameAs: String,
         url: String,
-        gmoInfo: mongoose.SchemaTypes.Mixed,
-        parentOrganization: mongoose.SchemaTypes.Mixed,
+        gmoInfo: gmoInfoSchema,
+        parentOrganization: parentOrganizationSchema,
         telephone: String,
-        location: mongoose.SchemaTypes.Mixed
+        location: locationSchema
     },
     {
         collection: 'organizations',
         id: true,
         read: 'primaryPreferred',
         safe: safe,
+        strict: true,
+        useNestedStrict: true,
         timestamps: {
             createdAt: 'createdAt',
             updatedAt: 'updatedAt'

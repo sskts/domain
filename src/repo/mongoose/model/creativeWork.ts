@@ -2,6 +2,24 @@ import * as mongoose from 'mongoose';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
+const copyrightHolderSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const coaInfoSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
 /**
  * 作品スキーマ
  * @ignore
@@ -15,20 +33,22 @@ const schema = new mongoose.Schema(
         identifier: String,
         name: String,
         description: String,
-        copyrightHolder: mongoose.SchemaTypes.Mixed,
+        copyrightHolder: copyrightHolderSchema,
         copyrightYear: Number,
         datePublished: Date,
         license: String,
         thumbnailUrl: String,
         duration: String,
         contentRating: String,
-        coaInfo: mongoose.SchemaTypes.Mixed
+        coaInfo: coaInfoSchema
     },
     {
         collection: 'creativeWorks',
         id: true,
         read: 'primaryPreferred',
         safe: safe,
+        strict: true,
+        useNestedStrict: true,
         timestamps: {
             createdAt: 'createdAt',
             updatedAt: 'updatedAt'

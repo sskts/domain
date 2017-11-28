@@ -4,6 +4,42 @@ import MultilingualStringSchemaType from '../schemaTypes/multilingualString';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
+const containedInPlaceSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const containsPlaceSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const openingHoursSpecificationSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const coaInfoSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
 /**
  * 場所スキーマ
  * @ignore
@@ -19,22 +55,24 @@ const schema = new mongoose.Schema(
         description: MultilingualStringSchemaType,
         address: MultilingualStringSchemaType,
         branchCode: String,
-        containedInPlace: mongoose.SchemaTypes.Mixed,
-        containsPlace: mongoose.SchemaTypes.Mixed,
+        containedInPlace: containedInPlaceSchema,
+        containsPlace: [containsPlaceSchema],
         maximumAttendeeCapacity: Number,
-        openingHoursSpecification: mongoose.SchemaTypes.Mixed,
+        openingHoursSpecification: openingHoursSpecificationSchema,
         smokingAllowed: Boolean,
         telephone: String,
         sameAs: String,
         url: String,
         kanaName: String,
-        coaInfo: mongoose.SchemaTypes.Mixed
+        coaInfo: coaInfoSchema
     },
     {
         collection: 'places',
         id: true,
         read: 'primaryPreferred',
         safe: safe,
+        strict: true,
+        useNestedStrict: true,
         timestamps: {
             createdAt: 'createdAt',
             updatedAt: 'updatedAt'

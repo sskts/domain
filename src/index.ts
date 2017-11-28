@@ -40,7 +40,6 @@ import { MongoRepository as IndividualScreeningEventItemAvailabilityRepo } from 
 import { MongoRepository as OrderRepo } from './repo/order';
 import { MongoRepository as OrganizationRepo } from './repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from './repo/ownershipInfo';
-import { MongoRepository as PersonRepo } from './repo/person';
 import { MongoRepository as PlaceRepo } from './repo/place';
 import { MongoRepository as SendGridEventRepo } from './repo/sendGridEvent';
 import { MongoRepository as TaskRepo } from './repo/task';
@@ -114,7 +113,6 @@ export namespace repository {
     export class Order extends OrderRepo { }
     export class Organization extends OrganizationRepo { }
     export class OwnershipInfo extends OwnershipInfoRepo { }
-    export class Person extends PersonRepo { }
     export class Place extends PlaceRepo { }
     export class SendGridEvent extends SendGridEventRepo { }
     export class Task extends TaskRepo { }

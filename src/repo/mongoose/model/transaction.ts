@@ -4,12 +4,47 @@ const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
 const objectSchema = new mongoose.Schema(
     {},
-    { strict: false }
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
 );
 
 const resultSchema = new mongoose.Schema(
     {},
-    { strict: false }
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const agentSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const sellerSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const errorSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
 );
 
 /**
@@ -20,9 +55,9 @@ const schema = new mongoose.Schema(
     {
         status: String,
         typeOf: String,
-        agent: mongoose.Schema.Types.Mixed,
-        seller: mongoose.Schema.Types.Mixed,
-        error: mongoose.Schema.Types.Mixed,
+        agent: agentSchema,
+        seller: sellerSchema,
+        error: errorSchema,
         result: resultSchema,
         object: objectSchema,
         expires: Date,
