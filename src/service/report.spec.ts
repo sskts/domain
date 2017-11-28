@@ -1,3 +1,5 @@
+// tslint:disable:no-implicit-dependencies
+
 /**
  * レポートサービステスト
  * @ignore
@@ -5,8 +7,7 @@
 
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
-// tslint:disable-next-line:no-require-imports no-var-requires
-require('sinon-mongoose');
+import { } from 'sinon-mongoose';
 
 import * as sskts from '../index';
 
@@ -16,7 +17,7 @@ before(() => {
     sandbox = sinon.sandbox.create();
 });
 
-describe('service.report.searchTelemetries()', () => {
+describe('service.report.telemetry.search()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -29,7 +30,7 @@ describe('service.report.searchTelemetries()', () => {
         sandbox.mock(telemetryRepo.telemetryModel).expects('find').once()
             .chain('sort').chain('lean').chain('exec').resolves(telemetries);
 
-        const result = await sskts.service.report.searchTelemetries(<any>conditions)(telemetryRepo);
+        const result = await sskts.service.report.telemetry.search(<any>conditions)(telemetryRepo);
 
         assert(Array.isArray(result));
         sandbox.verify();
@@ -63,7 +64,7 @@ describe('service.report.searchTelemetries()', () => {
 //     });
 // });
 
-describe('service.report.checkHealthOfGMOSales()', () => {
+describe('service.report.health.checkGMOSales()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -103,7 +104,7 @@ describe('service.report.checkHealthOfGMOSales()', () => {
         sandbox.mock(transactionRepo.transactionModel).expects('find').once()
             .chain('lean').chain('exec').resolves(transactions);
 
-        const result = await sskts.service.report.checkHealthOfGMOSales(madeFrom, madeThrough)(gmoNotificationRepo, transactionRepo);
+        const result = await sskts.service.report.health.checkGMOSales(madeFrom, madeThrough)(gmoNotificationRepo, transactionRepo);
         assert.equal(typeof result, 'object');
         assert.equal(result.unhealthGMOSales.length, 0);
         sandbox.verify();
@@ -143,7 +144,7 @@ describe('service.report.checkHealthOfGMOSales()', () => {
         sandbox.mock(transactionRepo.transactionModel).expects('find').once()
             .chain('lean').chain('exec').resolves(transactions);
 
-        const result = await sskts.service.report.checkHealthOfGMOSales(madeFrom, madeThrough)(gmoNotificationRepo, transactionRepo);
+        const result = await sskts.service.report.health.checkGMOSales(madeFrom, madeThrough)(gmoNotificationRepo, transactionRepo);
         assert.equal(typeof result, 'object');
         assert.equal(result.unhealthGMOSales.length, 1);
         sandbox.verify();
@@ -184,7 +185,7 @@ describe('service.report.checkHealthOfGMOSales()', () => {
         sandbox.mock(transactionRepo.transactionModel).expects('find').once()
             .chain('lean').chain('exec').resolves(transactions);
 
-        const result = await sskts.service.report.checkHealthOfGMOSales(madeFrom, madeThrough)(gmoNotificationRepo, transactionRepo);
+        const result = await sskts.service.report.health.checkGMOSales(madeFrom, madeThrough)(gmoNotificationRepo, transactionRepo);
         assert.equal(typeof result, 'object');
         assert.equal(result.unhealthGMOSales.length, 1);
         sandbox.verify();
@@ -225,7 +226,7 @@ describe('service.report.checkHealthOfGMOSales()', () => {
         sandbox.mock(transactionRepo.transactionModel).expects('find').once()
             .chain('lean').chain('exec').resolves(transactions);
 
-        const result = await sskts.service.report.checkHealthOfGMOSales(madeFrom, madeThrough)(gmoNotificationRepo, transactionRepo);
+        const result = await sskts.service.report.health.checkGMOSales(madeFrom, madeThrough)(gmoNotificationRepo, transactionRepo);
         assert.equal(typeof result, 'object');
         assert.equal(result.unhealthGMOSales.length, 1);
         sandbox.verify();
@@ -266,7 +267,7 @@ describe('service.report.checkHealthOfGMOSales()', () => {
         sandbox.mock(transactionRepo.transactionModel).expects('find').once()
             .chain('lean').chain('exec').resolves(transactions);
 
-        const result = await sskts.service.report.checkHealthOfGMOSales(madeFrom, madeThrough)(gmoNotificationRepo, transactionRepo);
+        const result = await sskts.service.report.health.checkGMOSales(madeFrom, madeThrough)(gmoNotificationRepo, transactionRepo);
         assert.equal(typeof result, 'object');
         assert.equal(result.unhealthGMOSales.length, 1);
         sandbox.verify();

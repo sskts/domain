@@ -9,10 +9,8 @@ const googleLibphonenumber = require('google-libphonenumber');
 const sskts = require('../');
 
 // tslint:disable-next-line:max-func-body-length
-async function main() {
+async function main(confirmationNumber) {
     const now = new Date();
-
-    sskts.mongoose.connect(process.env.MONGOLAB_URI, { useMongoClient: true });
 
     const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
     const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
@@ -21,7 +19,7 @@ async function main() {
     // まず注文照会
     const orderInquiryKey = {
         theaterCode: '118',
-        confirmationNumber: 53523,
+        confirmationNumber: confirmationNumber,
         telephone: '+819012345678'
     };
     const order = await orderRepo.findByOrderInquiryKey(orderInquiryKey);
@@ -289,13 +287,24 @@ http://www.cinemasunshine.co.jp/
     });
 
     await sskts.service.notification.sendEmail(emailMessage)();
-
-    sskts.mongoose.disconnect();
 }
 
-main().then(() => {
-    console.log('success!');
-}).catch((err) => {
-    console.error(err);
-    process.exit(1);
-});
+sskts.mongoose.connect(process.env.MONGOLAB_URI, { useMongoClient: true });
+
+const confirmationNumbers = require('./returnOrder.json');
+Promise.all(confirmationNumbers.map(async (confirmationNumber) => {
+    try {
+        await main(confirmationNumber);
+    } catch (error) {
+        console.error(error);
+    }
+}))
+    .then(() => {
+        console.log('all success!');
+    })
+    .catch((err) => {
+        console.error(err);
+    })
+    .then(() => {
+        sskts.mongoose.disconnect();
+    });
