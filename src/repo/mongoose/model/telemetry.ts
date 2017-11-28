@@ -2,30 +2,66 @@ import * as mongoose from 'mongoose';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
 
+const purposeSchema = new mongoose.Schema(
+    {
+        typeOf: String
+    },
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const objectSchema = new mongoose.Schema(
+    {
+        measuredAt: Date
+    },
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const resultSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const errorSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
 /**
  * 測定スキーマ
  * @ignore
  */
 const schema = new mongoose.Schema(
     {
-        flow: {
-            transactions: mongoose.Schema.Types.Mixed,
-            tasks: mongoose.Schema.Types.Mixed,
-            measuredFrom: Date,
-            measuredThrough: Date
-
-        },
-        stock: {
-            transactions: mongoose.Schema.Types.Mixed,
-            tasks: mongoose.Schema.Types.Mixed,
-            measuredAt: Date
-        }
+        result: resultSchema,
+        error: errorSchema,
+        object: objectSchema,
+        startDate: Date,
+        endDate: Date,
+        purpose: purposeSchema
     },
     {
         collection: 'telemetries',
         id: true,
         read: 'primaryPreferred',
         safe: safe,
+        strict: true,
+        useNestedStrict: true,
         timestamps: {
             createdAt: 'createdAt',
             updatedAt: 'updatedAt'
@@ -37,7 +73,12 @@ const schema = new mongoose.Schema(
 
 // レポート参照時に使用
 schema.index(
-    { 'stock.measuredAt': 1 }
+    { 'object.measuredAt': 1 },
+    {
+        partialFilterExpression: {
+            'object.measuredAt': { $exists: true }
+        }
+    }
 );
 
 export default mongoose.model('Telemetry', schema);

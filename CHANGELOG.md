@@ -17,6 +17,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v23.4.0 - 2017-11-28
+### Added
+- WAITER許可証で注文取引を開始することができるように対応。許可証については発行者の確認を行う。許可証の重複使用は禁止。
+- 取引成立からイベント開始までの残り時間を計測。
+- 計測期間内に開始された取引の成立数を計測。
+
+### Changed
+- 測定データにスコープ(測定対象)をプロパティとして追加(Global,Seller)
+- レポートサービスをヘルスチェックサービスと測定サービスに分割。
+- mongoose.SchemaTypes.Mixedで定義されているmongooseのスキーマを、全てChild Schemaとして定義するように変更。
+
 ## v23.3.0 - 2017-11-15
 ### Added
 - 個々の上映イベントの検索条件にプロパティを追加。
