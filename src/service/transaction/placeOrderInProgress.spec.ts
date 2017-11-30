@@ -30,7 +30,8 @@ describe('start()', () => {
         const agentId = 'agentId';
         const seller = {
             id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
+            name: { ja: 'ja', en: 'ne' },
+            identifier: 'sellerIdentifier'
         };
         const transaction = {
             expires: new Date()
@@ -42,8 +43,8 @@ describe('start()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
 
-        sandbox.mock(transactioCountRepo).expects('incr').once().withExactArgs(scope).resolves(maxCountPerUnit - 1);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
+        sandbox.mock(transactioCountRepo).expects('incr').once().withExactArgs(scope).resolves(maxCountPerUnit - 1);
         sandbox.mock(transactionRepo).expects('startPlaceOrder').once().resolves(transaction);
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
@@ -64,7 +65,8 @@ describe('start()', () => {
         const agentId = 'agentId';
         const seller = {
             id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
+            name: { ja: 'ja', en: 'ne' },
+            identifier: 'sellerIdentifier'
         };
         const transaction = {
             expires: new Date()
@@ -79,8 +81,8 @@ describe('start()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
 
-        sandbox.mock(transactioCountRepo).expects('incr').once().withExactArgs(scope).resolves(maxCountPerUnit - 1);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
+        sandbox.mock(transactioCountRepo).expects('incr').once().withExactArgs(scope).resolves(maxCountPerUnit - 1);
         sandbox.mock(transactionRepo).expects('startPlaceOrder').once().resolves(transaction);
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
@@ -101,14 +103,15 @@ describe('start()', () => {
         const agentId = 'agentId';
         const seller = {
             id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
+            name: { ja: 'ja', en: 'ne' },
+            identifier: 'sellerIdentifier'
         };
         const transaction = {
             expires: new Date()
         };
         const passportToken = 'passportToken';
         const passport = {
-            scope: `placeOrderTransaction.${seller.id}`,
+            scope: `placeOrderTransaction.${seller.identifier}`,
             iat: 123,
             exp: 123,
             iss: process.env.WAITER_PASSPORT_ISSUER,
@@ -118,8 +121,8 @@ describe('start()', () => {
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
+        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
         sandbox.mock(transactionRepo).expects('startPlaceOrder').once().resolves(transaction);
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
@@ -138,7 +141,8 @@ describe('start()', () => {
         const agentId = 'agentId';
         const seller = {
             id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
+            name: { ja: 'ja', en: 'ne' },
+            identifier: 'sellerIdentifier'
         };
         const transaction = {
             expires: new Date()
@@ -149,8 +153,8 @@ describe('start()', () => {
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
+        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().rejects(verifyResult);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
         sandbox.mock(transactionRepo).expects('startPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
@@ -169,7 +173,8 @@ describe('start()', () => {
         const agentId = 'agentId';
         const seller = {
             id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
+            name: { ja: 'ja', en: 'ne' },
+            identifier: 'sellerIdentifier'
         };
         const transaction = {
             expires: new Date()
@@ -186,8 +191,8 @@ describe('start()', () => {
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
+        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
         sandbox.mock(transactionRepo).expects('startPlaceOrder').once().never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
@@ -205,7 +210,8 @@ describe('start()', () => {
         const agentId = 'agentId';
         const seller = {
             id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
+            name: { ja: 'ja', en: 'ne' },
+            identifier: 'sellerIdentifier'
         };
         const transaction = {
             expires: new Date()
@@ -217,8 +223,8 @@ describe('start()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
 
+        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(transactioCountRepo).expects('incr').never();
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
         sandbox.mock(transactionRepo).expects('startPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
@@ -237,7 +243,8 @@ describe('start()', () => {
         const agentId = 'agentId';
         const seller = {
             id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
+            name: { ja: 'ja', en: 'ne' },
+            identifier: 'sellerIdentifier'
         };
         const transaction = {
             expires: new Date()
@@ -249,8 +256,8 @@ describe('start()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
 
+        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(transactioCountRepo).expects('incr').never();
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
         sandbox.mock(transactionRepo).expects('startPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
@@ -269,7 +276,8 @@ describe('start()', () => {
         const agentId = 'agentId';
         const seller = {
             id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
+            name: { ja: 'ja', en: 'ne' },
+            identifier: 'sellerIdentifier'
         };
         const transaction = {
             expires: new Date()
@@ -281,8 +289,8 @@ describe('start()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
 
+        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(transactioCountRepo).expects('incr').never();
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
         sandbox.mock(transactionRepo).expects('startPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
@@ -303,13 +311,14 @@ describe('start()', () => {
         const agentId = 'agentId';
         const seller = {
             id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
+            name: { ja: 'ja', en: 'ne' },
+            identifier: 'sellerIdentifier'
         };
         const expires = new Date();
         const startResult = new Error('startError');
         const passportToken = 'passportToken';
         const passport = {
-            scope: `placeOrderTransaction.${seller.id}`,
+            scope: `placeOrderTransaction.${seller.identifier}`,
             iat: 123,
             exp: 123,
             iss: process.env.WAITER_PASSPORT_ISSUER,
@@ -319,8 +328,8 @@ describe('start()', () => {
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
+        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
         sandbox.mock(transactionRepo).expects('startPlaceOrder').once().rejects(startResult);
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
@@ -339,13 +348,14 @@ describe('start()', () => {
         const agentId = 'agentId';
         const seller = {
             id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
+            name: { ja: 'ja', en: 'ne' },
+            identifier: 'sellerIdentifier'
         };
         const expires = new Date();
         const startResult = sskts.mongoose.mongo.MongoError.create({ code: 11000 });
         const passportToken = 'passportToken';
         const passport = {
-            scope: `placeOrderTransaction.${seller.id}`,
+            scope: `placeOrderTransaction.${seller.identifier}`,
             iat: 123,
             exp: 123,
             iss: process.env.WAITER_PASSPORT_ISSUER,
@@ -355,8 +365,8 @@ describe('start()', () => {
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
+        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
         sandbox.mock(transactionRepo).expects('startPlaceOrder').once().rejects(startResult);
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
@@ -374,7 +384,8 @@ describe('start()', () => {
         const agentId = 'agentId';
         const seller = {
             id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
+            name: { ja: 'ja', en: 'ne' },
+            identifier: 'sellerIdentifier'
         };
         const transaction = {
             expires: new Date()
@@ -386,8 +397,8 @@ describe('start()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
 
+        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(transactioCountRepo).expects('incr').once().withExactArgs(scope).resolves(maxCountPerUnit + 1);
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
         sandbox.mock(transactionRepo).expects('startPlaceOrder').never();
 
         const startError = await sskts.service.transaction.placeOrderInProgress.start({

@@ -79,6 +79,9 @@ export function start(params: IStartParams):
         transactionRepo: TransactionRepo,
         transactionCountRepo?: TransactionCountRepo
     ) => {
+        // 売り手を取得
+        const seller = await organizationRepo.findMovieTheaterById(params.sellerId);
+
         let passport: waiter.factory.passport.IPassport | undefined;
 
         // WAITER許可証トークンがあれば検証する
@@ -90,7 +93,7 @@ export function start(params: IStartParams):
             }
 
             // スコープを判別
-            if (!validatePassport(passport, params.sellerId)) {
+            if (!validatePassport(passport, seller.identifier)) {
                 throw new factory.errors.Argument('passportToken', 'Invalid passport.');
             }
         } else {
@@ -121,9 +124,6 @@ export function start(params: IStartParams):
                 programName: 'Amazon Cognito'
             };
         }
-
-        // 売り手を取得
-        const seller = await organizationRepo.findMovieTheaterById(params.sellerId);
 
         // 取引ファクトリーで新しい進行中取引オブジェクトを作成
         const transactionAttributes = factory.transaction.placeOrder.createAttributes({
@@ -175,9 +175,9 @@ export function start(params: IStartParams):
  * WAITER許可証の有効性チェック
  * @function
  * @param passport WAITER許可証
- * @param sellerId 販売者ID
+ * @param sellerIdentifier 販売者識別子
  */
-function validatePassport(passport: waiter.factory.passport.IPassport, sellerId: string) {
+function validatePassport(passport: waiter.factory.passport.IPassport, sellerIdentifier: string) {
     // スコープのフォーマットは、placeOrderTransaction.{sellerId}
     const explodedScopeStrings = passport.scope.split('.');
 
@@ -186,7 +186,7 @@ function validatePassport(passport: waiter.factory.passport.IPassport, sellerId:
         // tslint:disable-next-line:no-magic-numbers
         explodedScopeStrings.length === 2 &&
         explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
-        explodedScopeStrings[1] === sellerId // 販売者ID確認
+        explodedScopeStrings[1] === sellerIdentifier // 販売者識別子確認
     );
 }
 
