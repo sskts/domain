@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v23.4.1 - 2017-11-30
+### Changed
+- 注文取引開始時の許可証スコープをCOA劇場コードを使用する形に変更。
+
 ## v23.4.0 - 2017-11-28
 ### Added
 - WAITER許可証で注文取引を開始することができるように対応。許可証については発行者の確認を行う。許可証の重複使用は禁止。
