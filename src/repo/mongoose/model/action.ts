@@ -110,4 +110,9 @@ schema.index(
     }
 );
 
-export default mongoose.model('Action', schema);
+export default mongoose.model('Action', schema)
+    .on('index', (error) => {
+        if (error !== undefined) {
+            console.error(error);
+        }
+    });

@@ -175,4 +175,9 @@ schema.index(
     }
 );
 
-export default mongoose.model('Transaction', schema);
+export default mongoose.model('Transaction', schema)
+    .on('index', (error) => {
+        if (error !== undefined) {
+            console.error(error);
+        }
+    });

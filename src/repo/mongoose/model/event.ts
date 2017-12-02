@@ -108,4 +108,9 @@ schema.index(
     { identifier: 1, typeOf: 1 }
 );
 
-export default mongoose.model('Event', schema);
+export default mongoose.model('Event', schema)
+    .on('index', (error) => {
+        if (error !== undefined) {
+            console.error(error);
+        }
+    });

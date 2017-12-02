@@ -54,4 +54,9 @@ const schema = new mongoose.Schema(
     }
 );
 
-export default mongoose.model('SendGridEvent', schema);
+export default mongoose.model('SendGridEvent', schema)
+    .on('index', (error) => {
+        if (error !== undefined) {
+            console.error(error);
+        }
+    });
