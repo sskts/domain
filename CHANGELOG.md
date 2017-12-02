@@ -5,7 +5,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
-- mongooseのindexイベントからエラーを検知するコードを追加。
 
 ### Changed
 
@@ -17,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+
+## v23.4.2 - 2017-12-02
+### Added
+- mongooseのindexイベントからエラーを検知するコードを追加。
 
 ## v23.4.1 - 2017-11-30
 ### Changed
