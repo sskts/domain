@@ -69,6 +69,8 @@ schema.index(
 );
 
 export default mongoose.model('OwnershipInfo', schema)
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
     .on('index', (error) => {
         if (error !== undefined) {
             console.error(error);

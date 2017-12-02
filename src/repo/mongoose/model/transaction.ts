@@ -160,12 +160,42 @@ schema.index(
     }
 );
 
+schema.index(
+    {
+        typeOf: 1,
+        'result.order.orderNumber': 1
+    },
+    {
+        partialFilterExpression: {
+            'result.order.orderNumber': { $exists: true }
+        }
+    }
+);
+
 // レポート作成時に使用
 schema.index({ startDate: 1 });
 schema.index({ endDate: 1 });
-schema.index({ startDate: 1, endDate: 1 });
-schema.index({ status: 1, startDate: 1 });
-schema.index({ status: 1, endDate: 1 });
+schema.index(
+    { 'seller.id': 1, startDate: 1, endDate: 1 },
+    {
+        partialFilterExpression: {
+            'seller.id': { $exists: true },
+            endDate: { $exists: true }
+        }
+    }
+);
+schema.index(
+    { status: 1, 'seller.id': 1, startDate: 1 }
+);
+schema.index(
+    { status: 1, 'seller.id': 1, endDate: 1 },
+    {
+        partialFilterExpression: {
+            'seller.id': { $exists: true },
+            endDate: { $exists: true }
+        }
+    }
+);
 
 // 取引タイプ指定で取得する場合に使用
 schema.index(
@@ -176,6 +206,8 @@ schema.index(
 );
 
 export default mongoose.model('Transaction', schema)
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
     .on('index', (error) => {
         if (error !== undefined) {
             console.error(error);

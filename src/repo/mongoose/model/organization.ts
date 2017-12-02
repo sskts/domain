@@ -72,7 +72,16 @@ schema.index(
     { typeOf: 1, _id: 1 }
 );
 
+schema.index(
+    {
+        'location.branchCode': 1,
+        typeOf: 1
+    }
+);
+
 export default mongoose.model('Organization', schema)
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
     .on('index', (error) => {
         if (error !== undefined) {
             console.error(error);

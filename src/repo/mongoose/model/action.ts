@@ -89,6 +89,10 @@ const schema = new mongoose.Schema(
     }
 );
 
+schema.index(
+    { typeOf: 1, _id: 1 }
+);
+
 // 取引の承認アクション検索に使用
 schema.index(
     { typeOf: 1, 'object.transactionId': 1 },
@@ -111,6 +115,8 @@ schema.index(
 );
 
 export default mongoose.model('Action', schema)
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
     .on('index', (error) => {
         if (error !== undefined) {
             console.error(error);
