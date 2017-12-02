@@ -93,11 +93,16 @@ const schema = new mongoose.Schema(
 
 // 上映イベント検索に使用
 schema.index(
-    { typeOf: 1, 'superEvent.location.branchCode': 1, startDate: 1 },
+    {
+        typeOf: 1,
+        'superEvent.location.identifier': 1,
+        startDate: 1
+    },
     {
         partialFilterExpression: {
-            'superEvent.location.branchCode': { $exists: true }
-        }
+            'superEvent.location.identifier': { $exists: true }
+        },
+        name: 'searchScreeningEventsConditions'
     }
 );
 schema.index({ typeOf: 1, startDate: 1 });
@@ -109,6 +114,8 @@ schema.index(
 );
 
 export default mongoose.model('Event', schema)
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
     .on('index', (error) => {
         if (error !== undefined) {
             console.error(error);

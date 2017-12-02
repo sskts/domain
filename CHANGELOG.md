@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v23.4.3 - 2017-12-03
+### Changed
+- MongoDBのインデックス調整。
+
 ## v23.4.2 - 2017-12-02
 ### Added
 - mongooseのindexイベントからエラーを検知するコードを追加。
