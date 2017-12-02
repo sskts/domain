@@ -81,4 +81,9 @@ schema.index(
     }
 );
 
-export default mongoose.model('Telemetry', schema);
+export default mongoose.model('Telemetry', schema)
+    .on('index', (error) => {
+        if (error !== undefined) {
+            console.error(error);
+        }
+    });

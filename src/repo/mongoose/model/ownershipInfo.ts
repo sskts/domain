@@ -68,4 +68,9 @@ schema.index(
     { unique: true }
 );
 
-export default mongoose.model('OwnershipInfo', schema);
+export default mongoose.model('OwnershipInfo', schema)
+    .on('index', (error) => {
+        if (error !== undefined) {
+            console.error(error);
+        }
+    });

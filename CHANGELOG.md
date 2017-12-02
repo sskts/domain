@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v23.4.2 - 2017-12-02
+### Added
+- mongooseのindexイベントからエラーを検知するコードを追加。
+
 ## v23.4.1 - 2017-11-30
 ### Changed
 - 注文取引開始時の許可証スコープをCOA劇場コードを使用する形に変更。

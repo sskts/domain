@@ -72,4 +72,9 @@ schema.index(
     { typeOf: 1, _id: 1 }
 );
 
-export default mongoose.model('Organization', schema);
+export default mongoose.model('Organization', schema)
+    .on('index', (error) => {
+        if (error !== undefined) {
+            console.error(error);
+        }
+    });

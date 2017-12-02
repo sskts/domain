@@ -58,4 +58,9 @@ const schema = new mongoose.Schema(
     }
 );
 
-export default mongoose.model('CreativeWork', schema);
+export default mongoose.model('CreativeWork', schema)
+    .on('index', (error) => {
+        if (error !== undefined) {
+            console.error(error);
+        }
+    });

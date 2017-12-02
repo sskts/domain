@@ -116,4 +116,9 @@ schema.index(
     { name: 'orderInquiryKey' }
 );
 
-export default mongoose.model('Order', schema);
+export default mongoose.model('Order', schema)
+    .on('index', (error) => {
+        if (error !== undefined) {
+            console.error(error);
+        }
+    });

@@ -51,11 +51,6 @@ const schema = new mongoose.Schema(
     }
 );
 
-// ID指定でタスク実行に使用
-schema.index(
-    { _id: 1 }
-);
-
 // 取引のタスク検索に使用
 schema.index(
     { 'data.transactionId': 1 },
@@ -81,4 +76,9 @@ schema.index({ createdAt: 1, lastTriedAt: 1 });
 schema.index({ status: 1, createdAt: 1 });
 schema.index({ createdAt: 1 });
 
-export default mongoose.model('Task', schema);
+export default mongoose.model('Task', schema)
+    .on('index', (error) => {
+        if (error !== undefined) {
+            console.error(error);
+        }
+    });
