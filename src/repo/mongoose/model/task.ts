@@ -77,9 +77,9 @@ schema.index({ status: 1, createdAt: 1 });
 schema.index({ createdAt: 1 });
 
 export default mongoose.model('Task', schema)
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore next */
     .on('index', (error) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore next */
         if (error !== undefined) {
             console.error(error);
         }

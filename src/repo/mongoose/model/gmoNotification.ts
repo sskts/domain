@@ -48,9 +48,9 @@ const schema = new mongoose.Schema(
 schema.index({ jobCd: 1, tranDate: 1 });
 
 export default mongoose.model('GMONotification', schema)
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore next */
     .on('index', (error) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore next */
         if (error !== undefined) {
             console.error(error);
         }

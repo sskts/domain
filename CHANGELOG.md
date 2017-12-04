@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 劇場場所検索のレスポンスにcontainsPlace以外の属性が全て含まれるように変更。
 
 ### Deprecated
 
