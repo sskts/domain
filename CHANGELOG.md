@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 ### Fixed
+- COA本予約時の予約金額パラメーターに注文の割引金額が含まれているバグを修正。
 
 ### Security
 
