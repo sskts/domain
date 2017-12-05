@@ -17,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v23.4.4 - 2017-12-05
+### Changed
+- 劇場場所検索のレスポンスにcontainsPlace以外の属性が全て含まれるように変更。
+
+### Fixed
+- COA本予約時の予約金額パラメーターに注文の割引金額が含まれているバグを修正。
+
 ## v23.4.3 - 2017-12-03
 ### Changed
 - MongoDBのインデックス調整。

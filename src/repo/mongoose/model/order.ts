@@ -117,9 +117,9 @@ schema.index(
 );
 
 export default mongoose.model('Order', schema)
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore next */
     .on('index', (error) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore next */
         if (error !== undefined) {
             console.error(error);
         }

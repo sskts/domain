@@ -1,3 +1,5 @@
+// tslint:disable:no-implicit-dependencies
+
 /**
  * stock service test
  * @ignore
@@ -33,6 +35,12 @@ before(() => {
                                 itemOffered: {
                                     reservedTicket: {}
                                 }
+                            },
+                            {
+                                price: 456,
+                                itemOffered: {
+                                    reservedTicket: {}
+                                }
                             }
                         ],
                         updTmpReserveSeatArgs: {
@@ -53,8 +61,15 @@ before(() => {
                         itemOffered: {
                             reservedTicket: {}
                         }
+                    },
+                    {
+                        price: 456,
+                        itemOffered: {
+                            reservedTicket: {}
+                        }
                     }
-                ]
+                ],
+                price: 123
             },
             ownershipInfos: [{}, {}]
         }
@@ -109,7 +124,10 @@ describe('transferSeatReservation()', () => {
                 reserveNum: 123,
                 telNum: '09012345678' // 電話番号は数字のみで本予約されるはず
             }).resolves(null);
-        sandbox.mock(sskts.COA.services.reserve).expects('updReserve').once().resolves();
+        sandbox.mock(sskts.COA.services.reserve).expects('updReserve').once()
+            // 予約金額はOrderのpriceのはず
+            .withArgs(sinon.match({ reserveAmount: existingTransaction.result.order.price }))
+            .resolves();
 
         const result = await sskts.service.stock.transferSeatReservation(
             existingTransaction.id

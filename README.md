@@ -39,7 +39,7 @@ npm install @motionpicture/sskts-domain
 | `WAITER_SECRET`                            | true     |                                  | WAITER許可証トークン秘密鍵   |
 | `WAITER_PASSPORT_ISSUER`                   | true     | https://sskts-waiter-example.com | WAITER許可証発行者       |
 
-### 上映イベント検索サンプル
+### Search individual screening events sample
 
 ```js
 const sskts = require('@motionpicture/sskts-domain');
@@ -67,11 +67,11 @@ sskts.service.event.searchIndividualScreeningEvents({
 
 ## Code Samples
 
-コードサンプルは [example](https://github.com/motionpicture/sskts-domain/tree/master/example) にあります。
+Code sample are [here](https://github.com/motionpicture/sskts-domain/tree/master/example).
 
 ## Jsdoc
 
-`npm run doc`でjsdocを作成できます。./docに出力されます。
+`npm run doc` emits jsdoc to ./doc.
 
 ## License
 

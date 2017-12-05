@@ -68,7 +68,7 @@ export function transferSeatReservation(transactionId: string) {
 
         const updTmpReserveSeatArgs = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatArgs;
         const updTmpReserveSeatResult = (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).updTmpReserveSeatResult;
-        const acceptedOffers = (<factory.transaction.placeOrder.IResult>transaction.result).order.acceptedOffers;
+        const order = (<factory.transaction.placeOrder.IResult>transaction.result).order;
 
         const customerContact = transaction.object.customerContact;
         if (customerContact === undefined) {
@@ -107,11 +107,8 @@ export function transferSeatReservation(transactionId: string) {
                 reserveNameJkana: `${customerContact.familyName}　${customerContact.givenName}`,
                 telNum: telNum,
                 mailAddr: customerContact.email,
-                reserveAmount: acceptedOffers.reduce(
-                    (a, b) => a + b.price,
-                    0
-                ),
-                listTicket: acceptedOffers.map((offer) => offer.itemOffered.reservedTicket.coaTicketInfo)
+                reserveAmount: order.price, // デフォルトのpriceCurrencyがJPYなのでこれでよし
+                listTicket: order.acceptedOffers.map((offer) => offer.itemOffered.reservedTicket.coaTicketInfo)
             });
         }
     };

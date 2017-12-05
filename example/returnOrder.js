@@ -18,9 +18,9 @@ async function main(confirmationNumber) {
 
     // まず注文照会
     const orderInquiryKey = {
-        theaterCode: '118',
+        theaterCode: '012',
         confirmationNumber: confirmationNumber,
-        telephone: '+819012345678'
+        telephone: '+81362778824'
     };
     const order = await orderRepo.findByOrderInquiryKey(orderInquiryKey);
     console.log('order found.', order);
@@ -178,7 +178,14 @@ async function main(confirmationNumber) {
     // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
     const phoneUtil = googleLibphonenumber.PhoneNumberUtil.getInstance();
     const phoneNumber = phoneUtil.parse(orderInquiryKey.telephone, 'JP');
-    const telNum = phoneUtil.format(phoneNumber, googleLibphonenumber.PhoneNumberFormat.NATIONAL);
+    let telNum = phoneUtil.format(phoneNumber, googleLibphonenumber.PhoneNumberFormat.NATIONAL);
+    // COAでは数字のみ受け付けるので数字以外を除去
+    telNum = telNum.replace(/[^\d]/g, '');
+    console.log({
+        theaterCode: orderInquiryKey.theaterCode,
+        reserveNum: orderInquiryKey.confirmationNumber,
+        telNum: telNum
+    });
     const stateReserveResult = await sskts.COA.services.reserve.stateReserve({
         theaterCode: orderInquiryKey.theaterCode,
         reserveNum: orderInquiryKey.confirmationNumber,

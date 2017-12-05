@@ -18,7 +18,6 @@ export abstract class Repository {
 
 /**
  * 場所レポジトリー
- *
  * @class PlaceRepository
  */
 export class MongoRepository {
@@ -29,7 +28,6 @@ export class MongoRepository {
     }
 
     /**
-     * save a movie theater
      * 劇場を保管する
      * @param movieTheater movieTheater object
      */
@@ -45,6 +43,8 @@ export class MongoRepository {
 
     /**
      * 劇場検索
+     * @param {object} searchConditions 検索条件
+     * @return {Promise<factory.place.movieTheater.IPlaceWithoutScreeningRoom[]>}
      */
     public async searchMovieTheaters(
         searchConditions: {}
@@ -55,31 +55,19 @@ export class MongoRepository {
         };
         debug('searchConditions:', searchConditions);
 
-        // todo 検索条件を指定できるように改修
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO 検索条件を指定できるように改修
 
         debug('finding places...', conditions);
 
         // containsPlaceを含めるとデータサイズが大きくなるので、検索結果には含めない
-        return this.placeModel.find(conditions, 'typeOf branchCode name kanaName url')
+        return this.placeModel.find(
+            conditions,
+            { containsPlace: 0 }
+        )
             .setOptions({ maxTimeMS: 10000 })
             .exec()
-            .then((docs) => {
-                return docs.map((doc) => {
-                    const movieTheater = <factory.place.movieTheater.IPlaceWithoutScreeningRoom>doc.toObject();
-
-                    return {
-                        typeOf: movieTheater.typeOf,
-                        identifier: movieTheater.identifier,
-                        screenCount: movieTheater.screenCount,
-                        branchCode: movieTheater.branchCode,
-                        name: movieTheater.name,
-                        kanaName: movieTheater.kanaName,
-                        url: movieTheater.url,
-                        telephone: movieTheater.telephone
-                    };
-                });
-
-            });
+            .then((docs) => docs.map((doc) => <factory.place.movieTheater.IPlaceWithoutScreeningRoom>doc.toObject()));
     }
 
     /**
