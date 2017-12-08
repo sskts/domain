@@ -109,7 +109,7 @@ export function start(params: IStartParams):
 
             const nextCount = await transactionCountRepo.incr(params.scope);
             if (nextCount > params.maxCountPerUnit) {
-                throw new factory.errors.ServiceUnavailable('Transactions temporarily unavailable.');
+                throw new factory.errors.RateLimitExceeded('PlaceOrder transactions rate limit exceeded.');
             }
         }
 

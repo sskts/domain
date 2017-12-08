@@ -380,7 +380,7 @@ describe('start()', () => {
         sandbox.verify();
     });
 
-    it('取引数制限を超えていれば、エラーが投げられるはず', async () => {
+    it('取引数制限を超えていれば、RateLimitExceededエラーが投げられるはず', async () => {
         const agentId = 'agentId';
         const seller = {
             id: 'sellerId',
@@ -411,7 +411,7 @@ describe('start()', () => {
         })(organizationRepo, transactionRepo, transactioCountRepo)
             .catch((err) => err);
 
-        assert(startError instanceof sskts.factory.errors.ServiceUnavailable);
+        assert(startError instanceof sskts.factory.errors.RateLimitExceeded);
         sandbox.verify();
     });
 });
