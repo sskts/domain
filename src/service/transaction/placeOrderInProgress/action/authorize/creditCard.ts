@@ -114,7 +114,7 @@ export function create(
                 // GMO流量制限オーバーエラーの場合
                 const serviceUnavailableError = error.errors.find((gmoError: any) => gmoError.info.match(/^E92000001|E92000002$/));
                 if (serviceUnavailableError !== undefined) {
-                    throw new factory.errors.ServiceUnavailable(serviceUnavailableError.userMessage);
+                    throw new factory.errors.RateLimitExceeded(serviceUnavailableError.userMessage);
                 }
 
                 // オーダーID重複エラーの場合

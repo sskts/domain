@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 注文取引レート制限超過時のエラーをRateLimitExceededに変更。
+- クレジットカード取引レート制限超過時のエラーをRateLimitExceededに変更。
 
 ### Deprecated
 

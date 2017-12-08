@@ -1,3 +1,5 @@
+// tslint:disable:no-implicit-dependencies
+
 /**
  * placeOrderInProgress transaction service test
  * @ignore
@@ -281,11 +283,11 @@ describe('action.authorize.creditCard.create()', () => {
             creditCard
         )(authorizeActionRepo, organizationRepo, transactionRepo).catch((err) => err);
 
-        assert(result instanceof sskts.factory.errors.ServiceUnavailable);
+        assert(result instanceof sskts.factory.errors.RateLimitExceeded);
         sandbox.verify();
     });
 
-    it('GMOでオーダーID重複エラーが発生すれば、承認アクションを諦めて、ServiceUnavailableエラーとなるはず', async () => {
+    it('GMOでオーダーID重複エラーが発生すれば、承認アクションを諦めて、AlreadyInUseエラーとなるはず', async () => {
         const agent = {
             id: 'agentId'
         };
