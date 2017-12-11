@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- ムビチケ着券INのサイトコードバリデーションを池袋の劇場コードに合わせて調整。
 
 ### Deprecated
 
