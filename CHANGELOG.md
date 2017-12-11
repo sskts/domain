@@ -7,7 +7,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
-- ムビチケ着券INのサイトコードバリデーションを池袋の劇場コードに合わせて調整。
 
 ### Deprecated
 
@@ -17,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+
+## v23.4.6 - 2017-12-11
+### Changed
+- ムビチケ着券INのサイトコードバリデーションを池袋の劇場コードに合わせて調整。
 
 ## v23.4.5 - 2017-12-08
 ### Changed
