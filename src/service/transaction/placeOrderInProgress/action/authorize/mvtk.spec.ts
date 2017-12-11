@@ -1,3 +1,4 @@
+// tslint:disable:no-implicit-dependencies
 /**
  * placeOrderInProgress transaction service test
  * @ignore
@@ -33,7 +34,7 @@ describe('action.authorize.mvtk.create()', () => {
         };
         const authorizeObject = {
             seatInfoSyncIn: {
-                stCd: '18',
+                stCd: '1',
                 skhnCd: '1234500',
                 screnCd: '01',
                 knyknrNoInfo: [
@@ -69,7 +70,7 @@ describe('action.authorize.mvtk.create()', () => {
             result: {
                 acceptedOffers: [],
                 updTmpReserveSeatArgs: {
-                    theaterCode: '118',
+                    theaterCode: '001',
                     titleCode: '12345',
                     titleBranchNum: '0',
                     screenCode: '01'

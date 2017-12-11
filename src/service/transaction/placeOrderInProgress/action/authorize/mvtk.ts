@@ -100,9 +100,9 @@ export function create(
             throw new factory.errors.Argument('authorizeActionResult', 'knyknrNoInfo not matched with seat reservation authorizeAction');
         }
 
-        // サイトコードが一致しているか (last two figures of theater code)
+        // サイトコードが一致しているか (COAの劇場コードから頭の0をとった値)
         // tslint:disable-next-line:no-magic-numbers
-        const stCdShouldBe = seatReservationAuthorizeActionResult.updTmpReserveSeatArgs.theaterCode.slice(-2);
+        const stCdShouldBe = parseInt(seatReservationAuthorizeActionResult.updTmpReserveSeatArgs.theaterCode.slice(-2), 10).toString();
         if (authorizeObject.seatInfoSyncIn.stCd !== stCdShouldBe) {
             throw new factory.errors.Argument('authorizeActionResult', 'stCd not matched with seat reservation authorizeAction');
         }
