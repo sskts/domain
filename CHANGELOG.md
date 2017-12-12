@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v23.4.7 - 2017-12-12
+### Fixed
+- 要メガネ上映イベントをムビチケで購入する際のメガネ代金連携バグ修正。
+
 ## v23.4.6 - 2017-12-11
 ### Changed
 - ムビチケ着券INのサイトコードバリデーションを池袋の劇場コードに合わせて調整。

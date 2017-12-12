@@ -144,7 +144,7 @@ async function validateOffers(
                     addPrice: availableSalesTicket.addPrice,
                     disPrice: 0,
                     salePrice: availableSalesTicket.addPrice,
-                    addGlasses: availableSalesTicket.addPriceGlasses,
+                    addGlasses: 0, // まずメガネ代金なしでデータをセット
                     mvtkAppPrice: offer.ticketInfo.mvtkAppPrice,
                     ticketCount: 1,
                     seatNum: offer.seatNumber,
