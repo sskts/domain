@@ -339,7 +339,6 @@ export function create(
                 }
             }
 
-            console.error('COA.services.reserve.updTmpReserveSeat() threw', error);
             throw new factory.errors.ServiceUnavailable('Unexepected error occurred.');
         }
 
