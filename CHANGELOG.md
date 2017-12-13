@@ -7,7 +7,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
-- 承認アクション実行時の外部サービスエラーの標準出力をオフに変更。
 
 ### Deprecated
 
@@ -17,6 +16,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+
+## v23.4.8 - 2017-12-13
+### Changed
+- 承認アクション実行時の外部サービスエラーの標準出力をオフに変更。
 
 ## v23.4.7 - 2017-12-12
 ### Fixed
