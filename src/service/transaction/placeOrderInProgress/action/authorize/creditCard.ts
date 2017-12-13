@@ -100,7 +100,6 @@ export function create(
             execTranResult = await GMO.services.credit.execTran(execTranArgs);
             debug('execTranResult:', execTranResult);
         } catch (error) {
-            console.error(error);
             // actionにエラー結果を追加
             try {
                 const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
@@ -123,13 +122,9 @@ export function create(
                     throw new factory.errors.AlreadyInUse('action.object', ['orderId'], duplicateError.userMessage);
                 }
 
-                console.error('action.authorize.creditCard.create() threw', error);
-
                 // その他のGMOエラーに場合、なんらかのクライアントエラー
                 throw new factory.errors.Argument('payment');
             }
-
-            console.error('action.authorize.creditCard.create() threw', error);
 
             throw new Error(error);
         }
@@ -179,7 +174,7 @@ export function cancel(
             });
             debug('alterTran processed', GMO.utils.util.JobCd.Void);
         } catch (error) {
-            console.error('cancelCreditCardAuth threw', error);
+            // no op
         }
     };
 }
