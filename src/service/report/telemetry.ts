@@ -35,6 +35,46 @@ export type TaskAndTelemetryAndTransactionOperation<T> = (
 const debug = createDebug('sskts-domain:service:report:telemetry');
 const TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS = 60; // 測定単位時間(秒)
 
+export interface IGlobalFlowTaskResultByName {
+    name: factory.taskName;
+    /**
+     * 集計期間中に作成されたタスク数
+     */
+    numberOfCreated: number;
+    /**
+     * 集計期間中に実行されたタスク数
+     */
+    numberOfExecuted: number;
+    /**
+     * 集計期間中に中止されたタスク数
+     */
+    numberOfAborted: number;
+    /**
+     * 合計待ち時間
+     */
+    totalLatencyInMilliseconds: number;
+    /**
+     * 最大待ち時間
+     */
+    maxLatencyInMilliseconds: number;
+    /**
+     * 最小待ち時間
+     */
+    minLatencyInMilliseconds: number;
+    /**
+     * 合計試行回数
+     */
+    totalNumberOfTrials: number;
+    /**
+     * 最大試行回数
+     */
+    maxNumberOfTrials: number;
+    /**
+     * 最小試行回数
+     */
+    minNumberOfTrials: number;
+}
+
 /**
  * フローデータ
  * @export
@@ -43,44 +83,7 @@ const TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS = 60; // 測定単位時間(秒)
  * @see https://en.wikipedia.org/wiki/Stock_and_flow
  */
 export interface IGlobalFlowResult {
-    tasks: {
-        /**
-         * 集計期間中に作成されたタスク数
-         */
-        numberOfCreated: number;
-        /**
-         * 集計期間中に実行されたタスク数
-         */
-        numberOfExecuted: number;
-        /**
-         * 集計期間中に中止されたタスク数
-         */
-        numberOfAborted: number;
-        /**
-         * 合計待ち時間
-         */
-        totalLatencyInMilliseconds: number;
-        /**
-         * 最大待ち時間
-         */
-        maxLatencyInMilliseconds: number;
-        /**
-         * 最小待ち時間
-         */
-        minLatencyInMilliseconds: number;
-        /**
-         * 合計試行回数
-         */
-        totalNumberOfTrials: number;
-        /**
-         * 最大試行回数
-         */
-        maxNumberOfTrials: number;
-        /**
-         * 最小試行回数
-         */
-        minNumberOfTrials: number;
-    };
+    tasks: IGlobalFlowTaskResultByName[];
     measuredFrom: Date;
     measuredThrough: Date;
 }
@@ -731,47 +734,62 @@ function createGlobalFlow(
     return async (
         taskRepo: TaskRepo
     ) => {
-        const numberOfTasksCreated = await taskRepo.taskModel.count({
-            createdAt: {
-                $gte: measuredFrom,
-                $lt: measuredThrough
-            }
-        }).exec();
+        const targetTaskNames = [
+            factory.taskName.CreateOrder,
+            factory.taskName.CreateOwnershipInfos,
+            factory.taskName.SendEmailNotification,
+            factory.taskName.SettleCreditCard,
+            factory.taskName.SettleMvtk,
+            factory.taskName.SettleSeatReservation
+        ];
 
-        // 実行中止ステータスで、最終試行日時が範囲にあるものを実行タスク数とする
-        const numberOfTasksAborted = await taskRepo.taskModel.count({
-            lastTriedAt: {
-                $gte: measuredFrom,
-                $lt: measuredThrough
-            },
-            status: factory.taskStatus.Aborted
-        }).exec();
+        const taskResults = await Promise.all(targetTaskNames.map(async (taskName) => {
+            const numberOfTasksCreated = await taskRepo.taskModel.count({
+                name: taskName,
+                createdAt: {
+                    $gte: measuredFrom,
+                    $lt: measuredThrough
+                }
+            }).exec();
 
-        // 実行済みステータスで、最終試行日時が範囲にあるものを実行タスク数とする
-        const executedTasks = await taskRepo.taskModel.find(
-            {
+            // 実行中止ステータスで、最終試行日時が範囲にあるものを実行タスク数とする
+            const numberOfTasksAborted = await taskRepo.taskModel.count({
+                name: taskName,
                 lastTriedAt: {
                     $gte: measuredFrom,
                     $lt: measuredThrough
                 },
-                status: factory.taskStatus.Executed
-            },
-            'runsAt lastTriedAt numberOfTried'
-        ).exec().then((docs) => docs.map((doc) => <factory.task.ITask>doc.toObject()));
-        const numberOfTasksExecuted = executedTasks.length;
+                status: factory.taskStatus.Aborted
+            }).exec();
 
-        const latencies = executedTasks.map((task) => moment(<Date>task.lastTriedAt).diff(moment(task.runsAt, 'milliseconds')));
-        const totalLatency = latencies.reduce((a, b) => a + b, 0);
-        const maxLatency = latencies.reduce((a, b) => Math.max(a, b), 0);
-        const minLatency = latencies.reduce((a, b) => Math.min(a, b), (numberOfTasksExecuted > 0) ? latencies[0] : 0);
+            // 実行済みステータスで、最終試行日時が範囲にあるものを実行タスク数とする
+            const executedTasks = await taskRepo.taskModel.find(
+                {
+                    name: taskName,
+                    lastTriedAt: {
+                        $gte: measuredFrom,
+                        $lt: measuredThrough
+                    },
+                    status: factory.taskStatus.Executed
+                },
+                'runsAt lastTriedAt numberOfTried'
+            ).exec().then((docs) => docs.map((doc) => <factory.task.ITask>doc.toObject()));
+            const numberOfTasksExecuted = executedTasks.length;
 
-        const numbersOfTrials = await Promise.all(executedTasks.map((task) => task.numberOfTried));
-        const totalNumberOfTrials = numbersOfTrials.reduce((a, b) => a + b, 0);
-        const maxNumberOfTrials = numbersOfTrials.reduce((a, b) => Math.max(a, b), 0);
-        const minNumberOfTrials = numbersOfTrials.reduce((a, b) => Math.min(a, b), (numberOfTasksExecuted > 0) ? numbersOfTrials[0] : 0);
+            const latencies = executedTasks.map((task) => moment(<Date>task.lastTriedAt).diff(moment(task.runsAt, 'milliseconds')));
+            const totalLatency = latencies.reduce((a, b) => a + b, 0);
+            const maxLatency = latencies.reduce((a, b) => Math.max(a, b), 0);
+            const minLatency = latencies.reduce((a, b) => Math.min(a, b), (numberOfTasksExecuted > 0) ? latencies[0] : 0);
 
-        return {
-            tasks: {
+            const numbersOfTrials = await Promise.all(executedTasks.map((task) => task.numberOfTried));
+            const totalNumberOfTrials = numbersOfTrials.reduce((a, b) => a + b, 0);
+            const maxNumberOfTrials = numbersOfTrials.reduce((a, b) => Math.max(a, b), 0);
+            const minNumberOfTrials = numbersOfTrials.reduce(
+                (a, b) => Math.min(a, b), (numberOfTasksExecuted > 0) ? numbersOfTrials[0] : 0
+            );
+
+            return {
+                name: taskName,
                 numberOfCreated: numberOfTasksCreated,
                 numberOfExecuted: numberOfTasksExecuted,
                 numberOfAborted: numberOfTasksAborted,
@@ -781,7 +799,11 @@ function createGlobalFlow(
                 totalNumberOfTrials: totalNumberOfTrials,
                 maxNumberOfTrials: maxNumberOfTrials,
                 minNumberOfTrials: minNumberOfTrials
-            },
+            };
+        }));
+
+        return {
+            tasks: taskResults,
             measuredFrom: measuredFrom,
             measuredThrough: measuredThrough
         };

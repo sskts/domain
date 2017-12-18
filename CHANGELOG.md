@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- タスクのフローデータをタスク名別に集計するように変更。
 
 ### Deprecated
 
