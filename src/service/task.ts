@@ -19,7 +19,7 @@ export type TaskOperation<T> = (taskRepository: TaskRepository) => Promise<T>;
 export type TaskAndConnectionOperation<T> = (
     taskRepository: TaskRepository,
     connection: mongoose.Connection,
-    pecorinoAuthClient: pecorinoapi.auth.ClientCredentials
+    pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials
 ) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:task');
@@ -38,7 +38,7 @@ export function executeByName(taskName: factory.taskName): TaskAndConnectionOper
     return async (
         taskRepository: TaskRepository,
         connection: mongoose.Connection,
-        pecorinoAuthClient: pecorinoapi.auth.ClientCredentials
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials
     ) => {
         // 未実行のタスクを取得
         let task: factory.task.ITask | null = null;
@@ -68,10 +68,14 @@ export function execute(task: factory.task.ITask): TaskAndConnectionOperation<vo
     debug('executing a task...', task);
     const now = new Date();
 
-    return async (taskRepository: TaskRepository, connection: mongoose.Connection) => {
+    return async (
+        taskRepository: TaskRepository,
+        connection: mongoose.Connection,
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials
+    ) => {
         try {
             // タスク名の関数が定義されていなければ、TypeErrorとなる
-            await (<any>TaskFunctionsService)[task.name](task.data)(connection);
+            await (<any>TaskFunctionsService)[task.name](task.data)(connection, pecorinoAuthClient);
 
             const result = {
                 executedAt: now,

@@ -60,6 +60,18 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
+                taskAttributes.push({
+                    name: <any>'executePecorinoPayAction',
+                    status: factory.taskStatus.Ready,
+                    runsAt: new Date(), // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transaction.id
+                    }
+                });
                 taskAttributes.push(factory.task.settleSeatReservation.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
