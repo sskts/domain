@@ -4,6 +4,7 @@
  * @namespace service/task
  */
 
+import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
@@ -15,7 +16,11 @@ import * as NotificationService from './notification';
 import * as TaskFunctionsService from './taskFunctions';
 
 export type TaskOperation<T> = (taskRepository: TaskRepository) => Promise<T>;
-export type TaskAndConnectionOperation<T> = (taskRepository: TaskRepository, connection: mongoose.Connection) => Promise<T>;
+export type TaskAndConnectionOperation<T> = (
+    taskRepository: TaskRepository,
+    connection: mongoose.Connection,
+    pecorinoAuthClient: pecorinoapi.auth.ClientCredentials
+) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:task');
 
@@ -30,7 +35,11 @@ export const ABORT_REPORT_SUBJECT = 'One task aboted !!!';
  * @memberof service/task
  */
 export function executeByName(taskName: factory.taskName): TaskAndConnectionOperation<void> {
-    return async (taskRepository: TaskRepository, connection: mongoose.Connection) => {
+    return async (
+        taskRepository: TaskRepository,
+        connection: mongoose.Connection,
+        pecorinoAuthClient: pecorinoapi.auth.ClientCredentials
+    ) => {
         // 未実行のタスクを取得
         let task: factory.task.ITask | null = null;
         try {
@@ -42,7 +51,7 @@ export function executeByName(taskName: factory.taskName): TaskAndConnectionOper
 
         // タスクがなければ終了
         if (task !== null) {
-            await execute(task)(taskRepository, connection);
+            await execute(task)(taskRepository, connection, pecorinoAuthClient);
         }
     };
 }

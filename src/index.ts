@@ -7,6 +7,7 @@
 
 import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
+import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as ssktsFactory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
@@ -30,6 +31,7 @@ import * as UtilService from './service/util';
 import { MongoRepository as AuthorizeActionRepo } from './repo/action/authorize';
 import { MongoRepository as CreditCardAuthorizeActionRepo } from './repo/action/authorize/creditCard';
 import { MongoRepository as MvtkAuthorizeActionRepo } from './repo/action/authorize/mvtk';
+import { MongoRepository as PecorinoAuthorizeActionRepo } from './repo/action/authorize/pecorino';
 import { MongoRepository as SeatReservationAuthorizeActionRepo } from './repo/action/authorize/seatReservation';
 import { MongoRepository as PrintActionRepo } from './repo/action/print';
 import { MongoRepository as ClientRepo } from './repo/client';
@@ -96,12 +98,15 @@ export import COA = COA;
  */
 export import GMO = GMO;
 
+export import pecorinoapi = pecorinoapi;
+
 export namespace repository {
     export namespace action {
         export class Authorize extends AuthorizeActionRepo { }
         export namespace authorize {
             export class CreditCard extends CreditCardAuthorizeActionRepo { }
             export class Mvtk extends MvtkAuthorizeActionRepo { }
+            export class Pecorino extends PecorinoAuthorizeActionRepo { }
             export class SeatReservation extends SeatReservationAuthorizeActionRepo { }
         }
         export class Print extends PrintActionRepo { }

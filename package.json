@@ -11,6 +11,7 @@
   "dependencies": {
     "@motionpicture/coa-service": "^4.0.8",
     "@motionpicture/gmo-service": "^4.1.0",
+    "@motionpicture/pecorino-api-nodejs-client": "0.0.0-alpha.0",
     "@motionpicture/sskts-factory": "^2.3.1",
     "@motionpicture/waiter-domain": "^2.0.2",
     "@sendgrid/mail": "^6.1.4",

@@ -11,6 +11,7 @@ import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 
 import { MongoRepository as CreditCardAuthorizeActionRepo } from '../../repo/action/authorize/creditCard';
 import { MongoRepository as MvtkAuthorizeActionRepo } from '../../repo/action/authorize/mvtk';
+import { MongoRepository as PecorinoAuthorizeActionRepo } from '../../repo/action/authorize/pecorino';
 import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../../repo/action/authorize/seatReservation';
 import { MongoRepository as OrganizationRepo } from '../../repo/organization';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
@@ -18,6 +19,7 @@ import { MongoRepository as TransactionCountRepo } from '../../repo/transactionC
 
 import * as CreditCardAuthorizeActionService from './placeOrderInProgress/action/authorize/creditCard';
 import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/authorize/mvtk';
+import * as PecorinoAuthorizeActionService from './placeOrderInProgress/action/authorize/pecorino';
 import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/action/authorize/seatReservation';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress');
@@ -220,6 +222,12 @@ export namespace action {
          * @memberof service.transaction.placeOrderInProgress.action.authorize
          */
         export import seatReservation = SeatReservationAuthorizeActionService;
+        /**
+         * Pecorino承認アクションサービス
+         * @export
+         * @memberof service.transaction.placeOrderInProgress.action.pecorino
+         */
+        export import pecorino = PecorinoAuthorizeActionService;
     }
 }
 
@@ -340,7 +348,8 @@ export function confirm(
         creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo,
         mvtkAuthorizeActionRepo: MvtkAuthorizeActionRepo,
         seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
-        transactionRepo: TransactionRepo
+        transactionRepo: TransactionRepo,
+        pecorinoAuthorizeActionRepo?: PecorinoAuthorizeActionRepo
     ) => {
         const now = new Date();
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
@@ -354,6 +363,11 @@ export function confirm(
             ... await mvtkAuthorizeActionRepo.findByTransactionId(transactionId),
             ... await seatReservationAuthorizeActionRepo.findByTransactionId(transactionId)
         ];
+
+        // Pecorino決済可能な場合
+        if (pecorinoAuthorizeActionRepo !== undefined) {
+            authorizeActions.push(...await pecorinoAuthorizeActionRepo.findByTransactionId(transactionId));
+        }
 
         // 万が一このプロセス中に他処理が発生してもそれらを無視するように、endDateでフィルタリング
         authorizeActions = authorizeActions.filter(

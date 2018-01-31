@@ -5,6 +5,7 @@
  */
 
 import * as GMO from '@motionpicture/gmo-service';
+import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
@@ -14,6 +15,34 @@ import { MongoRepository as TransactionRepo } from '../repo/transaction';
 const debug = createDebug('sskts-domain:service:sales');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
+
+/**
+ * Pecorino支払実行
+ * @export
+ * @function
+ * @memberof service.sales
+ * @param {string} transactionId 取引ID
+ */
+export function settlePecorinoAuth(transactionId: string) {
+    return async (transactionRepository: TransactionRepo, pecorinoAuthClient: pecorinoapi.auth.ClientCredentials) => {
+        const transaction = await transactionRepository.findPlaceOrderById(transactionId);
+        const authorizeActions = transaction.object.authorizeActions
+            .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((action) => action.purpose.typeOf === <any>'Pecorino');
+
+        await Promise.all(authorizeActions.map(async (authorizeAction) => {
+            // 支払取引確定
+            const payTransactionService = new pecorinoapi.service.transaction.Pay({
+                endpoint: authorizeAction.result.pecorinoEndpoint,
+                auth: pecorinoAuthClient
+            });
+
+            await payTransactionService.confirm({
+                transactionId: authorizeAction.result.pecorinoTransaction.id
+            });
+        }));
+    };
+}
 
 /**
  * クレジットカードオーソリ取消
