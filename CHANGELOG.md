@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ## Unreleased
 ### Added
 - 決済方法にPecorino口座決済を追加。
+- Pecorino決済時のキャッシュバックを実装。
 
 ### Changed
 

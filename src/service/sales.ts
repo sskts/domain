@@ -8,6 +8,7 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
+import * as moment from 'moment';
 
 import { MongoRepository as CreditCardAuthorizeActionRepo } from '../repo/action/authorize/creditCard';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
@@ -40,6 +41,29 @@ export function settlePecorinoAuth(transactionId: string) {
             await payTransactionService.confirm({
                 transactionId: authorizeAction.result.pecorinoTransaction.id
             });
+
+            // Pecorino決済の場合キャッシュバック
+            const CACHBACK = 100;
+            const customerContact = <factory.person.IContact>transaction.object.customerContact;
+            const depositTransactionService = new pecorinoapi.service.transaction.Deposit({
+                endpoint: authorizeAction.result.pecorinoEndpoint,
+                auth: pecorinoAuthClient
+            });
+            const depositTransaction = await depositTransactionService.start({
+                toAccountId: authorizeAction.result.pecorinoTransaction.object.accountId,
+                expires: moment().add(1, 'minutes').toDate(),
+                agent: transaction.seller,
+                recipient: {
+                    typeOf: transaction.agent.typeOf,
+                    id: transaction.agent.id,
+                    name: `${customerContact.givenName} ${customerContact.familyName}`,
+                    url: transaction.agent.url
+                },
+                price: CACHBACK,
+                notes: 'sskts incentive'
+            });
+
+            await depositTransactionService.confirm({ transactionId: depositTransaction.id });
         }));
     };
 }

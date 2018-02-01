@@ -20,14 +20,6 @@ export type ICreateOperation<T> = (
 ) => Promise<T>;
 
 /**
- * オーソリを取得するクレジットカード情報インターフェース
- */
-export type ICreditCard4authorizeAction =
-    factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw |
-    factory.paymentMethod.paymentCard.creditCard.IUncheckedCardTokenized |
-    factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember;
-
-/**
  * Pecorino残高差し押さえ
  */
 export function create(
