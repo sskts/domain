@@ -25,6 +25,7 @@ import * as StockService from './service/stock';
 import * as TaskService from './service/task';
 import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
 import * as PlaceOrderInProgressTransactionService from './service/transaction/placeOrderInProgress';
+import * as ReturnOrderTransactionService from './service/transaction/returnOrder';
 import * as UtilService from './service/util';
 
 import { MongoRepository as AuthorizeActionRepo } from './repo/action/authorize';
@@ -143,6 +144,7 @@ export namespace service {
     export namespace transaction {
         export import placeOrder = PlaceOrderTransactionService;
         export import placeOrderInProgress = PlaceOrderInProgressTransactionService;
+        export import returnOrder = ReturnOrderTransactionService;
     }
     export import util = UtilService;
 }

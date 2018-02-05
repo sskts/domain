@@ -99,6 +99,41 @@ export function settleCreditCardAuth(transactionId: string) {
     };
 }
 
+export function returnCreditCardSales(transactionId: string) {
+    return async (transactionRepository: TransactionRepo) => {
+        const transaction = await transactionRepository.findReturnOrderById(transactionId);
+        const placeOrderTransaction = transaction.object.transaction;
+        const authorizeActions = placeOrderTransaction.object.authorizeActions
+            .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+
+        await Promise.all(authorizeActions.map(async (authorizeAction) => {
+            // 取引状態参照
+            const gmoTrade = await GMO.services.credit.searchTrade({
+                shopId: authorizeAction.result.entryTranArgs.shopId,
+                shopPass: authorizeAction.result.entryTranArgs.shopPass,
+                orderId: authorizeAction.result.entryTranArgs.orderId
+            });
+            debug('gmoTrade is', gmoTrade);
+
+            // 実売上状態であれば取消
+            // 手数料がかかるのであれば、ChangeTran、かからないのであれば、AlterTran
+            if (gmoTrade.status === GMO.utils.util.Status.Sales) {
+                debug('canceling credit card sales...', authorizeAction);
+                // const SERVICE_CHARGE = 100;
+                const alterTranResult = await GMO.services.credit.alterTran({
+                    shopId: authorizeAction.result.entryTranArgs.shopId,
+                    shopPass: authorizeAction.result.entryTranArgs.shopPass,
+                    accessId: gmoTrade.accessId,
+                    accessPass: gmoTrade.accessPass,
+                    jobCd: GMO.utils.util.JobCd.Void
+                });
+                debug('GMO alterTranResult is', alterTranResult);
+            }
+        }));
+    };
+}
+
 /**
  * ムビチケ着券取消し
  * @export

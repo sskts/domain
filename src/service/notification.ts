@@ -31,7 +31,7 @@ export const LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify';
  */
 export function sendEmail(emailMessage: factory.creativeWork.message.email.ICreativeWork): Operation<void> {
     return async () => {
-        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+        sgMail.setApiKey(<string>process.env.SENDGRID_API_KEY);
         const msg = {
             to: {
                 name: emailMessage.toRecipient.name,

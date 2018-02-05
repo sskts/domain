@@ -24,7 +24,7 @@ export class MongoRepository {
     public async giveUp(
         actionId: string,
         error: any
-    ): Promise<factory.action.authorize.IAction> {
+    ): Promise<factory.action.authorize.IAction<any, any>> {
         return this.actionModel.findByIdAndUpdate(
             actionId,
             {
@@ -38,7 +38,7 @@ export class MongoRepository {
                 throw new factory.errors.NotFound('authorizeAction');
             }
 
-            return <factory.action.authorize.IAction>doc.toObject();
+            return <factory.action.authorize.IAction<any, any>>doc.toObject();
         });
     }
 
@@ -46,11 +46,11 @@ export class MongoRepository {
      * 取引内の承認アクションを取得する
      * @param transactionId 取引ID
      */
-    public async findByTransactionId(transactionId: string): Promise<factory.action.authorize.IAction[]> {
+    public async findByTransactionId(transactionId: string): Promise<factory.action.authorize.IAction<any, any>[]> {
         return this.actionModel.find({
             typeOf: factory.actionType.AuthorizeAction,
             'object.transactionId': transactionId,
             'purpose.typeOf': this.purpose
-        }).exec().then((docs) => docs.map((doc) => <factory.action.authorize.IAction>doc.toObject()));
+        }).exec().then((docs) => docs.map((doc) => <factory.action.authorize.IAction<any, any>>doc.toObject()));
     }
 }

@@ -100,3 +100,23 @@ export function createOwnershipInfos(
         await OwnershipInfoService.createFromTransaction(data.transactionId)(ownershipInfoRepository, transactionRepository);
     };
 }
+
+export function returnCreditCardSales(
+    data: factory.task.returnCreditCardSales.IData
+): IOperation<void> {
+    return async (connection: mongoose.Connection) => {
+        const transactionRepo = new TransactionRepo(connection);
+        await SalesService.returnCreditCardSales(data.transactionId)(transactionRepo);
+    };
+}
+
+export function returnOrder(
+    data: factory.task.returnOrder.IData
+): IOperation<void> {
+    return async (connection: mongoose.Connection) => {
+        const orderRepo = new OrderRepo(connection);
+        const ownershipInfoRepo = new OwnershipInfoRepo(connection);
+        const transactionRepo = new TransactionRepo(connection);
+        await OrderService.cancelReservations(data.transactionId)(orderRepo, ownershipInfoRepo, transactionRepo);
+    };
+}
