@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文返品取引サービスを追加。
 - クレジットカード売上取消タスクを追加。
 - 注文返品処理タスクを追加。
+- 汎用的なアクションリポジトリーを追加。
 
 ### Changed
 

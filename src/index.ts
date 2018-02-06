@@ -28,6 +28,7 @@ import * as PlaceOrderInProgressTransactionService from './service/transaction/p
 import * as ReturnOrderTransactionService from './service/transaction/returnOrder';
 import * as UtilService from './service/util';
 
+import { MongoRepository as ActionRepo } from './repo/action';
 import { MongoRepository as AuthorizeActionRepo } from './repo/action/authorize';
 import { MongoRepository as CreditCardAuthorizeActionRepo } from './repo/action/authorize/creditCard';
 import { MongoRepository as MvtkAuthorizeActionRepo } from './repo/action/authorize/mvtk';
@@ -98,6 +99,7 @@ export import COA = COA;
 export import GMO = GMO;
 
 export namespace repository {
+    export class Action extends ActionRepo { }
     export namespace action {
         export class Authorize extends AuthorizeActionRepo { }
         export namespace authorize {

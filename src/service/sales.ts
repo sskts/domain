@@ -8,6 +8,7 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
+import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as CreditCardAuthorizeActionRepo } from '../repo/action/authorize/creditCard';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
@@ -58,8 +59,8 @@ export function cancelCreditCardAuth(transactionId: string) {
  * @param {string} transactionId 取引ID
  */
 export function settleCreditCardAuth(transactionId: string) {
-    return async (transactionRepository: TransactionRepo) => {
-        const transaction = await transactionRepository.findPlaceOrderById(transactionId);
+    return async (transactionRep: TransactionRepo) => {
+        const transaction = await transactionRep.findPlaceOrderById(transactionId);
         const authorizeActions = transaction.object.authorizeActions
             .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
             .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
@@ -100,36 +101,84 @@ export function settleCreditCardAuth(transactionId: string) {
 }
 
 export function returnCreditCardSales(transactionId: string) {
-    return async (transactionRepository: TransactionRepo) => {
-        const transaction = await transactionRepository.findReturnOrderById(transactionId);
+    return async (
+        actionRepo: ActionRepo,
+        transactionRep: TransactionRepo
+    ) => {
+        const transaction = await transactionRep.findReturnOrderById(transactionId);
+        const returnOrderTransactionresult = transaction.result;
         const placeOrderTransaction = transaction.object.transaction;
+        const placeOrderTransactionResult = placeOrderTransaction.result;
         const authorizeActions = placeOrderTransaction.object.authorizeActions
             .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
             .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
 
-        await Promise.all(authorizeActions.map(async (authorizeAction) => {
-            // 取引状態参照
-            const gmoTrade = await GMO.services.credit.searchTrade({
-                shopId: authorizeAction.result.entryTranArgs.shopId,
-                shopPass: authorizeAction.result.entryTranArgs.shopPass,
-                orderId: authorizeAction.result.entryTranArgs.orderId
-            });
-            debug('gmoTrade is', gmoTrade);
+        if (returnOrderTransactionresult === undefined) {
+            throw new factory.errors.NotFound('transaction.result');
+        }
 
-            // 実売上状態であれば取消
-            // 手数料がかかるのであれば、ChangeTran、かからないのであれば、AlterTran
-            if (gmoTrade.status === GMO.utils.util.Status.Sales) {
-                debug('canceling credit card sales...', authorizeAction);
-                // const SERVICE_CHARGE = 100;
-                const alterTranResult = await GMO.services.credit.alterTran({
+        if (placeOrderTransactionResult === undefined) {
+            throw new factory.errors.NotFound('placeOrderTransaction.result');
+        }
+
+        await Promise.all(authorizeActions.map(async (authorizeAction) => {
+
+            // アクション開始
+            const returnPayActionAttributes = returnOrderTransactionresult.returnPayActionAttributes;
+            const action = await actionRepo.start<factory.action.transfer.returnAction.pay.IAction>(
+                returnPayActionAttributes.typeOf,
+                returnPayActionAttributes.agent,
+                returnPayActionAttributes.recipient,
+                returnPayActionAttributes.object
+            );
+
+            let alterTranResult: GMO.services.credit.IAlterTranResult;
+            try {
+                // 取引状態参照
+                const gmoTrade = await GMO.services.credit.searchTrade({
                     shopId: authorizeAction.result.entryTranArgs.shopId,
                     shopPass: authorizeAction.result.entryTranArgs.shopPass,
-                    accessId: gmoTrade.accessId,
-                    accessPass: gmoTrade.accessPass,
-                    jobCd: GMO.utils.util.JobCd.Void
+                    orderId: authorizeAction.result.entryTranArgs.orderId
                 });
-                debug('GMO alterTranResult is', alterTranResult);
+                debug('gmoTrade is', gmoTrade);
+
+                // 実売上状態であれば取消
+                // 手数料がかかるのであれば、ChangeTran、かからないのであれば、AlterTran
+                if (gmoTrade.status === GMO.utils.util.Status.Sales) {
+                    debug('canceling credit card sales...', authorizeAction);
+                    alterTranResult = await GMO.services.credit.alterTran({
+                        shopId: authorizeAction.result.entryTranArgs.shopId,
+                        shopPass: authorizeAction.result.entryTranArgs.shopPass,
+                        accessId: gmoTrade.accessId,
+                        accessPass: gmoTrade.accessPass,
+                        jobCd: GMO.utils.util.JobCd.Void
+                    });
+                    debug('GMO alterTranResult is', alterTranResult);
+                } else {
+                    alterTranResult = {
+                        accessId: gmoTrade.accessId,
+                        accessPass: gmoTrade.accessPass,
+                        forward: gmoTrade.forward,
+                        approve: gmoTrade.approve,
+                        tranId: gmoTrade.tranId,
+                        tranDate: ''
+                    };
+                }
+            } catch (error) {
+                // actionにエラー結果を追加
+                try {
+                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                    await actionRepo.giveUp(factory.actionType.ReturnAction, action.id, actionError);
+                } catch (__) {
+                    // 失敗したら仕方ない
+                }
+
+                throw new Error(error);
             }
+
+            // アクション完了
+            debug('ending action...');
+            await actionRepo.complete(factory.actionType.ReturnAction, action.id, { alterTranResult });
         }));
     };
 }

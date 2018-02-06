@@ -7,6 +7,7 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
+import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as CreditCardAuthorizeActionRepo } from '../repo/action/authorize/creditCard';
 import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../repo/action/authorize/seatReservation';
 import { MongoRepository as OrderRepo } from '../repo/order';
@@ -105,8 +106,9 @@ export function returnCreditCardSales(
     data: factory.task.returnCreditCardSales.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
+        const actionRepo = new ActionRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await SalesService.returnCreditCardSales(data.transactionId)(transactionRepo);
+        await SalesService.returnCreditCardSales(data.transactionId)(actionRepo, transactionRepo);
     };
 }
 
@@ -114,9 +116,10 @@ export function returnOrder(
     data: factory.task.returnOrder.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
+        const actionRepo = new ActionRepo(connection);
         const orderRepo = new OrderRepo(connection);
         const ownershipInfoRepo = new OwnershipInfoRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await OrderService.cancelReservations(data.transactionId)(orderRepo, ownershipInfoRepo, transactionRepo);
+        await OrderService.cancelReservations(data.transactionId)(actionRepo, orderRepo, ownershipInfoRepo, transactionRepo);
     };
 }

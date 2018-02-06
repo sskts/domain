@@ -4,7 +4,6 @@
  */
 
 import * as createDebug from 'debug';
-import * as mongoose from 'mongoose';
 
 import * as factory from '@motionpicture/sskts-factory';
 
@@ -151,19 +150,30 @@ export function confirm(
         if (placeOrderTransactionResult === undefined) {
             throw new Error('Result of placeOrder transaction to return undefined.');
         }
-        const returnOrderAction = factory.action.transfer.returnOrder.createAttributes({
+        const returnOrderActionAttributes = factory.action.transfer.returnAction.order.createAttributes({
             actionStatus: factory.actionStatusType.CompletedActionStatus,
-            result: {
-            },
             object: {
+                orderNumber: placeOrderTransactionResult.order.orderNumber,
                 order: placeOrderTransactionResult.order
             },
             agent: placeOrderTransaction.agent,
             recipient: placeOrderTransaction.seller,
             startDate: new Date()
         });
+        const returnPayActionAttributes = factory.action.transfer.returnAction.pay.createAttributes({
+            actionStatus: factory.actionStatusType.CompletedActionStatus,
+            object: {
+                orderNumber: placeOrderTransactionResult.order.orderNumber,
+                // tslint:disable-next-line:no-suspicious-comment
+                payAction: <any>{} // TODO アクションリポジトリーから支払アクションを取得する
+            },
+            agent: placeOrderTransaction.seller,
+            recipient: placeOrderTransaction.agent,
+            startDate: new Date()
+        });
         const result: factory.transaction.returnOrder.IResult = {
-            returnAction: { id: mongoose.Types.ObjectId().toHexString(), ...returnOrderAction }
+            returnOrderActionAttributes: returnOrderActionAttributes,
+            returnPayActionAttributes: returnPayActionAttributes
         };
 
         // ステータス変更

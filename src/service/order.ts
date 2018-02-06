@@ -1,6 +1,5 @@
 /**
- * order service
- * @namespace service/order
+ * 注文サービス
  */
 
 import * as COA from '@motionpicture/coa-service';
@@ -8,6 +7,7 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as googleLibphonenumber from 'google-libphonenumber';
 
+import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as OrderRepo } from '../repo/order';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
@@ -29,13 +29,35 @@ export function createFromTransaction(transactionId: string) {
 }
 
 export function cancelReservations(returnOrderTransactionId: string) {
-    return async (orderRepo: OrderRepo, ownershipInfoRepo: OwnershipInfoRepo, transactionRepo: TransactionRepo) => {
+    return async (
+        actionRepo: ActionRepo,
+        orderRepo: OrderRepo,
+        ownershipInfoRepo: OwnershipInfoRepo,
+        transactionRepo: TransactionRepo
+    ) => {
         const now = new Date();
         const transaction = await transactionRepo.findReturnOrderById(returnOrderTransactionId);
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;
 
-        if (placeOrderTransactionResult !== undefined) {
+        if (transaction.result === undefined) {
+            throw new factory.errors.NotFound('transaction.result');
+        }
+
+        if (placeOrderTransactionResult === undefined) {
+            throw new factory.errors.NotFound('placeOrderTransaction.result');
+        }
+
+        // アクション開始
+        const returnOrderActionAttributes = transaction.result.returnOrderActionAttributes;
+        const action = await actionRepo.start<factory.action.transfer.returnAction.order.IAction>(
+            returnOrderActionAttributes.typeOf,
+            returnOrderActionAttributes.agent,
+            returnOrderActionAttributes.recipient,
+            returnOrderActionAttributes.object
+        );
+
+        try {
             const order = placeOrderTransactionResult.order;
 
             // 非同期でCOA本予約取消
@@ -85,6 +107,20 @@ export function cancelReservations(returnOrderTransactionId: string) {
                 { orderNumber: order.orderNumber },
                 { orderStatus: factory.orderStatus.OrderReturned }
             ).exec();
+        } catch (error) {
+            // actionにエラー結果を追加
+            try {
+                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                await actionRepo.giveUp(factory.actionType.ReturnAction, action.id, actionError);
+            } catch (__) {
+                // 失敗したら仕方ない
+            }
+
+            throw new Error(error);
         }
+
+        // アクション完了
+        debug('ending action...');
+        await actionRepo.complete(factory.actionType.ReturnAction, action.id, {});
     };
 }
