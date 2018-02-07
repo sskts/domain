@@ -51,8 +51,9 @@ export function updateIndividualScreeningEvents(locationBranchCode: string, star
                     });
 
                     const itemAvailability = factory.event.individualScreeningEvent.createItemAvailability(
-                        countFreeSeatPerformance.cntReserveFree,
-                        countFreeSeatPerformance.cntReserveMax
+                        // COAからのレスポンスが負の値の場合があるので調整
+                        Math.max(0, countFreeSeatPerformance.cntReserveFree),
+                        Math.max(0, countFreeSeatPerformance.cntReserveMax)
                     );
 
                     // 永続化

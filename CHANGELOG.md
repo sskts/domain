@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 ### Fixed
+- COAから取得した空席数が負の値の場合のイベント利用状況を修正。
 
 ### Security
 
