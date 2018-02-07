@@ -23,7 +23,8 @@ describe('createFromTransaction()', () => {
         const transaction = {
             id: 'id',
             result: {
-                order: {}
+                order: {},
+                postActions: { orderAction: { typeOf: 'actionType' } }
             }
         };
         const action = { id: 'actionId' };
@@ -33,9 +34,9 @@ describe('createFromTransaction()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(actionRepo).expects('start').once()
-            .withArgs(sskts.factory.actionType.OrderAction).resolves(action);
+            .withExactArgs(transaction.result.postActions.orderAction).resolves(action);
         sandbox.mock(actionRepo).expects('complete').once()
-            .withArgs(sskts.factory.actionType.OrderAction, action.id).resolves(action);
+            .withArgs(transaction.result.postActions.orderAction.typeOf, action.id).resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').never();
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
             .withExactArgs(transaction.id).resolves(transaction);

@@ -26,13 +26,8 @@ export function createFromTransaction(transactionId: string) {
 
         if (transaction.result !== undefined) {
             // アクション開始
-            const actionObject: factory.action.transfer.send.order.IObject = transaction.result.order;
-            const action = await actionRepo.start<factory.action.transfer.send.order.IAction>(
-                factory.actionType.SendAction,
-                transaction.seller,
-                transaction.agent,
-                actionObject
-            );
+            const sendOrderActionAttributes = transaction.result.postActions.sendOrderAction;
+            const action = await actionRepo.start<factory.action.transfer.send.order.IAction>(sendOrderActionAttributes);
 
             try {
                 await Promise.all(transaction.result.ownershipInfos.map(async (ownershipInfo) => {
@@ -42,7 +37,7 @@ export function createFromTransaction(transactionId: string) {
                 // actionにエラー結果を追加
                 try {
                     const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                    await actionRepo.giveUp(factory.actionType.SendAction, action.id, actionError);
+                    await actionRepo.giveUp(sendOrderActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
@@ -52,7 +47,7 @@ export function createFromTransaction(transactionId: string) {
 
             // アクション完了
             debug('ending action...');
-            await actionRepo.complete(factory.actionType.SendAction, action.id, {});
+            await actionRepo.complete(sendOrderActionAttributes.typeOf, action.id, {});
         }
     };
 }

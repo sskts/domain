@@ -24,13 +24,8 @@ export function createFromTransaction(transactionId: string) {
         /* istanbul ignore else */
         if (transaction.result !== undefined) {
             // アクション開始
-            const actionObject: factory.action.trade.order.IObject = transaction.result.order;
-            const action = await actionRepo.start<factory.action.trade.order.IAction>(
-                factory.actionType.OrderAction,
-                transaction.agent,
-                transaction.seller,
-                actionObject
-            );
+            const orderActionAttributes = transaction.result.postActions.orderAction;
+            const action = await actionRepo.start<factory.action.trade.order.IAction>(orderActionAttributes);
 
             try {
                 await orderRepo.save(transaction.result.order);
@@ -38,7 +33,7 @@ export function createFromTransaction(transactionId: string) {
                 // actionにエラー結果を追加
                 try {
                     const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                    await actionRepo.giveUp(factory.actionType.OrderAction, action.id, actionError);
+                    await actionRepo.giveUp(orderActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
@@ -48,7 +43,7 @@ export function createFromTransaction(transactionId: string) {
 
             // アクション完了
             debug('ending action...');
-            await actionRepo.complete(factory.actionType.OrderAction, action.id, {});
+            await actionRepo.complete(orderActionAttributes.typeOf, action.id, {});
         }
     };
 }
@@ -74,13 +69,8 @@ export function cancelReservations(returnOrderTransactionId: string) {
         }
 
         // アクション開始
-        const returnOrderActionAttributes = transaction.result.returnOrderActionAttributes;
-        const action = await actionRepo.start<factory.action.transfer.returnAction.order.IAction>(
-            returnOrderActionAttributes.typeOf,
-            returnOrderActionAttributes.agent,
-            returnOrderActionAttributes.recipient,
-            returnOrderActionAttributes.object
-        );
+        const returnOrderActionAttributes = transaction.result.postActions.returnOrderAction;
+        const action = await actionRepo.start<factory.action.transfer.returnAction.order.IAction>(returnOrderActionAttributes);
 
         try {
             const order = placeOrderTransactionResult.order;
@@ -136,7 +126,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
             // actionにエラー結果を追加
             try {
                 const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                await actionRepo.giveUp(factory.actionType.ReturnAction, action.id, actionError);
+                await actionRepo.giveUp(returnOrderActionAttributes.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -146,6 +136,6 @@ export function cancelReservations(returnOrderTransactionId: string) {
 
         // アクション完了
         debug('ending action...');
-        await actionRepo.complete(factory.actionType.ReturnAction, action.id, {});
+        await actionRepo.complete(returnOrderActionAttributes.typeOf, action.id, {});
     };
 }

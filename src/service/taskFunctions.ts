@@ -78,8 +78,10 @@ export function settleCreditCard(
 export function settleMvtk(
     data: factory.task.settleMvtk.IData
 ): IOperation<void> {
-    return async (__: mongoose.Connection) => {
-        await SalesService.settleMvtk(data.transactionId)();
+    return async (connection: mongoose.Connection) => {
+        const actionRepo = new ActionRepo(connection);
+        const transactionRepo = new TransactionRepo(connection);
+        await SalesService.settleMvtk(data.transactionId)(actionRepo, transactionRepo);
     };
 }
 

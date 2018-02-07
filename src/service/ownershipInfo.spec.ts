@@ -7,7 +7,6 @@
 import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
-import * as sskts from '../index';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
@@ -29,7 +28,8 @@ describe('OwnershipInfoService.createFromTransaction()', () => {
         const transaction = {
             id: 'transactionId',
             result: {
-                ownershipInfos: [{ identifier: 'identifier' }, { identifier: 'identifier' }, { identifier: 'identifier' }]
+                ownershipInfos: [{ identifier: 'identifier' }, { identifier: 'identifier' }, { identifier: 'identifier' }],
+                postActions: { sendOrderAction: { typeOf: 'actionType' } }
             }
         };
         const action = { id: 'actionId' };
@@ -39,9 +39,9 @@ describe('OwnershipInfoService.createFromTransaction()', () => {
         const transactionRepo = new TransactionRepo(mongoose.connection);
 
         sandbox.mock(actionRepo).expects('start').once()
-            .withArgs(sskts.factory.actionType.SendAction).resolves(action);
+            .withExactArgs(transaction.result.postActions.sendOrderAction).resolves(action);
         sandbox.mock(actionRepo).expects('complete').once()
-            .withArgs(sskts.factory.actionType.SendAction, action.id).resolves(action);
+            .withArgs(transaction.result.postActions.sendOrderAction.typeOf, action.id).resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').never();
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
         // tslint:disable-next-line:no-magic-numbers

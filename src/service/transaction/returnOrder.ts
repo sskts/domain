@@ -168,8 +168,10 @@ export function confirm(
             startDate: new Date()
         });
         const result: factory.transaction.returnOrder.IResult = {
-            returnOrderActionAttributes: returnOrderActionAttributes,
-            returnPayActionAttributes: returnPayActionAttributes
+            postActions: {
+                returnOrderAction: returnOrderActionAttributes,
+                returnPayAction: returnPayActionAttributes
+            }
         };
 
         // ステータス変更

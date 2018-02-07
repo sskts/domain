@@ -28,21 +28,21 @@ export class MongoRepository {
     /**
      * アクション開始
      */
-    public async start<T extends IAction>(
-        typeOf: factory.actionType,
-        agent: factory.action.IParticipant,
-        recipient: factory.action.IParticipant,
-        object: any,
-        purpose?: any
-    ): Promise<T> {
+    public async start<T extends IAction>(params: {
+        typeOf: factory.actionType;
+        agent: factory.action.IParticipant;
+        object: any;
+        recipient?: factory.action.IParticipant;
+        purpose?: any;
+    }): Promise<T> {
         const actionAttributes = {
             actionStatus: factory.actionStatusType.ActiveActionStatus,
-            typeOf: typeOf,
-            agent: agent,
-            recipient: recipient,
-            object: object,
+            typeOf: params.typeOf,
+            agent: params.agent,
+            recipient: params.recipient,
+            object: params.object,
             startDate: new Date(),
-            purpose: purpose
+            purpose: params.purpose
         };
 
         return this.actionModel.create(actionAttributes).then(

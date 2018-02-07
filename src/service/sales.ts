@@ -61,35 +61,20 @@ export function cancelCreditCardAuth(transactionId: string) {
 export function settleCreditCardAuth(transactionId: string) {
     return async (actionRepo: ActionRepo, transactionRep: TransactionRepo) => {
         const transaction = await transactionRep.findPlaceOrderById(transactionId);
-        const authorizeActions = <factory.action.authorize.creditCard.IAction[]>transaction.object.authorizeActions
-            .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
-
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
         }
 
-        await Promise.all(authorizeActions.map(async (authorizeAction) => {
+        const payActionAttributes = transactionResult.postActions.payCreditCardAction;
+        if (payActionAttributes !== undefined) {
+            // クレジットカード承認アクションがあるはず
+            const authorizeAction = <factory.action.authorize.creditCard.IAction>transaction.object.authorizeActions
+                .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                .find((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+
             // アクション開始
-            const actionObject: factory.action.trade.pay.IObject = {
-                orderNumber: transactionResult.order.orderNumber,
-                paymentMethod: {
-                    name: 'クレジットカード',
-                    paymentMethod: factory.paymentMethodType.CreditCard,
-                    paymentMethodId: authorizeAction.object.orderId
-                },
-                price: authorizeAction.object.amount,
-                priceCurrency: transactionResult.order.priceCurrency
-            };
-            const actionPurpose: factory.action.trade.pay.IPurpose = transactionResult.order;
-            const action = await actionRepo.start<factory.action.trade.pay.IAction>(
-                factory.actionType.PayAction,
-                transaction.agent,
-                transaction.seller,
-                actionObject,
-                actionPurpose
-            );
+            const action = await actionRepo.start<factory.action.trade.pay.IAction>(payActionAttributes);
 
             let alterTranResult: GMO.services.credit.IAlterTranResult;
             try {
@@ -133,7 +118,7 @@ export function settleCreditCardAuth(transactionId: string) {
                 // actionにエラー結果を追加
                 try {
                     const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                    await actionRepo.giveUp(factory.actionType.PayAction, action.id, actionError);
+                    await actionRepo.giveUp(payActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
@@ -144,8 +129,8 @@ export function settleCreditCardAuth(transactionId: string) {
             // アクション完了
             debug('ending action...');
             const actionResult: factory.action.trade.pay.IResult = { creditCardSales: alterTranResult };
-            await actionRepo.complete(factory.actionType.PayAction, action.id, actionResult);
-        }));
+            await actionRepo.complete(payActionAttributes.typeOf, action.id, actionResult);
+        }
     };
 }
 
@@ -171,15 +156,9 @@ export function returnCreditCardSales(transactionId: string) {
         }
 
         await Promise.all(authorizeActions.map(async (authorizeAction) => {
-
             // アクション開始
-            const returnPayActionAttributes = returnOrderTransactionresult.returnPayActionAttributes;
-            const action = await actionRepo.start<factory.action.transfer.returnAction.pay.IAction>(
-                returnPayActionAttributes.typeOf,
-                returnPayActionAttributes.agent,
-                returnPayActionAttributes.recipient,
-                returnPayActionAttributes.object
-            );
+            const returnPayActionAttributes = returnOrderTransactionresult.postActions.returnPayAction;
+            const action = await actionRepo.start<factory.action.transfer.returnAction.pay.IAction>(returnPayActionAttributes);
 
             let alterTranResult: GMO.services.credit.IAlterTranResult;
             try {
@@ -217,7 +196,7 @@ export function returnCreditCardSales(transactionId: string) {
                 // actionにエラー結果を追加
                 try {
                     const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                    await actionRepo.giveUp(factory.actionType.ReturnAction, action.id, actionError);
+                    await actionRepo.giveUp(returnPayActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
@@ -227,7 +206,7 @@ export function returnCreditCardSales(transactionId: string) {
 
             // アクション完了
             debug('ending action...');
-            await actionRepo.complete(factory.actionType.ReturnAction, action.id, { alterTranResult });
+            await actionRepo.complete(returnPayActionAttributes.typeOf, action.id, { alterTranResult });
         }));
     };
 }
@@ -254,8 +233,41 @@ export function cancelMvtk(transactionId: string) {
  * @param {string} transactionId 取引ID
  */
 export function settleMvtk(transactionId: string) {
-    return async () => {
-        debug('settling mvtk...transactionId:', transactionId);
-        // 実は取引成立の前に着券済みなので何もしない
+    return async (actionRepo: ActionRepo, transactionRep: TransactionRepo) => {
+        const transaction = await transactionRep.findPlaceOrderById(transactionId);
+        const transactionResult = transaction.result;
+        if (transactionResult === undefined) {
+            throw new factory.errors.NotFound('transaction.result');
+        }
+
+        const useActionAttributes = transactionResult.postActions.useMvtkAction;
+        if (useActionAttributes !== undefined) {
+            // ムビチケ承認アクションがあるはず
+            // const authorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions
+            //     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            //     .find((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
+
+            // アクション開始
+            const action = await actionRepo.start<factory.action.consume.use.mvtk.IAction>(useActionAttributes);
+
+            try {
+                // 実は取引成立の前に着券済みなので何もしない
+            } catch (error) {
+                // actionにエラー結果を追加
+                try {
+                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                    await actionRepo.giveUp(useActionAttributes.typeOf, action.id, actionError);
+                } catch (__) {
+                    // 失敗したら仕方ない
+                }
+
+                throw new Error(error);
+            }
+
+            // アクション完了
+            debug('ending action...');
+            const actionResult: factory.action.consume.use.mvtk.IResult = {};
+            await actionRepo.complete(useActionAttributes.typeOf, action.id, actionResult);
+        }
     };
 }

@@ -332,10 +332,12 @@ export function setCustomerContact(
 /**
  * 取引確定
  */
+// tslint:disable-next-line:max-func-body-length
 export function confirm(
     agentId: string,
     transactionId: string
 ) {
+    // tslint:disable-next-line:max-func-body-length
     return async (
         creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo,
         mvtkAuthorizeActionRepo: MvtkAuthorizeActionRepo,
@@ -356,15 +358,11 @@ export function confirm(
         ];
 
         // 万が一このプロセス中に他処理が発生してもそれらを無視するように、endDateでフィルタリング
-        authorizeActions = authorizeActions.filter(
-            (authorizeAction) => (authorizeAction.endDate !== undefined && authorizeAction.endDate < now)
-        );
+        authorizeActions = authorizeActions.filter((a) => (a.endDate !== undefined && a.endDate < now));
         transaction.object.authorizeActions = authorizeActions;
 
         // 照会可能になっているかどうか
-        if (!canBeClosed(transaction)) {
-            throw new factory.errors.Argument('transactionId', 'Transaction cannot be confirmed because prices are not matched.');
-        }
+        validateTransaction(transaction);
 
         // 結果作成
         const order = factory.order.createFromPlaceOrderTransaction({
@@ -394,9 +392,63 @@ export function confirm(
                 typeOfGood: acceptedOffer.itemOffered
             });
         });
+
+        // クレジットカード支払いアクション
+        let payCreditCardAction: factory.action.trade.pay.IAttributes | null = null;
+        const creditCardPayment = order.paymentMethods.find((m) => m.paymentMethod === factory.paymentMethodType.CreditCard);
+        if (creditCardPayment !== undefined) {
+            payCreditCardAction = factory.action.trade.pay.createAttributes({
+                actionStatus: factory.actionStatusType.ActiveActionStatus,
+                object: {
+                    orderNumber: order.orderNumber,
+                    paymentMethod: creditCardPayment,
+                    price: order.price,
+                    priceCurrency: order.priceCurrency
+                },
+                agent: transaction.agent,
+                startDate: new Date(),
+                purpose: order
+            });
+        }
+
+        // ムビチケ使用アクション
+        let useMvtkAction: factory.action.consume.use.mvtk.IAttributes | null = null;
+        const mvtkAuthorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .find((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
+        if (mvtkAuthorizeAction !== undefined) {
+            useMvtkAction = factory.action.consume.use.mvtk.createAttributes({
+                actionStatus: factory.actionStatusType.ActiveActionStatus,
+                object: {
+                    typeOf: 'Mvtk',
+                    seatInfoSyncIn: mvtkAuthorizeAction.object.seatInfoSyncIn
+                },
+                agent: transaction.agent,
+                startDate: new Date()
+            });
+        }
+
         const result: factory.transaction.placeOrder.IResult = {
             order: order,
-            ownershipInfos: ownershipInfos
+            ownershipInfos: ownershipInfos,
+            postActions: {
+                orderAction: factory.action.trade.order.createAttributes({
+                    actionStatus: factory.actionStatusType.ActiveActionStatus,
+                    object: order,
+                    agent: transaction.agent,
+                    startDate: new Date()
+                }),
+                // クレジットカード決済があればアクション追加
+                payCreditCardAction: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
+                useMvtkAction: (useMvtkAction !== null) ? useMvtkAction : undefined,
+                sendOrderAction: factory.action.transfer.send.order.createAttributes({
+                    actionStatus: factory.actionStatusType.ActiveActionStatus,
+                    object: order,
+                    agent: transaction.seller,
+                    recipient: transaction.agent,
+                    startDate: new Date()
+                })
+            }
         };
 
         // ステータス変更
@@ -417,11 +469,27 @@ export function confirm(
  * @function
  * @returns {boolean}
  */
-function canBeClosed(transaction: factory.transaction.placeOrder.ITransaction) {
+function validateTransaction(transaction: factory.transaction.placeOrder.ITransaction) {
     type IAuthorizeActionResult =
         factory.action.authorize.creditCard.IResult |
         factory.action.authorize.mvtk.IResult |
         factory.action.authorize.seatReservation.IResult;
+
+    // クレジットカードオーソリをひとつに限定
+    const creditCardAuthorizeActions = transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+    if (creditCardAuthorizeActions.length > 1) {
+        throw new factory.errors.Argument('transactionId', 'The number of credit card authorize actions must be one.');
+    }
+
+    // ムビチケ着券情報をひとつに限定
+    const mvtkAuthorizeActions = transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
+    if (mvtkAuthorizeActions.length > 1) {
+        throw new factory.errors.Argument('transactionId', 'The number of mvtk authorize actions must be one.');
+    }
 
     // agentとsellerで、承認アクションの金額が合うかどうか
     const priceByAgent = transaction.object.authorizeActions
@@ -434,5 +502,7 @@ function canBeClosed(transaction: factory.transaction.placeOrder.ITransaction) {
         .reduce((a, b) => a + (<IAuthorizeActionResult>b.result).price, 0);
     debug('priceByAgent priceBySeller:', priceByAgent, priceBySeller);
 
-    return (priceByAgent > 0 && priceByAgent === priceBySeller);
+    if (priceByAgent <= 0 || priceByAgent !== priceBySeller) {
+        throw new factory.errors.Argument('transactionId', 'Transaction cannot be confirmed because prices are not matched.');
+    }
 }
