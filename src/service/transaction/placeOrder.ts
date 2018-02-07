@@ -27,6 +27,7 @@ export function exportTasks(status: factory.transactionStatusType) {
 
         const transaction = await transactionRepository.transactionModel.findOneAndUpdate(
             {
+                typeOf: factory.transactionType.PlaceOrder,
                 status: status,
                 tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
             },

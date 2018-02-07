@@ -25,8 +25,10 @@ import * as StockService from './service/stock';
 import * as TaskService from './service/task';
 import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
 import * as PlaceOrderInProgressTransactionService from './service/transaction/placeOrderInProgress';
+import * as ReturnOrderTransactionService from './service/transaction/returnOrder';
 import * as UtilService from './service/util';
 
+import { MongoRepository as ActionRepo } from './repo/action';
 import { MongoRepository as AuthorizeActionRepo } from './repo/action/authorize';
 import { MongoRepository as CreditCardAuthorizeActionRepo } from './repo/action/authorize/creditCard';
 import { MongoRepository as MvtkAuthorizeActionRepo } from './repo/action/authorize/mvtk';
@@ -97,6 +99,7 @@ export import COA = COA;
 export import GMO = GMO;
 
 export namespace repository {
+    export class Action extends ActionRepo { }
     export namespace action {
         export class Authorize extends AuthorizeActionRepo { }
         export namespace authorize {
@@ -143,6 +146,7 @@ export namespace service {
     export namespace transaction {
         export import placeOrder = PlaceOrderTransactionService;
         export import placeOrderInProgress = PlaceOrderInProgressTransactionService;
+        export import returnOrder = ReturnOrderTransactionService;
     }
     export import util = UtilService;
 }

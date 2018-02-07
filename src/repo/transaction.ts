@@ -92,7 +92,7 @@ export class MongoRepository {
     public async confirmPlaceOrder(
         transactionId: string,
         endDate: Date,
-        authorizeActions: factory.action.authorize.IAction[],
+        authorizeActions: factory.action.authorize.IAction<any, any>[],
         result: factory.transaction.placeOrder.IResult
     ): Promise<factory.transaction.placeOrder.ITransaction> {
         const doc = await this.transactionModel.findOneAndUpdate(
@@ -115,6 +115,72 @@ export class MongoRepository {
         }
 
         return <factory.transaction.placeOrder.ITransaction>doc.toObject();
+    }
+
+    /**
+     * 進行中の返品取引を取得する
+     */
+    public async findReturnOrderInProgressById(transactionId: string): Promise<factory.transaction.returnOrder.ITransaction> {
+        const doc = await this.transactionModel.findOne({
+            _id: transactionId,
+            typeOf: factory.transactionType.ReturnOrder,
+            status: factory.transactionStatusType.InProgress
+        }).exec();
+
+        if (doc === null) {
+            throw new factory.errors.NotFound('transaction in progress');
+        }
+
+        return <factory.transaction.returnOrder.ITransaction>doc.toObject();
+    }
+
+    /**
+     * IDから返品取引を取得する
+     * @param {string} transactionId transaction id
+     */
+    public async findReturnOrderById(transactionId: string): Promise<factory.transaction.returnOrder.ITransaction> {
+        const doc = await this.transactionModel.findOne({
+            _id: transactionId,
+            typeOf: factory.transactionType.ReturnOrder
+        }).exec();
+
+        if (doc === null) {
+            throw new factory.errors.NotFound('transaction');
+        }
+
+        return <factory.transaction.returnOrder.ITransaction>doc.toObject();
+    }
+
+    /**
+     * 注文返品取引を確定する
+     * @param {string} transactionId transaction id
+     * @param {Date} endDate end date
+     * @param {factory.transaction.returnOrder.IResult} result transaction result
+     */
+    public async confirmReturnOrder(
+        transactionId: string,
+        endDate: Date,
+        result: factory.transaction.returnOrder.IResult
+    ): Promise<factory.transaction.returnOrder.ITransaction> {
+        const doc = await this.transactionModel.findOneAndUpdate(
+            {
+                _id: transactionId,
+                typeOf: factory.transactionType.ReturnOrder,
+                status: factory.transactionStatusType.InProgress
+            },
+            {
+                status: factory.transactionStatusType.Confirmed, // ステータス変更
+                endDate: endDate,
+                result: result // resultを更新
+            },
+            { new: true }
+        ).exec();
+
+        if (doc === null) {
+            throw new factory.errors.NotFound('transaction in progress');
+        }
+
+        return <factory.transaction.returnOrder.ITransaction>doc.toObject();
     }
 
     /**

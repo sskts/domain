@@ -11,7 +11,7 @@
   "dependencies": {
     "@motionpicture/coa-service": "^4.0.8",
     "@motionpicture/gmo-service": "^4.1.0",
-    "@motionpicture/sskts-factory": "^2.3.1",
+    "@motionpicture/sskts-factory": "^2.4.0-alpha.4",
     "@motionpicture/waiter-domain": "^2.0.2",
     "@sendgrid/mail": "^6.1.4",
     "@types/google-libphonenumber": "^7.4.12",
@@ -38,6 +38,7 @@
     "@types/mocha": "^2.2.44",
     "@types/moment-timezone": "^0.5.2",
     "@types/nock": "^8.2.1",
+    "@types/node": "^8.0.58",
     "@types/power-assert": "^1.4.29",
     "@types/redis-mock": "^0.17.0",
     "@types/request": "^2.0.8",

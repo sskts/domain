@@ -5,8 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- 注文返品取引サービスを追加。
+- クレジットカード売上取消タスクを追加。
+- 注文返品処理タスクを追加。
+- 汎用的なアクションリポジトリーを追加。
 
 ### Changed
+- 注文に対するタスク実行時にアクションを保管するように変更。
+- 取引結果にポストアクションを定義。
 
 ### Deprecated
 

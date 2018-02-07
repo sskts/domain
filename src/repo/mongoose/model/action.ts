@@ -114,6 +114,16 @@ schema.index(
     }
 );
 
+// 注文に対するアクション検索に使用
+schema.index(
+    { 'object.orderNumber': 1 },
+    {
+        partialFilterExpression: {
+            'object.orderNumber': { $exists: true }
+        }
+    }
+);
+
 export default mongoose.model('Action', schema)
     .on('index', (error) => {
         // tslint:disable-next-line:no-single-line-block-comment

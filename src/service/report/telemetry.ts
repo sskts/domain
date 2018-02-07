@@ -611,7 +611,7 @@ function createSellerFlow(
                 'object.transactionId': { $in: expiredTransactionIds }
             },
             '_id object.transactionId'
-        ).exec().then((docs) => docs.map((doc) => <factory.action.authorize.IAction>doc.toObject()));
+        ).exec().then((docs) => docs.map((doc) => <factory.action.authorize.IAction<any, any>>doc.toObject()));
         const numbersOfActionsOnExpired = expiredTransactionIds.map((transactionId) => {
             return actionsOnExpiredTransactions.filter((action) => action.object.transactionId === transactionId).length;
         });

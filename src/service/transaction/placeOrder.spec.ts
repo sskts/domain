@@ -1,3 +1,4 @@
+// tslint:disable:no-implicit-dependencies
 /**
  * placeOrder transaction service test
  * @ignore
@@ -51,6 +52,7 @@ describe('exportTasks()', () => {
 
         sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').once()
             .withArgs({
+                typeOf: sskts.factory.transactionType.PlaceOrder,
                 status: status,
                 tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported
             }).chain('exec').resolves(transactionDoc);
@@ -73,6 +75,7 @@ describe('exportTasks()', () => {
 
         sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').once()
             .withArgs({
+                typeOf: sskts.factory.transactionType.PlaceOrder,
                 status: status,
                 tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported
             }).chain('exec').resolves(null);

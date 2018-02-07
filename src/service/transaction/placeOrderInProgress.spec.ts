@@ -566,7 +566,8 @@ describe('confirm()', () => {
                 result: {
                     price: 1234
                 },
-                endDate: new Date()
+                endDate: new Date(),
+                purpose: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard }
             }
         ];
         const seatReservationAuthorizeActions = [
@@ -579,7 +580,8 @@ describe('confirm()', () => {
                     updTmpReserveSeatArgs: {},
                     price: 1234
                 },
-                endDate: new Date()
+                endDate: new Date(),
+                purpose: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation }
             }
         ];
         const order = {
@@ -600,7 +602,12 @@ describe('confirm()', () => {
             ],
             customer: {
                 name: 'name'
-            }
+            },
+            paymentMethods: [{
+                name: 'クレジットカード',
+                paymentMethod: 'CreditCard',
+                paymentMethodId: 'paymentMethodId'
+            }]
         };
 
         const creditCardAuthorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
@@ -655,7 +662,8 @@ describe('confirm()', () => {
                     updTmpReserveSeatArgs: {},
                     price: 1234
                 },
-                endDate: new Date()
+                endDate: new Date(),
+                purpose: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation }
             },
             {
                 id: 'actionId2',
@@ -665,7 +673,8 @@ describe('confirm()', () => {
                 result: {
                     price: 1235
                 },
-                endDate: new Date()
+                endDate: new Date(),
+                purpose: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard }
             }
         ];
 
