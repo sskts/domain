@@ -17,13 +17,38 @@ const debug = createDebug('sskts-domain:service:order');
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 
 export function createFromTransaction(transactionId: string) {
-    return async (orderRepo: OrderRepo, transactionRepo: TransactionRepo) => {
+    return async (actionRepo: ActionRepo, orderRepo: OrderRepo, transactionRepo: TransactionRepo) => {
         const transaction = await transactionRepo.findPlaceOrderById(transactionId);
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (transaction.result !== undefined) {
-            await orderRepo.save(transaction.result.order);
+            // アクション開始
+            const actionObject: factory.action.trade.order.IObject = transaction.result.order;
+            const action = await actionRepo.start<factory.action.trade.order.IAction>(
+                factory.actionType.OrderAction,
+                transaction.agent,
+                transaction.seller,
+                actionObject
+            );
+
+            try {
+                await orderRepo.save(transaction.result.order);
+            } catch (error) {
+                // actionにエラー結果を追加
+                try {
+                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                    await actionRepo.giveUp(factory.actionType.OrderAction, action.id, actionError);
+                } catch (__) {
+                    // 失敗したら仕方ない
+                }
+
+                throw new Error(error);
+            }
+
+            // アクション完了
+            debug('ending action...');
+            await actionRepo.complete(factory.actionType.OrderAction, action.id, {});
         }
     };
 }

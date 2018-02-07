@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 汎用的なアクションリポジトリーを追加。
 
 ### Changed
+- 注文に対するタスク実行時にアクションを保管するように変更。
 
 ### Deprecated
 

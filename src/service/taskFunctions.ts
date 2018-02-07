@@ -60,8 +60,8 @@ export function settleSeatReservation(
     data: factory.task.settleSeatReservation.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const transactionRepository = new TransactionRepo(connection);
-        await StockService.transferSeatReservation(data.transactionId)(transactionRepository);
+        const transactionRepo = new TransactionRepo(connection);
+        await StockService.transferSeatReservation(data.transactionId)(transactionRepo);
     };
 }
 
@@ -69,8 +69,9 @@ export function settleCreditCard(
     data: factory.task.settleCreditCard.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const transactionRepository = new TransactionRepo(connection);
-        await SalesService.settleCreditCardAuth(data.transactionId)(transactionRepository);
+        const actionRepo = new ActionRepo(connection);
+        const transactionRepo = new TransactionRepo(connection);
+        await SalesService.settleCreditCardAuth(data.transactionId)(actionRepo, transactionRepo);
     };
 }
 
@@ -86,9 +87,10 @@ export function createOrder(
     data: factory.task.createOrder.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
+        const actionRepo = new ActionRepo(connection);
         const orderRepository = new OrderRepo(connection);
-        const transactionRepository = new TransactionRepo(connection);
-        await OrderService.createFromTransaction(data.transactionId)(orderRepository, transactionRepository);
+        const transactionRepo = new TransactionRepo(connection);
+        await OrderService.createFromTransaction(data.transactionId)(actionRepo, orderRepository, transactionRepo);
     };
 }
 
@@ -96,9 +98,10 @@ export function createOwnershipInfos(
     data: factory.task.createOrder.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
+        const actionRepo = new ActionRepo(connection);
         const ownershipInfoRepository = new OwnershipInfoRepo(connection);
-        const transactionRepository = new TransactionRepo(connection);
-        await OwnershipInfoService.createFromTransaction(data.transactionId)(ownershipInfoRepository, transactionRepository);
+        const transactionRepo = new TransactionRepo(connection);
+        await OwnershipInfoService.createFromTransaction(data.transactionId)(actionRepo, ownershipInfoRepository, transactionRepo);
     };
 }
 

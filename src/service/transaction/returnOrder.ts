@@ -152,20 +152,16 @@ export function confirm(
         }
         const returnOrderActionAttributes = factory.action.transfer.returnAction.order.createAttributes({
             actionStatus: factory.actionStatusType.CompletedActionStatus,
-            object: {
-                orderNumber: placeOrderTransactionResult.order.orderNumber,
-                order: placeOrderTransactionResult.order
-            },
+            object: placeOrderTransactionResult.order,
             agent: placeOrderTransaction.agent,
             recipient: placeOrderTransaction.seller,
             startDate: new Date()
         });
         const returnPayActionAttributes = factory.action.transfer.returnAction.pay.createAttributes({
             actionStatus: factory.actionStatusType.CompletedActionStatus,
-            object: {
-                orderNumber: placeOrderTransactionResult.order.orderNumber,
-                // tslint:disable-next-line:no-suspicious-comment
-                payAction: <any>{} // TODO アクションリポジトリーから支払アクションを取得する
+            // tslint:disable-next-line:no-suspicious-comment
+            object: <any>{ // TODO アクションリポジトリーから支払アクションを取得する
+                orderNumber: placeOrderTransactionResult.order.orderNumber
             },
             agent: placeOrderTransaction.seller,
             recipient: placeOrderTransaction.agent,
