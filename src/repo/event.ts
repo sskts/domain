@@ -14,6 +14,13 @@ export abstract class Repository {
     public abstract async saveIndividualScreeningEvent(
         individualScreeningEvent: factory.event.individualScreeningEvent.IEvent
     ): Promise<void>;
+    public abstract async cancelIndividualScreeningEvent(identifier: string): Promise<void>;
+    public abstract async searchIndividualScreeningEvents(
+        searchConditions: factory.event.individualScreeningEvent.ISearchConditions
+    ): Promise<factory.event.individualScreeningEvent.IEvent[]>;
+    public abstract async findIndividualScreeningEventByIdentifier(
+        identifier: string
+    ): Promise<factory.event.individualScreeningEvent.IEvent>;
 }
 
 /**
@@ -60,6 +67,21 @@ export class MongoRepository implements Repository {
     }
 
     /**
+     * 上映イベントをキャンセルする
+     * @param identifier イベント識別子
+     */
+    public async cancelIndividualScreeningEvent(identifier: string) {
+        await this.eventModel.findOneAndUpdate(
+            {
+                identifier: identifier,
+                typeOf: factory.eventType.IndividualScreeningEvent
+            },
+            { eventStatus: factory.eventStatusType.EventCancelled },
+            { new: true }
+        ).exec();
+    }
+
+    /**
      * 個々の上映イベントを検索する
      * @param {Object} searchConditions 検索条件
      */
@@ -90,7 +112,7 @@ export class MongoRepository implements Repository {
             });
         }
 
-        // 場所の枝番号条件
+        // 場所の識別子条件
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (Array.isArray(searchConditions.superEventLocationIdentifiers)) {

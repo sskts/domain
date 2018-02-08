@@ -13,7 +13,7 @@ async function main() {
         await sskts.service.masterSync.importScreeningEvents(
             theaterCode,
             moment().toDate(),
-            moment().add(1, 'week').toDate(),
+            moment().add(5, 'weeks').toDate(),
         )(
             new sskts.repository.Event(sskts.mongoose.connection),
             new sskts.repository.Place(sskts.mongoose.connection)
