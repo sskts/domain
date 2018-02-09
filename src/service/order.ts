@@ -19,32 +19,36 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 export function createFromTransaction(transactionId: string) {
     return async (actionRepo: ActionRepo, orderRepo: OrderRepo, transactionRepo: TransactionRepo) => {
         const transaction = await transactionRepo.findPlaceOrderById(transactionId);
+        const transactionResult = transaction.result;
+        if (transactionResult === undefined) {
+            throw new factory.errors.NotFound('transaction.result');
+        }
+        const potentialActions = transaction.potentialActions;
+        if (potentialActions === undefined) {
+            throw new factory.errors.NotFound('transaction.potentialActions');
+        }
 
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (transaction.result !== undefined) {
-            // アクション開始
-            const orderActionAttributes = transaction.result.postActions.orderAction;
-            const action = await actionRepo.start<factory.action.trade.order.IAction>(orderActionAttributes);
+        // アクション開始
+        const orderActionAttributes = potentialActions.order;
+        const action = await actionRepo.start<factory.action.trade.order.IAction>(orderActionAttributes);
 
+        try {
+            await orderRepo.save(transactionResult.order);
+        } catch (error) {
+            // actionにエラー結果を追加
             try {
-                await orderRepo.save(transaction.result.order);
-            } catch (error) {
-                // actionにエラー結果を追加
-                try {
-                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                    await actionRepo.giveUp(orderActionAttributes.typeOf, action.id, actionError);
-                } catch (__) {
-                    // 失敗したら仕方ない
-                }
-
-                throw new Error(error);
+                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                await actionRepo.giveUp(orderActionAttributes.typeOf, action.id, actionError);
+            } catch (__) {
+                // 失敗したら仕方ない
             }
 
-            // アクション完了
-            debug('ending action...');
-            await actionRepo.complete(orderActionAttributes.typeOf, action.id, {});
+            throw new Error(error);
         }
+
+        // アクション完了
+        debug('ending action...');
+        await actionRepo.complete(orderActionAttributes.typeOf, action.id, {});
     };
 }
 

@@ -158,6 +158,7 @@ describe('confirmPlaceOrder()', () => {
         const endDate = new Date();
         const authorizeActions: any[] = [];
         const transactionResult = {};
+        const potentialActions = {};
 
         const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
         const doc = new repository.transactionModel();
@@ -165,7 +166,9 @@ describe('confirmPlaceOrder()', () => {
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(doc);
 
-        const result = await repository.confirmPlaceOrder(transactionId, endDate, authorizeActions, <any>transactionResult);
+        const result = await repository.confirmPlaceOrder(
+            transactionId, endDate, authorizeActions, <any>transactionResult, <any>potentialActions
+        );
         assert.equal(typeof result, 'object');
         sandbox.verify();
     });
@@ -175,13 +178,16 @@ describe('confirmPlaceOrder()', () => {
         const endDate = new Date();
         const authorizeActions: any[] = [];
         const transactionResult = {};
+        const potentialActions = {};
 
         const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(null);
 
-        const result = await repository.confirmPlaceOrder(transactionId, endDate, authorizeActions, <any>transactionResult)
+        const result = await repository.confirmPlaceOrder(
+            transactionId, endDate, authorizeActions, <any>transactionResult, <any>potentialActions
+        )
             .catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();

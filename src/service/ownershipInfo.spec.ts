@@ -7,6 +7,7 @@
 import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
+import * as sskts from '../index';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
@@ -28,9 +29,9 @@ describe('OwnershipInfoService.createFromTransaction()', () => {
         const transaction = {
             id: 'transactionId',
             result: {
-                ownershipInfos: [{ identifier: 'identifier' }, { identifier: 'identifier' }, { identifier: 'identifier' }],
-                postActions: { sendOrderAction: { typeOf: 'actionType' } }
-            }
+                ownershipInfos: [{ identifier: 'identifier' }, { identifier: 'identifier' }, { identifier: 'identifier' }]
+            },
+            potentialActions: { order: { potentialActions: { sendOrder: { typeOf: 'actionType' } } } }
         };
         const action = { id: 'actionId' };
 
@@ -39,9 +40,9 @@ describe('OwnershipInfoService.createFromTransaction()', () => {
         const transactionRepo = new TransactionRepo(mongoose.connection);
 
         sandbox.mock(actionRepo).expects('start').once()
-            .withExactArgs(transaction.result.postActions.sendOrderAction).resolves(action);
+            .withExactArgs(transaction.potentialActions.order.potentialActions.sendOrder).resolves(action);
         sandbox.mock(actionRepo).expects('complete').once()
-            .withArgs(transaction.result.postActions.sendOrderAction.typeOf, action.id).resolves(action);
+            .withArgs(transaction.potentialActions.order.potentialActions.sendOrder.typeOf, action.id).resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').never();
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
         // tslint:disable-next-line:no-magic-numbers
@@ -52,7 +53,7 @@ describe('OwnershipInfoService.createFromTransaction()', () => {
         sandbox.verify();
     });
 
-    it('取引結果がなければ、何もしないはず', async () => {
+    it('取引結果がなければ、エラー', async () => {
         const transaction = {
             id: 'transactionId'
         };
@@ -65,8 +66,10 @@ describe('OwnershipInfoService.createFromTransaction()', () => {
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
         sandbox.mock(ownershipInfoRepo).expects('save').never();
 
-        const result = await OwnershipInfoService.createFromTransaction(transaction.id)(actionRepo, ownershipInfoRepo, transactionRepo);
-        assert.equal(result, undefined);
+        const result = await OwnershipInfoService.createFromTransaction(transaction.id)(actionRepo, ownershipInfoRepo, transactionRepo)
+            .catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
 });

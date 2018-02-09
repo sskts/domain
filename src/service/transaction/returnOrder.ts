@@ -154,8 +154,7 @@ export function confirm(
             actionStatus: factory.actionStatusType.CompletedActionStatus,
             object: placeOrderTransactionResult.order,
             agent: placeOrderTransaction.agent,
-            recipient: placeOrderTransaction.seller,
-            startDate: new Date()
+            recipient: placeOrderTransaction.seller
         });
         const returnPayActionAttributes = factory.action.transfer.returnAction.pay.createAttributes({
             actionStatus: factory.actionStatusType.CompletedActionStatus,
@@ -164,14 +163,16 @@ export function confirm(
                 orderNumber: placeOrderTransactionResult.order.orderNumber
             },
             agent: placeOrderTransaction.seller,
-            recipient: placeOrderTransaction.agent,
-            startDate: new Date()
+            recipient: placeOrderTransaction.agent
         });
         const result: factory.transaction.returnOrder.IResult = {
             postActions: {
-                returnOrderAction: returnOrderActionAttributes,
-                returnPayAction: returnPayActionAttributes
             }
+        };
+
+        const potentialActions: factory.transaction.returnOrder.IPotentialActions = {
+            returnOrder: returnOrderActionAttributes,
+            refund: returnPayActionAttributes
         };
 
         // ステータス変更
@@ -179,7 +180,8 @@ export function confirm(
         await transactionRepo.confirmReturnOrder(
             transactionId,
             now,
-            result
+            result,
+            potentialActions
         );
 
         return result;

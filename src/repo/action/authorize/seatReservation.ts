@@ -16,16 +16,16 @@ export class MongoRepository extends AuthorizeActionRepository {
         object: factory.action.authorize.seatReservation.IObject
     ): Promise<factory.action.authorize.creditCard.IAction> {
         const actionAttributes = factory.action.authorize.seatReservation.createAttributes({
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
             object: object,
             agent: agent,
-            recipient: recipient,
-            startDate: new Date()
+            recipient: recipient
         });
 
-        return this.actionModel.create(actionAttributes).then(
-            (doc) => <factory.action.authorize.creditCard.IAction>doc.toObject()
-        );
+        return this.actionModel.create({
+            ...actionAttributes,
+            actionStatus: factory.actionStatusType.ActiveActionStatus,
+            startDate: new Date()
+        }).then((doc) => <factory.action.authorize.creditCard.IAction>doc.toObject());
     }
 
     public async complete(

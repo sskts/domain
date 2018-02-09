@@ -3,10 +3,7 @@ import { Connection } from 'mongoose';
 
 import ActionModel from '../mongoose/model/action';
 
-// export type IObject =
-//     factory.action.authorize.creditCard.IObject |
-//     factory.action.authorize.mvtk.IObject |
-//     factory.action.authorize.seatReservation.IObject;
+export type IAuthorizeAction = factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>>;
 
 /**
  * 承認アクションMongoレポジトリー
@@ -24,7 +21,7 @@ export class MongoRepository {
     public async giveUp(
         actionId: string,
         error: any
-    ): Promise<factory.action.authorize.IAction<any, any>> {
+    ): Promise<IAuthorizeAction> {
         return this.actionModel.findByIdAndUpdate(
             actionId,
             {
@@ -38,7 +35,7 @@ export class MongoRepository {
                 throw new factory.errors.NotFound('authorizeAction');
             }
 
-            return <factory.action.authorize.IAction<any, any>>doc.toObject();
+            return <IAuthorizeAction>doc.toObject();
         });
     }
 
@@ -46,11 +43,11 @@ export class MongoRepository {
      * 取引内の承認アクションを取得する
      * @param transactionId 取引ID
      */
-    public async findByTransactionId(transactionId: string): Promise<factory.action.authorize.IAction<any, any>[]> {
+    public async findByTransactionId(transactionId: string): Promise<IAuthorizeAction[]> {
         return this.actionModel.find({
             typeOf: factory.actionType.AuthorizeAction,
             'object.transactionId': transactionId,
             'purpose.typeOf': this.purpose
-        }).exec().then((docs) => docs.map((doc) => <factory.action.authorize.IAction<any, any>>doc.toObject()));
+        }).exec().then((docs) => docs.map((doc) => <IAuthorizeAction>doc.toObject()));
     }
 }

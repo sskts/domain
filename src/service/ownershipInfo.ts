@@ -23,31 +23,37 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 export function createFromTransaction(transactionId: string) {
     return async (actionRepo: ActionRepo, ownershipInfoRepository: OwnershipInfoRepo, transactionRepository: TransactionRepo) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
+        const transactionResult = transaction.result;
+        if (transactionResult === undefined) {
+            throw new factory.errors.NotFound('transaction.result');
+        }
+        const potentialActions = transaction.potentialActions;
+        if (potentialActions === undefined) {
+            throw new factory.errors.NotFound('transaction.potentialActions');
+        }
 
-        if (transaction.result !== undefined) {
-            // アクション開始
-            const sendOrderActionAttributes = transaction.result.postActions.sendOrderAction;
-            const action = await actionRepo.start<factory.action.transfer.send.order.IAction>(sendOrderActionAttributes);
+        // アクション開始
+        const sendOrderActionAttributes = potentialActions.order.potentialActions.sendOrder;
+        const action = await actionRepo.start<factory.action.transfer.send.order.IAction>(sendOrderActionAttributes);
 
+        try {
+            await Promise.all(transactionResult.ownershipInfos.map(async (ownershipInfo) => {
+                await ownershipInfoRepository.save(ownershipInfo);
+            }));
+        } catch (error) {
+            // actionにエラー結果を追加
             try {
-                await Promise.all(transaction.result.ownershipInfos.map(async (ownershipInfo) => {
-                    await ownershipInfoRepository.save(ownershipInfo);
-                }));
-            } catch (error) {
-                // actionにエラー結果を追加
-                try {
-                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                    await actionRepo.giveUp(sendOrderActionAttributes.typeOf, action.id, actionError);
-                } catch (__) {
-                    // 失敗したら仕方ない
-                }
-
-                throw new Error(error);
+                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                await actionRepo.giveUp(sendOrderActionAttributes.typeOf, action.id, actionError);
+            } catch (__) {
+                // 失敗したら仕方ない
             }
 
-            // アクション完了
-            debug('ending action...');
-            await actionRepo.complete(sendOrderActionAttributes.typeOf, action.id, {});
+            throw new Error(error);
         }
+
+        // アクション完了
+        debug('ending action...');
+        await actionRepo.complete(sendOrderActionAttributes.typeOf, action.id, {});
     };
 }

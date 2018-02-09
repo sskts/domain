@@ -398,7 +398,6 @@ export function confirm(
         const creditCardPayment = order.paymentMethods.find((m) => m.paymentMethod === factory.paymentMethodType.CreditCard);
         if (creditCardPayment !== undefined) {
             payCreditCardAction = factory.action.trade.pay.createAttributes({
-                actionStatus: factory.actionStatusType.ActiveActionStatus,
                 object: {
                     orderNumber: order.orderNumber,
                     paymentMethod: creditCardPayment,
@@ -406,7 +405,6 @@ export function confirm(
                     priceCurrency: order.priceCurrency
                 },
                 agent: transaction.agent,
-                startDate: new Date(),
                 purpose: order
             });
         }
@@ -423,32 +421,34 @@ export function confirm(
                     typeOf: 'Mvtk',
                     seatInfoSyncIn: mvtkAuthorizeAction.object.seatInfoSyncIn
                 },
-                agent: transaction.agent,
-                startDate: new Date()
+                agent: transaction.agent
             });
         }
 
         const result: factory.transaction.placeOrder.IResult = {
             order: order,
-            ownershipInfos: ownershipInfos,
-            postActions: {
-                orderAction: factory.action.trade.order.createAttributes({
-                    actionStatus: factory.actionStatusType.ActiveActionStatus,
-                    object: order,
-                    agent: transaction.agent,
-                    startDate: new Date()
-                }),
-                // クレジットカード決済があればアクション追加
-                payCreditCardAction: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
-                useMvtkAction: (useMvtkAction !== null) ? useMvtkAction : undefined,
-                sendOrderAction: factory.action.transfer.send.order.createAttributes({
-                    actionStatus: factory.actionStatusType.ActiveActionStatus,
-                    object: order,
-                    agent: transaction.seller,
-                    recipient: transaction.agent,
-                    startDate: new Date()
-                })
-            }
+            ownershipInfos: ownershipInfos
+        };
+
+        const potentialActions: factory.transaction.placeOrder.IPotentialActions = {
+            order: factory.action.trade.order.createAttributes({
+                object: order,
+                agent: transaction.agent,
+                potentialActions: {
+                    // クレジットカード決済があればアクション追加
+                    payCreditCard: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
+                    useMvtk: (useMvtkAction !== null) ? useMvtkAction : undefined,
+                    sendOrder: factory.action.transfer.send.order.createAttributes({
+                        actionStatus: factory.actionStatusType.ActiveActionStatus,
+                        object: order,
+                        agent: transaction.seller,
+                        recipient: transaction.agent,
+                        potentialActions: {
+                            // 通知アクション
+                        }
+                    })
+                }
+            })
         };
 
         // ステータス変更
@@ -457,7 +457,8 @@ export function confirm(
             transactionId,
             now,
             authorizeActions,
-            result
+            result,
+            potentialActions
         );
 
         return order;

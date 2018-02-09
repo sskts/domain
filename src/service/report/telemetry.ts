@@ -604,6 +604,8 @@ function createSellerFlow(
         const numberOfTransactionsExpired = expiredTransactions.length;
         const expiredTransactionIds = expiredTransactions.map((transaction) => transaction.id);
 
+        type IAuthorizeAction = factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>>;
+
         // 期限切れ取引に対して作成されたアクションを取得
         const actionsOnExpiredTransactions = await authorizeActionRepo.actionModel.find(
             {
@@ -611,7 +613,7 @@ function createSellerFlow(
                 'object.transactionId': { $in: expiredTransactionIds }
             },
             '_id object.transactionId'
-        ).exec().then((docs) => docs.map((doc) => <factory.action.authorize.IAction<any, any>>doc.toObject()));
+        ).exec().then((docs) => docs.map((doc) => <IAuthorizeAction>doc.toObject()));
         const numbersOfActionsOnExpired = expiredTransactionIds.map((transactionId) => {
             return actionsOnExpiredTransactions.filter((action) => action.object.transactionId === transactionId).length;
         });

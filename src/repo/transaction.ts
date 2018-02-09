@@ -92,8 +92,9 @@ export class MongoRepository {
     public async confirmPlaceOrder(
         transactionId: string,
         endDate: Date,
-        authorizeActions: factory.action.authorize.IAction<any, any>[],
-        result: factory.transaction.placeOrder.IResult
+        authorizeActions: factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>>[],
+        result: factory.transaction.placeOrder.IResult,
+        potentialActions: factory.transaction.placeOrder.IPotentialActions
     ): Promise<factory.transaction.placeOrder.ITransaction> {
         const doc = await this.transactionModel.findOneAndUpdate(
             {
@@ -105,7 +106,8 @@ export class MongoRepository {
                 status: factory.transactionStatusType.Confirmed, // ステータス変更
                 endDate: endDate,
                 'object.authorizeActions': authorizeActions, // 認可アクションリストを更新
-                result: result // resultを更新
+                result: result, // resultを更新
+                potentialActions: potentialActions // resultを更新
             },
             { new: true }
         ).exec();
@@ -160,7 +162,8 @@ export class MongoRepository {
     public async confirmReturnOrder(
         transactionId: string,
         endDate: Date,
-        result: factory.transaction.returnOrder.IResult
+        result: factory.transaction.returnOrder.IResult,
+        potentialActions: factory.transaction.returnOrder.IPotentialActions
     ): Promise<factory.transaction.returnOrder.ITransaction> {
         const doc = await this.transactionModel.findOneAndUpdate(
             {
@@ -171,7 +174,8 @@ export class MongoRepository {
             {
                 status: factory.transactionStatusType.Confirmed, // ステータス変更
                 endDate: endDate,
-                result: result // resultを更新
+                result: result,
+                potentialActions: potentialActions
             },
             { new: true }
         ).exec();

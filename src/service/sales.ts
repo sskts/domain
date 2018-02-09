@@ -65,8 +65,12 @@ export function settleCreditCardAuth(transactionId: string) {
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
         }
+        const potentialActions = transaction.potentialActions;
+        if (potentialActions === undefined) {
+            throw new factory.errors.NotFound('transaction.potentialActions');
+        }
 
-        const payActionAttributes = transactionResult.postActions.payCreditCardAction;
+        const payActionAttributes = potentialActions.order.potentialActions.payCreditCard;
         if (payActionAttributes !== undefined) {
             // クレジットカード承認アクションがあるはず
             const authorizeAction = <factory.action.authorize.creditCard.IAction>transaction.object.authorizeActions
@@ -239,8 +243,12 @@ export function settleMvtk(transactionId: string) {
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
         }
+        const potentialActions = transaction.potentialActions;
+        if (potentialActions === undefined) {
+            throw new factory.errors.NotFound('transaction.potentialActions');
+        }
 
-        const useActionAttributes = transactionResult.postActions.useMvtkAction;
+        const useActionAttributes = potentialActions.order.potentialActions.useMvtk;
         if (useActionAttributes !== undefined) {
             // ムビチケ承認アクションがあるはず
             // const authorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions
