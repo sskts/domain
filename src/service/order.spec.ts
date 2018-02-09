@@ -26,7 +26,12 @@ describe('createFromTransaction()', () => {
                 order: {}
             },
             potentialActions: {
-                order: { typeOf: 'actionType' }
+                order: {
+                    typeOf: 'actionType',
+                    potentialActions: {
+                        payCreditCard: { typeOf: 'actionType' }
+                    }
+                }
             }
         };
         const action = { id: 'actionId' };
@@ -34,6 +39,7 @@ describe('createFromTransaction()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
         sandbox.mock(actionRepo).expects('start').once()
             .withExactArgs(transaction.potentialActions.order).resolves(action);
@@ -42,10 +48,11 @@ describe('createFromTransaction()', () => {
         sandbox.mock(actionRepo).expects('giveUp').never();
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(orderRepo).expects('save').once()
+        sandbox.mock(orderRepo).expects('createIfNotExist').once()
             .withExactArgs(transaction.result.order).resolves();
+        sandbox.mock(taskRepo).expects('save').once();
 
-        const result = await sskts.service.order.createFromTransaction(transaction.id)(actionRepo, orderRepo, transactionRepo);
+        const result = await sskts.service.order.createFromTransaction(transaction.id)(actionRepo, orderRepo, transactionRepo, taskRepo);
 
         assert.equal(result, undefined);
         sandbox.verify();

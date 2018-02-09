@@ -34,12 +34,14 @@ export class MongoRepository {
         return <factory.order.IOrder>doc.toObject();
     }
 
-    public async save(order: factory.order.IOrder) {
+    /**
+     * なければ作成する
+     * @param order 注文
+     */
+    public async createIfNotExist(order: factory.order.IOrder) {
         await this.orderModel.findOneAndUpdate(
-            {
-                orderNumber: order.orderNumber
-            },
-            order,
+            { orderNumber: order.orderNumber },
+            { $setOnInsert: order },
             { upsert: true }
         ).exec();
     }

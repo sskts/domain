@@ -12,6 +12,7 @@ import { MongoRepository as CreditCardAuthorizeActionRepo } from '../repo/action
 import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../repo/action/authorize/seatReservation';
 import { MongoRepository as OrderRepo } from '../repo/order';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
+import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 import * as NotificationService from '../service/notification';
@@ -92,7 +93,8 @@ export function createOrder(
         const actionRepo = new ActionRepo(connection);
         const orderRepository = new OrderRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await OrderService.createFromTransaction(data.transactionId)(actionRepo, orderRepository, transactionRepo);
+        const taskRepo = new TaskRepo(connection);
+        await OrderService.createFromTransaction(data.transactionId)(actionRepo, orderRepository, transactionRepo, taskRepo);
     };
 }
 

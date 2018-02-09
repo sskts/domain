@@ -10,14 +10,19 @@ import * as googleLibphonenumber from 'google-libphonenumber';
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as OrderRepo } from '../repo/order';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
+import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:order');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 
+/**
+ * 注文取引結果から注文を作成する
+ * @param transactionId 注文取引ID
+ */
 export function createFromTransaction(transactionId: string) {
-    return async (actionRepo: ActionRepo, orderRepo: OrderRepo, transactionRepo: TransactionRepo) => {
+    return async (actionRepo: ActionRepo, orderRepo: OrderRepo, transactionRepo: TransactionRepo, taskRepo: TaskRepo) => {
         const transaction = await transactionRepo.findPlaceOrderById(transactionId);
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
@@ -33,7 +38,73 @@ export function createFromTransaction(transactionId: string) {
         const action = await actionRepo.start<factory.action.trade.order.IAction>(orderActionAttributes);
 
         try {
-            await orderRepo.save(transactionResult.order);
+            // 注文保管
+            await orderRepo.createIfNotExist(transactionResult.order);
+
+            // potentialActionsのためのタスクを生成
+            const orderPotentialActions = potentialActions.order.potentialActions;
+            const now = new Date();
+            const taskAttributes: factory.task.IAttributes[] = [];
+            if (orderPotentialActions.sendOrder !== undefined) {
+                taskAttributes.push(factory.task.settleSeatReservation.createAttributes({
+                    status: factory.taskStatus.Ready,
+                    runsAt: now, // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transaction.id
+                    }
+                }));
+
+                taskAttributes.push(factory.task.createOwnershipInfos.createAttributes({
+                    status: factory.taskStatus.Ready,
+                    runsAt: now, // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transaction.id
+                    }
+                }));
+            }
+
+            // クレジットカード決済
+            if (orderPotentialActions.payCreditCard !== undefined) {
+                taskAttributes.push(factory.task.settleCreditCard.createAttributes({
+                    status: factory.taskStatus.Ready,
+                    runsAt: now, // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transaction.id
+                    }
+                }));
+            }
+
+            // ムビチケ使用
+            if (orderPotentialActions.useMvtk !== undefined) {
+                taskAttributes.push(factory.task.settleMvtk.createAttributes({
+                    status: factory.taskStatus.Ready,
+                    runsAt: now, // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transaction.id
+                    }
+                }));
+            }
+
+            // タスク保管
+            await Promise.all(taskAttributes.map(async (taskAttribute) => {
+                return taskRepo.save(taskAttribute);
+            }));
         } catch (error) {
             // actionにエラー結果を追加
             try {

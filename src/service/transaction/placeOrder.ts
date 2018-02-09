@@ -54,46 +54,12 @@ export function exportTasks(status: factory.transactionStatusType) {
  * ID指定で取引のタスク出力
  */
 export function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask[]> {
-    // tslint:disable-next-line:max-func-body-length
     return async (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
 
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
-                taskAttributes.push(factory.task.settleSeatReservation.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-                taskAttributes.push(factory.task.settleCreditCard.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-                taskAttributes.push(factory.task.settleMvtk.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
                 taskAttributes.push(factory.task.createOrder.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
@@ -105,33 +71,6 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 }));
-                taskAttributes.push(factory.task.createOwnershipInfos.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-
-                // notifications.forEach((notification) => {
-                //     if (notification.group === NotificationGroup.EMAIL) {
-                //         taskAttributes.push(SendEmailNotificationTaskFactory.create({
-                //             status: factory.taskStatus.Ready,
-                //             runsAt: new Date(), // todo emailのsent_atを指定
-                //             remainingNumberOfTries: 10,
-                //             lastTriedAt: null,
-                //             numberOfTried: 0,
-                //             executionResults: [],
-                //             data: {
-                //                 notification: <EmailNotificationFactory.INotification>notification
-                //             }
-                //         }));
-                //     }
-                // });
 
                 break;
 

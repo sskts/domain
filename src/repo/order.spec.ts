@@ -51,12 +51,12 @@ describe('findByOrderInquiryKey()', () => {
     });
 });
 
-describe('save()', () => {
+describe('createIfNotExist()', () => {
     afterEach(() => {
         sandbox.restore();
     });
 
-    it('MongoDBの状態が正常であれば、保管できるはず', async () => {
+    it('MongoDBの状態が正常であれば、作成できるはず', async () => {
         const order = {};
 
         const repository = new sskts.repository.Order(sskts.mongoose.connection);
@@ -64,7 +64,7 @@ describe('save()', () => {
         sandbox.mock(repository.orderModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(new repository.orderModel());
 
-        const result = await repository.save(<any>order);
+        const result = await repository.createIfNotExist(<any>order);
 
         assert.equal(result, undefined);
         sandbox.verify();
