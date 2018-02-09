@@ -46,19 +46,7 @@ export function createFromTransaction(transactionId: string) {
             const now = new Date();
             const taskAttributes: factory.task.IAttributes[] = [];
             if (orderPotentialActions.sendOrder !== undefined) {
-                taskAttributes.push(factory.task.settleSeatReservation.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: now, // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-
-                taskAttributes.push(factory.task.createOwnershipInfos.createAttributes({
+                taskAttributes.push(factory.task.sendOrder.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,

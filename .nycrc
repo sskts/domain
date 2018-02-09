@@ -17,7 +17,8 @@
         "src/service/report/health.ts",
         "src/service/report/telemetry.ts",
         "src/service/transaction/returnOrder.ts",
-        "src/service/sales.ts"
+        "src/service/sales.ts",
+        "src/service/delivery.ts"
     ],
     "reporter": [
         "lcov",

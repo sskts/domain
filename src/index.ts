@@ -11,6 +11,7 @@ import * as ssktsFactory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
+import * as DeliveryService from './service/delivery';
 import * as EventService from './service/event';
 import * as ItemAvailabilityService from './service/itemAvailability';
 import * as MasterSyncService from './service/masterSync';
@@ -129,6 +130,7 @@ export namespace repository {
 }
 
 export namespace service {
+    export import delivery = DeliveryService;
     export import event = EventService;
     export import itemAvailability = ItemAvailabilityService;
     export import masterSync = MasterSyncService;

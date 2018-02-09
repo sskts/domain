@@ -15,6 +15,7 @@ import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
+import * as DeliveryService from '../service/delivery';
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
 import * as OwnershipInfoService from '../service/ownershipInfo';
@@ -128,5 +129,16 @@ export function returnOrder(
         const ownershipInfoRepo = new OwnershipInfoRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
         await OrderService.cancelReservations(data.transactionId)(actionRepo, orderRepo, ownershipInfoRepo, transactionRepo);
+    };
+}
+
+export function sendOrder(
+    data: factory.task.returnOrder.IData
+): IOperation<void> {
+    return async (connection: mongoose.Connection) => {
+        const actionRepo = new ActionRepo(connection);
+        const ownershipInfoRepo = new OwnershipInfoRepo(connection);
+        const transactionRepo = new TransactionRepo(connection);
+        await DeliveryService.sendOrder(data.transactionId)(actionRepo, ownershipInfoRepo, transactionRepo);
     };
 }
