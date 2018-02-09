@@ -110,13 +110,13 @@ export function createOwnershipInfos(
     };
 }
 
-export function returnCreditCardSales(
-    data: factory.task.returnCreditCardSales.IData
+export function refundCreditCard(
+    data: factory.task.refundCreditCard.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
         const actionRepo = new ActionRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await SalesService.returnCreditCardSales(data.transactionId)(actionRepo, transactionRepo);
+        await SalesService.refundCreditCard(data.transactionId)(actionRepo, transactionRepo);
     };
 }
 
@@ -128,7 +128,8 @@ export function returnOrder(
         const orderRepo = new OrderRepo(connection);
         const ownershipInfoRepo = new OwnershipInfoRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await OrderService.cancelReservations(data.transactionId)(actionRepo, orderRepo, ownershipInfoRepo, transactionRepo);
+        const taskRepo = new TaskRepo(connection);
+        await OrderService.cancelReservations(data.transactionId)(actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo);
     };
 }
 

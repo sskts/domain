@@ -399,7 +399,6 @@ export function confirm(
         if (creditCardPayment !== undefined) {
             payCreditCardAction = factory.action.trade.pay.createAttributes({
                 object: {
-                    orderNumber: order.orderNumber,
                     paymentMethod: creditCardPayment,
                     price: order.price,
                     priceCurrency: order.priceCurrency
@@ -421,7 +420,8 @@ export function confirm(
                     typeOf: 'Mvtk',
                     seatInfoSyncIn: mvtkAuthorizeAction.object.seatInfoSyncIn
                 },
-                agent: transaction.agent
+                agent: transaction.agent,
+                purpose: order
             });
         }
 

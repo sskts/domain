@@ -138,21 +138,21 @@ export function settleCreditCardAuth(transactionId: string) {
     };
 }
 
-export function returnCreditCardSales(transactionId: string) {
+export function refundCreditCard(transactionId: string) {
     return async (
         actionRepo: ActionRepo,
         transactionRep: TransactionRepo
     ) => {
         const transaction = await transactionRep.findReturnOrderById(transactionId);
-        const returnOrderTransactionresult = transaction.result;
+        const potentialActions = transaction.potentialActions;
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;
         const authorizeActions = placeOrderTransaction.object.authorizeActions
             .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
             .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
 
-        if (returnOrderTransactionresult === undefined) {
-            throw new factory.errors.NotFound('transaction.result');
+        if (potentialActions === undefined) {
+            throw new factory.errors.NotFound('transaction.potentialActions');
         }
 
         if (placeOrderTransactionResult === undefined) {
@@ -161,8 +161,8 @@ export function returnCreditCardSales(transactionId: string) {
 
         await Promise.all(authorizeActions.map(async (authorizeAction) => {
             // アクション開始
-            const returnPayActionAttributes = returnOrderTransactionresult.postActions.returnPayAction;
-            const action = await actionRepo.start<factory.action.transfer.returnAction.pay.IAction>(returnPayActionAttributes);
+            const refundActionAttributes = potentialActions.returnOrder.potentialActions.refund;
+            const action = await actionRepo.start<factory.action.trade.refund.IAction>(refundActionAttributes);
 
             let alterTranResult: GMO.services.credit.IAlterTranResult;
             try {
@@ -200,7 +200,7 @@ export function returnCreditCardSales(transactionId: string) {
                 // actionにエラー結果を追加
                 try {
                     const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                    await actionRepo.giveUp(returnPayActionAttributes.typeOf, action.id, actionError);
+                    await actionRepo.giveUp(refundActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
@@ -210,7 +210,7 @@ export function returnCreditCardSales(transactionId: string) {
 
             // アクション完了
             debug('ending action...');
-            await actionRepo.complete(returnPayActionAttributes.typeOf, action.id, { alterTranResult });
+            await actionRepo.complete(refundActionAttributes.typeOf, action.id, { alterTranResult });
         }));
     };
 }

@@ -40,59 +40,6 @@ export function createFromTransaction(transactionId: string) {
         try {
             // 注文保管
             await orderRepo.createIfNotExist(transactionResult.order);
-
-            // potentialActionsのためのタスクを生成
-            const orderPotentialActions = potentialActions.order.potentialActions;
-            const now = new Date();
-            const taskAttributes: factory.task.IAttributes[] = [];
-            if (orderPotentialActions.sendOrder !== undefined) {
-                taskAttributes.push(factory.task.sendOrder.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: now, // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-            }
-
-            // クレジットカード決済
-            if (orderPotentialActions.payCreditCard !== undefined) {
-                taskAttributes.push(factory.task.settleCreditCard.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: now, // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-            }
-
-            // ムビチケ使用
-            if (orderPotentialActions.useMvtk !== undefined) {
-                taskAttributes.push(factory.task.settleMvtk.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: now, // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-            }
-
-            // タスク保管
-            await Promise.all(taskAttributes.map(async (taskAttribute) => {
-                return taskRepo.save(taskAttribute);
-            }));
         } catch (error) {
             // actionにエラー結果を追加
             try {
@@ -108,34 +55,104 @@ export function createFromTransaction(transactionId: string) {
         // アクション完了
         debug('ending action...');
         await actionRepo.complete(orderActionAttributes.typeOf, action.id, {});
+
+        // 潜在アクション
+        await onCreate(transactionId, orderActionAttributes)(taskRepo);
     };
 }
 
+/**
+ * 注文作成後のアクション
+ * @param transactionId 注文取引ID
+ * @param orderActionAttributes 注文アクション属性
+ */
+function onCreate(transactionId: string, orderActionAttributes: factory.action.trade.order.IAttributes) {
+    return async (taskRepo: TaskRepo) => {
+        // potentialActionsのためのタスクを生成
+        const orderPotentialActions = orderActionAttributes.potentialActions;
+        const now = new Date();
+        const taskAttributes: factory.task.IAttributes[] = [];
+        if (orderPotentialActions.sendOrder !== undefined) {
+            taskAttributes.push(factory.task.sendOrder.createAttributes({
+                status: factory.taskStatus.Ready,
+                runsAt: now, // なるはやで実行
+                remainingNumberOfTries: 10,
+                lastTriedAt: null,
+                numberOfTried: 0,
+                executionResults: [],
+                data: {
+                    transactionId: transactionId
+                }
+            }));
+        }
+
+        // クレジットカード決済
+        if (orderPotentialActions.payCreditCard !== undefined) {
+            taskAttributes.push(factory.task.settleCreditCard.createAttributes({
+                status: factory.taskStatus.Ready,
+                runsAt: now, // なるはやで実行
+                remainingNumberOfTries: 10,
+                lastTriedAt: null,
+                numberOfTried: 0,
+                executionResults: [],
+                data: {
+                    transactionId: transactionId
+                }
+            }));
+        }
+
+        // ムビチケ使用
+        if (orderPotentialActions.useMvtk !== undefined) {
+            taskAttributes.push(factory.task.settleMvtk.createAttributes({
+                status: factory.taskStatus.Ready,
+                runsAt: now, // なるはやで実行
+                remainingNumberOfTries: 10,
+                lastTriedAt: null,
+                numberOfTried: 0,
+                executionResults: [],
+                data: {
+                    transactionId: transactionId
+                }
+            }));
+        }
+
+        // タスク保管
+        await Promise.all(taskAttributes.map(async (taskAttribute) => {
+            return taskRepo.save(taskAttribute);
+        }));
+    };
+}
+
+/**
+ * 注文返品アクション
+ * @param returnOrderTransactionId 注文返品取引ID
+ */
 export function cancelReservations(returnOrderTransactionId: string) {
     return async (
         actionRepo: ActionRepo,
         orderRepo: OrderRepo,
         ownershipInfoRepo: OwnershipInfoRepo,
-        transactionRepo: TransactionRepo
+        transactionRepo: TransactionRepo,
+        taskRepo: TaskRepo
     ) => {
-        const now = new Date();
         const transaction = await transactionRepo.findReturnOrderById(returnOrderTransactionId);
+        const potentialActions = transaction.potentialActions;
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;
 
-        if (transaction.result === undefined) {
-            throw new factory.errors.NotFound('transaction.result');
+        if (potentialActions === undefined) {
+            throw new factory.errors.NotFound('transaction.potentialActions');
         }
-
         if (placeOrderTransactionResult === undefined) {
             throw new factory.errors.NotFound('placeOrderTransaction.result');
         }
 
         // アクション開始
-        const returnOrderActionAttributes = transaction.result.postActions.returnOrderAction;
+        const returnOrderActionAttributes = potentialActions.returnOrder;
         const action = await actionRepo.start<factory.action.transfer.returnAction.order.IAction>(returnOrderActionAttributes);
 
         try {
+            const now = new Date();
             const order = placeOrderTransactionResult.order;
 
             // 非同期でCOA本予約取消
@@ -200,5 +217,39 @@ export function cancelReservations(returnOrderTransactionId: string) {
         // アクション完了
         debug('ending action...');
         await actionRepo.complete(returnOrderActionAttributes.typeOf, action.id, {});
+
+        // 潜在アクション
+        await onReturn(returnOrderTransactionId, returnOrderActionAttributes)(taskRepo);
+    };
+}
+
+/**
+ * 返品アクション後の処理
+ * @param transactionId 注文返品取引ID
+ * @param returnActionAttributes 返品アクション属性
+ */
+function onReturn(transactionId: string, returnActionAttributes: factory.action.transfer.returnAction.order.IAttributes) {
+    return async (taskRepo: TaskRepo) => {
+        const now = new Date();
+        const taskAttributes: factory.task.IAttributes[] = [];
+        if (returnActionAttributes.potentialActions.refund !== undefined) {
+            // 返金タスク作成
+            taskAttributes.push(factory.task.refundCreditCard.createAttributes({
+                status: factory.taskStatus.Ready,
+                runsAt: now, // なるはやで実行
+                remainingNumberOfTries: 10,
+                lastTriedAt: null,
+                numberOfTried: 0,
+                executionResults: [],
+                data: {
+                    transactionId: transactionId
+                }
+            }));
+        }
+
+        // タスク保管
+        await Promise.all(taskAttributes.map(async (taskAttribute) => {
+            return taskRepo.save(taskAttribute);
+        }));
     };
 }

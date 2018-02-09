@@ -150,29 +150,26 @@ export function confirm(
         if (placeOrderTransactionResult === undefined) {
             throw new Error('Result of placeOrder transaction to return undefined.');
         }
-        const returnOrderActionAttributes = factory.action.transfer.returnAction.order.createAttributes({
-            actionStatus: factory.actionStatusType.CompletedActionStatus,
-            object: placeOrderTransactionResult.order,
-            agent: placeOrderTransaction.agent,
-            recipient: placeOrderTransaction.seller
-        });
-        const returnPayActionAttributes = factory.action.transfer.returnAction.pay.createAttributes({
-            actionStatus: factory.actionStatusType.CompletedActionStatus,
+        const refundActionAttributes = factory.action.trade.refund.createAttributes({
             // tslint:disable-next-line:no-suspicious-comment
             object: <any>{ // TODO アクションリポジトリーから支払アクションを取得する
-                orderNumber: placeOrderTransactionResult.order.orderNumber
             },
             agent: placeOrderTransaction.seller,
-            recipient: placeOrderTransaction.agent
+            recipient: placeOrderTransaction.agent,
+            purpose: placeOrderTransactionResult.order
+        });
+        const returnOrderActionAttributes = factory.action.transfer.returnAction.order.createAttributes({
+            object: placeOrderTransactionResult.order,
+            agent: placeOrderTransaction.agent,
+            recipient: placeOrderTransaction.seller,
+            potentialActions: {
+                refund: refundActionAttributes
+            }
         });
         const result: factory.transaction.returnOrder.IResult = {
-            postActions: {
-            }
         };
-
         const potentialActions: factory.transaction.returnOrder.IPotentialActions = {
-            returnOrder: returnOrderActionAttributes,
-            refund: returnPayActionAttributes
+            returnOrder: returnOrderActionAttributes
         };
 
         // ステータス変更
@@ -244,19 +241,6 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
             case factory.transactionStatusType.Confirmed:
                 // 注文返品タスク
                 taskAttributes.push(factory.task.returnOrder.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-
-                // 売上取消タスク
-                taskAttributes.push(factory.task.returnCreditCardSales.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
