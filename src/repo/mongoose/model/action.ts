@@ -133,6 +133,14 @@ schema.index(
         }
     }
 );
+schema.index(
+    { 'purpose.orderNumber': 1 },
+    {
+        partialFilterExpression: {
+            'purpose.orderNumber': { $exists: true }
+        }
+    }
+);
 
 export default mongoose.model('Action', schema)
     .on('index', (error) => {
