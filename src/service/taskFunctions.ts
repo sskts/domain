@@ -8,8 +8,6 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
-import { MongoRepository as CreditCardAuthorizeActionRepo } from '../repo/action/authorize/creditCard';
-import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../repo/action/authorize/seatReservation';
 import { MongoRepository as OrderRepo } from '../repo/order';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { MongoRepository as TaskRepo } from '../repo/task';
@@ -36,8 +34,8 @@ export function cancelSeatReservation(
     data: factory.task.cancelSeatReservation.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const authorizeActionRepo = new SeatReservationAuthorizeActionRepo(connection);
-        await StockService.cancelSeatReservationAuth(data.transactionId)(authorizeActionRepo);
+        const actionRepo = new ActionRepo(connection);
+        await StockService.cancelSeatReservationAuth(data.transactionId)(actionRepo);
     };
 }
 
@@ -45,8 +43,8 @@ export function cancelCreditCard(
     data: factory.task.cancelCreditCard.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const authorizeActionRepo = new CreditCardAuthorizeActionRepo(connection);
-        await SalesService.cancelCreditCardAuth(data.transactionId)(authorizeActionRepo);
+        const actionRepo = new ActionRepo(connection);
+        await SalesService.cancelCreditCardAuth(data.transactionId)(actionRepo);
     };
 }
 

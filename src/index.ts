@@ -30,10 +30,6 @@ import * as ReturnOrderTransactionService from './service/transaction/returnOrde
 import * as UtilService from './service/util';
 
 import { MongoRepository as ActionRepo } from './repo/action';
-import { MongoRepository as AuthorizeActionRepo } from './repo/action/authorize';
-import { MongoRepository as CreditCardAuthorizeActionRepo } from './repo/action/authorize/creditCard';
-import { MongoRepository as MvtkAuthorizeActionRepo } from './repo/action/authorize/mvtk';
-import { MongoRepository as SeatReservationAuthorizeActionRepo } from './repo/action/authorize/seatReservation';
 import { MongoRepository as PrintActionRepo } from './repo/action/print';
 import { MongoRepository as ClientRepo } from './repo/client';
 import { MongoRepository as CreativeWorkRepo } from './repo/creativeWork';
@@ -102,12 +98,6 @@ export import GMO = GMO;
 export namespace repository {
     export class Action extends ActionRepo { }
     export namespace action {
-        export class Authorize extends AuthorizeActionRepo { }
-        export namespace authorize {
-            export class CreditCard extends CreditCardAuthorizeActionRepo { }
-            export class Mvtk extends MvtkAuthorizeActionRepo { }
-            export class SeatReservation extends SeatReservationAuthorizeActionRepo { }
-        }
         export class Print extends PrintActionRepo { }
     }
     export class Client extends ClientRepo { }

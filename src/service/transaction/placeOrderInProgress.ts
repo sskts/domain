@@ -13,9 +13,7 @@ import * as moment from 'moment';
 require('moment-timezone');
 import * as util from 'util';
 
-import { MongoRepository as CreditCardAuthorizeActionRepo } from '../../repo/action/authorize/creditCard';
-import { MongoRepository as MvtkAuthorizeActionRepo } from '../../repo/action/authorize/mvtk';
-import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../../repo/action/authorize/seatReservation';
+import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as OrganizationRepo } from '../../repo/organization';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 import { MongoRepository as TransactionCountRepo } from '../../repo/transactionCount';
@@ -343,9 +341,7 @@ export function confirm(
 ) {
     // tslint:disable-next-line:max-func-body-length
     return async (
-        creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo,
-        mvtkAuthorizeActionRepo: MvtkAuthorizeActionRepo,
-        seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
+        actionRepo: ActionRepo,
         transactionRepo: TransactionRepo
     ) => {
         const now = moment().toDate();
@@ -355,11 +351,7 @@ export function confirm(
         }
 
         // 取引に対する全ての承認アクションをマージ
-        let authorizeActions = [
-            ... await creditCardAuthorizeActionRepo.findByTransactionId(transactionId),
-            ... await mvtkAuthorizeActionRepo.findByTransactionId(transactionId),
-            ... await seatReservationAuthorizeActionRepo.findByTransactionId(transactionId)
-        ];
+        let authorizeActions = await actionRepo.findAuthorizeByTransactionId(transactionId);
 
         // 万が一このプロセス中に他処理が発生してもそれらを無視するように、endDateでフィルタリング
         authorizeActions = authorizeActions.filter((a) => (a.endDate !== undefined && a.endDate < now));

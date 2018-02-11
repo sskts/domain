@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Deprecated
 
 ### Removed
+- 承認アクションリポジトリーを削除。
 
 ### Fixed
 - COAから取得した空席数が負の値の場合のイベント利用状況を修正。

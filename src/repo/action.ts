@@ -15,6 +15,8 @@ export interface IAction {
     endDate?: Date;
 }
 
+export type IAuthorizeAction = factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>>;
+
 /**
  * アクションリポジトリー
  */
@@ -151,5 +153,16 @@ export class MongoRepository {
 
                 return <T>doc.toObject();
             });
+    }
+
+    /**
+     * 取引内の承認アクションを取得する
+     * @param transactionId 取引ID
+     */
+    public async findAuthorizeByTransactionId(transactionId: string): Promise<IAuthorizeAction[]> {
+        return this.actionModel.find({
+            typeOf: factory.actionType.AuthorizeAction,
+            'purpose.id': transactionId
+        }).exec().then((docs) => docs.map((doc) => <IAuthorizeAction>doc.toObject()));
     }
 }

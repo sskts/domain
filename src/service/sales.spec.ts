@@ -59,6 +59,7 @@ describe('cancelCreditCardAuth()', () => {
             {
                 id: 'actionId',
                 actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+                object: { typeOf: 'CreditCard' },
                 purpose: {},
                 result: {
                     entryTranArgs: {},
@@ -66,13 +67,13 @@ describe('cancelCreditCardAuth()', () => {
                 }
             }
         ];
-        const authorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
 
-        sandbox.mock(authorizeActionRepo).expects('findByTransactionId').once()
+        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .withExactArgs(existingTransaction.id).resolves(authorizeActions);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().resolves();
 
-        const result = await sskts.service.sales.cancelCreditCardAuth(existingTransaction.id)(authorizeActionRepo);
+        const result = await sskts.service.sales.cancelCreditCardAuth(existingTransaction.id)(actionRepo);
 
         assert.equal(result, undefined);
         sandbox.verify();

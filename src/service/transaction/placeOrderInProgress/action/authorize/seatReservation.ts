@@ -8,19 +8,19 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { INTERNAL_SERVER_ERROR } from 'http-status';
 
-import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../../../../../repo/action/authorize/seatReservation';
+import { MongoRepository as ActionRepo } from '../../../../../repo/action';
 import { MongoRepository as EventRepo } from '../../../../../repo/event';
 import { MongoRepository as TransactionRepo } from '../../../../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:seatReservation');
 
-export type IEventAndActionAndTransactionOperation<T> = (
+export type ICreateOperation<T> = (
     eventRepo: EventRepo,
-    seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
+    actionRepo: ActionRepo,
     transactionRepo: TransactionRepo
 ) => Promise<T>;
 export type IActionAndTransactionOperation<T> = (
-    seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
+    actionRepo: ActionRepo,
     transactionRepo: TransactionRepo
 ) => Promise<T>;
 
@@ -264,10 +264,10 @@ export function create(
     transactionId: string,
     eventIdentifier: string,
     offers: factory.offer.seatReservation.IOffer[]
-): IEventAndActionAndTransactionOperation<factory.action.authorize.seatReservation.IAction> {
+): ICreateOperation<factory.action.authorize.seatReservation.IAction> {
     return async (
         eventRepo: EventRepo,
-        seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
+        actionRepo: ActionRepo,
         transactionRepo: TransactionRepo
     ) => {
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
@@ -283,17 +283,18 @@ export function create(
         const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
 
         // 承認アクションを開始
-        const action = await seatReservationAuthorizeActionRepo.start(
-            transaction.seller,
-            transaction.agent,
-            {
+        const actionAttributes = factory.action.authorize.seatReservation.createAttributes({
+            object: {
                 typeOf: 'SeatReservation',
                 transactionId: transactionId,
                 offers: offersWithDetails,
                 individualScreeningEvent: individualScreeningEvent
             },
-            { ...transaction, typeOf: <any>factory.action.authorize.authorizeActionPurpose.SeatReservation }
-        );
+            agent: transaction.seller,
+            recipient: transaction.agent,
+            purpose: { ...transaction, typeOf: <any>factory.action.authorize.authorizeActionPurpose.SeatReservation }
+        });
+        const action = await actionRepo.start<factory.action.authorize.seatReservation.IAction>(actionAttributes);
 
         // COA仮予約
         const updTmpReserveSeatArgs = {
@@ -319,7 +320,7 @@ export function create(
             // actionにエラー結果を追加
             try {
                 const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                await seatReservationAuthorizeActionRepo.giveUp(action.id, actionError);
+                await actionRepo.giveUp(action.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -346,15 +347,13 @@ export function create(
 
         // アクションを完了
         debug('ending authorize action...');
+        const result: factory.action.authorize.seatReservation.IResult = {
+            price: offers2resultPrice(offersWithDetails),
+            updTmpReserveSeatArgs: updTmpReserveSeatArgs,
+            updTmpReserveSeatResult: updTmpReserveSeatResult
+        };
 
-        return seatReservationAuthorizeActionRepo.complete(
-            action.id,
-            {
-                price: offers2resultPrice(offersWithDetails),
-                updTmpReserveSeatArgs: updTmpReserveSeatArgs,
-                updTmpReserveSeatResult: updTmpReserveSeatResult
-            }
-        );
+        return actionRepo.complete<factory.action.authorize.seatReservation.IAction>(action.typeOf, action.id, result);
     };
 }
 
@@ -372,7 +371,7 @@ export function cancel(
     transactionId: string,
     actionId: string
 ) {
-    return async (seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo, transactionRepo: TransactionRepo) => {
+    return async (actionRepo: ActionRepo, transactionRepo: TransactionRepo) => {
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
@@ -381,7 +380,7 @@ export function cancel(
 
         // MongoDBでcompleteステータスであるにも関わらず、COAでは削除されている、というのが最悪の状況
         // それだけは回避するためにMongoDBを先に変更
-        const action = await seatReservationAuthorizeActionRepo.cancel(actionId, transactionId);
+        const action = await actionRepo.cancel(factory.actionType.AuthorizeAction, actionId);
         const actionResult = <factory.action.authorize.seatReservation.IResult>action.result;
 
         // 座席仮予約削除
@@ -415,10 +414,10 @@ export function changeOffers(
     actionId: string,
     eventIdentifier: string,
     offers: factory.offer.seatReservation.IOffer[]
-): IEventAndActionAndTransactionOperation<factory.action.authorize.seatReservation.IAction> {
+): ICreateOperation<factory.action.authorize.seatReservation.IAction> {
     return async (
         eventRepo: EventRepo,
-        seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
+        actionRepo: ActionRepo,
         transactionRepo: TransactionRepo
     ) => {
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
@@ -428,7 +427,9 @@ export function changeOffers(
         }
 
         // アクション中のイベント識別子と座席リストが合っているかどうか確認
-        const authorizeAction = await seatReservationAuthorizeActionRepo.findById(actionId);
+        const authorizeAction = await actionRepo.findById<factory.action.authorize.seatReservation.IAction>(
+            factory.actionType.AuthorizeAction, actionId
+        );
         // 完了ステータスのアクションのみ更新可能
         if (authorizeAction.actionStatus !== factory.actionStatusType.CompletedActionStatus) {
             throw new factory.errors.NotFound('authorizeAction');
@@ -455,11 +456,26 @@ export function changeOffers(
         authorizeAction.object.offers = offersWithDetails;
         (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).price = offers2resultPrice(offersWithDetails);
 
-        return seatReservationAuthorizeActionRepo.updateObjectAndResultById(
-            actionId,
-            transactionId,
-            authorizeAction.object,
-            (<factory.action.authorize.seatReservation.IResult>authorizeAction.result)
-        );
+        // 座席予約承認アクションの供給情報を変更する
+        return actionRepo.actionModel.findOneAndUpdate(
+            {
+                typeOf: factory.actionType.AuthorizeAction,
+                _id: actionId,
+                actionStatus: factory.actionStatusType.CompletedActionStatus // 完了ステータスのアクションのみ
+            },
+            {
+                object: authorizeAction.object,
+                result: (<factory.action.authorize.seatReservation.IResult>authorizeAction.result)
+            },
+            { new: true }
+        ).exec()
+            .then((doc) => {
+                if (doc === null) {
+                    throw new factory.errors.NotFound('authorizeAction');
+
+                }
+
+                return <factory.action.authorize.seatReservation.IAction>doc.toObject();
+            });
     };
 }

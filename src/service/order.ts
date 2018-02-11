@@ -198,10 +198,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
 
             // 注文ステータス変更
             debug('changing orderStatus...');
-            await orderRepo.orderModel.findOneAndUpdate(
-                { orderNumber: order.orderNumber },
-                { orderStatus: factory.orderStatus.OrderReturned }
-            ).exec();
+            await orderRepo.changeStatus(order.orderNumber, factory.orderStatus.OrderReturned);
         } catch (error) {
             // actionにエラー結果を追加
             try {

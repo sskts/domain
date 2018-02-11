@@ -9,7 +9,7 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 
-import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../repo/action/authorize/seatReservation';
+import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:stock');
@@ -24,11 +24,14 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  * @param {string} transactionId 取引ID
  */
 export function cancelSeatReservationAuth(transactionId: string) {
-    return async (seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo) => {
+    return async (actionRepo: ActionRepo) => {
         // 座席仮予約アクションを取得
         const authorizeActions: factory.action.authorize.seatReservation.IAction[] =
-            await seatReservationAuthorizeActionRepo.findByTransactionId(transactionId)
-                .then((actions) => actions.filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus));
+            await actionRepo.findAuthorizeByTransactionId(transactionId)
+                .then((actions) => actions
+                    .filter((a) => a.object.typeOf === 'SeatReservation')
+                    .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                );
 
         await Promise.all(authorizeActions.map(async (action) => {
             debug('calling deleteTmpReserve...');

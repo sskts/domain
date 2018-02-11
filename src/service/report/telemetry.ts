@@ -8,7 +8,7 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
-import { MongoRepository as AuthorizeActionRepo } from '../../repo/action/authorize';
+import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TelemetryRepo } from '../../repo/telemetry';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
@@ -22,14 +22,14 @@ export type TransactionOperation<T> =
 export type TaskAndTransactionOperation<T> =
     (taskRepo: TaskRepo, transactionRepo: TransactionRepo) => Promise<T>;
 export type TaskAndTransactionAndAuthorizeActionOperation<T> =
-    (taskRepo: TaskRepo, transactionRepo: TransactionRepo, authorizeActionRepo: AuthorizeActionRepo) => Promise<T>;
+    (taskRepo: TaskRepo, transactionRepo: TransactionRepo, actionRepo: ActionRepo) => Promise<T>;
 export type TransactionAndAuthorizeActionOperation<T> =
-    (transactionRepo: TransactionRepo, authorizeActionRepo: AuthorizeActionRepo) => Promise<T>;
+    (transactionRepo: TransactionRepo, actionRepo: ActionRepo) => Promise<T>;
 export type TaskAndTelemetryAndTransactionOperation<T> = (
     taskRepo: TaskRepo,
     telemetryRepo: TelemetryRepo,
     transactionRep: TransactionRepo,
-    authorizeActionRepo: AuthorizeActionRepo
+    actionRepo: ActionRepo
 ) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:report:telemetry');
@@ -379,7 +379,7 @@ export function createFlow(target: {
         taskRepo: TaskRepo,
         telemetryRepo: TelemetryRepo,
         transactionRepo: TransactionRepo,
-        authorizeActionRepo: AuthorizeActionRepo
+        actionRepo: ActionRepo
     ) => {
         const startDate = new Date();
         const measuredThrough = moment(target.measuredAt);
@@ -388,7 +388,7 @@ export function createFlow(target: {
         let telemetry: IGlobalFlowTelemetry | ISellerFlowTelemetry;
         if (target.sellerId !== undefined) {
             const flowData = await createSellerFlow(measuredFrom.toDate(), measuredThrough.toDate(), target.sellerId)(
-                transactionRepo, authorizeActionRepo
+                transactionRepo, actionRepo
             );
             debug('flowData created.', flowData);
 
@@ -504,7 +504,7 @@ function createSellerFlow(
     // tslint:disable-next-line:max-func-body-length
     return async (
         transactionRepo: TransactionRepo,
-        authorizeActionRepo: AuthorizeActionRepo
+        actionRepo: ActionRepo
     ) => {
         // 計測期間内に開始された取引数を算出する
         const numberOfTransactionsStarted = await transactionRepo.transactionModel.count({
@@ -607,7 +607,7 @@ function createSellerFlow(
         type IAuthorizeAction = factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>>;
 
         // 期限切れ取引に対して作成されたアクションを取得
-        const actionsOnExpiredTransactions = await authorizeActionRepo.actionModel.find(
+        const actionsOnExpiredTransactions = await actionRepo.actionModel.find(
             {
                 typeOf: factory.actionType.AuthorizeAction,
                 'purpose.id': { $in: expiredTransactionIds }

@@ -9,7 +9,6 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
-import { MongoRepository as CreditCardAuthorizeActionRepo } from '../repo/action/authorize/creditCard';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:sales');
@@ -24,11 +23,14 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  * @param {string} transactionId 取引ID
  */
 export function cancelCreditCardAuth(transactionId: string) {
-    return async (creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo) => {
+    return async (actionRepo: ActionRepo) => {
         // クレジットカード仮売上アクションを取得
         const authorizeActions: factory.action.authorize.creditCard.IAction[] =
-            await creditCardAuthorizeActionRepo.findByTransactionId(transactionId)
-                .then((actions) => actions.filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus));
+            await actionRepo.findAuthorizeByTransactionId(transactionId)
+                .then((actions) => actions
+                    .filter((a) => a.object.typeOf === 'CreditCard')
+                    .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                );
 
         await Promise.all(authorizeActions.map(async (action) => {
             const entryTranArgs = (<factory.action.authorize.creditCard.IResult>action.result).entryTranArgs;

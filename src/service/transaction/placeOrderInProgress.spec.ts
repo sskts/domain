@@ -677,20 +677,14 @@ describe('confirm()', () => {
             url: `/inquiry/login?theater=${seatReservationAuthorizeActions[0].result.updTmpReserveSeatArgs.theaterCode}&reserve=${seatReservationAuthorizeActions[0].result.updTmpReserveSeatResult.tmpReserveNum}`
         };
 
-        const creditCardAuthorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
-        const mvtkAuthorizeActionRepo = new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection);
-        const seatReservationAuthorizeActionRepo = new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(moment.fn).expects('toDate').once().returns(orderDate);
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(creditCardAuthorizeActionRepo).expects('findByTransactionId').once()
-            .withExactArgs(transaction.id).resolves(creditCardAuthorizeActions);
-        sandbox.mock(mvtkAuthorizeActionRepo).expects('findByTransactionId').once()
-            .withExactArgs(transaction.id).resolves([]);
-        sandbox.mock(seatReservationAuthorizeActionRepo).expects('findByTransactionId').once()
-            .withExactArgs(transaction.id).resolves(seatReservationAuthorizeActions);
+        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
+            .withExactArgs(transaction.id).resolves([...creditCardAuthorizeActions, ...seatReservationAuthorizeActions]);
         sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').once().returns(eventReservations);
         sandbox.mock(sskts.factory.ownershipInfo).expects('create').exactly(order.acceptedOffers.length).returns([]);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();
@@ -698,7 +692,7 @@ describe('confirm()', () => {
         const result = await sskts.service.transaction.placeOrderInProgress.confirm(
             agent.id,
             transaction.id
-        )(creditCardAuthorizeActionRepo, mvtkAuthorizeActionRepo, seatReservationAuthorizeActionRepo, transactionRepo);
+        )(actionRepo, transactionRepo);
 
         assert.deepEqual(result, order);
         sandbox.verify();
@@ -746,18 +740,12 @@ describe('confirm()', () => {
             }
         ];
 
-        const creditCardAuthorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
-        const mvtkAuthorizeActionRepo = new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection);
-        const seatReservationAuthorizeActionRepo = new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(creditCardAuthorizeActionRepo).expects('findByTransactionId').once()
-            .withExactArgs(transaction.id).resolves(authorizeActions);
-        sandbox.mock(mvtkAuthorizeActionRepo).expects('findByTransactionId').once()
-            .withExactArgs(transaction.id).resolves(authorizeActions);
-        sandbox.mock(seatReservationAuthorizeActionRepo).expects('findByTransactionId').once()
+        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .withExactArgs(transaction.id).resolves(authorizeActions);
         sandbox.mock(sskts.factory.ownershipInfo).expects('create').never();
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
@@ -765,7 +753,7 @@ describe('confirm()', () => {
         const result = await sskts.service.transaction.placeOrderInProgress.confirm(
             agent.id,
             transaction.id
-        )(creditCardAuthorizeActionRepo, mvtkAuthorizeActionRepo, seatReservationAuthorizeActionRepo, transactionRepo)
+        )(actionRepo, transactionRepo)
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Argument);
@@ -788,23 +776,19 @@ describe('confirm()', () => {
             }
         };
 
-        const creditCardAuthorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
-        const mvtkAuthorizeActionRepo = new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection);
-        const seatReservationAuthorizeActionRepo = new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(creditCardAuthorizeActionRepo).expects('findByTransactionId').never();
-        sandbox.mock(mvtkAuthorizeActionRepo).expects('findByTransactionId').never();
-        sandbox.mock(seatReservationAuthorizeActionRepo).expects('findByTransactionId').never();
+        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').never();
         sandbox.mock(sskts.factory.ownershipInfo).expects('create').never();
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm(
             agent.id,
             transaction.id
-        )(creditCardAuthorizeActionRepo, mvtkAuthorizeActionRepo, seatReservationAuthorizeActionRepo, transactionRepo)
+        )(actionRepo, transactionRepo)
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
