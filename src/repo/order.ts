@@ -45,4 +45,20 @@ export class MongoRepository {
             { upsert: true }
         ).exec();
     }
+
+    /**
+     * 注文ステータスを変更する
+     * @param orderNumber 注文番号
+     * @param orderStatus 注文ステータス
+     */
+    public async changeStatus(orderNumber: string, orderStatus: factory.orderStatus) {
+        const doc = await this.orderModel.findOneAndUpdate(
+            { orderNumber: orderNumber },
+            { orderStatus: orderStatus }
+        ).exec();
+
+        if (doc === null) {
+            throw new factory.errors.NotFound('order');
+        }
+    }
 }

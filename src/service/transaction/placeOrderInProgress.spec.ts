@@ -6,6 +6,7 @@
  */
 
 import * as waiter from '@motionpicture/waiter-domain';
+import * as moment from 'moment';
 import * as assert from 'power-assert';
 import * as redis from 'redis-mock';
 import * as sinon from 'sinon';
@@ -541,20 +542,27 @@ describe('confirm()', () => {
         sandbox.restore();
     });
 
+    // tslint:disable-next-line:max-func-body-length
     it('確定条件が整っていれば、確定できるはず', async () => {
         const agent = {
+            typeOf: 'Person',
             id: 'agentId'
         };
         const seller = {
             id: 'sellerId',
             name: { ja: 'ja', en: 'ne' }
         };
+        const customerContact = {
+            familyName: 'familyName',
+            givenName: 'givenName',
+            telephone: '+819012345678'
+        };
         const transaction = {
             id: 'transactionId',
             agent: agent,
             seller: seller,
             object: {
-                customerContact: {}
+                customerContact: customerContact
             }
         };
         const creditCardAuthorizeActions = [
@@ -562,12 +570,17 @@ describe('confirm()', () => {
                 id: 'actionId2',
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.agent,
-                object: {},
+                object: {
+                    typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard
+                },
                 result: {
+                    execTranResult: {
+                        orderId: 'orderId'
+                    },
                     price: 1234
                 },
                 endDate: new Date(),
-                purpose: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard }
+                purpose: {}
             }
         ];
         const seatReservationAuthorizeActions = [
@@ -575,39 +588,93 @@ describe('confirm()', () => {
                 id: 'actionId1',
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.seller,
-                object: {},
+                object: {
+                    typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation,
+                    individualScreeningEvent: {
+                        superEvent: {
+                            location: {
+                                typeOf: 'MovieTheater',
+                                name: { ja: 'naem' }
+                            }
+                        }
+                    }
+                },
                 result: {
-                    updTmpReserveSeatArgs: {},
+                    updTmpReserveSeatArgs: {
+                        theaterCode: '118'
+                    },
+                    updTmpReserveSeatResult: {
+                        tmpReserveNum: 12345
+                    },
                     price: 1234
                 },
                 endDate: new Date(),
-                purpose: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation }
+                purpose: {}
             }
         ];
-        const order = {
-            orderNumber: 'orderNumber',
-            acceptedOffers: [
-                {
-                    itemOffered: {
-                        reservationFor: { endDate: new Date() },
-                        reservedTicket: { ticketToken: 'ticketToken1' }
-                    }
+        const eventReservations = [
+            {
+                reservationFor: { endDate: new Date() },
+                reservedTicket: {
+                    ticketToken: 'ticketToken1',
+                    underName: { name: {} }
                 },
-                {
-                    itemOffered: {
-                        reservationFor: { endDate: new Date() },
-                        reservedTicket: { ticketToken: 'ticketToken2' }
+                underName: { name: {} },
+                price: 234
+            },
+            {
+                reservationFor: { endDate: new Date() },
+                reservedTicket: {
+                    ticketToken: 'ticketToken2',
+                    underName: { name: {} }
+                },
+                underName: { name: {} },
+                price: 1000
+            }
+        ];
+        // tslint:disable-next-line:no-magic-numbers
+        const orderDate = moment().add(10, 'seconds').toDate();
+        const order = {
+            orderNumber: `${moment(orderDate).tz('Asia/Tokyo').format('YYMMDD')}-118-12345`,
+            orderDate: orderDate,
+            orderStatus: sskts.factory.orderStatus.OrderProcessing,
+            confirmationNumber: 12345,
+            orderInquiryKey: {
+                confirmationNumber: 12345,
+                telephone: customerContact.telephone,
+                theaterCode: '118'
+            },
+            isGift: false,
+            acceptedOffers: eventReservations.map((r) => {
+                return {
+                    itemOffered: r,
+                    price: r.price,
+                    priceCurrency: sskts.factory.priceCurrency.JPY,
+                    seller: {
+                        typeOf: seatReservationAuthorizeActions[0].object.individualScreeningEvent.superEvent.location.typeOf,
+                        name: seatReservationAuthorizeActions[0].object.individualScreeningEvent.superEvent.location.name.ja
                     }
-                }
-            ],
+                };
+            }),
             customer: {
-                name: 'name'
+                ...customerContact,
+                id: transaction.agent.id,
+                typeOf: transaction.agent.typeOf,
+                name: `${transaction.object.customerContact.familyName} ${transaction.object.customerContact.givenName}`,
+                url: ''
             },
             paymentMethods: [{
                 name: 'クレジットカード',
                 paymentMethod: 'CreditCard',
-                paymentMethodId: 'paymentMethodId'
-            }]
+                paymentMethodId: creditCardAuthorizeActions[0].result.execTranResult.orderId
+            }],
+            discounts: [],
+            price: 1234,
+            priceCurrency: sskts.factory.priceCurrency.JPY,
+            seller: transaction.seller,
+            typeOf: 'Order',
+            // tslint:disable-next-line:max-line-length
+            url: `/inquiry/login?theater=${seatReservationAuthorizeActions[0].result.updTmpReserveSeatArgs.theaterCode}&reserve=${seatReservationAuthorizeActions[0].result.updTmpReserveSeatResult.tmpReserveNum}`
         };
 
         const creditCardAuthorizeActionRepo = new sskts.repository.action.authorize.CreditCard(sskts.mongoose.connection);
@@ -615,6 +682,7 @@ describe('confirm()', () => {
         const seatReservationAuthorizeActionRepo = new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
+        sandbox.mock(moment.fn).expects('toDate').once().returns(orderDate);
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(creditCardAuthorizeActionRepo).expects('findByTransactionId').once()
@@ -623,7 +691,7 @@ describe('confirm()', () => {
             .withExactArgs(transaction.id).resolves([]);
         sandbox.mock(seatReservationAuthorizeActionRepo).expects('findByTransactionId').once()
             .withExactArgs(transaction.id).resolves(seatReservationAuthorizeActions);
-        sandbox.mock(sskts.factory.order).expects('createFromPlaceOrderTransaction').once().returns(order);
+        sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').once().returns(eventReservations);
         sandbox.mock(sskts.factory.ownershipInfo).expects('create').exactly(order.acceptedOffers.length).returns([]);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();
 
@@ -691,7 +759,6 @@ describe('confirm()', () => {
             .withExactArgs(transaction.id).resolves(authorizeActions);
         sandbox.mock(seatReservationAuthorizeActionRepo).expects('findByTransactionId').once()
             .withExactArgs(transaction.id).resolves(authorizeActions);
-        sandbox.mock(sskts.factory.order).expects('createFromPlaceOrderTransaction').never();
         sandbox.mock(sskts.factory.ownershipInfo).expects('create').never();
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 
@@ -731,7 +798,6 @@ describe('confirm()', () => {
         sandbox.mock(creditCardAuthorizeActionRepo).expects('findByTransactionId').never();
         sandbox.mock(mvtkAuthorizeActionRepo).expects('findByTransactionId').never();
         sandbox.mock(seatReservationAuthorizeActionRepo).expects('findByTransactionId').never();
-        sandbox.mock(sskts.factory.order).expects('createFromPlaceOrderTransaction').never();
         sandbox.mock(sskts.factory.ownershipInfo).expects('create').never();
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 

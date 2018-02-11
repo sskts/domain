@@ -9,10 +9,11 @@ import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
+import { MongoRepository as OrderRepo } from '../repo/order';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
-const debug = createDebug('sskts-domain:service:stock');
+const debug = createDebug('sskts-domain:service:delivery');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 
@@ -22,7 +23,7 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  * @param transactionId 注文取引ID
  */
 export function sendOrder(transactionId: string) {
-    return async (actionRepo: ActionRepo, ownershipInfoRepo: OwnershipInfoRepo, transactionRepo: TransactionRepo) => {
+    return async (actionRepo: ActionRepo, orderRepo: OrderRepo, ownershipInfoRepo: OwnershipInfoRepo, transactionRepo: TransactionRepo) => {
         const transaction = await transactionRepo.findPlaceOrderById(transactionId);
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
@@ -98,6 +99,9 @@ export function sendOrder(transactionId: string) {
             await Promise.all(transactionResult.ownershipInfos.map(async (ownershipInfo) => {
                 await ownershipInfoRepo.save(ownershipInfo);
             }));
+
+            // 注文ステータス変更
+            await orderRepo.changeStatus(transactionResult.order.orderNumber, factory.orderStatus.OrderDelivered);
         } catch (error) {
             // actionにエラー結果を追加
             try {

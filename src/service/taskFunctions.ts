@@ -138,8 +138,9 @@ export function sendOrder(
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
         const actionRepo = new ActionRepo(connection);
+        const orderRepo = new OrderRepo(connection);
         const ownershipInfoRepo = new OwnershipInfoRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await DeliveryService.sendOrder(data.transactionId)(actionRepo, ownershipInfoRepo, transactionRepo);
+        await DeliveryService.sendOrder(data.transactionId)(actionRepo, orderRepo, ownershipInfoRepo, transactionRepo);
     };
 }
