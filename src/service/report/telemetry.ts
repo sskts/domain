@@ -568,7 +568,7 @@ function createSellerFlow(
         const timesLeftUntilEvent = confirmedTransactions.map((transaction) => {
             // 座席予約は必ず存在する
             const seatReservation = <factory.action.authorize.seatReservation.IAction>transaction.object.authorizeActions.find(
-                (action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation
+                (action) => action.object.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation
             );
 
             return moment(seatReservation.object.individualScreeningEvent.startDate).diff(moment(transaction.endDate), 'milliseconds');
@@ -610,12 +610,12 @@ function createSellerFlow(
         const actionsOnExpiredTransactions = await authorizeActionRepo.actionModel.find(
             {
                 typeOf: factory.actionType.AuthorizeAction,
-                'object.transactionId': { $in: expiredTransactionIds }
+                'purpose.id': { $in: expiredTransactionIds }
             },
-            '_id object.transactionId'
+            '_id purpose.id'
         ).exec().then((docs) => docs.map((doc) => <IAuthorizeAction>doc.toObject()));
         const numbersOfActionsOnExpired = expiredTransactionIds.map((transactionId) => {
-            return actionsOnExpiredTransactions.filter((action) => action.object.transactionId === transactionId).length;
+            return actionsOnExpiredTransactions.filter((action) => action.purpose.id === transactionId).length;
         });
         const totalNumberOfActionsOnExpired = numbersOfActionsOnExpired.reduce((a, b) => a + b, 0);
         const maxNumberOfActionsOnExpired = numbersOfActionsOnExpired.reduce((a, b) => Math.max(a, b), 0);

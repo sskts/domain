@@ -20,10 +20,9 @@ before(() => {
                 {
                     id: 'actionId',
                     actionStatus: 'CompletedActionStatus',
-                    purpose: {
-                        typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard
-                    },
+                    purpose: {},
                     object: {
+                        typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard,
                         amount: 123,
                         orderId: 'orderId'
                     },
@@ -60,9 +59,7 @@ describe('cancelCreditCardAuth()', () => {
             {
                 id: 'actionId',
                 actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                purpose: {
-                    typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard
-                },
+                purpose: {},
                 result: {
                     entryTranArgs: {},
                     execTranArgs: {}

@@ -24,9 +24,8 @@ before(() => {
                 {
                     id: 'actionId',
                     actionStatus: 'CompletedActionStatus',
-                    purpose: {
-                        typeOf: 'SeatReservation'
-                    },
+                    object: { typeOf: 'SeatReservation' },
+                    purpose: {},
                     result: {
                         price: 123,
                         acceptedOffers: [
@@ -167,9 +166,8 @@ describe('transferSeatReservation()', () => {
                     {
                         id: 'actionId',
                         actionStatus: 'CompletedActionStatus',
-                        purpose: {
-                            typeOf: 'SeatReservation'
-                        },
+                        object: { typeOf: 'SeatReservation' },
+                        purpose: {},
                         result: {
                             updTmpReserveSeatArgs: {},
                             updTmpReserveSeatResult: {}

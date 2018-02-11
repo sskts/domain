@@ -75,7 +75,7 @@ export function settleCreditCardAuth(transactionId: string) {
             // クレジットカード承認アクションがあるはず
             const authorizeAction = <factory.action.authorize.creditCard.IAction>transaction.object.authorizeActions
                 .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                .find((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+                .find((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
 
             // アクション開始
             const action = await actionRepo.start<factory.action.trade.pay.IAction>(payActionAttributes);
@@ -149,7 +149,7 @@ export function refundCreditCard(transactionId: string) {
         const placeOrderTransactionResult = placeOrderTransaction.result;
         const authorizeActions = placeOrderTransaction.object.authorizeActions
             .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+            .filter((action) => action.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
 
         if (potentialActions === undefined) {
             throw new factory.errors.NotFound('transaction.potentialActions');
@@ -253,7 +253,7 @@ export function settleMvtk(transactionId: string) {
             // ムビチケ承認アクションがあるはず
             // const authorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions
             //     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            //     .find((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
+            //     .find((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
 
             // アクション開始
             const action = await actionRepo.start<factory.action.consume.use.mvtk.IAction>(useActionAttributes);

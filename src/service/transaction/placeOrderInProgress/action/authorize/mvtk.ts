@@ -133,7 +133,8 @@ export function create(
         const mvtkAuthorizeAction = await mvtkAuthorizeActionRepo.start(
             transaction.agent,
             transaction.seller,
-            authorizeObject
+            authorizeObject,
+            { ...transaction, typeOf: <any>factory.action.authorize.authorizeActionPurpose.Mvtk }
         );
 
         // 特に何もしない

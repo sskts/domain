@@ -58,12 +58,17 @@ export function create(
             transaction.agent,
             transaction.seller,
             {
+                typeOf: 'CreditCard',
                 transactionId: transactionId,
                 orderId: orderId,
                 amount: amount,
                 method: method,
                 payType: GMO.utils.util.PayType.Credit
-            }
+            },
+            // 互換性維持のためにtypeOFを一時的に変更
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 変更を削除する
+            { ...transaction, typeOf: <any>factory.action.authorize.authorizeActionPurpose.CreditCard }
         );
 
         // GMOオーソリ取得

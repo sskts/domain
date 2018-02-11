@@ -287,10 +287,12 @@ export function create(
             transaction.seller,
             transaction.agent,
             {
+                typeOf: 'SeatReservation',
                 transactionId: transactionId,
                 offers: offersWithDetails,
                 individualScreeningEvent: individualScreeningEvent
-            }
+            },
+            { ...transaction, typeOf: <any>factory.action.authorize.authorizeActionPurpose.SeatReservation }
         );
 
         // COA仮予約

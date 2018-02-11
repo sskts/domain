@@ -412,7 +412,7 @@ export function confirm(
         let useMvtkAction: factory.action.consume.use.mvtk.IAttributes | null = null;
         const mvtkAuthorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .find((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
+            .find((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
         if (mvtkAuthorizeAction !== undefined) {
             useMvtkAction = factory.action.consume.use.mvtk.createAttributes({
                 actionStatus: factory.actionStatusType.ActiveActionStatus,
@@ -479,7 +479,7 @@ function validateTransaction(transaction: factory.transaction.placeOrder.ITransa
     // クレジットカードオーソリをひとつに限定
     const creditCardAuthorizeActions = transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+        .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
     if (creditCardAuthorizeActions.length > 1) {
         throw new factory.errors.Argument('transactionId', 'The number of credit card authorize actions must be one.');
     }
@@ -487,7 +487,7 @@ function validateTransaction(transaction: factory.transaction.placeOrder.ITransa
     // ムビチケ着券情報をひとつに限定
     const mvtkAuthorizeActions = transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
+        .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
     if (mvtkAuthorizeActions.length > 1) {
         throw new factory.errors.Argument('transactionId', 'The number of mvtk authorize actions must be one.');
     }

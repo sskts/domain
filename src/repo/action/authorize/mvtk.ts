@@ -13,12 +13,14 @@ export class MongoRepository extends AuthorizeActionRepository {
     public async start(
         agent: factory.action.IParticipant,
         recipient: factory.action.IParticipant,
-        object: factory.action.authorize.mvtk.IObject
+        object: factory.action.authorize.mvtk.IObject,
+        purpose: factory.transaction.placeOrder.ITransaction
     ): Promise<factory.action.authorize.creditCard.IAction> {
         const actionAttributes = factory.action.authorize.mvtk.createAttributes({
             object: object,
             agent: agent,
-            recipient: recipient
+            recipient: recipient,
+            purpose: purpose
         });
 
         return this.actionModel.create({
@@ -57,8 +59,8 @@ export class MongoRepository extends AuthorizeActionRepository {
             {
                 _id: actionId,
                 typeOf: factory.actionType.AuthorizeAction,
-                'object.transactionId': transactionId,
-                'purpose.typeOf': this.purpose
+                'purpose.id': transactionId,
+                'object.typeOf': this.purpose
             },
             { actionStatus: factory.actionStatusType.CanceledActionStatus },
             { new: true }

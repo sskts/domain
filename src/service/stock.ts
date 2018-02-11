@@ -59,7 +59,7 @@ export function transferSeatReservation(transactionId: string) {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
         const authorizeActions = transaction.object.authorizeActions
             .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation);
+            .filter((action) => action.object.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation);
         if (authorizeActions.length !== 1) {
             throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
         }
