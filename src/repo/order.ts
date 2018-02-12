@@ -61,4 +61,20 @@ export class MongoRepository {
             throw new factory.errors.NotFound('order');
         }
     }
+
+    /**
+     * 注文番号から注文を取得する
+     * @param orderNumber 注文番号
+     */
+    public async findByOrderNumber(orderNumber: string): Promise<factory.order.IOrder> {
+        const doc = await this.orderModel.findOne(
+            { orderNumber: orderNumber }
+        ).exec();
+
+        if (doc === null) {
+            throw new factory.errors.NotFound('order');
+        }
+
+        return <factory.order.IOrder>doc.toObject();
+    }
 }

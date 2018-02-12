@@ -56,7 +56,7 @@ export function create(
         // 承認アクションを開始する
         const actionAttributes = factory.action.authorize.creditCard.createAttributes({
             object: {
-                typeOf: 'CreditCard',
+                typeOf: factory.action.authorize.authorizeActionPurpose.CreditCard,
                 transactionId: transactionId,
                 orderId: orderId,
                 amount: amount,

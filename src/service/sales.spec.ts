@@ -59,7 +59,7 @@ describe('cancelCreditCardAuth()', () => {
             {
                 id: 'actionId',
                 actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                object: { typeOf: 'CreditCard' },
+                object: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard },
                 purpose: {},
                 result: {
                     entryTranArgs: {},

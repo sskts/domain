@@ -44,7 +44,7 @@ export function create(
         const seatReservationAuthorizeActions = await actionRepo.actionModel.find({
             typeOf: factory.actionType.AuthorizeAction,
             'purpose.id': transactionId,
-            'object.typeOf': 'SeatReservation'
+            'object.typeOf': factory.action.authorize.authorizeActionPurpose.SeatReservation
         }).exec().then((docs) => docs
             .map((doc) => <factory.action.authorize.seatReservation.IAction>doc.toObject())
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus));

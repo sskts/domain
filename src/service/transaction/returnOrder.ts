@@ -7,13 +7,17 @@ import * as createDebug from 'debug';
 
 import * as factory from '@motionpicture/sskts-factory';
 
+import { MongoRepository as ActionRepo } from '../../repo/action';
+import { MongoRepository as OrderRepo } from '../../repo/order';
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:returnOrder');
 
+export type IStartOperation<T> = (actionRepo: ActionRepo, orderRepo: OrderRepo, transactionRepo: TransactionRepo) => Promise<T>;
 export type ITransactionOperation<T> = (transactionRepo: TransactionRepo) => Promise<T>;
 export type ITaskAndTransactionOperation<T> = (taskRepo: TaskRepo, transactionRepo: TransactionRepo) => Promise<T>;
+export type IConfirmOperation<T> = (actionRepo: ActionRepo, transactionRepo: TransactionRepo) => Promise<T>;
 
 /**
  * 予約キャンセル処理
@@ -51,8 +55,8 @@ export function start(params: {
      * 返品理由
      */
     reason: factory.transaction.returnOrder.Reason;
-}): ITransactionOperation<factory.transaction.returnOrder.ITransaction> {
-    return async (transactionRepo: TransactionRepo) => {
+}): IStartOperation<factory.transaction.returnOrder.ITransaction> {
+    return async (actionRepo: ActionRepo, orderRepo: OrderRepo, transactionRepo: TransactionRepo) => {
         const now = new Date();
 
         // 返品対象の取引取得
@@ -70,14 +74,28 @@ export function start(params: {
             return <factory.transaction.placeOrder.ITransaction>doc.toObject();
         });
 
-        const transactionResult = <factory.transaction.placeOrder.IResult>transaction.result;
+        const transactionResult = transaction.result;
+        if (transactionResult === undefined) {
+            throw new factory.errors.NotFound('transaction.result');
+        }
 
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO
-        // // クレジットカード決済の場合、取引状態が実売上でなければまだ返品できない
-        // if (transaction.object.paymentMethod === factory.paymentMethodType.CreditCard && creditCardSales === undefined) {
-        //     throw new factory.errors.Argument('transaction', 'Status not Sales.');
-        // }
+        // 注文ステータスが配送済の場合のみ受け付け
+        const order = await orderRepo.findByOrderNumber(transactionResult.order.orderNumber);
+        if (order.orderStatus !== factory.orderStatus.OrderDelivered) {
+            throw new factory.errors.Argument('transaction', 'order status is not OrderDelivered');
+        }
+
+        const actionsOnOrder = await actionRepo.findByOrderNumber(order.orderNumber);
+        const payAction = <factory.action.trade.pay.IAction | undefined>actionsOnOrder.find(
+            (a) => {
+                return a.typeOf === factory.actionType.PayAction &&
+                    a.actionStatus === factory.actionStatusType.CompletedActionStatus;
+            }
+        );
+        // もし支払アクションがなければエラー
+        if (payAction === undefined) {
+            throw new factory.errors.NotFound('PayAction');
+        }
 
         // 検証
         if (!params.forcibly) {
@@ -113,8 +131,6 @@ export function start(params: {
                 // message: 'E11000 duplicate key error ...',
                 // code: 11000,
 
-                // tslint:disable-next-line:no-single-line-block-comment
-                /* istanbul ignore else */
                 // tslint:disable-next-line:no-magic-numbers
                 if (error.code === 11000) {
                     throw new factory.errors.AlreadyInUse('transaction', ['object.transaction'], 'Already returned.');
@@ -134,8 +150,9 @@ export function start(params: {
 export function confirm(
     agentId: string,
     transactionId: string
-): ITransactionOperation<factory.transaction.returnOrder.IResult> {
+): IConfirmOperation<factory.transaction.returnOrder.IResult> {
     return async (
+        actionRepo: ActionRepo,
         transactionRepo: TransactionRepo
     ) => {
         const now = new Date();
@@ -150,10 +167,21 @@ export function confirm(
         if (placeOrderTransactionResult === undefined) {
             throw new Error('Result of placeOrder transaction to return undefined.');
         }
+
+        const actionsOnOrder = await actionRepo.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
+        const payAction = <factory.action.trade.pay.IAction | undefined>actionsOnOrder.find(
+            (a) => {
+                return a.typeOf === factory.actionType.PayAction &&
+                    a.actionStatus === factory.actionStatusType.CompletedActionStatus;
+            }
+        );
+        // もし支払アクションがなければエラー
+        if (payAction === undefined) {
+            throw new factory.errors.NotFound('PayAction');
+        }
+
         const refundActionAttributes = factory.action.trade.refund.createAttributes({
-            // tslint:disable-next-line:no-suspicious-comment
-            object: <any>{ // TODO アクションリポジトリーから支払アクションを取得する
-            },
+            object: payAction,
             agent: placeOrderTransaction.seller,
             recipient: placeOrderTransaction.agent,
             purpose: placeOrderTransactionResult.order

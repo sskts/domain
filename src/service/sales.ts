@@ -28,7 +28,7 @@ export function cancelCreditCardAuth(transactionId: string) {
         const authorizeActions: factory.action.authorize.creditCard.IAction[] =
             await actionRepo.findAuthorizeByTransactionId(transactionId)
                 .then((actions) => actions
-                    .filter((a) => a.object.typeOf === 'CreditCard')
+                    .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard)
                     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
                 );
 

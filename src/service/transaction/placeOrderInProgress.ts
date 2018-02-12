@@ -413,7 +413,7 @@ export function confirm(
             useMvtkAction = factory.action.consume.use.mvtk.createAttributes({
                 actionStatus: factory.actionStatusType.ActiveActionStatus,
                 object: {
-                    typeOf: 'Mvtk',
+                    typeOf: factory.action.authorize.authorizeActionPurpose.Mvtk,
                     seatInfoSyncIn: mvtkAuthorizeAction.object.seatInfoSyncIn
                 },
                 agent: transaction.agent,

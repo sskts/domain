@@ -665,7 +665,7 @@ describe('confirm()', () => {
             },
             paymentMethods: [{
                 name: 'クレジットカード',
-                paymentMethod: 'CreditCard',
+                paymentMethod: sskts.factory.paymentMethodType.CreditCard,
                 paymentMethodId: creditCardAuthorizeActions[0].result.execTranResult.orderId
             }],
             discounts: [],
