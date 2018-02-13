@@ -11,6 +11,7 @@ import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as OrderRepo } from '../repo/order';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
+import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:delivery');
@@ -22,8 +23,15 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  * COAに本予約連携を行い、内部的には所有権を作成する
  * @param transactionId 注文取引ID
  */
+// tslint:disable-next-line:max-func-body-length
 export function sendOrder(transactionId: string) {
-    return async (actionRepo: ActionRepo, orderRepo: OrderRepo, ownershipInfoRepo: OwnershipInfoRepo, transactionRepo: TransactionRepo) => {
+    return async (
+        actionRepo: ActionRepo,
+        orderRepo: OrderRepo,
+        ownershipInfoRepo: OwnershipInfoRepo,
+        transactionRepo: TransactionRepo,
+        taskRepo: TaskRepo
+    ) => {
         const transaction = await transactionRepo.findPlaceOrderById(transactionId);
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
@@ -117,5 +125,42 @@ export function sendOrder(transactionId: string) {
         // アクション完了
         debug('ending action...');
         await actionRepo.complete(sendOrderActionAttributes.typeOf, action.id, {});
+
+        // 潜在アクション
+        await onSend(sendOrderActionAttributes)(taskRepo);
+    };
+}
+
+/**
+ * 注文配送後のアクション
+ * @param transactionId 注文取引ID
+ * @param sendOrderActionAttributes 注文配送悪損属性
+ */
+function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IAttributes) {
+    return async (taskRepo: TaskRepo) => {
+        const potentialActions = sendOrderActionAttributes.potentialActions;
+        const now = new Date();
+        const taskAttributes: factory.task.IAttributes[] = [];
+        if (potentialActions.sendEmailMessage !== undefined) {
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO 互換性維持のため、すでにメール送信タスクが存在するかどうか確認
+
+            taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
+                status: factory.taskStatus.Ready,
+                runsAt: now, // なるはやで実行
+                remainingNumberOfTries: 3,
+                lastTriedAt: null,
+                numberOfTried: 0,
+                executionResults: [],
+                data: {
+                    actionAttributes: potentialActions.sendEmailMessage
+                }
+            }));
+        }
+
+        // タスク保管
+        await Promise.all(taskAttributes.map(async (taskAttribute) => {
+            return taskRepo.save(taskAttribute);
+        }));
     };
 }

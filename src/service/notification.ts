@@ -12,6 +12,8 @@ import * as request from 'request';
 import * as util from 'util';
 import * as validator from 'validator';
 
+import { MongoRepository as ActionRepo } from '../repo/action';
+
 export type Operation<T> = () => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:notification');
@@ -62,6 +64,69 @@ export function sendEmail(emailMessage: factory.creativeWork.message.email.ICrea
         if (response[0].statusCode !== httpStatus.ACCEPTED) {
             throw new Error(`sendgrid request not accepted. response is ${util.inspect(response)}`);
         }
+    };
+}
+
+/**
+ * Eメールメッセージを送信する
+ * @param actionAttributes Eメール送信アクション属性
+ */
+export function sendEmailMessage(actionAttributes: factory.action.transfer.send.message.email.IAttributes) {
+    return async (
+        actionRepo: ActionRepo
+    ) => {
+        // アクション開始
+        const action = await actionRepo.start<factory.action.transfer.send.message.email.IAction>(actionAttributes);
+        let result: any = {};
+
+        try {
+            sgMail.setApiKey(<string>process.env.SENDGRID_API_KEY);
+            const emailMessage = actionAttributes.object;
+            const msg = {
+                to: {
+                    name: emailMessage.toRecipient.name,
+                    email: emailMessage.toRecipient.email
+                },
+                from: {
+                    name: emailMessage.sender.name,
+                    email: emailMessage.sender.email
+                },
+                subject: emailMessage.about,
+                text: emailMessage.text,
+                // html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+                // categories: ['Transactional', 'My category'],
+                // tslint:disable-next-line:no-suspicious-comment
+                // TODO 送信予定を追加することもできるが、タスクの実行予定日時でコントロールするかもしれないのでいったん保留
+                // sendAt: moment(email.send_at).unix(),
+                // 追跡用に通知IDをカスタムフィールドとしてセットする
+                customArgs: {
+                    emailMessage: emailMessage.identifier
+                }
+            };
+
+            debug('requesting sendgrid api...', msg);
+            result = await sgMail.send(msg);
+            debug('response is', result);
+
+            // check the response.
+            if (result[0].statusCode !== httpStatus.ACCEPTED) {
+                throw new Error(`sendgrid request not accepted. response is ${util.inspect(result)}`);
+            }
+        } catch (error) {
+            // actionにエラー結果を追加
+            try {
+                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                await actionRepo.giveUp(actionAttributes.typeOf, action.id, actionError);
+            } catch (__) {
+                // 失敗したら仕方ない
+            }
+
+            throw new Error(error);
+        }
+
+        // アクション完了
+        debug('ending action...');
+        await actionRepo.complete(actionAttributes.typeOf, action.id, result);
     };
 }
 

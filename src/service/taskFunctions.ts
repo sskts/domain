@@ -30,6 +30,15 @@ export function sendEmailNotification(
     };
 }
 
+export function sendEmailMessage(
+    data: factory.task.sendEmailMessage.IData
+): IOperation<void> {
+    return async (connection: mongoose.Connection) => {
+        const actionRepo = new ActionRepo(connection);
+        await NotificationService.sendEmailMessage(data.actionAttributes)(actionRepo);
+    };
+}
+
 export function cancelSeatReservation(
     data: factory.task.cancelSeatReservation.IData
 ): IOperation<void> {
@@ -139,6 +148,7 @@ export function sendOrder(
         const orderRepo = new OrderRepo(connection);
         const ownershipInfoRepo = new OwnershipInfoRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await DeliveryService.sendOrder(data.transactionId)(actionRepo, orderRepo, ownershipInfoRepo, transactionRepo);
+        const taskRepo = new TaskRepo(connection);
+        await DeliveryService.sendOrder(data.transactionId)(actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo);
     };
 }

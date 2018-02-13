@@ -555,7 +555,8 @@ describe('confirm()', () => {
         const customerContact = {
             familyName: 'familyName',
             givenName: 'givenName',
-            telephone: '+819012345678'
+            telephone: '+819012345678',
+            email: 'test@example.com'
         };
         const transaction = {
             id: 'transactionId',

@@ -350,6 +350,11 @@ export function confirm(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
+        const customerContact = transaction.object.customerContact;
+        if (customerContact === undefined) {
+            throw new factory.errors.NotFound('customerContact');
+        }
+
         // 取引に対する全ての承認アクションをマージ
         let authorizeActions = await actionRepo.findAuthorizeByTransactionId(transactionId);
 
@@ -426,6 +431,19 @@ export function confirm(
             ownershipInfos: ownershipInfos
         };
 
+        const emailMessage = createEmailMessageFromTransaction({
+            transaction: transaction,
+            customerContact: customerContact,
+            order: order
+        });
+        const sendEmailMessageActionAttributes = factory.action.transfer.send.message.email.createAttributes({
+            actionStatus: factory.actionStatusType.ActiveActionStatus,
+            object: emailMessage,
+            agent: transaction.seller,
+            recipient: transaction.agent,
+            potentialActions: {},
+            purpose: order
+        });
         const potentialActions: factory.transaction.placeOrder.IPotentialActions = {
             order: factory.action.trade.order.createAttributes({
                 object: order,
@@ -441,6 +459,7 @@ export function confirm(
                         recipient: transaction.agent,
                         potentialActions: {
                             // 通知アクション
+                            sendEmailMessage: sendEmailMessageActionAttributes
                         }
                     })
                 }
@@ -640,4 +659,55 @@ function createOrderFromTransaction(params: {
         isGift: params.isGift,
         orderInquiryKey: orderInquiryKey
     };
+}
+
+function createEmailMessageFromTransaction(params: {
+    transaction: factory.transaction.placeOrder.ITransaction;
+    customerContact: factory.transaction.placeOrder.ICustomerContact;
+    order: factory.order.IOrder;
+}) {
+    const seller = params.transaction.seller;
+    // tslint:disable-next-line:no-multiline-string
+    const text = `
+${params.customerContact.familyName} ${params.customerContact.givenName} 様
+この度は、${seller.name}のオンライン先売りチケットサービスにてご購入頂き、誠にありがとうございます。お客様がご購入されましたチケットの情報は下記の通りです。
+
+[予約番号]
+${params.order.confirmationNumber}
+
+【ご注意事項】
+・ご購入されたチケットの変更、キャンセル、払い戻しはいかなる場合でも致しかねます。
+・チケットの発券にお時間がかかる場合もございますので、お時間の余裕を持ってご来場ください。
+・メンバーズカード会員のお客様は、ポイントは付与いたしますので、発券したチケットまたは、表示されたQRコードとメンバーズカードをチケット売場までお持ちくださいませ。
+・年齢や学生など各種証明が必要なチケットを購入された方は、入場時にご提示ください。
+ご提示頂けない場合は、一般料金との差額を頂きます。
+
+なお、このメールは、${seller.name}の予約システムでチケットをご購入頂いた方にお送りしておりますが、
+チケット購入に覚えのない方に届いております場合は、下記お問い合わせ先までご連絡ください。
+※なお、このメールアドレスは送信専用となっておりますので、ご返信頂けません。
+ご不明な点がございましたら、下記番号までお問合わせください。
+
+お問い合わせはこちら
+
+
+${seller.name}
+TEL
+`;
+
+    return factory.creativeWork.message.email.create({
+        identifier: `placeOrderTransaction-${params.transaction.id}`,
+        sender: {
+            typeOf: seller.typeOf,
+            name: seller.name,
+            // tslint:disable-next-line:no-suspicious-comment
+            email: 'noreply@ticket-cinemasunshine.com' // TODO どこかに保管
+        },
+        toRecipient: {
+            typeOf: params.transaction.agent.typeOf,
+            name: `${params.customerContact.familyName} ${params.customerContact.givenName}`,
+            email: params.customerContact.email
+        },
+        about: `${seller.name} 購入完了`,
+        text: text
+    });
 }
