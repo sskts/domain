@@ -105,13 +105,15 @@ export function sendEmailMessage(actionAttributes: factory.action.transfer.send.
             };
 
             debug('requesting sendgrid api...', msg);
-            result = await sgMail.send(msg);
-            debug('response is', result);
+            const response = await sgMail.send(msg);
+            debug('response is', response);
 
             // check the response.
-            if (result[0].statusCode !== httpStatus.ACCEPTED) {
-                throw new Error(`sendgrid request not accepted. response is ${util.inspect(result)}`);
+            if (response[0].statusCode !== httpStatus.ACCEPTED) {
+                throw new Error(`sendgrid request not accepted. response is ${util.inspect(response)}`);
             }
+
+            result = response[0].body;
         } catch (error) {
             // actionにエラー結果を追加
             try {
