@@ -142,20 +142,24 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
         const now = new Date();
         const taskAttributes: factory.task.IAttributes[] = [];
         if (potentialActions.sendEmailMessage !== undefined) {
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 互換性維持のため、すでにメール送信タスクが存在するかどうか確認
-
-            taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
-                status: factory.taskStatus.Ready,
-                runsAt: now, // なるはやで実行
-                remainingNumberOfTries: 3,
-                lastTriedAt: null,
-                numberOfTried: 0,
-                executionResults: [],
-                data: {
-                    actionAttributes: potentialActions.sendEmailMessage
-                }
-            }));
+            // 互換性維持のため、すでにメール送信タスクが存在するかどうか確認し、なければタスク追加
+            const sendEmailNotificationTaskDoc = await taskRepo.taskModel.findOne({
+                name: factory.taskName.SendEmailNotification,
+                'data.emailMessage.identifier': potentialActions.sendEmailMessage.object.identifier
+            }).exec();
+            if (sendEmailNotificationTaskDoc === null) {
+                taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
+                    status: factory.taskStatus.Ready,
+                    runsAt: now, // なるはやで実行
+                    remainingNumberOfTries: 3,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        actionAttributes: potentialActions.sendEmailMessage
+                    }
+                }));
+            }
         }
 
         // タスク保管
