@@ -7,11 +7,11 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as waiter from '@motionpicture/waiter-domain';
 import * as createDebug from 'debug';
-import * as Email from 'email-templates';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as moment from 'moment';
 // tslint:disable-next-line:no-require-imports no-var-requires
 require('moment-timezone');
+import * as pug from 'pug';
 import * as util from 'util';
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
@@ -673,65 +673,77 @@ export async function createEmailMessageFromTransaction(params: {
     order: factory.order.IOrder;
     seller: factory.organization.movieTheater.IOrganization;
 }): Promise<factory.creativeWork.message.email.ICreativeWork> {
-    const seller = params.transaction.seller;
-    const event = params.order.acceptedOffers[0].itemOffered.reservationFor;
+    return new Promise<factory.creativeWork.message.email.ICreativeWork>((resolve, reject) => {
+        const seller = params.transaction.seller;
+        const event = params.order.acceptedOffers[0].itemOffered.reservationFor;
 
-    const email = new Email(<any>{
-        views: { root: `${__dirname}/../../../emails` },
-        message: {},
-        // uncomment below to send emails in development/test env:
-        // send: true,
-        transport: {
-            jsonTransport: true
-        }
-        // htmlToText: false,
-    });
+        pug.renderFile(
+            `${__dirname}/../../../emails/sendOrder/text.pug`,
+            {
+                familyName: params.customerContact.familyName,
+                givenName: params.customerContact.givenName,
+                confirmationNumber: params.order.confirmationNumber,
+                eventStartDate: util.format(
+                    '%s - %s',
+                    moment(event.startDate).locale('ja').tz('Asia/Tokyo').format('YYYY年MM月DD日(ddd) HH:mm'),
+                    moment(event.endDate).tz('Asia/Tokyo').format('HH:mm')
+                ),
+                workPerformedName: event.workPerformed.name,
+                screenName: event.location.name.ja,
+                reservedSeats: params.order.acceptedOffers.map((o) => {
+                    return util.format(
+                        '%s %s ￥%s',
+                        o.itemOffered.reservedTicket.ticketedSeat.seatNumber,
+                        o.itemOffered.reservedTicket.coaTicketInfo.ticketName,
+                        o.itemOffered.reservedTicket.coaTicketInfo.salePrice
+                    );
+                }).join('\n'),
+                price: params.order.price,
+                inquiryUrl: params.order.url,
+                sellerName: params.order.seller.name,
+                sellerTelephone: params.seller.telephone
+            },
+            (renderMessageErr, message) => {
+                if (renderMessageErr instanceof Error) {
+                    reject(renderMessageErr);
 
-    const message = await email.render('sendOrder/text', {
-        familyName: params.customerContact.familyName,
-        givenName: params.customerContact.givenName,
-        confirmationNumber: params.order.confirmationNumber,
-        eventStartDate: util.format(
-            '%s - %s',
-            moment(event.startDate).locale('ja').tz('Asia/Tokyo').format('YYYY年MM月DD日(ddd) HH:mm'),
-            moment(event.endDate).tz('Asia/Tokyo').format('HH:mm')
-        ),
-        workPerformedName: event.workPerformed.name,
-        screenName: event.location.name.ja,
-        reservedSeats: params.order.acceptedOffers.map((o) => {
-            return util.format(
-                '%s %s ￥%s',
-                o.itemOffered.reservedTicket.ticketedSeat.seatNumber,
-                o.itemOffered.reservedTicket.coaTicketInfo.ticketName,
-                o.itemOffered.reservedTicket.coaTicketInfo.salePrice
-            );
-        }).join('\n'),
-        price: params.order.price,
-        inquiryUrl: params.order.url,
-        sellerName: params.order.seller.name,
-        sellerTelephone: params.seller.telephone
-    });
-    debug('message:', message);
+                    return;
+                }
 
-    const subject = await email.render('sendOrder/subject', {
-        sellerName: params.order.seller.name
-    });
-    debug('subject:', subject);
+                debug('message:', message);
+                pug.renderFile(
+                    `${__dirname}/../../../emails/sendOrder/subject.pug`,
+                    {
+                        sellerName: params.order.seller.name
+                    },
+                    (renderSubjectErr, subject) => {
+                        if (renderSubjectErr instanceof Error) {
+                            reject(renderSubjectErr);
 
-    return factory.creativeWork.message.email.create({
-        identifier: `placeOrderTransaction-${params.transaction.id}`,
-        sender: {
-            typeOf: seller.typeOf,
-            name: seller.name,
-            // tslint:disable-next-line:no-suspicious-comment
-            email: 'noreply@ticket-cinemasunshine.com' // TODO どこかに保管
-        },
-        toRecipient: {
-            typeOf: params.transaction.agent.typeOf,
-            name: `${params.customerContact.familyName} ${params.customerContact.givenName}`,
-            email: params.customerContact.email
-        },
-        about: subject,
-        text: message
+                            return;
+                        }
+
+                        debug('subject:', subject);
+
+                        resolve(factory.creativeWork.message.email.create({
+                            identifier: `placeOrderTransaction-${params.transaction.id}`,
+                            sender: {
+                                typeOf: seller.typeOf,
+                                name: seller.name,
+                                // tslint:disable-next-line:no-suspicious-comment
+                                email: 'noreply@ticket-cinemasunshine.com' // TODO どこかに保管
+                            },
+                            toRecipient: {
+                                typeOf: params.transaction.agent.typeOf,
+                                name: `${params.customerContact.familyName} ${params.customerContact.givenName}`,
+                                email: params.customerContact.email
+                            },
+                            about: subject,
+                            text: message
+                        }));
+                    }
+                );
+            }
+        );
     });
 }
