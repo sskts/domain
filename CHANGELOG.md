@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 - COAから取得した空席数が負の値の場合のイベント利用状況を修正。
 - COAからの上映イベント同期時に、COAにないイベントをキャンセルステータスへ変更する処理を追加。
+- COA作品抽出のtitle_nameを拾えていないバグを修正。
 
 ### Security
 

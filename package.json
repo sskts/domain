@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/coa-service": "^4.0.8",
+    "@motionpicture/coa-service": "^4.0.9",
     "@motionpicture/gmo-service": "^4.1.0",
     "@motionpicture/sskts-factory": "^3.0.0-alpha.1",
     "@motionpicture/waiter-domain": "^2.0.2",
