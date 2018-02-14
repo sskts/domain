@@ -7,6 +7,7 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as waiter from '@motionpicture/waiter-domain';
 import * as createDebug from 'debug';
+import * as Email from 'email-templates';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as moment from 'moment';
 // tslint:disable-next-line:no-require-imports no-var-requires
@@ -342,13 +343,16 @@ export function confirm(
     // tslint:disable-next-line:max-func-body-length
     return async (
         actionRepo: ActionRepo,
-        transactionRepo: TransactionRepo
+        transactionRepo: TransactionRepo,
+        organizationRepo: OrganizationRepo
     ) => {
         const now = moment().toDate();
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
+
+        const seller = await organizationRepo.findMovieTheaterById(transaction.seller.id);
 
         const customerContact = transaction.object.customerContact;
         if (customerContact === undefined) {
@@ -431,10 +435,11 @@ export function confirm(
             ownershipInfos: ownershipInfos
         };
 
-        const emailMessage = createEmailMessageFromTransaction({
+        const emailMessage = await createEmailMessageFromTransaction({
             transaction: transaction,
             customerContact: customerContact,
-            order: order
+            order: order,
+            seller: seller
         });
         const sendEmailMessageActionAttributes = factory.action.transfer.send.message.email.createAttributes({
             actionStatus: factory.actionStatusType.ActiveActionStatus,
@@ -653,7 +658,8 @@ function createOrderFromTransaction(params: {
         confirmationNumber: orderInquiryKey.confirmationNumber,
         orderNumber: orderNumber,
         acceptedOffers: acceptedOffers,
-        url: `/inquiry/login?theater=${orderInquiryKey.theaterCode}&reserve=${orderInquiryKey.confirmationNumber}`,
+        // tslint:disable-next-line:max-line-length
+        url: `${process.env.ORDER_INQUIRY_ENDPOINT}/inquiry/login?theater=${orderInquiryKey.theaterCode}&reserve=${orderInquiryKey.confirmationNumber}`,
         orderStatus: params.orderStatus,
         orderDate: params.orderDate,
         isGift: params.isGift,
@@ -661,38 +667,56 @@ function createOrderFromTransaction(params: {
     };
 }
 
-function createEmailMessageFromTransaction(params: {
+export async function createEmailMessageFromTransaction(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     customerContact: factory.transaction.placeOrder.ICustomerContact;
     order: factory.order.IOrder;
-}) {
+    seller: factory.organization.movieTheater.IOrganization;
+}): Promise<factory.creativeWork.message.email.ICreativeWork> {
     const seller = params.transaction.seller;
-    // tslint:disable-next-line:no-multiline-string
-    const text = `
-${params.customerContact.familyName} ${params.customerContact.givenName} 様
-この度は、${seller.name}のオンライン先売りチケットサービスにてご購入頂き、誠にありがとうございます。お客様がご購入されましたチケットの情報は下記の通りです。
+    const event = params.order.acceptedOffers[0].itemOffered.reservationFor;
 
-[予約番号]
-${params.order.confirmationNumber}
+    const email = new Email(<any>{
+        views: { root: `${__dirname}/../../../emails` },
+        message: {},
+        // uncomment below to send emails in development/test env:
+        // send: true,
+        transport: {
+            jsonTransport: true
+        }
+        // htmlToText: false,
+    });
 
-【ご注意事項】
-・ご購入されたチケットの変更、キャンセル、払い戻しはいかなる場合でも致しかねます。
-・チケットの発券にお時間がかかる場合もございますので、お時間の余裕を持ってご来場ください。
-・メンバーズカード会員のお客様は、ポイントは付与いたしますので、発券したチケットまたは、表示されたQRコードとメンバーズカードをチケット売場までお持ちくださいませ。
-・年齢や学生など各種証明が必要なチケットを購入された方は、入場時にご提示ください。
-ご提示頂けない場合は、一般料金との差額を頂きます。
+    const message = await email.render('sendOrder/text', {
+        familyName: params.customerContact.familyName,
+        givenName: params.customerContact.givenName,
+        confirmationNumber: params.order.confirmationNumber,
+        eventStartDate: util.format(
+            '%s - %s',
+            moment(event.startDate).locale('ja').tz('Asia/Tokyo').format('YYYY年MM月DD日(ddd) HH:mm'),
+            moment(event.endDate).tz('Asia/Tokyo').format('HH:mm')
+        ),
+        workPerformedName: event.workPerformed.name,
+        screenName: event.location.name.ja,
+        reservedSeats: params.order.acceptedOffers.map((o) => {
+            return util.format(
+                '%s %s ￥%s',
+                o.itemOffered.reservedTicket.ticketedSeat.seatNumber,
+                o.itemOffered.reservedTicket.coaTicketInfo.ticketName,
+                o.itemOffered.reservedTicket.coaTicketInfo.salePrice
+            );
+        }).join('\n'),
+        price: params.order.price,
+        inquiryUrl: params.order.url,
+        sellerName: params.order.seller.name,
+        sellerTelephone: params.seller.telephone
+    });
+    debug('message:', message);
 
-なお、このメールは、${seller.name}の予約システムでチケットをご購入頂いた方にお送りしておりますが、
-チケット購入に覚えのない方に届いております場合は、下記お問い合わせ先までご連絡ください。
-※なお、このメールアドレスは送信専用となっておりますので、ご返信頂けません。
-ご不明な点がございましたら、下記番号までお問合わせください。
-
-お問い合わせはこちら
-
-
-${seller.name}
-TEL
-`;
+    const subject = await email.render('sendOrder/subject', {
+        sellerName: params.order.seller.name
+    });
+    debug('subject:', subject);
 
     return factory.creativeWork.message.email.create({
         identifier: `placeOrderTransaction-${params.transaction.id}`,
@@ -707,7 +731,7 @@ TEL
             name: `${params.customerContact.familyName} ${params.customerContact.givenName}`,
             email: params.customerContact.email
         },
-        about: `${seller.name} 購入完了`,
-        text: text
+        about: subject,
+        text: message
     });
 }
