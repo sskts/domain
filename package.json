@@ -78,6 +78,7 @@
   "types": "./lib/index.d.ts",
   "files": [
     "doc",
+    "emails",
     "example",
     "lib"
   ],
