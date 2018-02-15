@@ -1,3 +1,4 @@
+import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
@@ -155,6 +156,17 @@ schema.index(
     {
         partialFilterExpression: {
             'purpose.orderNumber': { $exists: true }
+        }
+    }
+);
+
+// GMOオーダーIDから支払アクションを検索する際に使用
+schema.index(
+    { 'object.paymentMethod.paymentMethodId': 1 },
+    {
+        partialFilterExpression: {
+            typeOf: factory.actionType.PayAction,
+            'object.paymentMethod.paymentMethodId': { $exists: true }
         }
     }
 );
