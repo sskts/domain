@@ -68,11 +68,23 @@ schema.index(
 
 // ステータス&最終トライ日時&残りトライ可能回数を見て、リトライor中止を決定する
 schema.index(
-    { remainingNumberOfTries: 1, status: 1, lastTriedAt: 1 }
+    { remainingNumberOfTries: 1, status: 1, lastTriedAt: 1 },
+    {
+        partialFilterExpression: {
+            lastTriedAt: { $type: 'date' }
+        }
+    }
 );
 
 // 測定データ作成時に使用
-schema.index({ createdAt: 1, lastTriedAt: 1 });
+schema.index(
+    { createdAt: 1, lastTriedAt: 1 },
+    {
+        partialFilterExpression: {
+            lastTriedAt: { $type: 'date' }
+        }
+    }
+);
 schema.index({ status: 1, createdAt: 1 });
 schema.index({ createdAt: 1 });
 

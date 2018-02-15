@@ -71,11 +71,21 @@ const schema = new mongoose.Schema(
     }
 );
 
-// レポート参照時に使用
+// 測定データ参照時に使用
 schema.index(
     { 'object.measuredAt': 1 },
     {
         partialFilterExpression: {
+            'object.measuredAt': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'purpose.typeOf': 1, 'object.scope': 1, 'object.measuredAt': 1 },
+    {
+        partialFilterExpression: {
+            'purpose.typeOf': { $exists: true },
+            'object.scope': { $exists: true },
             'object.measuredAt': { $exists: true }
         }
     }

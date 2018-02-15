@@ -390,7 +390,7 @@ export function createFlow(target: {
             const flowData = await createSellerFlow(measuredFrom.toDate(), measuredThrough.toDate(), target.sellerId)(
                 transactionRepo, actionRepo
             );
-            debug('flowData created.', flowData);
+            debug('flowData created.');
 
             telemetry = {
                 purpose: { typeOf: TelemetryPurposeType.Flow },
@@ -407,7 +407,7 @@ export function createFlow(target: {
             const flowData = await createGlobalFlow(measuredFrom.toDate(), measuredThrough.toDate())(
                 taskRepo
             );
-            debug('flowData created.', flowData);
+            debug('flowData created.');
 
             telemetry = {
                 purpose: { typeOf: TelemetryPurposeType.Flow },
@@ -422,7 +422,7 @@ export function createFlow(target: {
         }
 
         await telemetryRepo.telemetryModel.create(telemetry);
-        debug('telemetry saved.', telemetry);
+        debug('telemetry saved.');
     };
 }
 
@@ -451,7 +451,7 @@ export function createStock(target: {
             const stockData = await createSellerStock(target.measuredAt, target.sellerId)(
                 transactionRepo
             );
-            debug('stockData created.', stockData);
+            debug('stockData created.');
 
             telemetry = {
                 purpose: { typeOf: TelemetryPurposeType.Stock },
@@ -466,7 +466,7 @@ export function createStock(target: {
             };
         } else {
             const stockData = await createGlobalStock(target.measuredAt)(taskRepo);
-            debug('stockData created.', stockData);
+            debug('stockData created.');
 
             telemetry = {
                 purpose: { typeOf: TelemetryPurposeType.Stock },
@@ -481,7 +481,7 @@ export function createStock(target: {
         }
 
         await telemetryRepo.telemetryModel.create(telemetry);
-        debug('telemetry saved.', telemetry);
+        debug('telemetry saved.');
     };
 }
 
@@ -508,6 +508,7 @@ function createSellerFlow(
     ) => {
         // 計測期間内に開始された取引数を算出する
         const numberOfTransactionsStarted = await transactionRepo.transactionModel.count({
+            typeOf: factory.transactionType.PlaceOrder,
             'seller.id': sellerId,
             startDate: {
                 $gte: measuredFrom,
@@ -517,6 +518,7 @@ function createSellerFlow(
 
         // 計測期間内に開始され、かつ、すでに終了している取引を検索
         const startedAndEndedTransactions = await transactionRepo.transactionModel.find({
+            typeOf: factory.transactionType.PlaceOrder,
             'seller.id': sellerId,
             startDate: {
                 $gte: measuredFrom,
@@ -534,6 +536,7 @@ function createSellerFlow(
 
         const endedTransactions = await transactionRepo.transactionModel.find(
             {
+                typeOf: factory.transactionType.PlaceOrder,
                 'seller.id': sellerId,
                 endDate: {
                     $gte: measuredFrom,
@@ -542,7 +545,7 @@ function createSellerFlow(
             },
             'status startDate endDate object result.order'
         ).exec().then((docs) => docs.map((doc) => <factory.transaction.placeOrder.ITransaction>doc.toObject()));
-        debug('endedTransactions:', endedTransactions);
+        debug(endedTransactions.length, 'endedTransactions found.');
 
         const confirmedTransactions = endedTransactions.filter(
             (transaction) => transaction.status === factory.transactionStatusType.Confirmed
@@ -614,6 +617,7 @@ function createSellerFlow(
             },
             '_id purpose.id'
         ).exec().then((docs) => docs.map((doc) => <IAuthorizeAction>doc.toObject()));
+        debug(actionsOnExpiredTransactions.length, 'actionsOnExpiredTransactions found.');
         const numbersOfActionsOnExpired = expiredTransactionIds.map((transactionId) => {
             return actionsOnExpiredTransactions.filter((action) => action.purpose.id === transactionId).length;
         });
@@ -687,6 +691,7 @@ function createSellerStock(measuredAt: Date, sellerId: string): TransactionOpera
         transactionRepo: TransactionRepo
     ) => {
         const numberOfTransactionsUnderway = await transactionRepo.transactionModel.count({
+            typeOf: factory.transactionType.PlaceOrder,
             'seller.id': sellerId,
             $or: [
                 // {measuredAt}以前に開始し、{measuredAt}以後に成立あるいは期限切れした取引
@@ -707,6 +712,7 @@ function createSellerStock(measuredAt: Date, sellerId: string): TransactionOpera
                 }
             ]
         }).exec();
+        debug('numberOfTransactionsUnderway:', numberOfTransactionsUnderway);
 
         return {
             transactions: {
@@ -736,14 +742,8 @@ function createGlobalFlow(
     return async (
         taskRepo: TaskRepo
     ) => {
-        const targetTaskNames = [
-            factory.taskName.CreateOrder,
-            factory.taskName.CreateOwnershipInfos,
-            factory.taskName.SendEmailNotification,
-            factory.taskName.SettleCreditCard,
-            factory.taskName.SettleMvtk,
-            factory.taskName.SettleSeatReservation
-        ];
+        // 全タスク名リスト
+        const targetTaskNames = Object.keys(factory.taskName).map((k) => factory.taskName[k]);
 
         const taskResults = await Promise.all(targetTaskNames.map(async (taskName) => {
             const numberOfTasksCreated = await taskRepo.taskModel.count({
@@ -753,6 +753,7 @@ function createGlobalFlow(
                     $lt: measuredThrough
                 }
             }).exec();
+            debug('numberOfTasksCreated:', numberOfTasksCreated);
 
             // 実行中止ステータスで、最終試行日時が範囲にあるものを実行タスク数とする
             const numberOfTasksAborted = await taskRepo.taskModel.count({
@@ -763,6 +764,7 @@ function createGlobalFlow(
                 },
                 status: factory.taskStatus.Aborted
             }).exec();
+            debug('numberOfTasksAborted:', numberOfTasksAborted);
 
             // 実行済みステータスで、最終試行日時が範囲にあるものを実行タスク数とする
             const executedTasks = await taskRepo.taskModel.find(
@@ -776,6 +778,8 @@ function createGlobalFlow(
                 },
                 'runsAt lastTriedAt numberOfTried'
             ).exec().then((docs) => docs.map((doc) => <factory.task.ITask>doc.toObject()));
+            debug(executedTasks.length, 'executedTasks found.');
+
             const numberOfTasksExecuted = executedTasks.length;
 
             const latencies = executedTasks.map((task) => moment(<Date>task.lastTriedAt).diff(moment(task.runsAt, 'milliseconds')));
@@ -847,6 +851,7 @@ function createGlobalStock(measuredAt: Date): TaskOperation<IGlobalStockResult> 
                 }
             ]
         }).exec();
+        debug('numberOfTasksUnexecuted:', numberOfTasksUnexecuted);
 
         return {
             tasks: {
