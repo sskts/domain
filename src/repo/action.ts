@@ -151,7 +151,10 @@ export class MongoRepository {
     public async findAuthorizeByTransactionId(transactionId: string): Promise<IAuthorizeAction[]> {
         return this.actionModel.find({
             typeOf: factory.actionType.AuthorizeAction,
-            'purpose.id': transactionId
+            'purpose.id': {
+                $exists: true,
+                $eq: transactionId
+            }
         }).exec().then((docs) => docs.map((doc) => <IAuthorizeAction>doc.toObject()));
     }
 

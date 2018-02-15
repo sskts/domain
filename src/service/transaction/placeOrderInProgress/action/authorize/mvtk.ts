@@ -43,7 +43,10 @@ export function create(
         // 座席予約承認アクションが存在していなければエラー
         const seatReservationAuthorizeActions = await actionRepo.actionModel.find({
             typeOf: factory.actionType.AuthorizeAction,
-            'purpose.id': transactionId,
+            'purpose.id': {
+                $exists: true,
+                $eq: transactionId
+            },
             'object.typeOf': factory.action.authorize.authorizeActionPurpose.SeatReservation
         }).exec().then((docs) => docs
             .map((doc) => <factory.action.authorize.seatReservation.IAction>doc.toObject())

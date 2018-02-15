@@ -349,12 +349,19 @@ export function search(searchConditions: {
     return async (telemetryRepo: TelemetryRepo) => {
         return <ITelemetry[]>await telemetryRepo.telemetryModel.find(
             {
-                'object.scope': searchConditions.scope,
+                'object.scope': {
+                    $exists: true,
+                    $eq: searchConditions.scope
+                },
                 'object.measuredAt': {
+                    $exists: true,
                     $gte: searchConditions.measuredFrom,
                     $lt: searchConditions.measuredThrough
                 },
-                'purpose.typeOf': searchConditions.purpose
+                'purpose.typeOf': {
+                    $exists: true,
+                    $eq: searchConditions.purpose
+                }
             }
         ).sort({ 'object.measuredAt': 1 })
             .lean()
@@ -509,7 +516,10 @@ function createSellerFlow(
         // 計測期間内に開始された取引数を算出する
         const numberOfTransactionsStarted = await transactionRepo.transactionModel.count({
             typeOf: factory.transactionType.PlaceOrder,
-            'seller.id': sellerId,
+            'seller.id': {
+                $exists: true,
+                $eq: sellerId
+            },
             startDate: {
                 $gte: measuredFrom,
                 $lt: measuredThrough
@@ -519,7 +529,10 @@ function createSellerFlow(
         // 計測期間内に開始され、かつ、すでに終了している取引を検索
         const startedAndEndedTransactions = await transactionRepo.transactionModel.find({
             typeOf: factory.transactionType.PlaceOrder,
-            'seller.id': sellerId,
+            'seller.id': {
+                $exists: true,
+                $eq: sellerId
+            },
             startDate: {
                 $gte: measuredFrom,
                 $lt: measuredThrough
@@ -537,8 +550,12 @@ function createSellerFlow(
         const endedTransactions = await transactionRepo.transactionModel.find(
             {
                 typeOf: factory.transactionType.PlaceOrder,
-                'seller.id': sellerId,
+                'seller.id': {
+                    $exists: true,
+                    $eq: sellerId
+                },
                 endDate: {
+                    $exists: true,
                     $gte: measuredFrom,
                     $lt: measuredThrough
                 }
@@ -613,7 +630,10 @@ function createSellerFlow(
         const actionsOnExpiredTransactions = await actionRepo.actionModel.find(
             {
                 typeOf: factory.actionType.AuthorizeAction,
-                'purpose.id': { $in: expiredTransactionIds }
+                'purpose.id': {
+                    $exists: true,
+                    $in: expiredTransactionIds
+                }
             },
             '_id purpose.id'
         ).exec().then((docs) => docs.map((doc) => <IAuthorizeAction>doc.toObject()));
@@ -692,7 +712,10 @@ function createSellerStock(measuredAt: Date, sellerId: string): TransactionOpera
     ) => {
         const numberOfTransactionsUnderway = await transactionRepo.transactionModel.count({
             typeOf: factory.transactionType.PlaceOrder,
-            'seller.id': sellerId,
+            'seller.id': {
+                $exists: true,
+                $eq: sellerId
+            },
             $or: [
                 // {measuredAt}以前に開始し、{measuredAt}以後に成立あるいは期限切れした取引
                 {
@@ -700,6 +723,7 @@ function createSellerStock(measuredAt: Date, sellerId: string): TransactionOpera
                         $lte: measuredAt
                     },
                     endDate: {
+                        $exists: true,
                         $gt: measuredAt
                     }
                 },
