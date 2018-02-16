@@ -9,6 +9,7 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
+import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:sales');
@@ -140,10 +141,15 @@ export function settleCreditCardAuth(transactionId: string) {
     };
 }
 
+/**
+ * 注文返品取引からクレジットカード返金処理を実行する
+ * @param transactionId 注文返品取引ID
+ */
 export function refundCreditCard(transactionId: string) {
     return async (
         actionRepo: ActionRepo,
-        transactionRep: TransactionRepo
+        transactionRep: TransactionRepo,
+        taskRepo: TaskRepo
     ) => {
         const transaction = await transactionRep.findReturnOrderById(transactionId);
         const potentialActions = transaction.potentialActions;
@@ -213,6 +219,39 @@ export function refundCreditCard(transactionId: string) {
             // アクション完了
             debug('ending action...');
             await actionRepo.complete(refundActionAttributes.typeOf, action.id, { alterTranResult });
+
+            // 潜在アクション
+            await onRefund(refundActionAttributes)(taskRepo);
+        }));
+    };
+}
+
+/**
+ * 返金後のアクション
+ * @param refundActionAttributes 返金アクション属性
+ */
+function onRefund(refundActionAttributes: factory.action.trade.refund.IAttributes) {
+    return async (taskRepo: TaskRepo) => {
+        const potentialActions = refundActionAttributes.potentialActions;
+        const now = new Date();
+        const taskAttributes: factory.task.IAttributes[] = [];
+        if (potentialActions.sendEmailMessage !== undefined) {
+            taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
+                status: factory.taskStatus.Ready,
+                runsAt: now, // なるはやで実行
+                remainingNumberOfTries: 3,
+                lastTriedAt: null,
+                numberOfTried: 0,
+                executionResults: [],
+                data: {
+                    actionAttributes: potentialActions.sendEmailMessage
+                }
+            }));
+        }
+
+        // タスク保管
+        await Promise.all(taskAttributes.map(async (taskAttribute) => {
+            return taskRepo.save(taskAttribute);
         }));
     };
 }

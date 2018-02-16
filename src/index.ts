@@ -44,7 +44,6 @@ import { MongoRepository as SendGridEventRepo } from './repo/sendGridEvent';
 import { MongoRepository as TaskRepo } from './repo/task';
 import { MongoRepository as TelemetryRepo } from './repo/telemetry';
 import { MongoRepository as TransactionRepo } from './repo/transaction';
-import { MongoRepository as TransactionCountRepo } from './repo/transactionCount';
 
 (<any>mongoose).Promise = global.Promise;
 
@@ -112,7 +111,6 @@ export namespace repository {
     export class Task extends TaskRepo { }
     export class Telemetry extends TelemetryRepo { }
     export class Transaction extends TransactionRepo { }
-    export class TransactionCount extends TransactionCountRepo { }
 
     export namespace itemAvailability {
         export class IndividualScreeningEvent extends IndividualScreeningEventItemAvailabilityRepo { }

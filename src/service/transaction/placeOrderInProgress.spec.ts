@@ -1,14 +1,13 @@
 // tslint:disable:no-implicit-dependencies
 
 /**
- * placeOrderInProgress transaction service test
+ * 進行中の注文取引サービステスト
  * @ignore
  */
 
 import * as waiter from '@motionpicture/waiter-domain';
 import * as moment from 'moment';
 import * as assert from 'power-assert';
-import * as redis from 'redis-mock';
 import * as sinon from 'sinon';
 import * as sskts from '../../index';
 
@@ -37,25 +36,29 @@ describe('start()', () => {
         const transaction = {
             expires: new Date()
         };
-        const scope = {};
-        const maxCountPerUnit = 999;
+        const passportToken = 'passportToken';
+        const passport = {
+            scope: `placeOrderTransaction.${seller.identifier}`,
+            iat: 123,
+            exp: 123,
+            iss: process.env.WAITER_PASSPORT_ISSUER,
+            issueUnit: {}
+        };
 
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
-        sandbox.mock(transactioCountRepo).expects('incr').once().withExactArgs(scope).resolves(maxCountPerUnit - 1);
         sandbox.mock(transactionRepo).expects('startPlaceOrder').once().resolves(transaction);
+        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
-            maxCountPerUnit: maxCountPerUnit,
             clientUser: <any>{},
-            scope: <any>scope,
             agentId: agentId,
-            sellerId: seller.id
-        })(organizationRepo, transactionRepo, transactioCountRepo);
+            sellerId: seller.id,
+            passportToken: passportToken
+        })(organizationRepo, transactionRepo);
 
         assert.deepEqual(result, transaction);
         // assert.equal(result.expires, transaction.expires);
@@ -72,28 +75,32 @@ describe('start()', () => {
         const transaction = {
             expires: new Date()
         };
-        const scope = {};
-        const maxCountPerUnit = 999;
         const clientUser = {
             username: 'username'
+        };
+        const passportToken = 'passportToken';
+        const passport = {
+            scope: `placeOrderTransaction.${seller.identifier}`,
+            iat: 123,
+            exp: 123,
+            iss: process.env.WAITER_PASSPORT_ISSUER,
+            issueUnit: {}
         };
 
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
-        sandbox.mock(transactioCountRepo).expects('incr').once().withExactArgs(scope).resolves(maxCountPerUnit - 1);
         sandbox.mock(transactionRepo).expects('startPlaceOrder').once().resolves(transaction);
+        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
-            maxCountPerUnit: maxCountPerUnit,
             clientUser: <any>clientUser,
-            scope: <any>scope,
             agentId: agentId,
-            sellerId: seller.id
-        })(organizationRepo, transactionRepo, transactioCountRepo);
+            sellerId: seller.id,
+            passportToken: passportToken
+        })(organizationRepo, transactionRepo);
 
         assert.deepEqual(result, transaction);
         sandbox.verify();
@@ -207,7 +214,7 @@ describe('start()', () => {
         sandbox.verify();
     });
 
-    it('許可証がない場合、スコープの指定がなければArgumentNullエラーとなるはず', async () => {
+    it('許可証がない場合、ArgumentNullエラーとなるはず', async () => {
         const agentId = 'agentId';
         const seller = {
             id: 'sellerId',
@@ -217,90 +224,19 @@ describe('start()', () => {
         const transaction = {
             expires: new Date()
         };
-        const scope = undefined;
-        const maxCountPerUnit = 999;
 
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
-        sandbox.mock(transactioCountRepo).expects('incr').never();
         sandbox.mock(transactionRepo).expects('startPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
-            scope: <any>scope,
-            maxCountPerUnit: maxCountPerUnit,
             clientUser: <any>{},
             agentId: agentId,
-            sellerId: seller.id
-        })(organizationRepo, transactionRepo, transactioCountRepo).catch((err) => err);
-        assert(result instanceof sskts.factory.errors.ArgumentNull);
-        sandbox.verify();
-    });
-
-    it('許可証がない場合、単位あたりの最大取引数の指定がなければArgumentNullエラーとなるはず', async () => {
-        const agentId = 'agentId';
-        const seller = {
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            identifier: 'sellerIdentifier'
-        };
-        const transaction = {
-            expires: new Date()
-        };
-        const scope = {};
-        const maxCountPerUnit = undefined;
-
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
-
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
-        sandbox.mock(transactioCountRepo).expects('incr').never();
-        sandbox.mock(transactionRepo).expects('startPlaceOrder').never();
-
-        const result = await sskts.service.transaction.placeOrderInProgress.start({
-            expires: transaction.expires,
-            scope: <any>scope,
-            maxCountPerUnit: maxCountPerUnit,
-            clientUser: <any>{},
-            agentId: agentId,
-            sellerId: seller.id
-        })(organizationRepo, transactionRepo, transactioCountRepo).catch((err) => err);
-        assert(result instanceof sskts.factory.errors.ArgumentNull);
-        sandbox.verify();
-    });
-
-    it('許可証がない場合、取引数レポジトリーの指定がなければArgumentNullエラーとなるはず', async () => {
-        const agentId = 'agentId';
-        const seller = {
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            identifier: 'sellerIdentifier'
-        };
-        const transaction = {
-            expires: new Date()
-        };
-        const scope = {};
-        const maxCountPerUnit = 999;
-
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
-
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
-        sandbox.mock(transactioCountRepo).expects('incr').never();
-        sandbox.mock(transactionRepo).expects('startPlaceOrder').never();
-
-        const result = await sskts.service.transaction.placeOrderInProgress.start({
-            expires: transaction.expires,
-            scope: <any>scope,
-            maxCountPerUnit: maxCountPerUnit,
-            clientUser: <any>{},
-            agentId: agentId,
-            sellerId: seller.id
+            sellerId: seller.id,
+            passportToken: <any>undefined
         })(organizationRepo, transactionRepo).catch((err) => err);
         console.error(result);
         assert(result instanceof sskts.factory.errors.ArgumentNull);
@@ -378,41 +314,6 @@ describe('start()', () => {
             sellerId: seller.id
         })(organizationRepo, transactionRepo).catch((err) => err);
         assert(result instanceof sskts.factory.errors.AlreadyInUse);
-        sandbox.verify();
-    });
-
-    it('取引数制限を超えていれば、RateLimitExceededエラーが投げられるはず', async () => {
-        const agentId = 'agentId';
-        const seller = {
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            identifier: 'sellerIdentifier'
-        };
-        const transaction = {
-            expires: new Date()
-        };
-        const scope = {};
-        const maxCountPerUnit = 999;
-
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const transactioCountRepo = new sskts.repository.TransactionCount(redis.createClient());
-
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
-        sandbox.mock(transactioCountRepo).expects('incr').once().withExactArgs(scope).resolves(maxCountPerUnit + 1);
-        sandbox.mock(transactionRepo).expects('startPlaceOrder').never();
-
-        const startError = await sskts.service.transaction.placeOrderInProgress.start({
-            expires: transaction.expires,
-            maxCountPerUnit: maxCountPerUnit,
-            clientUser: <any>{},
-            scope: <any>scope,
-            agentId: agentId,
-            sellerId: seller.id
-        })(organizationRepo, transactionRepo, transactioCountRepo)
-            .catch((err) => err);
-
-        assert(startError instanceof sskts.factory.errors.RateLimitExceeded);
         sandbox.verify();
     });
 });
@@ -902,7 +803,9 @@ describe('createEmailMessageFromTransaction()', () => {
             object: {
                 customerContact: customerContact,
                 clientUser: <any>{ client_id: 'client_id' },
-                authorizeActions: []
+                authorizeActions: [],
+                passportToken: 'passportToken',
+                passport: <any>{}
             }
         };
         const creditCardAuthorizeActions = [

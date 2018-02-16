@@ -123,7 +123,8 @@ export function refundCreditCard(
     return async (connection: mongoose.Connection) => {
         const actionRepo = new ActionRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await SalesService.refundCreditCard(data.transactionId)(actionRepo, transactionRepo);
+        const taskRepo = new TaskRepo(connection);
+        await SalesService.refundCreditCard(data.transactionId)(actionRepo, transactionRepo, taskRepo);
     };
 }
 

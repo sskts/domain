@@ -17,7 +17,6 @@ import * as util from 'util';
 import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as OrganizationRepo } from '../../repo/organization';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
-import { MongoRepository as TransactionCountRepo } from '../../repo/transactionCount';
 
 import * as CreditCardAuthorizeActionService from './placeOrderInProgress/action/authorize/creditCard';
 import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/authorize/mvtk';
@@ -28,8 +27,7 @@ const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress
 export type ITransactionOperation<T> = (transactionRepo: TransactionRepo) => Promise<T>;
 export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (
     organizationRepo: OrganizationRepo,
-    transactionRepo: TransactionRepo,
-    transactionCountRepo?: TransactionCountRepo
+    transactionRepo: TransactionRepo
 ) => Promise<T>;
 
 /**
@@ -55,19 +53,9 @@ export interface IStartParams {
      */
     clientUser: factory.clientUser.IClientUser;
     /**
-     * WAITERの許可証必須にするまで互換性担保
-     * @deprecated since v24.0.0
-     */
-    maxCountPerUnit?: number;
-    /**
-     * WAITERの許可証必須にするまで互換性担保
-     * @deprecated since v24.0.0
-     */
-    scope?: factory.transactionScope.ITransactionScope;
-    /**
      * WAITER許可証トークン
      */
-    passportToken?: waiter.factory.passport.IEncodedPassport;
+    passportToken: waiter.factory.passport.IEncodedPassport;
 }
 
 /**
@@ -79,8 +67,7 @@ export function start(params: IStartParams):
     IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction> {
     return async (
         organizationRepo: OrganizationRepo,
-        transactionRepo: TransactionRepo,
-        transactionCountRepo?: TransactionCountRepo
+        transactionRepo: TransactionRepo
     ) => {
         // 売り手を取得
         const seller = await organizationRepo.findMovieTheaterById(params.sellerId);
@@ -100,20 +87,7 @@ export function start(params: IStartParams):
                 throw new factory.errors.Argument('passportToken', 'Invalid passport.');
             }
         } else {
-            if (params.scope === undefined) {
-                throw new factory.errors.ArgumentNull('scope');
-            }
-            if (params.maxCountPerUnit === undefined) {
-                throw new factory.errors.ArgumentNull('maxCountPerUnit');
-            }
-            if (transactionCountRepo === undefined) {
-                throw new factory.errors.ArgumentNull('transactionCountRepo');
-            }
-
-            const nextCount = await transactionCountRepo.incr(params.scope);
-            if (nextCount > params.maxCountPerUnit) {
-                throw new factory.errors.RateLimitExceeded('PlaceOrder transactions rate limit exceeded.');
-            }
+            throw new factory.errors.ArgumentNull('passportToken');
         }
 
         const agent: factory.transaction.placeOrder.IAgent = {
@@ -225,70 +199,6 @@ export namespace action {
         export import seatReservation = SeatReservationAuthorizeActionService;
     }
 }
-
-/**
- * メール追加
- *
- * @param {string} transactionId
- * @param {EmailNotification} notification
- * @returns {TransactionOperation<void>}
- *
- * @memberof service.transaction.placeOrderInProgress
- */
-// export function addEmail(transactionId: string, notification: EmailNotificationFactory.INotification) {
-//     return async (transactionRepo: TransactionRepo) => {
-//         // イベント作成
-//         const event = AddNotificationTransactionEventFactory.create({
-//             occurredAt: new Date(),
-//             notification: notification
-//         });
-
-//         // 永続化
-//         debug('adding an event...', event);
-//         await pushEvent(transactionId, event)(transactionRepo);
-//     };
-// }
-
-/**
- * メール削除
- *
- * @param {string} transactionId
- * @param {string} notificationId
- * @returns {TransactionOperation<void>}
- *
- * @memberof service.transaction.placeOrderInProgress
- */
-// export function removeEmail(transactionId: string, notificationId: string) {
-//     return async (transactionRepo: TransactionRepo) => {
-//         const transaction = await findInProgressById(transactionId)(transactionRepo)
-//             .then((option) => {
-//                 if (option.isEmpty) {
-//                     throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
-//                 }
-
-//                 return option.get();
-//             });
-
-//         type ITransactionEvent = AddNotificationTransactionEventFactory.ITransactionEvent<EmailNotificationFactory.INotification>;
-//         const addNotificationTransactionEvent = <ITransactionEvent>transaction.object.actionEvents.find(
-//             (actionEvent) =>
-//                 actionEvent.actionEventType === TransactionEventGroup.AddNotification &&
-//                 (<ITransactionEvent>actionEvent).notification.id === notificationId
-//         );
-//         if (addNotificationTransactionEvent === undefined) {
-//             throw new factory.errors.Argument('notificationId', `notification [${notificationId}] not found in the transaction.`);
-//         }
-
-//         // イベント作成
-//         const event = RemoveNotificationTransactionEventFactory.create({
-//             occurredAt: new Date(),
-//             notification: addNotificationTransactionEvent.notification
-//         });
-
-//         // 永続化
-//         await pushEvent(transactionId, event)(transactionRepo);
-//     };
-// }
 
 /**
  * 取引中の購入者情報を変更する
