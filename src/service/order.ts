@@ -152,7 +152,6 @@ export function cancelReservations(returnOrderTransactionId: string) {
         const action = await actionRepo.start<factory.action.transfer.returnAction.order.IAction>(returnOrderActionAttributes);
 
         try {
-            const now = new Date();
             const order = placeOrderTransactionResult.order;
 
             // 非同期でCOA本予約取消
@@ -186,13 +185,13 @@ export function cancelReservations(returnOrderTransactionId: string) {
                 debug('COA delReserve processed.');
             }
 
-            // 所有権無効化(所有期間を現在までに変更する)
+            // 所有権の予約ステータスを変更
             const ownershipInfos = placeOrderTransactionResult.ownershipInfos;
             debug('invalidating ownershipInfos...', ownershipInfos);
             await Promise.all(ownershipInfos.map(async (ownershipInfo) => {
                 await ownershipInfoRepo.ownershipInfoModel.findOneAndUpdate(
                     { identifier: ownershipInfo.identifier },
-                    { ownedThrough: now }
+                    { 'typeOfGood.reservationStatus': factory.reservationStatusType.ReservationCancelled }
                 ).exec();
             }));
 
