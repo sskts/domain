@@ -228,7 +228,7 @@ schema.index(
     }
 );
 
-// ひとつの注文取引に対する返品取引はユニークなはず
+// ひとつの注文取引に対する確定返品取引はユニークなはず
 schema.index(
     {
         'object.transaction.id': 1
@@ -236,7 +236,8 @@ schema.index(
     {
         unique: true,
         partialFilterExpression: {
-            typeOf: factory.transactionType.ReturnOrder,
+            typeOf: factory.transactionType.ReturnOrder, // 返品取引
+            status: factory.transactionStatusType.Confirmed, // 確定ステータス
             'object.transaction.id': { $exists: true }
         }
     }
