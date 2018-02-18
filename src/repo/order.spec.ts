@@ -70,3 +70,77 @@ describe('createIfNotExist()', () => {
         sandbox.verify();
     });
 });
+
+describe('changeStatus()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('注文が存在すればステータス変更できるはず', async () => {
+        const orderNumber = 'orderNumber';
+        const orderStatus = sskts.factory.orderStatus.OrderDelivered;
+
+        const repository = new sskts.repository.Order(sskts.mongoose.connection);
+
+        sandbox.mock(repository.orderModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves(new repository.orderModel());
+
+        const result = await repository.changeStatus(orderNumber, orderStatus);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('注文が存在しなければNotFoundエラーとなるはず', async () => {
+        const orderNumber = 'orderNumber';
+        const orderStatus = sskts.factory.orderStatus.OrderDelivered;
+
+        const repository = new sskts.repository.Order(sskts.mongoose.connection);
+
+        sandbox.mock(repository.orderModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves(null);
+
+        const result = await repository.changeStatus(orderNumber, orderStatus)
+            .catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+});
+
+describe('findByOrderNumber()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('注文が存在すれば注文オブジェクトが返却されるはず', async () => {
+        const order = {
+            orderNumber: 'orderNumber'
+        };
+
+        const repository = new sskts.repository.Order(sskts.mongoose.connection);
+
+        sandbox.mock(repository.orderModel).expects('findOne').once()
+            .chain('exec').resolves(new repository.orderModel(order));
+
+        const result = await repository.findByOrderNumber(order.orderNumber);
+
+        assert.equal(result.orderNumber, order.orderNumber);
+        sandbox.verify();
+    });
+
+    it('注文が存在しなければNotFoundエラーとなるはず', async () => {
+        const orderNumber = 'orderNumber';
+
+        const repository = new sskts.repository.Order(sskts.mongoose.connection);
+
+        sandbox.mock(repository.orderModel).expects('findOne').once()
+            .chain('exec').resolves(null);
+
+        const result = await repository.findByOrderNumber(orderNumber)
+            .catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+});

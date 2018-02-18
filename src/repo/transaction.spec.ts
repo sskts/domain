@@ -277,3 +277,112 @@ describe('searchPlaceOrder()', () => {
         sandbox.verify();
     });
 });
+
+describe('findReturnOrderById()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('取引が存在すればオブジェクトが返却されるはず', async () => {
+        const transactionId = 'transactionId';
+
+        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(repository.transactionModel).expects('findOne').once()
+            .chain('exec').resolves(new repository.transactionModel());
+
+        const result = await repository.findReturnOrderById(transactionId);
+
+        assert.equal(typeof result, 'object');
+        sandbox.verify();
+    });
+
+    it('取引が存在しなければNotFoundエラーとなるはず', async () => {
+        const transactionId = 'transactionId';
+
+        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(repository.transactionModel).expects('findOne').once()
+            .chain('exec').resolves(null);
+
+        const result = await repository.findReturnOrderById(transactionId).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+});
+
+describe('confirmReturnOrder()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('取引が存在すれば、エラーにならないはず', async () => {
+        const transactionId = 'transactionId';
+        const endDate = new Date();
+        const transactionResult = {};
+        const potentialActions = {};
+
+        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const doc = new repository.transactionModel();
+
+        sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves(doc);
+
+        const result = await repository.confirmReturnOrder(
+            transactionId, endDate, <any>transactionResult, <any>potentialActions
+        );
+        assert.equal(typeof result, 'object');
+        sandbox.verify();
+    });
+
+    it('取引が存在しなければ、NotFoundエラーになるはず', async () => {
+        const transactionId = 'transactionId';
+        const endDate = new Date();
+        const transactionResult = {};
+        const potentialActions = {};
+
+        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves(null);
+
+        const result = await repository.confirmReturnOrder(
+            transactionId, endDate, <any>transactionResult, <any>potentialActions
+        ).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+});
+
+describe('findReturnOrderInProgressById()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('取引が存在すればオブジェクトが返却されるはず', async () => {
+        const transactionId = 'transactionId';
+
+        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(repository.transactionModel).expects('findOne').once()
+            .chain('exec').resolves(new repository.transactionModel());
+
+        const result = await repository.findReturnOrderInProgressById(transactionId);
+
+        assert.equal(typeof result, 'object');
+        sandbox.verify();
+    });
+
+    it('取引が存在しなければNotFoundエラーとなるはず', async () => {
+        const transactionId = 'transactionId';
+
+        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(repository.transactionModel).expects('findOne').once()
+            .chain('exec').resolves(null);
+
+        const result = await repository.findReturnOrderInProgressById(transactionId).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+});

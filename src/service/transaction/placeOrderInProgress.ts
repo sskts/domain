@@ -400,7 +400,7 @@ export function confirm(
  * @function
  * @returns {boolean}
  */
-function validateTransaction(transaction: factory.transaction.placeOrder.ITransaction) {
+export function validateTransaction(transaction: factory.transaction.placeOrder.ITransaction) {
     type IAuthorizeActionResult =
         factory.action.authorize.creditCard.IResult |
         factory.action.authorize.mvtk.IResult |
@@ -446,7 +446,7 @@ function validateTransaction(transaction: factory.transaction.placeOrder.ITransa
  * @memberof order
  */
 // tslint:disable-next-line:max-func-body-length
-function createOrderFromTransaction(params: {
+export function createOrderFromTransaction(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     orderDate: Date;
     orderStatus: factory.orderStatus;
