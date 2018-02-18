@@ -145,7 +145,10 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
             // 互換性維持のため、すでにメール送信タスクが存在するかどうか確認し、なければタスク追加
             const sendEmailNotificationTaskDoc = await taskRepo.taskModel.findOne({
                 name: factory.taskName.SendEmailNotification,
-                'data.emailMessage.identifier': potentialActions.sendEmailMessage.object.identifier
+                'data.emailMessage.identifier': {
+                    $exists: true,
+                    $eq: potentialActions.sendEmailMessage.object.identifier
+                }
             }).exec();
             if (sendEmailNotificationTaskDoc === null) {
                 taskAttributes.push(factory.task.sendEmailMessage.createAttributes({

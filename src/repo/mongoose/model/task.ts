@@ -87,6 +87,25 @@ schema.index(
 );
 schema.index({ status: 1, createdAt: 1 });
 schema.index({ createdAt: 1 });
+schema.index({ name: 1, createdAt: 1 });
+schema.index(
+    { status: 1, name: 1, lastTriedAt: 1 },
+    {
+        partialFilterExpression: {
+            lastTriedAt: { $type: 'date' }
+        }
+    }
+);
+
+// 特定のEメールメッセージタスク検索に使用
+schema.index(
+    { 'data.emailMessage.identifier': 1, name: 1 },
+    {
+        partialFilterExpression: {
+            'data.emailMessage.identifier': { $exists: true }
+        }
+    }
+);
 
 export default mongoose.model('Task', schema)
     .on('index', (error) => {

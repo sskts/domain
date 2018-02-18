@@ -711,14 +711,14 @@ function createSellerStock(measuredAt: Date, sellerId: string): TransactionOpera
         transactionRepo: TransactionRepo
     ) => {
         const numberOfTransactionsUnderway = await transactionRepo.transactionModel.count({
-            typeOf: factory.transactionType.PlaceOrder,
-            'seller.id': {
-                $exists: true,
-                $eq: sellerId
-            },
             $or: [
                 // {measuredAt}以前に開始し、{measuredAt}以後に成立あるいは期限切れした取引
                 {
+                    typeOf: factory.transactionType.PlaceOrder,
+                    'seller.id': {
+                        $exists: true,
+                        $eq: sellerId
+                    },
                     startDate: {
                         $lte: measuredAt
                     },
@@ -729,10 +729,15 @@ function createSellerStock(measuredAt: Date, sellerId: string): TransactionOpera
                 },
                 // {measuredAt}以前に開始し、いまだに進行中の取引
                 {
+                    typeOf: factory.transactionType.PlaceOrder,
+                    'seller.id': {
+                        $exists: true,
+                        $eq: sellerId
+                    },
+                    status: factory.transactionStatusType.InProgress,
                     startDate: {
                         $lte: measuredAt
-                    },
-                    status: factory.transactionStatusType.InProgress
+                    }
                 }
             ]
         }).exec();
@@ -783,6 +788,7 @@ function createGlobalFlow(
             const numberOfTasksAborted = await taskRepo.taskModel.count({
                 name: taskName,
                 lastTriedAt: {
+                    $type: 'date',
                     $gte: measuredFrom,
                     $lt: measuredThrough
                 },
@@ -795,6 +801,7 @@ function createGlobalFlow(
                 {
                     name: taskName,
                     lastTriedAt: {
+                        $type: 'date',
                         $gte: measuredFrom,
                         $lt: measuredThrough
                     },
@@ -863,6 +870,7 @@ function createGlobalStock(measuredAt: Date): TaskOperation<IGlobalStockResult> 
                         $lte: measuredAt
                     },
                     lastTriedAt: {
+                        $type: 'date',
                         $gt: measuredAt
                     }
                 },

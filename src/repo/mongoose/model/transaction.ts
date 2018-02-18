@@ -219,6 +219,23 @@ schema.index(
         }
     }
 );
+schema.index(
+    { 'seller.id': 1, typeOf: 1, endDate: 1 },
+    {
+        partialFilterExpression: {
+            'seller.id': { $exists: true },
+            endDate: { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'seller.id': 1, typeOf: 1, startDate: 1 },
+    {
+        partialFilterExpression: {
+            'seller.id': { $exists: true }
+        }
+    }
+);
 
 // 取引タイプ指定で取得する場合に使用
 schema.index(
