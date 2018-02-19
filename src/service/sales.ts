@@ -124,7 +124,8 @@ export function settleCreditCardAuth(transactionId: string) {
             } catch (error) {
                 // actionにエラー結果を追加
                 try {
-                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
                     await actionRepo.giveUp(payActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
@@ -207,7 +208,8 @@ export function refundCreditCard(transactionId: string) {
             } catch (error) {
                 // actionにエラー結果を追加
                 try {
-                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
                     await actionRepo.giveUp(refundActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
@@ -235,6 +237,8 @@ function onRefund(refundActionAttributes: factory.action.trade.refund.IAttribute
         const potentialActions = refundActionAttributes.potentialActions;
         const now = new Date();
         const taskAttributes: factory.task.IAttributes[] = [];
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (potentialActions.sendEmailMessage !== undefined) {
             taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
                 status: factory.taskStatus.Ready,
@@ -302,14 +306,20 @@ export function settleMvtk(transactionId: string) {
             try {
                 // 実は取引成立の前に着券済みなので何もしない
             } catch (error) {
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore next */
+
                 // actionにエラー結果を追加
                 try {
-                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
                     await actionRepo.giveUp(useActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
 
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore next */
                 throw new Error(error);
             }
 
