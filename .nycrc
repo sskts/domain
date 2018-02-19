@@ -12,12 +12,10 @@
     ],
     "exclude": [
         "**/*.spec.ts",
-        "src/repo/action.ts",
         "src/service/util.ts",
         "src/service/report/health.ts",
         "src/service/report/telemetry.ts",
         "src/service/transaction/returnOrder.ts",
-        "src/service/sales.ts",
         "src/service/delivery.ts"
     ],
     "reporter": [

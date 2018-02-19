@@ -19,7 +19,7 @@ before(() => {
             authorizeActions: [
                 {
                     id: 'actionId',
-                    actionStatus: 'CompletedActionStatus',
+                    actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
                     purpose: {},
                     object: {
                         typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard,
@@ -108,6 +108,42 @@ describe('settleCreditCardAuth()', () => {
         sandbox.verify();
     });
 
+    it('注文取引結果が未定義であればNotFoundエラーとなるはず', async () => {
+        const transaction = { ...existingTransaction, result: undefined };
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
+            .withExactArgs(existingTransaction.id).resolves(transaction);
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.sales.settleCreditCardAuth(transaction.id)(
+            actionRepo, transactionRepo
+        ).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+
+    it('注文取引の潜在アクションが未定義であればNotFoundエラーとなるはず', async () => {
+        const transaction = { ...existingTransaction, potentialActions: undefined };
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
+            .withExactArgs(existingTransaction.id).resolves(transaction);
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.sales.settleCreditCardAuth(transaction.id)(
+            actionRepo, transactionRepo
+        ).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+
     it('すでに実売上済であれば、実売上リクエストは実行されないはず', async () => {
         const searchTradeResult = { jobCd: sskts.GMO.utils.util.JobCd.Sales };
         const action = { id: 'actionId' };
@@ -128,6 +164,32 @@ describe('settleCreditCardAuth()', () => {
         const result = await sskts.service.sales.settleCreditCardAuth(existingTransaction.id)(actionRepo, transactionRepo);
 
         assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('GMO実売上に失敗すればアクションにエラー結果が追加されるはず', async () => {
+        const searchTradeResult = { jobCd: sskts.GMO.utils.util.JobCd.Auth };
+        const action = { id: 'actionId' };
+        const alterTranResult = new Error('alterTranError');
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(actionRepo).expects('start').once()
+            .withExactArgs(existingTransaction.potentialActions.order.potentialActions.payCreditCard).resolves(action);
+        sandbox.mock(actionRepo).expects('giveUp')
+            .withArgs(existingTransaction.potentialActions.order.potentialActions.payCreditCard.typeOf, action.id).resolves(action);
+        sandbox.mock(actionRepo).expects('complete').never();
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
+            .withExactArgs(existingTransaction.id).resolves(existingTransaction);
+        sandbox.mock(sskts.GMO.services.credit).expects('searchTrade').once().resolves(searchTradeResult);
+        sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().rejects(alterTranResult);
+
+        const result = await sskts.service.sales.settleCreditCardAuth(existingTransaction.id)(
+            actionRepo, transactionRepo
+        ).catch((err) => err);
+
+        assert.deepEqual(result, alterTranResult);
         sandbox.verify();
     });
 });
@@ -165,6 +227,60 @@ describe('settleMvtk()', () => {
             .withExactArgs(existingTransaction.id).resolves(existingTransaction);
 
         const result = await sskts.service.sales.settleMvtk(existingTransaction.id)(actionRepo, transactionRepo);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
+
+describe('refundCreditCard()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('実売上状態であれば売上取消するはず', async () => {
+        const placeOrderTransaction = { ...existingTransaction };
+        const refundActionAttributes = {
+            typeOf: sskts.factory.actionType.RefundAction,
+            potentialActions: {
+                sendEmailMessage: {
+                    typeOf: sskts.factory.actionType.SendAction
+                }
+            }
+        };
+        const returnOrderTransaction = {
+            id: 'returnOrderTransactionId',
+            typeOf: sskts.factory.transactionType.ReturnOrder,
+            object: { transaction: placeOrderTransaction },
+            potentialActions: {
+                returnOrder: {
+                    potentialActions: {
+                        refund: refundActionAttributes
+                    }
+                }
+            }
+        };
+        const action = { typeOf: refundActionAttributes.typeOf, id: 'actionId' };
+        const searchTradeResult = { status: sskts.GMO.utils.util.Status.Sales };
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findReturnOrderById').once()
+            .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
+        sandbox.mock(actionRepo).expects('start').once()
+            .withExactArgs(refundActionAttributes).resolves(action);
+        sandbox.mock(actionRepo).expects('complete').once()
+            .withArgs(action.typeOf, action.id).resolves(action);
+        sandbox.mock(actionRepo).expects('giveUp').never();
+        sandbox.mock(sskts.GMO.services.credit).expects('searchTrade').once().resolves(searchTradeResult);
+        sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().resolves();
+        sandbox.mock(taskRepo).expects('save').once();
+
+        const result = await sskts.service.sales.refundCreditCard(returnOrderTransaction.id)(
+            actionRepo, transactionRepo, taskRepo
+        );
 
         assert.equal(result, undefined);
         sandbox.verify();
