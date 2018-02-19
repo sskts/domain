@@ -43,7 +43,8 @@ export function createFromTransaction(transactionId: string) {
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
                 await actionRepo.giveUp(orderActionAttributes.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
@@ -72,6 +73,9 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
         const orderPotentialActions = orderActionAttributes.potentialActions;
         const now = new Date();
         const taskAttributes: factory.task.IAttributes[] = [];
+
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (orderPotentialActions.sendOrder !== undefined) {
             taskAttributes.push(factory.task.sendOrder.createAttributes({
                 status: factory.taskStatus.Ready,
@@ -87,6 +91,8 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
         }
 
         // クレジットカード決済
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (orderPotentialActions.payCreditCard !== undefined) {
             taskAttributes.push(factory.task.settleCreditCard.createAttributes({
                 status: factory.taskStatus.Ready,
@@ -102,6 +108,8 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
         }
 
         // ムビチケ使用
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (orderPotentialActions.useMvtk !== undefined) {
             taskAttributes.push(factory.task.settleMvtk.createAttributes({
                 status: factory.taskStatus.Ready,
@@ -170,6 +178,8 @@ export function cancelReservations(returnOrderTransactionId: string) {
             debug('COA stateReserveResult is', stateReserveResult);
 
             // 予約が存在すればCOA購入チケット取消
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
             if (stateReserveResult !== null) {
                 debug('deleting COA reservation...');
                 await COA.services.reserve.delReserve({
@@ -201,7 +211,8 @@ export function cancelReservations(returnOrderTransactionId: string) {
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
                 await actionRepo.giveUp(returnOrderActionAttributes.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
@@ -228,6 +239,9 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
     return async (taskRepo: TaskRepo) => {
         const now = new Date();
         const taskAttributes: factory.task.IAttributes[] = [];
+
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (returnActionAttributes.potentialActions.refund !== undefined) {
             // 返金タスク作成
             taskAttributes.push(factory.task.refundCreditCard.createAttributes({
