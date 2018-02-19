@@ -43,7 +43,8 @@ export function createFromTransaction(transactionId: string) {
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
                 await actionRepo.giveUp(sendOrderActionAttributes.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない

@@ -472,7 +472,6 @@ export function changeOffers(
             .then((doc) => {
                 if (doc === null) {
                     throw new factory.errors.NotFound('authorizeAction');
-
                 }
 
                 return <factory.action.authorize.seatReservation.IAction>doc.toObject();
