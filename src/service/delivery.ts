@@ -55,6 +55,11 @@ export function sendOrder(transactionId: string) {
             throw new factory.errors.NotFound('authorizeAction.result');
         }
 
+        const customerContact = transaction.object.customerContact;
+        if (customerContact === undefined) {
+            throw new factory.errors.NotFound('transaction.object.customerContact');
+        }
+
         // アクション開始
         const sendOrderActionAttributes = potentialActions.order.potentialActions.sendOrder;
         const action = await actionRepo.start<factory.action.transfer.send.order.IAction>(sendOrderActionAttributes);
@@ -63,11 +68,6 @@ export function sendOrder(transactionId: string) {
             const updTmpReserveSeatArgs = authorizeActionResult.updTmpReserveSeatArgs;
             const updTmpReserveSeatResult = authorizeActionResult.updTmpReserveSeatResult;
             const order = transactionResult.order;
-
-            const customerContact = transaction.object.customerContact;
-            if (customerContact === undefined) {
-                throw new factory.errors.NotFound('transaction.object.customerContact');
-            }
 
             // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
             const phoneUtil = PhoneNumberUtil.getInstance();
@@ -113,7 +113,8 @@ export function sendOrder(transactionId: string) {
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
                 await actionRepo.giveUp(sendOrderActionAttributes.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
@@ -141,6 +142,9 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
         const potentialActions = sendOrderActionAttributes.potentialActions;
         const now = new Date();
         const taskAttributes: factory.task.IAttributes[] = [];
+
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (potentialActions.sendEmailMessage !== undefined) {
             // 互換性維持のため、すでにメール送信タスクが存在するかどうか確認し、なければタスク追加
             const sendEmailNotificationTaskDoc = await taskRepo.taskModel.findOne({
@@ -150,6 +154,8 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
                     $eq: potentialActions.sendEmailMessage.object.identifier
                 }
             }).exec();
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
             if (sendEmailNotificationTaskDoc === null) {
                 taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
                     status: factory.taskStatus.Ready,
