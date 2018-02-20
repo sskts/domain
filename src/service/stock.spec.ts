@@ -24,9 +24,8 @@ before(() => {
                 {
                     id: 'actionId',
                     actionStatus: 'CompletedActionStatus',
-                    purpose: {
-                        typeOf: 'SeatReservation'
-                    },
+                    object: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation },
+                    purpose: {},
                     result: {
                         price: 123,
                         acceptedOffers: [
@@ -86,22 +85,21 @@ describe('cancelSeatReservationAuth()', () => {
             {
                 id: 'actionId',
                 actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                purpose: {
-                    typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation
-                },
+                object: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation },
+                purpose: {},
                 result: {
                     updTmpReserveSeatArgs: {},
                     updTmpReserveSeatResult: {}
                 }
             }
         ];
-        const authorizeActionRepo = new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
 
-        sandbox.mock(authorizeActionRepo).expects('findByTransactionId').once()
+        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .withExactArgs(existingTransaction.id).resolves(authorizeActions);
         sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').once().resolves();
 
-        const result = await sskts.service.stock.cancelSeatReservationAuth(existingTransaction.id)(authorizeActionRepo);
+        const result = await sskts.service.stock.cancelSeatReservationAuth(existingTransaction.id)(actionRepo);
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -167,9 +165,8 @@ describe('transferSeatReservation()', () => {
                     {
                         id: 'actionId',
                         actionStatus: 'CompletedActionStatus',
-                        purpose: {
-                            typeOf: 'SeatReservation'
-                        },
+                        object: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation },
+                        purpose: {},
                         result: {
                             updTmpReserveSeatArgs: {},
                             updTmpReserveSeatResult: {}

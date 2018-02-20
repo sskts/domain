@@ -18,7 +18,6 @@ export class MongoRepository {
         agentId: string,
         ticket: factory.action.transfer.print.ticket.ITicket
     ): Promise<factory.action.transfer.print.ticket.IAction> {
-        const now = new Date();
         const actionAttributes = factory.action.transfer.print.ticket.createAttributes({
             actionStatus: factory.actionStatusType.CompletedActionStatus,
             object: {
@@ -28,9 +27,7 @@ export class MongoRepository {
             agent: {
                 typeOf: factory.personType.Person,
                 id: agentId
-            },
-            startDate: now,
-            endDate: now
+            }
         });
 
         return this.actionModel.create(actionAttributes).then((doc) => <factory.action.transfer.print.ticket.IAction>doc.toObject());

@@ -26,10 +26,8 @@ describe('exportTasks()', () => {
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
         const status = sskts.factory.transactionStatusType.InProgress;
-        const transactionDoc = new transactionRepo.transactionModel();
-        transactionDoc.set('status', status);
 
-        sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').never();
+        sandbox.mock(transactionRepo).expects('startExportTasks').never();
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').never();
         sandbox.mock(taskRepo).expects('save').never();
         sandbox.mock(transactionRepo).expects('setTasksExportedById').never();
@@ -47,18 +45,15 @@ describe('exportTasks()', () => {
 
         const status = sskts.factory.transactionStatusType.Confirmed;
         const task = {};
-        const transactionDoc = new transactionRepo.transactionModel();
-        transactionDoc.set('status', status);
+        const transaction = {
+            id: 'transactionId',
+            status: status
+        };
 
-        sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').once()
-            .withArgs({
-                typeOf: sskts.factory.transactionType.PlaceOrder,
-                status: status,
-                tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported
-            }).chain('exec').resolves(transactionDoc);
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transactionDoc);
+        sandbox.mock(transactionRepo).expects('startExportTasks').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
         sandbox.mock(taskRepo).expects('save').atLeast(1).resolves(task);
-        sandbox.mock(transactionRepo).expects('setTasksExportedById').once().withArgs(transactionDoc.id).resolves();
+        sandbox.mock(transactionRepo).expects('setTasksExportedById').once().withArgs(transaction.id).resolves();
 
         const result = await sskts.service.transaction.placeOrder.exportTasks(
             status
@@ -73,12 +68,7 @@ describe('exportTasks()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').once()
-            .withArgs({
-                typeOf: sskts.factory.transactionType.PlaceOrder,
-                status: status,
-                tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported
-            }).chain('exec').resolves(null);
+        sandbox.mock(transactionRepo).expects('startExportTasks').once().resolves(null);
         sandbox.mock(sskts.service.transaction.placeOrder).expects('exportTasksById').never();
         sandbox.mock(transactionRepo).expects('setTasksExportedById').never();
 
@@ -96,8 +86,8 @@ describe('exportTasksById()', () => {
         sandbox.restore();
     });
 
-    it('確定取引であれば5つのタスクがエクスポートされるはず', async () => {
-        const numberOfTasks = 5;
+    it('確定取引であれば1つのタスクがエクスポートされるはず', async () => {
+        const numberOfTasks = 1;
         const transaction = {
             id: 'transactionId',
             status: sskts.factory.transactionStatusType.Confirmed
@@ -297,6 +287,89 @@ describe('download', () => {
         sandbox.verify();
     });
 
+    it('undefined属性は空文字列としてcsvに補完されるはず', async () => {
+        const conditions = {
+            startFrom: new Date(),
+            startThrough: new Date()
+        };
+        const transactions = [
+            {
+                id: 'id',
+                status: sskts.factory.transactionStatusType.Confirmed,
+                seller: {},
+                agent: {},
+                object: {
+                    customerContact: {}
+                },
+                result: {
+                    order: {
+                        confirmationNumber: 123,
+                        acceptedOffers: [{
+                            itemOffered: {
+                                reservationFor: {
+                                    superEvent: {
+                                        workPerformed: {},
+                                        location: {
+                                            name: {}
+                                        }
+                                    },
+                                    startDate: new Date(),
+                                    endDate: new Date(),
+                                    location: {
+                                        name: {}
+                                    }
+                                },
+                                reservedTicket: {
+                                    ticketedSeat: {},
+                                    coaTicketInfo: {}
+                                }
+                            }
+                        }],
+                        paymentMethods: [{
+                            name: 'name',
+                            paymentMethodId: 'paymentMethodId'
+                        }],
+                        discounts: [{
+                            name: 'name',
+                            discountCode: 'discountCode',
+                            discount: 123
+                        }]
+                    }
+                }
+            },
+            {
+                id: 'id',
+                status: sskts.factory.transactionStatusType.Expired,
+                seller: {},
+                agent: {
+                    memberOf: { membershipNumber: 'membershipNumber' }
+                },
+                object: {
+                }
+            },
+            {
+                id: 'id',
+                status: sskts.factory.transactionStatusType.Expired,
+                seller: {},
+                agent: {},
+                object: {
+                }
+            }
+        ];
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('searchPlaceOrder').once().resolves(transactions);
+
+        const result = await sskts.service.transaction.placeOrder.download(
+            conditions,
+            'csv'
+        )(transactionRepo);
+
+        assert(typeof result === 'string');
+        sandbox.verify();
+    });
+
     it('DBが正常であれば、成立以外の取引をダウンロードできるはず', async () => {
         const conditions = {
             startFrom: new Date(),
@@ -324,6 +397,26 @@ describe('download', () => {
         )(transactionRepo);
 
         assert(typeof result === 'string');
+        sandbox.verify();
+    });
+
+    it('非対応フォーマットを指定すればNotImplementedエラーとなるはず', async () => {
+        const conditions = {
+            startFrom: new Date(),
+            startThrough: new Date()
+        };
+        const transactions = [];
+
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('searchPlaceOrder').once().resolves(transactions);
+
+        const result = await sskts.service.transaction.placeOrder.download(
+            conditions,
+            <any>'invalidformat'
+        )(transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotImplemented);
         sandbox.verify();
     });
 });

@@ -6,14 +6,24 @@
 import * as createDebug from 'debug';
 
 import * as factory from '@motionpicture/sskts-factory';
+import * as pug from 'pug';
 
+import { MongoRepository as ActionRepo } from '../../repo/action';
+import { MongoRepository as OrderRepo } from '../../repo/order';
+import { MongoRepository as OrganizationRepo } from '../../repo/organization';
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:returnOrder');
 
+export type IStartOperation<T> = (actionRepo: ActionRepo, orderRepo: OrderRepo, transactionRepo: TransactionRepo) => Promise<T>;
 export type ITransactionOperation<T> = (transactionRepo: TransactionRepo) => Promise<T>;
 export type ITaskAndTransactionOperation<T> = (taskRepo: TaskRepo, transactionRepo: TransactionRepo) => Promise<T>;
+export type IConfirmOperation<T> = (
+    actionRepo: ActionRepo,
+    transactionRepo: TransactionRepo,
+    organizationRepo: OrganizationRepo
+) => Promise<T>;
 
 /**
  * 予約キャンセル処理
@@ -51,37 +61,44 @@ export function start(params: {
      * 返品理由
      */
     reason: factory.transaction.returnOrder.Reason;
-}): ITransactionOperation<factory.transaction.returnOrder.ITransaction> {
-    return async (transactionRepo: TransactionRepo) => {
+}): IStartOperation<factory.transaction.returnOrder.ITransaction> {
+    return async (actionRepo: ActionRepo, orderRepo: OrderRepo, transactionRepo: TransactionRepo) => {
         const now = new Date();
 
         // 返品対象の取引取得
-        const transaction = await transactionRepo.transactionModel.findOne(
-            {
-                typeOf: factory.transactionType.PlaceOrder,
-                status: factory.transactionStatusType.Confirmed,
-                _id: params.transactionId
+        const placeOrderTransaction = await transactionRepo.findPlaceOrderById(params.transactionId);
+        if (placeOrderTransaction.status !== factory.transactionStatusType.Confirmed) {
+            throw new factory.errors.Argument('transactionId', 'Status not Confirmed.');
+        }
+
+        const placeOrderTransactionResult = placeOrderTransaction.result;
+        if (placeOrderTransactionResult === undefined) {
+            throw new factory.errors.NotFound('placeOrderTransaction.result');
+        }
+
+        // 注文ステータスが配送済の場合のみ受け付け
+        const order = await orderRepo.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
+        if (order.orderStatus !== factory.orderStatus.OrderDelivered) {
+            throw new factory.errors.Argument('transaction', 'order status is not OrderDelivered');
+        }
+
+        const actionsOnOrder = await actionRepo.findByOrderNumber(order.orderNumber);
+        const payAction = <factory.action.trade.pay.IAction | undefined>actionsOnOrder.find(
+            (a) => {
+                return a.typeOf === factory.actionType.PayAction &&
+                    a.actionStatus === factory.actionStatusType.CompletedActionStatus;
             }
-        ).exec().then((doc) => {
-            if (doc === null) {
-                throw new factory.errors.NotFound('transaction');
-            }
-
-            return <factory.transaction.placeOrder.ITransaction>doc.toObject();
-        });
-
-        const transactionResult = <factory.transaction.placeOrder.IResult>transaction.result;
-
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO
-        // // クレジットカード決済の場合、取引状態が実売上でなければまだ返品できない
-        // if (transaction.object.paymentMethod === factory.paymentMethodType.CreditCard && creditCardSales === undefined) {
-        //     throw new factory.errors.Argument('transaction', 'Status not Sales.');
-        // }
+        );
+        // もし支払アクションがなければエラー
+        if (payAction === undefined) {
+            throw new factory.errors.NotFound('PayAction');
+        }
 
         // 検証
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (!params.forcibly) {
-            validateRequest(now, transactionResult.order.acceptedOffers[0].itemOffered.reservationFor.startDate);
+            validateRequest();
         }
 
         const returnOrderAttributes = factory.transaction.returnOrder.createAttributes({
@@ -93,7 +110,7 @@ export function start(params: {
             },
             object: {
                 clientUser: params.clientUser,
-                transaction: transaction,
+                transaction: placeOrderTransaction,
                 cancellationFee: params.cancellationFee,
                 reason: params.reason
             },
@@ -104,8 +121,7 @@ export function start(params: {
 
         let returnOrderTransaction: factory.transaction.returnOrder.ITransaction;
         try {
-            returnOrderTransaction = await transactionRepo.transactionModel.create(returnOrderAttributes)
-                .then((doc) => <factory.transaction.returnOrder.ITransaction>doc.toObject());
+            returnOrderTransaction = await transactionRepo.start<factory.transaction.returnOrder.ITransaction>(returnOrderAttributes);
         } catch (error) {
             if (error.name === 'MongoError') {
                 // 同一取引に対して返品取引を作成しようとすると、MongoDBでE11000 duplicate key errorが発生する
@@ -134,11 +150,12 @@ export function start(params: {
 export function confirm(
     agentId: string,
     transactionId: string
-): ITransactionOperation<factory.transaction.returnOrder.IResult> {
+): IConfirmOperation<factory.transaction.returnOrder.IResult> {
     return async (
-        transactionRepo: TransactionRepo
+        actionRepo: ActionRepo,
+        transactionRepo: TransactionRepo,
+        organizationRepo: OrganizationRepo
     ) => {
-        const now = new Date();
         const transaction = await transactionRepo.findReturnOrderInProgressById(transactionId);
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -148,38 +165,70 @@ export function confirm(
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;
         if (placeOrderTransactionResult === undefined) {
-            throw new Error('Result of placeOrder transaction to return undefined.');
+            throw new factory.errors.NotFound('placeOrderTransaction.result');
         }
+        const customerContact = placeOrderTransaction.object.customerContact;
+        if (customerContact === undefined) {
+            throw new factory.errors.NotFound('customerContact');
+        }
+
+        const seller = await organizationRepo.findMovieTheaterById(placeOrderTransaction.seller.id);
+
+        const actionsOnOrder = await actionRepo.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
+        const payAction = <factory.action.trade.pay.IAction | undefined>actionsOnOrder.find(
+            (a) => {
+                return a.typeOf === factory.actionType.PayAction &&
+                    a.actionStatus === factory.actionStatusType.CompletedActionStatus;
+            }
+        );
+        // もし支払アクションがなければエラー
+        if (payAction === undefined) {
+            throw new factory.errors.NotFound('PayAction');
+        }
+
+        const emailMessage = await createRefundEmail({
+            transaction: placeOrderTransaction,
+            customerContact: customerContact,
+            order: placeOrderTransactionResult.order,
+            seller: seller
+        });
+        const sendEmailMessageActionAttributes = factory.action.transfer.send.message.email.createAttributes({
+            actionStatus: factory.actionStatusType.ActiveActionStatus,
+            object: emailMessage,
+            agent: placeOrderTransaction.seller,
+            recipient: placeOrderTransaction.agent,
+            potentialActions: {},
+            purpose: placeOrderTransactionResult.order
+        });
+        const refundActionAttributes = factory.action.trade.refund.createAttributes({
+            object: payAction,
+            agent: placeOrderTransaction.seller,
+            recipient: placeOrderTransaction.agent,
+            purpose: placeOrderTransactionResult.order,
+            potentialActions: {
+                sendEmailMessage: sendEmailMessageActionAttributes
+            }
+        });
         const returnOrderActionAttributes = factory.action.transfer.returnAction.order.createAttributes({
-            actionStatus: factory.actionStatusType.CompletedActionStatus,
             object: placeOrderTransactionResult.order,
             agent: placeOrderTransaction.agent,
             recipient: placeOrderTransaction.seller,
-            startDate: new Date()
-        });
-        const returnPayActionAttributes = factory.action.transfer.returnAction.pay.createAttributes({
-            actionStatus: factory.actionStatusType.CompletedActionStatus,
-            // tslint:disable-next-line:no-suspicious-comment
-            object: <any>{ // TODO アクションリポジトリーから支払アクションを取得する
-                orderNumber: placeOrderTransactionResult.order.orderNumber
-            },
-            agent: placeOrderTransaction.seller,
-            recipient: placeOrderTransaction.agent,
-            startDate: new Date()
+            potentialActions: {
+                refund: refundActionAttributes
+            }
         });
         const result: factory.transaction.returnOrder.IResult = {
-            postActions: {
-                returnOrderAction: returnOrderActionAttributes,
-                returnPayAction: returnPayActionAttributes
-            }
+        };
+        const potentialActions: factory.transaction.returnOrder.IPotentialActions = {
+            returnOrder: returnOrderActionAttributes
         };
 
         // ステータス変更
         debug('updating transaction...');
         await transactionRepo.confirmReturnOrder(
             transactionId,
-            now,
-            result
+            result,
+            potentialActions
         );
 
         return result;
@@ -187,14 +236,77 @@ export function confirm(
 }
 
 /**
- * キャンセル検証
+ * 返品取引バリデーション
  */
-function validateRequest(__1: Date, __2: Date) {
-    // 入塔予定日の3日前までキャンセル可能(3日前を過ぎていたらエラー)
-    // const cancellableThrough = moment(performanceStartDate).add(-CANCELLABLE_DAYS + 1, 'days').toDate();
-    // if (cancellableThrough <= now) {
-    //     throw new factory.errors.Argument('performance_day', 'キャンセルできる期限を過ぎています。');
-    // }
+export function validateRequest() {
+    // 現時点で特にバリデーション内容なし
+}
+
+/**
+ * 返金メールを作成する
+ */
+export async function createRefundEmail(params: {
+    transaction: factory.transaction.placeOrder.ITransaction;
+    customerContact: factory.transaction.placeOrder.ICustomerContact;
+    order: factory.order.IOrder;
+    seller: factory.organization.movieTheater.IOrganization;
+}): Promise<factory.creativeWork.message.email.ICreativeWork> {
+    return new Promise<factory.creativeWork.message.email.ICreativeWork>((resolve, reject) => {
+        const seller = params.transaction.seller;
+
+        pug.renderFile(
+            `${__dirname}/../../../emails/refundOrder/text.pug`,
+            {
+                familyName: params.customerContact.familyName,
+                givenName: params.customerContact.givenName,
+                confirmationNumber: params.order.confirmationNumber,
+                price: params.order.price,
+                sellerName: params.order.seller.name,
+                sellerTelephone: params.seller.telephone
+            },
+            (renderMessageErr, message) => {
+                if (renderMessageErr instanceof Error) {
+                    reject(renderMessageErr);
+
+                    return;
+                }
+
+                debug('message:', message);
+                pug.renderFile(
+                    `${__dirname}/../../../emails/refundOrder/subject.pug`,
+                    {
+                        sellerName: params.order.seller.name
+                    },
+                    (renderSubjectErr, subject) => {
+                        if (renderSubjectErr instanceof Error) {
+                            reject(renderSubjectErr);
+
+                            return;
+                        }
+
+                        debug('subject:', subject);
+
+                        resolve(factory.creativeWork.message.email.create({
+                            identifier: `refundOrder-${params.order.orderNumber}`,
+                            sender: {
+                                typeOf: seller.typeOf,
+                                name: seller.name,
+                                // tslint:disable-next-line:no-suspicious-comment
+                                email: 'noreply@ticket-cinemasunshine.com' // TODO どこかに保管
+                            },
+                            toRecipient: {
+                                typeOf: params.transaction.agent.typeOf,
+                                name: `${params.customerContact.familyName} ${params.customerContact.givenName}`,
+                                email: params.customerContact.email
+                            },
+                            about: subject,
+                            text: message
+                        }));
+                    }
+                );
+            }
+        );
+    });
 }
 
 /**
@@ -207,17 +319,7 @@ export function exportTasks(status: factory.transactionStatusType) {
             throw new factory.errors.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
         }
 
-        const transaction = await transactionRepo.transactionModel.findOneAndUpdate(
-            {
-                typeOf: factory.transactionType.ReturnOrder,
-                status: status,
-                tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
-            },
-            { tasksExportationStatus: factory.transactionTasksExportationStatus.Exporting },
-            { new: true }
-        ).exec()
-            .then((doc) => (doc === null) ? null : <factory.transaction.returnOrder.ITransaction>doc.toObject());
-
+        const transaction = await transactionRepo.startExportTasks(factory.transactionType.ReturnOrder, status);
         if (transaction === null) {
             return;
         }
@@ -253,78 +355,10 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     }
                 }));
 
-                // 売上取消タスク
-                taskAttributes.push(factory.task.returnCreditCardSales.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-
-                // メール送信タスク
-                const placeOrderTransaction = transaction.object.transaction;
-                const customerContact = placeOrderTransaction.object.customerContact;
-                const placeOrderTransactionResult = placeOrderTransaction.result;
-                if (customerContact !== undefined && placeOrderTransactionResult !== undefined) {
-                    const emailMessage = factory.creativeWork.message.email.create({
-                        identifier: `returnOrderTransaction-${transactionId}`,
-                        sender: {
-                            typeOf: placeOrderTransaction.seller.typeOf,
-                            name: placeOrderTransaction.seller.name,
-                            email: 'noreply@ticket-cinemasunshine.com'
-                        },
-                        toRecipient: {
-                            typeOf: placeOrderTransaction.agent.typeOf,
-                            name: `${customerContact.givenName} ${customerContact.familyName}`,
-                            email: customerContact.email
-                        },
-                        about: `${placeOrderTransaction.seller.name} 返品完了`,
-                        text: `${customerContact.givenName} ${customerContact.familyName} 様
-----------------------------------------
-
-下記購入について、返金処理が完了いたしました。
-
-またのご利用、心よりお待ちしております。
-
-----------------------------------------
-
-◆購入番号 ：${placeOrderTransactionResult.order.orderInquiryKey.confirmationNumber}
-◆合計金額 ：${placeOrderTransactionResult.order.price}円
-
-※このアドレスは送信専用です。返信はできませんのであらかじめご了承下さい。
-
-----------------------------------------
-
-シネマサンシャイン
-
-http://www.cinemasunshine.co.jp/
-
-----------------------------------------
-`
-                    });
-
-                    taskAttributes.push(factory.task.sendEmailNotification.createAttributes({
-                        status: factory.taskStatus.Ready,
-                        runsAt: new Date(), // なるはやで実行
-                        remainingNumberOfTries: 10,
-                        lastTriedAt: null,
-                        numberOfTried: 0,
-                        executionResults: [],
-                        data: {
-                            transactionId: transaction.id,
-                            emailMessage: emailMessage
-                        }
-                    }));
-                }
-
                 break;
 
             case factory.transactionStatusType.Expired:
+                // 特にタスクなし
 
                 break;
 

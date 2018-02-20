@@ -71,7 +71,7 @@ const schema = new mongoose.Schema(
     }
 );
 
-// レポート参照時に使用
+// 測定データ参照時に使用
 schema.index(
     { 'object.measuredAt': 1 },
     {
@@ -80,12 +80,24 @@ schema.index(
         }
     }
 );
+schema.index(
+    { 'purpose.typeOf': 1, 'object.scope': 1, 'object.measuredAt': 1 },
+    {
+        partialFilterExpression: {
+            'purpose.typeOf': { $exists: true },
+            'object.scope': { $exists: true },
+            'object.measuredAt': { $exists: true }
+        }
+    }
+);
 
-export default mongoose.model('Telemetry', schema)
-    .on('index', (error) => {
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore next */
+export default mongoose.model('Telemetry', schema).on(
+    'index',
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    (error) => {
         if (error !== undefined) {
             console.error(error);
         }
-    });
+    }
+);

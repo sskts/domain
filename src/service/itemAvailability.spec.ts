@@ -1,3 +1,4 @@
+// tslint:disable:no-implicit-dependencies
 /**
  * itemAvailability service test
  * @ignore

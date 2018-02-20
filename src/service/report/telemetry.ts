@@ -8,7 +8,7 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
-import { MongoRepository as AuthorizeActionRepo } from '../../repo/action/authorize';
+import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TelemetryRepo } from '../../repo/telemetry';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
@@ -22,14 +22,14 @@ export type TransactionOperation<T> =
 export type TaskAndTransactionOperation<T> =
     (taskRepo: TaskRepo, transactionRepo: TransactionRepo) => Promise<T>;
 export type TaskAndTransactionAndAuthorizeActionOperation<T> =
-    (taskRepo: TaskRepo, transactionRepo: TransactionRepo, authorizeActionRepo: AuthorizeActionRepo) => Promise<T>;
+    (taskRepo: TaskRepo, transactionRepo: TransactionRepo, actionRepo: ActionRepo) => Promise<T>;
 export type TransactionAndAuthorizeActionOperation<T> =
-    (transactionRepo: TransactionRepo, authorizeActionRepo: AuthorizeActionRepo) => Promise<T>;
+    (transactionRepo: TransactionRepo, actionRepo: ActionRepo) => Promise<T>;
 export type TaskAndTelemetryAndTransactionOperation<T> = (
     taskRepo: TaskRepo,
     telemetryRepo: TelemetryRepo,
     transactionRep: TransactionRepo,
-    authorizeActionRepo: AuthorizeActionRepo
+    actionRepo: ActionRepo
 ) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:report:telemetry');
@@ -349,12 +349,19 @@ export function search(searchConditions: {
     return async (telemetryRepo: TelemetryRepo) => {
         return <ITelemetry[]>await telemetryRepo.telemetryModel.find(
             {
-                'object.scope': searchConditions.scope,
+                'object.scope': {
+                    $exists: true,
+                    $eq: searchConditions.scope
+                },
                 'object.measuredAt': {
+                    $exists: true,
                     $gte: searchConditions.measuredFrom,
                     $lt: searchConditions.measuredThrough
                 },
-                'purpose.typeOf': searchConditions.purpose
+                'purpose.typeOf': {
+                    $exists: true,
+                    $eq: searchConditions.purpose
+                }
             }
         ).sort({ 'object.measuredAt': 1 })
             .lean()
@@ -379,7 +386,7 @@ export function createFlow(target: {
         taskRepo: TaskRepo,
         telemetryRepo: TelemetryRepo,
         transactionRepo: TransactionRepo,
-        authorizeActionRepo: AuthorizeActionRepo
+        actionRepo: ActionRepo
     ) => {
         const startDate = new Date();
         const measuredThrough = moment(target.measuredAt);
@@ -388,9 +395,9 @@ export function createFlow(target: {
         let telemetry: IGlobalFlowTelemetry | ISellerFlowTelemetry;
         if (target.sellerId !== undefined) {
             const flowData = await createSellerFlow(measuredFrom.toDate(), measuredThrough.toDate(), target.sellerId)(
-                transactionRepo, authorizeActionRepo
+                transactionRepo, actionRepo
             );
-            debug('flowData created.', flowData);
+            debug('flowData created.');
 
             telemetry = {
                 purpose: { typeOf: TelemetryPurposeType.Flow },
@@ -407,7 +414,7 @@ export function createFlow(target: {
             const flowData = await createGlobalFlow(measuredFrom.toDate(), measuredThrough.toDate())(
                 taskRepo
             );
-            debug('flowData created.', flowData);
+            debug('flowData created.');
 
             telemetry = {
                 purpose: { typeOf: TelemetryPurposeType.Flow },
@@ -422,7 +429,7 @@ export function createFlow(target: {
         }
 
         await telemetryRepo.telemetryModel.create(telemetry);
-        debug('telemetry saved.', telemetry);
+        debug('telemetry saved.');
     };
 }
 
@@ -451,7 +458,7 @@ export function createStock(target: {
             const stockData = await createSellerStock(target.measuredAt, target.sellerId)(
                 transactionRepo
             );
-            debug('stockData created.', stockData);
+            debug('stockData created.');
 
             telemetry = {
                 purpose: { typeOf: TelemetryPurposeType.Stock },
@@ -466,7 +473,7 @@ export function createStock(target: {
             };
         } else {
             const stockData = await createGlobalStock(target.measuredAt)(taskRepo);
-            debug('stockData created.', stockData);
+            debug('stockData created.');
 
             telemetry = {
                 purpose: { typeOf: TelemetryPurposeType.Stock },
@@ -481,7 +488,7 @@ export function createStock(target: {
         }
 
         await telemetryRepo.telemetryModel.create(telemetry);
-        debug('telemetry saved.', telemetry);
+        debug('telemetry saved.');
     };
 }
 
@@ -504,11 +511,15 @@ function createSellerFlow(
     // tslint:disable-next-line:max-func-body-length
     return async (
         transactionRepo: TransactionRepo,
-        authorizeActionRepo: AuthorizeActionRepo
+        actionRepo: ActionRepo
     ) => {
         // 計測期間内に開始された取引数を算出する
         const numberOfTransactionsStarted = await transactionRepo.transactionModel.count({
-            'seller.id': sellerId,
+            typeOf: factory.transactionType.PlaceOrder,
+            'seller.id': {
+                $exists: true,
+                $eq: sellerId
+            },
             startDate: {
                 $gte: measuredFrom,
                 $lt: measuredThrough
@@ -517,7 +528,11 @@ function createSellerFlow(
 
         // 計測期間内に開始され、かつ、すでに終了している取引を検索
         const startedAndEndedTransactions = await transactionRepo.transactionModel.find({
-            'seller.id': sellerId,
+            typeOf: factory.transactionType.PlaceOrder,
+            'seller.id': {
+                $exists: true,
+                $eq: sellerId
+            },
             startDate: {
                 $gte: measuredFrom,
                 $lt: measuredThrough
@@ -534,15 +549,20 @@ function createSellerFlow(
 
         const endedTransactions = await transactionRepo.transactionModel.find(
             {
-                'seller.id': sellerId,
+                typeOf: factory.transactionType.PlaceOrder,
+                'seller.id': {
+                    $exists: true,
+                    $eq: sellerId
+                },
                 endDate: {
+                    $exists: true,
                     $gte: measuredFrom,
                     $lt: measuredThrough
                 }
             },
             'status startDate endDate object result.order'
         ).exec().then((docs) => docs.map((doc) => <factory.transaction.placeOrder.ITransaction>doc.toObject()));
-        debug('endedTransactions:', endedTransactions);
+        debug(endedTransactions.length, 'endedTransactions found.');
 
         const confirmedTransactions = endedTransactions.filter(
             (transaction) => transaction.status === factory.transactionStatusType.Confirmed
@@ -568,7 +588,7 @@ function createSellerFlow(
         const timesLeftUntilEvent = confirmedTransactions.map((transaction) => {
             // 座席予約は必ず存在する
             const seatReservation = <factory.action.authorize.seatReservation.IAction>transaction.object.authorizeActions.find(
-                (action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation
+                (action) => action.object.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation
             );
 
             return moment(seatReservation.object.individualScreeningEvent.startDate).diff(moment(transaction.endDate), 'milliseconds');
@@ -604,16 +624,22 @@ function createSellerFlow(
         const numberOfTransactionsExpired = expiredTransactions.length;
         const expiredTransactionIds = expiredTransactions.map((transaction) => transaction.id);
 
+        type IAuthorizeAction = factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>>;
+
         // 期限切れ取引に対して作成されたアクションを取得
-        const actionsOnExpiredTransactions = await authorizeActionRepo.actionModel.find(
+        const actionsOnExpiredTransactions = await actionRepo.actionModel.find(
             {
                 typeOf: factory.actionType.AuthorizeAction,
-                'object.transactionId': { $in: expiredTransactionIds }
+                'purpose.id': {
+                    $exists: true,
+                    $in: expiredTransactionIds
+                }
             },
-            '_id object.transactionId'
-        ).exec().then((docs) => docs.map((doc) => <factory.action.authorize.IAction<any, any>>doc.toObject()));
+            '_id purpose.id'
+        ).exec().then((docs) => docs.map((doc) => <IAuthorizeAction>doc.toObject()));
+        debug(actionsOnExpiredTransactions.length, 'actionsOnExpiredTransactions found.');
         const numbersOfActionsOnExpired = expiredTransactionIds.map((transactionId) => {
-            return actionsOnExpiredTransactions.filter((action) => action.object.transactionId === transactionId).length;
+            return actionsOnExpiredTransactions.filter((action) => action.purpose.id === transactionId).length;
         });
         const totalNumberOfActionsOnExpired = numbersOfActionsOnExpired.reduce((a, b) => a + b, 0);
         const maxNumberOfActionsOnExpired = numbersOfActionsOnExpired.reduce((a, b) => Math.max(a, b), 0);
@@ -685,26 +711,37 @@ function createSellerStock(measuredAt: Date, sellerId: string): TransactionOpera
         transactionRepo: TransactionRepo
     ) => {
         const numberOfTransactionsUnderway = await transactionRepo.transactionModel.count({
-            'seller.id': sellerId,
             $or: [
                 // {measuredAt}以前に開始し、{measuredAt}以後に成立あるいは期限切れした取引
                 {
+                    typeOf: factory.transactionType.PlaceOrder,
+                    'seller.id': {
+                        $exists: true,
+                        $eq: sellerId
+                    },
                     startDate: {
                         $lte: measuredAt
                     },
                     endDate: {
+                        $exists: true,
                         $gt: measuredAt
                     }
                 },
                 // {measuredAt}以前に開始し、いまだに進行中の取引
                 {
+                    typeOf: factory.transactionType.PlaceOrder,
+                    'seller.id': {
+                        $exists: true,
+                        $eq: sellerId
+                    },
+                    status: factory.transactionStatusType.InProgress,
                     startDate: {
                         $lte: measuredAt
-                    },
-                    status: factory.transactionStatusType.InProgress
+                    }
                 }
             ]
         }).exec();
+        debug('numberOfTransactionsUnderway:', numberOfTransactionsUnderway);
 
         return {
             transactions: {
@@ -734,14 +771,8 @@ function createGlobalFlow(
     return async (
         taskRepo: TaskRepo
     ) => {
-        const targetTaskNames = [
-            factory.taskName.CreateOrder,
-            factory.taskName.CreateOwnershipInfos,
-            factory.taskName.SendEmailNotification,
-            factory.taskName.SettleCreditCard,
-            factory.taskName.SettleMvtk,
-            factory.taskName.SettleSeatReservation
-        ];
+        // 全タスク名リスト
+        const targetTaskNames = Object.keys(factory.taskName).map((k) => factory.taskName[k]);
 
         const taskResults = await Promise.all(targetTaskNames.map(async (taskName) => {
             const numberOfTasksCreated = await taskRepo.taskModel.count({
@@ -751,22 +782,26 @@ function createGlobalFlow(
                     $lt: measuredThrough
                 }
             }).exec();
+            debug('numberOfTasksCreated:', numberOfTasksCreated);
 
             // 実行中止ステータスで、最終試行日時が範囲にあるものを実行タスク数とする
             const numberOfTasksAborted = await taskRepo.taskModel.count({
                 name: taskName,
                 lastTriedAt: {
+                    $type: 'date',
                     $gte: measuredFrom,
                     $lt: measuredThrough
                 },
                 status: factory.taskStatus.Aborted
             }).exec();
+            debug('numberOfTasksAborted:', numberOfTasksAborted);
 
             // 実行済みステータスで、最終試行日時が範囲にあるものを実行タスク数とする
             const executedTasks = await taskRepo.taskModel.find(
                 {
                     name: taskName,
                     lastTriedAt: {
+                        $type: 'date',
                         $gte: measuredFrom,
                         $lt: measuredThrough
                     },
@@ -774,6 +809,8 @@ function createGlobalFlow(
                 },
                 'runsAt lastTriedAt numberOfTried'
             ).exec().then((docs) => docs.map((doc) => <factory.task.ITask>doc.toObject()));
+            debug(executedTasks.length, 'executedTasks found.');
+
             const numberOfTasksExecuted = executedTasks.length;
 
             const latencies = executedTasks.map((task) => moment(<Date>task.lastTriedAt).diff(moment(task.runsAt, 'milliseconds')));
@@ -833,6 +870,7 @@ function createGlobalStock(measuredAt: Date): TaskOperation<IGlobalStockResult> 
                         $lte: measuredAt
                     },
                     lastTriedAt: {
+                        $type: 'date',
                         $gt: measuredAt
                     }
                 },
@@ -845,6 +883,7 @@ function createGlobalStock(measuredAt: Date): TaskOperation<IGlobalStockResult> 
                 }
             ]
         }).exec();
+        debug('numberOfTasksUnexecuted:', numberOfTasksUnexecuted);
 
         return {
             tasks: {

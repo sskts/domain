@@ -1,3 +1,4 @@
+import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
@@ -47,6 +48,15 @@ const errorSchema = new mongoose.Schema(
     }
 );
 
+const potentialActionsSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
 /**
  * 取引スキーマ
  * @ignore
@@ -64,7 +74,8 @@ const schema = new mongoose.Schema(
         startDate: Date,
         endDate: Date,
         tasksExportedAt: Date,
-        tasksExportationStatus: String
+        tasksExportationStatus: String,
+        potentialActions: potentialActionsSchema
     },
     {
         collection: 'transactions',
@@ -84,7 +95,7 @@ const schema = new mongoose.Schema(
 
 // タスクエクスポート時の検索で使用
 schema.index(
-    { tasksExportationStatus: 1, status: 1 }
+    { tasksExportationStatus: 1, status: 1, typeOf: 1 }
 );
 
 // 取引期限切れ確認等に使用
@@ -173,10 +184,17 @@ schema.index(
 );
 
 // レポート作成時に使用
-schema.index({ startDate: 1 });
-schema.index({ endDate: 1 });
+schema.index({ typeOf: 1, startDate: 1 });
 schema.index(
-    { 'seller.id': 1, startDate: 1, endDate: 1 },
+    { typeOf: 1, endDate: 1 },
+    {
+        partialFilterExpression: {
+            endDate: { $exists: true }
+        }
+    }
+);
+schema.index(
+    { typeOf: 1, 'seller.id': 1, startDate: 1, endDate: 1 },
     {
         partialFilterExpression: {
             'seller.id': { $exists: true },
@@ -185,14 +203,36 @@ schema.index(
     }
 );
 schema.index(
-    { status: 1, 'seller.id': 1, startDate: 1 }
+    { typeOf: 1, status: 1, 'seller.id': 1, startDate: 1 },
+    {
+        partialFilterExpression: {
+            'seller.id': { $exists: true }
+        }
+    }
 );
 schema.index(
-    { status: 1, 'seller.id': 1, endDate: 1 },
+    { typeOf: 1, status: 1, 'seller.id': 1, endDate: 1 },
     {
         partialFilterExpression: {
             'seller.id': { $exists: true },
             endDate: { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'seller.id': 1, typeOf: 1, endDate: 1 },
+    {
+        partialFilterExpression: {
+            'seller.id': { $exists: true },
+            endDate: { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'seller.id': 1, typeOf: 1, startDate: 1 },
+    {
+        partialFilterExpression: {
+            'seller.id': { $exists: true }
         }
     }
 );
@@ -205,11 +245,28 @@ schema.index(
     }
 );
 
-export default mongoose.model('Transaction', schema)
-    .on('index', (error) => {
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore next */
+// ひとつの注文取引に対する確定返品取引はユニークなはず
+schema.index(
+    {
+        'object.transaction.id': 1
+    },
+    {
+        unique: true,
+        partialFilterExpression: {
+            typeOf: factory.transactionType.ReturnOrder, // 返品取引
+            status: factory.transactionStatusType.Confirmed, // 確定ステータス
+            'object.transaction.id': { $exists: true }
+        }
+    }
+);
+
+export default mongoose.model('Transaction', schema).on(
+    'index',
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    (error) => {
         if (error !== undefined) {
             console.error(error);
         }
-    });
+    }
+);

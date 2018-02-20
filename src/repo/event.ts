@@ -117,7 +117,10 @@ export class MongoRepository implements Repository {
         /* istanbul ignore else */
         if (Array.isArray(searchConditions.superEventLocationIdentifiers)) {
             andConditions.push({
-                'superEvent.location.identifier': { $in: searchConditions.superEventLocationIdentifiers }
+                'superEvent.location.identifier': {
+                    $exists: true,
+                    $in: searchConditions.superEventLocationIdentifiers
+                }
             });
         }
 

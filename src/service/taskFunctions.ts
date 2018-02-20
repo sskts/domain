@@ -8,12 +8,12 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
-import { MongoRepository as CreditCardAuthorizeActionRepo } from '../repo/action/authorize/creditCard';
-import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../repo/action/authorize/seatReservation';
 import { MongoRepository as OrderRepo } from '../repo/order';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
+import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
+import * as DeliveryService from '../service/delivery';
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
 import * as OwnershipInfoService from '../service/ownershipInfo';
@@ -30,12 +30,21 @@ export function sendEmailNotification(
     };
 }
 
+export function sendEmailMessage(
+    data: factory.task.sendEmailMessage.IData
+): IOperation<void> {
+    return async (connection: mongoose.Connection) => {
+        const actionRepo = new ActionRepo(connection);
+        await NotificationService.sendEmailMessage(data.actionAttributes)(actionRepo);
+    };
+}
+
 export function cancelSeatReservation(
     data: factory.task.cancelSeatReservation.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const authorizeActionRepo = new SeatReservationAuthorizeActionRepo(connection);
-        await StockService.cancelSeatReservationAuth(data.transactionId)(authorizeActionRepo);
+        const actionRepo = new ActionRepo(connection);
+        await StockService.cancelSeatReservationAuth(data.transactionId)(actionRepo);
     };
 }
 
@@ -43,8 +52,8 @@ export function cancelCreditCard(
     data: factory.task.cancelCreditCard.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
-        const authorizeActionRepo = new CreditCardAuthorizeActionRepo(connection);
-        await SalesService.cancelCreditCardAuth(data.transactionId)(authorizeActionRepo);
+        const actionRepo = new ActionRepo(connection);
+        await SalesService.cancelCreditCardAuth(data.transactionId)(actionRepo);
     };
 }
 
@@ -92,7 +101,8 @@ export function createOrder(
         const actionRepo = new ActionRepo(connection);
         const orderRepository = new OrderRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await OrderService.createFromTransaction(data.transactionId)(actionRepo, orderRepository, transactionRepo);
+        const taskRepo = new TaskRepo(connection);
+        await OrderService.createFromTransaction(data.transactionId)(actionRepo, orderRepository, transactionRepo, taskRepo);
     };
 }
 
@@ -107,13 +117,14 @@ export function createOwnershipInfos(
     };
 }
 
-export function returnCreditCardSales(
-    data: factory.task.returnCreditCardSales.IData
+export function refundCreditCard(
+    data: factory.task.refundCreditCard.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
         const actionRepo = new ActionRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await SalesService.returnCreditCardSales(data.transactionId)(actionRepo, transactionRepo);
+        const taskRepo = new TaskRepo(connection);
+        await SalesService.refundCreditCard(data.transactionId)(actionRepo, transactionRepo, taskRepo);
     };
 }
 
@@ -125,6 +136,20 @@ export function returnOrder(
         const orderRepo = new OrderRepo(connection);
         const ownershipInfoRepo = new OwnershipInfoRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await OrderService.cancelReservations(data.transactionId)(actionRepo, orderRepo, ownershipInfoRepo, transactionRepo);
+        const taskRepo = new TaskRepo(connection);
+        await OrderService.cancelReservations(data.transactionId)(actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo);
+    };
+}
+
+export function sendOrder(
+    data: factory.task.returnOrder.IData
+): IOperation<void> {
+    return async (connection: mongoose.Connection) => {
+        const actionRepo = new ActionRepo(connection);
+        const orderRepo = new OrderRepo(connection);
+        const ownershipInfoRepo = new OwnershipInfoRepo(connection);
+        const transactionRepo = new TransactionRepo(connection);
+        const taskRepo = new TaskRepo(connection);
+        await DeliveryService.sendOrder(data.transactionId)(actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo);
     };
 }

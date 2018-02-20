@@ -8,13 +8,15 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as waiter from '@motionpicture/waiter-domain';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
+import * as moment from 'moment';
+// tslint:disable-next-line:no-require-imports no-var-requires
+require('moment-timezone');
+import * as pug from 'pug';
+import * as util from 'util';
 
-import { MongoRepository as CreditCardAuthorizeActionRepo } from '../../repo/action/authorize/creditCard';
-import { MongoRepository as MvtkAuthorizeActionRepo } from '../../repo/action/authorize/mvtk';
-import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../../repo/action/authorize/seatReservation';
+import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as OrganizationRepo } from '../../repo/organization';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
-import { MongoRepository as TransactionCountRepo } from '../../repo/transactionCount';
 
 import * as CreditCardAuthorizeActionService from './placeOrderInProgress/action/authorize/creditCard';
 import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/authorize/mvtk';
@@ -25,8 +27,7 @@ const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress
 export type ITransactionOperation<T> = (transactionRepo: TransactionRepo) => Promise<T>;
 export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (
     organizationRepo: OrganizationRepo,
-    transactionRepo: TransactionRepo,
-    transactionCountRepo?: TransactionCountRepo
+    transactionRepo: TransactionRepo
 ) => Promise<T>;
 
 /**
@@ -52,19 +53,9 @@ export interface IStartParams {
      */
     clientUser: factory.clientUser.IClientUser;
     /**
-     * WAITERの許可証必須にするまで互換性担保
-     * @deprecated since v24.0.0
-     */
-    maxCountPerUnit?: number;
-    /**
-     * WAITERの許可証必須にするまで互換性担保
-     * @deprecated since v24.0.0
-     */
-    scope?: factory.transactionScope.ITransactionScope;
-    /**
      * WAITER許可証トークン
      */
-    passportToken?: waiter.factory.passport.IEncodedPassport;
+    passportToken: waiter.factory.passport.IEncodedPassport;
 }
 
 /**
@@ -76,8 +67,7 @@ export function start(params: IStartParams):
     IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction> {
     return async (
         organizationRepo: OrganizationRepo,
-        transactionRepo: TransactionRepo,
-        transactionCountRepo?: TransactionCountRepo
+        transactionRepo: TransactionRepo
     ) => {
         // 売り手を取得
         const seller = await organizationRepo.findMovieTheaterById(params.sellerId);
@@ -97,20 +87,7 @@ export function start(params: IStartParams):
                 throw new factory.errors.Argument('passportToken', 'Invalid passport.');
             }
         } else {
-            if (params.scope === undefined) {
-                throw new factory.errors.ArgumentNull('scope');
-            }
-            if (params.maxCountPerUnit === undefined) {
-                throw new factory.errors.ArgumentNull('maxCountPerUnit');
-            }
-            if (transactionCountRepo === undefined) {
-                throw new factory.errors.ArgumentNull('transactionCountRepo');
-            }
-
-            const nextCount = await transactionCountRepo.incr(params.scope);
-            if (nextCount > params.maxCountPerUnit) {
-                throw new factory.errors.RateLimitExceeded('PlaceOrder transactions rate limit exceeded.');
-            }
+            throw new factory.errors.ArgumentNull('passportToken');
         }
 
         const agent: factory.transaction.placeOrder.IAgent = {
@@ -148,7 +125,7 @@ export function start(params: IStartParams):
 
         let transaction: factory.transaction.placeOrder.ITransaction;
         try {
-            transaction = await transactionRepo.startPlaceOrder(transactionAttributes);
+            transaction = await transactionRepo.start<factory.transaction.placeOrder.ITransaction>(transactionAttributes);
         } catch (error) {
             if (error.name === 'MongoError') {
                 // 許可証を重複使用しようとすると、MongoDBでE11000 duplicate key errorが発生する
@@ -224,70 +201,6 @@ export namespace action {
 }
 
 /**
- * メール追加
- *
- * @param {string} transactionId
- * @param {EmailNotification} notification
- * @returns {TransactionOperation<void>}
- *
- * @memberof service.transaction.placeOrderInProgress
- */
-// export function addEmail(transactionId: string, notification: EmailNotificationFactory.INotification) {
-//     return async (transactionRepo: TransactionRepo) => {
-//         // イベント作成
-//         const event = AddNotificationTransactionEventFactory.create({
-//             occurredAt: new Date(),
-//             notification: notification
-//         });
-
-//         // 永続化
-//         debug('adding an event...', event);
-//         await pushEvent(transactionId, event)(transactionRepo);
-//     };
-// }
-
-/**
- * メール削除
- *
- * @param {string} transactionId
- * @param {string} notificationId
- * @returns {TransactionOperation<void>}
- *
- * @memberof service.transaction.placeOrderInProgress
- */
-// export function removeEmail(transactionId: string, notificationId: string) {
-//     return async (transactionRepo: TransactionRepo) => {
-//         const transaction = await findInProgressById(transactionId)(transactionRepo)
-//             .then((option) => {
-//                 if (option.isEmpty) {
-//                     throw new factory.errors.Argument('transactionId', `transaction[${transactionId}] not found.`);
-//                 }
-
-//                 return option.get();
-//             });
-
-//         type ITransactionEvent = AddNotificationTransactionEventFactory.ITransactionEvent<EmailNotificationFactory.INotification>;
-//         const addNotificationTransactionEvent = <ITransactionEvent>transaction.object.actionEvents.find(
-//             (actionEvent) =>
-//                 actionEvent.actionEventType === TransactionEventGroup.AddNotification &&
-//                 (<ITransactionEvent>actionEvent).notification.id === notificationId
-//         );
-//         if (addNotificationTransactionEvent === undefined) {
-//             throw new factory.errors.Argument('notificationId', `notification [${notificationId}] not found in the transaction.`);
-//         }
-
-//         // イベント作成
-//         const event = RemoveNotificationTransactionEventFactory.create({
-//             occurredAt: new Date(),
-//             notification: addNotificationTransactionEvent.notification
-//         });
-
-//         // 永続化
-//         await pushEvent(transactionId, event)(transactionRepo);
-//     };
-// }
-
-/**
  * 取引中の購入者情報を変更する
  */
 export function setCustomerContact(
@@ -339,23 +252,25 @@ export function confirm(
 ) {
     // tslint:disable-next-line:max-func-body-length
     return async (
-        creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo,
-        mvtkAuthorizeActionRepo: MvtkAuthorizeActionRepo,
-        seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
-        transactionRepo: TransactionRepo
+        actionRepo: ActionRepo,
+        transactionRepo: TransactionRepo,
+        organizationRepo: OrganizationRepo
     ) => {
-        const now = new Date();
+        const now = moment().toDate();
         const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
+        const seller = await organizationRepo.findMovieTheaterById(transaction.seller.id);
+
+        const customerContact = transaction.object.customerContact;
+        if (customerContact === undefined) {
+            throw new factory.errors.NotFound('customerContact');
+        }
+
         // 取引に対する全ての承認アクションをマージ
-        let authorizeActions = [
-            ... await creditCardAuthorizeActionRepo.findByTransactionId(transactionId),
-            ... await mvtkAuthorizeActionRepo.findByTransactionId(transactionId),
-            ... await seatReservationAuthorizeActionRepo.findByTransactionId(transactionId)
-        ];
+        let authorizeActions = await actionRepo.findAuthorizeByTransactionId(transactionId);
 
         // 万が一このプロセス中に他処理が発生してもそれらを無視するように、endDateでフィルタリング
         authorizeActions = authorizeActions.filter((a) => (a.endDate !== undefined && a.endDate < now));
@@ -365,10 +280,10 @@ export function confirm(
         validateTransaction(transaction);
 
         // 結果作成
-        const order = factory.order.createFromPlaceOrderTransaction({
+        const order = createOrderFromTransaction({
             transaction: transaction,
             orderDate: now,
-            orderStatus: factory.orderStatus.OrderDelivered,
+            orderStatus: factory.orderStatus.OrderProcessing,
             isGift: false
         });
         const ownershipInfos = order.acceptedOffers.map((acceptedOffer) => {
@@ -398,15 +313,12 @@ export function confirm(
         const creditCardPayment = order.paymentMethods.find((m) => m.paymentMethod === factory.paymentMethodType.CreditCard);
         if (creditCardPayment !== undefined) {
             payCreditCardAction = factory.action.trade.pay.createAttributes({
-                actionStatus: factory.actionStatusType.ActiveActionStatus,
                 object: {
-                    orderNumber: order.orderNumber,
                     paymentMethod: creditCardPayment,
                     price: order.price,
                     priceCurrency: order.priceCurrency
                 },
                 agent: transaction.agent,
-                startDate: new Date(),
                 purpose: order
             });
         }
@@ -415,49 +327,67 @@ export function confirm(
         let useMvtkAction: factory.action.consume.use.mvtk.IAttributes | null = null;
         const mvtkAuthorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .find((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
+            .find((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
         if (mvtkAuthorizeAction !== undefined) {
             useMvtkAction = factory.action.consume.use.mvtk.createAttributes({
                 actionStatus: factory.actionStatusType.ActiveActionStatus,
                 object: {
-                    typeOf: 'Mvtk',
+                    typeOf: factory.action.authorize.authorizeActionPurpose.Mvtk,
                     seatInfoSyncIn: mvtkAuthorizeAction.object.seatInfoSyncIn
                 },
                 agent: transaction.agent,
-                startDate: new Date()
+                purpose: order
             });
         }
 
         const result: factory.transaction.placeOrder.IResult = {
             order: order,
-            ownershipInfos: ownershipInfos,
-            postActions: {
-                orderAction: factory.action.trade.order.createAttributes({
-                    actionStatus: factory.actionStatusType.ActiveActionStatus,
-                    object: order,
-                    agent: transaction.agent,
-                    startDate: new Date()
-                }),
-                // クレジットカード決済があればアクション追加
-                payCreditCardAction: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
-                useMvtkAction: (useMvtkAction !== null) ? useMvtkAction : undefined,
-                sendOrderAction: factory.action.transfer.send.order.createAttributes({
-                    actionStatus: factory.actionStatusType.ActiveActionStatus,
-                    object: order,
-                    agent: transaction.seller,
-                    recipient: transaction.agent,
-                    startDate: new Date()
-                })
-            }
+            ownershipInfos: ownershipInfos
+        };
+
+        const emailMessage = await createEmailMessageFromTransaction({
+            transaction: transaction,
+            customerContact: customerContact,
+            order: order,
+            seller: seller
+        });
+        const sendEmailMessageActionAttributes = factory.action.transfer.send.message.email.createAttributes({
+            actionStatus: factory.actionStatusType.ActiveActionStatus,
+            object: emailMessage,
+            agent: transaction.seller,
+            recipient: transaction.agent,
+            potentialActions: {},
+            purpose: order
+        });
+        const potentialActions: factory.transaction.placeOrder.IPotentialActions = {
+            order: factory.action.trade.order.createAttributes({
+                object: order,
+                agent: transaction.agent,
+                potentialActions: {
+                    // クレジットカード決済があればアクション追加
+                    payCreditCard: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
+                    useMvtk: (useMvtkAction !== null) ? useMvtkAction : undefined,
+                    sendOrder: factory.action.transfer.send.order.createAttributes({
+                        actionStatus: factory.actionStatusType.ActiveActionStatus,
+                        object: order,
+                        agent: transaction.seller,
+                        recipient: transaction.agent,
+                        potentialActions: {
+                            // 通知アクション
+                            sendEmailMessage: sendEmailMessageActionAttributes
+                        }
+                    })
+                }
+            })
         };
 
         // ステータス変更
         debug('updating transaction...');
         await transactionRepo.confirmPlaceOrder(
             transactionId,
-            now,
             authorizeActions,
-            result
+            result,
+            potentialActions
         );
 
         return order;
@@ -469,7 +399,7 @@ export function confirm(
  * @function
  * @returns {boolean}
  */
-function validateTransaction(transaction: factory.transaction.placeOrder.ITransaction) {
+export function validateTransaction(transaction: factory.transaction.placeOrder.ITransaction) {
     type IAuthorizeActionResult =
         factory.action.authorize.creditCard.IResult |
         factory.action.authorize.mvtk.IResult |
@@ -478,7 +408,7 @@ function validateTransaction(transaction: factory.transaction.placeOrder.ITransa
     // クレジットカードオーソリをひとつに限定
     const creditCardAuthorizeActions = transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+        .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
     if (creditCardAuthorizeActions.length > 1) {
         throw new factory.errors.Argument('transactionId', 'The number of credit card authorize actions must be one.');
     }
@@ -486,7 +416,7 @@ function validateTransaction(transaction: factory.transaction.placeOrder.ITransa
     // ムビチケ着券情報をひとつに限定
     const mvtkAuthorizeActions = transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
+        .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
     if (mvtkAuthorizeActions.length > 1) {
         throw new factory.errors.Argument('transactionId', 'The number of mvtk authorize actions must be one.');
     }
@@ -505,4 +435,224 @@ function validateTransaction(transaction: factory.transaction.placeOrder.ITransa
     if (priceByAgent <= 0 || priceByAgent !== priceBySeller) {
         throw new factory.errors.Argument('transactionId', 'Transaction cannot be confirmed because prices are not matched.');
     }
+}
+
+/**
+ * create order object from transaction parameters
+ * 取引オブジェクトから注文オブジェクトを生成する
+ * @export
+ * @function
+ * @memberof order
+ */
+// tslint:disable-next-line:max-func-body-length
+export function createOrderFromTransaction(params: {
+    transaction: factory.transaction.placeOrder.ITransaction;
+    orderDate: Date;
+    orderStatus: factory.orderStatus;
+    isGift: boolean;
+}): factory.order.IOrder {
+    // seatReservation exists?
+    const seatReservationAuthorizeActions = params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation);
+    if (seatReservationAuthorizeActions.length === 0) {
+        throw new factory.errors.Argument('transaction', 'Seat reservation does not exist.');
+    }
+    if (seatReservationAuthorizeActions.length > 1) {
+        throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
+    }
+    const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
+    if (seatReservationAuthorizeAction.result === undefined) {
+        throw new factory.errors.Argument('transaction', 'Seat reservation result does not exist.');
+    }
+    if (params.transaction.object.customerContact === undefined) {
+        throw new factory.errors.Argument('transaction', 'Customer contact does not exist');
+    }
+
+    const cutomerContact = params.transaction.object.customerContact;
+    const orderInquiryKey = {
+        theaterCode: seatReservationAuthorizeAction.result.updTmpReserveSeatArgs.theaterCode,
+        confirmationNumber: seatReservationAuthorizeAction.result.updTmpReserveSeatResult.tmpReserveNum,
+        telephone: cutomerContact.telephone
+    };
+
+    // 結果作成
+    const discounts: factory.order.IDiscount[] = [];
+    params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk)
+        .forEach((mvtkAuthorizeAction: factory.action.authorize.mvtk.IAction) => {
+            const discountCode = mvtkAuthorizeAction.object.seatInfoSyncIn.knyknrNoInfo.map(
+                (knshInfo) => knshInfo.knyknrNo
+            ).join(',');
+
+            discounts.push({
+                name: 'ムビチケカード',
+                discount: (<factory.action.authorize.mvtk.IResult>mvtkAuthorizeAction.result).price,
+                discountCode: discountCode,
+                discountCurrency: factory.priceCurrency.JPY
+            });
+        });
+
+    const paymentMethods: factory.order.IPaymentMethod[] = [];
+    params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard)
+        .forEach((creditCardAuthorizeAction: factory.action.authorize.creditCard.IAction) => {
+            paymentMethods.push({
+                name: 'クレジットカード',
+                paymentMethod: factory.paymentMethodType.CreditCard,
+                paymentMethodId: (<factory.action.authorize.creditCard.IResult>creditCardAuthorizeAction.result).execTranResult.orderId
+            });
+        });
+
+    const seller: factory.order.ISeller = params.transaction.seller;
+    const customer: factory.order.ICustomer = {
+        ...{
+            id: params.transaction.agent.id,
+            typeOf: params.transaction.agent.typeOf,
+            name: `${cutomerContact.familyName} ${cutomerContact.givenName}`,
+            url: ''
+        },
+        ...params.transaction.object.customerContact
+    };
+    if (params.transaction.agent.memberOf !== undefined) {
+        customer.memberOf = params.transaction.agent.memberOf;
+    }
+
+    // 座席仮予約から容認供給情報を生成する
+    // 座席予約以外の注文アイテムが追加された場合は、このロジックに修正が加えられることになる
+    const acceptedOffers = factory.reservation.event.createFromCOATmpReserve({
+        updTmpReserveSeatResult: seatReservationAuthorizeAction.result.updTmpReserveSeatResult,
+        offers: seatReservationAuthorizeAction.object.offers,
+        individualScreeningEvent: seatReservationAuthorizeAction.object.individualScreeningEvent
+    }).map((eventReservation) => {
+        eventReservation.reservationStatus = factory.reservationStatusType.ReservationConfirmed;
+        eventReservation.underName.name = {
+            ja: customer.name,
+            en: customer.name
+        };
+        eventReservation.reservedTicket.underName.name = {
+            ja: customer.name,
+            en: customer.name
+        };
+
+        return {
+            itemOffered: eventReservation,
+            price: eventReservation.price,
+            priceCurrency: factory.priceCurrency.JPY,
+            seller: {
+                typeOf: seatReservationAuthorizeAction.object.individualScreeningEvent.superEvent.location.typeOf,
+                name: seatReservationAuthorizeAction.object.individualScreeningEvent.superEvent.location.name.ja
+            }
+        };
+    });
+
+    // 注文番号生成
+    const orderNumber = util.format(
+        '%s-%s-%s',
+        moment(params.orderDate).tz('Asia/Tokyo').format('YYMMDD'),
+        orderInquiryKey.theaterCode,
+        orderInquiryKey.confirmationNumber
+    );
+
+    return {
+        typeOf: 'Order',
+        seller: seller,
+        customer: customer,
+        price: seatReservationAuthorizeAction.result.price - discounts.reduce((a, b) => a + b.discount, 0),
+        priceCurrency: factory.priceCurrency.JPY,
+        paymentMethods: paymentMethods,
+        discounts: discounts,
+        confirmationNumber: orderInquiryKey.confirmationNumber,
+        orderNumber: orderNumber,
+        acceptedOffers: acceptedOffers,
+        // tslint:disable-next-line:max-line-length
+        url: `${process.env.ORDER_INQUIRY_ENDPOINT}/inquiry/login?theater=${orderInquiryKey.theaterCode}&reserve=${orderInquiryKey.confirmationNumber}`,
+        orderStatus: params.orderStatus,
+        orderDate: params.orderDate,
+        isGift: params.isGift,
+        orderInquiryKey: orderInquiryKey
+    };
+}
+
+export async function createEmailMessageFromTransaction(params: {
+    transaction: factory.transaction.placeOrder.ITransaction;
+    customerContact: factory.transaction.placeOrder.ICustomerContact;
+    order: factory.order.IOrder;
+    seller: factory.organization.movieTheater.IOrganization;
+}): Promise<factory.creativeWork.message.email.ICreativeWork> {
+    return new Promise<factory.creativeWork.message.email.ICreativeWork>((resolve, reject) => {
+        const seller = params.transaction.seller;
+        const event = params.order.acceptedOffers[0].itemOffered.reservationFor;
+
+        pug.renderFile(
+            `${__dirname}/../../../emails/sendOrder/text.pug`,
+            {
+                familyName: params.customerContact.familyName,
+                givenName: params.customerContact.givenName,
+                confirmationNumber: params.order.confirmationNumber,
+                eventStartDate: util.format(
+                    '%s - %s',
+                    moment(event.startDate).locale('ja').tz('Asia/Tokyo').format('YYYY年MM月DD日(ddd) HH:mm'),
+                    moment(event.endDate).tz('Asia/Tokyo').format('HH:mm')
+                ),
+                workPerformedName: event.workPerformed.name,
+                screenName: event.location.name.ja,
+                reservedSeats: params.order.acceptedOffers.map((o) => {
+                    return util.format(
+                        '%s %s ￥%s',
+                        o.itemOffered.reservedTicket.ticketedSeat.seatNumber,
+                        o.itemOffered.reservedTicket.coaTicketInfo.ticketName,
+                        o.itemOffered.reservedTicket.coaTicketInfo.salePrice
+                    );
+                }).join('\n'),
+                price: params.order.price,
+                inquiryUrl: params.order.url,
+                sellerName: params.order.seller.name,
+                sellerTelephone: params.seller.telephone
+            },
+            (renderMessageErr, message) => {
+                if (renderMessageErr instanceof Error) {
+                    reject(renderMessageErr);
+
+                    return;
+                }
+
+                debug('message:', message);
+                pug.renderFile(
+                    `${__dirname}/../../../emails/sendOrder/subject.pug`,
+                    {
+                        sellerName: params.order.seller.name
+                    },
+                    (renderSubjectErr, subject) => {
+                        if (renderSubjectErr instanceof Error) {
+                            reject(renderSubjectErr);
+
+                            return;
+                        }
+
+                        debug('subject:', subject);
+
+                        resolve(factory.creativeWork.message.email.create({
+                            identifier: `placeOrderTransaction-${params.transaction.id}`,
+                            sender: {
+                                typeOf: seller.typeOf,
+                                name: seller.name,
+                                // tslint:disable-next-line:no-suspicious-comment
+                                email: 'noreply@ticket-cinemasunshine.com' // TODO どこかに保管
+                            },
+                            toRecipient: {
+                                typeOf: params.transaction.agent.typeOf,
+                                name: `${params.customerContact.familyName} ${params.customerContact.givenName}`,
+                                email: params.customerContact.email
+                            },
+                            about: subject,
+                            text: message
+                        }));
+                    }
+                );
+            }
+        );
+    });
 }

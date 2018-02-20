@@ -11,6 +11,7 @@ import * as ssktsFactory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
+import * as DeliveryService from './service/delivery';
 import * as EventService from './service/event';
 import * as ItemAvailabilityService from './service/itemAvailability';
 import * as MasterSyncService from './service/masterSync';
@@ -29,10 +30,6 @@ import * as ReturnOrderTransactionService from './service/transaction/returnOrde
 import * as UtilService from './service/util';
 
 import { MongoRepository as ActionRepo } from './repo/action';
-import { MongoRepository as AuthorizeActionRepo } from './repo/action/authorize';
-import { MongoRepository as CreditCardAuthorizeActionRepo } from './repo/action/authorize/creditCard';
-import { MongoRepository as MvtkAuthorizeActionRepo } from './repo/action/authorize/mvtk';
-import { MongoRepository as SeatReservationAuthorizeActionRepo } from './repo/action/authorize/seatReservation';
 import { MongoRepository as PrintActionRepo } from './repo/action/print';
 import { MongoRepository as ClientRepo } from './repo/client';
 import { MongoRepository as CreativeWorkRepo } from './repo/creativeWork';
@@ -47,7 +44,6 @@ import { MongoRepository as SendGridEventRepo } from './repo/sendGridEvent';
 import { MongoRepository as TaskRepo } from './repo/task';
 import { MongoRepository as TelemetryRepo } from './repo/telemetry';
 import { MongoRepository as TransactionRepo } from './repo/transaction';
-import { MongoRepository as TransactionCountRepo } from './repo/transactionCount';
 
 (<any>mongoose).Promise = global.Promise;
 
@@ -101,12 +97,6 @@ export import GMO = GMO;
 export namespace repository {
     export class Action extends ActionRepo { }
     export namespace action {
-        export class Authorize extends AuthorizeActionRepo { }
-        export namespace authorize {
-            export class CreditCard extends CreditCardAuthorizeActionRepo { }
-            export class Mvtk extends MvtkAuthorizeActionRepo { }
-            export class SeatReservation extends SeatReservationAuthorizeActionRepo { }
-        }
         export class Print extends PrintActionRepo { }
     }
     export class Client extends ClientRepo { }
@@ -121,7 +111,6 @@ export namespace repository {
     export class Task extends TaskRepo { }
     export class Telemetry extends TelemetryRepo { }
     export class Transaction extends TransactionRepo { }
-    export class TransactionCount extends TransactionCountRepo { }
 
     export namespace itemAvailability {
         export class IndividualScreeningEvent extends IndividualScreeningEventItemAvailabilityRepo { }
@@ -129,6 +118,7 @@ export namespace repository {
 }
 
 export namespace service {
+    export import delivery = DeliveryService;
     export import event = EventService;
     export import itemAvailability = ItemAvailabilityService;
     export import masterSync = MasterSyncService;

@@ -56,11 +56,13 @@ const schema = new mongoose.Schema(
 
 schema.index({ sg_event_id: 1 });
 
-export default mongoose.model('SendGridEvent', schema)
-    .on('index', (error) => {
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore next */
+export default mongoose.model('SendGridEvent', schema).on(
+    'index',
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    (error) => {
         if (error !== undefined) {
             console.error(error);
         }
-    });
+    }
+);

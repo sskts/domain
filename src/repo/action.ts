@@ -3,17 +3,8 @@ import { Connection } from 'mongoose';
 
 import ActionModel from './mongoose/model/action';
 
-export interface IAction {
-    typeOf: factory.actionType;
-    actionStatus: factory.actionStatusType;
-    agent?: factory.action.IParticipant;
-    recipient?: factory.action.IParticipant;
-    result?: any;
-    error?: any;
-    object?: any;
-    startDate: Date;
-    endDate?: Date;
-}
+export type IAction = factory.action.IAction<factory.action.IAttributes<any, any>>;
+export type IAuthorizeAction = factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>>;
 
 /**
  * アクションリポジトリー
@@ -151,5 +142,36 @@ export class MongoRepository {
 
                 return <T>doc.toObject();
             });
+    }
+
+    /**
+     * 取引内の承認アクションを取得する
+     * @param transactionId 取引ID
+     */
+    public async findAuthorizeByTransactionId(transactionId: string): Promise<IAuthorizeAction[]> {
+        return this.actionModel.find({
+            typeOf: factory.actionType.AuthorizeAction,
+            'purpose.id': {
+                $exists: true,
+                $eq: transactionId
+            }
+        }).exec().then((docs) => docs.map((doc) => <IAuthorizeAction>doc.toObject()));
+    }
+
+    /**
+     * 注文番号から、注文に対するアクションを検索する
+     * @param orderNumber 注文番号
+     */
+    public async findByOrderNumber(orderNumber: string): Promise<IAction[]> {
+        return this.actionModel.find({
+            $or: [
+                { 'object.orderNumber': orderNumber },
+                { 'purpose.orderNumber': orderNumber }
+            ]
+        })
+            .sort({ endDate: -1 })
+            .exec()
+            .then((docs) => docs.map((doc) => <IAction>doc.toObject()));
+
     }
 }

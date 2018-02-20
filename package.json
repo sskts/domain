@@ -9,9 +9,9 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/coa-service": "^4.0.8",
+    "@motionpicture/coa-service": "^4.0.9",
     "@motionpicture/gmo-service": "^4.1.0",
-    "@motionpicture/sskts-factory": "^2.4.0-alpha.4",
+    "@motionpicture/sskts-factory": "^3.0.0-alpha.2",
     "@motionpicture/waiter-domain": "^2.0.2",
     "@sendgrid/mail": "^6.1.4",
     "@types/google-libphonenumber": "^7.4.12",
@@ -27,6 +27,7 @@
     "moment": "^2.19.3",
     "moment-timezone": "^0.5.14",
     "mongoose": "^4.13.6",
+    "pug": "^2.0.0-rc.4",
     "redis": "^2.8.0",
     "request": "^2.83.0",
     "underscore": "^1.8.3",
@@ -42,6 +43,7 @@
     "@types/nock": "^8.2.1",
     "@types/node": "^8.0.58",
     "@types/power-assert": "^1.4.29",
+    "@types/pug": "^2.0.4",
     "@types/redis-mock": "^0.17.0",
     "@types/request": "^2.0.8",
     "@types/sinon": "^2.3.7",
@@ -75,6 +77,7 @@
   "types": "./lib/index.d.ts",
   "files": [
     "doc",
+    "emails",
     "example",
     "lib"
   ],

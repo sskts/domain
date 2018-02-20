@@ -19,7 +19,7 @@ export type TaskAndConnectionOperation<T> = (taskRepository: TaskRepository, con
 
 const debug = createDebug('sskts-domain:service:task');
 
-export const ABORT_REPORT_SUBJECT = 'One task aboted !!!';
+export const ABORT_REPORT_SUBJECT = 'Task aborted !!!';
 
 /**
  * execute a task by taskName

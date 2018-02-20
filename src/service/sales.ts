@@ -9,7 +9,7 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
-import { MongoRepository as CreditCardAuthorizeActionRepo } from '../repo/action/authorize/creditCard';
+import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:sales');
@@ -24,11 +24,14 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  * @param {string} transactionId 取引ID
  */
 export function cancelCreditCardAuth(transactionId: string) {
-    return async (creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo) => {
+    return async (actionRepo: ActionRepo) => {
         // クレジットカード仮売上アクションを取得
         const authorizeActions: factory.action.authorize.creditCard.IAction[] =
-            await creditCardAuthorizeActionRepo.findByTransactionId(transactionId)
-                .then((actions) => actions.filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus));
+            await actionRepo.findAuthorizeByTransactionId(transactionId)
+                .then((actions) => actions
+                    .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard)
+                    .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                );
 
         await Promise.all(authorizeActions.map(async (action) => {
             const entryTranArgs = (<factory.action.authorize.creditCard.IResult>action.result).entryTranArgs;
@@ -65,13 +68,17 @@ export function settleCreditCardAuth(transactionId: string) {
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
         }
+        const potentialActions = transaction.potentialActions;
+        if (potentialActions === undefined) {
+            throw new factory.errors.NotFound('transaction.potentialActions');
+        }
 
-        const payActionAttributes = transactionResult.postActions.payCreditCardAction;
+        const payActionAttributes = potentialActions.order.potentialActions.payCreditCard;
         if (payActionAttributes !== undefined) {
             // クレジットカード承認アクションがあるはず
             const authorizeAction = <factory.action.authorize.creditCard.IAction>transaction.object.authorizeActions
                 .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                .find((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+                .find((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
 
             // アクション開始
             const action = await actionRepo.start<factory.action.trade.pay.IAction>(payActionAttributes);
@@ -117,7 +124,8 @@ export function settleCreditCardAuth(transactionId: string) {
             } catch (error) {
                 // actionにエラー結果を追加
                 try {
-                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
                     await actionRepo.giveUp(payActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
@@ -134,21 +142,26 @@ export function settleCreditCardAuth(transactionId: string) {
     };
 }
 
-export function returnCreditCardSales(transactionId: string) {
+/**
+ * 注文返品取引からクレジットカード返金処理を実行する
+ * @param transactionId 注文返品取引ID
+ */
+export function refundCreditCard(transactionId: string) {
     return async (
         actionRepo: ActionRepo,
-        transactionRep: TransactionRepo
+        transactionRep: TransactionRepo,
+        taskRepo: TaskRepo
     ) => {
         const transaction = await transactionRep.findReturnOrderById(transactionId);
-        const returnOrderTransactionresult = transaction.result;
+        const potentialActions = transaction.potentialActions;
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;
         const authorizeActions = placeOrderTransaction.object.authorizeActions
             .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+            .filter((action) => action.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
 
-        if (returnOrderTransactionresult === undefined) {
-            throw new factory.errors.NotFound('transaction.result');
+        if (potentialActions === undefined) {
+            throw new factory.errors.NotFound('transaction.potentialActions');
         }
 
         if (placeOrderTransactionResult === undefined) {
@@ -157,8 +170,8 @@ export function returnCreditCardSales(transactionId: string) {
 
         await Promise.all(authorizeActions.map(async (authorizeAction) => {
             // アクション開始
-            const returnPayActionAttributes = returnOrderTransactionresult.postActions.returnPayAction;
-            const action = await actionRepo.start<factory.action.transfer.returnAction.pay.IAction>(returnPayActionAttributes);
+            const refundActionAttributes = potentialActions.returnOrder.potentialActions.refund;
+            const action = await actionRepo.start<factory.action.trade.refund.IAction>(refundActionAttributes);
 
             let alterTranResult: GMO.services.credit.IAlterTranResult;
             try {
@@ -195,8 +208,9 @@ export function returnCreditCardSales(transactionId: string) {
             } catch (error) {
                 // actionにエラー結果を追加
                 try {
-                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                    await actionRepo.giveUp(returnPayActionAttributes.typeOf, action.id, actionError);
+                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
+                    await actionRepo.giveUp(refundActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
@@ -206,7 +220,42 @@ export function returnCreditCardSales(transactionId: string) {
 
             // アクション完了
             debug('ending action...');
-            await actionRepo.complete(returnPayActionAttributes.typeOf, action.id, { alterTranResult });
+            await actionRepo.complete(refundActionAttributes.typeOf, action.id, { alterTranResult });
+
+            // 潜在アクション
+            await onRefund(refundActionAttributes)(taskRepo);
+        }));
+    };
+}
+
+/**
+ * 返金後のアクション
+ * @param refundActionAttributes 返金アクション属性
+ */
+function onRefund(refundActionAttributes: factory.action.trade.refund.IAttributes) {
+    return async (taskRepo: TaskRepo) => {
+        const potentialActions = refundActionAttributes.potentialActions;
+        const now = new Date();
+        const taskAttributes: factory.task.IAttributes[] = [];
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (potentialActions.sendEmailMessage !== undefined) {
+            taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
+                status: factory.taskStatus.Ready,
+                runsAt: now, // なるはやで実行
+                remainingNumberOfTries: 3,
+                lastTriedAt: null,
+                numberOfTried: 0,
+                executionResults: [],
+                data: {
+                    actionAttributes: potentialActions.sendEmailMessage
+                }
+            }));
+        }
+
+        // タスク保管
+        await Promise.all(taskAttributes.map(async (taskAttribute) => {
+            return taskRepo.save(taskAttribute);
         }));
     };
 }
@@ -239,13 +288,17 @@ export function settleMvtk(transactionId: string) {
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
         }
+        const potentialActions = transaction.potentialActions;
+        if (potentialActions === undefined) {
+            throw new factory.errors.NotFound('transaction.potentialActions');
+        }
 
-        const useActionAttributes = transactionResult.postActions.useMvtkAction;
+        const useActionAttributes = potentialActions.order.potentialActions.useMvtk;
         if (useActionAttributes !== undefined) {
             // ムビチケ承認アクションがあるはず
             // const authorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions
             //     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            //     .find((a) => a.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
+            //     .find((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
 
             // アクション開始
             const action = await actionRepo.start<factory.action.consume.use.mvtk.IAction>(useActionAttributes);
@@ -253,14 +306,20 @@ export function settleMvtk(transactionId: string) {
             try {
                 // 実は取引成立の前に着券済みなので何もしない
             } catch (error) {
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore next */
+
                 // actionにエラー結果を追加
                 try {
-                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
                     await actionRepo.giveUp(useActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
 
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore next */
                 throw new Error(error);
             }
 
