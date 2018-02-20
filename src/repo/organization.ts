@@ -6,9 +6,7 @@ import organizationModel from './mongoose/model/organization';
 const debug = createDebug('sskts-domain:repository:organization');
 
 /**
- * 組織レポジトリー
- *
- * @class OrganizationRepository
+ * 組織リポジトリー
  */
 export class MongoRepository {
     public readonly organizationModel: typeof organizationModel;

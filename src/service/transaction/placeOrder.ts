@@ -116,8 +116,6 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
 /**
  * 確定取引についてメールを送信する
  * @export
- * @function
- * @memberof service.transaction.placeOrder
  * @param transactionId 取引ID
  * @param emailMessageAttributes Eメールメッセージ属性
  */
@@ -168,8 +166,6 @@ export function sendEmail(
 /**
  * フォーマット指定でダウンロード
  * @export
- * @function
- * @memberof service.transaction.placeOrder
  * @param conditions 検索条件
  * @param format フォーマット
  */
@@ -236,8 +232,6 @@ export function download(
 /**
  * 取引レポートインターフェース
  * @export
- * @interface
- * @memberof service.transaction.placeOrder
  */
 export interface ITransactionReport {
     id: string;
@@ -250,7 +244,7 @@ export interface ITransactionReport {
         telephone: string;
         memberOf?: {
             membershipNumber: string;
-        }
+        };
     };
     eventName: string;
     eventStartDate: string;

@@ -78,8 +78,6 @@ export interface IGlobalFlowTaskResultByName {
 /**
  * フローデータ
  * @export
- * @interface IGlobalFlowResult
- * @memberof service.report
  * @see https://en.wikipedia.org/wiki/Stock_and_flow
  */
 export interface IGlobalFlowResult {
@@ -91,8 +89,6 @@ export interface IGlobalFlowResult {
 /**
  * ストックデータ
  * @export
- * @interface IGlobalStockResult
- * @memberof service.report
  * @see https://en.wikipedia.org/wiki/Stock_and_flow
  */
 export interface IGlobalStockResult {
@@ -105,8 +101,6 @@ export interface IGlobalStockResult {
 /**
  * 販売者が対象のフローデータ
  * @export
- * @interface ISellerFlowResult
- * @memberof service.report
  */
 export interface ISellerFlowResult {
     transactions: {
@@ -242,8 +236,6 @@ export interface ISellerFlowResult {
 /**
  * 販売者が対象のストックデータ
  * @export
- * @interface ISellerStockResult
- * @memberof service.report
  */
 export interface ISellerStockResult {
     transactions: {
@@ -275,7 +267,6 @@ export interface ISellerObect {
 
 /**
  * 測定データインターフェース
- * @interface
  */
 export interface ITelemetry {
     object: any;
@@ -308,26 +299,26 @@ export interface ISellerFlowTelemetry extends ITelemetry {
 }
 
 export function searchGlobalFlow(searchConditions: {
-    measuredFrom: Date,
-    measuredThrough: Date
+    measuredFrom: Date;
+    measuredThrough: Date;
 }): TelemetryOperation<IGlobalFlowTelemetry[]> {
     return search({ ...searchConditions, ...{ scope: TelemetryScope.Global, purpose: TelemetryPurposeType.Flow } });
 }
 export function searchGlobalStock(searchConditions: {
-    measuredFrom: Date,
-    measuredThrough: Date
+    measuredFrom: Date;
+    measuredThrough: Date;
 }): TelemetryOperation<IGlobalStockTelemetry[]> {
     return search({ ...searchConditions, ...{ scope: TelemetryScope.Global, purpose: TelemetryPurposeType.Stock } });
 }
 export function searchSellerFlow(searchConditions: {
-    measuredFrom: Date,
-    measuredThrough: Date
+    measuredFrom: Date;
+    measuredThrough: Date;
 }): TelemetryOperation<ISellerFlowTelemetry[]> {
     return search({ ...searchConditions, ...{ scope: TelemetryScope.Seller, purpose: TelemetryPurposeType.Flow } });
 }
 export function searchSellerStock(searchConditions: {
-    measuredFrom: Date,
-    measuredThrough: Date
+    measuredFrom: Date;
+    measuredThrough: Date;
 }): TelemetryOperation<ISellerStockTelemetry[]> {
     return search({ ...searchConditions, ...{ scope: TelemetryScope.Seller, purpose: TelemetryPurposeType.Stock } });
 }
@@ -335,16 +326,14 @@ export function searchSellerStock(searchConditions: {
 /**
  * 計測データを検索する
  * @export
- * @function
- * @memberof service.report
- * @param {Date} searchConditions.measuredFrom 計測日時from
- * @param {Date} searchConditions.measuredThrough 計測日時through
+ * @param searchConditions.measuredFrom 計測日時from
+ * @param searchConditions.measuredThrough 計測日時through
  */
 export function search(searchConditions: {
-    measuredFrom: Date,
-    measuredThrough: Date,
-    scope: TelemetryScope,
-    purpose: TelemetryPurposeType
+    measuredFrom: Date;
+    measuredThrough: Date;
+    scope: TelemetryScope;
+    purpose: TelemetryPurposeType;
 }) {
     return async (telemetryRepo: TelemetryRepo) => {
         return <ITelemetry[]>await telemetryRepo.telemetryModel.find(
@@ -372,15 +361,12 @@ export function search(searchConditions: {
 /**
  * フロー測定データを作成する
  * @export
- * @function
- * @returns {TaskAndTelemetryAndTransactionOperation<void>}
- * @memberof service.report
  */
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
 export function createFlow(target: {
-    measuredAt: Date,
-    sellerId?: string
+    measuredAt: Date;
+    sellerId?: string;
 }): TaskAndTelemetryAndTransactionOperation<void> {
     return async (
         taskRepo: TaskRepo,
@@ -436,15 +422,12 @@ export function createFlow(target: {
 /**
  * ストック測定データを作成する
  * @export
- * @function
- * @returns {TaskAndTelemetryAndTransactionOperation<void>}
- * @memberof service.report
  */
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
 export function createStock(target: {
-    measuredAt: Date,
-    sellerId?: string
+    measuredAt: Date;
+    sellerId?: string;
 }): TaskAndTelemetryAndTransactionOperation<void> {
     return async (
         taskRepo: TaskRepo,
@@ -495,11 +478,8 @@ export function createStock(target: {
 /**
  * フロー計測データーを作成する
  * @export
- * @function
- * @memberof service.report
- * @param {Date} measuredFrom 計測開始日時
- * @param {Date} measuredThrough 計測終了日時
- * @returns {TransactionAndAuthorizeActionOperation<ISellerFlowResult>}
+ * @param measuredFrom 計測開始日時
+ * @param measuredThrough 計測終了日時
  */
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
@@ -610,9 +590,7 @@ function createSellerFlow(
         const averageAmount = (numberOfTransactionsConfirmed > 0) ? totalAmount / numberOfTransactionsConfirmed : 0;
 
         // アクション数集計
-        const numbersOfActions = confirmedTransactions.map(
-            (transaction) => (<factory.transaction.placeOrder.IObject>transaction.object).authorizeActions.length
-        );
+        const numbersOfActions = confirmedTransactions.map((t) => t.object.authorizeActions.length);
         const totalNumberOfActions = numbersOfActions.reduce((a, b) => a + b, 0);
         const maxNumberOfActions = numbersOfActions.reduce((a, b) => Math.max(a, b), 0);
         const minNumberOfActions = numbersOfActions.reduce(
@@ -698,10 +676,7 @@ function createSellerFlow(
 /**
  * ストック計測データを作成する
  * @export
- * @function
- * @memberof service.report
- * @param {Date} measuredAt 計測日時
- * @returns {TransactionOperation<ISellerStockResult>}
+ * @param measuredAt 計測日時
  */
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
@@ -755,11 +730,8 @@ function createSellerStock(measuredAt: Date, sellerId: string): TransactionOpera
 /**
  * フロー計測データーを作成する
  * @export
- * @function
- * @memberof service.report
- * @param {Date} measuredFrom 計測開始日時
- * @param {Date} measuredThrough 計測終了日時
- * @returns {TaskOperation<IGlobalFlowResult>}
+ * @param measuredFrom 計測開始日時
+ * @param measuredThrough 計測終了日時
  */
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
@@ -850,10 +822,7 @@ function createGlobalFlow(
 /**
  * ストック計測データを作成する
  * @export
- * @function
- * @memberof service.report
- * @param {Date} measuredAt 計測日時
- * @returns {TaskOperation<IGlobalStockResult>}
+ * @param measuredAt 計測日時
  */
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */

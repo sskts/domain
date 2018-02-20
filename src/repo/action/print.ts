@@ -5,7 +5,6 @@ import ActionModel from '../mongoose/model/action';
 
 /**
  * print action repository
- * @class
  */
 export class MongoRepository {
     public readonly actionModel: typeof ActionModel;

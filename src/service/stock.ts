@@ -19,9 +19,7 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 /**
  * 資産承認解除(COA座席予約)
  * @export
- * @function
- * @memberof service.stock
- * @param {string} transactionId 取引ID
+ * @param transactionId 取引ID
  */
 export function cancelSeatReservationAuth(transactionId: string) {
     return async (actionRepo: ActionRepo) => {
@@ -53,9 +51,7 @@ export function cancelSeatReservationAuth(transactionId: string) {
 /**
  * 資産移動(COA座席予約)
  * @export
- * @function
- * @memberof service.stock
- * @param {string} transactionId 取引ID
+ * @param transactionId 取引ID
  */
 export function transferSeatReservation(transactionId: string) {
     return async (transactionRepository: TransactionRepo) => {
@@ -106,7 +102,9 @@ export function transferSeatReservation(transactionId: string) {
                 titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
                 timeBegin: updTmpReserveSeatArgs.timeBegin,
                 tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum,
+                // tslint:disable-next-line:no-irregular-whitespace
                 reserveName: `${customerContact.familyName}　${customerContact.givenName}`,
+                // tslint:disable-next-line:no-irregular-whitespace
                 reserveNameJkana: `${customerContact.familyName}　${customerContact.givenName}`,
                 telNum: telNum,
                 mailAddr: customerContact.email,

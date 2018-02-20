@@ -20,8 +20,6 @@ export type ICreateOperation<T> = (
  * create a mvtk authorizeAction
  * add the result of using a mvtk card
  * @export
- * @function
- * @memberof service.transaction.placeOrderInProgress
  */
 export function create(
     agentId: string,

@@ -95,7 +95,9 @@ export function sendOrder(transactionId: string) {
                     titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
                     timeBegin: updTmpReserveSeatArgs.timeBegin,
                     tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum,
+                    // tslint:disable-next-line:no-irregular-whitespace
                     reserveName: `${customerContact.familyName}　${customerContact.givenName}`,
+                    // tslint:disable-next-line:no-irregular-whitespace
                     reserveNameJkana: `${customerContact.familyName}　${customerContact.givenName}`,
                     telNum: telNum,
                     mailAddr: customerContact.email,

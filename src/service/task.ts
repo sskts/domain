@@ -24,10 +24,8 @@ export const ABORT_REPORT_SUBJECT = 'Task aborted !!!';
 /**
  * execute a task by taskName
  * タスク名でタスクをひとつ実行する
- * @param {factory.taskName} taskName タスク名
+ * @param taskName タスク名
  * @export
- * @function
- * @memberof service/task
  */
 export function executeByName(taskName: factory.taskName): TaskAndConnectionOperation<void> {
     return async (taskRepository: TaskRepository, connection: mongoose.Connection) => {
@@ -50,10 +48,8 @@ export function executeByName(taskName: factory.taskName): TaskAndConnectionOper
 /**
  * execute a task
  * タスクを実行する
- * @param {factory.task.ITask} task タスクオブジェクト
+ * @param task タスクオブジェクト
  * @export
- * @function
- * @memberof service/task
  */
 export function execute(task: factory.task.ITask): TaskAndConnectionOperation<void> {
     debug('executing a task...', task);
@@ -84,11 +80,8 @@ export function execute(task: factory.task.ITask): TaskAndConnectionOperation<vo
 /**
  * retry tasks in running status
  * 実行中ステータスのままになっているタスクをリトライする
- * @param {number} intervalInMinutes 最終トライ日時から何分経過したタスクをリトライするか
- * @returns {TaskOperation<void>}
+ * @param intervalInMinutes 最終トライ日時から何分経過したタスクをリトライするか
  * @export
- * @function
- * @memberof service/task
  */
 export function retry(intervalInMinutes: number): TaskOperation<void> {
     return async (taskRepository: TaskRepository) => {
@@ -99,11 +92,8 @@ export function retry(intervalInMinutes: number): TaskOperation<void> {
 /**
  * abort a task
  * トライ可能回数が0に達したタスクを実行中止する
- * @param {number} intervalInMinutes 最終トライ日時から何分経過したタスクを中止するか
- * @returns {TaskOperation<void>}
+ * @param intervalInMinutes 最終トライ日時から何分経過したタスクを中止するか
  * @export
- * @function
- * @memberof service/task
  */
 export function abort(intervalInMinutes: number): TaskOperation<void> {
     return async (taskRepository: TaskRepository) => {

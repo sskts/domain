@@ -29,10 +29,9 @@ export type IActionAndTransactionOperation<T> = (
  * 供給情報の有効性の確認などを行う。
  * この処理次第で、どのような供給情報を受け入れられるかが決定するので、とても大事な処理です。
  * バグ、不足等あれば、随時更新することが望ましい。
- * @function
- * @param {boolean} isMember 会員かどうか
- * @param {factory.event.individualScreeningEvent.IEvent} individualScreeningEvent 上映イベント
- * @param {factory.offer.ISeatReservationOffer[]} offers 供給情報
+ * @param isMember 会員かどうか
+ * @param individualScreeningEvent 上映イベント
+ * @param offers 供給情報
  */
 // tslint:disable-next-line:max-func-body-length
 async function validateOffers(
@@ -241,8 +240,7 @@ async function validateOffers(
 
 /**
  * 供給情報から承認アクションの価格を導き出す
- * @function
- * @param {factory.offer.ISeatReservationOffer[]} offers 供給情報
+ * @param offers 供給情報
  */
 function offers2resultPrice(offers: factory.offer.seatReservation.IOfferWithDetails[]) {
     return offers.reduce((a, b) => a + b.price, 0);
@@ -252,12 +250,10 @@ function offers2resultPrice(offers: factory.offer.seatReservation.IOfferWithDeta
  * 座席を仮予約する
  * 承認アクションオブジェクトが返却されます。
  * @export
- * @function
- * @memberof service.transaction.placeOrderInProgress.action.authorize.seatReservation
- * @param {string} agentId 取引主体ID
- * @param {string} transactionId 取引ID
- * @param {string} eventIdentifier イベント識別子
- * @param {factory.offer.ISeatReservationOffer[]} offers 供給情報
+ * @param agentId 取引主体ID
+ * @param transactionId 取引ID
+ * @param eventIdentifier イベント識別子
+ * @param offers 供給情報
  */
 export function create(
     agentId: string,
@@ -360,8 +356,6 @@ export function create(
 /**
  * 座席予約承認アクションをキャンセルする
  * @export
- * @function
- * @memberof service.transaction.placeOrderInProgress.action.authorize.seatReservation
  * @param agentId アクション主体ID
  * @param transactionId 取引ID
  * @param actionId アクションID
@@ -400,13 +394,11 @@ export function cancel(
 /**
  * 座席予約承認アクションの供給情報を変更する
  * @export
- * @function
- * @memberof service.transaction.placeOrderInProgress.action.authorize.seatReservation
- * @param {string} agentId アクション主体ID
- * @param {string} transactionId 取引ID
- * @param {string} actionId アクションID
- * @param {string} eventIdentifier イベント識別子
- * @param {factory.offer.seatReservation.IOffer[]} offers 供給情報
+ * @param agentId アクション主体ID
+ * @param transactionId 取引ID
+ * @param actionId アクションID
+ * @param eventIdentifier イベント識別子
+ * @param offers 供給情報
  */
 export function changeOffers(
     agentId: string,

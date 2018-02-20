@@ -7,8 +7,6 @@ const debug = createDebug('sskts-domain:repository:place');
 
 /**
  * 場所抽象リポジトリー
- * @class
- * @abstract
  */
 export abstract class Repository {
     public abstract async saveMovieTheater(movieTheater: factory.place.movieTheater.IPlace): Promise<void>;
@@ -17,8 +15,7 @@ export abstract class Repository {
 }
 
 /**
- * 場所レポジトリー
- * @class PlaceRepository
+ * 場所リポジトリー
  */
 export class MongoRepository {
     public readonly placeModel: typeof placeModel;
@@ -43,8 +40,7 @@ export class MongoRepository {
 
     /**
      * 劇場検索
-     * @param {object} searchConditions 検索条件
-     * @return {Promise<factory.place.movieTheater.IPlaceWithoutScreeningRoom[]>}
+     * @param searchConditions 検索条件
      */
     public async searchMovieTheaters(
         searchConditions: {}

@@ -4,16 +4,13 @@ import creativeWorkModel from './mongoose/model/creativeWork';
 
 /**
  * 作品抽象リポジトリー
- * @class
- * @abstract
  */
 export abstract class Repository {
     public abstract async saveMovie(movie: factory.creativeWork.movie.ICreativeWork): Promise<void>;
 }
 
 /**
- * 作品レポジトリー
- * @class CreativeWorkRepository
+ * 作品リポジトリー
  */
 export class MongoRepository implements Repository {
     public readonly creativeWorkModel: typeof creativeWorkModel;

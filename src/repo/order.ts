@@ -3,9 +3,7 @@ import { Connection } from 'mongoose';
 import OrderModel from './mongoose/model/order';
 
 /**
- * 注文レポジトリー
- *
- * @class OrderRepository
+ * 注文リポジトリー
  */
 export class MongoRepository {
     public readonly orderModel: typeof OrderModel;
@@ -16,7 +14,6 @@ export class MongoRepository {
 
     /**
      * find an order by an inquiry key
-     * @param {factory.order.IOrderInquiryKey} orderInquiryKey
      */
     public async findByOrderInquiryKey(orderInquiryKey: factory.order.IOrderInquiryKey) {
         const doc = await this.orderModel.findOne(

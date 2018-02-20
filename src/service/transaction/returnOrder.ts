@@ -26,10 +26,8 @@ export type IConfirmOperation<T> = (
 ) => Promise<T>;
 
 /**
- * 予約キャンセル処理
- * @param {Request} req
- * @param {Response} res
- * @returns {Promise<void>}
+ * 注文返品取引開始
+ * @param params 開始パラメーター
  */
 export function start(params: {
     /**

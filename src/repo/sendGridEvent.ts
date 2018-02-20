@@ -2,9 +2,7 @@ import { Connection } from 'mongoose';
 import SendGridEventModel from './mongoose/model/sendGridEvent';
 
 /**
- * SendGridイベントレポジトリー
- *
- * @class SendGridEventRepository
+ * SendGridイベントリポジトリー
  */
 export class MongoRepository {
     public readonly sendGridEventModel: typeof SendGridEventModel;

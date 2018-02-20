@@ -19,8 +19,6 @@ const debug = createDebug('sskts-domain:service:report:health');
 /**
  * GMO売上健康診断レポートインターフェース
  * @export
- * @interface
- * @memberof service.report
  */
 export interface IReportOfGMOSalesHealthCheck {
     madeFrom: Date;
@@ -34,8 +32,6 @@ export interface IReportOfGMOSalesHealthCheck {
 /**
  * 不健康なGMO売上インターフェース
  * @export
- * @interface
- * @memberof service.report
  */
 export interface IUnhealthGMOSale {
     orderId: string;
@@ -46,8 +42,6 @@ export interface IUnhealthGMOSale {
 /**
  * 期間指定でGMO実売上の健康診断を実施する
  * @export
- * @function
- * @memberof service.report
  */
 export function checkGMOSales(madeFrom: Date, madeThrough: Date) {
     return async (gmoNotificationRepo: GMONotificationRepo, actionRepo: ActionRepo): Promise<IReportOfGMOSalesHealthCheck> => {

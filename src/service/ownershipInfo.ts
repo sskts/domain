@@ -17,8 +17,6 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 /**
  * 注文取引結果から所有権を作成する
  * @export
- * @function
- * @memberof service.ownershipInfo
  */
 export function createFromTransaction(transactionId: string) {
     return async (actionRepo: ActionRepo, ownershipInfoRepository: OwnershipInfoRepo, transactionRepository: TransactionRepo) => {

@@ -36,7 +36,7 @@ export class MongoRepository {
 
     /**
      * find placeOrder transaction by id
-     * @param {string} transactionId transaction id
+     * @param transactionId transaction id
      */
     public async findPlaceOrderById(transactionId: string): Promise<factory.transaction.placeOrder.ITransaction> {
         const doc = await this.transactionModel.findOne({
@@ -94,9 +94,9 @@ export class MongoRepository {
 
     /**
      * 注文取引を確定する
-     * @param {string} transactionId transaction id
-     * @param {factory.action.authorize.IAction[]} authorizeActions authorize actions
-     * @param {factory.transaction.placeOrder.IResult} result transaction result
+     * @param transactionId transaction id
+     * @param authorizeActions authorize actions
+     * @param result transaction result
      */
     public async confirmPlaceOrder(
         transactionId: string,
@@ -146,7 +146,7 @@ export class MongoRepository {
 
     /**
      * IDから返品取引を取得する
-     * @param {string} transactionId transaction id
+     * @param transactionId transaction id
      */
     public async findReturnOrderById(transactionId: string): Promise<factory.transaction.returnOrder.ITransaction> {
         const doc = await this.transactionModel.findOne({
@@ -163,8 +163,8 @@ export class MongoRepository {
 
     /**
      * 注文返品取引を確定する
-     * @param {string} transactionId transaction id
-     * @param {factory.transaction.returnOrder.IResult} result transaction result
+     * @param transactionId transaction id
+     * @param result transaction result
      */
     public async confirmReturnOrder(
         transactionId: string,
@@ -214,7 +214,6 @@ export class MongoRepository {
     /**
      * タスクエクスポートリトライ
      * todo updatedAtを基準にしているが、タスクエクスポートトライ日時を持たせた方が安全か？
-     * @param {number} intervalInMinutes
      */
     public async reexportTasks(intervalInMinutes: number): Promise<void> {
         await this.transactionModel.findOneAndUpdate(

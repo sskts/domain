@@ -19,9 +19,7 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 /**
  * クレジットカードオーソリ取消
  * @export
- * @function
- * @memberof service.sales
- * @param {string} transactionId 取引ID
+ * @param transactionId 取引ID
  */
 export function cancelCreditCardAuth(transactionId: string) {
     return async (actionRepo: ActionRepo) => {
@@ -57,9 +55,7 @@ export function cancelCreditCardAuth(transactionId: string) {
 /**
  * クレジットカード売上確定
  * @export
- * @function
- * @memberof service.sales
- * @param {string} transactionId 取引ID
+ * @param transactionId 取引ID
  */
 export function settleCreditCardAuth(transactionId: string) {
     return async (actionRepo: ActionRepo, transactionRep: TransactionRepo) => {
@@ -263,9 +259,7 @@ function onRefund(refundActionAttributes: factory.action.trade.refund.IAttribute
 /**
  * ムビチケ着券取消し
  * @export
- * @function
- * @memberof service.sales
- * @param {string} transactionId 取引ID
+ * @param transactionId 取引ID
  */
 export function cancelMvtk(transactionId: string) {
     return async () => {
@@ -277,9 +271,7 @@ export function cancelMvtk(transactionId: string) {
 /**
  * ムビチケ資産移動
  * @export
- * @function
- * @memberof service.sales
- * @param {string} transactionId 取引ID
+ * @param transactionId 取引ID
  */
 export function settleMvtk(transactionId: string) {
     return async (actionRepo: ActionRepo, transactionRep: TransactionRepo) => {

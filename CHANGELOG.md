@@ -20,6 +20,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文の配送前後のステータス遷移を管理するように変更。
 - GMO売上健康診断の材料として、支払アクションを参照するように変更。
 - 注文取引開始パラメーターのWAITER許可証を必須に変更。
+- install typescript@2.7.x.
+- install tslint@5.9.x.
+- install mongoose@5.x.x.
 
 ### Deprecated
 
@@ -122,14 +125,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## v23.1.1 - 2017-10-28
 ### Added
-- GMO結果通知レポジトリーに検索メソッドを追加。
+- GMO結果通知リポジトリーに検索メソッドを追加。
 
 ### Fixed
 - GMO実売上を検索できないバグを解消。
 
 ## v23.1.0 - 2017-10-28
 ### Added
-- GMO結果通知レポジトリーに保管メソッドを追加。
+- GMO結果通知リポジトリーに保管メソッドを追加。
 
 ## v23.0.1 - 2017-10-27
 ### Changed

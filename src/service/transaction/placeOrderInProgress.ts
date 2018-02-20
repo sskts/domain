@@ -32,8 +32,6 @@ export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (
 
 /**
  * 取引開始パラメーターインターフェース
- * @interface
- * @memberof service.transaction.placeOrderInProgress
  */
 export interface IStartParams {
     /**
@@ -60,8 +58,6 @@ export interface IStartParams {
 
 /**
  * 取引開始
- * @function
- * @memberof service.transaction.placeOrderInProgress
  */
 export function start(params: IStartParams):
     IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction> {
@@ -150,7 +146,6 @@ export function start(params: IStartParams):
 
 /**
  * WAITER許可証の有効性チェック
- * @function
  * @param passport WAITER許可証
  * @param sellerIdentifier 販売者識別子
  */
@@ -170,31 +165,26 @@ function validatePassport(passport: waiter.factory.passport.IPassport, sellerIde
 /**
  * 取引に対するアクション
  * @export
- * @memberof service.transaction.placeOrderInProgress
  */
 export namespace action {
     /**
      * 取引に対する承認アクション
      * @export
-     * @memberof service.transaction.placeOrderInProgress.action
      */
     export namespace authorize {
         /**
          * クレジットカード承認アクションサービス
          * @export
-         * @memberof service.transaction.placeOrderInProgress.action.authorize
          */
         export import creditCard = CreditCardAuthorizeActionService;
         /**
          * ムビチケ承認アクションサービス
          * @export
-         * @memberof service.transaction.placeOrderInProgress.action.authorize
          */
         export import mvtk = MvtkAuthorizeActionService;
         /**
          * 座席予約承認アクションサービス
          * @export
-         * @memberof service.transaction.placeOrderInProgress.action.authorize
          */
         export import seatReservation = SeatReservationAuthorizeActionService;
     }
@@ -223,7 +213,7 @@ export function setCustomerContact(
         }
 
         // 連絡先を再生成(validationの意味も含めて)
-        contact = {
+        const customerContact: factory.transaction.placeOrder.ICustomerContact = {
             familyName: contact.familyName,
             givenName: contact.givenName,
             email: contact.email,
@@ -236,9 +226,9 @@ export function setCustomerContact(
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        await transactionRepo.setCustomerContactOnPlaceOrderInProgress(transactionId, contact);
+        await transactionRepo.setCustomerContactOnPlaceOrderInProgress(transactionId, customerContact);
 
-        return contact;
+        return customerContact;
     };
 }
 
@@ -396,8 +386,6 @@ export function confirm(
 
 /**
  * 取引が確定可能な状態かどうかをチェックする
- * @function
- * @returns {boolean}
  */
 export function validateTransaction(transaction: factory.transaction.placeOrder.ITransaction) {
     type IAuthorizeActionResult =
@@ -441,8 +429,6 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
  * create order object from transaction parameters
  * 取引オブジェクトから注文オブジェクトを生成する
  * @export
- * @function
- * @memberof order
  */
 // tslint:disable-next-line:max-func-body-length
 export function createOrderFromTransaction(params: {

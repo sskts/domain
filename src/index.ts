@@ -45,8 +45,6 @@ import { MongoRepository as TaskRepo } from './repo/task';
 import { MongoRepository as TelemetryRepo } from './repo/telemetry';
 import { MongoRepository as TransactionRepo } from './repo/transaction';
 
-(<any>mongoose).Promise = global.Promise;
-
 /**
  * MongoDBクライアント`mongoose`
  *

@@ -6,8 +6,6 @@ import eventModel from './mongoose/model/event';
 
 /**
  * イベント抽象リポジトリー
- * @class
- * @abstract
  */
 export abstract class Repository {
     public abstract async saveScreeningEvent(screeningEvent: factory.event.screeningEvent.IEvent): Promise<void>;
@@ -24,8 +22,7 @@ export abstract class Repository {
 }
 
 /**
- * イベントレポジトリー
- * @class EventRepository
+ * イベントリポジトリー
  */
 export class MongoRepository implements Repository {
     public readonly eventModel: typeof eventModel;
@@ -83,7 +80,7 @@ export class MongoRepository implements Repository {
 
     /**
      * 個々の上映イベントを検索する
-     * @param {Object} searchConditions 検索条件
+     * @param searchConditions 検索条件
      */
     public async searchIndividualScreeningEvents(
         searchConditions: factory.event.individualScreeningEvent.ISearchConditions
@@ -183,7 +180,6 @@ export class MongoRepository implements Repository {
 
     /**
      * identifierで上映イベントを取得する
-     * @param {string} identifier
      */
     public async findIndividualScreeningEventByIdentifier(identifier: string): Promise<factory.event.individualScreeningEvent.IEvent> {
         const event = await this.eventModel.findOne({

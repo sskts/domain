@@ -6,8 +6,7 @@ import { Connection } from 'mongoose';
 import GMONotificationModel from './mongoose/model/gmoNotification';
 
 /**
- * GMO通知レポジトリー
- * @class GMONotificationRepository
+ * GMO通知リポジトリー
  */
 export class MongoRepository {
     public readonly gmoNotificationModel: typeof GMONotificationModel;
@@ -18,8 +17,7 @@ export class MongoRepository {
 
     /**
      * 通知を保管する
-     * @memberof GMONotificationRepository
-     * @param {GMO.factory.resultNotification.creditCard.IResultNotification} notification GMO結果通知オブジェクト
+     * @param notification GMO結果通知オブジェクト
      */
     public async save(notification: GMO.factory.resultNotification.creditCard.IResultNotification) {
         await this.gmoNotificationModel.create(notification);
@@ -27,10 +25,9 @@ export class MongoRepository {
 
     /**
      * GMO実売上検索
-     * @memberof GMONotificationRepository
-     * @param {Date} searchConditions.tranDateFrom 処理日時from
-     * @param {Date} searchConditions.tranDateThrough 処理日時through
-     * @returns {GMO.factory.resultNotification.creditCard.IResultNotification[]} GMO結果通知リスト
+     * @param searchConditions.tranDateFrom 処理日時from
+     * @param searchConditions.tranDateThrough 処理日時through
+     * @returns GMO結果通知リスト
      */
     public async searchSales(searchConditions: {
         tranDateFrom: Date;

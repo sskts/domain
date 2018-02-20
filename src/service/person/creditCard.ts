@@ -16,8 +16,6 @@ export type IUncheckedCardTokenized = factory.paymentMethod.paymentCard.creditCa
 /**
  * クレジットカード追加
  * @export
- * @function
- * @memberof service.person.creditCard
  */
 export function save(
     personId: string,
@@ -84,8 +82,6 @@ export function save(
 /**
  * クレジットカード削除
  * @export
- * @function
- * @memberof service.person.creditCard
  */
 export function unsubscribe(personId: string, cardSeq: string): IOperation<void> {
     return async () => {
@@ -113,8 +109,6 @@ export function unsubscribe(personId: string, cardSeq: string): IOperation<void>
 /**
  * クレジットカード検索
  * @export
- * @function
- * @memberof service.person.creditCard
  */
 export function find(
     personId: string,
