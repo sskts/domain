@@ -68,13 +68,13 @@ schema.index(
     { unique: true }
 );
 
-export default mongoose.model('OwnershipInfo', schema)
+export default mongoose.model('OwnershipInfo', schema).on(
+    'index',
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore next */
-    .on('index', (error) => {
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore next */
+    (error) => {
         if (error !== undefined) {
             console.error(error);
         }
-    });
+    }
+);

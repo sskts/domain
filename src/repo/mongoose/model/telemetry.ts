@@ -91,13 +91,13 @@ schema.index(
     }
 );
 
-export default mongoose.model('Telemetry', schema)
+export default mongoose.model('Telemetry', schema).on(
+    'index',
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore next */
-    .on('index', (error) => {
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore next */
+    (error) => {
         if (error !== undefined) {
             console.error(error);
         }
-    });
+    }
+);

@@ -13,29 +13,19 @@ import { MongoRepository as TransactionRepository } from '../../repo/transaction
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrder');
 
-export type ITaskAndTransactionOperation<T> = (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => Promise<T>;
+export type ITaskAndTransactionOperation<T> = (taskRepository: TaskRepository, transactionRepo: TransactionRepository) => Promise<T>;
 
 /**
  * ひとつの取引のタスクをエクスポートする
  */
 export function exportTasks(status: factory.transactionStatusType) {
-    return async (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => {
+    return async (taskRepository: TaskRepository, transactionRepo: TransactionRepository) => {
         const statusesTasksExportable = [factory.transactionStatusType.Expired, factory.transactionStatusType.Confirmed];
         if (statusesTasksExportable.indexOf(status) < 0) {
             throw new factory.errors.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
         }
 
-        const transaction = await transactionRepository.transactionModel.findOneAndUpdate(
-            {
-                typeOf: factory.transactionType.PlaceOrder,
-                status: status,
-                tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
-            },
-            { tasksExportationStatus: factory.transactionTasksExportationStatus.Exporting },
-            { new: true }
-        ).exec()
-            .then((doc) => (doc === null) ? null : <factory.transaction.placeOrder.ITransaction>doc.toObject());
-
+        const transaction = await transactionRepo.startExportTasks(factory.transactionType.PlaceOrder, status);
         if (transaction === null) {
             return;
         }
@@ -43,10 +33,10 @@ export function exportTasks(status: factory.transactionStatusType) {
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
         await exportTasksById(transaction.id)(
             taskRepository,
-            transactionRepository
+            transactionRepo
         );
 
-        await transactionRepository.setTasksExportedById(transaction.id);
+        await transactionRepo.setTasksExportedById(transaction.id);
     };
 }
 
@@ -54,8 +44,8 @@ export function exportTasks(status: factory.transactionStatusType) {
  * ID指定で取引のタスク出力
  */
 export function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask[]> {
-    return async (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => {
-        const transaction = await transactionRepository.findPlaceOrderById(transactionId);
+    return async (taskRepository: TaskRepository, transactionRepo: TransactionRepository) => {
+        const transaction = await transactionRepo.findPlaceOrderById(transactionId);
 
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {

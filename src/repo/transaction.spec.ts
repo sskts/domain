@@ -18,7 +18,7 @@ before(() => {
     sandbox = sinon.sandbox.create();
 });
 
-describe('startPlaceOrder()', () => {
+describe('start()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -32,7 +32,7 @@ describe('startPlaceOrder()', () => {
             .expects('create').once()
             .resolves(new repository.transactionModel());
 
-        const result = await repository.startPlaceOrder(<any>transaction);
+        const result = await repository.start(<any>transaction);
 
         assert.equal(typeof result, 'object');
         sandbox.verify();
@@ -155,7 +155,6 @@ describe('confirmPlaceOrder()', () => {
 
     it('取引が存在すれば、エラーにならないはず', async () => {
         const transactionId = 'transactionId';
-        const endDate = new Date();
         const authorizeActions: any[] = [];
         const transactionResult = {};
         const potentialActions = {};
@@ -167,7 +166,7 @@ describe('confirmPlaceOrder()', () => {
             .chain('exec').resolves(doc);
 
         const result = await repository.confirmPlaceOrder(
-            transactionId, endDate, authorizeActions, <any>transactionResult, <any>potentialActions
+            transactionId, authorizeActions, <any>transactionResult, <any>potentialActions
         );
         assert.equal(typeof result, 'object');
         sandbox.verify();
@@ -175,7 +174,6 @@ describe('confirmPlaceOrder()', () => {
 
     it('取引が存在しなければ、NotFoundエラーになるはず', async () => {
         const transactionId = 'transactionId';
-        const endDate = new Date();
         const authorizeActions: any[] = [];
         const transactionResult = {};
         const potentialActions = {};
@@ -186,7 +184,7 @@ describe('confirmPlaceOrder()', () => {
             .chain('exec').resolves(null);
 
         const result = await repository.confirmPlaceOrder(
-            transactionId, endDate, authorizeActions, <any>transactionResult, <any>potentialActions
+            transactionId, authorizeActions, <any>transactionResult, <any>potentialActions
         )
             .catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
@@ -318,7 +316,6 @@ describe('confirmReturnOrder()', () => {
 
     it('取引が存在すれば、エラーにならないはず', async () => {
         const transactionId = 'transactionId';
-        const endDate = new Date();
         const transactionResult = {};
         const potentialActions = {};
 
@@ -329,7 +326,7 @@ describe('confirmReturnOrder()', () => {
             .chain('exec').resolves(doc);
 
         const result = await repository.confirmReturnOrder(
-            transactionId, endDate, <any>transactionResult, <any>potentialActions
+            transactionId, <any>transactionResult, <any>potentialActions
         );
         assert.equal(typeof result, 'object');
         sandbox.verify();
@@ -337,7 +334,6 @@ describe('confirmReturnOrder()', () => {
 
     it('取引が存在しなければ、NotFoundエラーになるはず', async () => {
         const transactionId = 'transactionId';
-        const endDate = new Date();
         const transactionResult = {};
         const potentialActions = {};
 
@@ -347,7 +343,7 @@ describe('confirmReturnOrder()', () => {
             .chain('exec').resolves(null);
 
         const result = await repository.confirmReturnOrder(
-            transactionId, endDate, <any>transactionResult, <any>potentialActions
+            transactionId, <any>transactionResult, <any>potentialActions
         ).catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -386,3 +382,46 @@ describe('findReturnOrderInProgressById()', () => {
         sandbox.verify();
     });
 });
+
+describe('startExportTasks()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('タスク未出力の取引が存在すればオブジェクトが返却されるはず', async () => {
+        const transaction = {
+            typeOf: sskts.factory.transactionType.PlaceOrder,
+            id: 'transactionId',
+            status: sskts.factory.transactionStatusType.Confirmed
+        };
+
+        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves(new repository.transactionModel());
+
+        const result = await repository.startExportTasks(transaction.typeOf, transaction.status);
+
+        assert.equal(typeof result, 'object');
+        sandbox.verify();
+    });
+
+    it('タスク未出力の取引が存在しなければnullを返却するはず', async () => {
+        const transaction = {
+            typeOf: sskts.factory.transactionType.PlaceOrder,
+            id: 'transactionId',
+            status: sskts.factory.transactionStatusType.Confirmed
+        };
+
+        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves(null);
+
+        const result = await repository.startExportTasks(transaction.typeOf, transaction.status);
+
+        assert.equal(result, null);
+        sandbox.verify();
+    });
+});
+

@@ -87,13 +87,13 @@ schema.index(
     { branchCode: 1, typeOf: 1 }
 );
 
-export default mongoose.model('Place', schema)
+export default mongoose.model('Place', schema).on(
+    'index',
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore next */
-    .on('index', (error) => {
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore next */
+    (error) => {
         if (error !== undefined) {
             console.error(error);
         }
-    });
+    }
+);

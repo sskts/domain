@@ -125,7 +125,7 @@ export function start(params: IStartParams):
 
         let transaction: factory.transaction.placeOrder.ITransaction;
         try {
-            transaction = await transactionRepo.startPlaceOrder(transactionAttributes);
+            transaction = await transactionRepo.start<factory.transaction.placeOrder.ITransaction>(transactionAttributes);
         } catch (error) {
             if (error.name === 'MongoError') {
                 // 許可証を重複使用しようとすると、MongoDBでE11000 duplicate key errorが発生する
@@ -385,7 +385,6 @@ export function confirm(
         debug('updating transaction...');
         await transactionRepo.confirmPlaceOrder(
             transactionId,
-            now,
             authorizeActions,
             result,
             potentialActions

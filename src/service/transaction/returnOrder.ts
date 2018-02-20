@@ -66,27 +66,18 @@ export function start(params: {
         const now = new Date();
 
         // 返品対象の取引取得
-        const transaction = await transactionRepo.transactionModel.findOne(
-            {
-                typeOf: factory.transactionType.PlaceOrder,
-                status: factory.transactionStatusType.Confirmed,
-                _id: params.transactionId
-            }
-        ).exec().then((doc) => {
-            if (doc === null) {
-                throw new factory.errors.NotFound('transaction');
-            }
+        const placeOrderTransaction = await transactionRepo.findPlaceOrderById(params.transactionId);
+        if (placeOrderTransaction.status !== factory.transactionStatusType.Confirmed) {
+            throw new factory.errors.Argument('transactionId', 'Status not Confirmed.');
+        }
 
-            return <factory.transaction.placeOrder.ITransaction>doc.toObject();
-        });
-
-        const transactionResult = transaction.result;
-        if (transactionResult === undefined) {
-            throw new factory.errors.NotFound('transaction.result');
+        const placeOrderTransactionResult = placeOrderTransaction.result;
+        if (placeOrderTransactionResult === undefined) {
+            throw new factory.errors.NotFound('placeOrderTransaction.result');
         }
 
         // 注文ステータスが配送済の場合のみ受け付け
-        const order = await orderRepo.findByOrderNumber(transactionResult.order.orderNumber);
+        const order = await orderRepo.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
         if (order.orderStatus !== factory.orderStatus.OrderDelivered) {
             throw new factory.errors.Argument('transaction', 'order status is not OrderDelivered');
         }
@@ -104,8 +95,10 @@ export function start(params: {
         }
 
         // 検証
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (!params.forcibly) {
-            validateRequest(now, transactionResult.order.acceptedOffers[0].itemOffered.reservationFor.startDate);
+            validateRequest();
         }
 
         const returnOrderAttributes = factory.transaction.returnOrder.createAttributes({
@@ -117,7 +110,7 @@ export function start(params: {
             },
             object: {
                 clientUser: params.clientUser,
-                transaction: transaction,
+                transaction: placeOrderTransaction,
                 cancellationFee: params.cancellationFee,
                 reason: params.reason
             },
@@ -128,8 +121,7 @@ export function start(params: {
 
         let returnOrderTransaction: factory.transaction.returnOrder.ITransaction;
         try {
-            returnOrderTransaction = await transactionRepo.transactionModel.create(returnOrderAttributes)
-                .then((doc) => <factory.transaction.returnOrder.ITransaction>doc.toObject());
+            returnOrderTransaction = await transactionRepo.start<factory.transaction.returnOrder.ITransaction>(returnOrderAttributes);
         } catch (error) {
             if (error.name === 'MongoError') {
                 // 同一取引に対して返品取引を作成しようとすると、MongoDBでE11000 duplicate key errorが発生する
@@ -137,6 +129,8 @@ export function start(params: {
                 // message: 'E11000 duplicate key error ...',
                 // code: 11000,
 
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore else */
                 // tslint:disable-next-line:no-magic-numbers
                 if (error.code === 11000) {
                     throw new factory.errors.AlreadyInUse('transaction', ['object.transaction'], 'Already returned.');
@@ -162,7 +156,6 @@ export function confirm(
         transactionRepo: TransactionRepo,
         organizationRepo: OrganizationRepo
     ) => {
-        const now = new Date();
         const transaction = await transactionRepo.findReturnOrderInProgressById(transactionId);
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -172,7 +165,7 @@ export function confirm(
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;
         if (placeOrderTransactionResult === undefined) {
-            throw new Error('Result of placeOrder transaction to return undefined.');
+            throw new factory.errors.NotFound('placeOrderTransaction.result');
         }
         const customerContact = placeOrderTransaction.object.customerContact;
         if (customerContact === undefined) {
@@ -234,7 +227,6 @@ export function confirm(
         debug('updating transaction...');
         await transactionRepo.confirmReturnOrder(
             transactionId,
-            now,
             result,
             potentialActions
         );
@@ -244,14 +236,10 @@ export function confirm(
 }
 
 /**
- * キャンセル検証
+ * 返品取引バリデーション
  */
-function validateRequest(__1: Date, __2: Date) {
-    // 入塔予定日の3日前までキャンセル可能(3日前を過ぎていたらエラー)
-    // const cancellableThrough = moment(performanceStartDate).add(-CANCELLABLE_DAYS + 1, 'days').toDate();
-    // if (cancellableThrough <= now) {
-    //     throw new factory.errors.Argument('performance_day', 'キャンセルできる期限を過ぎています。');
-    // }
+export function validateRequest() {
+    // 現時点で特にバリデーション内容なし
 }
 
 /**
@@ -331,17 +319,7 @@ export function exportTasks(status: factory.transactionStatusType) {
             throw new factory.errors.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
         }
 
-        const transaction = await transactionRepo.transactionModel.findOneAndUpdate(
-            {
-                typeOf: factory.transactionType.ReturnOrder,
-                status: status,
-                tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
-            },
-            { tasksExportationStatus: factory.transactionTasksExportationStatus.Exporting },
-            { new: true }
-        ).exec()
-            .then((doc) => (doc === null) ? null : <factory.transaction.returnOrder.ITransaction>doc.toObject());
-
+        const transaction = await transactionRepo.startExportTasks(factory.transactionType.ReturnOrder, status);
         if (transaction === null) {
             return;
         }

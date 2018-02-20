@@ -26,10 +26,8 @@ describe('exportTasks()', () => {
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
         const status = sskts.factory.transactionStatusType.InProgress;
-        const transactionDoc = new transactionRepo.transactionModel();
-        transactionDoc.set('status', status);
 
-        sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').never();
+        sandbox.mock(transactionRepo).expects('startExportTasks').never();
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').never();
         sandbox.mock(taskRepo).expects('save').never();
         sandbox.mock(transactionRepo).expects('setTasksExportedById').never();
@@ -47,18 +45,15 @@ describe('exportTasks()', () => {
 
         const status = sskts.factory.transactionStatusType.Confirmed;
         const task = {};
-        const transactionDoc = new transactionRepo.transactionModel();
-        transactionDoc.set('status', status);
+        const transaction = {
+            id: 'transactionId',
+            status: status
+        };
 
-        sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').once()
-            .withArgs({
-                typeOf: sskts.factory.transactionType.PlaceOrder,
-                status: status,
-                tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported
-            }).chain('exec').resolves(transactionDoc);
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transactionDoc);
+        sandbox.mock(transactionRepo).expects('startExportTasks').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
         sandbox.mock(taskRepo).expects('save').atLeast(1).resolves(task);
-        sandbox.mock(transactionRepo).expects('setTasksExportedById').once().withArgs(transactionDoc.id).resolves();
+        sandbox.mock(transactionRepo).expects('setTasksExportedById').once().withArgs(transaction.id).resolves();
 
         const result = await sskts.service.transaction.placeOrder.exportTasks(
             status
@@ -73,12 +68,7 @@ describe('exportTasks()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').once()
-            .withArgs({
-                typeOf: sskts.factory.transactionType.PlaceOrder,
-                status: status,
-                tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported
-            }).chain('exec').resolves(null);
+        sandbox.mock(transactionRepo).expects('startExportTasks').once().resolves(null);
         sandbox.mock(sskts.service.transaction.placeOrder).expects('exportTasksById').never();
         sandbox.mock(transactionRepo).expects('setTasksExportedById').never();
 

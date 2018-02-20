@@ -50,7 +50,7 @@ describe('start()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
-        sandbox.mock(transactionRepo).expects('startPlaceOrder').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('start').once().resolves(transaction);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
@@ -92,7 +92,7 @@ describe('start()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
-        sandbox.mock(transactionRepo).expects('startPlaceOrder').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('start').once().resolves(transaction);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
@@ -132,7 +132,7 @@ describe('start()', () => {
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
-        sandbox.mock(transactionRepo).expects('startPlaceOrder').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('start').once().resolves(transaction);
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
@@ -164,7 +164,7 @@ describe('start()', () => {
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().rejects(verifyResult);
-        sandbox.mock(transactionRepo).expects('startPlaceOrder').never();
+        sandbox.mock(transactionRepo).expects('start').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
@@ -202,7 +202,7 @@ describe('start()', () => {
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
-        sandbox.mock(transactionRepo).expects('startPlaceOrder').once().never();
+        sandbox.mock(transactionRepo).expects('start').once().never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
@@ -230,7 +230,7 @@ describe('start()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
-        sandbox.mock(transactionRepo).expects('startPlaceOrder').never();
+        sandbox.mock(transactionRepo).expects('start').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
@@ -268,7 +268,7 @@ describe('start()', () => {
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
-        sandbox.mock(transactionRepo).expects('startPlaceOrder').once().rejects(startResult);
+        sandbox.mock(transactionRepo).expects('start').once().rejects(startResult);
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: expires,
@@ -305,7 +305,7 @@ describe('start()', () => {
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withExactArgs(seller.id).resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
-        sandbox.mock(transactionRepo).expects('startPlaceOrder').once().rejects(startResult);
+        sandbox.mock(transactionRepo).expects('start').once().rejects(startResult);
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: expires,
