@@ -6,7 +6,7 @@
  */
 
 import * as waiter from '@motionpicture/waiter-domain';
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 import * as assert from 'power-assert';
 import * as pug from 'pug';
 import * as sinon from 'sinon';

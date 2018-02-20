@@ -9,9 +9,7 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 // @ts-ignore
 import * as difference from 'lodash.difference';
-import * as moment from 'moment';
-// tslint:disable-next-line:no-require-imports no-var-requires
-require('moment-timezone');
+import * as moment from 'moment-timezone';
 
 import { Repository as CreativeWorkRepo } from '../repo/creativeWork';
 import { Repository as EventRepo } from '../repo/event';

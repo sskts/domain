@@ -8,9 +8,7 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as waiter from '@motionpicture/waiter-domain';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
-import * as moment from 'moment';
-// tslint:disable-next-line:no-require-imports no-var-requires
-require('moment-timezone');
+import * as moment from 'moment-timezone';
 import * as pug from 'pug';
 import * as util from 'util';
 

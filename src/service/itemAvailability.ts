@@ -6,9 +6,7 @@
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
-import * as moment from 'moment';
-// tslint:disable-next-line:no-require-imports no-var-requires
-require('moment-timezone');
+import * as moment from 'moment-timezone';
 
 import { MongoRepository as ItemAvailabilityRepository } from '../repo/itemAvailability/individualScreeningEvent';
 
