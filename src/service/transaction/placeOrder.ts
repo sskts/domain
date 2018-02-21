@@ -44,6 +44,7 @@ export function exportTasks(status: factory.transactionStatusType) {
  * ID指定で取引のタスク出力
  */
 export function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask[]> {
+    // tslint:disable-next-line:max-func-body-length
     return async (taskRepository: TaskRepository, transactionRepo: TransactionRepository) => {
         const transaction = await transactionRepo.findPlaceOrderById(transactionId);
 

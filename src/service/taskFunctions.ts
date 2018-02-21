@@ -4,6 +4,7 @@
  * @namespace service.taskFunctions
  */
 
+import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
@@ -20,7 +21,10 @@ import * as OwnershipInfoService from '../service/ownershipInfo';
 import * as SalesService from '../service/sales';
 import * as StockService from '../service/stock';
 
-export type IOperation<T> = (connection: mongoose.Connection) => Promise<T>;
+export type IOperation<T> = (
+    connection: mongoose.Connection,
+    pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials
+) => Promise<T>;
 
 export function sendEmailNotification(
     data: factory.task.sendEmailNotification.IData
@@ -91,6 +95,16 @@ export function settleMvtk(
         const actionRepo = new ActionRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
         await SalesService.settleMvtk(data.transactionId)(actionRepo, transactionRepo);
+    };
+}
+
+export function payPecorino(
+    data: factory.task.settleCreditCard.IData
+): IOperation<void> {
+    return async (connection: mongoose.Connection, pecorinoAuthClient: pecorinoapi.auth.ClientCredentials) => {
+        const actionRepo = new ActionRepo(connection);
+        const transactionRepo = new TransactionRepo(connection);
+        await SalesService.payPecorino(data.transactionId)(actionRepo, transactionRepo, pecorinoAuthClient);
     };
 }
 

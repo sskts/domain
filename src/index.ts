@@ -7,6 +7,7 @@
 
 import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
+import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as ssktsFactory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
@@ -91,6 +92,8 @@ export import COA = COA;
  * });
  */
 export import GMO = GMO;
+
+export import pecorinoapi = pecorinoapi;
 
 export namespace repository {
     export class Action extends ActionRepo { }

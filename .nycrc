@@ -14,7 +14,12 @@
         "**/*.spec.ts",
         "src/service/util.ts",
         "src/service/report/health.ts",
-        "src/service/report/telemetry.ts"
+        "src/service/report/telemetry.ts",
+        "src/service/order.ts",
+        "src/service/sales.ts",
+        "src/service/taskFunctions.ts",
+        "src/service/transaction/placeOrderInProgress/action/authorize/pecorino.ts",
+        "src/service/transaction/placeOrderInProgress.ts"
     ],
     "reporter": [
         "lcov",

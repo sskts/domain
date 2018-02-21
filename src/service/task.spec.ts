@@ -1,5 +1,7 @@
+// tslint:disable:no-implicit-dependencies
+
 /**
- * stock service test
+ * task service test
  * @ignore
  */
 
@@ -28,11 +30,12 @@ describe('executeByName()', () => {
             status: sskts.factory.taskStatus.Running
         };
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const authClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
         sandbox.mock(taskRepo).expects('executeOneByName').once().withArgs(task.name).resolves(task);
         sandbox.mock(TaskFunctionsService).expects(task.name).once().withArgs(task.data).returns(async () => Promise.resolve());
         sandbox.mock(taskRepo).expects('pushExecutionResultById').once().withArgs(task.id, sskts.factory.taskStatus.Executed).resolves();
 
-        const result = await sskts.service.task.executeByName(task.name)(taskRepo, sskts.mongoose.connection);
+        const result = await sskts.service.task.executeByName(task.name)(taskRepo, sskts.mongoose.connection, authClient);
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -41,12 +44,13 @@ describe('executeByName()', () => {
     it('未実行タスクが存在しなければ、実行されないはず', async () => {
         const taskName = sskts.factory.taskName.CreateOrder;
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const authClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
 
         sandbox.mock(taskRepo).expects('executeOneByName').once()
             .withArgs(taskName).rejects(new sskts.factory.errors.NotFound('task'));
         sandbox.mock(sskts.service.task).expects('execute').never();
 
-        const result = await sskts.service.task.executeByName(taskName)(taskRepo, sskts.mongoose.connection);
+        const result = await sskts.service.task.executeByName(taskName)(taskRepo, sskts.mongoose.connection, authClient);
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -109,11 +113,12 @@ describe('execute()', () => {
             status: sskts.factory.taskStatus.Running
         };
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const authClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
 
         sandbox.mock(TaskFunctionsService).expects(task.name).once().withArgs(task.data).returns(async () => Promise.resolve());
         sandbox.mock(taskRepo).expects('pushExecutionResultById').once().withArgs(task.id, sskts.factory.taskStatus.Executed).resolves();
 
-        const result = await sskts.service.task.execute(<any>task)(taskRepo, sskts.mongoose.connection);
+        const result = await sskts.service.task.execute(<any>task)(taskRepo, sskts.mongoose.connection, authClient);
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -127,10 +132,11 @@ describe('execute()', () => {
             status: sskts.factory.taskStatus.Running
         };
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const authClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
 
         sandbox.mock(taskRepo).expects('pushExecutionResultById').once().withArgs(task.id, task.status).resolves();
 
-        const result = await sskts.service.task.execute(<any>task)(taskRepo, sskts.mongoose.connection);
+        const result = await sskts.service.task.execute(<any>task)(taskRepo, sskts.mongoose.connection, authClient);
 
         assert.equal(result, undefined);
         sandbox.verify();

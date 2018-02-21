@@ -5,8 +5,10 @@
  */
 
 import * as GMO from '@motionpicture/gmo-service';
+import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
+import * as moment from 'moment';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as TaskRepo } from '../repo/task';
@@ -15,6 +17,87 @@ import { MongoRepository as TransactionRepo } from '../repo/transaction';
 const debug = createDebug('sskts-domain:service:sales');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
+
+/**
+ * Pecorino支払実行
+ * @export
+ * @param transactionId 取引ID
+ */
+export function payPecorino(transactionId: string) {
+    return async (actionRepo: ActionRepo, transactionRepo: TransactionRepo, pecorinoAuthClient: pecorinoapi.auth.ClientCredentials) => {
+        const transaction = await transactionRepo.findPlaceOrderById(transactionId);
+        const transactionResult = transaction.result;
+        if (transactionResult === undefined) {
+            throw new factory.errors.NotFound('transaction.result');
+        }
+        const potentialActions = transaction.potentialActions;
+        if (potentialActions === undefined) {
+            throw new factory.errors.NotFound('transaction.potentialActions');
+        }
+
+        const payActionAttributes = potentialActions.order.potentialActions.payPecorino;
+        if (payActionAttributes !== undefined) {
+            // Pecorino承認アクションがあるはず
+            const authorizeAction = <any>transaction.object.authorizeActions
+                .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                .find((a) => a.object.typeOf === 'Pecorino');
+
+            // アクション開始
+            const action = await actionRepo.start<factory.action.trade.pay.IAction>(payActionAttributes);
+
+            try {
+                // 支払取引確定
+                const payTransactionService = new pecorinoapi.service.transaction.Pay({
+                    endpoint: authorizeAction.result.pecorinoEndpoint,
+                    auth: pecorinoAuthClient
+                });
+
+                await payTransactionService.confirm({
+                    transactionId: authorizeAction.result.pecorinoTransaction.id
+                });
+
+                // Pecorino決済の場合キャッシュバック
+                const CACHBACK = 100;
+                const customerContact = <factory.person.IContact>transaction.object.customerContact;
+                const depositTransactionService = new pecorinoapi.service.transaction.Deposit({
+                    endpoint: authorizeAction.result.pecorinoEndpoint,
+                    auth: pecorinoAuthClient
+                });
+                const depositTransaction = await depositTransactionService.start({
+                    toAccountId: authorizeAction.result.pecorinoTransaction.object.accountId,
+                    expires: moment().add(1, 'minutes').toDate(),
+                    agent: transaction.seller,
+                    recipient: {
+                        typeOf: transaction.agent.typeOf,
+                        id: transaction.agent.id,
+                        name: `${customerContact.givenName} ${customerContact.familyName}`,
+                        url: transaction.agent.url
+                    },
+                    price: CACHBACK,
+                    notes: 'sskts incentive'
+                });
+
+                await depositTransactionService.confirm({ transactionId: depositTransaction.id });
+            } catch (error) {
+                // actionにエラー結果を追加
+                try {
+                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
+                    await actionRepo.giveUp(payActionAttributes.typeOf, action.id, actionError);
+                } catch (__) {
+                    // 失敗したら仕方ない
+                }
+
+                throw new Error(error);
+            }
+
+            // アクション完了
+            debug('ending action...');
+            const actionResult: factory.action.trade.pay.IResult = {};
+            await actionRepo.complete(payActionAttributes.typeOf, action.id, actionResult);
+        }
+    };
+}
 
 /**
  * クレジットカードオーソリ取消
