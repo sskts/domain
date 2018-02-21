@@ -8,7 +8,7 @@
 import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
-import * as ssktsFactory from '@motionpicture/sskts-factory';
+import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
@@ -18,11 +18,10 @@ import * as ItemAvailabilityService from './service/itemAvailability';
 import * as MasterSyncService from './service/masterSync';
 import * as NotificationService from './service/notification';
 import * as OrderService from './service/order';
-import * as OwnershipInfoService from './service/ownershipInfo';
+import * as PaymentService from './service/payment';
 import * as PersonContactService from './service/person/contact';
 import * as PersonCreditCardService from './service/person/creditCard';
 import * as ReportService from './service/report';
-import * as SalesService from './service/sales';
 import * as StockService from './service/stock';
 import * as TaskService from './service/task';
 import * as PlaceOrderTransactionService from './service/transaction/placeOrder';
@@ -125,13 +124,12 @@ export namespace service {
     export import masterSync = MasterSyncService;
     export import notification = NotificationService;
     export import order = OrderService;
-    export import ownershipInfo = OwnershipInfoService;
     export namespace person {
         export import contact = PersonContactService;
         export import creditCard = PersonCreditCardService;
     }
     export import report = ReportService;
-    export import sales = SalesService;
+    export import payment = PaymentService;
     export import stock = StockService;
     export import task = TaskService;
     export namespace transaction {
@@ -142,4 +140,4 @@ export namespace service {
     export import util = UtilService;
 }
 
-export import factory = ssktsFactory;
+export import factory = factory;

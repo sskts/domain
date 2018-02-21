@@ -160,7 +160,8 @@ describe('sendEmail', () => {
             id: 'id',
             status: sskts.factory.transactionStatusType.Confirmed,
             seller: {},
-            agent: {}
+            agent: {},
+            result: { order: {} }
         };
         const emailMessageAttributes = {
             sender: { name: 'name', email: 'test@example.com' },

@@ -1,7 +1,6 @@
 /**
- * sales service
- * mainly handle transactions with GMO
- * @namespace service.sales
+ * 決済サービス
+ * @namespace service.payment
  */
 
 import * as GMO from '@motionpicture/gmo-service';
@@ -14,7 +13,7 @@ import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
-const debug = createDebug('sskts-domain:service:sales');
+const debug = createDebug('sskts-domain:service:payment');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 
@@ -140,7 +139,7 @@ export function cancelCreditCardAuth(transactionId: string) {
  * @export
  * @param transactionId 取引ID
  */
-export function settleCreditCardAuth(transactionId: string) {
+export function payCreditCard(transactionId: string) {
     return async (actionRepo: ActionRepo, transactionRep: TransactionRepo) => {
         const transaction = await transactionRep.findPlaceOrderById(transactionId);
         const transactionResult = transaction.result;
@@ -356,7 +355,7 @@ export function cancelMvtk(transactionId: string) {
  * @export
  * @param transactionId 取引ID
  */
-export function settleMvtk(transactionId: string) {
+export function useMvtk(transactionId: string) {
     return async (actionRepo: ActionRepo, transactionRep: TransactionRepo) => {
         const transaction = await transactionRep.findPlaceOrderById(transactionId);
         const transactionResult = transaction.result;

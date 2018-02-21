@@ -73,7 +73,7 @@ describe('cancelCreditCardAuth()', () => {
             .withExactArgs(existingTransaction.id).resolves(authorizeActions);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().resolves();
 
-        const result = await sskts.service.sales.cancelCreditCardAuth(existingTransaction.id)(actionRepo);
+        const result = await sskts.service.payment.cancelCreditCardAuth(existingTransaction.id)(actionRepo);
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -102,7 +102,7 @@ describe('settleCreditCardAuth()', () => {
         sandbox.mock(sskts.GMO.services.credit).expects('searchTrade').once().resolves(searchTradeResult);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().resolves();
 
-        const result = await sskts.service.sales.settleCreditCardAuth(existingTransaction.id)(actionRepo, transactionRepo);
+        const result = await sskts.service.payment.payCreditCard(existingTransaction.id)(actionRepo, transactionRepo);
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -118,7 +118,7 @@ describe('settleCreditCardAuth()', () => {
             .withExactArgs(existingTransaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.sales.settleCreditCardAuth(transaction.id)(
+        const result = await sskts.service.payment.payCreditCard(transaction.id)(
             actionRepo, transactionRepo
         ).catch((err) => err);
 
@@ -136,7 +136,7 @@ describe('settleCreditCardAuth()', () => {
             .withExactArgs(existingTransaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.sales.settleCreditCardAuth(transaction.id)(
+        const result = await sskts.service.payment.payCreditCard(transaction.id)(
             actionRepo, transactionRepo
         ).catch((err) => err);
 
@@ -161,7 +161,7 @@ describe('settleCreditCardAuth()', () => {
         sandbox.mock(sskts.GMO.services.credit).expects('searchTrade').once().resolves(searchTradeResult);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').never();
 
-        const result = await sskts.service.sales.settleCreditCardAuth(existingTransaction.id)(actionRepo, transactionRepo);
+        const result = await sskts.service.payment.payCreditCard(existingTransaction.id)(actionRepo, transactionRepo);
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -185,7 +185,7 @@ describe('settleCreditCardAuth()', () => {
         sandbox.mock(sskts.GMO.services.credit).expects('searchTrade').once().resolves(searchTradeResult);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().rejects(alterTranResult);
 
-        const result = await sskts.service.sales.settleCreditCardAuth(existingTransaction.id)(
+        const result = await sskts.service.payment.payCreditCard(existingTransaction.id)(
             actionRepo, transactionRepo
         ).catch((err) => err);
 
@@ -204,7 +204,7 @@ describe('settleCreditCardAuth()', () => {
             .withExactArgs(placeOrderTransaction.id).resolves(placeOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.sales.settleCreditCardAuth(placeOrderTransaction.id)(actionRepo, transactionRepo);
+        const result = await sskts.service.payment.payCreditCard(placeOrderTransaction.id)(actionRepo, transactionRepo);
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -218,7 +218,7 @@ describe('cancelMvtk()', () => {
     });
 
     it('何もしないので、エラーにならないはず', async () => {
-        const result = await sskts.service.sales.cancelMvtk(existingTransaction.id)();
+        const result = await sskts.service.payment.cancelMvtk(existingTransaction.id)();
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -244,7 +244,7 @@ describe('settleMvtk()', () => {
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
             .withExactArgs(existingTransaction.id).resolves(existingTransaction);
 
-        const result = await sskts.service.sales.settleMvtk(existingTransaction.id)(actionRepo, transactionRepo);
+        const result = await sskts.service.payment.useMvtk(existingTransaction.id)(actionRepo, transactionRepo);
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -260,7 +260,7 @@ describe('settleMvtk()', () => {
             .withExactArgs(placeOrderTransaction.id).resolves(placeOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.sales.settleMvtk(existingTransaction.id)(actionRepo, transactionRepo)
+        const result = await sskts.service.payment.useMvtk(existingTransaction.id)(actionRepo, transactionRepo)
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
@@ -277,7 +277,7 @@ describe('settleMvtk()', () => {
             .withExactArgs(placeOrderTransaction.id).resolves(placeOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.sales.settleMvtk(existingTransaction.id)(actionRepo, transactionRepo)
+        const result = await sskts.service.payment.useMvtk(existingTransaction.id)(actionRepo, transactionRepo)
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
@@ -295,7 +295,7 @@ describe('settleMvtk()', () => {
             .withExactArgs(placeOrderTransaction.id).resolves(placeOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.sales.settleMvtk(existingTransaction.id)(actionRepo, transactionRepo);
+        const result = await sskts.service.payment.useMvtk(existingTransaction.id)(actionRepo, transactionRepo);
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -347,7 +347,7 @@ describe('refundCreditCard()', () => {
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().resolves();
         sandbox.mock(taskRepo).expects('save').once();
 
-        const result = await sskts.service.sales.refundCreditCard(returnOrderTransaction.id)(
+        const result = await sskts.service.payment.refundCreditCard(returnOrderTransaction.id)(
             actionRepo, transactionRepo, taskRepo
         );
 
@@ -378,7 +378,7 @@ describe('refundCreditCard()', () => {
             .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.sales.refundCreditCard(returnOrderTransaction.id)(
+        const result = await sskts.service.payment.refundCreditCard(returnOrderTransaction.id)(
             actionRepo, transactionRepo, taskRepo
         ).catch((err) => err);
 
@@ -417,7 +417,7 @@ describe('refundCreditCard()', () => {
             .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.sales.refundCreditCard(returnOrderTransaction.id)(
+        const result = await sskts.service.payment.refundCreditCard(returnOrderTransaction.id)(
             actionRepo, transactionRepo, taskRepo
         ).catch((err) => err);
 
@@ -465,7 +465,7 @@ describe('refundCreditCard()', () => {
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').never();
         sandbox.mock(taskRepo).expects('save').once();
 
-        const result = await sskts.service.sales.refundCreditCard(returnOrderTransaction.id)(
+        const result = await sskts.service.payment.refundCreditCard(returnOrderTransaction.id)(
             actionRepo, transactionRepo, taskRepo
         );
 
@@ -514,7 +514,7 @@ describe('refundCreditCard()', () => {
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().rejects(alterTranResult);
         sandbox.mock(taskRepo).expects('save').never();
 
-        const result = await sskts.service.sales.refundCreditCard(returnOrderTransaction.id)(
+        const result = await sskts.service.payment.refundCreditCard(returnOrderTransaction.id)(
             actionRepo, transactionRepo, taskRepo
         ).catch((err) => err);
 

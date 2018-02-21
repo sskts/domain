@@ -25,7 +25,7 @@ describe('executeByName()', () => {
     it('未実行タスクが存在すれば、実行されるはず', async () => {
         const task = {
             id: 'id',
-            name: sskts.factory.taskName.CreateOrder,
+            name: sskts.factory.taskName.PlaceOrder,
             data: { datakey: 'dataValue' },
             status: sskts.factory.taskStatus.Running
         };
@@ -42,7 +42,7 @@ describe('executeByName()', () => {
     });
 
     it('未実行タスクが存在しなければ、実行されないはず', async () => {
-        const taskName = sskts.factory.taskName.CreateOrder;
+        const taskName = sskts.factory.taskName.PlaceOrder;
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
         const authClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
 
@@ -108,7 +108,7 @@ describe('execute()', () => {
     it('存在するタスク名であれば、完了ステータスへ変更されるはず', async () => {
         const task = {
             id: 'id',
-            name: sskts.factory.taskName.CreateOrder,
+            name: sskts.factory.taskName.PlaceOrder,
             data: { datakey: 'dataValue' },
             status: sskts.factory.taskStatus.Running
         };

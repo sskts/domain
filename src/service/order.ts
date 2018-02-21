@@ -94,7 +94,7 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (orderPotentialActions.payCreditCard !== undefined) {
-            taskAttributes.push(factory.task.settleCreditCard.createAttributes({
+            taskAttributes.push(factory.task.payCreditCard.createAttributes({
                 status: factory.taskStatus.Ready,
                 runsAt: now, // なるはやで実行
                 remainingNumberOfTries: 10,
@@ -128,7 +128,7 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (orderPotentialActions.useMvtk !== undefined) {
-            taskAttributes.push(factory.task.settleMvtk.createAttributes({
+            taskAttributes.push(factory.task.useMvtk.createAttributes({
                 status: factory.taskStatus.Ready,
                 runsAt: now, // なるはやで実行
                 remainingNumberOfTries: 10,

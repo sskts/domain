@@ -17,22 +17,13 @@ import { MongoRepository as TransactionRepo } from '../repo/transaction';
 import * as DeliveryService from '../service/delivery';
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
-import * as OwnershipInfoService from '../service/ownershipInfo';
-import * as SalesService from '../service/sales';
+import * as PaymentService from '../service/payment';
 import * as StockService from '../service/stock';
 
 export type IOperation<T> = (
     connection: mongoose.Connection,
     pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials
 ) => Promise<T>;
-
-export function sendEmailNotification(
-    data: factory.task.sendEmailNotification.IData
-): IOperation<void> {
-    return async (__: mongoose.Connection) => {
-        await NotificationService.sendEmail(data.emailMessage)();
-    };
-}
 
 export function sendEmailMessage(
     data: factory.task.sendEmailMessage.IData
@@ -57,7 +48,7 @@ export function cancelCreditCard(
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
         const actionRepo = new ActionRepo(connection);
-        await SalesService.cancelCreditCardAuth(data.transactionId)(actionRepo);
+        await PaymentService.cancelCreditCardAuth(data.transactionId)(actionRepo);
     };
 }
 
@@ -65,51 +56,42 @@ export function cancelMvtk(
     data: factory.task.cancelMvtk.IData
 ): IOperation<void> {
     return async (__: mongoose.Connection) => {
-        await SalesService.cancelMvtk(data.transactionId)();
+        await PaymentService.cancelMvtk(data.transactionId)();
     };
 }
 
-export function settleSeatReservation(
-    data: factory.task.settleSeatReservation.IData
-): IOperation<void> {
-    return async (connection: mongoose.Connection) => {
-        const transactionRepo = new TransactionRepo(connection);
-        await StockService.transferSeatReservation(data.transactionId)(transactionRepo);
-    };
-}
-
-export function settleCreditCard(
-    data: factory.task.settleCreditCard.IData
+export function payCreditCard(
+    data: factory.task.payCreditCard.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
         const actionRepo = new ActionRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await SalesService.settleCreditCardAuth(data.transactionId)(actionRepo, transactionRepo);
+        await PaymentService.payCreditCard(data.transactionId)(actionRepo, transactionRepo);
     };
 }
 
-export function settleMvtk(
-    data: factory.task.settleMvtk.IData
+export function useMvtk(
+    data: factory.task.useMvtk.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
         const actionRepo = new ActionRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await SalesService.settleMvtk(data.transactionId)(actionRepo, transactionRepo);
+        await PaymentService.useMvtk(data.transactionId)(actionRepo, transactionRepo);
     };
 }
 
 export function payPecorino(
-    data: factory.task.settleCreditCard.IData
+    data: factory.task.payPecorino.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection, pecorinoAuthClient: pecorinoapi.auth.ClientCredentials) => {
         const actionRepo = new ActionRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
-        await SalesService.payPecorino(data.transactionId)(actionRepo, transactionRepo, pecorinoAuthClient);
+        await PaymentService.payPecorino(data.transactionId)(actionRepo, transactionRepo, pecorinoAuthClient);
     };
 }
 
-export function createOrder(
-    data: factory.task.createOrder.IData
+export function placeOrder(
+    data: factory.task.placeOrder.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection) => {
         const actionRepo = new ActionRepo(connection);
@@ -120,17 +102,6 @@ export function createOrder(
     };
 }
 
-export function createOwnershipInfos(
-    data: factory.task.createOrder.IData
-): IOperation<void> {
-    return async (connection: mongoose.Connection) => {
-        const actionRepo = new ActionRepo(connection);
-        const ownershipInfoRepository = new OwnershipInfoRepo(connection);
-        const transactionRepo = new TransactionRepo(connection);
-        await OwnershipInfoService.createFromTransaction(data.transactionId)(actionRepo, ownershipInfoRepository, transactionRepo);
-    };
-}
-
 export function refundCreditCard(
     data: factory.task.refundCreditCard.IData
 ): IOperation<void> {
@@ -138,7 +109,7 @@ export function refundCreditCard(
         const actionRepo = new ActionRepo(connection);
         const transactionRepo = new TransactionRepo(connection);
         const taskRepo = new TaskRepo(connection);
-        await SalesService.refundCreditCard(data.transactionId)(actionRepo, transactionRepo, taskRepo);
+        await PaymentService.refundCreditCard(data.transactionId)(actionRepo, transactionRepo, taskRepo);
     };
 }
 

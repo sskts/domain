@@ -51,7 +51,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
-                taskAttributes.push(factory.task.createOrder.createAttributes({
+                taskAttributes.push(factory.task.placeOrder.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -123,11 +123,15 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
 export function sendEmail(
     transactionId: string,
     emailMessageAttributes: factory.creativeWork.message.email.IAttributes
-): ITaskAndTransactionOperation<factory.task.sendEmailNotification.ITask> {
+): ITaskAndTransactionOperation<factory.task.sendEmailMessage.ITask> {
     return async (taskRepo: TaskRepository, transactionRepo: TransactionRepository) => {
         const transaction = await transactionRepo.findPlaceOrderById(transactionId);
         if (transaction.status !== factory.transactionStatusType.Confirmed) {
             throw new factory.errors.Forbidden('Transaction not confirmed.');
+        }
+        const transactionResult = transaction.result;
+        if (transactionResult === undefined) {
+            throw new factory.errors.NotFound('transaction.result');
         }
 
         const emailMessage = factory.creativeWork.message.email.create({
@@ -145,9 +149,17 @@ export function sendEmail(
             about: emailMessageAttributes.about,
             text: emailMessageAttributes.text
         });
+        const actionAttributes = factory.action.transfer.send.message.email.createAttributes({
+            actionStatus: factory.actionStatusType.ActiveActionStatus,
+            object: emailMessage,
+            agent: transaction.seller,
+            recipient: transaction.agent,
+            potentialActions: {},
+            purpose: transactionResult.order
+        });
 
         // その場で送信ではなく、DBにタスクを登録
-        const taskAttributes = factory.task.sendEmailNotification.createAttributes({
+        const taskAttributes = factory.task.sendEmailMessage.createAttributes({
             status: factory.taskStatus.Ready,
             runsAt: new Date(), // なるはやで実行
             remainingNumberOfTries: 10,
@@ -155,12 +167,11 @@ export function sendEmail(
             numberOfTried: 0,
             executionResults: [],
             data: {
-                transactionId: transactionId,
-                emailMessage: emailMessage
+                actionAttributes: actionAttributes
             }
         });
 
-        return <factory.task.sendEmailNotification.ITask>await taskRepo.save(taskAttributes);
+        return <factory.task.sendEmailMessage.ITask>await taskRepo.save(taskAttributes);
     };
 }
 

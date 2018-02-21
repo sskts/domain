@@ -149,16 +149,16 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
         /* istanbul ignore else */
         if (potentialActions.sendEmailMessage !== undefined) {
             // 互換性維持のため、すでにメール送信タスクが存在するかどうか確認し、なければタスク追加
-            const sendEmailNotificationTaskDoc = await taskRepo.taskModel.findOne({
-                name: factory.taskName.SendEmailNotification,
-                'data.emailMessage.identifier': {
+            const sendEmailMessageTaskDoc = await taskRepo.taskModel.findOne({
+                name: factory.taskName.SendEmailMessage,
+                'data.actionAttributes.object.identifier': {
                     $exists: true,
                     $eq: potentialActions.sendEmailMessage.object.identifier
                 }
             }).exec();
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (sendEmailNotificationTaskDoc === null) {
+            if (sendEmailMessageTaskDoc === null) {
                 taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
