@@ -94,6 +94,7 @@ export function create(
         // Pecorinoオーソリ取得
         let pecorinoTransaction: any;
         try {
+            debug('starting pecorino pay transaction...', price);
             pecorinoTransaction = await payTransactionService.start({
                 // tslint:disable-next-line:no-magic-numbers
                 expires: moment().add(60, 'minutes').toDate(),

@@ -107,6 +107,23 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
             }));
         }
 
+        // Pecorino決済
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (orderPotentialActions.payPecorino !== undefined) {
+            taskAttributes.push(factory.task.payPecorino.createAttributes({
+                status: factory.taskStatus.Ready,
+                runsAt: now, // なるはやで実行
+                remainingNumberOfTries: 10,
+                lastTriedAt: null,
+                numberOfTried: 0,
+                executionResults: [],
+                data: {
+                    transactionId: transactionId
+                }
+            }));
+        }
+
         // ムビチケ使用
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */

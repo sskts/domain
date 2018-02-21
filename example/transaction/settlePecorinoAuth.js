@@ -18,10 +18,11 @@ async function main() {
         ]
     });
 
+    const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
     const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-    await sskts.service.sales.settlePecorinoAuth('5a71967a1d0999237cc5b82a')(
-        transactionRepo, authClient
+    await sskts.service.sales.payPecorino('5a8d18e7f98e051d74800a50')(
+        actionRepo, transactionRepo, authClient
     );
 }
 

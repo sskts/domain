@@ -98,12 +98,13 @@ export function settleMvtk(
     };
 }
 
-export function executePecorinoPayAction(
+export function payPecorino(
     data: factory.task.settleCreditCard.IData
 ): IOperation<void> {
     return async (connection: mongoose.Connection, pecorinoAuthClient: pecorinoapi.auth.ClientCredentials) => {
-        const transactionRepository = new TransactionRepo(connection);
-        await SalesService.settlePecorinoAuth(data.transactionId)(transactionRepository, pecorinoAuthClient);
+        const actionRepo = new ActionRepo(connection);
+        const transactionRepo = new TransactionRepo(connection);
+        await SalesService.payPecorino(data.transactionId)(actionRepo, transactionRepo, pecorinoAuthClient);
     };
 }
 

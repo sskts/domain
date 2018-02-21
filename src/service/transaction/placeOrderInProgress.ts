@@ -317,6 +317,21 @@ export function confirm(
             });
         }
 
+        // クレジットカード支払いアクション
+        let payPecorinoAction: factory.action.trade.pay.IAttributes | null = null;
+        const pecorinoPayment = order.paymentMethods.find((m) => m.paymentMethod === 'Pecorino');
+        if (pecorinoPayment !== undefined) {
+            payPecorinoAction = factory.action.trade.pay.createAttributes({
+                object: {
+                    paymentMethod: pecorinoPayment,
+                    price: order.price,
+                    priceCurrency: order.priceCurrency
+                },
+                agent: transaction.agent,
+                purpose: order
+            });
+        }
+
         // ムビチケ使用アクション
         let useMvtkAction: factory.action.consume.use.mvtk.IAttributes | null = null;
         const mvtkAuthorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions
@@ -358,8 +373,10 @@ export function confirm(
                 object: order,
                 agent: transaction.agent,
                 potentialActions: {
-                    // クレジットカード決済があればアクション追加
+                    // クレジットカード決済があれば支払アクション追加
                     payCreditCard: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
+                    // Pecorino決済があれば支払アクション追加
+                    payPecorino: (payPecorinoAction !== null) ? payPecorinoAction : undefined,
                     useMvtk: (useMvtkAction !== null) ? useMvtkAction : undefined,
                     sendOrder: factory.action.transfer.send.order.createAttributes({
                         actionStatus: factory.actionStatusType.ActiveActionStatus,
@@ -485,6 +502,8 @@ export function createOrderFromTransaction(params: {
         });
 
     const paymentMethods: factory.order.IPaymentMethod[] = [];
+
+    // クレジットカード決済があれば決済方法に追加
     params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard)
@@ -493,6 +512,18 @@ export function createOrderFromTransaction(params: {
                 name: 'クレジットカード',
                 paymentMethod: factory.paymentMethodType.CreditCard,
                 paymentMethodId: (<factory.action.authorize.creditCard.IResult>creditCardAuthorizeAction.result).execTranResult.orderId
+            });
+        });
+
+    // pecorino決済があれば決済方法に追加
+    params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === 'Pecorino')
+        .forEach((pecorinoAuthorizeAction: any) => {
+            paymentMethods.push({
+                name: 'Pecorino',
+                paymentMethod: 'Pecorino',
+                paymentMethodId: pecorinoAuthorizeAction.result.pecorinoTransaction.id
             });
         });
 
