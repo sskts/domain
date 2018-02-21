@@ -1,3 +1,5 @@
+// tslint:disable:no-implicit-dependencies
+
 /**
  * 通知サービステスト
  * @ignore
@@ -132,5 +134,69 @@ describe('report2developers()', () => {
 
         assert(result instanceof sskts.factory.errors.Argument);
         assert(!scope.isDone());
+    });
+});
+
+describe('sendEmailMessage()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('SendGridの状態が正常であればエラーにならないはず', async () => {
+        const sendEamilMessageActionAttributets = {
+            typeOf: sskts.factory.actionType.SendAction,
+            object: {
+                identifier: 'identifier',
+                sender: {},
+                toRecipient: {}
+            }
+        };
+        const sendResponse = [{ statusCode: ACCEPTED }];
+        const action = {
+            id: 'actionId',
+            typeOf: sskts.factory.actionType.SendAction
+        };
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+
+        sandbox.mock(actionRepo).expects('start').once().resolves(action);
+        sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
+        sandbox.mock(sgMail).expects('send').once().resolves(sendResponse);
+
+        const result = await sskts.service.notification.sendEmailMessage(<any>sendEamilMessageActionAttributets)(
+            actionRepo
+        );
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('SendGridAPIのステータスコードがACCEPTEDでなｋれば、エラーになるはず', async () => {
+
+        const sendEamilMessageActionAttributets = {
+            typeOf: sskts.factory.actionType.SendAction,
+            object: {
+                identifier: 'identifier',
+                sender: {},
+                toRecipient: {}
+            }
+        };
+        const sendResponse = [{ statusCode: BAD_REQUEST }];
+        const action = {
+            id: 'actionId',
+            typeOf: sskts.factory.actionType.SendAction
+        };
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+
+        sandbox.mock(actionRepo).expects('start').once().resolves(action);
+        sandbox.mock(actionRepo).expects('giveUp').once().withArgs(action.typeOf, action.id).resolves(action);
+        sandbox.mock(actionRepo).expects('complete').never();
+        sandbox.mock(sgMail).expects('send').once().resolves(sendResponse);
+
+        const result = await sskts.service.notification.sendEmailMessage(<any>sendEamilMessageActionAttributets)(
+            actionRepo
+        ).catch((err) => err);
+
+        assert(result instanceof Error);
+        sandbox.verify();
     });
 });

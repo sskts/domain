@@ -8,13 +8,52 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
-import { MongoRepository as PecorinoActionRepo } from '../../../../../repo/action/authorize/pecorino';
+import { MongoRepository as ActionRepo } from '../../../../../repo/action';
 import { MongoRepository as TransactionRepo } from '../../../../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:pecorino');
 
+export namespace AuthorizeActionFactory {
+    export type IAgent = any;
+    export type IRecipient = any;
+    export interface IObject {
+        transactionId: string;
+        price: number;
+    }
+    export type IAction = any;
+    export interface IResult {
+        price: number;
+        pecorinoTransaction: any;
+        pecorinoEndpoint: string;
+    }
+
+    export function createAttributes(params: {
+        actionStatus: factory.actionStatusType;
+        result?: IResult;
+        object: IObject;
+        agent: IAgent;
+        recipient: IRecipient;
+        startDate: Date;
+        endDate?: Date;
+    }) {
+        return {
+            actionStatus: params.actionStatus,
+            typeOf: factory.actionType.AuthorizeAction,
+            purpose: {
+                typeOf: 'Pecorino'
+            },
+            result: params.result,
+            object: params.object,
+            agent: params.agent,
+            recipient: params.recipient,
+            startDate: params.startDate,
+            endDate: params.endDate
+        };
+    }
+}
+
 export type ICreateOperation<T> = (
-    authorizeActionRepo: PecorinoActionRepo,
+    actionRepo: ActionRepo,
     transactionRepo: TransactionRepo,
     payTransactionService: pecorinoapi.service.transaction.Pay
 ) => Promise<T>;
@@ -26,10 +65,10 @@ export function create(
     agentId: string,
     transactionId: string,
     price: number
-): ICreateOperation<factory.action.authorize.creditCard.IAction> {
+): ICreateOperation<factory.action.authorize.IAction<any>> {
     // tslint:disable-next-line:max-func-body-length
     return async (
-        authorizeActionRepo: PecorinoActionRepo,
+        actionRepo: ActionRepo,
         transactionRepo: TransactionRepo,
         payTransactionService: pecorinoapi.service.transaction.Pay
     ) => {
@@ -40,14 +79,17 @@ export function create(
         }
 
         // 承認アクションを開始する
-        const action = await authorizeActionRepo.start(
-            transaction.agent,
-            transaction.seller,
-            {
+        const action = await actionRepo.start({
+            typeOf: factory.actionType.AuthorizeAction,
+            agent: transaction.agent,
+            object: {
+                typeOf: 'Pecorino',
                 transactionId: transactionId,
                 price: price
-            }
-        );
+            },
+            recipient: transaction.seller,
+            purpose: transaction
+        });
 
         // Pecorinoオーソリ取得
         let pecorinoTransaction: any;
@@ -69,7 +111,7 @@ export function create(
             // actionにエラー結果を追加
             try {
                 const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                await authorizeActionRepo.giveUp(action.id, actionError);
+                await actionRepo.giveUp(action.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -80,7 +122,8 @@ export function create(
         // アクションを完了
         debug('ending authorize action...');
 
-        return authorizeActionRepo.complete(
+        return actionRepo.complete(
+            action.typeOf,
             action.id,
             {
                 price: price,
@@ -96,7 +139,7 @@ export function cancel(
     transactionId: string,
     actionId: string
 ) {
-    return async (__1: PecorinoActionRepo, __2: TransactionRepo) => {
+    return async (__1: ActionRepo, __2: TransactionRepo) => {
         debug('canceling pecorino authorize action...', agentId, transactionId, actionId);
         debug('implementing...');
     };

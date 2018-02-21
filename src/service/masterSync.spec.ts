@@ -1,3 +1,4 @@
+// tslint:disable:no-implicit-dependencies
 /**
  * masterSync service test
  * @ignore
@@ -85,6 +86,10 @@ describe('importScreeningEvents()', () => {
         const individualScreeningEvent = {
             identifier: 'identifier'
         };
+        const individualScreeningEventsInMongo = [
+            { identifier: individualScreeningEvent.identifier },
+            { identifier: 'cancellingIdentifier' }
+        ];
         const eventRepo = new EventRepo(mongoose.connection);
         const placeRepo = new PlaceRepo(mongoose.connection);
 
@@ -101,6 +106,8 @@ describe('importScreeningEvents()', () => {
         sandbox.mock(factory.event.individualScreeningEvent).expects('createFromCOA').exactly(schedulesFromCOA.length)
             .returns(individualScreeningEvent);
         sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').exactly(schedulesFromCOA.length);
+        sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').once().resolves(individualScreeningEventsInMongo);
+        sandbox.mock(eventRepo).expects('cancelIndividualScreeningEvent').once().withExactArgs('cancellingIdentifier');
 
         const result = await MasterSyncService.importScreeningEvents(
             '123', new Date(), new Date()
@@ -148,6 +155,7 @@ describe('importScreeningEvents()', () => {
             .returns(screeningEvent.identifier);
         sandbox.mock(factory.event.individualScreeningEvent).expects('createFromCOA').never();
         sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').never();
+        sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').once().resolves([]);
 
         const result = await MasterSyncService.importScreeningEvents(
             '123', new Date(), new Date()
@@ -200,6 +208,7 @@ describe('importScreeningEvents()', () => {
             .returns('invalidIdentifier');
         sandbox.mock(factory.event.individualScreeningEvent).expects('createFromCOA').never();
         sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').never();
+        sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').once().resolves([]);
 
         const result = await MasterSyncService.importScreeningEvents(
             '123', new Date(), new Date()

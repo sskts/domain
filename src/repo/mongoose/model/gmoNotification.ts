@@ -47,11 +47,13 @@ const schema = new mongoose.Schema(
 // GMO売上健康診断時に使用
 schema.index({ jobCd: 1, tranDate: 1 });
 
-export default mongoose.model('GMONotification', schema)
-    .on('index', (error) => {
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore next */
+export default mongoose.model('GMONotification', schema).on(
+    'index',
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    (error) => {
         if (error !== undefined) {
             console.error(error);
         }
-    });
+    }
+);

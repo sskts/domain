@@ -9,7 +9,7 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 
-import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../repo/action/authorize/seatReservation';
+import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:stock');
@@ -19,16 +19,17 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 /**
  * 資産承認解除(COA座席予約)
  * @export
- * @function
- * @memberof service.stock
- * @param {string} transactionId 取引ID
+ * @param transactionId 取引ID
  */
 export function cancelSeatReservationAuth(transactionId: string) {
-    return async (seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo) => {
+    return async (actionRepo: ActionRepo) => {
         // 座席仮予約アクションを取得
         const authorizeActions: factory.action.authorize.seatReservation.IAction[] =
-            await seatReservationAuthorizeActionRepo.findByTransactionId(transactionId)
-                .then((actions) => actions.filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus));
+            await actionRepo.findAuthorizeByTransactionId(transactionId)
+                .then((actions) => actions
+                    .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation)
+                    .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                );
 
         await Promise.all(authorizeActions.map(async (action) => {
             debug('calling deleteTmpReserve...');
@@ -50,16 +51,14 @@ export function cancelSeatReservationAuth(transactionId: string) {
 /**
  * 資産移動(COA座席予約)
  * @export
- * @function
- * @memberof service.stock
- * @param {string} transactionId 取引ID
+ * @param transactionId 取引ID
  */
 export function transferSeatReservation(transactionId: string) {
     return async (transactionRepository: TransactionRepo) => {
         const transaction = await transactionRepository.findPlaceOrderById(transactionId);
         const authorizeActions = transaction.object.authorizeActions
             .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((action) => action.purpose.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation);
+            .filter((action) => action.object.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation);
         if (authorizeActions.length !== 1) {
             throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
         }
@@ -103,7 +102,9 @@ export function transferSeatReservation(transactionId: string) {
                 titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
                 timeBegin: updTmpReserveSeatArgs.timeBegin,
                 tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum,
+                // tslint:disable-next-line:no-irregular-whitespace
                 reserveName: `${customerContact.familyName}　${customerContact.givenName}`,
+                // tslint:disable-next-line:no-irregular-whitespace
                 reserveNameJkana: `${customerContact.familyName}　${customerContact.givenName}`,
                 telNum: telNum,
                 mailAddr: customerContact.email,

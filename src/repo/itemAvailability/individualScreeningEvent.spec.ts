@@ -24,7 +24,7 @@ describe('findOne()', () => {
         sandbox.restore();
     });
 
-    it('データが存在すれば、数値が返却されるはず', async () => {
+    it('データが存在してBufferとして取得できれば数値が返却されるはず', async () => {
         const screeningDay = 'screeningDay';
         const eventIdentifier = 'eventIdentifier';
         const availability = 99;
@@ -32,6 +32,23 @@ describe('findOne()', () => {
         const repository = new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.createClient());
         (<any>repository.redisClient.hget) = (__: any, cb: Function) => {
             cb(null, new Buffer(availability.toString()));
+        };
+
+        const result = await repository.findOne(screeningDay, eventIdentifier);
+
+        assert.equal(typeof result, 'number');
+        assert.equal(result, availability);
+        sandbox.verify();
+    });
+
+    it('データが存在して文字列として取得できれば数値が返却されるはず', async () => {
+        const screeningDay = 'screeningDay';
+        const eventIdentifier = 'eventIdentifier';
+        const availability = 99;
+
+        const repository = new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.createClient());
+        (<any>repository.redisClient.hget) = (__: any, cb: Function) => {
+            cb(null, availability.toString());
         };
 
         const result = await repository.findOne(screeningDay, eventIdentifier);

@@ -68,19 +68,52 @@ schema.index(
 
 // ステータス&最終トライ日時&残りトライ可能回数を見て、リトライor中止を決定する
 schema.index(
-    { remainingNumberOfTries: 1, status: 1, lastTriedAt: 1 }
+    { remainingNumberOfTries: 1, status: 1, lastTriedAt: 1 },
+    {
+        partialFilterExpression: {
+            lastTriedAt: { $type: 'date' }
+        }
+    }
 );
 
 // 測定データ作成時に使用
-schema.index({ createdAt: 1, lastTriedAt: 1 });
+schema.index(
+    { createdAt: 1, lastTriedAt: 1 },
+    {
+        partialFilterExpression: {
+            lastTriedAt: { $type: 'date' }
+        }
+    }
+);
 schema.index({ status: 1, createdAt: 1 });
 schema.index({ createdAt: 1 });
+schema.index({ name: 1, createdAt: 1 });
+schema.index(
+    { status: 1, name: 1, lastTriedAt: 1 },
+    {
+        partialFilterExpression: {
+            lastTriedAt: { $type: 'date' }
+        }
+    }
+);
 
-export default mongoose.model('Task', schema)
-    .on('index', (error) => {
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore next */
+// 特定のEメールメッセージタスク検索に使用
+schema.index(
+    { 'data.emailMessage.identifier': 1, name: 1 },
+    {
+        partialFilterExpression: {
+            'data.emailMessage.identifier': { $exists: true }
+        }
+    }
+);
+
+export default mongoose.model('Task', schema).on(
+    'index',
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    (error) => {
         if (error !== undefined) {
             console.error(error);
         }
-    });
+    }
+);

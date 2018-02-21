@@ -13,28 +13,19 @@ import { MongoRepository as TransactionRepository } from '../../repo/transaction
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrder');
 
-export type ITaskAndTransactionOperation<T> = (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => Promise<T>;
+export type ITaskAndTransactionOperation<T> = (taskRepository: TaskRepository, transactionRepo: TransactionRepository) => Promise<T>;
 
 /**
  * ひとつの取引のタスクをエクスポートする
  */
 export function exportTasks(status: factory.transactionStatusType) {
-    return async (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => {
+    return async (taskRepository: TaskRepository, transactionRepo: TransactionRepository) => {
         const statusesTasksExportable = [factory.transactionStatusType.Expired, factory.transactionStatusType.Confirmed];
         if (statusesTasksExportable.indexOf(status) < 0) {
             throw new factory.errors.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
         }
 
-        const transaction = await transactionRepository.transactionModel.findOneAndUpdate(
-            {
-                status: status,
-                tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
-            },
-            { tasksExportationStatus: factory.transactionTasksExportationStatus.Exporting },
-            { new: true }
-        ).exec()
-            .then((doc) => (doc === null) ? null : <factory.transaction.placeOrder.ITransaction>doc.toObject());
-
+        const transaction = await transactionRepo.startExportTasks(factory.transactionType.PlaceOrder, status);
         if (transaction === null) {
             return;
         }
@@ -42,10 +33,10 @@ export function exportTasks(status: factory.transactionStatusType) {
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
         await exportTasksById(transaction.id)(
             taskRepository,
-            transactionRepository
+            transactionRepo
         );
 
-        await transactionRepository.setTasksExportedById(transaction.id);
+        await transactionRepo.setTasksExportedById(transaction.id);
     };
 }
 
@@ -54,57 +45,12 @@ export function exportTasks(status: factory.transactionStatusType) {
  */
 export function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask[]> {
     // tslint:disable-next-line:max-func-body-length
-    return async (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => {
-        const transaction = await transactionRepository.findPlaceOrderById(transactionId);
+    return async (taskRepository: TaskRepository, transactionRepo: TransactionRepository) => {
+        const transaction = await transactionRepo.findPlaceOrderById(transactionId);
 
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
-                taskAttributes.push({
-                    name: <any>'executePecorinoPayAction',
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                });
-                taskAttributes.push(factory.task.settleSeatReservation.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-                taskAttributes.push(factory.task.settleCreditCard.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-                taskAttributes.push(factory.task.settleMvtk.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
                 taskAttributes.push(factory.task.createOrder.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
@@ -116,33 +62,6 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 }));
-                taskAttributes.push(factory.task.createOwnershipInfos.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-
-                // notifications.forEach((notification) => {
-                //     if (notification.group === NotificationGroup.EMAIL) {
-                //         taskAttributes.push(SendEmailNotificationTaskFactory.create({
-                //             status: factory.taskStatus.Ready,
-                //             runsAt: new Date(), // todo emailのsent_atを指定
-                //             remainingNumberOfTries: 10,
-                //             lastTriedAt: null,
-                //             numberOfTried: 0,
-                //             executionResults: [],
-                //             data: {
-                //                 notification: <EmailNotificationFactory.INotification>notification
-                //             }
-                //         }));
-                //     }
-                // });
 
                 break;
 
@@ -198,8 +117,6 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
 /**
  * 確定取引についてメールを送信する
  * @export
- * @function
- * @memberof service.transaction.placeOrder
  * @param transactionId 取引ID
  * @param emailMessageAttributes Eメールメッセージ属性
  */
@@ -250,8 +167,6 @@ export function sendEmail(
 /**
  * フォーマット指定でダウンロード
  * @export
- * @function
- * @memberof service.transaction.placeOrder
  * @param conditions 検索条件
  * @param format フォーマット
  */
@@ -318,8 +233,6 @@ export function download(
 /**
  * 取引レポートインターフェース
  * @export
- * @interface
- * @memberof service.transaction.placeOrder
  */
 export interface ITransactionReport {
     id: string;
@@ -332,7 +245,7 @@ export interface ITransactionReport {
         telephone: string;
         memberOf?: {
             membershipNumber: string;
-        }
+        };
     };
     eventName: string;
     eventStartDate: string;

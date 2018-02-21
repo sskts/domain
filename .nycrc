@@ -1,9 +1,9 @@
 {
     "check-coverage": true,
-    "lines": 90,
-    "statements": 90,
-    "functions": 90,
-    "branches": 90,
+    "lines": 100,
+    "statements": 100,
+    "functions": 100,
+    "branches": 100,
     "extension": [
         ".ts"
     ],
@@ -12,11 +12,15 @@
     ],
     "exclude": [
         "**/*.spec.ts",
-        "src/service/util.ts"
+        "src/service/util.ts",
+        "src/service/report/health.ts",
+        "src/service/report/telemetry.ts",
+        "src/service/sales.ts",
+        "src/service/taskFunctions.ts",
+        "src/service/transaction/placeOrderInProgress/action/authorize/pecorino.ts"
     ],
     "reporter": [
         "lcov",
         "text-summary"
-    ],
-    "all": true
+    ]
 }

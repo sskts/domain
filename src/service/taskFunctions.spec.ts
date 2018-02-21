@@ -194,3 +194,84 @@ describe('TaskFunctionsService.createOwnershipInfos()', () => {
         sandbox.verify();
     });
 });
+
+describe('TaskFunctionsService.sendEmailMessage()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('通知サービスが正常であればエラーにならないはず', async () => {
+        const data = {
+            transactionId: 'transactionId',
+            actionAttributes: {}
+        };
+
+        sandbox.mock(sskts.service.notification).expects('sendEmailMessage').once()
+            .withArgs(data.actionAttributes).returns(async () => Promise.resolve());
+
+        const result = await TaskFunctionsService.sendEmailMessage(<any>data)(sskts.mongoose.connection);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
+
+describe('TaskFunctionsService.refundCreditCard()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('売上サービスが正常であればエラーにならないはず', async () => {
+        const data = {
+            transactionId: 'transactionId'
+        };
+
+        sandbox.mock(sskts.service.sales).expects('refundCreditCard').once()
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
+
+        const result = await TaskFunctionsService.refundCreditCard(<any>data)(sskts.mongoose.connection);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
+
+describe('TaskFunctionsService.returnOrder()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('注文サービスが正常であればエラーにならないはず', async () => {
+        const data = {
+            transactionId: 'transactionId'
+        };
+
+        sandbox.mock(sskts.service.order).expects('cancelReservations').once()
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
+
+        const result = await TaskFunctionsService.returnOrder(<any>data)(sskts.mongoose.connection);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
+
+describe('TaskFunctionsService.sendOrder()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('配送サービスが正常であればエラーにならないはず', async () => {
+        const data = {
+            transactionId: 'transactionId'
+        };
+
+        sandbox.mock(sskts.service.delivery).expects('sendOrder').once()
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
+
+        const result = await TaskFunctionsService.sendOrder(<any>data)(sskts.mongoose.connection);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});

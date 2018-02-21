@@ -4,8 +4,7 @@ import * as mongoose from 'mongoose';
 import ClientEventModel from './mongoose/model/clientEvent';
 
 /**
- * アプリケーションクライアントレポジトリー
- * @class respository.client
+ * アプリケーションクライアントリポジトリー
  */
 export class MongoRepository {
     public readonly clientEventModel: typeof ClientEventModel;

@@ -5,7 +5,6 @@ import ActionModel from '../mongoose/model/action';
 
 /**
  * print action repository
- * @class
  */
 export class MongoRepository {
     public readonly actionModel: typeof ActionModel;
@@ -17,8 +16,7 @@ export class MongoRepository {
     public async printTicket(
         agentId: string,
         ticket: factory.action.transfer.print.ticket.ITicket
-    ): Promise<factory.action.transfer.print.IAction> {
-        const now = new Date();
+    ): Promise<factory.action.transfer.print.ticket.IAction> {
         const actionAttributes = factory.action.transfer.print.ticket.createAttributes({
             actionStatus: factory.actionStatusType.CompletedActionStatus,
             object: {
@@ -28,17 +26,15 @@ export class MongoRepository {
             agent: {
                 typeOf: factory.personType.Person,
                 id: agentId
-            },
-            startDate: now,
-            endDate: now
+            }
         });
 
-        return this.actionModel.create(actionAttributes).then((doc) => <factory.action.transfer.print.IAction>doc.toObject());
+        return this.actionModel.create(actionAttributes).then((doc) => <factory.action.transfer.print.ticket.IAction>doc.toObject());
     }
 
     public async searchPrintTicket(
         conditions: factory.action.transfer.print.ticket.ISearchConditions
-    ): Promise<factory.action.transfer.print.IAction[]> {
+    ): Promise<factory.action.transfer.print.ticket.IAction[]> {
         return this.actionModel.find(
             {
                 typeOf: factory.actionType.PrintAction,
@@ -46,6 +42,6 @@ export class MongoRepository {
                 'object.typeOf': 'Ticket',
                 'object.ticketToken': conditions.ticketToken
             }
-        ).exec().then((docs) => docs.map((doc) => <factory.action.transfer.print.IAction>doc.toObject()));
+        ).exec().then((docs) => docs.map((doc) => <factory.action.transfer.print.ticket.IAction>doc.toObject()));
     }
 }

@@ -13,9 +13,7 @@ const sortOrder4executionOfTasks = {
 };
 
 /**
- * タスクレポジトリー
- *
- * @class TaskRepository
+ * タスクリポジトリー
  */
 export class MongoRepository {
     public readonly taskModel: typeof taskModel;
@@ -60,7 +58,10 @@ export class MongoRepository {
         await this.taskModel.update(
             {
                 status: factory.taskStatus.Running,
-                lastTriedAt: { $lt: lastTriedAtShoudBeLessThan },
+                lastTriedAt: {
+                    $type: 'date',
+                    $lt: lastTriedAtShoudBeLessThan
+                },
                 remainingNumberOfTries: { $gt: 0 }
             },
             {
@@ -76,7 +77,10 @@ export class MongoRepository {
         const doc = await this.taskModel.findOneAndUpdate(
             {
                 status: factory.taskStatus.Running,
-                lastTriedAt: { $lt: lastTriedAtShoudBeLessThan },
+                lastTriedAt: {
+                    $type: 'date',
+                    $lt: lastTriedAtShoudBeLessThan
+                },
                 remainingNumberOfTries: 0
             },
             {
