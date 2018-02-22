@@ -485,7 +485,7 @@ describe('confirm()', () => {
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.agent,
                 object: {
-                    typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard
+                    typeOf: sskts.factory.action.authorize.creditCard.ObjectType.CreditCard
                 },
                 result: {
                     execTranResult: {
@@ -503,7 +503,7 @@ describe('confirm()', () => {
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.seller,
                 object: {
-                    typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation,
+                    typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation,
                     individualScreeningEvent: {
                         superEvent: {
                             location: {
@@ -704,7 +704,7 @@ describe('confirm()', () => {
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.agent,
                 object: {
-                    typeOf: sskts.factory.action.authorize.authorizeActionPurpose.Mvtk,
+                    typeOf: sskts.factory.action.authorize.mvtk.ObjectType.Mvtk,
                     seatInfoSyncIn: {
                         knyknrNoInfo: [
                             { knyknrNo: 'knyknrNo' }
@@ -724,7 +724,7 @@ describe('confirm()', () => {
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.seller,
                 object: {
-                    typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation,
+                    typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation,
                     individualScreeningEvent: {
                         superEvent: {
                             location: {
@@ -949,7 +949,7 @@ describe('confirm()', () => {
                     price: 1234
                 },
                 endDate: new Date(),
-                purpose: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation }
+                purpose: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation }
             },
             {
                 id: 'actionId2',
@@ -960,7 +960,7 @@ describe('confirm()', () => {
                     price: 1235
                 },
                 endDate: new Date(),
-                purpose: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard }
+                purpose: { typeOf: sskts.factory.action.authorize.creditCard.ObjectType.CreditCard }
             }
         ];
 
@@ -1073,7 +1073,7 @@ describe('createEmailMessageFromTransaction()', () => {
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.agent,
                 object: {
-                    typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard
+                    typeOf: sskts.factory.action.authorize.creditCard.ObjectType.CreditCard
                 },
                 result: {
                     execTranResult: {
@@ -1091,7 +1091,7 @@ describe('createEmailMessageFromTransaction()', () => {
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.seller,
                 object: {
-                    typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation,
+                    typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation,
                     individualScreeningEvent: {
                         superEvent: {
                             location: {
@@ -1291,7 +1291,7 @@ describe('createOrderFromTransaction()', () => {
                         agent: agent,
                         recipient: seller,
                         object: {
-                            typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard
+                            typeOf: sskts.factory.action.authorize.creditCard.ObjectType.CreditCard
                         },
                         result: {
                             execTranResult: {
@@ -1310,7 +1310,7 @@ describe('createOrderFromTransaction()', () => {
                         agent: agent,
                         recipient: seller,
                         object: {
-                            typeOf: sskts.factory.action.authorize.authorizeActionPurpose.Mvtk,
+                            typeOf: sskts.factory.action.authorize.mvtk.ObjectType.Mvtk,
                             seatInfoSyncIn: {
                                 knyknrNoInfo: [
                                     { knyknrNo: 'knyknrNo' }
@@ -1331,7 +1331,7 @@ describe('createOrderFromTransaction()', () => {
                         agent: seller,
                         recipient: agent,
                         object: {
-                            typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation,
+                            typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation,
                             individualScreeningEvent: {
                                 superEvent: {
                                     location: {
@@ -1490,7 +1490,7 @@ describe('createOrderFromTransaction()', () => {
                         agent: seller,
                         recipient: agent,
                         object: {
-                            typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation
+                            typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation
                         },
                         result: {},
                         startDate: new Date(),
@@ -1503,7 +1503,7 @@ describe('createOrderFromTransaction()', () => {
                         agent: seller,
                         recipient: agent,
                         object: {
-                            typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation
+                            typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation
                         },
                         result: {},
                         startDate: new Date(),
@@ -1648,7 +1648,7 @@ describe('createOrderFromTransaction()', () => {
                         agent: seller,
                         recipient: agent,
                         object: {
-                            typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation
+                            typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation
                         },
                         startDate: new Date(),
                         endDate: new Date()
@@ -1719,7 +1719,7 @@ describe('createOrderFromTransaction()', () => {
                         agent: seller,
                         recipient: agent,
                         object: {
-                            typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation
+                            typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation
                         },
                         result: {},
                         startDate: new Date(),
@@ -1803,7 +1803,7 @@ describe('validateTransaction()', () => {
                         agent: agent,
                         recipient: seller,
                         object: {
-                            typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard
+                            typeOf: sskts.factory.action.authorize.creditCard.ObjectType.CreditCard
                         },
                         startDate: new Date(),
                         endDate: new Date()
@@ -1815,7 +1815,7 @@ describe('validateTransaction()', () => {
                         agent: agent,
                         recipient: seller,
                         object: {
-                            typeOf: sskts.factory.action.authorize.authorizeActionPurpose.CreditCard
+                            typeOf: sskts.factory.action.authorize.creditCard.ObjectType.CreditCard
                         },
                         startDate: new Date(),
                         endDate: new Date()
@@ -1882,7 +1882,7 @@ describe('validateTransaction()', () => {
                         agent: agent,
                         recipient: seller,
                         object: {
-                            typeOf: sskts.factory.action.authorize.authorizeActionPurpose.Mvtk
+                            typeOf: sskts.factory.action.authorize.mvtk.ObjectType.Mvtk
                         },
                         startDate: new Date(),
                         endDate: new Date()
@@ -1894,7 +1894,7 @@ describe('validateTransaction()', () => {
                         agent: agent,
                         recipient: seller,
                         object: {
-                            typeOf: sskts.factory.action.authorize.authorizeActionPurpose.Mvtk
+                            typeOf: sskts.factory.action.authorize.mvtk.ObjectType.Mvtk
                         },
                         startDate: new Date(),
                         endDate: new Date()

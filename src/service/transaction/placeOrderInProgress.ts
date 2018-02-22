@@ -336,12 +336,12 @@ export function confirm(
         let useMvtkAction: factory.action.consume.use.mvtk.IAttributes | null = null;
         const mvtkAuthorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .find((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
+            .find((a) => a.object.typeOf === factory.action.authorize.mvtk.ObjectType.Mvtk);
         if (mvtkAuthorizeAction !== undefined) {
             useMvtkAction = factory.action.consume.use.mvtk.createAttributes({
                 actionStatus: factory.actionStatusType.ActiveActionStatus,
                 object: {
-                    typeOf: factory.action.authorize.authorizeActionPurpose.Mvtk,
+                    typeOf: factory.action.consume.use.mvtk.ObjectType.Mvtk,
                     seatInfoSyncIn: mvtkAuthorizeAction.object.seatInfoSyncIn
                 },
                 agent: transaction.agent,
@@ -417,7 +417,7 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
     // クレジットカードオーソリをひとつに限定
     const creditCardAuthorizeActions = transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+        .filter((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard);
     if (creditCardAuthorizeActions.length > 1) {
         throw new factory.errors.Argument('transactionId', 'The number of credit card authorize actions must be one.');
     }
@@ -425,7 +425,7 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
     // ムビチケ着券情報をひとつに限定
     const mvtkAuthorizeActions = transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
+        .filter((a) => a.object.typeOf === factory.action.authorize.mvtk.ObjectType.Mvtk);
     if (mvtkAuthorizeActions.length > 1) {
         throw new factory.errors.Argument('transactionId', 'The number of mvtk authorize actions must be one.');
     }
@@ -461,7 +461,7 @@ export function createOrderFromTransaction(params: {
     // seatReservation exists?
     const seatReservationAuthorizeActions = params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation);
+        .filter((a) => a.object.typeOf === factory.action.authorize.seatReservation.ObjectType.SeatReservation);
     if (seatReservationAuthorizeActions.length === 0) {
         throw new factory.errors.Argument('transaction', 'Seat reservation does not exist.');
     }
@@ -487,7 +487,7 @@ export function createOrderFromTransaction(params: {
     const discounts: factory.order.IDiscount[] = [];
     params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk)
+        .filter((a) => a.object.typeOf === factory.action.authorize.mvtk.ObjectType.Mvtk)
         .forEach((mvtkAuthorizeAction: factory.action.authorize.mvtk.IAction) => {
             const discountCode = mvtkAuthorizeAction.object.seatInfoSyncIn.knyknrNoInfo.map(
                 (knshInfo) => knshInfo.knyknrNo
@@ -506,7 +506,7 @@ export function createOrderFromTransaction(params: {
     // クレジットカード決済があれば決済方法に追加
     params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard)
+        .filter((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard)
         .forEach((creditCardAuthorizeAction: factory.action.authorize.creditCard.IAction) => {
             paymentMethods.push({
                 name: 'クレジットカード',

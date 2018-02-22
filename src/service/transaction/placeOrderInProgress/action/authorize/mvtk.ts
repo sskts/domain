@@ -45,7 +45,7 @@ export function create(
                 $exists: true,
                 $eq: transactionId
             },
-            'object.typeOf': factory.action.authorize.authorizeActionPurpose.SeatReservation
+            'object.typeOf': factory.action.authorize.seatReservation.ObjectType.SeatReservation
         }).exec().then((docs) => docs
             .map((doc) => <factory.action.authorize.seatReservation.IAction>doc.toObject())
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus));

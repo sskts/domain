@@ -281,8 +281,7 @@ export function create(
         // 承認アクションを開始
         const actionAttributes = factory.action.authorize.seatReservation.createAttributes({
             object: {
-                typeOf: factory.action.authorize.authorizeActionPurpose.SeatReservation,
-                transactionId: transactionId,
+                typeOf: factory.action.authorize.seatReservation.ObjectType.SeatReservation,
                 offers: offersWithDetails,
                 individualScreeningEvent: individualScreeningEvent
             },

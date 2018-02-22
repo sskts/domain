@@ -24,7 +24,7 @@ before(() => {
                 {
                     id: 'actionId',
                     actionStatus: 'CompletedActionStatus',
-                    object: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation },
+                    object: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation },
                     purpose: {},
                     result: {
                         price: 123,
@@ -85,7 +85,7 @@ describe('cancelSeatReservationAuth()', () => {
             {
                 id: 'actionId',
                 actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                object: { typeOf: sskts.factory.action.authorize.authorizeActionPurpose.SeatReservation },
+                object: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation },
                 purpose: {},
                 result: {
                     updTmpReserveSeatArgs: {},

@@ -1,6 +1,5 @@
 
 import * as factory from '@motionpicture/sskts-factory';
-import * as moment from 'moment';
 import { Connection } from 'mongoose';
 import eventModel from './mongoose/model/event';
 
@@ -85,29 +84,12 @@ export class MongoRepository implements Repository {
     public async searchIndividualScreeningEvents(
         searchConditions: factory.event.individualScreeningEvent.ISearchConditions
     ): Promise<factory.event.individualScreeningEvent.IEvent[]> {
-        // dayプロパティがあればstartFrom & startThroughに変換(互換性維持のため)
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (searchConditions.day !== undefined) {
-            searchConditions.startFrom = moment(`${searchConditions.day} +09:00`, 'YYYYMMDD Z').toDate();
-            searchConditions.startThrough = moment(`${searchConditions.day} +09:00`, 'YYYYMMDD Z').add(1, 'day').toDate();
-        }
-
         // MongoDB検索条件
         const andConditions: any[] = [
             {
                 typeOf: factory.eventType.IndividualScreeningEvent
             }
         ];
-
-        // theaterプロパティがあればbranchCodeで検索(互換性維持のため)
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (searchConditions.theater !== undefined) {
-            andConditions.push({
-                'superEvent.location.branchCode': searchConditions.theater
-            });
-        }
 
         // 場所の識別子条件
         // tslint:disable-next-line:no-single-line-block-comment

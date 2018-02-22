@@ -106,14 +106,6 @@ schema.index(
 
 // 取引の承認アクション検索に使用
 schema.index(
-    { typeOf: 1, 'object.transactionId': 1 },
-    {
-        partialFilterExpression: {
-            'object.transactionId': { $exists: true }
-        }
-    }
-);
-schema.index(
     { typeOf: 1, 'purpose.id': 1 },
     {
         partialFilterExpression: {
@@ -123,15 +115,6 @@ schema.index(
 );
 
 // 取引の承認アクション状態変更に使用
-schema.index(
-    { 'purpose.typeOf': 1, 'object.transactionId': 1, typeOf: 1, _id: 1 },
-    {
-        partialFilterExpression: {
-            'purpose.typeOf': { $exists: true },
-            'object.transactionId': { $exists: true }
-        }
-    }
-);
 schema.index(
     { 'object.typeOf': 1, 'purpose.id': 1, typeOf: 1, _id: 1 },
     {

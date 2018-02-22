@@ -25,7 +25,7 @@ export function cancelSeatReservationAuth(transactionId: string) {
         const authorizeActions: factory.action.authorize.seatReservation.IAction[] =
             await actionRepo.findAuthorizeByTransactionId(transactionId)
                 .then((actions) => actions
-                    .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.SeatReservation)
+                    .filter((a) => a.object.typeOf === factory.action.authorize.seatReservation.ObjectType.SeatReservation)
                     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
                 );
 

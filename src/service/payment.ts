@@ -109,7 +109,7 @@ export function cancelCreditCardAuth(transactionId: string) {
         const authorizeActions: factory.action.authorize.creditCard.IAction[] =
             await actionRepo.findAuthorizeByTransactionId(transactionId)
                 .then((actions) => actions
-                    .filter((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard)
+                    .filter((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard)
                     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
                 );
 
@@ -156,7 +156,7 @@ export function payCreditCard(transactionId: string) {
             // クレジットカード承認アクションがあるはず
             const authorizeAction = <factory.action.authorize.creditCard.IAction>transaction.object.authorizeActions
                 .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                .find((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+                .find((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard);
 
             // アクション開始
             const action = await actionRepo.start<factory.action.trade.pay.IAction>(payActionAttributes);
@@ -236,7 +236,7 @@ export function refundCreditCard(transactionId: string) {
         const placeOrderTransactionResult = placeOrderTransaction.result;
         const authorizeActions = placeOrderTransaction.object.authorizeActions
             .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((action) => action.object.typeOf === factory.action.authorize.authorizeActionPurpose.CreditCard);
+            .filter((action) => action.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard);
 
         if (potentialActions === undefined) {
             throw new factory.errors.NotFound('transaction.potentialActions');
