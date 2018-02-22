@@ -33,8 +33,7 @@ describe('searchIndividualScreeningEvents()', () => {
         };
         const events = [event];
         const searchConditions = {
-            day: 'day',
-            theater: 'theater'
+            superEventLocationIdentifiers: ['12345']
         };
         const eventRepo = new EventRepo(mongoose.connection);
         const itemAvailabilityRepo = new ScreeningEventItemAvailabilityRepo(<any>{});
