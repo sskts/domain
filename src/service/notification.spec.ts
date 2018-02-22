@@ -19,45 +19,6 @@ before(() => {
     sandbox = sinon.sandbox.create();
 });
 
-describe('sendEmail()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('SendGridの状態が正常であれば、エラーにならないはず', async () => {
-        const emailMessage = {
-            identifier: 'identifier',
-            sender: {},
-            toRecipient: {}
-        };
-        const sendResponse = [{ statusCode: ACCEPTED }];
-
-        sandbox.mock(sgMail).expects('send').once().resolves(sendResponse);
-
-        const result = await sskts.service.notification.sendEmail(<any>emailMessage)();
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-
-    it('SendGridAPIのステータスコードがACCEPTEDでなｋれば、エラーになるはず', async () => {
-        const emailMessage = {
-            identifier: 'identifier',
-            sender: {},
-            toRecipient: {}
-        };
-        const sendResponse = [{ statusCode: BAD_REQUEST }];
-
-        sandbox.mock(sgMail).expects('send').once().resolves(sendResponse);
-
-        const sendEmailError = await sskts.service.notification.sendEmail(<any>emailMessage)()
-            .catch((err) => err);
-
-        assert(sendEmailError instanceof Error);
-        sandbox.verify();
-    });
-});
-
 describe('report2developers()', () => {
     beforeEach(() => {
         process.env.SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN = 'accessToken';

@@ -288,7 +288,7 @@ export function create(
             },
             agent: transaction.seller,
             recipient: transaction.agent,
-            purpose: { ...transaction, typeOf: <any>factory.action.authorize.authorizeActionPurpose.SeatReservation }
+            purpose: transaction // purposeは取引
         });
         const action = await actionRepo.start<factory.action.authorize.seatReservation.IAction>(actionAttributes);
 

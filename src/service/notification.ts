@@ -21,51 +21,9 @@ const debug = createDebug('sskts-domain:service:notification');
 export const LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify';
 
 /**
- * send an email
- * Eメールを送信する
- * https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
- * @export
- * @see https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
- */
-export function sendEmail(emailMessage: factory.creativeWork.message.email.ICreativeWork): Operation<void> {
-    return async () => {
-        sgMail.setApiKey(<string>process.env.SENDGRID_API_KEY);
-        const msg = {
-            to: {
-                name: emailMessage.toRecipient.name,
-                email: emailMessage.toRecipient.email
-            },
-            from: {
-                name: emailMessage.sender.name,
-                email: emailMessage.sender.email
-            },
-            subject: emailMessage.about,
-            text: emailMessage.text,
-            // html: '<strong>and easy to do anywhere, even with Node.js</strong>',
-            // categories: ['Transactional', 'My category'],
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 送信予定を追加することもできるが、タスクの実行予定日時でコントロールするかもしれないのでいったん保留
-            // sendAt: moment(email.send_at).unix(),
-            // 追跡用に通知IDをカスタムフィールドとしてセットする
-            customArgs: {
-                emailMessage: emailMessage.identifier
-            }
-        };
-
-        debug('requesting sendgrid api...', msg);
-        const response = await sgMail.send(msg);
-        debug('response is', response);
-
-        // check the response.
-        if (response[0].statusCode !== httpStatus.ACCEPTED) {
-            throw new Error(`sendgrid request not accepted. response is ${util.inspect(response)}`);
-        }
-    };
-}
-
-/**
  * Eメールメッセージを送信する
  * @param actionAttributes Eメール送信アクション属性
+ * @see https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
  */
 export function sendEmailMessage(actionAttributes: factory.action.transfer.send.message.email.IAttributes) {
     return async (
@@ -91,8 +49,7 @@ export function sendEmailMessage(actionAttributes: factory.action.transfer.send.
                 text: emailMessage.text,
                 // html: '<strong>and easy to do anywhere, even with Node.js</strong>',
                 // categories: ['Transactional', 'My category'],
-                // tslint:disable-next-line:no-suspicious-comment
-                // TODO 送信予定を追加することもできるが、タスクの実行予定日時でコントロールするかもしれないのでいったん保留
+                // 送信予定を追加することもできるが、タスクの実行予定日時でコントロールする想定
                 // sendAt: moment(email.send_at).unix(),
                 // 追跡用に通知IDをカスタムフィールドとしてセットする
                 customArgs: {
@@ -102,7 +59,7 @@ export function sendEmailMessage(actionAttributes: factory.action.transfer.send.
 
             debug('requesting sendgrid api...', msg);
             const response = await sgMail.send(msg);
-            debug('response is', response);
+            debug('email sent. status code:', response[0].statusCode);
 
             // check the response.
             if (response[0].statusCode !== httpStatus.ACCEPTED) {

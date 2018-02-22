@@ -289,8 +289,7 @@ export async function createRefundEmail(params: {
                             sender: {
                                 typeOf: seller.typeOf,
                                 name: seller.name,
-                                // tslint:disable-next-line:no-suspicious-comment
-                                email: 'noreply@ticket-cinemasunshine.com' // TODO どこかに保管
+                                email: 'noreply@ticket-cinemasunshine.com'
                             },
                             toRecipient: {
                                 typeOf: params.transaction.agent.typeOf,

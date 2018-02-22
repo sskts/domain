@@ -52,10 +52,12 @@ export function create(
         if (seatReservationAuthorizeActions.length === 0) {
             throw new factory.errors.Argument('transactionId', '座席予約が見つかりません。');
         }
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO 座席予約承認はひとつしかない仕様ではあるが、万が一データとして複数存在した場合の挙動を考慮できていない
-        const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
+        // 座席予約承認はひとつしかない仕様
+        if (seatReservationAuthorizeActions.length > 1) {
+            throw new factory.errors.Argument('transactionId', '座席予約が複数見つかりました。');
+        }
 
+        const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
         const seatReservationAuthorizeActionObject = seatReservationAuthorizeAction.object;
         const seatReservationAuthorizeActionResult =
             <factory.action.authorize.seatReservation.IResult>seatReservationAuthorizeAction.result;
@@ -137,7 +139,7 @@ export function create(
             object: authorizeObject,
             agent: transaction.agent,
             recipient: transaction.seller,
-            purpose: { ...transaction, typeOf: <any>factory.action.authorize.authorizeActionPurpose.Mvtk }
+            purpose: transaction // purposeは取引
         });
         const action = await actionRepo.start<factory.action.authorize.mvtk.IAction>(actionAttributes);
 

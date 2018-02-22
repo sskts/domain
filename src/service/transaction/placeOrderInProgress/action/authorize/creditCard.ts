@@ -65,10 +65,7 @@ export function create(
             },
             agent: transaction.agent,
             recipient: transaction.seller,
-            // 互換性維持のためにtypeOFを一時的に変更
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO 変更を削除する
-            purpose: { ...transaction, typeOf: <any>factory.action.authorize.authorizeActionPurpose.CreditCard }
+            purpose: transaction // purposeは取引
         });
         const action = await actionRepo.start<factory.action.authorize.creditCard.IAction>(actionAttributes);
 
@@ -167,8 +164,6 @@ export function cancel(
         // オーソリ取消
         // 現時点では、ここで失敗したらオーソリ取消をあきらめる
         // GMO混雑エラーはここでも発生する(取消処理でも混雑エラーが発生することは確認済)
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO リトライするためにも、処理を非同期に変更する
         try {
             await GMO.services.credit.alterTran({
                 shopId: actionResult.entryTranArgs.shopId,
