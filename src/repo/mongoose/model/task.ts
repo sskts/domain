@@ -1,3 +1,4 @@
+import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
 const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
@@ -98,11 +99,14 @@ schema.index(
 );
 
 // 特定のEメールメッセージタスク検索に使用
+// ひとつの注文取引に対する購入完了メールはユニークなはず
 schema.index(
-    { 'data.emailMessage.identifier': 1, name: 1 },
+    { 'data.actionAttributes.object.identifier': 1, name: 1 },
     {
+        unique: true,
         partialFilterExpression: {
-            'data.emailMessage.identifier': { $exists: true }
+            name: factory.taskName.SendEmailMessage,
+            'data.actionAttributes.object.identifier': { $exists: true }
         }
     }
 );
