@@ -78,16 +78,7 @@ schema.index(
 );
 
 // 測定データ作成時に使用
-schema.index(
-    { createdAt: 1, lastTriedAt: 1 },
-    {
-        partialFilterExpression: {
-            lastTriedAt: { $type: 'date' }
-        }
-    }
-);
-schema.index({ status: 1, createdAt: 1 });
-schema.index({ createdAt: 1 });
+schema.index({ status: 1, runsAt: 1 });
 schema.index({ name: 1, createdAt: 1 });
 schema.index(
     { status: 1, name: 1, lastTriedAt: 1 },

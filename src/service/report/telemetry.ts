@@ -831,28 +831,13 @@ function createGlobalStock(measuredAt: Date): TaskOperation<IGlobalStockResult> 
     return async (
         taskRepo: TaskRepo
     ) => {
+        // 待機状態のタスク数を算出
+        debug('counting waiting tasks globally...');
         const numberOfTasksUnexecuted = await taskRepo.taskModel.count({
-            $or: [
-                // {measuredAt}以前に作成され、{measuredAt}以後に実行試行されたタスク
-                {
-                    createdAt: {
-                        $lte: measuredAt
-                    },
-                    lastTriedAt: {
-                        $type: 'date',
-                        $gt: measuredAt
-                    }
-                },
-                // {measuredAt}以前に作成され、いまだに未実行のタスク
-                {
-                    createdAt: {
-                        $lte: measuredAt
-                    },
-                    status: factory.taskStatus.Ready
-                }
-            ]
+            runsAt: { $lt: measuredAt }, // 実行日時を超過している
+            status: { $in: [factory.taskStatus.Ready, factory.taskStatus.Running] }
         }).exec();
-        debug('numberOfTasksUnexecuted:', numberOfTasksUnexecuted);
+        debug('global waiting tasks count', numberOfTasksUnexecuted);
 
         return {
             tasks: {
