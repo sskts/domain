@@ -257,6 +257,7 @@ export function confirm(
         }
 
         const seller = await organizationRepo.findMovieTheaterById(transaction.seller.id);
+        debug('seller found.', seller.identifier);
 
         const customerContact = transaction.object.customerContact;
         if (customerContact === undefined) {
@@ -354,20 +355,20 @@ export function confirm(
             ownershipInfos: ownershipInfos
         };
 
-        const emailMessage = await createEmailMessageFromTransaction({
-            transaction: transaction,
-            customerContact: customerContact,
-            order: order,
-            seller: seller
-        });
-        const sendEmailMessageActionAttributes = factory.action.transfer.send.message.email.createAttributes({
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
-            object: emailMessage,
-            agent: transaction.seller,
-            recipient: transaction.agent,
-            potentialActions: {},
-            purpose: order
-        });
+        // const emailMessage = await createEmailMessageFromTransaction({
+        //     transaction: transaction,
+        //     customerContact: customerContact,
+        //     order: order,
+        //     seller: seller
+        // });
+        // const sendEmailMessageActionAttributes = factory.action.transfer.send.message.email.createAttributes({
+        //     actionStatus: factory.actionStatusType.ActiveActionStatus,
+        //     object: emailMessage,
+        //     agent: transaction.seller,
+        //     recipient: transaction.agent,
+        //     potentialActions: {},
+        //     purpose: order
+        // });
         const potentialActions: factory.transaction.placeOrder.IPotentialActions = {
             order: factory.action.trade.order.createAttributes({
                 object: order,
@@ -384,8 +385,10 @@ export function confirm(
                         agent: transaction.seller,
                         recipient: transaction.agent,
                         potentialActions: {
-                            // 通知アクション
-                            sendEmailMessage: sendEmailMessageActionAttributes
+                            // tslint:disable-next-line:no-suspicious-comment
+                            // TODO メール送信アクションをセットする
+                            // 現時点では、フロントエンドからメール送信タスクを作成しているので不要
+                            // sendEmailMessage: sendEmailMessageActionAttributes
                         }
                     })
                 }
