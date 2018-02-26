@@ -222,7 +222,7 @@ describe('action.authorize.mvtk.create()', () => {
                 zskInfo: []
             }
         };
-        const seatReservationAuthorizeActions = [];
+        const seatReservationAuthorizeActions: any[] = [];
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);

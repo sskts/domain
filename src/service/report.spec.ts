@@ -25,7 +25,7 @@ describe('service.report.telemetry.search()', () => {
 
     it('DBが正常であれば、配列を取得できるはず', async () => {
         const conditions = {};
-        const telemetries = [];
+        const telemetries: any[] = [];
         const telemetryRepo = new sskts.repository.Telemetry(sskts.mongoose.connection);
 
         sandbox.mock(telemetryRepo.telemetryModel).expects('find').once()

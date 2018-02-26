@@ -13,45 +13,6 @@ import { MongoRepository as TransactionRepo } from '../../../../../repo/transact
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:pecorino');
 
-export namespace AuthorizeActionFactory {
-    export type IAgent = any;
-    export type IRecipient = any;
-    export interface IObject {
-        transactionId: string;
-        price: number;
-    }
-    export type IAction = any;
-    export interface IResult {
-        price: number;
-        pecorinoTransaction: any;
-        pecorinoEndpoint: string;
-    }
-
-    export function createAttributes(params: {
-        actionStatus: factory.actionStatusType;
-        result?: IResult;
-        object: IObject;
-        agent: IAgent;
-        recipient: IRecipient;
-        startDate: Date;
-        endDate?: Date;
-    }) {
-        return {
-            actionStatus: params.actionStatus,
-            typeOf: factory.actionType.AuthorizeAction,
-            purpose: {
-                typeOf: 'Pecorino'
-            },
-            result: params.result,
-            object: params.object,
-            agent: params.agent,
-            recipient: params.recipient,
-            startDate: params.startDate,
-            endDate: params.endDate
-        };
-    }
-}
-
 export type ICreateOperation<T> = (
     actionRepo: ActionRepo,
     transactionRepo: TransactionRepo,
@@ -65,7 +26,7 @@ export function create(
     agentId: string,
     transactionId: string,
     price: number
-): ICreateOperation<factory.action.authorize.IAction<any>> {
+): ICreateOperation<factory.action.authorize.pecorino.IAction> {
     // tslint:disable-next-line:max-func-body-length
     return async (
         actionRepo: ActionRepo,
@@ -79,17 +40,17 @@ export function create(
         }
 
         // 承認アクションを開始する
-        const action = await actionRepo.start({
-            typeOf: factory.actionType.AuthorizeAction,
-            agent: transaction.agent,
+        const actionAttributes = factory.action.authorize.pecorino.createAttributes({
             object: {
-                typeOf: 'Pecorino',
+                typeOf: factory.action.authorize.pecorino.ObjectType.Pecorino,
                 transactionId: transactionId,
                 price: price
             },
+            agent: transaction.agent,
             recipient: transaction.seller,
             purpose: transaction
         });
+        const action = await actionRepo.start<factory.action.authorize.pecorino.IAction>(actionAttributes);
 
         // Pecorinoオーソリ取得
         let pecorinoTransaction: any;
@@ -111,7 +72,8 @@ export function create(
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */error;
                 await actionRepo.giveUp(action.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
@@ -123,18 +85,18 @@ export function create(
         // アクションを完了
         debug('ending authorize action...');
 
-        return actionRepo.complete(
-            action.typeOf,
-            action.id,
-            {
-                price: price,
-                pecorinoTransaction: pecorinoTransaction,
-                pecorinoEndpoint: payTransactionService.options.endpoint
-            }
-        );
+        const actionResult: factory.action.authorize.pecorino.IResult = {
+            price: price,
+            pecorinoTransaction: pecorinoTransaction,
+            pecorinoEndpoint: payTransactionService.options.endpoint
+        };
+
+        return actionRepo.complete<factory.action.authorize.pecorino.IAction>(action.typeOf, action.id, actionResult);
     };
 }
 
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 export function cancel(
     agentId: string,
     transactionId: string,

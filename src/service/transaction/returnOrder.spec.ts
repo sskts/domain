@@ -242,7 +242,7 @@ describe('service.transaction.returnOrder.start()', () => {
             expires: new Date(),
             object: { transaction: placeOrderTransaction }
         };
-        const actionsOnOrder = [];
+        const actionsOnOrder: any[] = [];
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
@@ -635,7 +635,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
             expires: new Date(),
             object: { transaction: placeOrderTransaction }
         };
-        const actionsOnOrder = [];
+        const actionsOnOrder: any[] = [];
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);

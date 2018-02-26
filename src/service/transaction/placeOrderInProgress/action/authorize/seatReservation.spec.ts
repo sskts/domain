@@ -225,7 +225,7 @@ describe('action.authorize.seatReservation.create()', () => {
                 mvtkSalesPrice: 1000
             }
         }];
-        const salesTickets = [];
+        const salesTickets: any[] = [];
         const reserveSeatsTemporarilyResult = <any>{};
         const action = {
             typeOf: sskts.factory.actionType.AuthorizeAction,

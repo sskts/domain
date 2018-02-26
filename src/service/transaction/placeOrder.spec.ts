@@ -406,7 +406,7 @@ describe('download', () => {
             startFrom: new Date(),
             startThrough: new Date()
         };
-        const transactions = [];
+        const transactions: any[] = [];
 
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 

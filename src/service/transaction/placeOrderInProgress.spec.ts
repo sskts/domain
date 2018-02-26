@@ -1554,7 +1554,7 @@ describe('createOrderFromTransaction()', () => {
                     isGift: false
                 });
             },
-            (err) => {
+            (err: any) => {
                 assert(err instanceof sskts.factory.errors.NotImplemented);
                 sandbox.verify();
 
@@ -1620,7 +1620,7 @@ describe('createOrderFromTransaction()', () => {
                     isGift: false
                 });
             },
-            (err) => {
+            (err: any) => {
                 assert(err instanceof sskts.factory.errors.Argument);
                 sandbox.verify();
 
@@ -1698,7 +1698,7 @@ describe('createOrderFromTransaction()', () => {
                     isGift: false
                 });
             },
-            (err) => {
+            (err: any) => {
                 assert(err instanceof sskts.factory.errors.Argument);
                 sandbox.verify();
 
@@ -1770,7 +1770,7 @@ describe('createOrderFromTransaction()', () => {
                     isGift: false
                 });
             },
-            (err) => {
+            (err: any) => {
                 assert(err instanceof sskts.factory.errors.Argument);
                 sandbox.verify();
 
@@ -1855,7 +1855,7 @@ describe('validateTransaction()', () => {
             () => {
                 sskts.service.transaction.placeOrderInProgress.validateTransaction(<any>transaction);
             },
-            (err) => {
+            (err: any) => {
                 assert(err instanceof sskts.factory.errors.Argument);
                 sandbox.verify();
 
@@ -1934,7 +1934,7 @@ describe('validateTransaction()', () => {
             () => {
                 sskts.service.transaction.placeOrderInProgress.validateTransaction(<any>transaction);
             },
-            (err) => {
+            (err: any) => {
                 assert(err instanceof sskts.factory.errors.Argument);
                 sandbox.verify();
 
