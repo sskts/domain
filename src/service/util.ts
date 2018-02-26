@@ -1,5 +1,4 @@
 /**
- * util service
  * ユーティリティサービス
  * @namespace service.util
  */

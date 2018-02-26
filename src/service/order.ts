@@ -76,69 +76,73 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (orderPotentialActions.sendOrder !== undefined) {
-            taskAttributes.push(factory.task.sendOrder.createAttributes({
-                status: factory.taskStatus.Ready,
-                runsAt: now, // なるはやで実行
-                remainingNumberOfTries: 10,
-                lastTriedAt: null,
-                numberOfTried: 0,
-                executionResults: [],
-                data: {
-                    transactionId: transactionId
-                }
-            }));
-        }
+        if (orderPotentialActions !== undefined) {
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (orderPotentialActions.sendOrder !== undefined) {
+                taskAttributes.push(factory.task.sendOrder.createAttributes({
+                    status: factory.taskStatus.Ready,
+                    runsAt: now, // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transactionId
+                    }
+                }));
+            }
 
-        // クレジットカード決済
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (orderPotentialActions.payCreditCard !== undefined) {
-            taskAttributes.push(factory.task.payCreditCard.createAttributes({
-                status: factory.taskStatus.Ready,
-                runsAt: now, // なるはやで実行
-                remainingNumberOfTries: 10,
-                lastTriedAt: null,
-                numberOfTried: 0,
-                executionResults: [],
-                data: {
-                    transactionId: transactionId
-                }
-            }));
-        }
+            // クレジットカード決済
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (orderPotentialActions.payCreditCard !== undefined) {
+                taskAttributes.push(factory.task.payCreditCard.createAttributes({
+                    status: factory.taskStatus.Ready,
+                    runsAt: now, // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transactionId
+                    }
+                }));
+            }
 
-        // Pecorino決済
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (orderPotentialActions.payPecorino !== undefined) {
-            taskAttributes.push(factory.task.payPecorino.createAttributes({
-                status: factory.taskStatus.Ready,
-                runsAt: now, // なるはやで実行
-                remainingNumberOfTries: 10,
-                lastTriedAt: null,
-                numberOfTried: 0,
-                executionResults: [],
-                data: {
-                    transactionId: transactionId
-                }
-            }));
-        }
+            // Pecorino決済
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (orderPotentialActions.payPecorino !== undefined) {
+                taskAttributes.push(factory.task.payPecorino.createAttributes({
+                    status: factory.taskStatus.Ready,
+                    runsAt: now, // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transactionId
+                    }
+                }));
+            }
 
-        // ムビチケ使用
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (orderPotentialActions.useMvtk !== undefined) {
-            taskAttributes.push(factory.task.useMvtk.createAttributes({
-                status: factory.taskStatus.Ready,
-                runsAt: now, // なるはやで実行
-                remainingNumberOfTries: 10,
-                lastTriedAt: null,
-                numberOfTried: 0,
-                executionResults: [],
-                data: {
-                    transactionId: transactionId
-                }
-            }));
+            // ムビチケ使用
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (orderPotentialActions.useMvtk !== undefined) {
+                taskAttributes.push(factory.task.useMvtk.createAttributes({
+                    status: factory.taskStatus.Ready,
+                    runsAt: now, // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transactionId
+                    }
+                }));
+            }
         }
 
         // タスク保管
@@ -259,19 +263,23 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (returnActionAttributes.potentialActions.refund !== undefined) {
-            // 返金タスク作成
-            taskAttributes.push(factory.task.refundCreditCard.createAttributes({
-                status: factory.taskStatus.Ready,
-                runsAt: now, // なるはやで実行
-                remainingNumberOfTries: 10,
-                lastTriedAt: null,
-                numberOfTried: 0,
-                executionResults: [],
-                data: {
-                    transactionId: transactionId
-                }
-            }));
+        if (returnActionAttributes.potentialActions !== undefined) {
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (returnActionAttributes.potentialActions.refund !== undefined) {
+                // 返金タスク作成
+                taskAttributes.push(factory.task.refundCreditCard.createAttributes({
+                    status: factory.taskStatus.Ready,
+                    runsAt: now, // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transactionId
+                    }
+                }));
+            }
         }
 
         // タスク保管

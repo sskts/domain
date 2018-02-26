@@ -33,8 +33,12 @@ export function payPecorino(transactionId: string) {
         if (potentialActions === undefined) {
             throw new factory.errors.NotFound('transaction.potentialActions');
         }
+        const orderPotentialActions = potentialActions.order.potentialActions;
+        if (orderPotentialActions === undefined) {
+            throw new factory.errors.NotFound('order.potentialActions');
+        }
 
-        const payActionAttributes = potentialActions.order.potentialActions.payPecorino;
+        const payActionAttributes = orderPotentialActions.payPecorino;
         if (payActionAttributes !== undefined) {
             // Pecorino承認アクションがあるはず
             const authorizeAction = <any>transaction.object.authorizeActions
@@ -150,8 +154,12 @@ export function payCreditCard(transactionId: string) {
         if (potentialActions === undefined) {
             throw new factory.errors.NotFound('transaction.potentialActions');
         }
+        const orderPotentialActions = potentialActions.order.potentialActions;
+        if (orderPotentialActions === undefined) {
+            throw new factory.errors.NotFound('order.potentialActions');
+        }
 
-        const payActionAttributes = potentialActions.order.potentialActions.payCreditCard;
+        const payActionAttributes = orderPotentialActions.payCreditCard;
         if (payActionAttributes !== undefined) {
             // クレジットカード承認アクションがあるはず
             const authorizeAction = <factory.action.authorize.creditCard.IAction>transaction.object.authorizeActions
@@ -245,10 +253,14 @@ export function refundCreditCard(transactionId: string) {
         if (placeOrderTransactionResult === undefined) {
             throw new factory.errors.NotFound('placeOrderTransaction.result');
         }
+        const returnOrderPotentialActions = potentialActions.returnOrder.potentialActions;
+        if (returnOrderPotentialActions === undefined) {
+            throw new factory.errors.NotFound('returnOrder.potentialActions');
+        }
 
         await Promise.all(authorizeActions.map(async (authorizeAction) => {
             // アクション開始
-            const refundActionAttributes = potentialActions.returnOrder.potentialActions.refund;
+            const refundActionAttributes = returnOrderPotentialActions.refund;
             const action = await actionRepo.start<factory.action.trade.refund.IAction>(refundActionAttributes);
 
             let alterTranResult: GMO.services.credit.IAlterTranResult;
@@ -317,18 +329,22 @@ function onRefund(refundActionAttributes: factory.action.trade.refund.IAttribute
         const taskAttributes: factory.task.IAttributes[] = [];
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (potentialActions.sendEmailMessage !== undefined) {
-            taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
-                status: factory.taskStatus.Ready,
-                runsAt: now, // なるはやで実行
-                remainingNumberOfTries: 3,
-                lastTriedAt: null,
-                numberOfTried: 0,
-                executionResults: [],
-                data: {
-                    actionAttributes: potentialActions.sendEmailMessage
-                }
-            }));
+        if (potentialActions !== undefined) {
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (potentialActions.sendEmailMessage !== undefined) {
+                taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
+                    status: factory.taskStatus.Ready,
+                    runsAt: now, // なるはやで実行
+                    remainingNumberOfTries: 3,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        actionAttributes: potentialActions.sendEmailMessage
+                    }
+                }));
+            }
         }
 
         // タスク保管
@@ -366,8 +382,12 @@ export function useMvtk(transactionId: string) {
         if (potentialActions === undefined) {
             throw new factory.errors.NotFound('transaction.potentialActions');
         }
+        const orderPotentialActions = potentialActions.order.potentialActions;
+        if (orderPotentialActions === undefined) {
+            throw new factory.errors.NotFound('order.potentialActions');
+        }
 
-        const useActionAttributes = potentialActions.order.potentialActions.useMvtk;
+        const useActionAttributes = orderPotentialActions.useMvtk;
         if (useActionAttributes !== undefined) {
             // ムビチケ承認アクションがあるはず
             // const authorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions

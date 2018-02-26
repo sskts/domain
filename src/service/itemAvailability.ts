@@ -1,5 +1,5 @@
 /**
- * itemAvailability service
+ * 注文アイテムの在庫状況を表現するサービス
  * @namespace service.itemAvailability
  */
 

@@ -1,5 +1,4 @@
 /**
- * master data synchronization service
  * マスターデータ同期サービス
  * @namespace service.masterSync
  */

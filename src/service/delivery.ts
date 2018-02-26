@@ -25,6 +25,7 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  */
 // tslint:disable-next-line:max-func-body-length
 export function sendOrder(transactionId: string) {
+    // tslint:disable-next-line:max-func-body-length
     return async (
         actionRepo: ActionRepo,
         orderRepo: OrderRepo,
@@ -59,9 +60,13 @@ export function sendOrder(transactionId: string) {
         if (customerContact === undefined) {
             throw new factory.errors.NotFound('transaction.object.customerContact');
         }
+        const orderPotentialActions = potentialActions.order.potentialActions;
+        if (orderPotentialActions === undefined) {
+            throw new factory.errors.NotFound('order.potentialActions');
+        }
 
         // アクション開始
-        const sendOrderActionAttributes = potentialActions.order.potentialActions.sendOrder;
+        const sendOrderActionAttributes = orderPotentialActions.sendOrder;
         const action = await actionRepo.start<factory.action.transfer.send.order.IAction>(sendOrderActionAttributes);
 
         try {
@@ -147,29 +152,33 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (potentialActions.sendEmailMessage !== undefined) {
-            // 互換性維持のため、すでにメール送信タスクが存在するかどうか確認し、なければタスク追加
-            const sendEmailMessageTaskDoc = await taskRepo.taskModel.findOne({
-                name: factory.taskName.SendEmailMessage,
-                'data.actionAttributes.object.identifier': {
-                    $exists: true,
-                    $eq: potentialActions.sendEmailMessage.object.identifier
-                }
-            }).exec();
+        if (potentialActions !== undefined) {
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (sendEmailMessageTaskDoc === null) {
-                taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: now, // なるはやで実行
-                    remainingNumberOfTries: 3,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        actionAttributes: potentialActions.sendEmailMessage
+            if (potentialActions.sendEmailMessage !== undefined) {
+                // 互換性維持のため、すでにメール送信タスクが存在するかどうか確認し、なければタスク追加
+                const sendEmailMessageTaskDoc = await taskRepo.taskModel.findOne({
+                    name: factory.taskName.SendEmailMessage,
+                    'data.actionAttributes.object.identifier': {
+                        $exists: true,
+                        $eq: potentialActions.sendEmailMessage.object.identifier
                     }
-                }));
+                }).exec();
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore else */
+                if (sendEmailMessageTaskDoc === null) {
+                    taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
+                        status: factory.taskStatus.Ready,
+                        runsAt: now, // なるはやで実行
+                        remainingNumberOfTries: 3,
+                        lastTriedAt: null,
+                        numberOfTried: 0,
+                        executionResults: [],
+                        data: {
+                            actionAttributes: potentialActions.sendEmailMessage
+                        }
+                    }));
+                }
             }
         }
 

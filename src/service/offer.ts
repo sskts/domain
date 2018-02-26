@@ -1,7 +1,5 @@
 /**
- * event service
- * イベントサービス
- * @namespace service.event
+ * 販売情報サービス
  */
 
 import * as factory from '@motionpicture/sskts-factory';
@@ -10,7 +8,7 @@ import * as createDebug from 'debug';
 import { MongoRepository as EventRepository } from '../repo/event';
 import { MongoRepository as IndividualScreeningEventItemAvailabilityRepository } from '../repo/itemAvailability/individualScreeningEvent';
 
-const debug = createDebug('sskts-domain:service:event');
+const debug = createDebug('sskts-domain:service:offer');
 
 export type IEventOperation<T> = (
     eventRepository: EventRepository,

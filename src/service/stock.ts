@@ -1,6 +1,5 @@
 /**
- * stock service
- * 在庫の管理に対して責任を負うサービス
+ * 在庫管理(在庫数調整)サービス
  * @namespace service.stock
  */
 

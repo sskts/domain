@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - install typescript@2.7.x.
 - install tslint@5.9.x.
 - install mongoose@5.x.x.
+- イベント検索サービスを販売情報提供サービスとして名前変更。
 
 ### Deprecated
 

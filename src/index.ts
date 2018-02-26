@@ -13,10 +13,10 @@ import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
 import * as DeliveryService from './service/delivery';
-import * as EventService from './service/event';
 import * as ItemAvailabilityService from './service/itemAvailability';
 import * as MasterSyncService from './service/masterSync';
 import * as NotificationService from './service/notification';
+import * as OfferService from './service/offer';
 import * as OrderService from './service/order';
 import * as PaymentService from './service/payment';
 import * as PersonContactService from './service/person/contact';
@@ -119,7 +119,7 @@ export namespace repository {
 
 export namespace service {
     export import delivery = DeliveryService;
-    export import event = EventService;
+    export import offer = OfferService;
     export import itemAvailability = ItemAvailabilityService;
     export import masterSync = MasterSyncService;
     export import notification = NotificationService;

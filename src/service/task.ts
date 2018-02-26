@@ -1,7 +1,6 @@
 /**
- * task service
  * タスクサービス
- * @namespace service/task
+ * @namespace service.task
  */
 
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
