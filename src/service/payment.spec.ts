@@ -15,7 +15,10 @@ before(() => {
     sandbox = sinon.sandbox.create();
     existingTransaction = {
         id: '123',
+        agent: { typeOf: 'Person' },
+        seller: { typeOf: sskts.factory.organizationType.MovieTheater },
         object: {
+            customerContact: {},
             authorizeActions: [
                 {
                     id: 'actionId',
@@ -39,10 +42,11 @@ before(() => {
         },
         potentialActions: {
             order: {
-                typeOf: 'actionType',
+                typeOf: sskts.factory.actionType.OrderAction,
                 potentialActions: {
-                    payCreditCard: { typeOf: 'actionType' },
-                    useMvtk: { typeOf: 'actionType' }
+                    payCreditCard: { typeOf: sskts.factory.actionType.PayAction },
+                    payPecorino: { typeOf: sskts.factory.actionType.PayAction },
+                    useMvtk: { typeOf: sskts.factory.actionType.UseAction }
                 }
             }
         }
@@ -80,7 +84,212 @@ describe('cancelCreditCardAuth()', () => {
     });
 });
 
-describe('settleCreditCardAuth()', () => {
+describe('payPecorino()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('Pecorinoサービスが正常であれば決済できるはず', async () => {
+        const transaction = {
+            ...existingTransaction,
+            object: {
+                customerContact: {},
+                authorizeActions: [
+                    {
+                        id: 'actionId',
+                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+                        purpose: {},
+                        object: {
+                            typeOf: 'Pecorino'
+                        },
+                        result: {
+                            price: 123,
+                            pecorinoTransaction: {
+                                id: 'pecorinoTransactionId',
+                                object: {
+                                    accountId: 'accountId'
+                                }
+                            },
+                            pecorinoEndpoint: 'https@example.com'
+                        }
+                    }
+                ]
+            }
+        };
+        const action = { id: 'actionId' };
+        const pecorinoDepositTransaction = { id: 'transactionId' };
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
+            domain: 'https@example.com',
+            clientId: 'clientId',
+            clientSecret: 'clientId',
+            scopes: [],
+            state: ''
+        });
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo).expects('start').once()
+            .withExactArgs(existingTransaction.potentialActions.order.potentialActions.payPecorino).resolves(action);
+        sandbox.mock(actionRepo).expects('complete').once()
+            .withArgs(existingTransaction.potentialActions.order.potentialActions.payPecorino.typeOf, action.id).resolves(action);
+        sandbox.mock(actionRepo).expects('giveUp').never();
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Pay.prototype).expects('confirm').once().resolves();
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Deposit.prototype).expects('start').once().resolves(pecorinoDepositTransaction);
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Deposit.prototype).expects('confirm').once().resolves();
+
+        const result = await sskts.service.payment.payPecorino(
+            existingTransaction.id
+        )(actionRepo, transactionRepo, pecorinoAuthClient);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('注文アクションの潜在アクションにPecorino決済がなければ何もしないはず', async () => {
+        const transaction = {
+            ...existingTransaction,
+            potentialActions: {
+                order: { potentialActions: {} }
+            }
+        };
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.payment.payPecorino(
+            existingTransaction.id
+        )(actionRepo, transactionRepo, pecorinoAuthClient);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('Pecorinoサービスでエラーが発生すればアクションにエラー結果が追加されるはず', async () => {
+        const transaction = {
+            ...existingTransaction,
+            object: {
+                customerContact: {},
+                authorizeActions: [
+                    {
+                        id: 'actionId',
+                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+                        purpose: {},
+                        object: {
+                            typeOf: 'Pecorino'
+                        },
+                        result: {
+                            price: 123,
+                            pecorinoTransaction: {
+                                id: 'pecorinoTransactionId',
+                                object: {
+                                    accountId: 'accountId'
+                                }
+                            },
+                            pecorinoEndpoint: 'https@example.com'
+                        }
+                    }
+                ]
+            }
+        };
+        const action = { id: 'actionId' };
+        const confirmPecorinoTransactionResult = new Error('confirmPecorinoTransactionError');
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo).expects('start').once()
+            .withExactArgs(existingTransaction.potentialActions.order.potentialActions.payPecorino).resolves(action);
+        sandbox.mock(actionRepo).expects('complete').never();
+        sandbox.mock(actionRepo).expects('giveUp').once()
+            .withArgs(existingTransaction.potentialActions.order.potentialActions.payPecorino.typeOf, action.id).resolves(action);
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Pay.prototype).expects('confirm').once()
+            .rejects(confirmPecorinoTransactionResult);
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Deposit.prototype).expects('start').never();
+
+        const result = await sskts.service.payment.payPecorino(
+            existingTransaction.id
+        )(actionRepo, transactionRepo, pecorinoAuthClient).catch((err) => err);
+
+        assert.deepEqual(result, confirmPecorinoTransactionResult);
+        sandbox.verify();
+    });
+
+    it('注文取引結果が未定義であればNotFoundエラーとなるはず', async () => {
+        const transaction = {
+            ...existingTransaction,
+            result: undefined
+        };
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo).expects('start').never();
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Pay.prototype).expects('confirm').never();
+
+        const result = await sskts.service.payment.payPecorino(
+            existingTransaction.id
+        )(actionRepo, transactionRepo, pecorinoAuthClient).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+
+    it('注文取引の潜在アクションが未定義であればNotFoundエラーとなるはず', async () => {
+        const transaction = {
+            ...existingTransaction,
+            potentialActions: undefined
+        };
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo).expects('start').never();
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Pay.prototype).expects('confirm').never();
+
+        const result = await sskts.service.payment.payPecorino(
+            existingTransaction.id
+        )(actionRepo, transactionRepo, pecorinoAuthClient).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+
+    it('注文アクションの潜在アクションが未定義であればNotFoundエラーとなるはず', async () => {
+        const transaction = {
+            ...existingTransaction,
+            potentialActions: { order: {} }
+        };
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo).expects('start').never();
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Pay.prototype).expects('confirm').never();
+
+        const result = await sskts.service.payment.payPecorino(
+            existingTransaction.id
+        )(actionRepo, transactionRepo, pecorinoAuthClient).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+});
+
+describe('payCreditCard()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -115,7 +324,7 @@ describe('settleCreditCardAuth()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(existingTransaction.id).resolves(transaction);
+            .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.payCreditCard(transaction.id)(
@@ -133,12 +342,36 @@ describe('settleCreditCardAuth()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(existingTransaction.id).resolves(transaction);
+            .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.payCreditCard(transaction.id)(
             actionRepo, transactionRepo
         ).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+
+    it('注文アクションの潜在アクションが未定義であれば、NotFoundエラーとなるはず', async () => {
+        const transaction = {
+            ...existingTransaction,
+            potentialActions: {
+                order: {
+                    typeOf: 'actionType'
+                    // potentialActions: {}
+                }
+            }
+        };
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.payment.payCreditCard(transaction.id)(actionRepo, transactionRepo)
+            .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -225,7 +458,7 @@ describe('cancelMvtk()', () => {
     });
 });
 
-describe('settleMvtk()', () => {
+describe('useMvtk()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -275,6 +508,27 @@ describe('settleMvtk()', () => {
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
             .withExactArgs(placeOrderTransaction.id).resolves(placeOrderTransaction);
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.payment.useMvtk(existingTransaction.id)(actionRepo, transactionRepo)
+            .catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+
+    it('注文アクションの潜在アクションが未定義であればNotFoundエラーとなるはず', async () => {
+        const transaction = {
+            ...existingTransaction,
+            potentialActions: {
+                order: {}
+            }
+        };
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.useMvtk(existingTransaction.id)(actionRepo, transactionRepo)
@@ -406,6 +660,33 @@ describe('refundCreditCard()', () => {
                         refund: refundActionAttributes
                     }
                 }
+            }
+        };
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findReturnOrderById').once()
+            .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.payment.refundCreditCard(returnOrderTransaction.id)(
+            actionRepo, transactionRepo, taskRepo
+        ).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+
+    it('注文返品アクションの潜在アクションが未定義であればNotFoundエラーとなるはず', async () => {
+        const placeOrderTransaction = { ...existingTransaction };
+        const returnOrderTransaction = {
+            id: 'returnOrderTransactionId',
+            typeOf: sskts.factory.transactionType.ReturnOrder,
+            object: { transaction: placeOrderTransaction },
+            potentialActions: {
+                returnOrder: {}
             }
         };
 

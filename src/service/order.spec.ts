@@ -33,6 +33,7 @@ describe('createFromTransaction()', () => {
                     potentialActions: {
                         sendOrder: { typeOf: sskts.factory.actionType.SendAction },
                         payCreditCard: { typeOf: sskts.factory.actionType.PayAction },
+                        payPecorino: { typeOf: sskts.factory.actionType.PayAction },
                         useMvtk: { typeOf: sskts.factory.actionType.UseAction }
                     }
                 }
@@ -54,7 +55,7 @@ describe('createFromTransaction()', () => {
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(orderRepo).expects('createIfNotExist').once()
             .withExactArgs(transaction.result.order).resolves();
-        sandbox.mock(taskRepo).expects('save').thrice();
+        sandbox.mock(taskRepo).expects('save').exactly(Object.keys(transaction.potentialActions.order.potentialActions).length);
 
         const result = await sskts.service.order.createFromTransaction(transaction.id)(actionRepo, orderRepo, transactionRepo, taskRepo);
 

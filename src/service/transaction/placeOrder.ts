@@ -116,6 +116,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
 
 /**
  * 確定取引についてメールを送信する
+ * @deprecated v24.0.0で廃止予定
  * @export
  * @param transactionId 取引ID
  * @param emailMessageAttributes Eメールメッセージ属性
@@ -130,6 +131,8 @@ export function sendEmail(
             throw new factory.errors.Forbidden('Transaction not confirmed.');
         }
         const transactionResult = transaction.result;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore next */
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
         }

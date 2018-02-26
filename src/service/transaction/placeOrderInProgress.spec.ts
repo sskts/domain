@@ -491,7 +491,23 @@ describe('confirm()', () => {
                     execTranResult: {
                         orderId: 'orderId'
                     },
-                    price: 1234
+                    price: 1000
+                },
+                endDate: new Date(),
+                purpose: {}
+            }
+        ];
+        const pecorinoAuthorizeActions = [
+            {
+                id: 'actionId',
+                actionStatus: 'CompletedActionStatus',
+                agent: transaction.agent,
+                object: {
+                    typeOf: 'Pecorino'
+                },
+                result: {
+                    price: 234,
+                    pecorinoTransaction: { id: 'pecorinoTransactionId' }
                 },
                 endDate: new Date(),
                 purpose: {}
@@ -626,11 +642,18 @@ describe('confirm()', () => {
                 name: `${transaction.object.customerContact.familyName} ${transaction.object.customerContact.givenName}`,
                 url: ''
             },
-            paymentMethods: [{
-                name: 'クレジットカード',
-                paymentMethod: sskts.factory.paymentMethodType.CreditCard,
-                paymentMethodId: creditCardAuthorizeActions[0].result.execTranResult.orderId
-            }],
+            paymentMethods: [
+                {
+                    name: 'クレジットカード',
+                    paymentMethod: sskts.factory.paymentMethodType.CreditCard,
+                    paymentMethodId: creditCardAuthorizeActions[0].result.execTranResult.orderId
+                },
+                {
+                    name: 'Pecorino',
+                    paymentMethod: 'Pecorino',
+                    paymentMethodId: pecorinoAuthorizeActions[0].result.pecorinoTransaction.id
+                }
+            ],
             discounts: [],
             price: 1234,
             priceCurrency: sskts.factory.priceCurrency.JPY,
@@ -649,7 +672,11 @@ describe('confirm()', () => {
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
-            .withExactArgs(transaction.id).resolves([...creditCardAuthorizeActions, ...seatReservationAuthorizeActions]);
+            .withExactArgs(transaction.id).resolves([
+                ...creditCardAuthorizeActions,
+                ...seatReservationAuthorizeActions,
+                ...pecorinoAuthorizeActions
+            ]);
         sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').once().returns(eventReservations);
         sandbox.mock(sskts.factory.ownershipInfo).expects('create').exactly(order.acceptedOffers.length).returns([]);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();

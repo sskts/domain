@@ -97,6 +97,67 @@ describe('action.authorize.mvtk.create()', () => {
         sandbox.verify();
     });
 
+    it('座席予約承認が2つ存在すればArgumentエラーとなるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const authorizeObject = {
+            seatInfoSyncIn: {
+                stCd: '1',
+                skhnCd: '1234500',
+                screnCd: '01',
+                knyknrNoInfo: [
+                    {
+                        knyknrNo: '12345',
+                        knshInfo: [{ miNum: 1 }]
+                    }
+                ],
+                zskInfo: [{ zskCd: 'seatNum' }]
+            }
+        };
+        const seatReservationAuthorizeActions = [
+            {
+                id: 'actionId',
+                actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+                object: {},
+                result: {}
+            },
+            {
+                id: 'actionId',
+                actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+                object: {},
+                result: {}
+            }
+        ];
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo.actionModel).expects('find').once().chain('exec')
+            .resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+            agent.id,
+            transaction.id,
+            <any>authorizeObject
+        )(actionRepo, transactionRepo).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Argument);
+        sandbox.verify();
+    });
+
     it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
         const agent = {
             id: 'agentId'

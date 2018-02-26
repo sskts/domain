@@ -531,4 +531,57 @@ describe('service.delivery.sendOrder()', () => {
         assert.deepEqual(result, stateReserveResult);
         sandbox.verify();
     });
+
+    it('注文アクションの潜在アクションが未定義であればNotFoundエラーとなるはず', async () => {
+        const orderActionAttributes = {
+            typeOf: sskts.factory.actionType.OrderAction
+            // potentialActions: { sendOrder: sendOrderActionAttributes }
+        };
+        const transaction = {
+            id: 'transactionId',
+            result: {
+                order: {
+                    orderNumber: 'orderNumber',
+                    acceptedOffers: [
+                        { itemOffered: { reservedTicket: {} } }
+                    ]
+                },
+                ownershipInfos: [{ identifier: 'identifier' }]
+            },
+            potentialActions: { order: orderActionAttributes },
+            object: {
+                customerContact: {
+                    telephone: '+819012345678'
+                },
+                authorizeActions: [
+                    {
+                        typeOf: sskts.factory.actionType.AuthorizeAction,
+                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+                        object: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation },
+                        result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
+                    }
+                ]
+            }
+        };
+
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const orderRepo = new sskts.repository.Order(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
+        sandbox.mock(taskRepo.taskModel).expects('findOne').never();
+        sandbox.mock(actionRepo).expects('start').never();
+        sandbox.mock(ownershipInfoRepo).expects('save').never();
+        sandbox.mock(orderRepo).expects('changeStatus').never();
+        sandbox.mock(taskRepo).expects('save').never();
+
+        const result = await sskts.service.delivery.sendOrder(transaction.id)(
+            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
+        ).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
 });

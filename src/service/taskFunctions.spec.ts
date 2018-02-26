@@ -216,3 +216,23 @@ describe('TaskFunctionsService.sendOrder()', () => {
         sandbox.verify();
     });
 });
+
+describe('TaskFunctionsService.payPecorino()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('決済サービスが正常であればエラーにならないはず', async () => {
+        const data = {
+            transactionId: 'transactionId'
+        };
+
+        sandbox.mock(sskts.service.payment).expects('payPecorino').once()
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
+
+        const result = await TaskFunctionsService.payPecorino(<any>data)(sskts.mongoose.connection);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
