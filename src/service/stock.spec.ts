@@ -99,7 +99,7 @@ describe('cancelSeatReservationAuth()', () => {
             .withExactArgs(existingTransaction.id).resolves(authorizeActions);
         sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').once().resolves();
 
-        const result = await sskts.service.stock.cancelSeatReservationAuth(existingTransaction.id)(actionRepo);
+        const result = await sskts.service.stock.cancelSeatReservationAuth(existingTransaction.id)({ action: actionRepo });
 
         assert.equal(result, undefined);
         sandbox.verify();

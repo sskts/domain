@@ -44,7 +44,7 @@ describe('importMovies()', () => {
         sandbox.mock(factory.creativeWork.movie).expects('createFromCOA').exactly(filmsFromCOA.length).returns(movie);
         sandbox.mock(creativeWorkRepo).expects('saveMovie').exactly(filmsFromCOA.length).resolves();
 
-        const result = await MasterSyncService.importMovies('123')(creativeWorkRepo);
+        const result = await MasterSyncService.importMovies('123')({ creativeWork: creativeWorkRepo });
         assert.equal(result, undefined);
         sandbox.verify();
     });
@@ -111,7 +111,7 @@ describe('importScreeningEvents()', () => {
 
         const result = await MasterSyncService.importScreeningEvents(
             '123', new Date(), new Date()
-        )(eventRepo, placeRepo);
+        )({ event: eventRepo, place: placeRepo });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -159,7 +159,7 @@ describe('importScreeningEvents()', () => {
 
         const result = await MasterSyncService.importScreeningEvents(
             '123', new Date(), new Date()
-        )(eventRepo, placeRepo);
+        )({ event: eventRepo, place: placeRepo });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -212,7 +212,7 @@ describe('importScreeningEvents()', () => {
 
         const result = await MasterSyncService.importScreeningEvents(
             '123', new Date(), new Date()
-        )(eventRepo, placeRepo);
+        )({ event: eventRepo, place: placeRepo });
 
         assert.equal(result, undefined);
         sandbox.verify();

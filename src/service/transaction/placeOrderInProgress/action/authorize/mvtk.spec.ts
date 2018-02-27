@@ -91,7 +91,10 @@ describe('action.authorize.mvtk.create()', () => {
             agent.id,
             transaction.id,
             <any>authorizeObject
-        )(actionRepo, transactionRepo);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        });
 
         assert.deepEqual(result, action);
         sandbox.verify();
@@ -152,7 +155,10 @@ describe('action.authorize.mvtk.create()', () => {
             agent.id,
             transaction.id,
             <any>authorizeObject
-        )(actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -185,7 +191,10 @@ describe('action.authorize.mvtk.create()', () => {
             agent.id,
             transaction.id,
             <any>authorizeObject
-        )(actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
@@ -237,7 +246,10 @@ describe('action.authorize.mvtk.create()', () => {
             agent.id,
             transaction.id,
             <any>authorizeObject
-        )(actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -306,7 +318,10 @@ describe('action.authorize.mvtk.create()', () => {
             agent.id,
             transaction.id,
             <any>authorizeObject
-        )(actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -375,7 +390,10 @@ describe('action.authorize.mvtk.create()', () => {
             agent.id,
             transaction.id,
             <any>authorizeObject
-        )(actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -444,7 +462,10 @@ describe('action.authorize.mvtk.create()', () => {
             agent.id,
             transaction.id,
             <any>authorizeObject
-        )(actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -513,7 +534,10 @@ describe('action.authorize.mvtk.create()', () => {
             agent.id,
             transaction.id,
             <any>authorizeObject
-        )(actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -582,7 +606,10 @@ describe('action.authorize.mvtk.create()', () => {
             agent.id,
             transaction.id,
             <any>authorizeObject
-        )(actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -623,7 +650,10 @@ describe('action.authorize.mvtk.cancel()', () => {
             agent.id,
             transaction.id,
             action.id
-        )(authorizeActionRepo, transactionRepo);
+        )({
+            action: authorizeActionRepo,
+            transaction: transactionRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -657,7 +687,10 @@ describe('action.authorize.mvtk.cancel()', () => {
             agent.id,
             transaction.id,
             action.id
-        )(authorizeActionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: authorizeActionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();

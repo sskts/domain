@@ -53,7 +53,7 @@ describe('updatePerformanceStockStatuses()', () => {
             theaterCode,
             startFrom,
             startThrough
-        )(itemAvailabilityRepo);
+        )({ itemAvailability: itemAvailabilityRepo });
 
         assert.equal(result, undefined);
         sandbox.verify();

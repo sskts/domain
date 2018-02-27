@@ -6,13 +6,13 @@
 const sskts = require('../');
 
 async function main() {
-    sskts.mongoose.connect(process.env.MONGOLAB_URI);
+    await sskts.mongoose.connect(process.env.MONGOLAB_URI);
 
     const repository = new sskts.repository.Organization(sskts.mongoose.connection);
     const theaters = await repository.searchMovieTheaters({});
     console.log('theaters:', theaters);
 
-    sskts.mongoose.disconnect();
+    await sskts.mongoose.disconnect();
 }
 
 main().then(() => {

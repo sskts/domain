@@ -9,17 +9,17 @@ import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
-import { MongoRepository as TaskRepository } from '../repo/task';
+import { MongoRepository as TaskRepo } from '../repo/task';
 
 import * as NotificationService from './notification';
 import * as TaskFunctionsService from './taskFunctions';
 
-export type TaskOperation<T> = (taskRepository: TaskRepository) => Promise<T>;
-export type TaskAndConnectionOperation<T> = (
-    taskRepository: TaskRepository,
-    connection: mongoose.Connection,
-    pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials
-) => Promise<T>;
+export type TaskOperation<T> = (repos: { task: TaskRepo }) => Promise<T>;
+export type TaskAndConnectionOperation<T> = (settings: {
+    taskRepo: TaskRepo;
+    connection: mongoose.Connection;
+    pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+}) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:task');
 
@@ -32,15 +32,15 @@ export const ABORT_REPORT_SUBJECT = 'Task aborted !!!';
  * @export
  */
 export function executeByName(taskName: factory.taskName): TaskAndConnectionOperation<void> {
-    return async (
-        taskRepository: TaskRepository,
-        connection: mongoose.Connection,
-        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials
-    ) => {
+    return async (settings: {
+        taskRepo: TaskRepo;
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
         // 未実行のタスクを取得
         let task: factory.task.ITask | null = null;
         try {
-            task = await taskRepository.executeOneByName(taskName);
+            task = await settings.taskRepo.executeOneByName(taskName);
             debug('task found', task);
         } catch (error) {
             debug('executeByName error:', error);
@@ -48,7 +48,7 @@ export function executeByName(taskName: factory.taskName): TaskAndConnectionOper
 
         // タスクがなければ終了
         if (task !== null) {
-            await execute(task)(taskRepository, connection, pecorinoAuthClient);
+            await execute(task)(settings);
         }
     };
 }
@@ -63,20 +63,20 @@ export function execute(task: factory.task.ITask): TaskAndConnectionOperation<vo
     debug('executing a task...', task);
     const now = new Date();
 
-    return async (
-        taskRepository: TaskRepository,
-        connection: mongoose.Connection,
-        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials
-    ) => {
+    return async (settings: {
+        taskRepo: TaskRepo;
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
         try {
             // タスク名の関数が定義されていなければ、TypeErrorとなる
-            await (<any>TaskFunctionsService)[task.name](task.data)(connection, pecorinoAuthClient);
+            await (<any>TaskFunctionsService)[task.name](task.data)(settings);
 
             const result = {
                 executedAt: now,
                 error: ''
             };
-            await taskRepository.pushExecutionResultById(task.id, factory.taskStatus.Executed, result);
+            await settings.taskRepo.pushExecutionResultById(task.id, factory.taskStatus.Executed, result);
         } catch (error) {
             // 実行結果追加
             const result = {
@@ -84,7 +84,7 @@ export function execute(task: factory.task.ITask): TaskAndConnectionOperation<vo
                 error: error.stack
             };
             // 失敗してもここではステータスを戻さない(Runningのまま待機)
-            await taskRepository.pushExecutionResultById(task.id, task.status, result);
+            await settings.taskRepo.pushExecutionResultById(task.id, task.status, result);
         }
     };
 }
@@ -96,8 +96,8 @@ export function execute(task: factory.task.ITask): TaskAndConnectionOperation<vo
  * @export
  */
 export function retry(intervalInMinutes: number): TaskOperation<void> {
-    return async (taskRepository: TaskRepository) => {
-        await taskRepository.retry(intervalInMinutes);
+    return async (repos: { task: TaskRepo }) => {
+        await repos.task.retry(intervalInMinutes);
     };
 }
 
@@ -108,8 +108,8 @@ export function retry(intervalInMinutes: number): TaskOperation<void> {
  * @export
  */
 export function abort(intervalInMinutes: number): TaskOperation<void> {
-    return async (taskRepository: TaskRepository) => {
-        const abortedTask = await taskRepository.abortOne(intervalInMinutes);
+    return async (repos: { task: TaskRepo }) => {
+        const abortedTask = await repos.task.abortOne(intervalInMinutes);
         debug('abortedTask found', abortedTask);
 
         // 開発者へ報告

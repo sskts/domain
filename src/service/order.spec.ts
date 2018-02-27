@@ -57,7 +57,12 @@ describe('createFromTransaction()', () => {
             .withExactArgs(transaction.result.order).resolves();
         sandbox.mock(taskRepo).expects('save').exactly(Object.keys(transaction.potentialActions.order.potentialActions).length);
 
-        const result = await sskts.service.order.createFromTransaction(transaction.id)(actionRepo, orderRepo, transactionRepo, taskRepo);
+        const result = await sskts.service.order.createFromTransaction(transaction.id)({
+            action: actionRepo,
+            order: orderRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -81,7 +86,12 @@ describe('createFromTransaction()', () => {
         sandbox.mock(orderRepo).expects('createIfNotExist').never();
         sandbox.mock(taskRepo).expects('save').never();
 
-        const result = await sskts.service.order.createFromTransaction(transaction.id)(actionRepo, orderRepo, transactionRepo, taskRepo)
+        const result = await sskts.service.order.createFromTransaction(transaction.id)({
+            action: actionRepo,
+            order: orderRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        })
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
@@ -107,7 +117,12 @@ describe('createFromTransaction()', () => {
         sandbox.mock(orderRepo).expects('createIfNotExist').never();
         sandbox.mock(taskRepo).expects('save').never();
 
-        const result = await sskts.service.order.createFromTransaction(transaction.id)(actionRepo, orderRepo, transactionRepo, taskRepo)
+        const result = await sskts.service.order.createFromTransaction(transaction.id)({
+            action: actionRepo,
+            order: orderRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        })
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
@@ -145,8 +160,12 @@ describe('createFromTransaction()', () => {
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(taskRepo).expects('save').never();
 
-        const result = await sskts.service.order.createFromTransaction(transaction.id)(actionRepo, orderRepo, transactionRepo, taskRepo)
-            .catch((err) => err);
+        const result = await sskts.service.order.createFromTransaction(transaction.id)({
+            action: actionRepo,
+            order: orderRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        }).catch((err) => err);
 
         assert.deepEqual(result, createOrderError);
         sandbox.verify();

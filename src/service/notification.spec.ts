@@ -123,9 +123,7 @@ describe('sendEmailMessage()', () => {
         sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
         sandbox.mock(sgMail).expects('send').once().resolves(sendResponse);
 
-        const result = await sskts.service.notification.sendEmailMessage(<any>sendEamilMessageActionAttributets)(
-            actionRepo
-        );
+        const result = await sskts.service.notification.sendEmailMessage(<any>sendEamilMessageActionAttributets)({ action: actionRepo });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -153,9 +151,8 @@ describe('sendEmailMessage()', () => {
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(sgMail).expects('send').once().resolves(sendResponse);
 
-        const result = await sskts.service.notification.sendEmailMessage(<any>sendEamilMessageActionAttributets)(
-            actionRepo
-        ).catch((err) => err);
+        const result = await sskts.service.notification.sendEmailMessage(<any>sendEamilMessageActionAttributets)({ action: actionRepo })
+            .catch((err) => err);
 
         assert(result instanceof Error);
         sandbox.verify();

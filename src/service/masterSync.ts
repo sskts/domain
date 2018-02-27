@@ -22,7 +22,7 @@ export type IPlaceOperation<T> = (placeRepo: PlaceRepo) => Promise<T>;
  * 映画作品インポート
  */
 export function importMovies(theaterCode: string) {
-    return async (creativeWorkRepo: CreativeWorkRepo) => {
+    return async (repos: { creativeWork: CreativeWorkRepo }) => {
         // COAから作品取得
         const filmsFromCOA = await COA.services.master.title({ theaterCode: theaterCode });
 
@@ -30,7 +30,7 @@ export function importMovies(theaterCode: string) {
         await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
             const movie = factory.creativeWork.movie.createFromCOA(filmFromCOA);
             debug('storing movie...', movie);
-            await creativeWorkRepo.saveMovie(movie);
+            await repos.creativeWork.saveMovie(movie);
             debug('movie stored.');
         }));
     };
@@ -44,9 +44,12 @@ export function importMovies(theaterCode: string) {
  */
 export function importScreeningEvents(theaterCode: string, importFrom: Date, importThrough: Date) {
     // tslint:disable-next-line:max-func-body-length
-    return async (eventRepo: EventRepo, placeRepo: PlaceRepo) => {
+    return async (repos: {
+        event: EventRepo;
+        place: PlaceRepo;
+    }) => {
         // 劇場取得
-        const movieTheater = await placeRepo.findMovieTheaterByBranchCode(theaterCode);
+        const movieTheater = await repos.place.findMovieTheaterByBranchCode(theaterCode);
 
         // COAから作品取得
         const filmsFromCOA = await COA.services.master.title({
@@ -106,7 +109,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
                 joueihousikiKubuns: joueihousikiKubuns,
                 jimakufukikaeKubuns: jimakufukikaeKubuns
             });
-            await eventRepo.saveScreeningEvent(screeningEvent);
+            await repos.event.saveScreeningEvent(screeningEvent);
 
             return screeningEvent;
         }));
@@ -152,7 +155,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
         debug(`storing ${individualScreeningEvents.length} individualScreeningEvents...`);
         await Promise.all(individualScreeningEvents.map(async (individualScreeningEvent) => {
             try {
-                await eventRepo.saveIndividualScreeningEvent(individualScreeningEvent);
+                await repos.event.saveIndividualScreeningEvent(individualScreeningEvent);
             } catch (error) {
                 // tslint:disable-next-line:no-single-line-block-comment
                 /* istanbul ignore next */
@@ -162,7 +165,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
         debug(`${individualScreeningEvents.length} individualScreeningEvents stored.`);
 
         // COAから削除されたイベントをキャンセル済ステータスへ変更
-        const identifiers = await eventRepo.searchIndividualScreeningEvents({
+        const identifiers = await repos.event.searchIndividualScreeningEvents({
             superEventLocationIdentifiers: [`MovieTheater-${theaterCode}`],
             startFrom: targetImportFrom.toDate(),
             startThrough: targetImportThrough.toDate()
@@ -172,7 +175,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
         debug(`cancelling ${cancelledIdentifiers.length} events...`);
         await Promise.all(cancelledIdentifiers.map(async (identifier) => {
             try {
-                await eventRepo.cancelIndividualScreeningEvent(identifier);
+                await repos.event.cancelIndividualScreeningEvent(identifier);
             } catch (error) {
                 // tslint:disable-next-line:no-single-line-block-comment
                 /* istanbul ignore next */

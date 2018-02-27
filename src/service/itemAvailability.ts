@@ -12,7 +12,7 @@ import { MongoRepository as ItemAvailabilityRepository } from '../repo/itemAvail
 
 const debug = createDebug('sskts-domain:service:itemAvailability');
 
-export type IItemAvailabilityOperation<T> = (itemAvailabilityRepository: ItemAvailabilityRepository) => Promise<T>;
+export type IItemAvailabilityOperation<T> = (repos: { itemAvailability: ItemAvailabilityRepository }) => Promise<T>;
 
 /**
  * 劇場IDと上映日範囲から上映イベント在庫状況を更新する
@@ -23,7 +23,7 @@ export type IItemAvailabilityOperation<T> = (itemAvailabilityRepository: ItemAva
  */
 export function updateIndividualScreeningEvents(locationBranchCode: string, startFrom: Date, startThrough: Date):
     IItemAvailabilityOperation<void> {
-    return async (itemAvailabilityRepository: ItemAvailabilityRepository) => {
+    return async (repos: { itemAvailability: ItemAvailabilityRepository }) => {
         // COAから空席状況取得
         const countFreeSeatResult = await COA.services.reserve.countFreeSeat({
             theaterCode: locationBranchCode,
@@ -54,7 +54,7 @@ export function updateIndividualScreeningEvents(locationBranchCode: string, star
 
                     // 永続化
                     debug('saving item availability... identifier:', eventIdentifier);
-                    await itemAvailabilityRepository.updateOne(
+                    await repos.itemAvailability.updateOne(
                         countFreeSeatDate.dateJouei,
                         eventIdentifier,
                         itemAvailability

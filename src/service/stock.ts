@@ -19,10 +19,10 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  * @param transactionId 取引ID
  */
 export function cancelSeatReservationAuth(transactionId: string) {
-    return async (actionRepo: ActionRepo) => {
+    return async (repos: { action: ActionRepo }) => {
         // 座席仮予約アクションを取得
         const authorizeActions: factory.action.authorize.seatReservation.IAction[] =
-            await actionRepo.findAuthorizeByTransactionId(transactionId)
+            await repos.action.findAuthorizeByTransactionId(transactionId)
                 .then((actions) => actions
                     .filter((a) => a.object.typeOf === factory.action.authorize.seatReservation.ObjectType.SeatReservation)
                     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)

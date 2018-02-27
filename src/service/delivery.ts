@@ -26,14 +26,14 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 // tslint:disable-next-line:max-func-body-length
 export function sendOrder(transactionId: string) {
     // tslint:disable-next-line:max-func-body-length
-    return async (
-        actionRepo: ActionRepo,
-        orderRepo: OrderRepo,
-        ownershipInfoRepo: OwnershipInfoRepo,
-        transactionRepo: TransactionRepo,
-        taskRepo: TaskRepo
-    ) => {
-        const transaction = await transactionRepo.findPlaceOrderById(transactionId);
+    return async (repos: {
+        action: ActionRepo;
+        order: OrderRepo;
+        ownershipInfo: OwnershipInfoRepo;
+        transaction: TransactionRepo;
+        task: TaskRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
@@ -67,7 +67,7 @@ export function sendOrder(transactionId: string) {
 
         // アクション開始
         const sendOrderActionAttributes = orderPotentialActions.sendOrder;
-        const action = await actionRepo.start<factory.action.transfer.send.order.IAction>(sendOrderActionAttributes);
+        const action = await repos.action.start<factory.action.transfer.send.order.IAction>(sendOrderActionAttributes);
 
         try {
             const updTmpReserveSeatArgs = authorizeActionResult.updTmpReserveSeatArgs;
@@ -112,17 +112,17 @@ export function sendOrder(transactionId: string) {
             }
 
             await Promise.all(transactionResult.ownershipInfos.map(async (ownershipInfo) => {
-                await ownershipInfoRepo.save(ownershipInfo);
+                await repos.ownershipInfo.save(ownershipInfo);
             }));
 
             // 注文ステータス変更
-            await orderRepo.changeStatus(transactionResult.order.orderNumber, factory.orderStatus.OrderDelivered);
+            await repos.order.changeStatus(transactionResult.order.orderNumber, factory.orderStatus.OrderDelivered);
         } catch (error) {
             // actionにエラー結果を追加
             try {
                 // tslint:disable-next-line:max-line-length no-single-line-block-comment
                 const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
-                await actionRepo.giveUp(sendOrderActionAttributes.typeOf, action.id, actionError);
+                await repos.action.giveUp(sendOrderActionAttributes.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -132,10 +132,10 @@ export function sendOrder(transactionId: string) {
 
         // アクション完了
         debug('ending action...');
-        await actionRepo.complete(sendOrderActionAttributes.typeOf, action.id, {});
+        await repos.action.complete(sendOrderActionAttributes.typeOf, action.id, {});
 
         // 潜在アクション
-        await onSend(sendOrderActionAttributes)(taskRepo);
+        await onSend(sendOrderActionAttributes)({ task: repos.task });
     };
 }
 
@@ -145,7 +145,7 @@ export function sendOrder(transactionId: string) {
  * @param sendOrderActionAttributes 注文配送悪損属性
  */
 function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IAttributes) {
-    return async (taskRepo: TaskRepo) => {
+    return async (repos: { task: TaskRepo }) => {
         const potentialActions = sendOrderActionAttributes.potentialActions;
         const now = new Date();
         const taskAttributes: factory.task.IAttributes[] = [];
@@ -157,7 +157,7 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
             /* istanbul ignore else */
             if (potentialActions.sendEmailMessage !== undefined) {
                 // 互換性維持のため、すでにメール送信タスクが存在するかどうか確認し、なければタスク追加
-                const sendEmailMessageTaskDoc = await taskRepo.taskModel.findOne({
+                const sendEmailMessageTaskDoc = await repos.task.taskModel.findOne({
                     name: factory.taskName.SendEmailMessage,
                     'data.actionAttributes.object.identifier': {
                         $exists: true,
@@ -184,7 +184,7 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
 
         // タスク保管
         await Promise.all(taskAttributes.map(async (taskAttribute) => {
-            return taskRepo.save(taskAttribute);
+            return repos.task.save(taskAttribute);
         }));
     };
 }

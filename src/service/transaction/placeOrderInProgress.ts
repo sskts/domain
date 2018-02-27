@@ -23,11 +23,11 @@ import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/a
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress');
 
-export type ITransactionOperation<T> = (transactionRepo: TransactionRepo) => Promise<T>;
-export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (
-    organizationRepo: OrganizationRepo,
-    transactionRepo: TransactionRepo
-) => Promise<T>;
+export type ITransactionOperation<T> = (repos: { transaction: TransactionRepo }) => Promise<T>;
+export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (repos: {
+    organization: OrganizationRepo;
+    transaction: TransactionRepo;
+}) => Promise<T>;
 
 /**
  * 取引開始パラメーターインターフェース
@@ -60,12 +60,12 @@ export interface IStartParams {
  */
 export function start(params: IStartParams):
     IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction> {
-    return async (
-        organizationRepo: OrganizationRepo,
-        transactionRepo: TransactionRepo
-    ) => {
+    return async (repos: {
+        organization: OrganizationRepo;
+        transaction: TransactionRepo;
+    }) => {
         // 売り手を取得
-        const seller = await organizationRepo.findMovieTheaterById(params.sellerId);
+        const seller = await repos.organization.findMovieTheaterById(params.sellerId);
 
         let passport: waiter.factory.passport.IPassport | undefined;
 
@@ -120,7 +120,7 @@ export function start(params: IStartParams):
 
         let transaction: factory.transaction.placeOrder.ITransaction;
         try {
-            transaction = await transactionRepo.start<factory.transaction.placeOrder.ITransaction>(transactionAttributes);
+            transaction = await repos.transaction.start<factory.transaction.placeOrder.ITransaction>(transactionAttributes);
         } catch (error) {
             if (error.name === 'MongoError') {
                 // 許可証を重複使用しようとすると、MongoDBでE11000 duplicate key errorが発生する
@@ -202,7 +202,7 @@ export function setCustomerContact(
     transactionId: string,
     contact: factory.transaction.placeOrder.ICustomerContact
 ): ITransactionOperation<factory.transaction.placeOrder.ICustomerContact> {
-    return async (transactionRepo: TransactionRepo) => {
+    return async (repos: { transaction: TransactionRepo }) => {
         let formattedTelephone: string;
         try {
             const phoneUtil = PhoneNumberUtil.getInstance();
@@ -224,13 +224,13 @@ export function setCustomerContact(
             telephone: formattedTelephone
         };
 
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        await transactionRepo.setCustomerContactOnPlaceOrderInProgress(transactionId, customerContact);
+        await repos.transaction.setCustomerContactOnPlaceOrderInProgress(transactionId, customerContact);
 
         return customerContact;
     };
@@ -245,18 +245,18 @@ export function confirm(
     transactionId: string
 ) {
     // tslint:disable-next-line:max-func-body-length
-    return async (
-        actionRepo: ActionRepo,
-        transactionRepo: TransactionRepo,
-        organizationRepo: OrganizationRepo
-    ) => {
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+        organization: OrganizationRepo;
+    }) => {
         const now = moment().toDate();
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const seller = await organizationRepo.findMovieTheaterById(transaction.seller.id);
+        const seller = await repos.organization.findMovieTheaterById(transaction.seller.id);
         debug('seller found.', seller.identifier);
 
         const customerContact = transaction.object.customerContact;
@@ -265,7 +265,7 @@ export function confirm(
         }
 
         // 取引に対する全ての承認アクションをマージ
-        let authorizeActions = await actionRepo.findAuthorizeByTransactionId(transactionId);
+        let authorizeActions = await repos.action.findAuthorizeByTransactionId(transactionId);
 
         // 万が一このプロセス中に他処理が発生してもそれらを無視するように、endDateでフィルタリング
         authorizeActions = authorizeActions.filter((a) => (a.endDate !== undefined && a.endDate < now));
@@ -281,12 +281,16 @@ export function confirm(
             orderStatus: factory.orderStatus.OrderProcessing,
             isGift: false
         });
-        const ownershipInfos = order.acceptedOffers.map((acceptedOffer) => {
+
+        // tslint:disable-next-line:max-line-length
+        type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.reservation.event.IEventReservation<factory.event.individualScreeningEvent.IEvent>>;
+        const ownershipInfos: IOwnershipInfo[] = order.acceptedOffers.map((acceptedOffer) => {
             // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
             // saveする際に、identifierでfindOneAndUpdateしている
             const identifier = `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservedTicket.ticketToken}`;
 
-            return factory.ownershipInfo.create({
+            return {
+                typeOf: <'OwnershipInfo'>'OwnershipInfo',
                 identifier: identifier,
                 ownedBy: {
                     id: transaction.agent.id,
@@ -300,7 +304,7 @@ export function confirm(
                 // 対象が他に広がれば、有効期間のコントロールは別でしっかり行う必要があるだろう
                 ownedThrough: acceptedOffer.itemOffered.reservationFor.endDate,
                 typeOfGood: acceptedOffer.itemOffered
-            });
+            };
         });
 
         // クレジットカード支払いアクション
@@ -397,7 +401,7 @@ export function confirm(
 
         // ステータス変更
         debug('updating transaction...');
-        await transactionRepo.confirmPlaceOrder(
+        await repos.transaction.confirmPlaceOrder(
             transactionId,
             authorizeActions,
             result,

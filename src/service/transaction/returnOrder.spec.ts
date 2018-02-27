@@ -76,7 +76,11 @@ describe('service.transaction.returnOrder.start()', () => {
             cancellationFee: 0,
             forcibly: false,
             reason: sskts.factory.transaction.returnOrder.Reason.Seller
-        })(actionRepo, orderRepo, transactionRepo);
+        })({
+            action: actionRepo,
+            transaction: transactionRepo,
+            order: orderRepo
+        });
 
         assert.equal(typeof result, 'object');
         sandbox.verify();
@@ -124,7 +128,11 @@ describe('service.transaction.returnOrder.start()', () => {
             cancellationFee: 0,
             forcibly: true,
             reason: sskts.factory.transaction.returnOrder.Reason.Seller
-        })(actionRepo, orderRepo, transactionRepo).catch((err) => err);
+        })({
+            action: actionRepo,
+            transaction: transactionRepo,
+            order: orderRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -164,7 +172,11 @@ describe('service.transaction.returnOrder.start()', () => {
             cancellationFee: 0,
             forcibly: true,
             reason: sskts.factory.transaction.returnOrder.Reason.Seller
-        })(actionRepo, orderRepo, transactionRepo).catch((err) => err);
+        })({
+            action: actionRepo,
+            transaction: transactionRepo,
+            order: orderRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -212,7 +224,11 @@ describe('service.transaction.returnOrder.start()', () => {
             cancellationFee: 0,
             forcibly: true,
             reason: sskts.factory.transaction.returnOrder.Reason.Seller
-        })(actionRepo, orderRepo, transactionRepo).catch((err) => err);
+        })({
+            action: actionRepo,
+            transaction: transactionRepo,
+            order: orderRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -263,7 +279,11 @@ describe('service.transaction.returnOrder.start()', () => {
             cancellationFee: 0,
             forcibly: true,
             reason: sskts.factory.transaction.returnOrder.Reason.Seller
-        })(actionRepo, orderRepo, transactionRepo).catch((err) => err);
+        })({
+            action: actionRepo,
+            transaction: transactionRepo,
+            order: orderRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -320,7 +340,11 @@ describe('service.transaction.returnOrder.start()', () => {
             cancellationFee: 0,
             forcibly: false,
             reason: sskts.factory.transaction.returnOrder.Reason.Seller
-        })(actionRepo, orderRepo, transactionRepo).catch((err) => err);
+        })({
+            action: actionRepo,
+            transaction: transactionRepo,
+            order: orderRepo
+        }).catch((err) => err);
 
         assert.deepEqual(result, startTransactionResult);
         sandbox.verify();
@@ -380,7 +404,11 @@ describe('service.transaction.returnOrder.start()', () => {
             cancellationFee: 0,
             forcibly: false,
             reason: sskts.factory.transaction.returnOrder.Reason.Seller
-        })(actionRepo, orderRepo, transactionRepo).catch((err) => err);
+        })({
+            action: actionRepo,
+            transaction: transactionRepo,
+            order: orderRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.AlreadyInUse);
         sandbox.verify();
@@ -450,7 +478,11 @@ describe('service.transaction.returnOrder.confirm()', () => {
         const result = await sskts.service.transaction.returnOrder.confirm(
             agent.id,
             returnOrderTransaction.id
-        )(actionRepo, transactionRepo, organizationRepo);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        });
 
         assert.equal(typeof result, 'object');
         sandbox.verify();
@@ -502,7 +534,11 @@ describe('service.transaction.returnOrder.confirm()', () => {
         const result = await sskts.service.transaction.returnOrder.confirm(
             'invalidAgentId',
             returnOrderTransaction.id
-        )(actionRepo, transactionRepo, organizationRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
@@ -544,7 +580,11 @@ describe('service.transaction.returnOrder.confirm()', () => {
         const result = await sskts.service.transaction.returnOrder.confirm(
             agent.id,
             returnOrderTransaction.id
-        )(actionRepo, transactionRepo, organizationRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -596,7 +636,11 @@ describe('service.transaction.returnOrder.confirm()', () => {
         const result = await sskts.service.transaction.returnOrder.confirm(
             agent.id,
             returnOrderTransaction.id
-        )(actionRepo, transactionRepo, organizationRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -649,7 +693,11 @@ describe('service.transaction.returnOrder.confirm()', () => {
         const result = await sskts.service.transaction.returnOrder.confirm(
             agent.id,
             returnOrderTransaction.id
-        )(actionRepo, transactionRepo, organizationRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -687,7 +735,10 @@ describe('service.transaction.returnOrder.exportTasks()', () => {
         sandbox.mock(taskRepo).expects('save').once().resolves(task);
         sandbox.mock(transactionRepo).expects('setTasksExportedById').once().withArgs(returnOrderTransaction.id).resolves();
 
-        const result = await sskts.service.transaction.returnOrder.exportTasks(status)(taskRepo, transactionRepo);
+        const result = await sskts.service.transaction.returnOrder.exportTasks(status)({
+            task: taskRepo,
+            transaction: transactionRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -714,7 +765,10 @@ describe('service.transaction.returnOrder.exportTasks()', () => {
         sandbox.mock(taskRepo).expects('save').never();
         sandbox.mock(transactionRepo).expects('setTasksExportedById').once().withArgs(returnOrderTransaction.id).resolves();
 
-        const result = await sskts.service.transaction.returnOrder.exportTasks(status)(taskRepo, transactionRepo);
+        const result = await sskts.service.transaction.returnOrder.exportTasks(status)({
+            task: taskRepo,
+            transaction: transactionRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -731,7 +785,10 @@ describe('service.transaction.returnOrder.exportTasks()', () => {
         sandbox.mock(taskRepo).expects('save').never();
         sandbox.mock(transactionRepo).expects('setTasksExportedById').never();
 
-        const result = await sskts.service.transaction.returnOrder.exportTasks(status)(taskRepo, transactionRepo);
+        const result = await sskts.service.transaction.returnOrder.exportTasks(status)({
+            task: taskRepo,
+            transaction: transactionRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -748,7 +805,10 @@ describe('service.transaction.returnOrder.exportTasks()', () => {
         sandbox.mock(taskRepo).expects('save').never();
         sandbox.mock(transactionRepo).expects('setTasksExportedById').never();
 
-        const result = await sskts.service.transaction.returnOrder.exportTasks(<any>status)(taskRepo, transactionRepo)
+        const result = await sskts.service.transaction.returnOrder.exportTasks(<any>status)({
+            task: taskRepo,
+            transaction: transactionRepo
+        })
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Argument);
@@ -778,7 +838,10 @@ describe('service.transaction.returnOrder.exportTasksById()', () => {
         sandbox.mock(transactionRepo).expects('findReturnOrderById').once().resolves(returnOrderTransaction);
         sandbox.mock(taskRepo).expects('save').never();
 
-        const result = await sskts.service.transaction.returnOrder.exportTasksById(returnOrderTransaction.id)(taskRepo, transactionRepo)
+        const result = await sskts.service.transaction.returnOrder.exportTasksById(returnOrderTransaction.id)({
+            task: taskRepo,
+            transaction: transactionRepo
+        })
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotImplemented);

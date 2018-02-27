@@ -59,7 +59,10 @@ describe('start()', () => {
             agentId: agentId,
             sellerId: seller.id,
             passportToken: passportToken
-        })(organizationRepo, transactionRepo);
+        })({
+            transaction: transactionRepo,
+            organization: organizationRepo
+        });
 
         assert.deepEqual(result, transaction);
         // assert.equal(result.expires, transaction.expires);
@@ -101,7 +104,10 @@ describe('start()', () => {
             agentId: agentId,
             sellerId: seller.id,
             passportToken: passportToken
-        })(organizationRepo, transactionRepo);
+        })({
+            transaction: transactionRepo,
+            organization: organizationRepo
+        });
 
         assert.deepEqual(result, transaction);
         sandbox.verify();
@@ -140,7 +146,10 @@ describe('start()', () => {
             clientUser: <any>{},
             agentId: agentId,
             sellerId: seller.id
-        })(organizationRepo, transactionRepo);
+        })({
+            transaction: transactionRepo,
+            organization: organizationRepo
+        });
         assert.deepEqual(result, transaction);
         sandbox.verify();
     });
@@ -172,7 +181,10 @@ describe('start()', () => {
             clientUser: <any>{},
             agentId: agentId,
             sellerId: seller.id
-        })(organizationRepo, transactionRepo).catch((err) => err);
+        })({
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
     });
@@ -210,7 +222,10 @@ describe('start()', () => {
             clientUser: <any>{},
             agentId: agentId,
             sellerId: seller.id
-        })(organizationRepo, transactionRepo).catch((err) => err);
+        })({
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
     });
@@ -238,7 +253,10 @@ describe('start()', () => {
             agentId: agentId,
             sellerId: seller.id,
             passportToken: <any>undefined
-        })(organizationRepo, transactionRepo).catch((err) => err);
+        })({
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
         console.error(result);
         assert(result instanceof sskts.factory.errors.ArgumentNull);
         sandbox.verify();
@@ -276,7 +294,10 @@ describe('start()', () => {
             clientUser: <any>{},
             agentId: agentId,
             sellerId: seller.id
-        })(organizationRepo, transactionRepo).catch((err) => err);
+        })({
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
         assert.deepEqual(result, startResult);
         sandbox.verify();
     });
@@ -313,7 +334,10 @@ describe('start()', () => {
             clientUser: <any>{},
             agentId: agentId,
             sellerId: seller.id
-        })(organizationRepo, transactionRepo).catch((err) => err);
+        })({
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.AlreadyInUse);
         sandbox.verify();
     });
@@ -357,7 +381,7 @@ describe('setCustomerContact()', () => {
             agent.id,
             transaction.id,
             <any>contact
-        )(transactionRepo);
+        )({ transaction: transactionRepo });
 
         assert.equal(typeof result, 'object');
         sandbox.verify();
@@ -395,7 +419,7 @@ describe('setCustomerContact()', () => {
             agent.id,
             transaction.id,
             <any>contact
-        )(transactionRepo).catch((err) => err);
+        )({ transaction: transactionRepo }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
@@ -433,7 +457,7 @@ describe('setCustomerContact()', () => {
             agent.id,
             transaction.id,
             <any>contact
-        )(transactionRepo).catch((err) => err);
+        )({ transaction: transactionRepo }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
     });
@@ -552,7 +576,7 @@ describe('confirm()', () => {
         };
         const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
             {
-                typeOf: 'EventReservation',
+                typeOf: sskts.factory.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
                     dateIssued: new Date(),
@@ -582,7 +606,7 @@ describe('confirm()', () => {
 
             },
             {
-                typeOf: 'EventReservation',
+                typeOf: sskts.factory.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
                     dateIssued: new Date(),
@@ -678,13 +702,16 @@ describe('confirm()', () => {
                 ...pecorinoAuthorizeActions
             ]);
         sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').once().returns(eventReservations);
-        sandbox.mock(sskts.factory.ownershipInfo).expects('create').exactly(order.acceptedOffers.length).returns([]);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm(
             agent.id,
             transaction.id
-        )(actionRepo, transactionRepo, organizationRepo);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        });
 
         assert.deepEqual(result, order);
         sandbox.verify();
@@ -784,7 +811,7 @@ describe('confirm()', () => {
         };
         const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
             {
-                typeOf: 'EventReservation',
+                typeOf: sskts.factory.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
                     dateIssued: new Date(),
@@ -814,7 +841,7 @@ describe('confirm()', () => {
 
             },
             {
-                typeOf: 'EventReservation',
+                typeOf: sskts.factory.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
                     dateIssued: new Date(),
@@ -900,13 +927,16 @@ describe('confirm()', () => {
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .withExactArgs(transaction.id).resolves([...mvtkAuthorizeActions, ...seatReservationAuthorizeActions]);
         sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').once().returns(eventReservations);
-        sandbox.mock(sskts.factory.ownershipInfo).expects('create').exactly(order.acceptedOffers.length).returns([]);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm(
             agent.id,
             transaction.id
-        )(actionRepo, transactionRepo, organizationRepo);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        });
 
         assert.deepEqual(result, order);
         sandbox.verify();
@@ -941,7 +971,11 @@ describe('confirm()', () => {
         const result = await sskts.service.transaction.placeOrderInProgress.confirm(
             agent.id,
             transaction.id
-        )(actionRepo, transactionRepo, organizationRepo)
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        })
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
@@ -1000,13 +1034,16 @@ describe('confirm()', () => {
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .withExactArgs(transaction.id).resolves(authorizeActions);
-        sandbox.mock(sskts.factory.ownershipInfo).expects('create').never();
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm(
             agent.id,
             transaction.id
-        )(actionRepo, transactionRepo, organizationRepo)
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        })
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Argument);
@@ -1038,13 +1075,16 @@ describe('confirm()', () => {
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').never();
-        sandbox.mock(sskts.factory.ownershipInfo).expects('create').never();
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm(
             agent.id,
             transaction.id
-        )(actionRepo, transactionRepo, organizationRepo)
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        })
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
@@ -1151,7 +1191,7 @@ describe('createEmailMessageFromTransaction()', () => {
         };
         const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
             {
-                typeOf: 'EventReservation',
+                typeOf: sskts.factory.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
                     dateIssued: new Date(),
@@ -1181,7 +1221,7 @@ describe('createEmailMessageFromTransaction()', () => {
 
             },
             {
-                typeOf: 'EventReservation',
+                typeOf: sskts.factory.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
                     dateIssued: new Date(),
@@ -1398,7 +1438,7 @@ describe('createOrderFromTransaction()', () => {
         };
         const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
             {
-                typeOf: 'EventReservation',
+                typeOf: sskts.factory.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
                     dateIssued: new Date(),
@@ -1428,7 +1468,7 @@ describe('createOrderFromTransaction()', () => {
 
             },
             {
-                typeOf: 'EventReservation',
+                typeOf: sskts.factory.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
                     dateIssued: new Date(),

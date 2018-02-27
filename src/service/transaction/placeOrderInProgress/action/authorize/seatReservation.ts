@@ -14,15 +14,15 @@ import { MongoRepository as TransactionRepo } from '../../../../../repo/transact
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:seatReservation');
 
-export type ICreateOperation<T> = (
-    eventRepo: EventRepo,
-    actionRepo: ActionRepo,
-    transactionRepo: TransactionRepo
-) => Promise<T>;
-export type IActionAndTransactionOperation<T> = (
-    actionRepo: ActionRepo,
-    transactionRepo: TransactionRepo
-) => Promise<T>;
+export type ICreateOperation<T> = (repos: {
+    event: EventRepo;
+    action: ActionRepo;
+    transaction: TransactionRepo;
+}) => Promise<T>;
+export type IActionAndTransactionOperation<T> = (repos: {
+    action: ActionRepo;
+    transaction: TransactionRepo;
+}) => Promise<T>;
 
 /**
  * 座席予約に対する承認アクションを開始する前の処理
@@ -261,19 +261,19 @@ export function create(
     eventIdentifier: string,
     offers: factory.offer.seatReservation.IOffer[]
 ): ICreateOperation<factory.action.authorize.seatReservation.IAction> {
-    return async (
-        eventRepo: EventRepo,
-        actionRepo: ActionRepo,
-        transactionRepo: TransactionRepo
-    ) => {
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+    return async (repos: {
+        event: EventRepo;
+        action: ActionRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
         // 上映イベントを取得
-        const individualScreeningEvent = await eventRepo.findIndividualScreeningEventByIdentifier(eventIdentifier);
+        const individualScreeningEvent = await repos.event.findIndividualScreeningEventByIdentifier(eventIdentifier);
 
         // 供給情報の有効性を確認
         const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
@@ -289,7 +289,7 @@ export function create(
             recipient: transaction.agent,
             purpose: transaction // purposeは取引
         });
-        const action = await actionRepo.start<factory.action.authorize.seatReservation.IAction>(actionAttributes);
+        const action = await repos.action.start<factory.action.authorize.seatReservation.IAction>(actionAttributes);
 
         // COA仮予約
         const updTmpReserveSeatArgs = {
@@ -315,7 +315,7 @@ export function create(
             // actionにエラー結果を追加
             try {
                 const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                await actionRepo.giveUp(action.typeOf, action.id, actionError);
+                await repos.action.giveUp(action.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -348,7 +348,7 @@ export function create(
             updTmpReserveSeatResult: updTmpReserveSeatResult
         };
 
-        return actionRepo.complete<factory.action.authorize.seatReservation.IAction>(action.typeOf, action.id, result);
+        return repos.action.complete<factory.action.authorize.seatReservation.IAction>(action.typeOf, action.id, result);
     };
 }
 
@@ -364,8 +364,11 @@ export function cancel(
     transactionId: string,
     actionId: string
 ) {
-    return async (actionRepo: ActionRepo, transactionRepo: TransactionRepo) => {
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -373,7 +376,7 @@ export function cancel(
 
         // MongoDBでcompleteステータスであるにも関わらず、COAでは削除されている、というのが最悪の状況
         // それだけは回避するためにMongoDBを先に変更
-        const action = await actionRepo.cancel(factory.actionType.AuthorizeAction, actionId);
+        const action = await repos.action.cancel(factory.actionType.AuthorizeAction, actionId);
         const actionResult = <factory.action.authorize.seatReservation.IResult>action.result;
 
         // 座席仮予約削除
@@ -406,19 +409,19 @@ export function changeOffers(
     eventIdentifier: string,
     offers: factory.offer.seatReservation.IOffer[]
 ): ICreateOperation<factory.action.authorize.seatReservation.IAction> {
-    return async (
-        eventRepo: EventRepo,
-        actionRepo: ActionRepo,
-        transactionRepo: TransactionRepo
-    ) => {
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+    return async (repos: {
+        event: EventRepo;
+        action: ActionRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
         // アクション中のイベント識別子と座席リストが合っているかどうか確認
-        const authorizeAction = await actionRepo.findById<factory.action.authorize.seatReservation.IAction>(
+        const authorizeAction = await repos.action.findById<factory.action.authorize.seatReservation.IAction>(
             factory.actionType.AuthorizeAction, actionId
         );
         // 完了ステータスのアクションのみ更新可能
@@ -438,7 +441,7 @@ export function changeOffers(
         }
 
         // 上映イベントを取得
-        const individualScreeningEvent = await eventRepo.findIndividualScreeningEventByIdentifier(eventIdentifier);
+        const individualScreeningEvent = await repos.event.findIndividualScreeningEventByIdentifier(eventIdentifier);
 
         // 供給情報の有効性を確認
         const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
@@ -448,7 +451,7 @@ export function changeOffers(
         (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).price = offers2resultPrice(offersWithDetails);
 
         // 座席予約承認アクションの供給情報を変更する
-        return actionRepo.actionModel.findOneAndUpdate(
+        return repos.action.actionModel.findOneAndUpdate(
             {
                 typeOf: factory.actionType.AuthorizeAction,
                 _id: actionId,

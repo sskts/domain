@@ -29,7 +29,7 @@ describe('TaskFunctionsService.cancelSeatReservation()', () => {
         sandbox.mock(sskts.service.stock).expects('cancelSeatReservationAuth').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.cancelSeatReservation(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.cancelSeatReservation(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -49,7 +49,7 @@ describe('TaskFunctionsService.cancelCreditCard()', () => {
         sandbox.mock(sskts.service.payment).expects('cancelCreditCardAuth').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.cancelCreditCard(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.cancelCreditCard(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -69,7 +69,7 @@ describe('TaskFunctionsService.cancelMvtk()', () => {
         sandbox.mock(sskts.service.payment).expects('cancelMvtk').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.cancelMvtk(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.cancelMvtk(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -89,7 +89,7 @@ describe('TaskFunctionsService.settleCreditCard()', () => {
         sandbox.mock(sskts.service.payment).expects('payCreditCard').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.payCreditCard(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.payCreditCard(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -109,7 +109,7 @@ describe('TaskFunctionsService.settleMvtk()', () => {
         sandbox.mock(sskts.service.payment).expects('useMvtk').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.useMvtk(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.useMvtk(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -129,7 +129,7 @@ describe('TaskFunctionsService.createOrder()', () => {
         sandbox.mock(sskts.service.order).expects('createFromTransaction').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.placeOrder(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.placeOrder(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -150,7 +150,7 @@ describe('TaskFunctionsService.sendEmailMessage()', () => {
         sandbox.mock(sskts.service.notification).expects('sendEmailMessage').once()
             .withArgs(data.actionAttributes).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.sendEmailMessage(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.sendEmailMessage(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -170,7 +170,7 @@ describe('TaskFunctionsService.refundCreditCard()', () => {
         sandbox.mock(sskts.service.payment).expects('refundCreditCard').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.refundCreditCard(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.refundCreditCard(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -190,7 +190,7 @@ describe('TaskFunctionsService.returnOrder()', () => {
         sandbox.mock(sskts.service.order).expects('cancelReservations').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.returnOrder(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.returnOrder(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -210,7 +210,7 @@ describe('TaskFunctionsService.sendOrder()', () => {
         sandbox.mock(sskts.service.delivery).expects('sendOrder').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.sendOrder(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.sendOrder(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -227,12 +227,32 @@ describe('TaskFunctionsService.payPecorino()', () => {
             transactionId: 'transactionId'
         };
 
+        const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
+
         sandbox.mock(sskts.service.payment).expects('payPecorino').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.payPecorino(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.payPecorino(<any>data)({
+            connection: sskts.mongoose.connection,
+            pecorinoAuthClient: pecorinoAuthClient
+        });
 
         assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('PecorinoAPIクライアントがセットされていなければエラーとなるはず', async () => {
+        const data = {
+            transactionId: 'transactionId'
+        };
+
+        sandbox.mock(sskts.service.payment).expects('payPecorino').never();
+
+        const result = await TaskFunctionsService.payPecorino(<any>data)({
+            connection: sskts.mongoose.connection
+        }).catch((err) => err);
+
+        assert(result instanceof Error);
         sandbox.verify();
     });
 });

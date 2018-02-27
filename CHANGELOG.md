@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - install tslint@5.9.x.
 - install mongoose@5.x.x.
 - イベント検索サービスを販売情報提供サービスとして名前変更。
+- 各サービスの複数リポジトリー引数をオブジェクトとして単一引数にまとめる対応。
 
 ### Deprecated
 

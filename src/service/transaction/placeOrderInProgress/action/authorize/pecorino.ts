@@ -13,11 +13,11 @@ import { MongoRepository as TransactionRepo } from '../../../../../repo/transact
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:pecorino');
 
-export type ICreateOperation<T> = (
-    actionRepo: ActionRepo,
-    transactionRepo: TransactionRepo,
-    payTransactionService: pecorinoapi.service.transaction.Pay
-) => Promise<T>;
+export type ICreateOperation<T> = (repos: {
+    action: ActionRepo;
+    transaction: TransactionRepo;
+    payTransactionService: pecorinoapi.service.transaction.Pay;
+}) => Promise<T>;
 
 /**
  * Pecorino残高差し押さえ
@@ -28,12 +28,12 @@ export function create(
     price: number
 ): ICreateOperation<factory.action.authorize.pecorino.IAction> {
     // tslint:disable-next-line:max-func-body-length
-    return async (
-        actionRepo: ActionRepo,
-        transactionRepo: TransactionRepo,
-        payTransactionService: pecorinoapi.service.transaction.Pay
-    ) => {
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+        payTransactionService: pecorinoapi.service.transaction.Pay;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -50,13 +50,13 @@ export function create(
             recipient: transaction.seller,
             purpose: transaction
         });
-        const action = await actionRepo.start<factory.action.authorize.pecorino.IAction>(actionAttributes);
+        const action = await repos.action.start<factory.action.authorize.pecorino.IAction>(actionAttributes);
 
         // Pecorinoオーソリ取得
         let pecorinoTransaction: any;
         try {
             debug('starting pecorino pay transaction...', price);
-            pecorinoTransaction = await payTransactionService.start({
+            pecorinoTransaction = await repos.payTransactionService.start({
                 // tslint:disable-next-line:no-magic-numbers
                 expires: moment().add(60, 'minutes').toDate(),
                 recipient: {
@@ -74,7 +74,7 @@ export function create(
             try {
                 // tslint:disable-next-line:max-line-length no-single-line-block-comment
                 const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */error;
-                await actionRepo.giveUp(action.typeOf, action.id, actionError);
+                await repos.action.giveUp(action.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -88,10 +88,10 @@ export function create(
         const actionResult: factory.action.authorize.pecorino.IResult = {
             price: price,
             pecorinoTransaction: pecorinoTransaction,
-            pecorinoEndpoint: payTransactionService.options.endpoint
+            pecorinoEndpoint: repos.payTransactionService.options.endpoint
         };
 
-        return actionRepo.complete<factory.action.authorize.pecorino.IAction>(action.typeOf, action.id, actionResult);
+        return repos.action.complete<factory.action.authorize.pecorino.IAction>(action.typeOf, action.id, actionResult);
     };
 }
 
@@ -102,7 +102,10 @@ export function cancel(
     transactionId: string,
     actionId: string
 ) {
-    return async (__1: ActionRepo, __2: TransactionRepo) => {
+    return async (__: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+    }) => {
         debug('canceling pecorino authorize action...', agentId, transactionId, actionId);
         debug('implementing...');
     };

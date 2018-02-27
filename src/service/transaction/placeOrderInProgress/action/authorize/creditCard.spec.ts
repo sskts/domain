@@ -67,7 +67,11 @@ describe('action.authorize.creditCard.create()', () => {
             amount,
             sskts.GMO.utils.util.Method.Lump,
             creditCard
-        )(actionRepo, organizationRepo, transactionRepo);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        });
 
         assert.deepEqual(result, action);
         sandbox.verify();
@@ -114,7 +118,11 @@ describe('action.authorize.creditCard.create()', () => {
             amount,
             sskts.GMO.utils.util.Method.Lump,
             creditCard
-        )(actionRepo, organizationRepo, transactionRepo)
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        })
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
@@ -170,7 +178,11 @@ describe('action.authorize.creditCard.create()', () => {
             amount,
             sskts.GMO.utils.util.Method.Lump,
             creditCard
-        )(actionRepo, organizationRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
 
         assert(result instanceof Error);
         sandbox.verify();
@@ -225,7 +237,11 @@ describe('action.authorize.creditCard.create()', () => {
             amount,
             sskts.GMO.utils.util.Method.Lump,
             creditCard
-        )(actionRepo, organizationRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
 
         assert(result instanceof Error);
         sandbox.verify();
@@ -284,7 +300,11 @@ describe('action.authorize.creditCard.create()', () => {
             amount,
             sskts.GMO.utils.util.Method.Lump,
             creditCard
-        )(actionRepo, organizationRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.RateLimitExceeded);
         sandbox.verify();
@@ -343,7 +363,11 @@ describe('action.authorize.creditCard.create()', () => {
             amount,
             sskts.GMO.utils.util.Method.Lump,
             creditCard
-        )(actionRepo, organizationRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.AlreadyInUse);
         sandbox.verify();
@@ -402,7 +426,11 @@ describe('action.authorize.creditCard.create()', () => {
             amount,
             sskts.GMO.utils.util.Method.Lump,
             creditCard
-        )(actionRepo, organizationRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            organization: organizationRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -453,7 +481,10 @@ describe('action.authorize.creditCard.cancel()', () => {
             agent.id,
             transaction.id,
             action.id
-        )(actionRepo, transactionRepo);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -492,7 +523,10 @@ describe('action.authorize.creditCard.cancel()', () => {
             agent.id,
             transaction.id,
             actionId
-        )(actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
@@ -537,7 +571,10 @@ describe('action.authorize.creditCard.cancel()', () => {
             agent.id,
             transaction.id,
             action.id
-        )(actionRepo, transactionRepo);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();

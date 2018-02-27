@@ -34,7 +34,10 @@ describe('exportTasks()', () => {
 
         const result = await sskts.service.transaction.placeOrder.exportTasks(
             status
-        )(taskRepo, transactionRepo).catch((err) => err);
+        )({
+            task: taskRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
     });
@@ -57,7 +60,10 @@ describe('exportTasks()', () => {
 
         const result = await sskts.service.transaction.placeOrder.exportTasks(
             status
-        )(taskRepo, transactionRepo);
+        )({
+            task: taskRepo,
+            transaction: transactionRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -74,7 +80,10 @@ describe('exportTasks()', () => {
 
         const result = await sskts.service.transaction.placeOrder.exportTasks(
             status
-        )(taskRepo, transactionRepo);
+        )({
+            task: taskRepo,
+            transaction: transactionRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -101,7 +110,10 @@ describe('exportTasksById()', () => {
 
         const result = await sskts.service.transaction.placeOrder.exportTasksById(
             transaction.id
-        )(taskRepo, transactionRepo);
+        )({
+            task: taskRepo,
+            transaction: transactionRepo
+        });
 
         assert(Array.isArray(result));
         assert.equal(result.length, numberOfTasks);
@@ -123,7 +135,10 @@ describe('exportTasksById()', () => {
 
         const result = await sskts.service.transaction.placeOrder.exportTasksById(
             transaction.id
-        )(taskRepo, transactionRepo);
+        )({
+            task: taskRepo,
+            transaction: transactionRepo
+        });
 
         assert(Array.isArray(result));
         assert.equal(result.length, numberOfTasks);
@@ -144,7 +159,10 @@ describe('exportTasksById()', () => {
 
         const result = await sskts.service.transaction.placeOrder.exportTasksById(
             transaction.id
-        )(taskRepo, transactionRepo).catch((err) => err);
+        )({
+            task: taskRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotImplemented);
         sandbox.verify();
     });
@@ -181,7 +199,10 @@ describe('sendEmail', () => {
         const result = await sskts.service.transaction.placeOrder.sendEmail(
             transaction.id,
             <any>emailMessageAttributes
-        )(taskRepo, transactionRepo);
+        )({
+            task: taskRepo,
+            transaction: transactionRepo
+        });
 
         assert(typeof result === 'object');
         sandbox.verify();
@@ -211,7 +232,10 @@ describe('sendEmail', () => {
         const result = await sskts.service.transaction.placeOrder.sendEmail(
             transaction.id,
             <any>emailMessageAttributes
-        )(taskRepo, transactionRepo).catch((err) => err);
+        )({
+            task: taskRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
@@ -282,7 +306,7 @@ describe('download', () => {
         const result = await sskts.service.transaction.placeOrder.download(
             conditions,
             'csv'
-        )(transactionRepo);
+        )({ transaction: transactionRepo });
 
         assert(typeof result === 'string');
         sandbox.verify();
@@ -365,7 +389,7 @@ describe('download', () => {
         const result = await sskts.service.transaction.placeOrder.download(
             conditions,
             'csv'
-        )(transactionRepo);
+        )({ transaction: transactionRepo });
 
         assert(typeof result === 'string');
         sandbox.verify();
@@ -395,7 +419,7 @@ describe('download', () => {
         const result = await sskts.service.transaction.placeOrder.download(
             conditions,
             'csv'
-        )(transactionRepo);
+        )({ transaction: transactionRepo });
 
         assert(typeof result === 'string');
         sandbox.verify();
@@ -415,7 +439,7 @@ describe('download', () => {
         const result = await sskts.service.transaction.placeOrder.download(
             conditions,
             <any>'invalidformat'
-        )(transactionRepo).catch((err) => err);
+        )({ transaction: transactionRepo }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotImplemented);
         sandbox.verify();

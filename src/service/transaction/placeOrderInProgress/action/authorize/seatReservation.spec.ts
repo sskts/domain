@@ -69,7 +69,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        });
 
         assert.deepEqual(result, action);
         sandbox.verify();
@@ -128,7 +132,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        });
 
         assert.deepEqual(result, action);
         sandbox.verify();
@@ -189,7 +197,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        });
 
         assert.deepEqual(result, action);
         sandbox.verify();
@@ -254,7 +266,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        });
 
         assert.deepEqual(result, action);
         sandbox.verify();
@@ -312,7 +328,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        });
 
         assert.deepEqual(result, action);
         sandbox.verify();
@@ -370,7 +390,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
@@ -424,7 +448,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
         assert.deepEqual(result, mvtkTicketResult);
         sandbox.verify();
     });
@@ -479,7 +507,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
@@ -529,7 +561,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
@@ -572,7 +608,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
@@ -631,7 +671,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.ServiceUnavailable);
         sandbox.verify();
     });
@@ -689,7 +733,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.ServiceUnavailable);
         sandbox.verify();
     });
@@ -748,7 +796,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.AlreadyInUse);
         sandbox.verify();
     });
@@ -809,7 +861,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
     });
@@ -870,7 +926,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.ServiceUnavailable);
         sandbox.verify();
     });
@@ -948,7 +1008,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
         assert(Array.isArray(result));
         assert(result[0] instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -1029,7 +1093,11 @@ describe('action.authorize.seatReservation.create()', () => {
             transaction.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo);
+        )({
+            event: eventRepo,
+            action: actionRepo,
+            transaction: transactionRepo
+        });
         assert.deepEqual(result, action);
         sandbox.verify();
     });
@@ -1074,7 +1142,10 @@ describe('action.authorize.seatReservation.cancel()', () => {
             agent.id,
             transaction.id,
             action.id
-        )(actionRepo, transactionRepo);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -1109,7 +1180,10 @@ describe('action.authorize.seatReservation.cancel()', () => {
             agent.id,
             transaction.id,
             actionId
-        )(actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
@@ -1174,7 +1248,11 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
             action.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            event: eventRepo
+        });
 
         assert.equal(typeof result, 'object');
         sandbox.verify();
@@ -1230,7 +1308,11 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
             action.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            event: eventRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
     });
@@ -1286,7 +1368,11 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
             action.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            event: eventRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         assert.equal((<sskts.factory.errors.NotFound>result).entityName, 'authorizeAction');
         sandbox.verify();
@@ -1341,7 +1427,11 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
             action.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            event: eventRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
         assert.equal((<sskts.factory.errors.Argument>result).argumentName, 'eventIdentifier');
         sandbox.verify();
@@ -1401,7 +1491,11 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
             action.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            event: eventRepo
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
         assert.equal((<sskts.factory.errors.Argument>result).argumentName, 'offers');
         sandbox.verify();
@@ -1460,7 +1554,11 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
             action.id,
             eventIdentifier,
             <any>offers
-        )(eventRepo, actionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            event: eventRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();

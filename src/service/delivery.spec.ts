@@ -83,9 +83,13 @@ describe('service.delivery.sendOrder()', () => {
         sandbox.mock(orderRepo).expects('changeStatus').once().resolves();
         sandbox.mock(taskRepo).expects('save').once().resolves();
 
-        const result = await sskts.service.delivery.sendOrder(transaction.id)(
-            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
-        );
+        const result = await sskts.service.delivery.sendOrder(transaction.id)({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -152,9 +156,13 @@ describe('service.delivery.sendOrder()', () => {
         sandbox.mock(orderRepo).expects('changeStatus').once().resolves();
         sandbox.mock(taskRepo).expects('save').once().resolves();
 
-        const result = await sskts.service.delivery.sendOrder(transaction.id)(
-            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
-        );
+        const result = await sskts.service.delivery.sendOrder(transaction.id)({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -214,9 +222,13 @@ describe('service.delivery.sendOrder()', () => {
         sandbox.mock(orderRepo).expects('changeStatus').never();
         sandbox.mock(taskRepo).expects('save').never();
 
-        const result = await sskts.service.delivery.sendOrder(transaction.id)(
-            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
-        ).catch((err) => err);
+        const result = await sskts.service.delivery.sendOrder(transaction.id)({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -263,9 +275,13 @@ describe('service.delivery.sendOrder()', () => {
         sandbox.mock(orderRepo).expects('changeStatus').never();
         sandbox.mock(taskRepo).expects('save').never();
 
-        const result = await sskts.service.delivery.sendOrder(transaction.id)(
-            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
-        ).catch((err) => err);
+        const result = await sskts.service.delivery.sendOrder(transaction.id)({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -325,9 +341,13 @@ describe('service.delivery.sendOrder()', () => {
         sandbox.mock(orderRepo).expects('changeStatus').never();
         sandbox.mock(taskRepo).expects('save').never();
 
-        const result = await sskts.service.delivery.sendOrder(transaction.id)(
-            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
-        ).catch((err) => err);
+        const result = await sskts.service.delivery.sendOrder(transaction.id)({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -393,9 +413,13 @@ describe('service.delivery.sendOrder()', () => {
         sandbox.mock(orderRepo).expects('changeStatus').never();
         sandbox.mock(taskRepo).expects('save').never();
 
-        const result = await sskts.service.delivery.sendOrder(transaction.id)(
-            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
-        ).catch((err) => err);
+        const result = await sskts.service.delivery.sendOrder(transaction.id)({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotImplemented);
         sandbox.verify();
@@ -455,9 +479,13 @@ describe('service.delivery.sendOrder()', () => {
         sandbox.mock(orderRepo).expects('changeStatus').never();
         sandbox.mock(taskRepo).expects('save').never();
 
-        const result = await sskts.service.delivery.sendOrder(transaction.id)(
-            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
-        ).catch((err) => err);
+        const result = await sskts.service.delivery.sendOrder(transaction.id)({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -524,9 +552,13 @@ describe('service.delivery.sendOrder()', () => {
         sandbox.mock(taskRepo.taskModel).expects('findOne').never();
         sandbox.mock(taskRepo).expects('save').never();
 
-        const result = await sskts.service.delivery.sendOrder(transaction.id)(
-            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
-        ).catch((err) => err);
+        const result = await sskts.service.delivery.sendOrder(transaction.id)({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        }).catch((err) => err);
 
         assert.deepEqual(result, stateReserveResult);
         sandbox.verify();
@@ -577,9 +609,13 @@ describe('service.delivery.sendOrder()', () => {
         sandbox.mock(orderRepo).expects('changeStatus').never();
         sandbox.mock(taskRepo).expects('save').never();
 
-        const result = await sskts.service.delivery.sendOrder(transaction.id)(
-            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
-        ).catch((err) => err);
+        const result = await sskts.service.delivery.sendOrder(transaction.id)({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();

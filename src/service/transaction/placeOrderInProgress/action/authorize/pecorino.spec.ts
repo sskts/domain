@@ -58,7 +58,11 @@ describe('action.authorize.pecorino.create()', () => {
             agent.id,
             transaction.id,
             price
-        )(actionRepo, transactionRepo, payTransactionService);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            payTransactionService: payTransactionService
+        });
 
         assert.deepEqual(result, action);
         sandbox.verify();
@@ -97,7 +101,11 @@ describe('action.authorize.pecorino.create()', () => {
             agent.id,
             transaction.id,
             price
-        )(actionRepo, transactionRepo, payTransactionService).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            payTransactionService: payTransactionService
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
@@ -144,7 +152,11 @@ describe('action.authorize.pecorino.create()', () => {
             agent.id,
             transaction.id,
             price
-        )(actionRepo, transactionRepo, payTransactionService).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo,
+            payTransactionService: payTransactionService
+        }).catch((err) => err);
 
         assert(result instanceof Error);
         sandbox.verify();

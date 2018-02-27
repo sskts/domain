@@ -42,7 +42,10 @@ describe('searchIndividualScreeningEvents()', () => {
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(itemAvailabilityRepo).expects('findOne').exactly(events.length).resolves(100);
 
-        const result = await OfferService.searchIndividualScreeningEvents(searchConditions)(eventRepo, itemAvailabilityRepo);
+        const result = await OfferService.searchIndividualScreeningEvents(searchConditions)({
+            event: eventRepo,
+            itemAvailability: itemAvailabilityRepo
+        });
         assert(Array.isArray(result));
         assert.equal(result.length, events.length);
         sandbox.verify();
@@ -70,7 +73,10 @@ describe('findIndividualScreeningEventByIdentifier()', () => {
 
         const result = await OfferService.findIndividualScreeningEventByIdentifier(
             event.identifier
-        )(eventRepo, itemAvailabilityRepo);
+        )({
+            event: eventRepo,
+            itemAvailability: itemAvailabilityRepo
+        });
 
         assert.equal(result.identifier, event.identifier);
         sandbox.verify();

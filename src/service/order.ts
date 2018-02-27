@@ -22,8 +22,13 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  * @param transactionId 注文取引ID
  */
 export function createFromTransaction(transactionId: string) {
-    return async (actionRepo: ActionRepo, orderRepo: OrderRepo, transactionRepo: TransactionRepo, taskRepo: TaskRepo) => {
-        const transaction = await transactionRepo.findPlaceOrderById(transactionId);
+    return async (repos: {
+        action: ActionRepo;
+        order: OrderRepo;
+        transaction: TransactionRepo;
+        task: TaskRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
@@ -35,17 +40,17 @@ export function createFromTransaction(transactionId: string) {
 
         // アクション開始
         const orderActionAttributes = potentialActions.order;
-        const action = await actionRepo.start<factory.action.trade.order.IAction>(orderActionAttributes);
+        const action = await repos.action.start<factory.action.trade.order.IAction>(orderActionAttributes);
 
         try {
             // 注文保管
-            await orderRepo.createIfNotExist(transactionResult.order);
+            await repos.order.createIfNotExist(transactionResult.order);
         } catch (error) {
             // actionにエラー結果を追加
             try {
                 // tslint:disable-next-line:max-line-length no-single-line-block-comment
                 const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
-                await actionRepo.giveUp(orderActionAttributes.typeOf, action.id, actionError);
+                await repos.action.giveUp(orderActionAttributes.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -55,10 +60,10 @@ export function createFromTransaction(transactionId: string) {
 
         // アクション完了
         debug('ending action...');
-        await actionRepo.complete(orderActionAttributes.typeOf, action.id, {});
+        await repos.action.complete(orderActionAttributes.typeOf, action.id, {});
 
         // 潜在アクション
-        await onCreate(transactionId, orderActionAttributes)(taskRepo);
+        await onCreate(transactionId, orderActionAttributes)({ task: repos.task });
     };
 }
 
@@ -68,7 +73,7 @@ export function createFromTransaction(transactionId: string) {
  * @param orderActionAttributes 注文アクション属性
  */
 function onCreate(transactionId: string, orderActionAttributes: factory.action.trade.order.IAttributes) {
-    return async (taskRepo: TaskRepo) => {
+    return async (repos: { task: TaskRepo }) => {
         // potentialActionsのためのタスクを生成
         const orderPotentialActions = orderActionAttributes.potentialActions;
         const now = new Date();
@@ -147,7 +152,7 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
 
         // タスク保管
         await Promise.all(taskAttributes.map(async (taskAttribute) => {
-            return taskRepo.save(taskAttribute);
+            return repos.task.save(taskAttribute);
         }));
     };
 }

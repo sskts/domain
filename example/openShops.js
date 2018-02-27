@@ -5,9 +5,9 @@
 
 const sskts = require('../');
 
-sskts.mongoose.connect(process.env.MONGOLAB_URI);
-
 async function main() {
+    await sskts.mongoose.connect(process.env.MONGOLAB_URI);
+    
     const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
     const movieTheaters = [
@@ -77,7 +77,7 @@ async function main() {
         await organizationRepo.openMovieTheaterShop(movieTheater);
     }));
 
-    sskts.mongoose.disconnect();
+    await sskts.mongoose.disconnect();
 }
 
 main().then(() => {

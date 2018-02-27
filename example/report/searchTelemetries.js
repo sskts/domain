@@ -7,7 +7,7 @@ const moment = require('moment');
 const sskts = require('../../');
 
 async function main() {
-    sskts.mongoose.connect(process.env.MONGOLAB_URI);
+    await sskts.mongoose.connect(process.env.MONGOLAB_URI);
 
     const telemetries = await sskts.service.report.searchTelemetries({
         measuredFrom: moment('2017-11-02T15:42:00Z').toDate(),
@@ -21,7 +21,7 @@ async function main() {
     console.log(telemetries[0].result.stock.measuredAt instanceof Date);
     console.log(telemetries[0].result.flow.measuredFrom instanceof Date);
 
-    sskts.mongoose.disconnect();
+    await sskts.mongoose.disconnect();
 }
 
 main().then(() => {

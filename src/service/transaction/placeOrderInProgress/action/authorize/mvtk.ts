@@ -11,10 +11,10 @@ import { MongoRepository as TransactionRepo } from '../../../../../repo/transact
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:mvtk');
 
-export type ICreateOperation<T> = (
-    actionRepo: ActionRepo,
-    transactionRepo: TransactionRepo
-) => Promise<T>;
+export type ICreateOperation<T> = (repos: {
+    action: ActionRepo;
+    transaction: TransactionRepo;
+}) => Promise<T>;
 
 /**
  * create a mvtk authorizeAction
@@ -27,11 +27,11 @@ export function create(
     authorizeObject: factory.action.authorize.mvtk.IObject
 ): ICreateOperation<factory.action.authorize.mvtk.IAction> {
     // tslint:disable-next-line:max-func-body-length
-    return async (
-        actionRepo: ActionRepo,
-        transactionRepo: TransactionRepo
-    ) => {
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -39,7 +39,7 @@ export function create(
 
         // 座席予約承認を取得
         // 座席予約承認アクションが存在していなければエラー
-        const seatReservationAuthorizeActions = await actionRepo.actionModel.find({
+        const seatReservationAuthorizeActions = await repos.action.actionModel.find({
             typeOf: factory.actionType.AuthorizeAction,
             'purpose.id': {
                 $exists: true,
@@ -141,7 +141,7 @@ export function create(
             recipient: transaction.seller,
             purpose: transaction // purposeは取引
         });
-        const action = await actionRepo.start<factory.action.authorize.mvtk.IAction>(actionAttributes);
+        const action = await repos.action.start<factory.action.authorize.mvtk.IAction>(actionAttributes);
 
         // 特に何もしない
 
@@ -150,7 +150,7 @@ export function create(
             price: authorizeObject.price
         };
 
-        return actionRepo.complete<factory.action.authorize.mvtk.IAction>(factory.actionType.AuthorizeAction, action.id, result);
+        return repos.action.complete<factory.action.authorize.mvtk.IAction>(factory.actionType.AuthorizeAction, action.id, result);
     };
 }
 
@@ -159,14 +159,17 @@ export function cancel(
     transactionId: string,
     actionId: string
 ) {
-    return async (actionRepo: ActionRepo, transactionRepo: TransactionRepo) => {
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        await actionRepo.cancel(factory.actionType.AuthorizeAction, actionId);
+        await repos.action.cancel(factory.actionType.AuthorizeAction, actionId);
 
         // 特に何もしない
     };

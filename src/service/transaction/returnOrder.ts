@@ -16,14 +16,21 @@ import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:returnOrder');
 
-export type IStartOperation<T> = (actionRepo: ActionRepo, orderRepo: OrderRepo, transactionRepo: TransactionRepo) => Promise<T>;
-export type ITransactionOperation<T> = (transactionRepo: TransactionRepo) => Promise<T>;
-export type ITaskAndTransactionOperation<T> = (taskRepo: TaskRepo, transactionRepo: TransactionRepo) => Promise<T>;
-export type IConfirmOperation<T> = (
-    actionRepo: ActionRepo,
-    transactionRepo: TransactionRepo,
-    organizationRepo: OrganizationRepo
-) => Promise<T>;
+export type IStartOperation<T> = (repos: {
+    action: ActionRepo;
+    order: OrderRepo;
+    transaction: TransactionRepo;
+}) => Promise<T>;
+export type ITransactionOperation<T> = (repos: { transaction: TransactionRepo }) => Promise<T>;
+export type ITaskAndTransactionOperation<T> = (repos: {
+    task: TaskRepo;
+    transaction: TransactionRepo;
+}) => Promise<T>;
+export type IConfirmOperation<T> = (repos: {
+    action: ActionRepo;
+    transaction: TransactionRepo;
+    organization: OrganizationRepo;
+}) => Promise<T>;
 
 /**
  * 注文返品取引開始
@@ -60,11 +67,15 @@ export function start(params: {
      */
     reason: factory.transaction.returnOrder.Reason;
 }): IStartOperation<factory.transaction.returnOrder.ITransaction> {
-    return async (actionRepo: ActionRepo, orderRepo: OrderRepo, transactionRepo: TransactionRepo) => {
+    return async (repos: {
+        action: ActionRepo;
+        order: OrderRepo;
+        transaction: TransactionRepo;
+    }) => {
         const now = new Date();
 
         // 返品対象の取引取得
-        const placeOrderTransaction = await transactionRepo.findPlaceOrderById(params.transactionId);
+        const placeOrderTransaction = await repos.transaction.findPlaceOrderById(params.transactionId);
         if (placeOrderTransaction.status !== factory.transactionStatusType.Confirmed) {
             throw new factory.errors.Argument('transactionId', 'Status not Confirmed.');
         }
@@ -75,12 +86,12 @@ export function start(params: {
         }
 
         // 注文ステータスが配送済の場合のみ受け付け
-        const order = await orderRepo.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
+        const order = await repos.order.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
         if (order.orderStatus !== factory.orderStatus.OrderDelivered) {
             throw new factory.errors.Argument('transaction', 'order status is not OrderDelivered');
         }
 
-        const actionsOnOrder = await actionRepo.findByOrderNumber(order.orderNumber);
+        const actionsOnOrder = await repos.action.findByOrderNumber(order.orderNumber);
         const payAction = <factory.action.trade.pay.IAction | undefined>actionsOnOrder.find(
             (a) => {
                 return a.typeOf === factory.actionType.PayAction &&
@@ -119,7 +130,7 @@ export function start(params: {
 
         let returnOrderTransaction: factory.transaction.returnOrder.ITransaction;
         try {
-            returnOrderTransaction = await transactionRepo.start<factory.transaction.returnOrder.ITransaction>(returnOrderAttributes);
+            returnOrderTransaction = await repos.transaction.start<factory.transaction.returnOrder.ITransaction>(returnOrderAttributes);
         } catch (error) {
             if (error.name === 'MongoError') {
                 // 同一取引に対して返品取引を作成しようとすると、MongoDBでE11000 duplicate key errorが発生する
@@ -149,12 +160,12 @@ export function confirm(
     agentId: string,
     transactionId: string
 ): IConfirmOperation<factory.transaction.returnOrder.IResult> {
-    return async (
-        actionRepo: ActionRepo,
-        transactionRepo: TransactionRepo,
-        organizationRepo: OrganizationRepo
-    ) => {
-        const transaction = await transactionRepo.findReturnOrderInProgressById(transactionId);
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+        organization: OrganizationRepo;
+    }) => {
+        const transaction = await repos.transaction.findReturnOrderInProgressById(transactionId);
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
@@ -170,9 +181,9 @@ export function confirm(
             throw new factory.errors.NotFound('customerContact');
         }
 
-        const seller = await organizationRepo.findMovieTheaterById(placeOrderTransaction.seller.id);
+        const seller = await repos.organization.findMovieTheaterById(placeOrderTransaction.seller.id);
 
-        const actionsOnOrder = await actionRepo.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
+        const actionsOnOrder = await repos.action.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
         const payAction = <factory.action.trade.pay.IAction | undefined>actionsOnOrder.find(
             (a) => {
                 return a.typeOf === factory.actionType.PayAction &&
@@ -223,7 +234,7 @@ export function confirm(
 
         // ステータス変更
         debug('updating transaction...');
-        await transactionRepo.confirmReturnOrder(
+        await repos.transaction.confirmReturnOrder(
             transactionId,
             result,
             potentialActions
@@ -310,21 +321,24 @@ export async function createRefundEmail(params: {
  * 返品取引のタスクをエクスポートする
  */
 export function exportTasks(status: factory.transactionStatusType) {
-    return async (taskRepo: TaskRepo, transactionRepo: TransactionRepo) => {
+    return async (repos: {
+        task: TaskRepo;
+        transaction: TransactionRepo;
+    }) => {
         const statusesTasksExportable = [factory.transactionStatusType.Expired, factory.transactionStatusType.Confirmed];
         if (statusesTasksExportable.indexOf(status) < 0) {
             throw new factory.errors.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
         }
 
-        const transaction = await transactionRepo.startExportTasks(factory.transactionType.ReturnOrder, status);
+        const transaction = await repos.transaction.startExportTasks(factory.transactionType.ReturnOrder, status);
         if (transaction === null) {
             return;
         }
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
-        await exportTasksById(transaction.id)(taskRepo, transactionRepo);
+        await exportTasksById(transaction.id)(repos);
 
-        await transactionRepo.setTasksExportedById(transaction.id);
+        await repos.transaction.setTasksExportedById(transaction.id);
     };
 }
 
@@ -333,8 +347,11 @@ export function exportTasks(status: factory.transactionStatusType) {
  */
 export function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask[]> {
     // tslint:disable-next-line:max-func-body-length
-    return async (taskRepo: TaskRepo, transactionRepo: TransactionRepo) => {
-        const transaction = await transactionRepo.findReturnOrderById(transactionId);
+    return async (repos: {
+        task: TaskRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findReturnOrderById(transactionId);
 
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {
@@ -364,7 +381,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         }
 
         return Promise.all(taskAttributes.map(async (taskAttribute) => {
-            return taskRepo.save(taskAttribute);
+            return repos.task.save(taskAttribute);
         }));
     };
 }

@@ -35,7 +35,11 @@ describe('executeByName()', () => {
         sandbox.mock(TaskFunctionsService).expects(task.name).once().withArgs(task.data).returns(async () => Promise.resolve());
         sandbox.mock(taskRepo).expects('pushExecutionResultById').once().withArgs(task.id, sskts.factory.taskStatus.Executed).resolves();
 
-        const result = await sskts.service.task.executeByName(task.name)(taskRepo, sskts.mongoose.connection, authClient);
+        const result = await sskts.service.task.executeByName(task.name)({
+            taskRepo: taskRepo,
+            connection: sskts.mongoose.connection,
+            pecorinoAuthClient: authClient
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -50,7 +54,11 @@ describe('executeByName()', () => {
             .withArgs(taskName).rejects(new sskts.factory.errors.NotFound('task'));
         sandbox.mock(sskts.service.task).expects('execute').never();
 
-        const result = await sskts.service.task.executeByName(taskName)(taskRepo, sskts.mongoose.connection, authClient);
+        const result = await sskts.service.task.executeByName(taskName)({
+            taskRepo: taskRepo,
+            connection: sskts.mongoose.connection,
+            pecorinoAuthClient: authClient
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -69,7 +77,7 @@ describe('retry()', () => {
         sandbox.mock(taskRepo).expects('retry').once()
             .withArgs(INTERVAL).resolves();
 
-        const result = await sskts.service.task.retry(INTERVAL)(taskRepo);
+        const result = await sskts.service.task.retry(INTERVAL)({ task: taskRepo });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -93,7 +101,7 @@ describe('abort()', () => {
         sandbox.mock(sskts.service.notification).expects('report2developers').once()
             .withArgs(sskts.service.task.ABORT_REPORT_SUBJECT).returns(async () => Promise.resolve());
 
-        const result = await sskts.service.task.abort(INTERVAL)(taskRepo);
+        const result = await sskts.service.task.abort(INTERVAL)({ task: taskRepo });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -118,7 +126,11 @@ describe('execute()', () => {
         sandbox.mock(TaskFunctionsService).expects(task.name).once().withArgs(task.data).returns(async () => Promise.resolve());
         sandbox.mock(taskRepo).expects('pushExecutionResultById').once().withArgs(task.id, sskts.factory.taskStatus.Executed).resolves();
 
-        const result = await sskts.service.task.execute(<any>task)(taskRepo, sskts.mongoose.connection, authClient);
+        const result = await sskts.service.task.execute(<any>task)({
+            taskRepo: taskRepo,
+            connection: sskts.mongoose.connection,
+            pecorinoAuthClient: authClient
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -136,7 +148,11 @@ describe('execute()', () => {
 
         sandbox.mock(taskRepo).expects('pushExecutionResultById').once().withArgs(task.id, task.status).resolves();
 
-        const result = await sskts.service.task.execute(<any>task)(taskRepo, sskts.mongoose.connection, authClient);
+        const result = await sskts.service.task.execute(<any>task)({
+            taskRepo: taskRepo,
+            connection: sskts.mongoose.connection,
+            pecorinoAuthClient: authClient
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();

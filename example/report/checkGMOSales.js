@@ -7,7 +7,7 @@ const moment = require('moment');
 const sskts = require('../../');
 
 async function main() {
-    sskts.mongoose.connect(process.env.MONGOLAB_URI);
+    await sskts.mongoose.connect(process.env.MONGOLAB_URI);
 
     await sskts.service.report.health.checkGMOSales({
         madeFrom: moment().add(-1, 'day').toDate(),
@@ -17,7 +17,7 @@ async function main() {
         new sskts.repository.Action(sskts.mongoose.connection),
     );
 
-    sskts.mongoose.disconnect();
+    await sskts.mongoose.disconnect();
 }
 
 main().then(() => {

@@ -10,10 +10,10 @@ import { MongoRepository as IndividualScreeningEventItemAvailabilityRepository }
 
 const debug = createDebug('sskts-domain:service:offer');
 
-export type IEventOperation<T> = (
-    eventRepository: EventRepository,
-    itemAvailability?: IndividualScreeningEventItemAvailabilityRepository
-) => Promise<T>;
+export type IEventOperation<T> = (repos: {
+    event: EventRepository;
+    itemAvailability?: IndividualScreeningEventItemAvailabilityRepository;
+}) => Promise<T>;
 
 /**
  * 個々の上映イベントを検索する
@@ -23,12 +23,12 @@ export type IEventOperation<T> = (
 export function searchIndividualScreeningEvents(
     searchConditions: factory.event.individualScreeningEvent.ISearchConditions
 ): IEventOperation<factory.event.individualScreeningEvent.IEventWithOffer[]> {
-    return async (
-        eventRepository: EventRepository,
-        itemAvailabilityRepository?: IndividualScreeningEventItemAvailabilityRepository
-    ) => {
+    return async (repos: {
+        event: EventRepository;
+        itemAvailability?: IndividualScreeningEventItemAvailabilityRepository;
+    }) => {
         debug('finding individualScreeningEvents...', searchConditions);
-        const events = await eventRepository.searchIndividualScreeningEvents(searchConditions);
+        const events = await repos.event.searchIndividualScreeningEvents(searchConditions);
 
         return Promise.all(events.map(async (event) => {
             // 空席状況情報を追加
@@ -39,8 +39,8 @@ export function searchIndividualScreeningEvents(
             };
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (itemAvailabilityRepository !== undefined) {
-                offer.availability = await itemAvailabilityRepository.findOne(event.coaInfo.dateJouei, event.identifier);
+            if (repos.itemAvailability !== undefined) {
+                offer.availability = await repos.itemAvailability.findOne(event.coaInfo.dateJouei, event.identifier);
             }
 
             return { ...event, ...{ offer: offer } };
@@ -55,11 +55,11 @@ export function searchIndividualScreeningEvents(
 export function findIndividualScreeningEventByIdentifier(
     identifier: string
 ): IEventOperation<factory.event.individualScreeningEvent.IEventWithOffer> {
-    return async (
-        eventRepository: EventRepository,
-        itemAvailabilityRepository?: IndividualScreeningEventItemAvailabilityRepository
-    ) => {
-        const event = await eventRepository.findIndividualScreeningEventByIdentifier(identifier);
+    return async (repos: {
+        event: EventRepository;
+        itemAvailability?: IndividualScreeningEventItemAvailabilityRepository;
+    }) => {
+        const event = await repos.event.findIndividualScreeningEventByIdentifier(identifier);
 
         // add item availability info
         const offer: factory.event.individualScreeningEvent.IOffer = {
@@ -69,8 +69,8 @@ export function findIndividualScreeningEventByIdentifier(
         };
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (itemAvailabilityRepository !== undefined) {
-            offer.availability = await itemAvailabilityRepository.findOne(event.coaInfo.dateJouei, event.identifier);
+        if (repos.itemAvailability !== undefined) {
+            offer.availability = await repos.itemAvailability.findOne(event.coaInfo.dateJouei, event.identifier);
         }
 
         return { ...event, ...{ offer: offer } };

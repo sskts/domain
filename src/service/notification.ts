@@ -26,11 +26,11 @@ export const LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify';
  * @see https://sendgrid.com/docs/API_Reference/Web_API_v3/Mail/errors.html
  */
 export function sendEmailMessage(actionAttributes: factory.action.transfer.send.message.email.IAttributes) {
-    return async (
-        actionRepo: ActionRepo
-    ) => {
+    return async (repos: {
+        action: ActionRepo;
+    }) => {
         // アクション開始
-        const action = await actionRepo.start<factory.action.transfer.send.message.email.IAction>(actionAttributes);
+        const action = await repos.action.start<factory.action.transfer.send.message.email.IAction>(actionAttributes);
         let result: any = {};
 
         try {
@@ -72,7 +72,7 @@ export function sendEmailMessage(actionAttributes: factory.action.transfer.send.
             try {
                 // tslint:disable-next-line:max-line-length no-single-line-block-comment
                 const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next*/ error;
-                await actionRepo.giveUp(actionAttributes.typeOf, action.id, actionError);
+                await repos.action.giveUp(actionAttributes.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -82,7 +82,7 @@ export function sendEmailMessage(actionAttributes: factory.action.transfer.send.
 
         // アクション完了
         debug('ending action...');
-        await actionRepo.complete(actionAttributes.typeOf, action.id, result);
+        await repos.action.complete(actionAttributes.typeOf, action.id, result);
     };
 }
 
