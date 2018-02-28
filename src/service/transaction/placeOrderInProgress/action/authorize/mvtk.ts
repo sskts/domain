@@ -6,37 +6,32 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import { MongoRepository as MvtkAuthorizeActionRepo } from '../../../../../repo/action/authorize/mvtk';
-import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../../../../../repo/action/authorize/seatReservation';
+import { MongoRepository as ActionRepo } from '../../../../../repo/action';
 import { MongoRepository as TransactionRepo } from '../../../../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:mvtk');
 
-export type ISeatAndMvtkAndTransactionOperation<T> = (
-    seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
-    mvtkAuthorizeActionRepo: MvtkAuthorizeActionRepo,
-    transactionRepo: TransactionRepo
-) => Promise<T>;
+export type ICreateOperation<T> = (repos: {
+    action: ActionRepo;
+    transaction: TransactionRepo;
+}) => Promise<T>;
 
 /**
  * create a mvtk authorizeAction
  * add the result of using a mvtk card
  * @export
- * @function
- * @memberof service.transaction.placeOrderInProgress
  */
 export function create(
     agentId: string,
     transactionId: string,
     authorizeObject: factory.action.authorize.mvtk.IObject
-): ISeatAndMvtkAndTransactionOperation<factory.action.authorize.mvtk.IAction> {
+): ICreateOperation<factory.action.authorize.mvtk.IAction> {
     // tslint:disable-next-line:max-func-body-length
-    return async (
-        seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
-        mvtkAuthorizeActionRepo: MvtkAuthorizeActionRepo,
-        transactionRepo: TransactionRepo
-    ) => {
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -44,15 +39,25 @@ export function create(
 
         // 座席予約承認を取得
         // 座席予約承認アクションが存在していなければエラー
-        const seatReservationAuthorizeActions = await seatReservationAuthorizeActionRepo.findByTransactionId(transactionId)
-            .then((actions) => actions.filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus));
+        const seatReservationAuthorizeActions = await repos.action.actionModel.find({
+            typeOf: factory.actionType.AuthorizeAction,
+            'purpose.id': {
+                $exists: true,
+                $eq: transactionId
+            },
+            'object.typeOf': factory.action.authorize.seatReservation.ObjectType.SeatReservation
+        }).exec().then((docs) => docs
+            .map((doc) => <factory.action.authorize.seatReservation.IAction>doc.toObject())
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus));
         if (seatReservationAuthorizeActions.length === 0) {
             throw new factory.errors.Argument('transactionId', '座席予約が見つかりません。');
         }
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO 座席予約承認はひとつしかない仕様ではあるが、万が一データとして複数存在した場合の挙動を考慮できていない
-        const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
+        // 座席予約承認はひとつしかない仕様
+        if (seatReservationAuthorizeActions.length > 1) {
+            throw new factory.errors.Argument('transactionId', '座席予約が複数見つかりました。');
+        }
 
+        const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
         const seatReservationAuthorizeActionObject = seatReservationAuthorizeAction.object;
         const seatReservationAuthorizeActionResult =
             <factory.action.authorize.seatReservation.IResult>seatReservationAuthorizeAction.result;
@@ -130,21 +135,22 @@ export function create(
             throw new factory.errors.Argument('authorizeActionResult', 'zskInfo not matched with seat reservation authorizeAction');
         }
 
-        const mvtkAuthorizeAction = await mvtkAuthorizeActionRepo.start(
-            transaction.agent,
-            transaction.seller,
-            authorizeObject
-        );
+        const actionAttributes = factory.action.authorize.mvtk.createAttributes({
+            object: authorizeObject,
+            agent: transaction.agent,
+            recipient: transaction.seller,
+            purpose: transaction // purposeは取引
+        });
+        const action = await repos.action.start<factory.action.authorize.mvtk.IAction>(actionAttributes);
 
         // 特に何もしない
 
         // アクションを完了
-        return mvtkAuthorizeActionRepo.complete(
-            mvtkAuthorizeAction.id,
-            {
-                price: authorizeObject.price
-            }
-        );
+        const result: factory.action.authorize.mvtk.IResult = {
+            price: authorizeObject.price
+        };
+
+        return repos.action.complete<factory.action.authorize.mvtk.IAction>(factory.actionType.AuthorizeAction, action.id, result);
     };
 }
 
@@ -153,14 +159,17 @@ export function cancel(
     transactionId: string,
     actionId: string
 ) {
-    return async (mvtkAuthorizeActionRepo: MvtkAuthorizeActionRepo, transactionRepo: TransactionRepo) => {
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        await mvtkAuthorizeActionRepo.cancel(actionId, transactionId);
+        await repos.action.cancel(factory.actionType.AuthorizeAction, actionId);
 
         // 特に何もしない
     };

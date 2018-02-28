@@ -44,7 +44,7 @@ describe('executeOneByName()', () => {
     });
 
     it('MongoDBの状態が正常であれば、オブジェクトが返却されるはず', async () => {
-        const taskName = sskts.factory.taskName.CreateOrder;
+        const taskName = sskts.factory.taskName.PlaceOrder;
 
         const repository = new sskts.repository.Task(sskts.mongoose.connection);
 
@@ -58,7 +58,7 @@ describe('executeOneByName()', () => {
     });
 
     it('存在しなければ、NotFoundエラーとなるはず', async () => {
-        const taskName = sskts.factory.taskName.CreateOrder;
+        const taskName = sskts.factory.taskName.PlaceOrder;
 
         const repository = new sskts.repository.Task(sskts.mongoose.connection);
 

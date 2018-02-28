@@ -1,7 +1,5 @@
 /**
- * event service
- * イベントサービス
- * @namespace service.event
+ * 販売情報サービス
  */
 
 import * as factory from '@motionpicture/sskts-factory';
@@ -10,29 +8,27 @@ import * as createDebug from 'debug';
 import { MongoRepository as EventRepository } from '../repo/event';
 import { MongoRepository as IndividualScreeningEventItemAvailabilityRepository } from '../repo/itemAvailability/individualScreeningEvent';
 
-const debug = createDebug('sskts-domain:service:event');
+const debug = createDebug('sskts-domain:service:offer');
 
-export type IEventOperation<T> = (
-    eventRepository: EventRepository,
-    itemAvailability?: IndividualScreeningEventItemAvailabilityRepository
-) => Promise<T>;
+export type IEventOperation<T> = (repos: {
+    event: EventRepository;
+    itemAvailability?: IndividualScreeningEventItemAvailabilityRepository;
+}) => Promise<T>;
 
 /**
  * 個々の上映イベントを検索する
  * 在庫状況リポジトリーをパラメーターとして渡せば、在庫状況も取得してくれる
  * @export
- * @function
- * @memberof service.event
  */
 export function searchIndividualScreeningEvents(
     searchConditions: factory.event.individualScreeningEvent.ISearchConditions
 ): IEventOperation<factory.event.individualScreeningEvent.IEventWithOffer[]> {
-    return async (
-        eventRepository: EventRepository,
-        itemAvailabilityRepository?: IndividualScreeningEventItemAvailabilityRepository
-    ) => {
+    return async (repos: {
+        event: EventRepository;
+        itemAvailability?: IndividualScreeningEventItemAvailabilityRepository;
+    }) => {
         debug('finding individualScreeningEvents...', searchConditions);
-        const events = await eventRepository.searchIndividualScreeningEvents(searchConditions);
+        const events = await repos.event.searchIndividualScreeningEvents(searchConditions);
 
         return Promise.all(events.map(async (event) => {
             // 空席状況情報を追加
@@ -43,8 +39,8 @@ export function searchIndividualScreeningEvents(
             };
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (itemAvailabilityRepository !== undefined) {
-                offer.availability = await itemAvailabilityRepository.findOne(event.coaInfo.dateJouei, event.identifier);
+            if (repos.itemAvailability !== undefined) {
+                offer.availability = await repos.itemAvailability.findOne(event.coaInfo.dateJouei, event.identifier);
             }
 
             return { ...event, ...{ offer: offer } };
@@ -55,17 +51,15 @@ export function searchIndividualScreeningEvents(
 /**
  * 個々の上映イベントを識別子で取得する
  * @export
- * @function
- * @memberof service.event
  */
 export function findIndividualScreeningEventByIdentifier(
     identifier: string
 ): IEventOperation<factory.event.individualScreeningEvent.IEventWithOffer> {
-    return async (
-        eventRepository: EventRepository,
-        itemAvailabilityRepository?: IndividualScreeningEventItemAvailabilityRepository
-    ) => {
-        const event = await eventRepository.findIndividualScreeningEventByIdentifier(identifier);
+    return async (repos: {
+        event: EventRepository;
+        itemAvailability?: IndividualScreeningEventItemAvailabilityRepository;
+    }) => {
+        const event = await repos.event.findIndividualScreeningEventByIdentifier(identifier);
 
         // add item availability info
         const offer: factory.event.individualScreeningEvent.IOffer = {
@@ -75,8 +69,8 @@ export function findIndividualScreeningEventByIdentifier(
         };
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (itemAvailabilityRepository !== undefined) {
-            offer.availability = await itemAvailabilityRepository.findOne(event.coaInfo.dateJouei, event.identifier);
+        if (repos.itemAvailability !== undefined) {
+            offer.availability = await repos.itemAvailability.findOne(event.coaInfo.dateJouei, event.identifier);
         }
 
         return { ...event, ...{ offer: offer } };

@@ -1,5 +1,4 @@
 /**
- * master data synchronization service
  * マスターデータ同期サービス
  * @namespace service.masterSync
  */
@@ -7,21 +6,23 @@
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
-import * as moment from 'moment';
+// @ts-ignore
+import * as difference from 'lodash.difference';
+import * as moment from 'moment-timezone';
 
-import { Repository as CreativeWorkRepository } from '../repo/creativeWork';
-import { Repository as EventRepository } from '../repo/event';
-import { Repository as PlaceRepository } from '../repo/place';
+import { Repository as CreativeWorkRepo } from '../repo/creativeWork';
+import { Repository as EventRepo } from '../repo/event';
+import { Repository as PlaceRepo } from '../repo/place';
 
 const debug = createDebug('sskts-domain:service:masterSync');
 
-export type IPlaceOperation<T> = (placeRepository: PlaceRepository) => Promise<T>;
+export type IPlaceOperation<T> = (placeRepo: PlaceRepo) => Promise<T>;
 
 /**
  * 映画作品インポート
  */
 export function importMovies(theaterCode: string) {
-    return async (creativeWorkRepository: CreativeWorkRepository) => {
+    return async (repos: { creativeWork: CreativeWorkRepo }) => {
         // COAから作品取得
         const filmsFromCOA = await COA.services.master.title({ theaterCode: theaterCode });
 
@@ -29,35 +30,46 @@ export function importMovies(theaterCode: string) {
         await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
             const movie = factory.creativeWork.movie.createFromCOA(filmFromCOA);
             debug('storing movie...', movie);
-            await creativeWorkRepository.saveMovie(movie);
+            await repos.creativeWork.saveMovie(movie);
             debug('movie stored.');
         }));
     };
 }
 
 /**
- * import screening events from COA
  * COAから上映イベントをインポートする
- * @export
- * @function
- * @memberof service/event
+ * @param theaterCode 劇場コード
+ * @param importFrom いつから
+ * @param importThrough いつまで
  */
 export function importScreeningEvents(theaterCode: string, importFrom: Date, importThrough: Date) {
     // tslint:disable-next-line:max-func-body-length
-    return async (eventRepository: EventRepository, placeRepository: PlaceRepository) => {
+    return async (repos: {
+        event: EventRepo;
+        place: PlaceRepo;
+    }) => {
         // 劇場取得
-        const movieTheater = await placeRepository.findMovieTheaterByBranchCode(theaterCode);
+        const movieTheater = await repos.place.findMovieTheaterByBranchCode(theaterCode);
 
         // COAから作品取得
         const filmsFromCOA = await COA.services.master.title({
             theaterCode: theaterCode
         });
 
+        const targetImportFrom = moment(`${moment(importFrom).tz('Asia/Tokyo').format('YYYY-MM-DD')}T00:00:00+09:00`);
+        const targetImportThrough = moment(`${moment(importThrough).tz('Asia/Tokyo').format('YYYY-MM-DD')}T00:00:00+09:00`).add(1, 'day');
+        debug('importing screening events...', targetImportFrom, targetImportThrough);
+
         // COAから上映イベント取得
+        debug(
+            'finding schedules from COA...',
+            moment(targetImportFrom).tz('Asia/Tokyo').format('YYYYMMDD'),
+            moment(targetImportThrough).add(-1, 'day').tz('Asia/Tokyo').format('YYYYMMDD')
+        );
         const schedulesFromCOA = await COA.services.master.schedule({
             theaterCode: theaterCode,
-            begin: moment(importFrom).tz('Asia/Tokyo').format('YYYYMMDD'), // COAは日本時間で判断
-            end: moment(importThrough).tz('Asia/Tokyo').format('YYYYMMDD') // COAは日本時間で判断
+            begin: moment(targetImportFrom).tz('Asia/Tokyo').format('YYYYMMDD'), // COAは日本時間で判断
+            end: moment(targetImportThrough).add(-1, 'day').tz('Asia/Tokyo').format('YYYYMMDD') // COAは日本時間で判断
         });
 
         // COAから区分マスター抽出
@@ -85,7 +97,7 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
             theaterCode: theaterCode,
             kubunClass: '043'
         });
-        debug(serviceKubuns, acousticKubuns, eirinKubuns, eizouKubuns, joueihousikiKubuns, jimakufukikaeKubuns);
+        debug('kubunNames found.');
 
         // 永続化
         const screeningEvents = await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
@@ -97,15 +109,14 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
                 joueihousikiKubuns: joueihousikiKubuns,
                 jimakufukikaeKubuns: jimakufukikaeKubuns
             });
-            debug('storing screeningEvent...', filmFromCOA, screeningEvent);
-            await eventRepository.saveScreeningEvent(screeningEvent);
-            debug('screeningEvent stored.');
+            await repos.event.saveScreeningEvent(screeningEvent);
 
             return screeningEvent;
         }));
 
         // 上映イベントごとに永続化トライ
-        await Promise.all(schedulesFromCOA.map(async (scheduleFromCOA) => {
+        const individualScreeningEvents: factory.event.individualScreeningEvent.IEvent[] = [];
+        schedulesFromCOA.forEach((scheduleFromCOA) => {
             const screeningEventIdentifier = factory.event.screeningEvent.createIdentifier({
                 theaterCode: theaterCode,
                 titleCode: scheduleFromCOA.titleCode,
@@ -138,10 +149,40 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
                 serviceKubuns: serviceKubuns,
                 acousticKubuns: acousticKubuns
             });
-            debug('storing individualScreeningEvent', individualScreeningEvent);
-            await eventRepository.saveIndividualScreeningEvent(individualScreeningEvent);
-            debug('individualScreeningEvent stored.');
+            individualScreeningEvents.push(individualScreeningEvent);
+        });
+
+        debug(`storing ${individualScreeningEvents.length} individualScreeningEvents...`);
+        await Promise.all(individualScreeningEvents.map(async (individualScreeningEvent) => {
+            try {
+                await repos.event.saveIndividualScreeningEvent(individualScreeningEvent);
+            } catch (error) {
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore next */
+                console.error(error);
+            }
         }));
+        debug(`${individualScreeningEvents.length} individualScreeningEvents stored.`);
+
+        // COAから削除されたイベントをキャンセル済ステータスへ変更
+        const identifiers = await repos.event.searchIndividualScreeningEvents({
+            superEventLocationIdentifiers: [`MovieTheater-${theaterCode}`],
+            startFrom: targetImportFrom.toDate(),
+            startThrough: targetImportThrough.toDate()
+        }).then((events) => events.map((e) => e.identifier));
+        const identifiersShouldBe = individualScreeningEvents.map((e) => e.identifier);
+        const cancelledIdentifiers = difference(identifiers, identifiersShouldBe);
+        debug(`cancelling ${cancelledIdentifiers.length} events...`);
+        await Promise.all(cancelledIdentifiers.map(async (identifier) => {
+            try {
+                await repos.event.cancelIndividualScreeningEvent(identifier);
+            } catch (error) {
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore next */
+                console.error(error);
+            }
+        }));
+        debug(`${cancelledIdentifiers.length} events cancelled.`);
     };
 }
 
@@ -149,14 +190,14 @@ export function importScreeningEvents(theaterCode: string, importFrom: Date, imp
  * 劇場インポート
  */
 export function importMovieTheater(theaterCode: string): IPlaceOperation<void> {
-    return async (placeRepository: PlaceRepository) => {
+    return async (placeRepo: PlaceRepo) => {
         const movieTheater = factory.place.movieTheater.createFromCOA(
             await COA.services.master.theater({ theaterCode: theaterCode }),
             await COA.services.master.screen({ theaterCode: theaterCode })
         );
 
         debug('storing movieTheater...', movieTheater);
-        await placeRepository.saveMovieTheater(movieTheater);
+        await placeRepo.saveMovieTheater(movieTheater);
         debug('movieTheater stored.');
     };
 }

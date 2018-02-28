@@ -8,44 +8,38 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as json2csv from 'json2csv';
 
-import { MongoRepository as TaskRepository } from '../../repo/task';
-import { MongoRepository as TransactionRepository } from '../../repo/transaction';
+import { MongoRepository as TaskRepo } from '../../repo/task';
+import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrder');
 
-export type ITaskAndTransactionOperation<T> = (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => Promise<T>;
+export type ITaskAndTransactionOperation<T> = (repos: {
+    task: TaskRepo;
+    transaction: TransactionRepo;
+}) => Promise<T>;
 
 /**
  * ひとつの取引のタスクをエクスポートする
  */
 export function exportTasks(status: factory.transactionStatusType) {
-    return async (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => {
+    return async (repos: {
+        task: TaskRepo;
+        transaction: TransactionRepo;
+    }) => {
         const statusesTasksExportable = [factory.transactionStatusType.Expired, factory.transactionStatusType.Confirmed];
         if (statusesTasksExportable.indexOf(status) < 0) {
             throw new factory.errors.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
         }
 
-        const transaction = await transactionRepository.transactionModel.findOneAndUpdate(
-            {
-                status: status,
-                tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
-            },
-            { tasksExportationStatus: factory.transactionTasksExportationStatus.Exporting },
-            { new: true }
-        ).exec()
-            .then((doc) => (doc === null) ? null : <factory.transaction.placeOrder.ITransaction>doc.toObject());
-
+        const transaction = await repos.transaction.startExportTasks(factory.transactionType.PlaceOrder, status);
         if (transaction === null) {
             return;
         }
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
-        await exportTasksById(transaction.id)(
-            taskRepository,
-            transactionRepository
-        );
+        await exportTasksById(transaction.id)(repos);
 
-        await transactionRepository.setTasksExportedById(transaction.id);
+        await repos.transaction.setTasksExportedById(transaction.id);
     };
 }
 
@@ -54,13 +48,16 @@ export function exportTasks(status: factory.transactionStatusType) {
  */
 export function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask[]> {
     // tslint:disable-next-line:max-func-body-length
-    return async (taskRepository: TaskRepository, transactionRepository: TransactionRepository) => {
-        const transaction = await transactionRepository.findPlaceOrderById(transactionId);
+    return async (repos: {
+        task: TaskRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
 
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
-                taskAttributes.push(factory.task.settleSeatReservation.createAttributes({
+                taskAttributes.push(factory.task.placeOrder.createAttributes({
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -71,66 +68,6 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 }));
-                taskAttributes.push(factory.task.settleCreditCard.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-                taskAttributes.push(factory.task.settleMvtk.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-                taskAttributes.push(factory.task.createOrder.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-                taskAttributes.push(factory.task.createOwnershipInfos.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                }));
-
-                // notifications.forEach((notification) => {
-                //     if (notification.group === NotificationGroup.EMAIL) {
-                //         taskAttributes.push(SendEmailNotificationTaskFactory.create({
-                //             status: factory.taskStatus.Ready,
-                //             runsAt: new Date(), // todo emailのsent_atを指定
-                //             remainingNumberOfTries: 10,
-                //             lastTriedAt: null,
-                //             numberOfTried: 0,
-                //             executionResults: [],
-                //             data: {
-                //                 notification: <EmailNotificationFactory.INotification>notification
-                //             }
-                //         }));
-                //     }
-                // });
 
                 break;
 
@@ -178,27 +115,35 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         debug('taskAttributes prepared', taskAttributes);
 
         return Promise.all(taskAttributes.map(async (taskAttribute) => {
-            return taskRepository.save(taskAttribute);
+            return repos.task.save(taskAttribute);
         }));
     };
 }
 
 /**
  * 確定取引についてメールを送信する
+ * @deprecated v24.0.0で廃止予定
  * @export
- * @function
- * @memberof service.transaction.placeOrder
  * @param transactionId 取引ID
  * @param emailMessageAttributes Eメールメッセージ属性
  */
 export function sendEmail(
     transactionId: string,
     emailMessageAttributes: factory.creativeWork.message.email.IAttributes
-): ITaskAndTransactionOperation<factory.task.sendEmailNotification.ITask> {
-    return async (taskRepo: TaskRepository, transactionRepo: TransactionRepository) => {
-        const transaction = await transactionRepo.findPlaceOrderById(transactionId);
+): ITaskAndTransactionOperation<factory.task.sendEmailMessage.ITask> {
+    return async (repos: {
+        task: TaskRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
         if (transaction.status !== factory.transactionStatusType.Confirmed) {
             throw new factory.errors.Forbidden('Transaction not confirmed.');
+        }
+        const transactionResult = transaction.result;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore next */
+        if (transactionResult === undefined) {
+            throw new factory.errors.NotFound('transaction.result');
         }
 
         const emailMessage = factory.creativeWork.message.email.create({
@@ -216,9 +161,17 @@ export function sendEmail(
             about: emailMessageAttributes.about,
             text: emailMessageAttributes.text
         });
+        const actionAttributes = factory.action.transfer.send.message.email.createAttributes({
+            actionStatus: factory.actionStatusType.ActiveActionStatus,
+            object: emailMessage,
+            agent: transaction.seller,
+            recipient: transaction.agent,
+            potentialActions: {},
+            purpose: transactionResult.order
+        });
 
         // その場で送信ではなく、DBにタスクを登録
-        const taskAttributes = factory.task.sendEmailNotification.createAttributes({
+        const taskAttributes = factory.task.sendEmailMessage.createAttributes({
             status: factory.taskStatus.Ready,
             runsAt: new Date(), // なるはやで実行
             remainingNumberOfTries: 10,
@@ -226,20 +179,17 @@ export function sendEmail(
             numberOfTried: 0,
             executionResults: [],
             data: {
-                transactionId: transactionId,
-                emailMessage: emailMessage
+                actionAttributes: actionAttributes
             }
         });
 
-        return <factory.task.sendEmailNotification.ITask>await taskRepo.save(taskAttributes);
+        return <factory.task.sendEmailMessage.ITask>await repos.task.save(taskAttributes);
     };
 }
 
 /**
  * フォーマット指定でダウンロード
  * @export
- * @function
- * @memberof service.transaction.placeOrder
  * @param conditions 検索条件
  * @param format フォーマット
  */
@@ -250,9 +200,9 @@ export function download(
     },
     format: 'csv'
 ) {
-    return async (transactionRepo: TransactionRepository): Promise<string> => {
+    return async (repos: { transaction: TransactionRepo }): Promise<string> => {
         // 取引検索
-        const transactions = await transactionRepo.searchPlaceOrder(conditions);
+        const transactions = await repos.transaction.searchPlaceOrder(conditions);
         debug('transactions:', transactions);
 
         // 取引ごとに詳細を検索し、csvを作成する
@@ -306,8 +256,6 @@ export function download(
 /**
  * 取引レポートインターフェース
  * @export
- * @interface
- * @memberof service.transaction.placeOrder
  */
 export interface ITransactionReport {
     id: string;
@@ -320,7 +268,7 @@ export interface ITransactionReport {
         telephone: string;
         memberOf?: {
             membershipNumber: string;
-        }
+        };
     };
     eventName: string;
     eventStartDate: string;

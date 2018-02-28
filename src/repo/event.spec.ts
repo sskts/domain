@@ -125,3 +125,24 @@ describe('findIndividualScreeningEventByIdentifier()', () => {
         sandbox.verify();
     });
 });
+
+describe('cancelIndividualScreeningEvent()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
+        const identifier = 'identifier';
+
+        const repository = new sskts.repository.Event(sskts.mongoose.connection);
+        const doc = new repository.eventModel();
+
+        sandbox.mock(repository.eventModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves(doc);
+
+        const result = await repository.cancelIndividualScreeningEvent(identifier);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});

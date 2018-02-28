@@ -7,9 +7,7 @@ export type IScreeningEventReservation = factory.reservation.event.IEventReserva
 export type IScreeningEventReservationOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<IScreeningEventReservation>;
 
 /**
- * 所有権レポジトリー
- *
- * @class OwnershipInfoRepository
+ * 所有権リポジトリー
  */
 export class MongoRepository {
     public readonly ownershipInfoModel: typeof ownershipInfoModel;

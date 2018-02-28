@@ -1,5 +1,4 @@
 /**
- * util service
  * ユーティリティサービス
  * @namespace service.util
  */
@@ -12,11 +11,9 @@ const debug = createDebug('sskts-domain:service:util');
 /**
  * ファイルをアップロードする
  * @export
- * @function
- * @memberof service.util
- * @param {string} params.fileName ファイル
- * @param {string | Buffer} params.text ファイルコンテンツ
- * @param {Date} [params.expiryDate] ファイルコンテンツ
+ * @param params.fileName ファイル
+ * @param params.text ファイルコンテンツ
+ * @param [params.expiryDate] ファイルコンテンツ
  */
 export function uploadFile(
     params: {

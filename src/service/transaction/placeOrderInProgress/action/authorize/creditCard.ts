@@ -7,17 +7,17 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import { MongoRepository as CreditCardAuthorizeActionRepo } from '../../../../../repo/action/authorize/creditCard';
+import { MongoRepository as ActionRepo } from '../../../../../repo/action';
 import { MongoRepository as OrganizationRepo } from '../../../../../repo/organization';
 import { MongoRepository as TransactionRepo } from '../../../../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:creditCard');
 
-export type IActionAndOrganizationAndTransactionOperation<T> = (
-    creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo,
-    organizationRepo: OrganizationRepo,
-    transactionRepo: TransactionRepo
-) => Promise<T>;
+export type ICreateOperation<T> = (repos: {
+    action: ActionRepo;
+    organization: OrganizationRepo;
+    transaction: TransactionRepo;
+}) => Promise<T>;
 
 /**
  * オーソリを取得するクレジットカード情報インターフェース
@@ -37,34 +37,36 @@ export function create(
     amount: number,
     method: GMO.utils.util.Method,
     creditCard: ICreditCard4authorizeAction
-): IActionAndOrganizationAndTransactionOperation<factory.action.authorize.creditCard.IAction> {
+): ICreateOperation<factory.action.authorize.creditCard.IAction> {
     // tslint:disable-next-line:max-func-body-length
-    return async (
-        creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo,
-        organizationRepo: OrganizationRepo,
-        transactionRepo: TransactionRepo
-    ) => {
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+    return async (repos: {
+        action: ActionRepo;
+        organization: OrganizationRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
         // GMOショップ情報取得
-        const movieTheater = await organizationRepo.findMovieTheaterById(transaction.seller.id);
+        const movieTheater = await repos.organization.findMovieTheaterById(transaction.seller.id);
 
         // 承認アクションを開始する
-        const action = await creditCardAuthorizeActionRepo.start(
-            transaction.agent,
-            transaction.seller,
-            {
-                transactionId: transactionId,
+        const actionAttributes = factory.action.authorize.creditCard.createAttributes({
+            object: {
+                typeOf: factory.action.authorize.creditCard.ObjectType.CreditCard,
                 orderId: orderId,
                 amount: amount,
                 method: method,
                 payType: GMO.utils.util.PayType.Credit
-            }
-        );
+            },
+            agent: transaction.agent,
+            recipient: transaction.seller,
+            purpose: transaction // purposeは取引
+        });
+        const action = await repos.action.start<factory.action.authorize.creditCard.IAction>(actionAttributes);
 
         // GMOオーソリ取得
         let entryTranArgs: GMO.services.credit.IEntryTranArgs;
@@ -103,7 +105,7 @@ export function create(
             // actionにエラー結果を追加
             try {
                 const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                await creditCardAuthorizeActionRepo.giveUp(action.id, actionError);
+                await repos.action.giveUp(action.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -132,15 +134,14 @@ export function create(
         // アクションを完了
         debug('ending authorize action...');
 
-        return creditCardAuthorizeActionRepo.complete(
-            action.id,
-            {
-                price: amount,
-                entryTranArgs: entryTranArgs,
-                execTranArgs: execTranArgs,
-                execTranResult: execTranResult
-            }
-        );
+        const result: factory.action.authorize.creditCard.IResult = {
+            price: amount,
+            entryTranArgs: entryTranArgs,
+            execTranArgs: execTranArgs,
+            execTranResult: execTranResult
+        };
+
+        return repos.action.complete<factory.action.authorize.creditCard.IAction>(action.typeOf, action.id, result);
     };
 }
 
@@ -149,21 +150,22 @@ export function cancel(
     transactionId: string,
     actionId: string
 ) {
-    return async (creditCardAuthorizeActionRepo: CreditCardAuthorizeActionRepo, transactionRepo: TransactionRepo) => {
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const action = await creditCardAuthorizeActionRepo.cancel(actionId, transactionId);
+        const action = await repos.action.cancel(factory.actionType.AuthorizeAction, actionId);
         const actionResult = <factory.action.authorize.creditCard.IResult>action.result;
 
         // オーソリ取消
         // 現時点では、ここで失敗したらオーソリ取消をあきらめる
         // GMO混雑エラーはここでも発生する(取消処理でも混雑エラーが発生することは確認済)
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO リトライするためにも、処理を非同期に変更する
         try {
             await GMO.services.credit.alterTran({
                 shopId: actionResult.entryTranArgs.shopId,

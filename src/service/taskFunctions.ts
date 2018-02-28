@@ -4,99 +4,199 @@
  * @namespace service.taskFunctions
  */
 
+import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
-import { MongoRepository as CreditCardAuthorizeActionRepo } from '../repo/action/authorize/creditCard';
-import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../repo/action/authorize/seatReservation';
+import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as OrderRepo } from '../repo/order';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
+import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
+import * as DeliveryService from '../service/delivery';
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
-import * as OwnershipInfoService from '../service/ownershipInfo';
-import * as SalesService from '../service/sales';
+import * as PaymentService from '../service/payment';
 import * as StockService from '../service/stock';
 
-export type IOperation<T> = (connection: mongoose.Connection) => Promise<T>;
+export type IOperation<T> = (settings: {
+    connection: mongoose.Connection;
+    pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+}) => Promise<T>;
 
-export function sendEmailNotification(
-    data: factory.task.sendEmailNotification.IData
+export function sendEmailMessage(
+    data: factory.task.sendEmailMessage.IData
 ): IOperation<void> {
-    return async (__: mongoose.Connection) => {
-        await NotificationService.sendEmail(data.emailMessage)();
+    return async (settings: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        const actionRepo = new ActionRepo(settings.connection);
+        await NotificationService.sendEmailMessage(data.actionAttributes)({ action: actionRepo });
     };
 }
 
 export function cancelSeatReservation(
     data: factory.task.cancelSeatReservation.IData
 ): IOperation<void> {
-    return async (connection: mongoose.Connection) => {
-        const authorizeActionRepo = new SeatReservationAuthorizeActionRepo(connection);
-        await StockService.cancelSeatReservationAuth(data.transactionId)(authorizeActionRepo);
+    return async (settings: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        const actionRepo = new ActionRepo(settings.connection);
+        await StockService.cancelSeatReservationAuth(data.transactionId)({ action: actionRepo });
     };
 }
 
 export function cancelCreditCard(
     data: factory.task.cancelCreditCard.IData
 ): IOperation<void> {
-    return async (connection: mongoose.Connection) => {
-        const authorizeActionRepo = new CreditCardAuthorizeActionRepo(connection);
-        await SalesService.cancelCreditCardAuth(data.transactionId)(authorizeActionRepo);
+    return async (settings: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        const actionRepo = new ActionRepo(settings.connection);
+        await PaymentService.cancelCreditCardAuth(data.transactionId)({ action: actionRepo });
     };
 }
 
 export function cancelMvtk(
     data: factory.task.cancelMvtk.IData
 ): IOperation<void> {
-    return async (__: mongoose.Connection) => {
-        await SalesService.cancelMvtk(data.transactionId)();
+    return async (__: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        await PaymentService.cancelMvtk(data.transactionId)();
     };
 }
 
-export function settleSeatReservation(
-    data: factory.task.settleSeatReservation.IData
+export function payCreditCard(
+    data: factory.task.payCreditCard.IData
 ): IOperation<void> {
-    return async (connection: mongoose.Connection) => {
-        const transactionRepository = new TransactionRepo(connection);
-        await StockService.transferSeatReservation(data.transactionId)(transactionRepository);
+    return async (settings: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        const actionRepo = new ActionRepo(settings.connection);
+        const transactionRepo = new TransactionRepo(settings.connection);
+        await PaymentService.payCreditCard(data.transactionId)({
+            action: actionRepo,
+            transaction: transactionRepo
+        });
     };
 }
 
-export function settleCreditCard(
-    data: factory.task.settleCreditCard.IData
+export function useMvtk(
+    data: factory.task.useMvtk.IData
 ): IOperation<void> {
-    return async (connection: mongoose.Connection) => {
-        const transactionRepository = new TransactionRepo(connection);
-        await SalesService.settleCreditCardAuth(data.transactionId)(transactionRepository);
+    return async (settings: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        const actionRepo = new ActionRepo(settings.connection);
+        const transactionRepo = new TransactionRepo(settings.connection);
+        await PaymentService.useMvtk(data.transactionId)({
+            action: actionRepo,
+            transaction: transactionRepo
+        });
     };
 }
 
-export function settleMvtk(
-    data: factory.task.settleMvtk.IData
+export function payPecorino(
+    data: factory.task.payPecorino.IData
 ): IOperation<void> {
-    return async (__: mongoose.Connection) => {
-        await SalesService.settleMvtk(data.transactionId)();
+    return async (settings: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        if (settings.pecorinoAuthClient === undefined) {
+            throw new Error('settings.pecorinoAuthClient undefined.');
+        }
+
+        const actionRepo = new ActionRepo(settings.connection);
+        const transactionRepo = new TransactionRepo(settings.connection);
+        await PaymentService.payPecorino(data.transactionId)({
+            action: actionRepo,
+            transaction: transactionRepo,
+            pecorinoAuthClient: settings.pecorinoAuthClient
+        });
     };
 }
 
-export function createOrder(
-    data: factory.task.createOrder.IData
+export function placeOrder(
+    data: factory.task.placeOrder.IData
 ): IOperation<void> {
-    return async (connection: mongoose.Connection) => {
-        const orderRepository = new OrderRepo(connection);
-        const transactionRepository = new TransactionRepo(connection);
-        await OrderService.createFromTransaction(data.transactionId)(orderRepository, transactionRepository);
+    return async (settings: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        const actionRepo = new ActionRepo(settings.connection);
+        const orderRepo = new OrderRepo(settings.connection);
+        const transactionRepo = new TransactionRepo(settings.connection);
+        const taskRepo = new TaskRepo(settings.connection);
+        await OrderService.createFromTransaction(data.transactionId)({
+            action: actionRepo,
+            order: orderRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        });
     };
 }
 
-export function createOwnershipInfos(
-    data: factory.task.createOrder.IData
+export function refundCreditCard(
+    data: factory.task.refundCreditCard.IData
 ): IOperation<void> {
-    return async (connection: mongoose.Connection) => {
-        const ownershipInfoRepository = new OwnershipInfoRepo(connection);
-        const transactionRepository = new TransactionRepo(connection);
-        await OwnershipInfoService.createFromTransaction(data.transactionId)(ownershipInfoRepository, transactionRepository);
+    return async (settings: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        const actionRepo = new ActionRepo(settings.connection);
+        const transactionRepo = new TransactionRepo(settings.connection);
+        const taskRepo = new TaskRepo(settings.connection);
+        await PaymentService.refundCreditCard(data.transactionId)({
+            action: actionRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        });
+    };
+}
+
+export function returnOrder(
+    data: factory.task.returnOrder.IData
+): IOperation<void> {
+    return async (settings: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        const actionRepo = new ActionRepo(settings.connection);
+        const orderRepo = new OrderRepo(settings.connection);
+        const ownershipInfoRepo = new OwnershipInfoRepo(settings.connection);
+        const transactionRepo = new TransactionRepo(settings.connection);
+        const taskRepo = new TaskRepo(settings.connection);
+        await OrderService.cancelReservations(data.transactionId)(actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo);
+    };
+}
+
+export function sendOrder(
+    data: factory.task.returnOrder.IData
+): IOperation<void> {
+    return async (settings: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        const actionRepo = new ActionRepo(settings.connection);
+        const orderRepo = new OrderRepo(settings.connection);
+        const ownershipInfoRepo = new OwnershipInfoRepo(settings.connection);
+        const transactionRepo = new TransactionRepo(settings.connection);
+        const taskRepo = new TaskRepo(settings.connection);
+        await DeliveryService.sendOrder(data.transactionId)({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        });
     };
 }

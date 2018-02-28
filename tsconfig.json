@@ -17,7 +17,7 @@
         "locale": "en-us",
         "module": "commonjs",
         "newLine": "LF",
-        "noImplicitAny": false,
+        "noImplicitAny": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "noImplicitUseStrict": false,

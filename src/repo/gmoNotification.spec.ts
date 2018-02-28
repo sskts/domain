@@ -54,7 +54,7 @@ describe('GMONotificationRepo.searchSales()', () => {
 
     it('repositoryの状態が正常であれば、配列を取得できるはず', async () => {
         const conditions = {};
-        const notifications = [];
+        const notifications: any[] = [];
         const gmoNotificationRepo = new sskts.repository.GMONotification(sskts.mongoose.connection);
 
         sandbox.mock(gmoNotificationRepo.gmoNotificationModel).expects('find').once()

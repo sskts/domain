@@ -1,3 +1,4 @@
+// tslint:disable:no-implicit-dependencies
 /**
  * itemAvailability service test
  * @ignore
@@ -52,7 +53,7 @@ describe('updatePerformanceStockStatuses()', () => {
             theaterCode,
             startFrom,
             startThrough
-        )(itemAvailabilityRepo);
+        )({ itemAvailability: itemAvailabilityRepo });
 
         assert.equal(result, undefined);
         sandbox.verify();

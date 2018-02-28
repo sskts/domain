@@ -8,8 +8,8 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
+import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as GMONotificationRepo } from '../../repo/gmoNotification';
-import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 export type GMONotificationOperation<T> = (gmoNotificationRepository: GMONotificationRepo) => Promise<T>;
 export type IGMOResultNotification = GMO.factory.resultNotification.creditCard.IResultNotification;
@@ -19,8 +19,6 @@ const debug = createDebug('sskts-domain:service:report:health');
 /**
  * GMO売上健康診断レポートインターフェース
  * @export
- * @interface
- * @memberof service.report
  */
 export interface IReportOfGMOSalesHealthCheck {
     madeFrom: Date;
@@ -34,8 +32,6 @@ export interface IReportOfGMOSalesHealthCheck {
 /**
  * 不健康なGMO売上インターフェース
  * @export
- * @interface
- * @memberof service.report
  */
 export interface IUnhealthGMOSale {
     orderId: string;
@@ -46,16 +42,17 @@ export interface IUnhealthGMOSale {
 /**
  * 期間指定でGMO実売上の健康診断を実施する
  * @export
- * @function
- * @memberof service.report
  */
 export function checkGMOSales(madeFrom: Date, madeThrough: Date) {
-    return async (gmoNotificationRepo: GMONotificationRepo, transactionRepo: TransactionRepo): Promise<IReportOfGMOSalesHealthCheck> => {
-        const sales = await gmoNotificationRepo.searchSales({
+    return async (repos: {
+        gmoNotification: GMONotificationRepo;
+        action: ActionRepo;
+    }): Promise<IReportOfGMOSalesHealthCheck> => {
+        const sales = await repos.gmoNotification.searchSales({
             tranDateFrom: madeFrom,
             tranDateThrough: madeThrough
         });
-        debug('sales:', sales);
+        debug(sales.length, 'sales found.');
 
         const totalAmount = sales.reduce((a, b) => a + b.amount, 0);
 
@@ -63,53 +60,42 @@ export function checkGMOSales(madeFrom: Date, madeThrough: Date) {
         // まとめて検索してから、ローカルで有効性を確認する必要がある
         const orderIds = sales.map((sale) => sale.orderId);
 
-        // オーダーIDが承認アクションに含まれる注文取引を参照
-        const transactions = <factory.transaction.placeOrder.ITransaction[]>await transactionRepo.transactionModel.find(
-            {
-                typeOf: factory.transactionType.PlaceOrder,
-                status: factory.transactionStatusType.Confirmed,
-                'object.authorizeActions.object.orderId': { $in: orderIds }
-            }
-        ).lean().exec();
-        debug('transactions are', transactions);
+        // オーダーIDでPayActionを検索
+        const payActions = await repos.action.actionModel.find({
+            typeOf: factory.actionType.PayAction,
+            actionStatus: factory.actionStatusType.CompletedActionStatus,
+            'object.paymentMethod.paymentMethodId': { $in: orderIds }
+        }).exec().then((docs) => docs.map((doc) => <factory.action.trade.pay.IAction>doc.toObject()));
+        debug(payActions.length, 'payActions found.');
 
         const errors: IUnhealthGMOSale[] = [];
         sales.forEach((gmoSale) => {
             try {
                 // オーダーIDに該当する取引がなければエラー
-                const transactionByOrderId = transactions.find((transaction) => {
-                    const authorizeActionByOrderId = transaction.object.authorizeActions.find(
-                        (authorizeAction: factory.action.authorize.creditCard.IAction) => {
-                            return authorizeAction.object.orderId === gmoSale.orderId;
-                        }
-                    );
-
-                    return authorizeActionByOrderId !== undefined;
+                const payActionByOrderId = payActions.find((payAction) => {
+                    return payAction.object.paymentMethod.paymentMethodId === gmoSale.orderId;
                 });
-                if (transactionByOrderId === undefined) {
-                    throw new Error('transaction by orderId not found');
+                if (payActionByOrderId === undefined) {
+                    throw new factory.errors.NotFound('PayAction by orderId');
                 }
 
                 // アクセスIDが一致するかどうか
-                const creditCardAuthorizeAction =
-                    <factory.action.authorize.creditCard.IAction>transactionByOrderId.object.authorizeActions.find(
-                        (authorizeAction: factory.action.authorize.creditCard.IAction) => {
-                            return authorizeAction.object.orderId === gmoSale.orderId;
-                        }
-                    );
-                debug('creditCardAuthorizeAction is', creditCardAuthorizeAction);
-
-                const authorizeActionResult = <factory.action.authorize.creditCard.IResult>creditCardAuthorizeAction.result;
-                if (authorizeActionResult.execTranArgs.accessId !== gmoSale.accessId) {
+                const payActionResult = payActionByOrderId.result;
+                if (payActionResult === undefined) {
+                    throw new factory.errors.NotFound('payAction.result');
+                }
+                if (payActionResult.creditCardSales === undefined) {
+                    throw new factory.errors.NotFound('payAction.result.creditCardSales');
+                }
+                if (payActionResult.creditCardSales.accessId !== gmoSale.accessId) {
                     throw new Error('accessId not matched');
                 }
-
-                if (creditCardAuthorizeAction.object.payType !== gmoSale.payType) {
-                    throw new Error('payType not matched');
+                if (payActionResult.creditCardSales.approve !== gmoSale.approve) {
+                    throw new Error('approve not matched');
                 }
 
-                // オーソリの金額と同一かどうか
-                if (creditCardAuthorizeAction.object.amount !== gmoSale.amount) {
+                // 金額が同一かどうか
+                if (payActionByOrderId.object.price !== gmoSale.amount) {
                     throw new Error('amount not matched');
                 }
             } catch (error) {

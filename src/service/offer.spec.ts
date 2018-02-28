@@ -1,5 +1,7 @@
+// tslint:disable:no-implicit-dependencies
+
 /**
- * イベントサービステスト
+ * 販売情報サービステスト
  * @ignore
  */
 
@@ -9,7 +11,7 @@ import * as sinon from 'sinon';
 
 import { MongoRepository as EventRepo } from '../repo/event';
 import { MongoRepository as ScreeningEventItemAvailabilityRepo } from '../repo/itemAvailability/individualScreeningEvent';
-import * as EventService from './event';
+import * as OfferService from './offer';
 
 let sandbox: sinon.SinonSandbox;
 
@@ -31,8 +33,7 @@ describe('searchIndividualScreeningEvents()', () => {
         };
         const events = [event];
         const searchConditions = {
-            day: 'day',
-            theater: 'theater'
+            superEventLocationIdentifiers: ['12345']
         };
         const eventRepo = new EventRepo(mongoose.connection);
         const itemAvailabilityRepo = new ScreeningEventItemAvailabilityRepo(<any>{});
@@ -41,7 +42,10 @@ describe('searchIndividualScreeningEvents()', () => {
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(itemAvailabilityRepo).expects('findOne').exactly(events.length).resolves(100);
 
-        const result = await EventService.searchIndividualScreeningEvents(searchConditions)(eventRepo, itemAvailabilityRepo);
+        const result = await OfferService.searchIndividualScreeningEvents(searchConditions)({
+            event: eventRepo,
+            itemAvailability: itemAvailabilityRepo
+        });
         assert(Array.isArray(result));
         assert.equal(result.length, events.length);
         sandbox.verify();
@@ -67,9 +71,12 @@ describe('findIndividualScreeningEventByIdentifier()', () => {
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(itemAvailabilityRepo).expects('findOne').once().resolves(100);
 
-        const result = await EventService.findIndividualScreeningEventByIdentifier(
+        const result = await OfferService.findIndividualScreeningEventByIdentifier(
             event.identifier
-        )(eventRepo, itemAvailabilityRepo);
+        )({
+            event: eventRepo,
+            itemAvailability: itemAvailabilityRepo
+        });
 
         assert.equal(result.identifier, event.identifier);
         sandbox.verify();

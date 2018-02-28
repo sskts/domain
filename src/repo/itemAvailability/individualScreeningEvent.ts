@@ -10,8 +10,7 @@ const REDIS_KEY_PREFIX = 'sskts-domain:itemAvailability:individualScreeningEvent
 const TIMEOUT_IN_SECONDS = 864000;
 
 /**
- * 上映イベント在庫状況レポジトリー
- * @class IndividualScreeningEventItemAvailabilityRepository
+ * 上映イベント在庫状況リポジトリー
  */
 export class MongoRepository {
     public readonly redisClient: redis.RedisClient;
@@ -22,10 +21,7 @@ export class MongoRepository {
 
     /**
      * 上映イベントの上映日からredisキーを生成する
-     * @static
-     * @param {string} screeningDay 上映日
-     * @returns {string} redis key
-     * @memberof IndividualScreeningEventItemAvailabilityRepository
+     * @param screeningDay 上映日
      */
     public static CREATE_REDIS_KEY(screeningDay: string): string {
         return `${REDIS_KEY_PREFIX}:${screeningDay}`;
@@ -33,10 +29,8 @@ export class MongoRepository {
 
     /**
      * 在庫状況をひとつ取得する
-     * @param {string} screeningDay 上映日
-     * @param {string} eventIdentifier 上映イベント識別子
-     * @returns {(Promise<factory.event.individualScreeningEvent.ItemAvailability | null>)}
-     * @memberof IndividualScreeningEventItemAvailabilityRepository
+     * @param screeningDay 上映日
+     * @param eventIdentifier 上映イベント識別子
      */
     public async findOne(screeningDay: string, eventIdentifier: string):
         Promise<factory.event.individualScreeningEvent.IItemAvailability | null> {
@@ -68,11 +62,9 @@ export class MongoRepository {
 
     /**
      * 在庫状況をひとつ更新する
-     * @param {string} screeningDay 上映日
-     * @param {string} eventIdentifier 上映イベント識別子
-     * @param {factory.event.individualScreeningEvent.IItemAvailability} itemAvailability 在庫状況表現
-     * @returns {Promise<void>}
-     * @memberof IndividualScreeningEventItemAvailabilityRepository
+     * @param screeningDay 上映日
+     * @param eventIdentifier 上映イベント識別子
+     * @param itemAvailability 在庫状況表現
      */
     public async updateOne(
         screeningDay: string,
@@ -95,11 +87,7 @@ export class MongoRepository {
 
     /**
      * 上映日から在庫状況を削除する
-     *
-     * @param {string} screeningDay 上映日
-     * @returns {Promise<void>}
-     *
-     * @memberof IndividualScreeningEventItemAvailabilityRepository
+     * @param screeningDay 上映日
      */
     public async removeByPerformaceDay(screeningDay: string): Promise<void> {
         const key = MongoRepository.CREATE_REDIS_KEY(screeningDay);
@@ -118,11 +106,7 @@ export class MongoRepository {
 
     /**
      * 上映日からredis cacheに期限をセットする
-     *
-     * @param {string} screeningDay 上映日
-     * @returns {Promise<void>}
-     *
-     * @memberof IndividualScreeningEventItemAvailabilityRepository
+     * @param screeningDay 上映日
      */
     public async setTTLIfNotExist(screeningDay: string): Promise<void> {
         const key = MongoRepository.CREATE_REDIS_KEY(screeningDay);

@@ -38,6 +38,7 @@ npm install @motionpicture/sskts-domain
 | `SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN` | true     |                                  | 開発者通知用LINEアクセストークン |
 | `WAITER_SECRET`                            | true     |                                  | WAITER許可証トークン秘密鍵   |
 | `WAITER_PASSPORT_ISSUER`                   | true     | https://sskts-waiter-example.com | WAITER許可証発行者       |
+| `ORDER_INQUIRY_ENDPOINT`                   | true     |                                  | 注文照会エンドポイント          |
 
 ### Search individual screening events sample
 
@@ -55,11 +56,14 @@ const redisClient = sskts.redis.createClient({
 const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
 const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(redisClient);
 
-sskts.service.event.searchIndividualScreeningEvents({
+sskts.service.offer.searchIndividualScreeningEvents({
     superEventLocationIdentifiers:['MovieTheater-118'],
     startFrom: new Date(),
     startThrough: new Date(),
-})(eventRepo, itemAvailabilityRepo)
+})({
+    event: eventRepo,
+    itemAvailability: itemAvailabilityRepo
+})
     .then((events) => {
         console.log('events:', events);
     });

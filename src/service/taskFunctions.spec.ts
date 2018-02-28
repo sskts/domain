@@ -1,3 +1,4 @@
+// tslint:disable:no-implicit-dependencies
 /**
  * taskFunctions test
  * @ignore
@@ -15,26 +16,6 @@ before(() => {
     sandbox = sinon.sandbox.create();
 });
 
-describe('TaskFunctionsService.sendEmailNotification()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('通知サービスが正常であれば、エラーにならないはず', async () => {
-        const data = {
-            emailMessage: { dataKey: 'dataValue' }
-        };
-
-        sandbox.mock(sskts.service.notification).expects('sendEmail').once()
-            .withArgs(data.emailMessage).returns(async () => Promise.resolve());
-
-        const result = await TaskFunctionsService.sendEmailNotification(<any>data)(sskts.mongoose.connection);
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
 describe('TaskFunctionsService.cancelSeatReservation()', () => {
     afterEach(() => {
         sandbox.restore();
@@ -48,7 +29,7 @@ describe('TaskFunctionsService.cancelSeatReservation()', () => {
         sandbox.mock(sskts.service.stock).expects('cancelSeatReservationAuth').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.cancelSeatReservation(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.cancelSeatReservation(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -65,10 +46,10 @@ describe('TaskFunctionsService.cancelCreditCard()', () => {
             transactionId: 'transactionId'
         };
 
-        sandbox.mock(sskts.service.sales).expects('cancelCreditCardAuth').once()
+        sandbox.mock(sskts.service.payment).expects('cancelCreditCardAuth').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.cancelCreditCard(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.cancelCreditCard(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -85,30 +66,10 @@ describe('TaskFunctionsService.cancelMvtk()', () => {
             transactionId: 'transactionId'
         };
 
-        sandbox.mock(sskts.service.sales).expects('cancelMvtk').once()
+        sandbox.mock(sskts.service.payment).expects('cancelMvtk').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.cancelMvtk(<any>data)(sskts.mongoose.connection);
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
-describe('TaskFunctionsService.settleSeatReservation()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('本予約サービスが正常であれば、エラーにならないはず', async () => {
-        const data = {
-            transactionId: 'transactionId'
-        };
-
-        sandbox.mock(sskts.service.stock).expects('transferSeatReservation').once()
-            .withArgs(data.transactionId).returns(async () => Promise.resolve());
-
-        const result = await TaskFunctionsService.settleSeatReservation(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.cancelMvtk(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -125,10 +86,10 @@ describe('TaskFunctionsService.settleCreditCard()', () => {
             transactionId: 'transactionId'
         };
 
-        sandbox.mock(sskts.service.sales).expects('settleCreditCardAuth').once()
+        sandbox.mock(sskts.service.payment).expects('payCreditCard').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.settleCreditCard(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.payCreditCard(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -145,10 +106,10 @@ describe('TaskFunctionsService.settleMvtk()', () => {
             transactionId: 'transactionId'
         };
 
-        sandbox.mock(sskts.service.sales).expects('settleMvtk').once()
+        sandbox.mock(sskts.service.payment).expects('useMvtk').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.settleMvtk(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.useMvtk(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -168,29 +129,130 @@ describe('TaskFunctionsService.createOrder()', () => {
         sandbox.mock(sskts.service.order).expects('createFromTransaction').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.createOrder(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.placeOrder(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
     });
 });
 
-describe('TaskFunctionsService.createOwnershipInfos()', () => {
+describe('TaskFunctionsService.sendEmailMessage()', () => {
     afterEach(() => {
         sandbox.restore();
     });
 
-    it('所有権作成サービスが正常であれば、エラーにならないはず', async () => {
+    it('通知サービスが正常であればエラーにならないはず', async () => {
+        const data = {
+            transactionId: 'transactionId',
+            actionAttributes: {}
+        };
+
+        sandbox.mock(sskts.service.notification).expects('sendEmailMessage').once()
+            .withArgs(data.actionAttributes).returns(async () => Promise.resolve());
+
+        const result = await TaskFunctionsService.sendEmailMessage(<any>data)({ connection: sskts.mongoose.connection });
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
+
+describe('TaskFunctionsService.refundCreditCard()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('売上サービスが正常であればエラーにならないはず', async () => {
         const data = {
             transactionId: 'transactionId'
         };
 
-        sandbox.mock(sskts.service.ownershipInfo).expects('createFromTransaction').once()
+        sandbox.mock(sskts.service.payment).expects('refundCreditCard').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.createOwnershipInfos(<any>data)(sskts.mongoose.connection);
+        const result = await TaskFunctionsService.refundCreditCard(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
+
+describe('TaskFunctionsService.returnOrder()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('注文サービスが正常であればエラーにならないはず', async () => {
+        const data = {
+            transactionId: 'transactionId'
+        };
+
+        sandbox.mock(sskts.service.order).expects('cancelReservations').once()
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
+
+        const result = await TaskFunctionsService.returnOrder(<any>data)({ connection: sskts.mongoose.connection });
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
+
+describe('TaskFunctionsService.sendOrder()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('配送サービスが正常であればエラーにならないはず', async () => {
+        const data = {
+            transactionId: 'transactionId'
+        };
+
+        sandbox.mock(sskts.service.delivery).expects('sendOrder').once()
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
+
+        const result = await TaskFunctionsService.sendOrder(<any>data)({ connection: sskts.mongoose.connection });
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
+
+describe('TaskFunctionsService.payPecorino()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('決済サービスが正常であればエラーにならないはず', async () => {
+        const data = {
+            transactionId: 'transactionId'
+        };
+
+        const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
+
+        sandbox.mock(sskts.service.payment).expects('payPecorino').once()
+            .withArgs(data.transactionId).returns(async () => Promise.resolve());
+
+        const result = await TaskFunctionsService.payPecorino(<any>data)({
+            connection: sskts.mongoose.connection,
+            pecorinoAuthClient: pecorinoAuthClient
+        });
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('PecorinoAPIクライアントがセットされていなければエラーとなるはず', async () => {
+        const data = {
+            transactionId: 'transactionId'
+        };
+
+        sandbox.mock(sskts.service.payment).expects('payPecorino').never();
+
+        const result = await TaskFunctionsService.payPecorino(<any>data)({
+            connection: sskts.mongoose.connection
+        }).catch((err) => err);
+
+        assert(result instanceof Error);
         sandbox.verify();
     });
 });

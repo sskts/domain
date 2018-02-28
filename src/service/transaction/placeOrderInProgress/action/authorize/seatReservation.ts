@@ -8,31 +8,30 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { INTERNAL_SERVER_ERROR } from 'http-status';
 
-import { MongoRepository as SeatReservationAuthorizeActionRepo } from '../../../../../repo/action/authorize/seatReservation';
+import { MongoRepository as ActionRepo } from '../../../../../repo/action';
 import { MongoRepository as EventRepo } from '../../../../../repo/event';
 import { MongoRepository as TransactionRepo } from '../../../../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:seatReservation');
 
-export type IEventAndActionAndTransactionOperation<T> = (
-    eventRepo: EventRepo,
-    seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
-    transactionRepo: TransactionRepo
-) => Promise<T>;
-export type IActionAndTransactionOperation<T> = (
-    seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
-    transactionRepo: TransactionRepo
-) => Promise<T>;
+export type ICreateOperation<T> = (repos: {
+    event: EventRepo;
+    action: ActionRepo;
+    transaction: TransactionRepo;
+}) => Promise<T>;
+export type IActionAndTransactionOperation<T> = (repos: {
+    action: ActionRepo;
+    transaction: TransactionRepo;
+}) => Promise<T>;
 
 /**
  * 座席予約に対する承認アクションを開始する前の処理
  * 供給情報の有効性の確認などを行う。
  * この処理次第で、どのような供給情報を受け入れられるかが決定するので、とても大事な処理です。
  * バグ、不足等あれば、随時更新することが望ましい。
- * @function
- * @param {boolean} isMember 会員かどうか
- * @param {factory.event.individualScreeningEvent.IEvent} individualScreeningEvent 上映イベント
- * @param {factory.offer.ISeatReservationOffer[]} offers 供給情報
+ * @param isMember 会員かどうか
+ * @param individualScreeningEvent 上映イベント
+ * @param offers 供給情報
  */
 // tslint:disable-next-line:max-func-body-length
 async function validateOffers(
@@ -241,8 +240,7 @@ async function validateOffers(
 
 /**
  * 供給情報から承認アクションの価格を導き出す
- * @function
- * @param {factory.offer.ISeatReservationOffer[]} offers 供給情報
+ * @param offers 供給情報
  */
 function offers2resultPrice(offers: factory.offer.seatReservation.IOfferWithDetails[]) {
     return offers.reduce((a, b) => a + b.price, 0);
@@ -252,46 +250,46 @@ function offers2resultPrice(offers: factory.offer.seatReservation.IOfferWithDeta
  * 座席を仮予約する
  * 承認アクションオブジェクトが返却されます。
  * @export
- * @function
- * @memberof service.transaction.placeOrderInProgress.action.authorize.seatReservation
- * @param {string} agentId 取引主体ID
- * @param {string} transactionId 取引ID
- * @param {string} eventIdentifier イベント識別子
- * @param {factory.offer.ISeatReservationOffer[]} offers 供給情報
+ * @param agentId 取引主体ID
+ * @param transactionId 取引ID
+ * @param eventIdentifier イベント識別子
+ * @param offers 供給情報
  */
 export function create(
     agentId: string,
     transactionId: string,
     eventIdentifier: string,
     offers: factory.offer.seatReservation.IOffer[]
-): IEventAndActionAndTransactionOperation<factory.action.authorize.seatReservation.IAction> {
-    return async (
-        eventRepo: EventRepo,
-        seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
-        transactionRepo: TransactionRepo
-    ) => {
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+): ICreateOperation<factory.action.authorize.seatReservation.IAction> {
+    return async (repos: {
+        event: EventRepo;
+        action: ActionRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
         // 上映イベントを取得
-        const individualScreeningEvent = await eventRepo.findIndividualScreeningEventByIdentifier(eventIdentifier);
+        const individualScreeningEvent = await repos.event.findIndividualScreeningEventByIdentifier(eventIdentifier);
 
         // 供給情報の有効性を確認
         const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
 
         // 承認アクションを開始
-        const action = await seatReservationAuthorizeActionRepo.start(
-            transaction.seller,
-            transaction.agent,
-            {
-                transactionId: transactionId,
+        const actionAttributes = factory.action.authorize.seatReservation.createAttributes({
+            object: {
+                typeOf: factory.action.authorize.seatReservation.ObjectType.SeatReservation,
                 offers: offersWithDetails,
                 individualScreeningEvent: individualScreeningEvent
-            }
-        );
+            },
+            agent: transaction.seller,
+            recipient: transaction.agent,
+            purpose: transaction // purposeは取引
+        });
+        const action = await repos.action.start<factory.action.authorize.seatReservation.IAction>(actionAttributes);
 
         // COA仮予約
         const updTmpReserveSeatArgs = {
@@ -317,7 +315,7 @@ export function create(
             // actionにエラー結果を追加
             try {
                 const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
-                await seatReservationAuthorizeActionRepo.giveUp(action.id, actionError);
+                await repos.action.giveUp(action.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -344,23 +342,19 @@ export function create(
 
         // アクションを完了
         debug('ending authorize action...');
+        const result: factory.action.authorize.seatReservation.IResult = {
+            price: offers2resultPrice(offersWithDetails),
+            updTmpReserveSeatArgs: updTmpReserveSeatArgs,
+            updTmpReserveSeatResult: updTmpReserveSeatResult
+        };
 
-        return seatReservationAuthorizeActionRepo.complete(
-            action.id,
-            {
-                price: offers2resultPrice(offersWithDetails),
-                updTmpReserveSeatArgs: updTmpReserveSeatArgs,
-                updTmpReserveSeatResult: updTmpReserveSeatResult
-            }
-        );
+        return repos.action.complete<factory.action.authorize.seatReservation.IAction>(action.typeOf, action.id, result);
     };
 }
 
 /**
  * 座席予約承認アクションをキャンセルする
  * @export
- * @function
- * @memberof service.transaction.placeOrderInProgress.action.authorize.seatReservation
  * @param agentId アクション主体ID
  * @param transactionId 取引ID
  * @param actionId アクションID
@@ -370,8 +364,11 @@ export function cancel(
     transactionId: string,
     actionId: string
 ) {
-    return async (seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo, transactionRepo: TransactionRepo) => {
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -379,7 +376,7 @@ export function cancel(
 
         // MongoDBでcompleteステータスであるにも関わらず、COAでは削除されている、というのが最悪の状況
         // それだけは回避するためにMongoDBを先に変更
-        const action = await seatReservationAuthorizeActionRepo.cancel(actionId, transactionId);
+        const action = await repos.action.cancel(factory.actionType.AuthorizeAction, actionId);
         const actionResult = <factory.action.authorize.seatReservation.IResult>action.result;
 
         // 座席仮予約削除
@@ -399,13 +396,11 @@ export function cancel(
 /**
  * 座席予約承認アクションの供給情報を変更する
  * @export
- * @function
- * @memberof service.transaction.placeOrderInProgress.action.authorize.seatReservation
- * @param {string} agentId アクション主体ID
- * @param {string} transactionId 取引ID
- * @param {string} actionId アクションID
- * @param {string} eventIdentifier イベント識別子
- * @param {factory.offer.seatReservation.IOffer[]} offers 供給情報
+ * @param agentId アクション主体ID
+ * @param transactionId 取引ID
+ * @param actionId アクションID
+ * @param eventIdentifier イベント識別子
+ * @param offers 供給情報
  */
 export function changeOffers(
     agentId: string,
@@ -413,20 +408,22 @@ export function changeOffers(
     actionId: string,
     eventIdentifier: string,
     offers: factory.offer.seatReservation.IOffer[]
-): IEventAndActionAndTransactionOperation<factory.action.authorize.seatReservation.IAction> {
-    return async (
-        eventRepo: EventRepo,
-        seatReservationAuthorizeActionRepo: SeatReservationAuthorizeActionRepo,
-        transactionRepo: TransactionRepo
-    ) => {
-        const transaction = await transactionRepo.findPlaceOrderInProgressById(transactionId);
+): ICreateOperation<factory.action.authorize.seatReservation.IAction> {
+    return async (repos: {
+        event: EventRepo;
+        action: ActionRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
         // アクション中のイベント識別子と座席リストが合っているかどうか確認
-        const authorizeAction = await seatReservationAuthorizeActionRepo.findById(actionId);
+        const authorizeAction = await repos.action.findById<factory.action.authorize.seatReservation.IAction>(
+            factory.actionType.AuthorizeAction, actionId
+        );
         // 完了ステータスのアクションのみ更新可能
         if (authorizeAction.actionStatus !== factory.actionStatusType.CompletedActionStatus) {
             throw new factory.errors.NotFound('authorizeAction');
@@ -444,7 +441,7 @@ export function changeOffers(
         }
 
         // 上映イベントを取得
-        const individualScreeningEvent = await eventRepo.findIndividualScreeningEventByIdentifier(eventIdentifier);
+        const individualScreeningEvent = await repos.event.findIndividualScreeningEventByIdentifier(eventIdentifier);
 
         // 供給情報の有効性を確認
         const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
@@ -453,11 +450,25 @@ export function changeOffers(
         authorizeAction.object.offers = offersWithDetails;
         (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).price = offers2resultPrice(offersWithDetails);
 
-        return seatReservationAuthorizeActionRepo.updateObjectAndResultById(
-            actionId,
-            transactionId,
-            authorizeAction.object,
-            (<factory.action.authorize.seatReservation.IResult>authorizeAction.result)
-        );
+        // 座席予約承認アクションの供給情報を変更する
+        return repos.action.actionModel.findOneAndUpdate(
+            {
+                typeOf: factory.actionType.AuthorizeAction,
+                _id: actionId,
+                actionStatus: factory.actionStatusType.CompletedActionStatus // 完了ステータスのアクションのみ
+            },
+            {
+                object: authorizeAction.object,
+                result: (<factory.action.authorize.seatReservation.IResult>authorizeAction.result)
+            },
+            { new: true }
+        ).exec()
+            .then((doc) => {
+                if (doc === null) {
+                    throw new factory.errors.NotFound('authorizeAction');
+                }
+
+                return <factory.action.authorize.seatReservation.IAction>doc.toObject();
+            });
     };
 }

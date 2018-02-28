@@ -7,6 +7,8 @@
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../../../../../index';
+// tslint:disable-next-line:no-require-imports no-var-requires
+require('sinon-mongoose');
 
 let sandbox: sinon.SinonSandbox;
 
@@ -40,14 +42,10 @@ describe('action.authorize.mvtk.create()', () => {
                 knyknrNoInfo: [
                     {
                         knyknrNo: '12345',
-                        knshInfo: [
-                            {
-                                miNum: 1
-                            }
-                        ]
+                        knshInfo: [{ miNum: 1 }]
                     }
                 ],
-                zskInfo: []
+                zskInfo: [{ zskCd: 'seatNum' }]
             }
         };
         const seatReservationAuthorizeActions = [{
@@ -55,16 +53,8 @@ describe('action.authorize.mvtk.create()', () => {
             actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
             object: {
                 offers: [
-                    {
-                        ticketInfo: {
-                            mvtkNum: '12345'
-                        }
-                    },
-                    {
-                        ticketInfo: {
-                            mvtkNum: ''
-                        }
-                    }
+                    { ticketInfo: { mvtkNum: '12345' } },
+                    { ticketInfo: { mvtkNum: '' } }
                 ]
             },
             result: {
@@ -76,33 +66,101 @@ describe('action.authorize.mvtk.create()', () => {
                     screenCode: '01'
                 },
                 updTmpReserveSeatResult: {
-                    listTmpReserve: []
+                    listTmpReserve: [{ seatNum: 'seatNum' }]
                 }
             }
         }];
         const action = {
+            typeOf: sskts.factory.actionType.AuthorizeAction,
             id: 'actionId'
         };
 
-        const mvtkAuthorizeActionRepo = new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection);
-        const seatReservationAuthorizeActionRepo = new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(seatReservationAuthorizeActionRepo).expects('findByTransactionId').once()
-            .withExactArgs(transaction.id).resolves(seatReservationAuthorizeActions);
-        sandbox.mock(mvtkAuthorizeActionRepo).expects('start').once()
-            .withArgs(transaction.agent, transaction.seller).resolves(action);
-        sandbox.mock(mvtkAuthorizeActionRepo).expects('complete').once().withArgs(action.id).resolves(action);
+        sandbox.mock(actionRepo.actionModel)
+            .expects('find').once()
+            .chain('exec')
+            .resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
+        sandbox.mock(actionRepo).expects('start').once().resolves(action);
+        sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
             agent.id,
             transaction.id,
             <any>authorizeObject
-        )(seatReservationAuthorizeActionRepo, mvtkAuthorizeActionRepo, transactionRepo);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        });
 
         assert.deepEqual(result, action);
+        sandbox.verify();
+    });
+
+    it('座席予約承認が2つ存在すればArgumentエラーとなるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const authorizeObject = {
+            seatInfoSyncIn: {
+                stCd: '1',
+                skhnCd: '1234500',
+                screnCd: '01',
+                knyknrNoInfo: [
+                    {
+                        knyknrNo: '12345',
+                        knshInfo: [{ miNum: 1 }]
+                    }
+                ],
+                zskInfo: [{ zskCd: 'seatNum' }]
+            }
+        };
+        const seatReservationAuthorizeActions = [
+            {
+                id: 'actionId',
+                actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+                object: {},
+                result: {}
+            },
+            {
+                id: 'actionId',
+                actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+                object: {},
+                result: {}
+            }
+        ];
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo.actionModel).expects('find').once().chain('exec')
+            .resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+            agent.id,
+            transaction.id,
+            <any>authorizeObject
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
     });
 
@@ -121,23 +179,439 @@ describe('action.authorize.mvtk.create()', () => {
         };
         const authorizeObject = {};
 
-        const mvtkAuthorizeActionRepo = new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection);
-        const seatReservationAuthorizeActionRepo = new sskts.repository.action.authorize.SeatReservation(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(seatReservationAuthorizeActionRepo).expects('findByTransactionId').never();
-        sandbox.mock(mvtkAuthorizeActionRepo).expects('start').never();
-        sandbox.mock(mvtkAuthorizeActionRepo).expects('complete').never();
+        sandbox.mock(actionRepo).expects('start').never();
+        sandbox.mock(actionRepo).expects('complete').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
             agent.id,
             transaction.id,
             <any>authorizeObject
-        )(seatReservationAuthorizeActionRepo, mvtkAuthorizeActionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
+        sandbox.verify();
+    });
+
+    it('座席予約承認アクションが存在していなければArgumentエラーとなるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const authorizeObject = {
+            seatInfoSyncIn: {
+                stCd: '1',
+                skhnCd: '1234500',
+                screnCd: '01',
+                knyknrNoInfo: [
+                    {
+                        knyknrNo: '12345',
+                        knshInfo: [
+                            {
+                                miNum: 1
+                            }
+                        ]
+                    }
+                ],
+                zskInfo: []
+            }
+        };
+        const seatReservationAuthorizeActions: any[] = [];
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo.actionModel).expects('find').once()
+            .chain('exec').resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+            agent.id,
+            transaction.id,
+            <any>authorizeObject
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Argument);
+        sandbox.verify();
+    });
+
+    it('座席予約承認アクションと購入管理番号が一致していなければArgumentエラーとなるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const authorizeObject = {
+            seatInfoSyncIn: {
+                stCd: '1',
+                skhnCd: '1234500',
+                screnCd: '01',
+                knyknrNoInfo: [
+                    {
+                        knyknrNo: '12345',
+                        knshInfo: [{ miNum: 1 }]
+                    }
+                ],
+                zskInfo: []
+            }
+        };
+        const seatReservationAuthorizeActions = [{
+            id: 'actionId',
+            actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+            object: {
+                offers: [
+                    { ticketInfo: { mvtkNum: '123456' } },
+                    { ticketInfo: { mvtkNum: '' } }
+                ]
+            },
+            result: {
+                acceptedOffers: [],
+                updTmpReserveSeatArgs: {
+                    theaterCode: '001',
+                    titleCode: '12345',
+                    titleBranchNum: '0',
+                    screenCode: '01'
+                },
+                updTmpReserveSeatResult: {
+                    listTmpReserve: []
+                }
+            }
+        }];
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo.actionModel).expects('find').once()
+            .chain('exec').resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+            agent.id,
+            transaction.id,
+            <any>authorizeObject
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Argument);
+        sandbox.verify();
+    });
+
+    it('座席予約承認アクションとサイトコードが一致していなければArgumentエラーとなるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const authorizeObject = {
+            seatInfoSyncIn: {
+                stCd: 'invalid',
+                skhnCd: '1234500',
+                screnCd: '01',
+                knyknrNoInfo: [
+                    {
+                        knyknrNo: '12345',
+                        knshInfo: [{ miNum: 1 }]
+                    }
+                ],
+                zskInfo: []
+            }
+        };
+        const seatReservationAuthorizeActions = [{
+            id: 'actionId',
+            actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+            object: {
+                offers: [
+                    { ticketInfo: { mvtkNum: '12345' } },
+                    { ticketInfo: { mvtkNum: '' } }
+                ]
+            },
+            result: {
+                acceptedOffers: [],
+                updTmpReserveSeatArgs: {
+                    theaterCode: '001',
+                    titleCode: '12345',
+                    titleBranchNum: '0',
+                    screenCode: '01'
+                },
+                updTmpReserveSeatResult: {
+                    listTmpReserve: []
+                }
+            }
+        }];
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo.actionModel).expects('find').once()
+            .chain('exec').resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+            agent.id,
+            transaction.id,
+            <any>authorizeObject
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Argument);
+        sandbox.verify();
+    });
+
+    it('座席予約承認アクションと作品コードが一致していなければArgumentエラーとなるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const authorizeObject = {
+            seatInfoSyncIn: {
+                stCd: '1',
+                skhnCd: '1234500',
+                screnCd: '01',
+                knyknrNoInfo: [
+                    {
+                        knyknrNo: '12345',
+                        knshInfo: [{ miNum: 1 }]
+                    }
+                ],
+                zskInfo: []
+            }
+        };
+        const seatReservationAuthorizeActions = [{
+            id: 'actionId',
+            actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+            object: {
+                offers: [
+                    { ticketInfo: { mvtkNum: '12345' } },
+                    { ticketInfo: { mvtkNum: '' } }
+                ]
+            },
+            result: {
+                acceptedOffers: [],
+                updTmpReserveSeatArgs: {
+                    theaterCode: '001',
+                    titleCode: '12345',
+                    titleBranchNum: '1', // invalid
+                    screenCode: '01'
+                },
+                updTmpReserveSeatResult: {
+                    listTmpReserve: []
+                }
+            }
+        }];
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo.actionModel).expects('find').once()
+            .chain('exec').resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+            agent.id,
+            transaction.id,
+            <any>authorizeObject
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Argument);
+        sandbox.verify();
+    });
+
+    it('座席予約承認アクションとスクリーンコードが一致していなければArgumentエラーとなるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const authorizeObject = {
+            seatInfoSyncIn: {
+                stCd: '1',
+                skhnCd: '1234500',
+                screnCd: '01',
+                knyknrNoInfo: [
+                    {
+                        knyknrNo: '12345',
+                        knshInfo: [{ miNum: 1 }]
+                    }
+                ],
+                zskInfo: []
+            }
+        };
+        const seatReservationAuthorizeActions = [{
+            id: 'actionId',
+            actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+            object: {
+                offers: [
+                    { ticketInfo: { mvtkNum: '12345' } },
+                    { ticketInfo: { mvtkNum: '' } }
+                ]
+            },
+            result: {
+                acceptedOffers: [],
+                updTmpReserveSeatArgs: {
+                    theaterCode: '001',
+                    titleCode: '12345',
+                    titleBranchNum: '0',
+                    screenCode: '02' // invalid
+                },
+                updTmpReserveSeatResult: {
+                    listTmpReserve: []
+                }
+            }
+        }];
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo.actionModel).expects('find').once()
+            .chain('exec').resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+            agent.id,
+            transaction.id,
+            <any>authorizeObject
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Argument);
+        sandbox.verify();
+    });
+
+    it('座席予約承認アクションと座席番号が一致していなければArgumentエラーとなるはず', async () => {
+        const agent = {
+            id: 'agentId'
+        };
+        const seller = {
+            id: 'sellerId',
+            name: { ja: 'ja', en: 'ne' }
+        };
+        const transaction = {
+            id: 'transactionId',
+            agent: agent,
+            seller: seller
+        };
+        const authorizeObject = {
+            seatInfoSyncIn: {
+                stCd: '1',
+                skhnCd: '1234500',
+                screnCd: '01',
+                knyknrNoInfo: [
+                    {
+                        knyknrNo: '12345',
+                        knshInfo: [{ miNum: 1 }]
+                    }
+                ],
+                zskInfo: [{ zskCd: 'seatNum' }]
+            }
+        };
+        const seatReservationAuthorizeActions = [{
+            id: 'actionId',
+            actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+            object: {
+                offers: [
+                    { ticketInfo: { mvtkNum: '12345' } },
+                    { ticketInfo: { mvtkNum: '' } }
+                ]
+            },
+            result: {
+                acceptedOffers: [],
+                updTmpReserveSeatArgs: {
+                    theaterCode: '001',
+                    titleCode: '12345',
+                    titleBranchNum: '0',
+                    screenCode: '01'
+                },
+                updTmpReserveSeatResult: {
+                    listTmpReserve: [{ seatNum: 'invalid' }] // invalid
+                }
+            }
+        }];
+
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(actionRepo.actionModel).expects('find').once()
+            .chain('exec').resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+            agent.id,
+            transaction.id,
+            <any>authorizeObject
+        )({
+            action: actionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
+
+        assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
     });
 });
@@ -156,6 +630,7 @@ describe('action.authorize.mvtk.cancel()', () => {
             name: { ja: 'ja', en: 'ne' }
         };
         const action = {
+            typeOf: sskts.factory.actionType.AuthorizeAction,
             id: 'actionId'
         };
         const transaction = {
@@ -164,18 +639,21 @@ describe('action.authorize.mvtk.cancel()', () => {
             seller: seller
         };
 
-        const authorizeActionRepo = new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
             .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('cancel').once().withExactArgs(action.id, transaction.id).resolves();
+        sandbox.mock(authorizeActionRepo).expects('cancel').once().withExactArgs(action.typeOf, action.id).resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.cancel(
             agent.id,
             transaction.id,
             action.id
-        )(authorizeActionRepo, transactionRepo);
+        )({
+            action: authorizeActionRepo,
+            transaction: transactionRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -198,7 +676,7 @@ describe('action.authorize.mvtk.cancel()', () => {
             seller: seller
         };
 
-        const authorizeActionRepo = new sskts.repository.action.authorize.Mvtk(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
@@ -209,7 +687,10 @@ describe('action.authorize.mvtk.cancel()', () => {
             agent.id,
             transaction.id,
             action.id
-        )(authorizeActionRepo, transactionRepo).catch((err) => err);
+        )({
+            action: authorizeActionRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();

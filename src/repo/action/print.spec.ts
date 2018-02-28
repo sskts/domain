@@ -1,7 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 
 /**
- * 印刷アクションレポジトリーテスト
+ * 印刷アクションリポジトリーテスト
  * @ignore
  */
 

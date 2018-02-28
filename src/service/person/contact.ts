@@ -13,8 +13,6 @@ const debug = createDebug('sskts-domain:service:person:contact');
 /**
  * retrieve contact from Amazon Cognito
  * @export
- * @function
- * @memberof service.person.contact
  */
 export function retrieve(accessToken: string) {
     return async () => {
@@ -62,7 +60,6 @@ export function retrieve(accessToken: string) {
                                     }
                                     break;
                                 default:
-                                    break;
                             }
 
                         });
@@ -77,8 +74,6 @@ export function retrieve(accessToken: string) {
 /**
  * 会員プロフィール更新
  * @export
- * @function
- * @memberof service.person.contact
  */
 export function update(
     accessToken: string,

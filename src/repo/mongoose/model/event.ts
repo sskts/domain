@@ -95,6 +95,17 @@ const schema = new mongoose.Schema(
 schema.index(
     {
         typeOf: 1,
+        'superEvent.location.branchCode': 1
+    },
+    {
+        partialFilterExpression: {
+            'superEvent.location.branchCode': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        typeOf: 1,
         'superEvent.location.identifier': 1,
         startDate: 1
     },
@@ -113,11 +124,13 @@ schema.index(
     { identifier: 1, typeOf: 1 }
 );
 
-export default mongoose.model('Event', schema)
-    .on('index', (error) => {
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore next */
+export default mongoose.model('Event', schema).on(
+    'index',
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    (error) => {
         if (error !== undefined) {
             console.error(error);
         }
-    });
+    }
+);

@@ -1,33 +1,29 @@
 /**
- * itemAvailability service
+ * 注文アイテムの在庫状況を表現するサービス
  * @namespace service.itemAvailability
  */
 
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
-import * as moment from 'moment';
-// tslint:disable-next-line:no-require-imports no-var-requires
-require('moment-timezone');
+import * as moment from 'moment-timezone';
 
 import { MongoRepository as ItemAvailabilityRepository } from '../repo/itemAvailability/individualScreeningEvent';
 
 const debug = createDebug('sskts-domain:service:itemAvailability');
 
-export type IItemAvailabilityOperation<T> = (itemAvailabilityRepository: ItemAvailabilityRepository) => Promise<T>;
+export type IItemAvailabilityOperation<T> = (repos: { itemAvailability: ItemAvailabilityRepository }) => Promise<T>;
 
 /**
  * 劇場IDと上映日範囲から上映イベント在庫状況を更新する
  * @export
- * @function
- * @memberof service.itemAvailability
- * @param {string} locationBranchCode 上映場所枝番号(劇場コード)
- * @param {Date} startFrom 上映開始日時from
- * @param {Date} startThrough 上映開始日時through
+ * @param locationBranchCode 上映場所枝番号(劇場コード)
+ * @param startFrom 上映開始日時from
+ * @param startThrough 上映開始日時through
  */
 export function updateIndividualScreeningEvents(locationBranchCode: string, startFrom: Date, startThrough: Date):
     IItemAvailabilityOperation<void> {
-    return async (itemAvailabilityRepository: ItemAvailabilityRepository) => {
+    return async (repos: { itemAvailability: ItemAvailabilityRepository }) => {
         // COAから空席状況取得
         const countFreeSeatResult = await COA.services.reserve.countFreeSeat({
             theaterCode: locationBranchCode,
@@ -51,13 +47,14 @@ export function updateIndividualScreeningEvents(locationBranchCode: string, star
                     });
 
                     const itemAvailability = factory.event.individualScreeningEvent.createItemAvailability(
-                        countFreeSeatPerformance.cntReserveFree,
-                        countFreeSeatPerformance.cntReserveMax
+                        // COAからのレスポンスが負の値の場合があるので調整
+                        Math.max(0, countFreeSeatPerformance.cntReserveFree),
+                        Math.max(0, countFreeSeatPerformance.cntReserveMax)
                     );
 
                     // 永続化
                     debug('saving item availability... identifier:', eventIdentifier);
-                    await itemAvailabilityRepository.updateOne(
+                    await repos.itemAvailability.updateOne(
                         countFreeSeatDate.dateJouei,
                         eventIdentifier,
                         itemAvailability
