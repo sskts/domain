@@ -5,6 +5,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+
+## v24.0.0 - 2018-02-28
+### Added
 - 決済方法にPecorino口座決済を追加。
 - Pecorino決済時のキャッシュバックを実装。
 
@@ -15,8 +29,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 汎用的なアクションリポジトリーを追加。
 - 注文配送処理を配送サービスのファンクションとして追加。
 - Eメール送信アクションをパラメーターに持つ、新しいEメール送信タスクを追加。
-
-### Changed
 - 注文に対するタスク実行時にアクションを保管するように変更。
 - アクションと取引に対して潜在アクション属性を定義。
 - 注文取引確定後のアクションフローが、潜在アクションの指定通りに実行されるように変更。
@@ -30,8 +42,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベント検索サービスを販売情報提供サービスとして名前変更。
 - 各サービスの複数リポジトリー引数をオブジェクトとして単一引数にまとめる対応。
 
-### Deprecated
-
 ### Removed
 - 承認アクションリポジトリーを削除。
 
@@ -40,9 +50,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - COAからの上映イベント同期時に、COAにないイベントをキャンセルステータスへ変更する処理を追加。
 - COA作品抽出のtitle_nameを拾えていないバグを修正。
 - タスク数集計でスロークエリが出ていたため、タスクコレクションのインデックスを最適化。
-
-### Security
-
 
 ## v23.4.9 - 2017-12-18
 ### Changed
