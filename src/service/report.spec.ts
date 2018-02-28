@@ -31,7 +31,7 @@ describe('service.report.telemetry.search()', () => {
         sandbox.mock(telemetryRepo.telemetryModel).expects('find').once()
             .chain('sort').chain('lean').chain('exec').resolves(telemetries);
 
-        const result = await sskts.service.report.telemetry.search(<any>conditions)(telemetryRepo);
+        const result = await sskts.service.report.telemetry.search(<any>conditions)({ telemetry: telemetryRepo });
 
         assert(Array.isArray(result));
         sandbox.verify();

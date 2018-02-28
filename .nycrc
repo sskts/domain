@@ -13,7 +13,6 @@
     "exclude": [
         "**/*.spec.ts",
         "src/service/util.ts",
-        "src/service/report/health.ts",
         "src/service/report/telemetry.ts"
     ],
     "reporter": [

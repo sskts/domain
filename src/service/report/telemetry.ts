@@ -14,23 +14,33 @@ import { MongoRepository as TelemetryRepo } from '../../repo/telemetry';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 export type TelemetryOperation<T> =
-    (telemetryRepo: TelemetryRepo) => Promise<T>;
+    (repos: { telemetry: TelemetryRepo }) => Promise<T>;
 export type TaskOperation<T> =
-    (taskRepo: TaskRepo) => Promise<T>;
+    (repos: { task: TaskRepo }) => Promise<T>;
 export type TransactionOperation<T> =
-    (transactionRepo: TransactionRepo) => Promise<T>;
+    (repos: { transaction: TransactionRepo }) => Promise<T>;
 export type TaskAndTransactionOperation<T> =
-    (taskRepo: TaskRepo, transactionRepo: TransactionRepo) => Promise<T>;
-export type TaskAndTransactionAndAuthorizeActionOperation<T> =
-    (taskRepo: TaskRepo, transactionRepo: TransactionRepo, actionRepo: ActionRepo) => Promise<T>;
-export type TransactionAndAuthorizeActionOperation<T> =
-    (transactionRepo: TransactionRepo, actionRepo: ActionRepo) => Promise<T>;
-export type TaskAndTelemetryAndTransactionOperation<T> = (
-    taskRepo: TaskRepo,
-    telemetryRepo: TelemetryRepo,
-    transactionRep: TransactionRepo,
-    actionRepo: ActionRepo
-) => Promise<T>;
+    (repos: {
+        task: TaskRepo;
+        transaction: TransactionRepo;
+    }) => Promise<T>;
+export type TaskAndTransactionAndActionOperation<T> =
+    (repos: {
+        task: TaskRepo;
+        transaction: TransactionRepo;
+        action: ActionRepo;
+    }) => Promise<T>;
+export type TransactionAndActionOperation<T> =
+    (repos: {
+        transaction: TransactionRepo;
+        action: ActionRepo;
+    }) => Promise<T>;
+export type TaskAndTelemetryAndTransactionOperation<T> = (repos: {
+    task: TaskRepo;
+    telemetry: TelemetryRepo;
+    transaction: TransactionRepo;
+    action: ActionRepo;
+}) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:report:telemetry');
 const TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS = 60; // 測定単位時間(秒)
@@ -335,8 +345,8 @@ export function search(searchConditions: {
     scope: TelemetryScope;
     purpose: TelemetryPurposeType;
 }) {
-    return async (telemetryRepo: TelemetryRepo) => {
-        return <ITelemetry[]>await telemetryRepo.telemetryModel.find(
+    return async (repos: { telemetry: TelemetryRepo }) => {
+        return <ITelemetry[]>await repos.telemetry.telemetryModel.find(
             {
                 'object.scope': {
                     $exists: true,
@@ -368,21 +378,22 @@ export function createFlow(target: {
     measuredAt: Date;
     sellerId?: string;
 }): TaskAndTelemetryAndTransactionOperation<void> {
-    return async (
-        taskRepo: TaskRepo,
-        telemetryRepo: TelemetryRepo,
-        transactionRepo: TransactionRepo,
-        actionRepo: ActionRepo
-    ) => {
+    return async (repos: {
+        task: TaskRepo;
+        telemetry: TelemetryRepo;
+        transaction: TransactionRepo;
+        action: ActionRepo;
+    }) => {
         const startDate = new Date();
         const measuredThrough = moment(target.measuredAt);
         const measuredFrom = moment(measuredThrough).add(-TELEMETRY_UNIT_OF_MEASUREMENT_IN_SECONDS, 'seconds');
 
         let telemetry: IGlobalFlowTelemetry | ISellerFlowTelemetry;
         if (target.sellerId !== undefined) {
-            const flowData = await createSellerFlow(measuredFrom.toDate(), measuredThrough.toDate(), target.sellerId)(
-                transactionRepo, actionRepo
-            );
+            const flowData = await createSellerFlow(measuredFrom.toDate(), measuredThrough.toDate(), target.sellerId)({
+                transaction: repos.transaction,
+                action: repos.action
+            });
             debug('flowData created.');
 
             telemetry = {
@@ -397,9 +408,9 @@ export function createFlow(target: {
                 endDate: new Date()
             };
         } else {
-            const flowData = await createGlobalFlow(measuredFrom.toDate(), measuredThrough.toDate())(
-                taskRepo
-            );
+            const flowData = await createGlobalFlow(measuredFrom.toDate(), measuredThrough.toDate())({
+                task: repos.task
+            });
             debug('flowData created.');
 
             telemetry = {
@@ -414,7 +425,7 @@ export function createFlow(target: {
             };
         }
 
-        await telemetryRepo.telemetryModel.create(telemetry);
+        await repos.telemetry.telemetryModel.create(telemetry);
         debug('telemetry saved.');
     };
 }
@@ -429,18 +440,18 @@ export function createStock(target: {
     measuredAt: Date;
     sellerId?: string;
 }): TaskAndTelemetryAndTransactionOperation<void> {
-    return async (
-        taskRepo: TaskRepo,
-        telemetryRepo: TelemetryRepo,
-        transactionRepo: TransactionRepo
-    ) => {
+    return async (repos: {
+        task: TaskRepo;
+        telemetry: TelemetryRepo;
+        transaction: TransactionRepo;
+    }) => {
         const startDate = new Date();
 
         let telemetry: IGlobalStockTelemetry | ISellerStockTelemetry;
         if (target.sellerId !== undefined) {
-            const stockData = await createSellerStock(target.measuredAt, target.sellerId)(
-                transactionRepo
-            );
+            const stockData = await createSellerStock(target.measuredAt, target.sellerId)({
+                transaction: repos.transaction
+            });
             debug('stockData created.');
 
             telemetry = {
@@ -455,7 +466,7 @@ export function createStock(target: {
                 endDate: new Date()
             };
         } else {
-            const stockData = await createGlobalStock(target.measuredAt)(taskRepo);
+            const stockData = await createGlobalStock(target.measuredAt)({ task: repos.task });
             debug('stockData created.');
 
             telemetry = {
@@ -470,7 +481,7 @@ export function createStock(target: {
             };
         }
 
-        await telemetryRepo.telemetryModel.create(telemetry);
+        await repos.telemetry.telemetryModel.create(telemetry);
         debug('telemetry saved.');
     };
 }
@@ -487,14 +498,14 @@ function createSellerFlow(
     measuredFrom: Date,
     measuredThrough: Date,
     sellerId: string
-): TransactionAndAuthorizeActionOperation<ISellerFlowResult> {
+): TransactionAndActionOperation<ISellerFlowResult> {
     // tslint:disable-next-line:max-func-body-length
-    return async (
-        transactionRepo: TransactionRepo,
-        actionRepo: ActionRepo
-    ) => {
+    return async (repos: {
+        transaction: TransactionRepo;
+        action: ActionRepo;
+    }) => {
         // 計測期間内に開始された取引数を算出する
-        const numberOfTransactionsStarted = await transactionRepo.transactionModel.count({
+        const numberOfTransactionsStarted = await repos.transaction.transactionModel.count({
             typeOf: factory.transactionType.PlaceOrder,
             'seller.id': {
                 $exists: true,
@@ -507,7 +518,7 @@ function createSellerFlow(
         }).exec();
 
         // 計測期間内に開始され、かつ、すでに終了している取引を検索
-        const startedAndEndedTransactions = await transactionRepo.transactionModel.find({
+        const startedAndEndedTransactions = await repos.transaction.transactionModel.find({
             typeOf: factory.transactionType.PlaceOrder,
             'seller.id': {
                 $exists: true,
@@ -527,7 +538,7 @@ function createSellerFlow(
             (transaction) => transaction.status === factory.transactionStatusType.Expired
         ).length;
 
-        const endedTransactions = await transactionRepo.transactionModel.find(
+        const endedTransactions = await repos.transaction.transactionModel.find(
             {
                 typeOf: factory.transactionType.PlaceOrder,
                 'seller.id': {
@@ -605,7 +616,7 @@ function createSellerFlow(
         type IAuthorizeAction = factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>>;
 
         // 期限切れ取引に対して作成されたアクションを取得
-        const actionsOnExpiredTransactions = await actionRepo.actionModel.find(
+        const actionsOnExpiredTransactions = await repos.action.actionModel.find(
             {
                 typeOf: factory.actionType.AuthorizeAction,
                 'purpose.id': {
@@ -682,10 +693,10 @@ function createSellerFlow(
 /* istanbul ignore next */
 function createSellerStock(measuredAt: Date, sellerId: string): TransactionOperation<ISellerStockResult> {
     // tslint:disable-next-line:max-func-body-length
-    return async (
-        transactionRepo: TransactionRepo
-    ) => {
-        const numberOfTransactionsUnderway = await transactionRepo.transactionModel.count({
+    return async (repos: {
+        transaction: TransactionRepo;
+    }) => {
+        const numberOfTransactionsUnderway = await repos.transaction.transactionModel.count({
             $or: [
                 // {measuredAt}以前に開始し、{measuredAt}以後に成立あるいは期限切れした取引
                 {
@@ -740,14 +751,14 @@ function createGlobalFlow(
     measuredThrough: Date
 ): TaskOperation<IGlobalFlowResult> {
     // tslint:disable-next-line:max-func-body-length
-    return async (
-        taskRepo: TaskRepo
-    ) => {
+    return async (repos: {
+        task: TaskRepo;
+    }) => {
         // 全タスク名リスト
         const targetTaskNames: any[] = Object.keys(factory.taskName).map((k) => factory.taskName[<any>k]);
 
         const taskResults = await Promise.all(targetTaskNames.map(async (taskName) => {
-            const numberOfTasksCreated = await taskRepo.taskModel.count({
+            const numberOfTasksCreated = await repos.task.taskModel.count({
                 name: taskName,
                 createdAt: {
                     $gte: measuredFrom,
@@ -757,7 +768,7 @@ function createGlobalFlow(
             debug('numberOfTasksCreated:', numberOfTasksCreated);
 
             // 実行中止ステータスで、最終試行日時が範囲にあるものを実行タスク数とする
-            const numberOfTasksAborted = await taskRepo.taskModel.count({
+            const numberOfTasksAborted = await repos.task.taskModel.count({
                 name: taskName,
                 lastTriedAt: {
                     $type: 'date',
@@ -769,7 +780,7 @@ function createGlobalFlow(
             debug('numberOfTasksAborted:', numberOfTasksAborted);
 
             // 実行済みステータスで、最終試行日時が範囲にあるものを実行タスク数とする
-            const executedTasks = await taskRepo.taskModel.find(
+            const executedTasks = await repos.task.taskModel.find(
                 {
                     name: taskName,
                     lastTriedAt: {
@@ -828,12 +839,12 @@ function createGlobalFlow(
 /* istanbul ignore next */
 function createGlobalStock(measuredAt: Date): TaskOperation<IGlobalStockResult> {
     // tslint:disable-next-line:max-func-body-length
-    return async (
-        taskRepo: TaskRepo
-    ) => {
+    return async (repos: {
+        task: TaskRepo;
+    }) => {
         // 待機状態のタスク数を算出
         debug('counting waiting tasks globally...');
-        const numberOfTasksUnexecuted = await taskRepo.taskModel.count({
+        const numberOfTasksUnexecuted = await repos.task.taskModel.count({
             runsAt: { $lt: measuredAt }, // 実行日時を超過している
             status: { $in: [factory.taskStatus.Ready, factory.taskStatus.Running] }
         }).exec();

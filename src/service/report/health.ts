@@ -44,8 +44,11 @@ export interface IUnhealthGMOSale {
  * @export
  */
 export function checkGMOSales(madeFrom: Date, madeThrough: Date) {
-    return async (gmoNotificationRepo: GMONotificationRepo, actionRepo: ActionRepo): Promise<IReportOfGMOSalesHealthCheck> => {
-        const sales = await gmoNotificationRepo.searchSales({
+    return async (repos: {
+        gmoNotification: GMONotificationRepo;
+        action: ActionRepo;
+    }): Promise<IReportOfGMOSalesHealthCheck> => {
+        const sales = await repos.gmoNotification.searchSales({
             tranDateFrom: madeFrom,
             tranDateThrough: madeThrough
         });
@@ -58,7 +61,7 @@ export function checkGMOSales(madeFrom: Date, madeThrough: Date) {
         const orderIds = sales.map((sale) => sale.orderId);
 
         // オーダーIDでPayActionを検索
-        const payActions = await actionRepo.actionModel.find({
+        const payActions = await repos.action.actionModel.find({
             typeOf: factory.actionType.PayAction,
             actionStatus: factory.actionStatusType.CompletedActionStatus,
             'object.paymentMethod.paymentMethodId': { $in: orderIds }
