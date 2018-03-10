@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- イベント識別子で注文取引を検索するためのMongoDBインデックスを追加。
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v24.0.1 - 2018-03-10
+
+### Changed
+
+- イベント識別子で注文取引を検索するためのMongoDBインデックスを追加。
 
 ## v24.0.0 - 2018-02-28
 ### Added
