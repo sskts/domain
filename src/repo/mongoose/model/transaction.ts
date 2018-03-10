@@ -260,6 +260,21 @@ schema.index(
     }
 );
 
+// イベント識別子で注文取引検索する際に使用
+schema.index(
+    {
+        typeOf: 1,
+        status: 1,
+        'result.order.acceptedOffers.itemOffered.reservationFor.identifier': 1
+    },
+    {
+        name: 'searchPlaceOrderByEvent',
+        partialFilterExpression: {
+            'result.order.acceptedOffers.itemOffered.reservationFor.identifier': { $exists: true }
+        }
+    }
+);
+
 export default mongoose.model('Transaction', schema).on(
     'index',
     // tslint:disable-next-line:no-single-line-block-comment

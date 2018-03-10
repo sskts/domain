@@ -1,12 +1,16 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
+
 ### Added
 
 ### Changed
+
+- イベント識別子で注文取引を検索するためのMongoDBインデックスを追加。
 
 ### Deprecated
 
@@ -15,7 +19,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
-
 
 ## v24.0.0 - 2018-02-28
 ### Added
