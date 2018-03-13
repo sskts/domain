@@ -71,7 +71,7 @@ export function payPecorino(transactionId: string) {
                     auth: repos.pecorinoAuthClient
                 });
                 const depositTransaction = await depositTransactionService.start({
-                    toAccountId: authorizeAction.result.pecorinoTransaction.object.accountId,
+                    toAccountId: authorizeAction.result.pecorinoTransaction.object.fromAccountId,
                     expires: moment().add(1, 'minutes').toDate(),
                     agent: transaction.seller,
                     recipient: {
