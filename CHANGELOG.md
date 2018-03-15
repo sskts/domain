@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 実験的にレストランのメニューアイテムを注文アイテムとして追加できるようにしてみる。
+
 ### Changed
 
 ### Deprecated

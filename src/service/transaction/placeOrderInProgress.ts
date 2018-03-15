@@ -465,6 +465,35 @@ export function createOrderFromTransaction(params: {
     orderStatus: factory.orderStatus;
     isGift: boolean;
 }): factory.order.IOrder {
+    // 実験的にメニューアイテムの注文の場合
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    const menuItemAuthorizeActions = params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === 'Offer')
+        .filter((a) => a.object.itemOffered.typeOf === 'MenuItem');
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    if (menuItemAuthorizeActions.length === 1) {
+        return {
+            typeOf: 'Order',
+            seller: params.transaction.seller,
+            customer: <any>{},
+            price: 700,
+            priceCurrency: factory.priceCurrency.JPY,
+            paymentMethods: [],
+            discounts: [],
+            confirmationNumber: 12345,
+            orderNumber: `${moment().format('YYYYMMDDHHmmss')}-12345`,
+            acceptedOffers: [],
+            url: '',
+            orderStatus: params.orderStatus,
+            orderDate: params.orderDate,
+            isGift: params.isGift,
+            orderInquiryKey: <any>{}
+        };
+    }
+
     // seatReservation exists?
     const seatReservationAuthorizeActions = params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
