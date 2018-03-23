@@ -68,48 +68,48 @@ describe('action.authorize.pecorino.create()', () => {
         sandbox.verify();
     });
 
-    it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
-        const agent = {
-            id: 'agentId'
-        };
-        const seller = {
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            gmoInfo: {
-                shopId: 'shopId',
-                shopPass: 'shopPass'
-            }
-        };
-        const transaction = {
-            id: 'transactionId',
-            agent: {
-                id: 'anotherAgentId'
-            },
-            seller: seller
-        };
-        const price = 1234;
+    // it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
+    //     const agent = {
+    //         id: 'agentId'
+    //     };
+    //     const seller = {
+    //         id: 'sellerId',
+    //         name: { ja: 'ja', en: 'ne' },
+    //         gmoInfo: {
+    //             shopId: 'shopId',
+    //             shopPass: 'shopPass'
+    //         }
+    //     };
+    //     const transaction = {
+    //         id: 'transactionId',
+    //         agent: {
+    //             id: 'anotherAgentId'
+    //         },
+    //         seller: seller
+    //     };
+    //     const price = 1234;
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay(<any>{});
+    //     const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+    //     const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+    //     const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay(<any>{});
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(actionRepo).expects('start').never();
-        sandbox.mock(payTransactionService).expects('start').never();
+    //     sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+    //     sandbox.mock(actionRepo).expects('start').never();
+    //     sandbox.mock(payTransactionService).expects('start').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create(
-            agent.id,
-            transaction.id,
-            price
-        )({
-            action: actionRepo,
-            transaction: transactionRepo,
-            payTransactionService: payTransactionService
-        }).catch((err) => err);
+    //     const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create(
+    //         agent.id,
+    //         transaction.id,
+    //         price
+    //     )({
+    //         action: actionRepo,
+    //         transaction: transactionRepo,
+    //         payTransactionService: payTransactionService
+    //     }).catch((err) => err);
 
-        assert(result instanceof sskts.factory.errors.Forbidden);
-        sandbox.verify();
-    });
+    //     assert(result instanceof sskts.factory.errors.Forbidden);
+    //     sandbox.verify();
+    // });
 
     it('口座サービスでエラーが発生すればアクションにエラー結果が追加されるはず', async () => {
         const agent = {

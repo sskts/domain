@@ -23,7 +23,7 @@ export type ICreateOperation<T> = (repos: {
  * Pecorino残高差し押さえ
  */
 export function create(
-    agentId: string,
+    __: string,
     transactionId: string,
     price: number
 ): ICreateOperation<factory.action.authorize.pecorino.IAction> {
@@ -35,9 +35,12 @@ export function create(
     }) => {
         const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
 
-        if (transaction.agent.id !== agentId) {
-            throw new factory.errors.Forbidden('A specified transaction is not yours.');
-        }
+        // 他者口座による決済も可能にするためにコメントアウト
+        // 基本的に、自分の口座のオーソリを他者に与えても得しないので、
+        // これが問題になるとすれば、本当にただサービスを荒らしたい悪質な攻撃のみ、ではある
+        // if (transaction.agent.id !== agentId) {
+        //     throw new factory.errors.Forbidden('A specified transaction is not yours.');
+        // }
 
         // 承認アクションを開始する
         const actionAttributes = factory.action.authorize.pecorino.createAttributes({
