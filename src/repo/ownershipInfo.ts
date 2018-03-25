@@ -39,8 +39,13 @@ export class MongoRepository {
         ownedAt?: Date;
     }): Promise<IScreeningEventReservationOwnershipInfo[]> {
         const andConditions: any[] = [
-            { 'typeOfGood.typeOf': 'EventReservation' }, // 所有対象がイベント予約
-            { 'typeOfGood.reservationFor.typeOf': 'IndividualScreeningEvent' } // 予約対象が個々の上映イベント
+            { 'typeOfGood.typeOf': factory.reservationType.EventReservation }, // 所有対象がイベント予約
+            {
+                'typeOfGood.reservationFor.typeOf': {
+                    $exists: true,
+                    $eq: factory.eventType.IndividualScreeningEvent
+                }
+            } // 予約対象が個々の上映イベント
         ];
 
         // 誰の所有か
@@ -48,7 +53,10 @@ export class MongoRepository {
         /* istanbul ignore else */
         if (searchConditions.ownedBy !== undefined) {
             andConditions.push({
-                'ownedBy.id': searchConditions.ownedBy
+                'ownedBy.id': {
+                    $exists: true,
+                    $eq: searchConditions.ownedBy
+                }
             });
         }
 

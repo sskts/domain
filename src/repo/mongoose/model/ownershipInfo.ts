@@ -68,6 +68,24 @@ schema.index(
     { unique: true }
 );
 
+// 上映イベント予約の所有権検索時に使用
+schema.index(
+    {
+        'typeOfGood.typeOf': 1,
+        'typeOfGood.reservationFor.typeOf': 1,
+        'ownedBy.id': 1,
+        ownedFrom: 1,
+        ownedThrough: 1
+    },
+    {
+        name: 'searchScreeningEventReservations',
+        partialFilterExpression: {
+            'typeOfGood.reservationFor.typeOf': { $exists: true },
+            'ownedBy.id': { $exists: true }
+        }
+    }
+);
+
 export default mongoose.model('OwnershipInfo', schema).on(
     'index',
     // tslint:disable-next-line:no-single-line-block-comment

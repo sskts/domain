@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 上映イベント予約の所有権検索時に使用するMongoDBインデックスを追加。
+
 ### Deprecated
 
 ### Removed
