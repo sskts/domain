@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - 上映イベント予約の所有権検索時に使用するMongoDBインデックスを追加。
+- Friend Payフローを実現するために、Pecorino口座オーソリ取得時の、アクション主体と取引主体の同一性チェックを解除。
+- クレジットカードオーソリ取得時の、アクション主体と取引主体の同一性チェックを解除。
 
 ### Deprecated
 

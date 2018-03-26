@@ -77,57 +77,57 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.verify();
     });
 
-    it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
-        const agent = {
-            id: 'agentId'
-        };
-        const seller = {
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            gmoInfo: {
-                shopId: 'shopId',
-                shopPass: 'shopPass'
-            }
-        };
-        const transaction = {
-            id: 'transactionId',
-            agent: {
-                id: 'anotherAgentId'
-            },
-            seller: seller
-        };
-        const orderId = 'orderId';
-        const amount = 1234;
-        const creditCard = <any>{};
+    // it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
+    //     const agent = {
+    //         id: 'agentId'
+    //     };
+    //     const seller = {
+    //         id: 'sellerId',
+    //         name: { ja: 'ja', en: 'ne' },
+    //         gmoInfo: {
+    //             shopId: 'shopId',
+    //             shopPass: 'shopPass'
+    //         }
+    //     };
+    //     const transaction = {
+    //         id: 'transactionId',
+    //         agent: {
+    //             id: 'anotherAgentId'
+    //         },
+    //         seller: seller
+    //     };
+    //     const orderId = 'orderId';
+    //     const amount = 1234;
+    //     const creditCard = <any>{};
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+    //     const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+    //     const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+    //     const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
-        sandbox.mock(actionRepo).expects('start').never();
-        sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
-        sandbox.mock(sskts.GMO.services.credit).expects('entryTran').never();
-        sandbox.mock(sskts.GMO.services.credit).expects('execTran').never();
+    //     sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+    //         .withExactArgs(transaction.id).resolves(transaction);
+    //     sandbox.mock(actionRepo).expects('start').never();
+    //     sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
+    //     sandbox.mock(sskts.GMO.services.credit).expects('entryTran').never();
+    //     sandbox.mock(sskts.GMO.services.credit).expects('execTran').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
-            agent.id,
-            transaction.id,
-            orderId,
-            amount,
-            sskts.GMO.utils.util.Method.Lump,
-            creditCard
-        )({
-            action: actionRepo,
-            transaction: transactionRepo,
-            organization: organizationRepo
-        })
-            .catch((err) => err);
+    //     const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
+    //         agent.id,
+    //         transaction.id,
+    //         orderId,
+    //         amount,
+    //         sskts.GMO.utils.util.Method.Lump,
+    //         creditCard
+    //     )({
+    //         action: actionRepo,
+    //         transaction: transactionRepo,
+    //         organization: organizationRepo
+    //     })
+    //         .catch((err) => err);
 
-        assert(result instanceof sskts.factory.errors.Forbidden);
-        sandbox.verify();
-    });
+    //     assert(result instanceof sskts.factory.errors.Forbidden);
+    //     sandbox.verify();
+    // });
 
     it('GMOでエラーが発生すれば、承認アクションを諦めて、エラーとなるはず', async () => {
         const agent = {
