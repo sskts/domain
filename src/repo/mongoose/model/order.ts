@@ -116,6 +116,22 @@ schema.index(
     { name: 'orderInquiryKey' }
 );
 
+// 会員情報で注文検索
+schema.index(
+    {
+        orderDate: 1,
+        'customer.memberOf.membershipNumber': 1,
+        'customer.memberOf.programName': 1
+    },
+    {
+        name: 'searchOrdersByProgramMembership',
+        partialFilterExpression: {
+            'customer.memberOf.membershipNumber': { $exists: true },
+            'customer.memberOf.programName': { $exists: true }
+        }
+    }
+);
+
 export default mongoose.model('Order', schema).on(
     'index',
     // tslint:disable-next-line:no-single-line-block-comment
