@@ -86,6 +86,19 @@ schema.index(
     }
 );
 
+// トークンで所有権検索時に使用
+schema.index(
+    {
+        'typeOfGood.reservedTicket.ticketToken': 1
+    },
+    {
+        name: 'searchByTicketToken',
+        partialFilterExpression: {
+            'typeOfGood.reservedTicket.ticketToken': { $exists: true }
+        }
+    }
+);
+
 export default mongoose.model('OwnershipInfo', schema).on(
     'index',
     // tslint:disable-next-line:no-single-line-block-comment
