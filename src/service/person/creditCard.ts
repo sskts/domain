@@ -29,19 +29,27 @@ export function save(
             // まずGMO会員登録
             const memberId = personId;
             const memberName = username;
-            const gmoMember = await GMO.services.card.searchMember({
-                siteId: <string>process.env.GMO_SITE_ID,
-                sitePass: <string>process.env.GMO_SITE_PASS,
-                memberId: memberId
-            });
-            if (gmoMember === null) {
-                const saveMemberResult = await GMO.services.card.saveMember({
+            try {
+                await GMO.services.card.searchMember({
                     siteId: <string>process.env.GMO_SITE_ID,
                     sitePass: <string>process.env.GMO_SITE_PASS,
-                    memberId: memberId,
-                    memberName: memberName
+                    memberId: memberId
                 });
-                debug('GMO saveMember processed', saveMemberResult);
+            } catch (searchMemberError) {
+                // 会員が存在しない場合このエラーになる
+                if (Array.isArray(searchMemberError.errors) &&
+                    searchMemberError.errors.length === 1 &&
+                    searchMemberError.errors[0].info === 'E01390002') {
+                    const saveMemberResult = await GMO.services.card.saveMember({
+                        siteId: <string>process.env.GMO_SITE_ID,
+                        sitePass: <string>process.env.GMO_SITE_PASS,
+                        memberId: memberId,
+                        memberName: memberName
+                    });
+                    debug('GMO saveMember processed', saveMemberResult);
+                } else {
+                    throw searchMemberError;
+                }
             }
 
             debug('saving a card to GMO...');
@@ -115,32 +123,46 @@ export function find(
     username: string
 ): IOperation<GMO.services.card.ISearchCardResult[]> {
     return async () => {
-        // まずGMO会員登録
-        const memberId = personId;
-        const memberName = username;
-        const gmoMember = await GMO.services.card.searchMember({
-            siteId: <string>process.env.GMO_SITE_ID,
-            sitePass: <string>process.env.GMO_SITE_PASS,
-            memberId: memberId
-        });
-        if (gmoMember === null) {
-            const saveMemberResult = await GMO.services.card.saveMember({
+        try {
+            // まずGMO会員登録
+            const memberId = personId;
+            const memberName = username;
+            try {
+                await GMO.services.card.searchMember({
+                    siteId: <string>process.env.GMO_SITE_ID,
+                    sitePass: <string>process.env.GMO_SITE_PASS,
+                    memberId: memberId
+                });
+            } catch (searchMemberError) {
+                // 会員が存在しない場合このエラーになる
+                if (Array.isArray(searchMemberError.errors) &&
+                    searchMemberError.errors.length === 1 &&
+                    searchMemberError.errors[0].info === 'E01390002') {
+                    const saveMemberResult = await GMO.services.card.saveMember({
+                        siteId: <string>process.env.GMO_SITE_ID,
+                        sitePass: <string>process.env.GMO_SITE_PASS,
+                        memberId: memberId,
+                        memberName: memberName
+                    });
+                    debug('GMO saveMember processed', saveMemberResult);
+                } else {
+                    throw searchMemberError;
+                }
+            }
+
+            return GMO.services.card.searchCard({
                 siteId: <string>process.env.GMO_SITE_ID,
                 sitePass: <string>process.env.GMO_SITE_PASS,
                 memberId: memberId,
-                memberName: memberName
-            });
-            debug('GMO saveMember processed', saveMemberResult);
+                seqMode: GMO.utils.util.SeqMode.Physics
+                // 未削除のものに絞り込む
+            }).then((results) => results.filter((result) => result.deleteFlag === '0'));
+        } catch (error) {
+            if (error.name === 'GMOServiceBadRequestError') {
+                throw new factory.errors.Argument('personId', error.errors[0].content);
+            } else {
+                throw error;
+            }
         }
-
-        return GMO.services.card.searchCard({
-            siteId: <string>process.env.GMO_SITE_ID,
-            sitePass: <string>process.env.GMO_SITE_PASS,
-            memberId: memberId,
-            seqMode: GMO.utils.util.SeqMode.Physics
-        }).then((results) => {
-            // 未削除のものに絞り込む
-            return results.filter((result) => result.deleteFlag === '0');
-        });
     };
 }
