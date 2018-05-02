@@ -154,6 +154,55 @@ schema.index(
     }
 );
 
+// 取引調査や、アクション集計などで、アクションを検索することはとても多いので、そのためのインデックス
+schema.index(
+    { typeOf: 1, 'object.typeOf': 1, startDate: 1 }
+);
+
+// イベントに対する座席仮予約アクション検索時に使用
+schema.index(
+    { typeOf: 1, 'object.typeOf': 1, 'object.individualScreeningEvent.identifier': 1 },
+    {
+        name: 'searchSeatReservationAuthorizeActionByEvent',
+        partialFilterExpression: {
+            'object.typeOf': factory.action.authorize.seatReservation.ObjectType.SeatReservation
+        }
+    }
+);
+
+// イベントと座席指定で座席仮予約アクション検索時に使用
+schema.index(
+    { typeOf: 1, 'object.typeOf': 1, 'object.individualScreeningEvent.identifier': 1, 'object.offers.seatNumber': 1 },
+    {
+        name: 'searchSeatReservationAuthorizeActionByEventAndSeat',
+        partialFilterExpression: {
+            'object.typeOf': factory.action.authorize.seatReservation.ObjectType.SeatReservation
+        }
+    }
+);
+
+// GMOオーダーIDから承認アクション検索時に使用
+schema.index(
+    { typeOf: 1, 'object.typeOf': 1, 'object.orderId': 1 },
+    {
+        name: 'searchCreditCardAuthorizeActionByOrderId',
+        partialFilterExpression: {
+            'object.typeOf': factory.action.authorize.creditCard.ObjectType.CreditCard
+        }
+    }
+);
+
+// ムビチケ購入管理番号から承認アクション検索時に使用
+schema.index(
+    { typeOf: 1, 'object.typeOf': 1, 'object.seatInfoSyncIn.knyknrNoInfo.knyknrNo': 1 },
+    {
+        name: 'searchMvtkAuthorizeActionByKnyknrNo',
+        partialFilterExpression: {
+            'object.typeOf': factory.action.authorize.mvtk.ObjectType.Mvtk
+        }
+    }
+);
+
 export default mongoose.model('Action', schema).on(
     'index',
     // tslint:disable-next-line:no-single-line-block-comment
