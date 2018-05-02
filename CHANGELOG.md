@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - クレジットカードオーソリ取得時の、アクション主体と取引主体の同一性チェックを解除。
 - 注文を会員情報で検索するために必要なMongoDBインデックスを追加。
 - チケットトークンで所有権で検索するために必要なMongoDBインデックスを追加。
+- 取引調査や集計作業で使用するアクション検索のためのインデックスを追加。
 
 ### Deprecated
 
