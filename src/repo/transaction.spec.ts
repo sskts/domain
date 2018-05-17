@@ -24,7 +24,7 @@ describe('start()', () => {
     });
 
     it('repositoryの状態が正常であれば、開始できるはず', async () => {
-        const transaction = { id: 'id' };
+        const transaction = { typeOf: sskts.factory.transactionType.PlaceOrder, id: 'id' };
 
         const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
 
@@ -32,7 +32,7 @@ describe('start()', () => {
             .expects('create').once()
             .resolves(new repository.transactionModel());
 
-        const result = await repository.start(<any>transaction);
+        const result = await repository.start(transaction.typeOf, <any>transaction);
 
         assert.equal(typeof result, 'object');
         sandbox.verify();
@@ -424,4 +424,3 @@ describe('startExportTasks()', () => {
         sandbox.verify();
     });
 });
-
