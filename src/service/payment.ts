@@ -1,8 +1,6 @@
 /**
  * 決済サービス
- * @namespace service.payment
  */
-
 import * as GMO from '@motionpicture/gmo-service';
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
@@ -19,10 +17,10 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 
 /**
  * Pecorino支払実行
- * @export
  * @param transactionId 取引ID
  */
 export function payPecorino(transactionId: string) {
+    // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
@@ -45,33 +43,61 @@ export function payPecorino(transactionId: string) {
         const payActionAttributes = orderPotentialActions.payPecorino;
         if (payActionAttributes !== undefined) {
             // Pecorino承認アクションがあるはず
-            const authorizeAction = <any>transaction.object.authorizeActions
+            const authorizeAction = <factory.action.authorize.pecorino.IAction>transaction.object.authorizeActions
                 .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                .find((a) => a.object.typeOf === 'Pecorino');
+                .find((a) => a.object.typeOf === factory.action.authorize.pecorino.ObjectType.Pecorino);
 
             // アクション開始
             const action = await repos.action.start<factory.action.trade.pay.IAction>(payActionAttributes);
 
             try {
-                // 支払取引確定
-                const payTransactionService = new pecorinoapi.service.transaction.Pay({
-                    endpoint: authorizeAction.result.pecorinoEndpoint,
-                    auth: repos.pecorinoAuthClient
-                });
+                // 承認アクション結果は基本的に必ずあるはず
+                if (authorizeAction.result === undefined) {
+                    throw new factory.errors.NotFound('authorizeAction.result');
+                }
 
-                await payTransactionService.confirm({
-                    transactionId: authorizeAction.result.pecorinoTransaction.id
-                });
+                const pecorinoTransaction = authorizeAction.result.pecorinoTransaction;
+                switch (pecorinoTransaction.typeOf) {
+                    case pecorinoapi.factory.transactionType.Pay:
+
+                        // 支払取引の場合、確定
+                        const payTransactionService = new pecorinoapi.service.transaction.Pay({
+                            endpoint: authorizeAction.result.pecorinoEndpoint,
+                            auth: repos.pecorinoAuthClient
+                        });
+                        await payTransactionService.confirm({
+                            transactionId: pecorinoTransaction.id
+                        });
+                        break;
+
+                    case pecorinoapi.factory.transactionType.Transfer:
+                        // 転送取引の場合確定
+                        const transferTransactionService = new pecorinoapi.service.transaction.Transfer({
+                            endpoint: authorizeAction.result.pecorinoEndpoint,
+                            auth: repos.pecorinoAuthClient
+                        });
+                        await transferTransactionService.confirm({
+                            transactionId: pecorinoTransaction.id
+                        });
+                        break;
+
+                    default:
+                        throw new factory.errors.NotImplemented(
+                            `transaction type '${(<any>pecorinoTransaction).typeOf}' not implemented.`
+                        );
+                }
 
                 // Pecorino決済の場合キャッシュバック
-                const CACHBACK = 100;
+                // tslint:disable-next-line:no-suspicious-comment
+                // TODO potentialActionとして定義する
+                const CACHBACK = 1;
                 const customerContact = <factory.person.IContact>transaction.object.customerContact;
                 const depositTransactionService = new pecorinoapi.service.transaction.Deposit({
                     endpoint: authorizeAction.result.pecorinoEndpoint,
                     auth: repos.pecorinoAuthClient
                 });
                 const depositTransaction = await depositTransactionService.start({
-                    toAccountId: authorizeAction.result.pecorinoTransaction.object.fromAccountId,
+                    toAccountNumber: pecorinoTransaction.object.fromAccountNumber,
                     expires: moment().add(1, 'minutes').toDate(),
                     agent: transaction.seller,
                     recipient: {
@@ -80,16 +106,15 @@ export function payPecorino(transactionId: string) {
                         name: `${customerContact.givenName} ${customerContact.familyName}`,
                         url: transaction.agent.url
                     },
-                    price: CACHBACK,
-                    notes: 'sskts incentive'
+                    amount: CACHBACK,
+                    notes: 'シネマサンシャイン座席予約インセンティブ'
                 });
-
                 await depositTransactionService.confirm({ transactionId: depositTransaction.id });
             } catch (error) {
                 // actionにエラー結果を追加
                 try {
                     // tslint:disable-next-line:max-line-length no-single-line-block-comment
-                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
+                    const actionError = { ...error, ...{ message: error.message, name: error.name } };
                     await repos.action.giveUp(payActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない

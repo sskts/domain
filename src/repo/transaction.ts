@@ -4,13 +4,15 @@ import { Connection } from 'mongoose';
 
 import TransactionModel from './mongoose/model/transaction';
 
-export type ITransactionAttributes =
-    factory.transaction.placeOrder.IAttributes |
-    factory.transaction.returnOrder.IAttributes;
+export type ITransactionAttributes<T> =
+    T extends factory.transactionType.PlaceOrder ? factory.transaction.placeOrder.IAttributes :
+    T extends factory.transactionType.ReturnOrder ? factory.transaction.returnOrder.IAttributes :
+    never;
 
-export type ITransaction =
-    factory.transaction.placeOrder.ITransaction |
-    factory.transaction.returnOrder.ITransaction;
+export type ITransaction<T> =
+    T extends factory.transactionType.PlaceOrder ? factory.transaction.placeOrder.ITransaction :
+    T extends factory.transactionType.ReturnOrder ? factory.transaction.returnOrder.ITransaction :
+    never;
 
 /**
  * 取引リポジトリー
@@ -24,14 +26,39 @@ export class MongoRepository {
 
     /**
      * 取引を開始する
-     * @param transactionAttributes 取引属性
      */
-    public async start<T extends ITransaction>(
-        transactionAttributes: ITransactionAttributes
-    ): Promise<T> {
-        return this.transactionModel.create(transactionAttributes).then(
-            (doc) => <T>doc.toObject()
-        );
+    public async start<T extends factory.transactionType>(
+        typeOf: T,
+        attributes: ITransactionAttributes<T>
+    ): Promise<ITransaction<T>> {
+        return this.transactionModel.create({
+            typeOf: typeOf,
+            ...<Object>attributes,
+            status: factory.transactionStatusType.InProgress,
+            startDate: new Date(),
+            endDate: undefined,
+            tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
+        }).then((doc) => doc.toObject());
+    }
+
+    /**
+     * 進行中の取引を取得する
+     */
+    public async findInProgressById<T extends factory.transactionType>(
+        typeOf: T,
+        transactionId: string
+    ): Promise<ITransaction<T>> {
+        const doc = await this.transactionModel.findOne({
+            _id: transactionId,
+            typeOf: typeOf,
+            status: factory.transactionStatusType.InProgress
+        }).exec();
+
+        if (doc === null) {
+            throw new factory.errors.NotFound('transaction in progress');
+        }
+
+        return doc.toObject();
     }
 
     /**
@@ -198,8 +225,10 @@ export class MongoRepository {
      * @param typeOf 取引タイプ
      * @param status 取引ステータス
      */
-    public async startExportTasks(typeOf: factory.transactionType, status: factory.transactionStatusType):
-        Promise<ITransaction | null> {
+    public async startExportTasks<T extends factory.transactionType>(
+        typeOf: T,
+        status: factory.transactionStatusType
+    ): Promise<ITransaction<T> | null> {
         return this.transactionModel.findOneAndUpdate(
             {
                 typeOf: typeOf,
@@ -208,7 +237,7 @@ export class MongoRepository {
             },
             { tasksExportationStatus: factory.transactionTasksExportationStatus.Exporting },
             { new: true }
-        ).exec().then((doc) => (doc === null) ? null : <ITransaction>doc.toObject());
+        ).exec().then((doc) => (doc === null) ? null : doc.toObject());
     }
 
     /**

@@ -1,11 +1,8 @@
 /**
  * 注文返品サービス
- * @namespace service.transaction.returnOrder
  */
-
-import * as createDebug from 'debug';
-
 import * as factory from '@motionpicture/sskts-factory';
+import * as createDebug from 'debug';
 import * as pug from 'pug';
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
@@ -130,7 +127,7 @@ export function start(params: {
 
         let returnOrderTransaction: factory.transaction.returnOrder.ITransaction;
         try {
-            returnOrderTransaction = await repos.transaction.start<factory.transaction.returnOrder.ITransaction>(returnOrderAttributes);
+            returnOrderTransaction = await repos.transaction.start(factory.transactionType.ReturnOrder, returnOrderAttributes);
         } catch (error) {
             if (error.name === 'MongoError') {
                 // 同一取引に対して返品取引を作成しようとすると、MongoDBでE11000 duplicate key errorが発生する

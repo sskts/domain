@@ -2,9 +2,7 @@
 
 /**
  * sskts-domain index module
- * @module
  */
-
 import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
@@ -92,6 +90,10 @@ export import COA = COA;
  */
 export import GMO = GMO;
 
+/**
+ * Pecorino APIクライアント
+ * Pecorinoサービスとの連携は全てこのクライアントを通じて行います。
+ */
 export import pecorinoapi = pecorinoapi;
 
 export namespace repository {

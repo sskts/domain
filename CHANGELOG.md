@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - update packages.
+- Pecorino決済を、口座支払取引と口座転送取引の2つに対応。
 
 ### Deprecated
 

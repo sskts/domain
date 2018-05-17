@@ -43,23 +43,26 @@ describe('action.authorize.pecorino.create()', () => {
             agent: agent,
             recipient: seller
         };
-        const pecorinoTransaction = { id: 'transactionId' };
+        const pecorinoTransaction = { typeOf: sskts.factory.pecorino.transactionType.Transfer, id: 'transactionId' };
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay(<any>{});
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
         sandbox.mock(actionRepo).expects('complete').once().resolves(action);
         sandbox.mock(payTransactionService).expects('start').once().resolves(pecorinoTransaction);
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create(
-            agent.id,
-            transaction.id,
-            price
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create({
+            transactionId: transaction.id,
+            price: price,
+            fromAccountNumber: 'fromAccountNumber',
+            notes: 'notes'
+        })({
             action: actionRepo,
+            organization: organizationRepo,
             transaction: transactionRepo,
             payTransactionService: payTransactionService
         });
@@ -138,22 +141,25 @@ describe('action.authorize.pecorino.create()', () => {
         const startPayTransactionResult = new Error('startPayTransactionError');
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay(<any>{});
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
         sandbox.mock(payTransactionService).expects('start').once().rejects(startPayTransactionResult);
         sandbox.mock(actionRepo).expects('giveUp').once()
             .withArgs(action.typeOf, action.id, sinon.match({ message: startPayTransactionResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create(
-            agent.id,
-            transaction.id,
-            price
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create({
+            transactionId: transaction.id,
+            price: price,
+            fromAccountNumber: 'fromAccountNumber',
+            notes: 'notes'
+        })({
             action: actionRepo,
+            organization: organizationRepo,
             transaction: transactionRepo,
             payTransactionService: payTransactionService
         }).catch((err) => err);

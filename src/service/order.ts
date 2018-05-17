@@ -119,7 +119,8 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
             if (orderPotentialActions.payPecorino !== undefined) {
-                taskAttributes.push(factory.task.payPecorino.createAttributes({
+                taskAttributes.push({
+                    name: factory.taskName.PayPecorino,
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -129,7 +130,7 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     data: {
                         transactionId: transactionId
                     }
-                }));
+                });
             }
 
             // ムビチケ使用

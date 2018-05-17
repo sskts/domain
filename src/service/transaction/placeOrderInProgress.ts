@@ -1,9 +1,7 @@
 /**
  * placeOrder in progress transaction service
  * 進行中注文取引サービス
- * @namespace service.transaction.placeOrderInProgress
  */
-
 import * as factory from '@motionpicture/sskts-factory';
 import * as waiter from '@motionpicture/waiter-domain';
 import * as createDebug from 'debug';
@@ -120,7 +118,7 @@ export function start(params: IStartParams):
 
         let transaction: factory.transaction.placeOrder.ITransaction;
         try {
-            transaction = await repos.transaction.start<factory.transaction.placeOrder.ITransaction>(transactionAttributes);
+            transaction = await repos.transaction.start(factory.transactionType.PlaceOrder, transactionAttributes);
         } catch (error) {
             if (error.name === 'MongoError') {
                 // 許可証を重複使用しようとすると、MongoDBでE11000 duplicate key errorが発生する

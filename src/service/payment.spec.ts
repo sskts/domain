@@ -105,6 +105,7 @@ describe('payPecorino()', () => {
                         result: {
                             price: 123,
                             pecorinoTransaction: {
+                                typeOf: sskts.factory.pecorino.transactionType.Pay,
                                 id: 'pecorinoTransactionId',
                                 object: {
                                     accountId: 'accountId'
@@ -117,7 +118,7 @@ describe('payPecorino()', () => {
             }
         };
         const action = { id: 'actionId' };
-        const pecorinoDepositTransaction = { id: 'transactionId' };
+        const pecorinoDepositTransaction = { typeOf: sskts.factory.pecorino.transactionType.Deposit, id: 'transactionId' };
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
@@ -194,6 +195,7 @@ describe('payPecorino()', () => {
                         result: {
                             price: 123,
                             pecorinoTransaction: {
+                                typeOf: sskts.factory.pecorino.transactionType.Pay,
                                 id: 'pecorinoTransactionId',
                                 object: {
                                     accountId: 'accountId'
