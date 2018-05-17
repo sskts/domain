@@ -2023,7 +2023,7 @@ describe('createEmailMessageFromTransaction()', () => {
         const orderDate = moment().add(10, 'seconds').toDate();
         const sellerOrganization = {
             id: 'sellerId',
-            typeOf: sskts.factory.organizationType.MovieTheater,
+            typeOf: <sskts.factory.organizationType.MovieTheater>sskts.factory.organizationType.MovieTheater,
             identifier: 'sellerIdentifier',
             branchCode: 'branchCode',
             name: {
@@ -2118,7 +2118,7 @@ describe('createEmailMessageFromTransaction()', () => {
         const orderDate = moment().add(10, 'seconds').toDate();
         const sellerOrganization = {
             id: 'sellerId',
-            typeOf: sskts.factory.organizationType.MovieTheater,
+            typeOf: <sskts.factory.organizationType.MovieTheater>sskts.factory.organizationType.MovieTheater,
             identifier: 'sellerIdentifier',
             branchCode: 'branchCode',
             name: {
