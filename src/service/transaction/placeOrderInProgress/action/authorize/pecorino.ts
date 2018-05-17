@@ -43,7 +43,8 @@ export function create(
         // }
 
         // 承認アクションを開始する
-        const actionAttributes = factory.action.authorize.pecorino.createAttributes({
+        const actionAttributes: factory.action.authorize.pecorino.IAttributes = {
+            typeOf: factory.actionType.AuthorizeAction,
             object: {
                 typeOf: factory.action.authorize.pecorino.ObjectType.Pecorino,
                 transactionId: transactionId,
@@ -52,7 +53,7 @@ export function create(
             agent: transaction.agent,
             recipient: transaction.seller,
             purpose: transaction
-        });
+        };
         const action = await repos.action.start<factory.action.authorize.pecorino.IAction>(actionAttributes);
 
         // Pecorinoオーソリ取得
