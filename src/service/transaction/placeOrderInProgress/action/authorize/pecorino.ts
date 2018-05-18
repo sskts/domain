@@ -144,7 +144,7 @@ export function create(params: {
                     amount: params.price,
                     notes: (params.notes !== undefined) ? params.notes : 'シネマサンシャイン 注文取引',
                     fromAccountNumber: params.fromAccountNumber,
-                    toAccountNumber: pecorinoPaymentAccepted.accountId
+                    toAccountNumber: pecorinoPaymentAccepted.accountNumber
                 });
                 debug('pecorinoTransaction started.', pecorinoTransaction.id);
             } else {
