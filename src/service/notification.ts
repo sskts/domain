@@ -77,7 +77,7 @@ export function sendEmailMessage(actionAttributes: factory.action.transfer.send.
                 // 失敗したら仕方ない
             }
 
-            throw new Error(error);
+            throw error;
         }
 
         // アクション完了

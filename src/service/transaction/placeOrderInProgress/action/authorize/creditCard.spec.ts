@@ -188,7 +188,7 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.verify();
     });
 
-    it('GMO処理でエラーオブジェクトでない例外が発生すれば、承認アクションを諦めて、エラーとなるはず', async () => {
+    it('GMO処理でエラーオブジェクトでない例外が発生すれば、承認アクションを諦めて、そのままエラーとなるはず', async () => {
         const agent = {
             id: 'agentId'
         };
@@ -242,8 +242,7 @@ describe('action.authorize.creditCard.create()', () => {
             transaction: transactionRepo,
             organization: organizationRepo
         }).catch((err) => err);
-
-        assert(result instanceof Error);
+        assert.deepEqual(result, entryTranResult);
         sandbox.verify();
     });
 

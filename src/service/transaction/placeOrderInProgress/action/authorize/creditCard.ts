@@ -131,7 +131,7 @@ export function create(
                 throw new factory.errors.Argument('payment');
             }
 
-            throw new Error(error);
+            throw error;
         }
 
         // アクションを完了

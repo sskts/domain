@@ -127,7 +127,7 @@ export function sendOrder(transactionId: string) {
                 // 失敗したら仕方ない
             }
 
-            throw new Error(error);
+            throw error;
         }
 
         // アクション完了

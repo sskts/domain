@@ -120,7 +120,7 @@ export function payPecorino(transactionId: string) {
                     // 失敗したら仕方ない
                 }
 
-                throw new Error(error);
+                throw error;
             }
 
             // アクション完了
@@ -249,7 +249,7 @@ export function payCreditCard(transactionId: string) {
                     // 失敗したら仕方ない
                 }
 
-                throw new Error(error);
+                throw error;
             }
 
             // アクション完了
@@ -337,7 +337,7 @@ export function refundCreditCard(transactionId: string) {
                     // 失敗したら仕方ない
                 }
 
-                throw new Error(error);
+                throw error;
             }
 
             // アクション完了
@@ -449,7 +449,7 @@ export function useMvtk(transactionId: string) {
 
                 // tslint:disable-next-line:no-single-line-block-comment
                 /* istanbul ignore next */
-                throw new Error(error);
+                throw error;
             }
 
             // アクション完了
