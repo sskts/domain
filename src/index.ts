@@ -38,6 +38,7 @@ import { MongoRepository as OrderRepo } from './repo/order';
 import { MongoRepository as OrganizationRepo } from './repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from './repo/ownershipInfo';
 import { MongoRepository as PlaceRepo } from './repo/place';
+import { MongoRepository as ProgramMembershipRepo } from './repo/programMembership';
 import { MongoRepository as SendGridEventRepo } from './repo/sendGridEvent';
 import { MongoRepository as TaskRepo } from './repo/task';
 import { MongoRepository as TelemetryRepo } from './repo/telemetry';
@@ -45,7 +46,6 @@ import { MongoRepository as TransactionRepo } from './repo/transaction';
 
 /**
  * MongoDBクライアント`mongoose`
- *
  * @example
  * var promise = sskts.mongoose.connect('mongodb://localhost/myapp', {
  *     useMongoClient: true
@@ -55,7 +55,6 @@ export import mongoose = mongoose;
 
 /**
  * Redis Cacheクライアント
- *
  * @example
  * const client = sskts.redis.createClient({
  *      host: process.env.REDIS_HOST,
@@ -68,7 +67,6 @@ export import redis = redis;
 
 /**
  * COAのAPIクライアント
- *
  * @example
  * sskts.COA.services.master.theater({ theater_code: '118' }).then(() => {
  *     console.log(result);
@@ -78,7 +76,6 @@ export import COA = COA;
 
 /**
  * GMOのAPIクライアント
- *
  * @example
  * sskts.GMO.services.card.searchMember({
  *     siteId: '',
@@ -109,6 +106,7 @@ export namespace repository {
     export class Organization extends OrganizationRepo { }
     export class OwnershipInfo extends OwnershipInfoRepo { }
     export class Place extends PlaceRepo { }
+    export class ProgramMembership extends ProgramMembershipRepo { }
     export class SendGridEvent extends SendGridEventRepo { }
     export class Task extends TaskRepo { }
     export class Telemetry extends TelemetryRepo { }
