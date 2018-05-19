@@ -90,6 +90,7 @@ export function start(params: IStartParams):
         };
         if (params.clientUser.username !== undefined) {
             agent.memberOf = {
+                typeOf: <factory.programMembership.ProgramMembershipType>'ProgramMembership',
                 membershipNumber: params.agentId,
                 programName: 'Amazon Cognito'
             };
@@ -281,7 +282,7 @@ export function confirm(
         });
 
         // tslint:disable-next-line:max-line-length
-        type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.reservation.event.IEventReservation<factory.event.individualScreeningEvent.IEvent>>;
+        type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.reservationType>;
         const ownershipInfos: IOwnershipInfo[] = order.acceptedOffers.map((acceptedOffer) => {
             // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
             // saveする際に、identifierでfindOneAndUpdateしている

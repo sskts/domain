@@ -1319,6 +1319,7 @@ describe('createOrderFromTransaction()', () => {
             id: 'agentId',
             url: '',
             memberOf: {
+                typeOf: <sskts.factory.programMembership.ProgramMembershipType>'ProgramMembership',
                 programName: 'programName',
                 membershipNumber: 'membershipNumber'
             }
@@ -1518,6 +1519,7 @@ describe('createOrderFromTransaction()', () => {
             id: 'agentId',
             url: '',
             memberOf: {
+                typeOf: <sskts.factory.programMembership.ProgramMembershipType>'ProgramMembership',
                 programName: 'programName',
                 membershipNumber: 'membershipNumber'
             }
@@ -1610,6 +1612,7 @@ describe('createOrderFromTransaction()', () => {
             id: 'agentId',
             url: '',
             memberOf: {
+                typeOf: <sskts.factory.programMembership.ProgramMembershipType>'ProgramMembership',
                 programName: 'programName',
                 membershipNumber: 'membershipNumber'
             }
@@ -1676,6 +1679,7 @@ describe('createOrderFromTransaction()', () => {
             id: 'agentId',
             url: '',
             memberOf: {
+                typeOf: <sskts.factory.programMembership.ProgramMembershipType>'ProgramMembership',
                 programName: 'programName',
                 membershipNumber: 'membershipNumber'
             }
@@ -1754,6 +1758,7 @@ describe('createOrderFromTransaction()', () => {
             id: 'agentId',
             url: '',
             memberOf: {
+                typeOf: <sskts.factory.programMembership.ProgramMembershipType>'ProgramMembership',
                 programName: 'programName',
                 membershipNumber: 'membershipNumber'
             }

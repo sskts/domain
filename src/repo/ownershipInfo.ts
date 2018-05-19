@@ -4,7 +4,7 @@ import ownershipInfoModel from './mongoose/model/ownershipInfo';
 
 export type IScreeningEvent = factory.event.individualScreeningEvent.IEvent;
 export type IScreeningEventReservation = factory.reservation.event.IEventReservation<IScreeningEvent>;
-export type IScreeningEventReservationOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<IScreeningEventReservation>;
+export type IScreeningEventReservationOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.reservationType>;
 
 /**
  * 所有権リポジトリー

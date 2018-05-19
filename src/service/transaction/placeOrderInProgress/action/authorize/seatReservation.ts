@@ -130,6 +130,7 @@ async function validateOffers(
             }
 
             const offerWithDetails: factory.offer.seatReservation.IOfferWithDetails = {
+                typeOf: 'Offer',
                 price: offer.ticketInfo.mvtkSalesPrice + availableSalesTicket.addPrice,
                 priceCurrency: factory.priceCurrency.JPY,
                 seatNumber: offer.seatNumber,
@@ -196,6 +197,7 @@ async function validateOffers(
             }
 
             const offerWithDetails: factory.offer.seatReservation.IOfferWithDetails = {
+                typeOf: 'Offer',
                 price: availableSalesTicket.salePrice,
                 priceCurrency: factory.priceCurrency.JPY,
                 seatNumber: offer.seatNumber,
