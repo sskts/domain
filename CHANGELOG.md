@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 会員プログラムリポジトリーを追加。
+
 ### Changed
 
 - update packages.

@@ -5,6 +5,7 @@ import ownershipInfoModel from './mongoose/model/ownershipInfo';
 export type IScreeningEvent = factory.event.individualScreeningEvent.IEvent;
 export type IScreeningEventReservation = factory.reservation.event.IEventReservation<IScreeningEvent>;
 export type IScreeningEventReservationOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.reservationType>;
+export type IOwnershipInfo<T extends factory.ownershipInfo.IGoodType> = factory.ownershipInfo.IOwnershipInfo<T>;
 
 /**
  * 所有権リポジトリー
@@ -74,5 +75,62 @@ export class MongoRepository {
             .sort({ ownedFrom: 1 })
             .exec()
             .then((docs) => docs.map((doc) => <IScreeningEventReservationOwnershipInfo>doc.toObject()));
+    }
+
+    /**
+     * 所有権を検索する
+     */
+    public async search<T extends factory.ownershipInfo.IGoodType>(
+        searchConditions: factory.ownershipInfo.ISearchConditions<T>
+    ): Promise<IOwnershipInfo<T>[]> {
+        const andConditions: any[] = [
+            { 'typeOfGood.typeOf': searchConditions.goodType }
+        ];
+
+        // if (searchConditions.typeOfGood !== undefined) {
+        //     if (searchConditions.typeOfGood.eventReservationFor !== undefined) {
+        //         andConditions.push(
+        //             {
+        //                 'typeOfGood.reservationFor.typeOf': {
+        //                     $exists: true,
+        //                     $eq: searchConditions.typeOfGood.eventReservationFor.typeOf
+        //                 }
+        //             },
+        //             {
+        //                 'typeOfGood.reservationFor.identifier': {
+        //                     $exists: true,
+        //                     $eq: searchConditions.typeOfGood.eventReservationFor.identifier
+        //                 }
+        //             }
+        //         );
+        //     }
+        // }
+
+        // 誰の所有か
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (searchConditions.ownedBy !== undefined) {
+            andConditions.push({
+                'ownedBy.id': {
+                    $exists: true,
+                    $eq: searchConditions.ownedBy
+                }
+            });
+        }
+
+        // いつの時点での所有か
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (searchConditions.ownedAt instanceof Date) {
+            andConditions.push({
+                ownedFrom: { $lte: searchConditions.ownedAt },
+                ownedThrough: { $gte: searchConditions.ownedAt }
+            });
+        }
+
+        return this.ownershipInfoModel.find({ $and: andConditions })
+            .sort({ ownedFrom: 1 })
+            .exec()
+            .then((docs) => docs.map((doc) => doc.toObject()));
     }
 }

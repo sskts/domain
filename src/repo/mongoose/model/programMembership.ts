@@ -1,32 +1,44 @@
 import * as mongoose from 'mongoose';
 
-import transactionModel from './transaction';
-
 const safe = { j: true, w: 'majority', wtimeout: 10000 };
 
+const hostingOrganizationSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
+const offerSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
 /**
- * アプリケーションクライアントイベントスキーマ
+ * 会員プログラムスキーマ
  * @ignore
  */
 const schema = new mongoose.Schema(
     {
-        client: String,
-        occurredAt: Date,
-        url: String,
-        label: String,
-        category: String,
-        action: String,
-        message: String,
-        notes: String,
-        useragent: String,
-        location: [Number, Number],
-        transaction: {
+        typeOf: {
             type: String,
-            ref: transactionModel.modelName
-        }
+            required: true
+        },
+        hostingOrganization: hostingOrganizationSchema,
+        programName: {
+            type: String,
+            required: true
+        },
+        offers: [offerSchema]
     },
     {
-        collection: 'clientEvents',
+        collection: 'programMemberships',
         id: true,
         read: 'primaryPreferred',
         safe: safe,
@@ -41,7 +53,7 @@ const schema = new mongoose.Schema(
     }
 );
 
-export default mongoose.model('ClientEvent', schema).on(
+export default mongoose.model('ProgramMembership', schema).on(
     'index',
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore next */
