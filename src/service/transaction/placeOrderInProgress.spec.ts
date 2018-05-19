@@ -704,10 +704,10 @@ describe('confirm()', () => {
         sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').once().returns(eventReservations);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.confirm(
-            agent.id,
-            transaction.id
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.confirm({
+            agentId: agent.id,
+            transactionId: transaction.id
+        })({
             action: actionRepo,
             transaction: transactionRepo,
             organization: organizationRepo
@@ -929,10 +929,10 @@ describe('confirm()', () => {
         sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').once().returns(eventReservations);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.confirm(
-            agent.id,
-            transaction.id
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.confirm({
+            agentId: agent.id,
+            transactionId: transaction.id
+        })({
             action: actionRepo,
             transaction: transactionRepo,
             organization: organizationRepo
@@ -968,10 +968,10 @@ describe('confirm()', () => {
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.confirm(
-            agent.id,
-            transaction.id
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.confirm({
+            agentId: agent.id,
+            transactionId: transaction.id
+        })({
             action: actionRepo,
             transaction: transactionRepo,
             organization: organizationRepo
@@ -1036,10 +1036,10 @@ describe('confirm()', () => {
             .withExactArgs(transaction.id).resolves(authorizeActions);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.confirm(
-            agent.id,
-            transaction.id
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.confirm({
+            agentId: agent.id,
+            transactionId: transaction.id
+        })({
             action: actionRepo,
             transaction: transactionRepo,
             organization: organizationRepo
@@ -1077,10 +1077,10 @@ describe('confirm()', () => {
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').never();
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.confirm(
-            agent.id,
-            transaction.id
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.confirm({
+            agentId: agent.id,
+            transactionId: transaction.id
+        })({
             action: actionRepo,
             transaction: transactionRepo,
             organization: organizationRepo

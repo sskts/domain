@@ -237,13 +237,42 @@ export function setCustomerContact(
 }
 
 /**
+ * 注文のインセンティブインターフェース
+ */
+export interface IIncentive {
+    /**
+     * 付与ポイント数
+     */
+    amount: number;
+    /**
+     * 入金先口座番号
+     */
+    toAccountNumber: string;
+}
+
+/**
  * 取引確定
  */
 // tslint:disable-next-line:max-func-body-length
-export function confirm(
-    agentId: string,
-    transactionId: string
-) {
+export function confirm(params: {
+    /**
+     * 取引進行者ID
+     */
+    agentId: string;
+    /**
+     * 取引ID
+     */
+    transactionId: string;
+    /**
+     * 注文メールを送信するかどうか
+     */
+    sendEmailMessage?: boolean;
+    /**
+     * 注文のインセンティブ
+     * ポイント付与する場合指定
+     */
+    incentives?: IIncentive[];
+}) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
@@ -251,8 +280,8 @@ export function confirm(
         organization: OrganizationRepo;
     }) => {
         const now = moment().toDate();
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
-        if (transaction.agent.id !== agentId) {
+        const transaction = await repos.transaction.findPlaceOrderInProgressById(params.transactionId);
+        if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
@@ -265,7 +294,7 @@ export function confirm(
         }
 
         // 取引に対する全ての承認アクションをマージ
-        let authorizeActions = await repos.action.findAuthorizeByTransactionId(transactionId);
+        let authorizeActions = await repos.action.findAuthorizeByTransactionId(params.transactionId);
 
         // 万が一このプロセス中に他処理が発生してもそれらを無視するように、endDateでフィルタリング
         authorizeActions = authorizeActions.filter((a) => (a.endDate !== undefined && a.endDate < now));
@@ -354,25 +383,56 @@ export function confirm(
             });
         }
 
+        // Pecorino口座使用ユーザーであればインセンティブ付与
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO インセンティブ付与条件が「会員だったら」になっているが、雑なので調整すべし
+        let givePecorinoActions: factory.action.transfer.give.pecorino.IAttributes[] = [];
+        if (transaction.agent.memberOf !== undefined && Array.isArray(params.incentives)) {
+            givePecorinoActions = params.incentives.map((i) => {
+                return {
+                    typeOf: <factory.actionType.GiveAction>factory.actionType.GiveAction,
+                    agent: transaction.seller,
+                    recipient: transaction.agent,
+                    object: {
+                        typeOf: factory.action.transfer.give.pecorino.ObjectType.Pecorino,
+                        amount: i.amount
+                    },
+                    purpose: order,
+                    toLocation: {
+                        typeOf: factory.pecorino.account.AccountType.Account,
+                        accountNumber: i.toAccountNumber
+                    }
+                };
+            });
+        }
+
         const result: factory.transaction.placeOrder.IResult = {
             order: order,
             ownershipInfos: ownershipInfos
         };
 
-        // const emailMessage = await createEmailMessageFromTransaction({
-        //     transaction: transaction,
-        //     customerContact: customerContact,
-        //     order: order,
-        //     seller: seller
-        // });
-        // const sendEmailMessageActionAttributes = factory.action.transfer.send.message.email.createAttributes({
-        //     actionStatus: factory.actionStatusType.ActiveActionStatus,
-        //     object: emailMessage,
-        //     agent: transaction.seller,
-        //     recipient: transaction.agent,
-        //     potentialActions: {},
-        //     purpose: order
-        // });
+        // メール送信ONであれば送信アクション属性を生成
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO メール送信アクションをセットする
+        // 現時点では、フロントエンドからメール送信タスクを作成しているので不要
+        let sendEmailMessageActionAttributes: factory.action.transfer.send.message.email.IAttributes | null = null;
+        if (params.sendEmailMessage === true) {
+            const emailMessage = await createEmailMessageFromTransaction({
+                transaction: transaction,
+                customerContact: customerContact,
+                order: order,
+                seller: seller
+            });
+            sendEmailMessageActionAttributes = factory.action.transfer.send.message.email.createAttributes({
+                actionStatus: factory.actionStatusType.ActiveActionStatus,
+                object: emailMessage,
+                agent: transaction.seller,
+                recipient: transaction.agent,
+                potentialActions: {},
+                purpose: order
+            });
+        }
+
         const potentialActions: factory.transaction.placeOrder.IPotentialActions = {
             order: factory.action.trade.order.createAttributes({
                 object: order,
@@ -389,12 +449,10 @@ export function confirm(
                         agent: transaction.seller,
                         recipient: transaction.agent,
                         potentialActions: {
-                            // tslint:disable-next-line:no-suspicious-comment
-                            // TODO メール送信アクションをセットする
-                            // 現時点では、フロントエンドからメール送信タスクを作成しているので不要
-                            // sendEmailMessage: sendEmailMessageActionAttributes
+                            sendEmailMessage: (sendEmailMessageActionAttributes !== null) ? sendEmailMessageActionAttributes : undefined
                         }
-                    })
+                    }),
+                    givePecorino: givePecorinoActions
                 }
             })
         };
@@ -402,7 +460,7 @@ export function confirm(
         // ステータス変更
         debug('updating transaction...');
         await repos.transaction.confirmPlaceOrder(
-            transactionId,
+            params.transactionId,
             authorizeActions,
             result,
             potentialActions
