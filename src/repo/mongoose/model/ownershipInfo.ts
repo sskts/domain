@@ -86,6 +86,22 @@ schema.index(
     }
 );
 
+// 所有権検索時に使用
+schema.index(
+    {
+        'typeOfGood.typeOf': 1,
+        'ownedBy.id': 1,
+        ownedFrom: 1,
+        ownedThrough: 1
+    },
+    {
+        name: 'searchByOwner',
+        partialFilterExpression: {
+            'ownedBy.id': { $exists: true }
+        }
+    }
+);
+
 // トークンで所有権検索時に使用
 schema.index(
     {

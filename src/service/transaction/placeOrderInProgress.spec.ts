@@ -1321,7 +1321,8 @@ describe('createOrderFromTransaction()', () => {
             memberOf: {
                 typeOf: <sskts.factory.programMembership.ProgramMembershipType>'ProgramMembership',
                 programName: 'programName',
-                membershipNumber: 'membershipNumber'
+                membershipNumber: 'membershipNumber',
+                award: []
             }
         };
         const seller = {
@@ -1521,7 +1522,8 @@ describe('createOrderFromTransaction()', () => {
             memberOf: {
                 typeOf: <sskts.factory.programMembership.ProgramMembershipType>'ProgramMembership',
                 programName: 'programName',
-                membershipNumber: 'membershipNumber'
+                membershipNumber: 'membershipNumber',
+                award: []
             }
         };
         const seller = {
@@ -1614,7 +1616,8 @@ describe('createOrderFromTransaction()', () => {
             memberOf: {
                 typeOf: <sskts.factory.programMembership.ProgramMembershipType>'ProgramMembership',
                 programName: 'programName',
-                membershipNumber: 'membershipNumber'
+                membershipNumber: 'membershipNumber',
+                award: []
             }
         };
         const seller = {
@@ -1681,7 +1684,8 @@ describe('createOrderFromTransaction()', () => {
             memberOf: {
                 typeOf: <sskts.factory.programMembership.ProgramMembershipType>'ProgramMembership',
                 programName: 'programName',
-                membershipNumber: 'membershipNumber'
+                membershipNumber: 'membershipNumber',
+                award: []
             }
         };
         const seller = {
@@ -1760,7 +1764,8 @@ describe('createOrderFromTransaction()', () => {
             memberOf: {
                 typeOf: <sskts.factory.programMembership.ProgramMembershipType>'ProgramMembership',
                 programName: 'programName',
-                membershipNumber: 'membershipNumber'
+                membershipNumber: 'membershipNumber',
+                award: []
             }
         };
         const seller = {

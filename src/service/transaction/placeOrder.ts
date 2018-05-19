@@ -267,7 +267,7 @@ export interface ITransactionReport {
         email: string;
         telephone: string;
         memberOf?: {
-            membershipNumber: string;
+            membershipNumber?: string;
         };
     };
     eventName: string;

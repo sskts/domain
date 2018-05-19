@@ -92,7 +92,8 @@ export function start(params: IStartParams):
             agent.memberOf = {
                 typeOf: <factory.programMembership.ProgramMembershipType>'ProgramMembership',
                 membershipNumber: params.agentId,
-                programName: 'Amazon Cognito'
+                programName: 'Amazon Cognito',
+                award: []
             };
         }
 

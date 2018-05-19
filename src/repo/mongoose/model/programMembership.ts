@@ -35,6 +35,7 @@ const schema = new mongoose.Schema(
             type: String,
             required: true
         },
+        award: [String],
         offers: [offerSchema]
     },
     {

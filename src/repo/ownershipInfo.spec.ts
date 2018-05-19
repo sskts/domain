@@ -1,10 +1,9 @@
 // tslint:disable:no-implicit-dependencies
-
 /**
  * ownershipInfo repository test
  * @ignore
  */
-
+import * as factory from '@motionpicture/sskts-factory';
 import { } from 'mocha';
 import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
@@ -42,13 +41,14 @@ describe('OwnershipInfoRepo.save()', () => {
     });
 });
 
-describe('OwnershipInfoRepo.searchScreeningEventReservation()', () => {
+describe('所有権検索', () => {
     afterEach(() => {
         sandbox.restore();
     });
 
     it('MongoDBの状態が正常であれば、配列を返すはず', async () => {
         const searchConditions = {
+            goodType: factory.reservationType.EventReservation,
             ownedBy: '',
             ownedAt: new Date()
         };
@@ -58,7 +58,7 @@ describe('OwnershipInfoRepo.searchScreeningEventReservation()', () => {
         sandbox.mock(repository.ownershipInfoModel).expects('find').once()
             .chain('exec').resolves(docs);
 
-        const result = await repository.searchScreeningEventReservation(searchConditions);
+        const result = await repository.search(searchConditions);
         assert(Array.isArray(result));
         assert.equal(result.length, docs.length);
         sandbox.verify();
