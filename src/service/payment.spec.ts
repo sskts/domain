@@ -118,7 +118,6 @@ describe('payPecorino()', () => {
             }
         };
         const action = { id: 'actionId' };
-        const pecorinoDepositTransaction = { typeOf: sskts.factory.pecorino.transactionType.Deposit, id: 'transactionId' };
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
@@ -137,8 +136,6 @@ describe('payPecorino()', () => {
             .withArgs(existingTransaction.potentialActions.order.potentialActions.payPecorino.typeOf, action.id).resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').never();
         sandbox.mock(sskts.pecorinoapi.service.transaction.Pay.prototype).expects('confirm').once().resolves();
-        sandbox.mock(sskts.pecorinoapi.service.transaction.Deposit.prototype).expects('start').once().resolves(pecorinoDepositTransaction);
-        sandbox.mock(sskts.pecorinoapi.service.transaction.Deposit.prototype).expects('confirm').once().resolves();
 
         const result = await sskts.service.payment.payPecorino(
             existingTransaction.id

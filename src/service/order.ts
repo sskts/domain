@@ -73,6 +73,7 @@ export function createFromTransaction(transactionId: string) {
  * @param orderActionAttributes 注文アクション属性
  */
 function onCreate(transactionId: string, orderActionAttributes: factory.action.trade.order.IAttributes) {
+    // tslint:disable-next-line:max-func-body-length
     return async (repos: { task: TaskRepo }) => {
         // potentialActionsのためのタスクを生成
         const orderPotentialActions = orderActionAttributes.potentialActions;
@@ -147,6 +148,24 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     data: {
                         transactionId: transactionId
                     }
+                }));
+            }
+
+            // Pecorinoポイント付与
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(orderPotentialActions.givePecorino)) {
+                taskAttributes.push(...orderPotentialActions.givePecorino.map((a): factory.task.givePecorino.IAttributes => {
+                    return {
+                        name: factory.taskName.GivePecorino,
+                        status: factory.taskStatus.Ready,
+                        runsAt: now, // なるはやで実行
+                        remainingNumberOfTries: 10,
+                        lastTriedAt: null,
+                        numberOfTried: 0,
+                        executionResults: [],
+                        data: a
+                    };
                 }));
             }
         }

@@ -248,6 +248,10 @@ export interface IIncentive {
      * 入金先口座番号
      */
     toAccountNumber: string;
+    /**
+     * PecorinoAPIエンドポイント
+     */
+    pecorinoEndpoint: string;
 }
 
 /**
@@ -400,7 +404,8 @@ export function confirm(params: {
                     purpose: order,
                     toLocation: {
                         typeOf: factory.pecorino.account.AccountType.Account,
-                        accountNumber: i.toAccountNumber
+                        accountNumber: i.toAccountNumber,
+                        pecorinoEndpoint: i.pecorinoEndpoint
                     }
                 };
             });

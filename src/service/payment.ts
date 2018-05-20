@@ -86,30 +86,6 @@ export function payPecorino(transactionId: string) {
                             `transaction type '${(<any>pecorinoTransaction).typeOf}' not implemented.`
                         );
                 }
-
-                // Pecorino決済の場合キャッシュバック
-                // tslint:disable-next-line:no-suspicious-comment
-                // TODO potentialActionとして定義する
-                const CACHBACK = 1;
-                const customerContact = <factory.person.IContact>transaction.object.customerContact;
-                const depositTransactionService = new pecorinoapi.service.transaction.Deposit({
-                    endpoint: authorizeAction.result.pecorinoEndpoint,
-                    auth: repos.pecorinoAuthClient
-                });
-                const depositTransaction = await depositTransactionService.start({
-                    toAccountNumber: pecorinoTransaction.object.fromAccountNumber,
-                    expires: moment().add(1, 'minutes').toDate(),
-                    agent: transaction.seller,
-                    recipient: {
-                        typeOf: transaction.agent.typeOf,
-                        id: transaction.agent.id,
-                        name: `${customerContact.givenName} ${customerContact.familyName}`,
-                        url: transaction.agent.url
-                    },
-                    amount: CACHBACK,
-                    notes: 'シネマサンシャイン座席予約インセンティブ'
-                });
-                await depositTransactionService.confirm({ transactionId: depositTransaction.id });
             } catch (error) {
                 // actionにエラー結果を追加
                 try {
@@ -457,5 +433,62 @@ export function useMvtk(transactionId: string) {
             const actionResult: factory.action.consume.use.mvtk.IResult = {};
             await repos.action.complete(useActionAttributes.typeOf, action.id, actionResult);
         }
+    };
+}
+
+/**
+ * Pecorino入金実行
+ */
+export function givePecorino(params: factory.task.givePecorino.IData) {
+    // tslint:disable-next-line:max-func-body-length
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+        pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        // アクション開始
+        const action = await repos.action.start<factory.action.transfer.give.pecorino.IAction>(params);
+
+        try {
+            // 入金取引
+            const depositService = new pecorinoapi.service.transaction.Deposit({
+                endpoint: params.toLocation.pecorinoEndpoint,
+                auth: repos.pecorinoAuthClient
+            });
+            const transaction = await depositService.start({
+                toAccountNumber: params.toLocation.accountNumber,
+                // tslint:disable-next-line:no-magic-numbers
+                expires: moment().add(5, 'minutes').toDate(),
+                agent: {
+                    ...params.agent,
+                    name: params.purpose.seller.name,
+                    url: params.purpose.seller.url
+                },
+                recipient: {
+                    ...params.recipient,
+                    name: `${params.purpose.customer.familyName} ${params.purpose.customer.givenName}`,
+                    url: params.purpose.customer.url
+                },
+                amount: params.object.amount,
+                notes: 'シネマサンシャインインセンティブ'
+            });
+            await depositService.confirm({ transactionId: transaction.id });
+        } catch (error) {
+            // actionにエラー結果を追加
+            try {
+                // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                const actionError = { ...error, ...{ message: error.message, name: error.name } };
+                await repos.action.giveUp(params.typeOf, action.id, actionError);
+            } catch (__) {
+                // 失敗したら仕方ない
+            }
+
+            throw error;
+        }
+
+        // アクション完了
+        debug('ending action...');
+        const actionResult: factory.action.trade.pay.IResult = {};
+        await repos.action.complete(params.typeOf, action.id, actionResult);
     };
 }
