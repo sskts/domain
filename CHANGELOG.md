@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Pecorino決済を、口座支払取引と口座転送取引の2つに対応。
 - 脆弱性のあるパッケージをアップデート。
 - 注文取引の潜在アクションにPecorino付与アクションを追加。
+- 注文取引を、ポイント鑑賞券とPecorino決済で成立させることができるように調整。
 
 ### Deprecated
 

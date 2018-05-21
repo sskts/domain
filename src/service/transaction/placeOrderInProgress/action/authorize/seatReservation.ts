@@ -77,8 +77,95 @@ async function validateOffers(
     // 供給情報ごとに確認
     // tslint:disable-next-line:max-func-body-length
     await Promise.all(offers.map(async (offer, offerIndex) => {
-        // ムビチケの場合
-        if (offer.ticketInfo.mvtkAppPrice > 0) {
+        // ポイント消費鑑賞券の場合
+        if (typeof offer.ticketInfo.usePoint === 'number' && offer.ticketInfo.usePoint > 0) {
+            // ムビチケ情報をCOA券種に変換
+            let availableSalesTicket: COA.services.master.ITicketResult | undefined;
+            try {
+                debug('finding mvtkTicket...', offer.ticketInfo.ticketCode, {
+                    theaterCode: individualScreeningEvent.coaInfo.theaterCode,
+                    kbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
+                    kbnMaeuriken: offer.ticketInfo.mvtkKbnMaeuriken,
+                    kbnKensyu: offer.ticketInfo.mvtkKbnKensyu,
+                    salesPrice: offer.ticketInfo.mvtkSalesPrice,
+                    appPrice: offer.ticketInfo.mvtkAppPrice,
+                    kbnEisyahousiki: offer.ticketInfo.kbnEisyahousiki,
+                    titleCode: individualScreeningEvent.coaInfo.titleCode,
+                    titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum
+                });
+                const availableTickets = await COA.services.master.ticket({
+                    theaterCode: individualScreeningEvent.coaInfo.theaterCode
+                });
+                availableSalesTicket = availableTickets.find((t) => t.ticketCode === offer.ticketInfo.ticketCode);
+                if (availableSalesTicket === undefined) {
+                    throw new factory.errors.NotFound(
+                        `offers.${offerIndex}`,
+                        `ticketInfo of ticketCode ${offer.ticketInfo.ticketCode} is invalid.`);
+                }
+            } catch (error) {
+                // COAサービスエラーの場合ハンドリング
+                if (error.name === 'COAServiceError') {
+                    // COAはクライアントエラーかサーバーエラーかに関わらずステータスコード200 or 500を返却する。
+                    // 500未満であればクライアントエラーとみなす
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore else */
+                    if (error.code < INTERNAL_SERVER_ERROR) {
+                        throw new factory.errors.NotFound(
+                            `offers.${offerIndex}`,
+                            `ticketCode ${offer.ticketInfo.ticketCode} not found. ${error.message}`
+                        );
+                    }
+                }
+
+                throw error;
+            }
+
+            const offerWithDetails: factory.offer.seatReservation.IOfferWithDetails = {
+                typeOf: 'Offer',
+                price: 0, // JPYとしては0円
+                priceCurrency: factory.priceCurrency.JPY,
+                seatNumber: offer.seatNumber,
+                seatSection: offer.seatSection,
+                ticketInfo: {
+                    ticketCode: availableSalesTicket.ticketCode,
+                    ticketName: availableSalesTicket.ticketName,
+                    ticketNameEng: availableSalesTicket.ticketNameEng,
+                    ticketNameKana: availableSalesTicket.ticketNameKana,
+                    // tslint:disable-next-line:no-suspicious-comment
+                    stdPrice: 0, // TODO これでいい？
+                    // tslint:disable-next-line:no-suspicious-comment
+                    addPrice: 0, // TODO これでいい？
+                    // tslint:disable-next-line:no-suspicious-comment
+                    disPrice: 0, // TODO これでいい？
+                    // tslint:disable-next-line:no-suspicious-comment
+                    salePrice: 0, // TODO これでいい？
+                    addGlasses: 0,
+                    mvtkAppPrice: 0,
+                    ticketCount: 1,
+                    seatNum: offer.seatNumber,
+                    kbnEisyahousiki: '00', // ムビチケを使用しない場合の初期値をセット
+                    mvtkNum: '', // ムビチケを使用しない場合の初期値をセット
+                    mvtkKbnDenshiken: '00', // ムビチケを使用しない場合の初期値をセット
+                    mvtkKbnMaeuriken: '00', // ムビチケを使用しない場合の初期値をセット
+                    mvtkKbnKensyu: '00', // ムビチケを使用しない場合の初期値をセット
+                    mvtkSalesPrice: 0, // ムビチケを使用しない場合の初期値をセット
+                    usePoint: availableSalesTicket.usePoint
+                }
+            };
+
+            // メガネ代込みの要求の場合は、販売単価調整&メガネ代をセット
+            // 販売券種抽出に対して無料鑑賞券を出力する改修がCOAで未対応なので、現時点ではこのケースは受け付けられない
+            // const includeGlasses = (offer.ticketInfo.addGlasses > 0);
+            // if (includeGlasses) {
+            //     offerWithDetails.ticketInfo.ticketName = `${availableSalesTicket.ticketName}メガネ込み`;
+            //     offerWithDetails.price += availableSalesTicket.addGlasses;
+            //     offerWithDetails.ticketInfo.salePrice += availableSalesTicket.addGlasses;
+            //     offerWithDetails.ticketInfo.addGlasses = availableSalesTicket.addGlasses;
+            // }
+
+            offersWithDetails.push(offerWithDetails);
+        } else if (offer.ticketInfo.mvtkAppPrice > 0) {
+            // ムビチケの場合
             // ムビチケ情報をCOA券種に変換
             let availableSalesTicket: COA.services.master.IMvtkTicketcodeResult;
             try {

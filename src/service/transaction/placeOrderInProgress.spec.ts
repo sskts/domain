@@ -515,23 +515,7 @@ describe('confirm()', () => {
                     execTranResult: {
                         orderId: 'orderId'
                     },
-                    price: 1000
-                },
-                endDate: new Date(),
-                purpose: {}
-            }
-        ];
-        const pecorinoAuthorizeActions = [
-            {
-                id: 'actionId',
-                actionStatus: 'CompletedActionStatus',
-                agent: transaction.agent,
-                object: {
-                    typeOf: 'Pecorino'
-                },
-                result: {
-                    price: 234,
-                    pecorinoTransaction: { id: 'pecorinoTransactionId' }
+                    price: 1234
                 },
                 endDate: new Date(),
                 purpose: {}
@@ -544,6 +528,7 @@ describe('confirm()', () => {
                 agent: transaction.seller,
                 object: {
                     typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation,
+                    offers: [],
                     individualScreeningEvent: {
                         superEvent: {
                             location: {
@@ -671,11 +656,6 @@ describe('confirm()', () => {
                     name: 'クレジットカード',
                     paymentMethod: sskts.factory.paymentMethodType.CreditCard,
                     paymentMethodId: creditCardAuthorizeActions[0].result.execTranResult.orderId
-                },
-                {
-                    name: 'Pecorino',
-                    paymentMethod: 'Pecorino',
-                    paymentMethodId: pecorinoAuthorizeActions[0].result.pecorinoTransaction.id
                 }
             ],
             discounts: [],
@@ -698,8 +678,8 @@ describe('confirm()', () => {
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .withExactArgs(transaction.id).resolves([
                 ...creditCardAuthorizeActions,
-                ...seatReservationAuthorizeActions,
-                ...pecorinoAuthorizeActions
+                ...seatReservationAuthorizeActions
+                // ...pecorinoAuthorizeActions
             ]);
         sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').once().returns(eventReservations);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();
@@ -779,6 +759,7 @@ describe('confirm()', () => {
                 agent: transaction.seller,
                 object: {
                     typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation,
+                    offers: [],
                     individualScreeningEvent: {
                         superEvent: {
                             location: {
@@ -1004,24 +985,30 @@ describe('confirm()', () => {
                 id: 'actionId1',
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.seller,
-                object: {},
+                object: {
+                    typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation,
+                    offers: []
+                },
                 result: {
                     updTmpReserveSeatArgs: {},
                     price: 1234
                 },
                 endDate: new Date(),
-                purpose: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation }
+                purpose: { typeOf: sskts.factory.transactionType.PlaceOrder }
             },
             {
                 id: 'actionId2',
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.agent,
-                object: {},
+                object: {
+                    typeOf: sskts.factory.action.authorize.creditCard.ObjectType.CreditCard,
+                    offers: []
+                },
                 result: {
                     price: 1235
                 },
                 endDate: new Date(),
-                purpose: { typeOf: sskts.factory.action.authorize.creditCard.ObjectType.CreditCard }
+                purpose: { typeOf: sskts.factory.transactionType.PlaceOrder }
             }
         ];
 

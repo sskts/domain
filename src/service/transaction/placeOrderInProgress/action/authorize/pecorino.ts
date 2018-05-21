@@ -33,7 +33,7 @@ export function create(params: {
     /**
      * 金額
      */
-    price: number;
+    amount: number;
     /**
      * Pecorino口座ID
      */
@@ -72,7 +72,7 @@ export function create(params: {
             object: {
                 typeOf: factory.action.authorize.pecorino.ObjectType.Pecorino,
                 transactionId: params.transactionId,
-                price: params.price
+                amount: params.amount
             },
             agent: transaction.agent,
             recipient: transaction.seller,
@@ -91,7 +91,7 @@ export function create(params: {
             if (repos.payTransactionService !== undefined) {
                 pecorinoEndpoint = repos.payTransactionService.options.endpoint;
 
-                debug('starting pecorino pay transaction...', params.price);
+                debug('starting pecorino pay transaction...', params.amount);
                 pecorinoTransaction = await repos.payTransactionService.start({
                     // 最大1ヵ月のオーソリ
                     expires: moment().add(1, 'month').toDate(),
@@ -104,7 +104,7 @@ export function create(params: {
                         name: transaction.seller.name,
                         url: transaction.seller.url
                     },
-                    amount: params.price,
+                    amount: params.amount,
                     notes: (params.notes !== undefined) ? params.notes : 'シネマサンシャイン 注文取引',
                     fromAccountNumber: params.fromAccountNumber
                 });
@@ -128,7 +128,7 @@ export function create(params: {
                     throw new factory.errors.Argument('transactionId', 'Pecorino payment not accepted.');
                 }
 
-                debug('starting pecorino pay transaction...', params.price);
+                debug('starting pecorino pay transaction...', params.amount);
                 pecorinoTransaction = await repos.transferTransactionService.start({
                     // 最大1ヵ月のオーソリ
                     expires: moment().add(1, 'month').toDate(),
@@ -141,7 +141,7 @@ export function create(params: {
                         name: transaction.seller.name,
                         url: transaction.seller.url
                     },
-                    amount: params.price,
+                    amount: params.amount,
                     notes: (params.notes !== undefined) ? params.notes : 'シネマサンシャイン 注文取引',
                     fromAccountNumber: params.fromAccountNumber,
                     toAccountNumber: pecorinoPaymentAccepted.accountNumber
@@ -186,7 +186,8 @@ export function create(params: {
         // アクションを完了
         debug('ending authorize action...');
         const actionResult: factory.action.authorize.pecorino.IResult = {
-            price: params.price,
+            price: 0, // JPYとして0円
+            amount: params.amount,
             pecorinoTransaction: pecorinoTransaction,
             pecorinoEndpoint: pecorinoEndpoint
         };

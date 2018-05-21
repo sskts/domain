@@ -355,15 +355,23 @@ export function confirm(params: {
             });
         }
 
-        // クレジットカード支払いアクション
+        // Pecorino支払いアクション
         let payPecorinoAction: factory.action.trade.pay.IAttributes | null = null;
-        const pecorinoPayment = order.paymentMethods.find((m) => m.paymentMethod === 'Pecorino');
-        if (pecorinoPayment !== undefined) {
+        const pecorinotAuthorizeAction = <factory.action.authorize.pecorino.IAction>transaction.object.authorizeActions
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .find((a) => a.object.typeOf === factory.action.authorize.pecorino.ObjectType.Pecorino);
+        if (pecorinotAuthorizeAction !== undefined) {
+            const pecorinoTransaction = (<factory.action.authorize.pecorino.IResult>pecorinotAuthorizeAction.result).pecorinoTransaction;
             payPecorinoAction = factory.action.trade.pay.createAttributes({
                 object: {
-                    paymentMethod: pecorinoPayment,
-                    price: order.price,
-                    priceCurrency: order.priceCurrency
+                    paymentMethod: {
+                        name: factory.paymentMethodType.Pecorino,
+                        paymentMethod: factory.paymentMethodType.Pecorino,
+                        paymentMethodId: pecorinoTransaction.id
+                    },
+                    price: pecorinoTransaction.object.amount,
+                    // tslint:disable-next-line:no-suspicious-comment
+                    priceCurrency: <any>'Pecorino' // TODO ポイント通貨名を調整する
                 },
                 agent: transaction.agent,
                 purpose: order
@@ -482,7 +490,8 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
     type IAuthorizeActionResult =
         factory.action.authorize.creditCard.IResult |
         factory.action.authorize.mvtk.IResult |
-        factory.action.authorize.seatReservation.IResult;
+        factory.action.authorize.seatReservation.IResult |
+        factory.action.authorize.pecorino.IResult;
 
     // クレジットカードオーソリをひとつに限定
     const creditCardAuthorizeActions = transaction.object.authorizeActions
@@ -511,7 +520,37 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
         .reduce((a, b) => a + (<IAuthorizeActionResult>b.result).price, 0);
     debug('priceByAgent priceBySeller:', priceByAgent, priceBySeller);
 
-    if (priceByAgent <= 0 || priceByAgent !== priceBySeller) {
+    // ポイント鑑賞券によって必要なポイントがどのくらいあるか算出
+    const seatReservationAuthorizeActions = <factory.action.authorize.seatReservation.IAction[]>transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === factory.action.authorize.seatReservation.ObjectType.SeatReservation);
+    if (seatReservationAuthorizeActions.length > 1) {
+        throw new factory.errors.Argument('transactionId', 'The number of seat reservation authorize actions must be one.');
+    }
+    const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
+    const seatReservationOffersWithPecorino = seatReservationAuthorizeAction.object.offers
+        .filter((o) => typeof o.ticketInfo.usePoint === 'number' && o.ticketInfo.usePoint > 0);
+    const requiredPoint = seatReservationOffersWithPecorino.reduce(
+        (a, b) => a + (<number>b.ticketInfo.usePoint),
+        0
+    );
+    // 必要ポイントがある場合、Pecorinoのオーソリ金額と比較
+    if (requiredPoint > 0) {
+        const pecorinoAuthorizeActions = <factory.action.authorize.pecorino.IAction[]>transaction.object.authorizeActions
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((a) => a.object.typeOf === factory.action.authorize.pecorino.ObjectType.Pecorino);
+        const authorizedPecorinoAmount = pecorinoAuthorizeActions.reduce((a, b) => a + b.object.amount, 0);
+        if (requiredPoint !== authorizedPecorinoAmount) {
+            throw new factory.errors.Argument('transactionId', 'Required pecorino amount not satisfied.');
+        }
+    }
+
+    // JPYオーソリ金額もPecorinoオーソリポイントも0より大きくなければ取引成立不可
+    if (priceByAgent <= 0 && requiredPoint <= 0) {
+        throw new factory.errors.Argument('transactionId', 'Price or point must be over 0.');
+    }
+
+    if (priceByAgent !== priceBySeller) {
         throw new factory.errors.Argument('transactionId', 'Transaction cannot be confirmed because prices are not matched.');
     }
 }
