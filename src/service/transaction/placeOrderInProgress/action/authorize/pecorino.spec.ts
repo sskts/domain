@@ -37,7 +37,7 @@ describe('action.authorize.pecorino.create()', () => {
             agent: agent,
             seller: seller
         };
-        const price = 1234;
+        const amount = 1234;
         const action = {
             id: 'actionId',
             agent: agent,
@@ -57,7 +57,7 @@ describe('action.authorize.pecorino.create()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create({
             transactionId: transaction.id,
-            price: price,
+            amount: amount,
             fromAccountNumber: 'fromAccountNumber',
             notes: 'notes'
         })({
@@ -131,7 +131,7 @@ describe('action.authorize.pecorino.create()', () => {
             agent: agent,
             seller: seller
         };
-        const price = 1234;
+        const amount = 1234;
         const action = {
             typeOf: sskts.factory.actionType.AuthorizeAction,
             id: 'actionId',
@@ -154,7 +154,7 @@ describe('action.authorize.pecorino.create()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create({
             transactionId: transaction.id,
-            price: price,
+            amount: amount,
             fromAccountNumber: 'fromAccountNumber',
             notes: 'notes'
         })({
