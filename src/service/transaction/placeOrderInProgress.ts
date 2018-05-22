@@ -347,8 +347,7 @@ export function confirm(params: {
             payCreditCardAction = {
                 typeOf: factory.actionType.PayAction,
                 object: {
-                    paymentMethodType: factory.paymentMethodType.CreditCard,
-                    paymentMethod: creditCardPayment,
+                    paymentMethod: <factory.order.IPaymentMethod<factory.paymentMethodType.CreditCard>>creditCardPayment,
                     price: order.price,
                     priceCurrency: order.priceCurrency
                 },
@@ -366,7 +365,11 @@ export function confirm(params: {
                 return {
                     typeOf: <factory.actionType.PayAction>factory.actionType.PayAction,
                     object: {
-                        paymentMethodType: <factory.paymentMethodType.Pecorino>factory.paymentMethodType.Pecorino,
+                        paymentMethod: {
+                            name: 'Pecorino',
+                            paymentMethod: <factory.paymentMethodType.Pecorino>factory.paymentMethodType.Pecorino,
+                            paymentMethodId: a.id
+                        },
                         pecorinoTransaction: (<factory.action.authorize.pecorino.IResult>a.result).pecorinoTransaction,
                         pecorinoEndpoint: (<factory.action.authorize.pecorino.IResult>a.result).pecorinoEndpoint
                     },
@@ -602,7 +605,7 @@ export function createOrderFromTransaction(params: {
             });
         });
 
-    const paymentMethods: factory.order.IPaymentMethod[] = [];
+    const paymentMethods: factory.order.IPaymentMethod<factory.paymentMethodType>[] = [];
 
     // クレジットカード決済があれば決済方法に追加
     params.transaction.object.authorizeActions

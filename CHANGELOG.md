@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 会員プログラムリポジトリーを追加。
 - Pecorino入金タスクを実装。
 - Pecorino承認アクション取消処理を実装。
+- 取引リポジトリーに中止メソッドを追加。
 
 ### Changed
 

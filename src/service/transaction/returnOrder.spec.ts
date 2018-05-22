@@ -465,7 +465,9 @@ describe('service.transaction.returnOrder.confirm()', () => {
                 typeOf: sskts.factory.actionType.PayAction,
                 actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
                 object: {
-                    paymentMethodType: sskts.factory.paymentMethodType.CreditCard
+                    paymentMethod: {
+                        paymentMethod: sskts.factory.paymentMethodType.CreditCard
+                    }
                 }
             }
         ];
