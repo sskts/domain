@@ -196,18 +196,51 @@ export function create(params: {
     };
 }
 
-// tslint:disable-next-line:no-single-line-block-comment
-/* istanbul ignore next */
-export function cancel(
-    agentId: string,
-    transactionId: string,
-    actionId: string
-) {
-    return async (__: {
+/**
+ * Pecorino承認を取り消す
+ */
+export function cancel(params: {
+    /**
+     * 取引進行者ID
+     */
+    agentId: string;
+    /**
+     * 取引ID
+     */
+    transactionId: string;
+    /**
+     * 承認アクションID
+     */
+    actionId: string;
+}) {
+    return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
+        payTransactionService?: pecorinoapi.service.transaction.Pay;
+        transferTransactionService?: pecorinoapi.service.transaction.Transfer;
     }) => {
-        debug('canceling pecorino authorize action...', agentId, transactionId, actionId);
-        debug('implementing...');
+        debug('canceling pecorino authorize action...');
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+
+        if (transaction.agent.id !== params.agentId) {
+            throw new factory.errors.Forbidden('A specified transaction is not yours.');
+        }
+
+        // まずアクションをキャンセル
+        const action = await repos.action.cancel(factory.actionType.AuthorizeAction, params.actionId);
+        const actionResult = <factory.action.authorize.pecorino.IResult>action.result;
+
+        // Pecorinoで取消中止実行
+        if (repos.payTransactionService !== undefined) {
+            await repos.payTransactionService.cancel({
+                transactionId: actionResult.pecorinoTransaction.id
+            });
+        } else if (repos.transferTransactionService !== undefined) {
+            await repos.transferTransactionService.cancel({
+                transactionId: actionResult.pecorinoTransaction.id
+            });
+        } else {
+            throw new factory.errors.Argument('resos', 'payTransactionService or transferTransactionService required.');
+        }
     };
 }
