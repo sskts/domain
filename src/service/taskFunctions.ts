@@ -116,10 +116,8 @@ export function payPecorino(
         }
 
         const actionRepo = new ActionRepo(settings.connection);
-        const transactionRepo = new TransactionRepo(settings.connection);
-        await PaymentService.payPecorino(data.transactionId)({
+        await PaymentService.payPecorino(data)({
             action: actionRepo,
-            transaction: transactionRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient
         });
     };

@@ -53,7 +53,10 @@ describe('service.transaction.returnOrder.start()', () => {
         const actionsOnOrder = [
             {
                 typeOf: sskts.factory.actionType.PayAction,
-                actionStatus: sskts.factory.actionStatusType.CompletedActionStatus
+                actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+                object: {
+                    paymentMethodType: sskts.factory.paymentMethodType.CreditCard
+                }
             }
         ];
 
@@ -424,7 +427,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
         sandbox.restore();
     });
 
-    it('条件がそろっていれば取引を開始できるはず', async () => {
+    it('条件がそろっていれば取引を確定できるはず', async () => {
         const agent = { id: 'agentId' };
         const seller = { id: 'sellerId' };
         const event = { startDate: new Date() };
@@ -460,7 +463,10 @@ describe('service.transaction.returnOrder.confirm()', () => {
         const actionsOnOrder = [
             {
                 typeOf: sskts.factory.actionType.PayAction,
-                actionStatus: sskts.factory.actionStatusType.CompletedActionStatus
+                actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+                object: {
+                    paymentMethodType: sskts.factory.paymentMethodType.CreditCard
+                }
             }
         ];
 

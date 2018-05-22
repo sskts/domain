@@ -291,9 +291,10 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
         if (returnActionAttributes.potentialActions !== undefined) {
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (returnActionAttributes.potentialActions.refund !== undefined) {
+            if (returnActionAttributes.potentialActions.refundCreditCard !== undefined) {
                 // 返金タスク作成
-                taskAttributes.push(factory.task.refundCreditCard.createAttributes({
+                const task: factory.task.refundCreditCard.IAttributes = {
+                    name: factory.taskName.RefundCreditCard,
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -303,7 +304,8 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
                     data: {
                         transactionId: transactionId
                     }
-                }));
+                };
+                taskAttributes.push(task);
             }
         }
 

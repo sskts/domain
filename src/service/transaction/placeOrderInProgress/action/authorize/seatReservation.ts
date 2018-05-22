@@ -240,7 +240,8 @@ async function validateOffers(
                     mvtkKbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
                     mvtkKbnMaeuriken: offer.ticketInfo.mvtkKbnMaeuriken,
                     mvtkKbnKensyu: offer.ticketInfo.mvtkKbnKensyu,
-                    mvtkSalesPrice: offer.ticketInfo.mvtkSalesPrice
+                    mvtkSalesPrice: offer.ticketInfo.mvtkSalesPrice,
+                    usePoint: 0
                 }
             };
 
@@ -307,7 +308,8 @@ async function validateOffers(
                     mvtkKbnDenshiken: '00', // ムビチケを使用しない場合の初期値をセット
                     mvtkKbnMaeuriken: '00', // ムビチケを使用しない場合の初期値をセット
                     mvtkKbnKensyu: '00', // ムビチケを使用しない場合の初期値をセット
-                    mvtkSalesPrice: 0 // ムビチケを使用しない場合の初期値をセット
+                    mvtkSalesPrice: 0, // ムビチケを使用しない場合の初期値をセット
+                    usePoint: 0
                 }
             };
 
@@ -332,7 +334,10 @@ async function validateOffers(
  * @param offers 供給情報
  */
 function offers2resultPrice(offers: factory.offer.seatReservation.IOfferWithDetails[]) {
-    return offers.reduce((a, b) => a + b.price, 0);
+    const price = offers.reduce((a, b) => a + b.price, 0);
+    const pecorinoAmount = offers.reduce((a, b) => a + b.ticketInfo.usePoint, 0);
+
+    return { price, pecorinoAmount };
 }
 
 /**
@@ -431,8 +436,11 @@ export function create(
 
         // アクションを完了
         debug('ending authorize action...');
+        const { price, pecorinoAmount } = offers2resultPrice(offersWithDetails);
         const result: factory.action.authorize.seatReservation.IResult = {
-            price: offers2resultPrice(offersWithDetails),
+            price: price,
+            priceCurrency: factory.priceCurrency.JPY,
+            pecorinoAmount: pecorinoAmount,
             updTmpReserveSeatArgs: updTmpReserveSeatArgs,
             updTmpReserveSeatResult: updTmpReserveSeatResult
         };
@@ -537,7 +545,9 @@ export function changeOffers(
 
         // 供給情報と価格を変更してからDB更新
         authorizeAction.object.offers = offersWithDetails;
-        (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).price = offers2resultPrice(offersWithDetails);
+        const { price, pecorinoAmount } = offers2resultPrice(offersWithDetails);
+        (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).price = price;
+        (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).pecorinoAmount = pecorinoAmount;
 
         // 座席予約承認アクションの供給情報を変更する
         return repos.action.actionModel.findOneAndUpdate(

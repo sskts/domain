@@ -223,14 +223,11 @@ describe('TaskFunctionsService.payPecorino()', () => {
     });
 
     it('決済サービスが正常であればエラーにならないはず', async () => {
-        const data = {
-            transactionId: 'transactionId'
-        };
+        const data = {};
 
         const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
 
-        sandbox.mock(sskts.service.payment).expects('payPecorino').once()
-            .withArgs(data.transactionId).returns(async () => Promise.resolve());
+        sandbox.mock(sskts.service.payment).expects('payPecorino').once().returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.payPecorino(<any>data)({
             connection: sskts.mongoose.connection,

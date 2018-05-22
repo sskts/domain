@@ -89,14 +89,11 @@ export function start(params: {
         }
 
         const actionsOnOrder = await repos.action.findByOrderNumber(order.orderNumber);
-        const payAction = <factory.action.trade.pay.IAction | undefined>actionsOnOrder.find(
-            (a) => {
-                return a.typeOf === factory.actionType.PayAction &&
-                    a.actionStatus === factory.actionStatusType.CompletedActionStatus;
-            }
-        );
+        const payActions = <factory.action.trade.pay.IAction<factory.paymentMethodType>[]>actionsOnOrder
+            .filter((a) => a.typeOf === factory.actionType.PayAction)
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus);
         // もし支払アクションがなければエラー
-        if (payAction === undefined) {
+        if (payActions.length === 0) {
             throw new factory.errors.NotFound('PayAction');
         }
 
@@ -153,6 +150,7 @@ export function start(params: {
 /**
  * 取引確定
  */
+// tslint:disable-next-line:max-func-body-length
 export function confirm(
     agentId: string,
     transactionId: string
@@ -181,14 +179,11 @@ export function confirm(
         const seller = await repos.organization.findMovieTheaterById(placeOrderTransaction.seller.id);
 
         const actionsOnOrder = await repos.action.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
-        const payAction = <factory.action.trade.pay.IAction | undefined>actionsOnOrder.find(
-            (a) => {
-                return a.typeOf === factory.actionType.PayAction &&
-                    a.actionStatus === factory.actionStatusType.CompletedActionStatus;
-            }
-        );
+        const payActions = <factory.action.trade.pay.IAction<factory.paymentMethodType>[]>actionsOnOrder
+            .filter((a) => a.typeOf === factory.actionType.PayAction)
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus);
         // もし支払アクションがなければエラー
-        if (payAction === undefined) {
+        if (payActions.length === 0) {
             throw new factory.errors.NotFound('PayAction');
         }
 
@@ -206,23 +201,46 @@ export function confirm(
             potentialActions: {},
             purpose: placeOrderTransactionResult.order
         });
-        const refundActionAttributes = factory.action.trade.refund.createAttributes({
-            object: payAction,
-            agent: placeOrderTransaction.seller,
-            recipient: placeOrderTransaction.agent,
-            purpose: placeOrderTransactionResult.order,
-            potentialActions: {
-                sendEmailMessage: sendEmailMessageActionAttributes
-            }
-        });
-        const returnOrderActionAttributes = factory.action.transfer.returnAction.order.createAttributes({
+        // クレジットカード返金アクション
+        const refundCreditCardActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.CreditCard>[]>payActions)
+            .filter((a) => a.object.paymentMethodType === factory.paymentMethodType.CreditCard)
+            .map((a) => {
+                return {
+                    typeOf: <factory.actionType.RefundAction>factory.actionType.RefundAction,
+                    object: a,
+                    agent: placeOrderTransaction.seller,
+                    recipient: placeOrderTransaction.agent,
+                    purpose: placeOrderTransactionResult.order,
+                    potentialActions: {
+                        sendEmailMessage: sendEmailMessageActionAttributes
+                    }
+                };
+            });
+        // Pecorino返金アクション
+        const refundPecorinoActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.Pecorino>[]>payActions)
+            .filter((a) => a.object.paymentMethodType === factory.paymentMethodType.Pecorino)
+            .map((a) => {
+                return {
+                    typeOf: <factory.actionType.RefundAction>factory.actionType.RefundAction,
+                    object: a,
+                    agent: placeOrderTransaction.seller,
+                    recipient: placeOrderTransaction.agent,
+                    purpose: placeOrderTransactionResult.order,
+                    potentialActions: {
+                        sendEmailMessage: sendEmailMessageActionAttributes
+                    }
+                };
+            });
+        const returnOrderActionAttributes = {
+            typeOf: <factory.actionType.ReturnAction>factory.actionType.ReturnAction,
             object: placeOrderTransactionResult.order,
             agent: placeOrderTransaction.agent,
             recipient: placeOrderTransaction.seller,
             potentialActions: {
-                refund: refundActionAttributes
+                refundCreditCard: refundCreditCardActions[0],
+                refundPecorino: refundPecorinoActions
             }
-        });
+        };
         const result: factory.transaction.returnOrder.IResult = {
         };
         const potentialActions: factory.transaction.returnOrder.IPotentialActions = {

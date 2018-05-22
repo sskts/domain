@@ -17,99 +17,69 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 
 /**
  * Pecorino支払実行
- * @param transactionId 取引ID
  */
-export function payPecorino(transactionId: string) {
-    // tslint:disable-next-line:max-func-body-length
+export function payPecorino(params: factory.task.payPecorino.IData) {
     return async (repos: {
         action: ActionRepo;
-        transaction: TransactionRepo;
+        // transaction: TransactionRepo;
         pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
-        const transactionResult = transaction.result;
-        if (transactionResult === undefined) {
-            throw new factory.errors.NotFound('transaction.result');
-        }
-        const potentialActions = transaction.potentialActions;
-        if (potentialActions === undefined) {
-            throw new factory.errors.NotFound('transaction.potentialActions');
-        }
-        const orderPotentialActions = potentialActions.order.potentialActions;
-        if (orderPotentialActions === undefined) {
-            throw new factory.errors.NotFound('order.potentialActions');
-        }
+        // アクション開始
+        const action = await repos.action.start<factory.action.trade.pay.IAction<factory.paymentMethodType.Pecorino>>(params);
 
-        const payActionAttributes = orderPotentialActions.payPecorino;
-        if (payActionAttributes !== undefined) {
-            // Pecorino承認アクションがあるはず
-            const authorizeAction = <factory.action.authorize.pecorino.IAction>transaction.object.authorizeActions
-                .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                .find((a) => a.object.typeOf === factory.action.authorize.pecorino.ObjectType.Pecorino);
+        try {
+            const pecorinoTransaction = params.object.pecorinoTransaction;
+            switch (pecorinoTransaction.typeOf) {
+                case pecorinoapi.factory.transactionType.Pay:
 
-            // アクション開始
-            const action = await repos.action.start<factory.action.trade.pay.IAction>(payActionAttributes);
+                    // 支払取引の場合、確定
+                    const payTransactionService = new pecorinoapi.service.transaction.Pay({
+                        endpoint: params.object.pecorinoEndpoint,
+                        auth: repos.pecorinoAuthClient
+                    });
+                    await payTransactionService.confirm({
+                        transactionId: pecorinoTransaction.id
+                    });
+                    break;
 
+                case pecorinoapi.factory.transactionType.Transfer:
+                    // 転送取引の場合確定
+                    const transferTransactionService = new pecorinoapi.service.transaction.Transfer({
+                        endpoint: params.object.pecorinoEndpoint,
+                        auth: repos.pecorinoAuthClient
+                    });
+                    await transferTransactionService.confirm({
+                        transactionId: pecorinoTransaction.id
+                    });
+                    break;
+
+                default:
+                    throw new factory.errors.NotImplemented(
+                        `transaction type '${(<any>pecorinoTransaction).typeOf}' not implemented.`
+                    );
+            }
+        } catch (error) {
+            // actionにエラー結果を追加
             try {
-                // 承認アクション結果は基本的に必ずあるはず
-                if (authorizeAction.result === undefined) {
-                    throw new factory.errors.NotFound('authorizeAction.result');
-                }
-
-                const pecorinoTransaction = authorizeAction.result.pecorinoTransaction;
-                switch (pecorinoTransaction.typeOf) {
-                    case pecorinoapi.factory.transactionType.Pay:
-
-                        // 支払取引の場合、確定
-                        const payTransactionService = new pecorinoapi.service.transaction.Pay({
-                            endpoint: authorizeAction.result.pecorinoEndpoint,
-                            auth: repos.pecorinoAuthClient
-                        });
-                        await payTransactionService.confirm({
-                            transactionId: pecorinoTransaction.id
-                        });
-                        break;
-
-                    case pecorinoapi.factory.transactionType.Transfer:
-                        // 転送取引の場合確定
-                        const transferTransactionService = new pecorinoapi.service.transaction.Transfer({
-                            endpoint: authorizeAction.result.pecorinoEndpoint,
-                            auth: repos.pecorinoAuthClient
-                        });
-                        await transferTransactionService.confirm({
-                            transactionId: pecorinoTransaction.id
-                        });
-                        break;
-
-                    default:
-                        throw new factory.errors.NotImplemented(
-                            `transaction type '${(<any>pecorinoTransaction).typeOf}' not implemented.`
-                        );
-                }
-            } catch (error) {
-                // actionにエラー結果を追加
-                try {
-                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
-                    const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                    await repos.action.giveUp(payActionAttributes.typeOf, action.id, actionError);
-                } catch (__) {
-                    // 失敗したら仕方ない
-                }
-
-                throw error;
+                // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                const actionError = { ...error, ...{ message: error.message, name: error.name } };
+                await repos.action.giveUp(action.typeOf, action.id, actionError);
+            } catch (__) {
+                // 失敗したら仕方ない
             }
 
-            // アクション完了
-            debug('ending action...');
-            const actionResult: factory.action.trade.pay.IResult = {};
-            await repos.action.complete(payActionAttributes.typeOf, action.id, actionResult);
+            throw error;
         }
+
+        // アクション完了
+        debug('ending action...');
+        const actionResult: factory.action.trade.pay.IResult<factory.paymentMethodType.Pecorino> = {};
+        await repos.action.complete(action.typeOf, action.id, actionResult);
     };
 }
 
 /**
  * クレジットカードオーソリ取消
- * @export
  * @param transactionId 取引ID
  */
 export function cancelCreditCardAuth(transactionId: string) {
@@ -145,7 +115,6 @@ export function cancelCreditCardAuth(transactionId: string) {
 
 /**
  * クレジットカード売上確定
- * @export
  * @param transactionId 取引ID
  */
 export function payCreditCard(transactionId: string) {
@@ -175,7 +144,9 @@ export function payCreditCard(transactionId: string) {
                 .find((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard);
 
             // アクション開始
-            const action = await repos.action.start<factory.action.trade.pay.IAction>(payActionAttributes);
+            const action = await repos.action.start<factory.action.trade.pay.IAction<factory.paymentMethodType.CreditCard>>(
+                payActionAttributes
+            );
 
             let alterTranResult: GMO.services.credit.IAlterTranResult;
             try {
@@ -230,7 +201,9 @@ export function payCreditCard(transactionId: string) {
 
             // アクション完了
             debug('ending action...');
-            const actionResult: factory.action.trade.pay.IResult = { creditCardSales: alterTranResult };
+            const actionResult: factory.action.trade.pay.IResult<factory.paymentMethodType.CreditCard> = {
+                creditCardSales: alterTranResult
+            };
             await repos.action.complete(payActionAttributes.typeOf, action.id, actionResult);
         }
     };
@@ -268,8 +241,13 @@ export function refundCreditCard(transactionId: string) {
 
         await Promise.all(authorizeActions.map(async (authorizeAction) => {
             // アクション開始
-            const refundActionAttributes = returnOrderPotentialActions.refund;
-            const action = await repos.action.start<factory.action.trade.refund.IAction>(refundActionAttributes);
+            const refundActionAttributes = returnOrderPotentialActions.refundCreditCard;
+            if (refundActionAttributes === undefined) {
+                throw new factory.errors.NotFound('returnOrder.potentialActions.refundCreditCard');
+            }
+            const action = await repos.action.start<factory.action.trade.refund.IAction<factory.paymentMethodType.CreditCard>>(
+                refundActionAttributes
+            );
 
             let alterTranResult: GMO.services.credit.IAlterTranResult;
             try {
@@ -306,9 +284,8 @@ export function refundCreditCard(transactionId: string) {
             } catch (error) {
                 // actionにエラー結果を追加
                 try {
-                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
-                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
-                    await repos.action.giveUp(refundActionAttributes.typeOf, action.id, actionError);
+                    const actionError = { ...error, ...{ message: error.message, name: error.name } };
+                    await repos.action.giveUp(action.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
@@ -318,7 +295,7 @@ export function refundCreditCard(transactionId: string) {
 
             // アクション完了
             debug('ending action...');
-            await repos.action.complete(refundActionAttributes.typeOf, action.id, { alterTranResult });
+            await repos.action.complete(action.typeOf, action.id, { alterTranResult });
 
             // 潜在アクション
             await onRefund(refundActionAttributes)({ task: repos.task });
@@ -330,7 +307,7 @@ export function refundCreditCard(transactionId: string) {
  * 返金後のアクション
  * @param refundActionAttributes 返金アクション属性
  */
-function onRefund(refundActionAttributes: factory.action.trade.refund.IAttributes) {
+function onRefund(refundActionAttributes: factory.action.trade.refund.IAttributes<factory.paymentMethodType>) {
     return async (repos: { task: TaskRepo }) => {
         const potentialActions = refundActionAttributes.potentialActions;
         const now = new Date();
@@ -488,7 +465,7 @@ export function givePecorino(params: factory.task.givePecorino.IData) {
 
         // アクション完了
         debug('ending action...');
-        const actionResult: factory.action.trade.pay.IResult = {};
+        const actionResult: factory.action.transfer.give.pecorino.IResult = {};
         await repos.action.complete(params.typeOf, action.id, actionResult);
     };
 }

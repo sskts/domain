@@ -204,7 +204,7 @@ describe('cancelReservations()', () => {
                     typeOf: sskts.factory.actionType.ReturnAction,
                     object: order,
                     potentialActions: {
-                        refund: {}
+                        refundCreditCard: {}
                     }
                 }
             }
