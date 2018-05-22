@@ -119,19 +119,19 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
             // Pecorino決済
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (orderPotentialActions.payPecorino !== undefined) {
-                taskAttributes.push({
-                    name: factory.taskName.PayPecorino,
-                    status: factory.taskStatus.Ready,
-                    runsAt: now, // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transactionId
-                    }
-                });
+            if (Array.isArray(orderPotentialActions.payPecorino)) {
+                taskAttributes.push(...orderPotentialActions.payPecorino.map((a): factory.task.payPecorino.IAttributes => {
+                    return {
+                        name: factory.taskName.PayPecorino,
+                        status: factory.taskStatus.Ready,
+                        runsAt: now, // なるはやで実行
+                        remainingNumberOfTries: 10,
+                        lastTriedAt: null,
+                        numberOfTried: 0,
+                        executionResults: [],
+                        data: a
+                    };
+                }));
             }
 
             // ムビチケ使用

@@ -33,7 +33,7 @@ describe('createFromTransaction()', () => {
                     potentialActions: {
                         sendOrder: { typeOf: sskts.factory.actionType.SendAction },
                         payCreditCard: { typeOf: sskts.factory.actionType.PayAction },
-                        payPecorino: { typeOf: sskts.factory.actionType.PayAction },
+                        payPecorino: [{ typeOf: sskts.factory.actionType.PayAction }],
                         useMvtk: { typeOf: sskts.factory.actionType.UseAction }
                     }
                 }
