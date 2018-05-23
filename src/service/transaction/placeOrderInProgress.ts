@@ -447,7 +447,8 @@ export function confirm(params: {
         }
 
         const potentialActions: factory.transaction.placeOrder.IPotentialActions = {
-            order: factory.action.trade.order.createAttributes({
+            order: {
+                typeOf: factory.actionType.OrderAction,
                 object: order,
                 agent: transaction.agent,
                 potentialActions: {
@@ -467,7 +468,7 @@ export function confirm(params: {
                     }),
                     givePecorino: givePecorinoActions
                 }
-            })
+            }
         };
 
         // ステータス変更

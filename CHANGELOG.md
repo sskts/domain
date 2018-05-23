@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Pecorino入金タスクを実装。
 - Pecorino承認アクション取消処理を実装。
 - 取引リポジトリーに中止メソッドを追加。
+- Pecorino返金処理を実装。
 
 ### Changed
 

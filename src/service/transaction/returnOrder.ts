@@ -204,7 +204,7 @@ export function confirm(
         // クレジットカード返金アクション
         const refundCreditCardActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.CreditCard>[]>payActions)
             .filter((a) => a.object.paymentMethod.paymentMethod === factory.paymentMethodType.CreditCard)
-            .map((a) => {
+            .map((a): factory.action.trade.refund.IAttributes<factory.paymentMethodType.CreditCard> => {
                 return {
                     typeOf: <factory.actionType.RefundAction>factory.actionType.RefundAction,
                     object: a,
@@ -219,7 +219,7 @@ export function confirm(
         // Pecorino返金アクション
         const refundPecorinoActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.Pecorino>[]>payActions)
             .filter((a) => a.object.paymentMethod.paymentMethod === factory.paymentMethodType.Pecorino)
-            .map((a) => {
+            .map((a): factory.action.trade.refund.IAttributes<factory.paymentMethodType.Pecorino> => {
                 return {
                     typeOf: <factory.actionType.RefundAction>factory.actionType.RefundAction,
                     object: a,
@@ -231,7 +231,7 @@ export function confirm(
                     }
                 };
             });
-        const returnOrderActionAttributes = {
+        const returnOrderActionAttributes: factory.action.transfer.returnAction.order.IAttributes = {
             typeOf: <factory.actionType.ReturnAction>factory.actionType.ReturnAction,
             object: placeOrderTransactionResult.order,
             agent: placeOrderTransaction.agent,

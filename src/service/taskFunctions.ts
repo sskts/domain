@@ -161,6 +161,27 @@ export function refundCreditCard(
     };
 }
 
+export function refundPecorino(
+    data: factory.task.refundPecorino.IData
+): IOperation<void> {
+    return async (settings: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        if (settings.pecorinoAuthClient === undefined) {
+            throw new Error('settings.pecorinoAuthClient undefined.');
+        }
+
+        const actionRepo = new ActionRepo(settings.connection);
+        const taskRepo = new TaskRepo(settings.connection);
+        await PaymentService.refundPecorino(data)({
+            action: actionRepo,
+            task: taskRepo,
+            pecorinoAuthClient: settings.pecorinoAuthClient
+        });
+    };
+}
+
 export function returnOrder(
     data: factory.task.returnOrder.IData
 ): IOperation<void> {

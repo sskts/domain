@@ -307,6 +307,24 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
                 };
                 taskAttributes.push(task);
             }
+
+            // Pecorino返金タスク
+            if (Array.isArray(returnActionAttributes.potentialActions.refundPecorino)) {
+                taskAttributes.push(...returnActionAttributes.potentialActions.refundPecorino.map(
+                    (a): factory.task.refundPecorino.IAttributes => {
+                        return {
+                            name: factory.taskName.RefundPecorino,
+                            status: factory.taskStatus.Ready,
+                            runsAt: now, // なるはやで実行
+                            remainingNumberOfTries: 10,
+                            lastTriedAt: null,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: a
+                        };
+                    }
+                ));
+            }
         }
 
         // タスク保管
