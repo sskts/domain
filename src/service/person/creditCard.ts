@@ -123,6 +123,7 @@ export function find(
     username: string
 ): IOperation<GMO.services.card.ISearchCardResult[]> {
     return async () => {
+        let creditCards: GMO.services.card.ISearchCardResult[] = [];
         try {
             // まずGMO会員登録
             const memberId = personId;
@@ -150,7 +151,7 @@ export function find(
                 }
             }
 
-            return GMO.services.card.searchCard({
+            creditCards = await GMO.services.card.searchCard({
                 siteId: <string>process.env.GMO_SITE_ID,
                 sitePass: <string>process.env.GMO_SITE_PASS,
                 memberId: memberId,
@@ -159,10 +160,21 @@ export function find(
             }).then((results) => results.filter((result) => result.deleteFlag === '0'));
         } catch (error) {
             if (error.name === 'GMOServiceBadRequestError') {
-                throw new factory.errors.Argument('personId', error.errors[0].content);
+                // カードが存在しない場合このエラーになる
+                // ErrCode=E01&ErrInfo=E01240002
+                if (Array.isArray(error.errors) &&
+                    error.errors.length === 1 &&
+                    error.errors[0].info === 'E01240002') {
+                    // no op
+                    // 存在しないだけなので何もしない
+                } else {
+                    throw new factory.errors.Argument('personId', error.errors[0].content);
+                }
             } else {
                 throw error;
             }
         }
+
+        return creditCards;
     };
 }

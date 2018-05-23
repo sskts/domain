@@ -28,6 +28,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- クレジットカード検索結果が0個の場合にGMOが投げるエラーをハンドリング。
+
 ### Security
 
 ## v24.1.1 - 2018-05-02
