@@ -1,8 +1,6 @@
 /**
  * 座席予約承認アクションサービス
- * @namespace service.transaction.placeOrderInProgress.action.authorize.seatReservation
  */
-
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
@@ -373,7 +371,8 @@ export function create(
         const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
 
         // 承認アクションを開始
-        const actionAttributes = factory.action.authorize.seatReservation.createAttributes({
+        const actionAttributes: factory.action.authorize.seatReservation.IAttributes = {
+            typeOf: factory.actionType.AuthorizeAction,
             object: {
                 typeOf: factory.action.authorize.seatReservation.ObjectType.SeatReservation,
                 offers: offersWithDetails,
@@ -382,7 +381,7 @@ export function create(
             agent: transaction.seller,
             recipient: transaction.agent,
             purpose: transaction // purposeは取引
-        });
+        };
         const action = await repos.action.start<factory.action.authorize.seatReservation.IAction>(actionAttributes);
 
         // COA仮予約

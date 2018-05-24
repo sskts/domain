@@ -1,9 +1,6 @@
 /**
- * placeOrder transaction service
  * 注文取引サービス
- * @namespace service.transaction.placeOrder
  */
-
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as json2csv from 'json2csv';
@@ -26,11 +23,6 @@ export function exportTasks(status: factory.transactionStatusType) {
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const statusesTasksExportable = [factory.transactionStatusType.Expired, factory.transactionStatusType.Confirmed];
-        if (statusesTasksExportable.indexOf(status) < 0) {
-            throw new factory.errors.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
-        }
-
         const transaction = await repos.transaction.startExportTasks(factory.transactionType.PlaceOrder, status);
         if (transaction === null) {
             return;
@@ -38,7 +30,6 @@ export function exportTasks(status: factory.transactionStatusType) {
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
         await exportTasksById(transaction.id)(repos);
-
         await repos.transaction.setTasksExportedById(transaction.id);
     };
 }
@@ -57,7 +48,8 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
-                taskAttributes.push(factory.task.placeOrder.createAttributes({
+                const placeOrderTaskAttributes: factory.task.placeOrder.IAttributes = {
+                    name: factory.taskName.PlaceOrder,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -67,13 +59,16 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     data: {
                         transactionId: transaction.id
                     }
-                }));
+                };
+                taskAttributes.push(placeOrderTaskAttributes);
 
                 break;
 
-            // 期限切れの場合は、タスクリストを作成する
+            // 期限切れor中止の場合は、タスクリストを作成する
+            case factory.transactionStatusType.Canceled:
             case factory.transactionStatusType.Expired:
-                taskAttributes.push(factory.task.cancelSeatReservation.createAttributes({
+                const cancelSeatReservationTaskAttributes: factory.task.cancelSeatReservation.IAttributes = {
+                    name: factory.taskName.CancelSeatReservation,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -83,8 +78,9 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     data: {
                         transactionId: transaction.id
                     }
-                }));
-                taskAttributes.push(factory.task.cancelCreditCard.createAttributes({
+                };
+                const cancelCreditCardTaskAttributes: factory.task.cancelCreditCard.IAttributes = {
+                    name: factory.taskName.CancelCreditCard,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -94,8 +90,9 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     data: {
                         transactionId: transaction.id
                     }
-                }));
-                taskAttributes.push(factory.task.cancelMvtk.createAttributes({
+                };
+                const cancelMvtkTaskAttributes: factory.task.cancelMvtk.IAttributes = {
+                    name: factory.taskName.CancelMvtk,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -105,7 +102,25 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     data: {
                         transactionId: transaction.id
                     }
-                }));
+                };
+                const cancelPecorinoTaskAttributes: factory.task.cancelPecorino.IAttributes = {
+                    name: factory.taskName.CancelPecorino,
+                    status: factory.taskStatus.Ready,
+                    runsAt: new Date(), // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transaction.id
+                    }
+                };
+                taskAttributes.push(
+                    cancelSeatReservationTaskAttributes,
+                    cancelCreditCardTaskAttributes,
+                    cancelMvtkTaskAttributes,
+                    cancelPecorinoTaskAttributes
+                );
 
                 break;
 
@@ -122,8 +137,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
 
 /**
  * 確定取引についてメールを送信する
- * @deprecated v24.0.0で廃止予定
- * @export
+ * @deprecated どこかのバージョンで廃止予定
  * @param transactionId 取引ID
  * @param emailMessageAttributes Eメールメッセージ属性
  */

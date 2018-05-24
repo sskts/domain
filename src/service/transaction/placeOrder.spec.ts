@@ -21,27 +21,6 @@ describe('exportTasks()', () => {
         sandbox.restore();
     });
 
-    it('非対応ステータスであれば、Argumentエラーになるはず', async () => {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
-
-        const status = sskts.factory.transactionStatusType.InProgress;
-
-        sandbox.mock(transactionRepo).expects('startExportTasks').never();
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').never();
-        sandbox.mock(taskRepo).expects('save').never();
-        sandbox.mock(transactionRepo).expects('setTasksExportedById').never();
-
-        const result = await sskts.service.transaction.placeOrder.exportTasks(
-            status
-        )({
-            task: taskRepo,
-            transaction: transactionRepo
-        }).catch((err) => err);
-        assert(result instanceof sskts.factory.errors.Argument);
-        sandbox.verify();
-    });
-
     it('タスクエクスポート待ちの取引があれば、エクスポートされるはず', async () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
@@ -120,8 +99,8 @@ describe('exportTasksById()', () => {
         sandbox.verify();
     });
 
-    it('期限切れ取引であれば3つのタスクがエクスポートされるはず', async () => {
-        const numberOfTasks = 3;
+    it('期限切れ取引であれば4つのタスクがエクスポートされるはず', async () => {
+        const numberOfTasks = 4;
         const transaction = {
             id: 'transactionId',
             status: sskts.factory.transactionStatusType.Expired

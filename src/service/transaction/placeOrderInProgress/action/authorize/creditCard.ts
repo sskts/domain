@@ -1,8 +1,6 @@
 /**
  * クレジットカード承認アクションサービス
- * @namespace service.transaction.placeOrderInProgress.action.authorize.creditCard
  */
-
 import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
@@ -57,7 +55,8 @@ export function create(
         const movieTheater = await repos.organization.findMovieTheaterById(transaction.seller.id);
 
         // 承認アクションを開始する
-        const actionAttributes = factory.action.authorize.creditCard.createAttributes({
+        const actionAttributes: factory.action.authorize.creditCard.IAttributes = {
+            typeOf: factory.actionType.AuthorizeAction,
             object: {
                 typeOf: factory.action.authorize.creditCard.ObjectType.CreditCard,
                 orderId: orderId,
@@ -68,7 +67,7 @@ export function create(
             agent: transaction.agent,
             recipient: transaction.seller,
             purpose: transaction // purposeは取引
-        });
+        };
         const action = await repos.action.start<factory.action.authorize.creditCard.IAction>(actionAttributes);
 
         // GMOオーソリ取得

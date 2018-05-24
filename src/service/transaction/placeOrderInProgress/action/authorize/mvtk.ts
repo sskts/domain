@@ -1,8 +1,6 @@
 /**
  * ムビチケ承認アクションサービス
- * @namespace service.transaction.placeOrderInProgress.action.authorize.mvtk
  */
-
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
@@ -135,12 +133,13 @@ export function create(
             throw new factory.errors.Argument('authorizeActionResult', 'zskInfo not matched with seat reservation authorizeAction');
         }
 
-        const actionAttributes = factory.action.authorize.mvtk.createAttributes({
+        const actionAttributes: factory.action.authorize.mvtk.IAttributes = {
+            typeOf: factory.actionType.AuthorizeAction,
             object: authorizeObject,
             agent: transaction.agent,
             recipient: transaction.seller,
             purpose: transaction // purposeは取引
-        });
+        };
         const action = await repos.action.start<factory.action.authorize.mvtk.IAction>(actionAttributes);
 
         // 特に何もしない

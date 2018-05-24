@@ -79,37 +79,56 @@ export function payPecorino(params: factory.task.payPecorino.IData) {
 }
 
 /**
- * クレジットカードオーソリ取消
+ * Pecorinoオーソリ取消
  * @param transactionId 取引ID
  */
-export function cancelCreditCardAuth(transactionId: string) {
-    return async (repos: { action: ActionRepo }) => {
-        // クレジットカード仮売上アクションを取得
-        const authorizeActions: factory.action.authorize.creditCard.IAction[] =
-            await repos.action.findAuthorizeByTransactionId(transactionId)
-                .then((actions) => actions
-                    .filter((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard)
-                    .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                );
+export function cancelPecorinoAuth(transactionId: string) {
+    return async (repos: {
+        action: ActionRepo;
+        pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        // Pecorino承認アクションを取得
+        const authorizeActions = <factory.action.authorize.pecorino.IAction[]>await repos.action.findAuthorizeByTransactionId(transactionId)
+            .then((actions) => actions
+                .filter((a) => a.object.typeOf === factory.action.authorize.pecorino.ObjectType.Pecorino)
+                .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            );
 
         await Promise.all(authorizeActions.map(async (action) => {
-            const entryTranArgs = (<factory.action.authorize.creditCard.IResult>action.result).entryTranArgs;
-            const execTranArgs = (<factory.action.authorize.creditCard.IResult>action.result).execTranArgs;
+            // 承認アクション結果は基本的に必ずあるはず
+            if (action.result === undefined) {
+                throw new factory.errors.NotFound('action.result');
+            }
 
-            debug('calling alterTran...');
-            await GMO.services.credit.alterTran({
-                shopId: entryTranArgs.shopId,
-                shopPass: entryTranArgs.shopPass,
-                accessId: execTranArgs.accessId,
-                accessPass: execTranArgs.accessPass,
-                jobCd: GMO.utils.util.JobCd.Void,
-                amount: entryTranArgs.amount
-            });
+            switch (action.result.pecorinoTransaction.typeOf) {
+                case pecorinoapi.factory.transactionType.Pay:
+                    // 支払取引の場合、中止
+                    const payTransactionService = new pecorinoapi.service.transaction.Pay({
+                        endpoint: action.result.pecorinoEndpoint,
+                        auth: repos.pecorinoAuthClient
+                    });
+                    await payTransactionService.cancel({
+                        transactionId: action.result.pecorinoTransaction.id
+                    });
+                    break;
+
+                case pecorinoapi.factory.transactionType.Transfer:
+                    // 転送取引の場合、中止
+                    const transferTransactionService = new pecorinoapi.service.transaction.Transfer({
+                        endpoint: action.result.pecorinoEndpoint,
+                        auth: repos.pecorinoAuthClient
+                    });
+                    await transferTransactionService.cancel({
+                        transactionId: action.result.pecorinoTransaction.id
+                    });
+                    break;
+
+                default:
+                    throw new factory.errors.NotImplemented(
+                        `transaction type '${(<any>action.result.pecorinoTransaction).typeOf}' not implemented.`
+                    );
+            }
         }));
-
-        // 失敗したら取引状態確認してどうこう、という処理も考えうるが、
-        // GMOはapiのコール制限が厳しく、下手にコールするとすぐにクライアントサイドにも影響をあたえてしまう
-        // リトライはタスクの仕組みに含まれているので失敗してもここでは何もしない
     };
 }
 
@@ -206,6 +225,41 @@ export function payCreditCard(transactionId: string) {
             };
             await repos.action.complete(payActionAttributes.typeOf, action.id, actionResult);
         }
+    };
+}
+
+/**
+ * クレジットカードオーソリ取消
+ * @param transactionId 取引ID
+ */
+export function cancelCreditCardAuth(transactionId: string) {
+    return async (repos: { action: ActionRepo }) => {
+        // クレジットカード仮売上アクションを取得
+        const authorizeActions = <factory.action.authorize.creditCard.IAction[]>await repos.action.findAuthorizeByTransactionId(
+            transactionId
+        ).then((actions) => actions
+            .filter((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard)
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        );
+
+        await Promise.all(authorizeActions.map(async (action) => {
+            const entryTranArgs = (<factory.action.authorize.creditCard.IResult>action.result).entryTranArgs;
+            const execTranArgs = (<factory.action.authorize.creditCard.IResult>action.result).execTranArgs;
+
+            debug('calling alterTran...');
+            await GMO.services.credit.alterTran({
+                shopId: entryTranArgs.shopId,
+                shopPass: entryTranArgs.shopPass,
+                accessId: execTranArgs.accessId,
+                accessPass: execTranArgs.accessPass,
+                jobCd: GMO.utils.util.JobCd.Void,
+                amount: entryTranArgs.amount
+            });
+        }));
+
+        // 失敗したら取引状態確認してどうこう、という処理も考えうるが、
+        // GMOはapiのコール制限が厳しく、下手にコールするとすぐにクライアントサイドにも影響をあたえてしまう
+        // リトライはタスクの仕組みに含まれているので失敗してもここでは何もしない
     };
 }
 

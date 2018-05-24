@@ -1,8 +1,6 @@
 /**
  * 在庫管理(在庫数調整)サービス
- * @namespace service.stock
  */
-
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
@@ -21,12 +19,12 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 export function cancelSeatReservationAuth(transactionId: string) {
     return async (repos: { action: ActionRepo }) => {
         // 座席仮予約アクションを取得
-        const authorizeActions: factory.action.authorize.seatReservation.IAction[] =
-            await repos.action.findAuthorizeByTransactionId(transactionId)
-                .then((actions) => actions
-                    .filter((a) => a.object.typeOf === factory.action.authorize.seatReservation.ObjectType.SeatReservation)
-                    .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                );
+        const authorizeActions = <factory.action.authorize.seatReservation.IAction[]>await repos.action.findAuthorizeByTransactionId(
+            transactionId
+        ).then((actions) => actions
+            .filter((a) => a.object.typeOf === factory.action.authorize.seatReservation.ObjectType.SeatReservation)
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        );
 
         await Promise.all(authorizeActions.map(async (action) => {
             debug('calling deleteTmpReserve...');
