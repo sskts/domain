@@ -352,7 +352,7 @@ export function create(
     transactionId: string,
     eventIdentifier: string,
     offers: factory.offer.seatReservation.IOffer[]
-): ICreateOperation<factory.action.authorize.seatReservation.IAction> {
+): ICreateOperation<factory.action.authorize.offer.seatReservation.IAction> {
     return async (repos: {
         event: EventRepo;
         action: ActionRepo;
@@ -371,10 +371,10 @@ export function create(
         const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, offers);
 
         // 承認アクションを開始
-        const actionAttributes: factory.action.authorize.seatReservation.IAttributes = {
+        const actionAttributes: factory.action.authorize.offer.seatReservation.IAttributes = {
             typeOf: factory.actionType.AuthorizeAction,
             object: {
-                typeOf: factory.action.authorize.seatReservation.ObjectType.SeatReservation,
+                typeOf: factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
                 offers: offersWithDetails,
                 individualScreeningEvent: individualScreeningEvent
             },
@@ -382,7 +382,7 @@ export function create(
             recipient: transaction.agent,
             purpose: transaction // purposeは取引
         };
-        const action = await repos.action.start<factory.action.authorize.seatReservation.IAction>(actionAttributes);
+        const action = await repos.action.start<factory.action.authorize.offer.seatReservation.IAction>(actionAttributes);
 
         // COA仮予約
         const updTmpReserveSeatArgs = {
@@ -436,7 +436,7 @@ export function create(
         // アクションを完了
         debug('ending authorize action...');
         const { price, pecorinoAmount } = offers2resultPrice(offersWithDetails);
-        const result: factory.action.authorize.seatReservation.IResult = {
+        const result: factory.action.authorize.offer.seatReservation.IResult = {
             price: price,
             priceCurrency: factory.priceCurrency.JPY,
             pecorinoAmount: pecorinoAmount,
@@ -444,7 +444,7 @@ export function create(
             updTmpReserveSeatResult: updTmpReserveSeatResult
         };
 
-        return repos.action.complete<factory.action.authorize.seatReservation.IAction>(action.typeOf, action.id, result);
+        return repos.action.complete<factory.action.authorize.offer.seatReservation.IAction>(action.typeOf, action.id, result);
     };
 }
 
@@ -473,7 +473,7 @@ export function cancel(
         // MongoDBでcompleteステータスであるにも関わらず、COAでは削除されている、というのが最悪の状況
         // それだけは回避するためにMongoDBを先に変更
         const action = await repos.action.cancel(factory.actionType.AuthorizeAction, actionId);
-        const actionResult = <factory.action.authorize.seatReservation.IResult>action.result;
+        const actionResult = <factory.action.authorize.offer.seatReservation.IResult>action.result;
 
         // 座席仮予約削除
         debug('delTmpReserve processing...', action);
@@ -504,7 +504,7 @@ export function changeOffers(
     actionId: string,
     eventIdentifier: string,
     offers: factory.offer.seatReservation.IOffer[]
-): ICreateOperation<factory.action.authorize.seatReservation.IAction> {
+): ICreateOperation<factory.action.authorize.offer.seatReservation.IAction> {
     return async (repos: {
         event: EventRepo;
         action: ActionRepo;
@@ -517,7 +517,7 @@ export function changeOffers(
         }
 
         // アクション中のイベント識別子と座席リストが合っているかどうか確認
-        const authorizeAction = await repos.action.findById<factory.action.authorize.seatReservation.IAction>(
+        const authorizeAction = await repos.action.findById<factory.action.authorize.offer.seatReservation.IAction>(
             factory.actionType.AuthorizeAction, actionId
         );
         // 完了ステータスのアクションのみ更新可能
@@ -545,8 +545,8 @@ export function changeOffers(
         // 供給情報と価格を変更してからDB更新
         authorizeAction.object.offers = offersWithDetails;
         const { price, pecorinoAmount } = offers2resultPrice(offersWithDetails);
-        (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).price = price;
-        (<factory.action.authorize.seatReservation.IResult>authorizeAction.result).pecorinoAmount = pecorinoAmount;
+        (<factory.action.authorize.offer.seatReservation.IResult>authorizeAction.result).price = price;
+        (<factory.action.authorize.offer.seatReservation.IResult>authorizeAction.result).pecorinoAmount = pecorinoAmount;
 
         // 座席予約承認アクションの供給情報を変更する
         return repos.action.actionModel.findOneAndUpdate(
@@ -557,7 +557,7 @@ export function changeOffers(
             },
             {
                 object: authorizeAction.object,
-                result: (<factory.action.authorize.seatReservation.IResult>authorizeAction.result)
+                result: (<factory.action.authorize.offer.seatReservation.IResult>authorizeAction.result)
             },
             { new: true }
         ).exec()
@@ -566,7 +566,7 @@ export function changeOffers(
                     throw new factory.errors.NotFound('authorizeAction');
                 }
 
-                return <factory.action.authorize.seatReservation.IAction>doc.toObject();
+                return <factory.action.authorize.offer.seatReservation.IAction>doc.toObject();
             });
     };
 }

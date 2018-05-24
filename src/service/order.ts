@@ -154,10 +154,10 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
             // Pecorinoポイント付与
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (Array.isArray(orderPotentialActions.givePecorino)) {
-                taskAttributes.push(...orderPotentialActions.givePecorino.map((a): factory.task.givePecorino.IAttributes => {
+            if (Array.isArray(orderPotentialActions.givePecorinoAward)) {
+                taskAttributes.push(...orderPotentialActions.givePecorinoAward.map((a): factory.task.givePecorinoAward.IAttributes => {
                     return {
-                        name: factory.taskName.GivePecorino,
+                        name: factory.taskName.GivePecorinoAward,
                         status: factory.taskStatus.Ready,
                         runsAt: now, // なるはやで実行
                         remainingNumberOfTries: 10,

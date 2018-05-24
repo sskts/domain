@@ -35,7 +35,7 @@ export function create(
     amount: number,
     method: GMO.utils.util.Method,
     creditCard: ICreditCard4authorizeAction
-): ICreateOperation<factory.action.authorize.creditCard.IAction> {
+): ICreateOperation<factory.action.authorize.paymentMethod.creditCard.IAction> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
@@ -55,10 +55,10 @@ export function create(
         const movieTheater = await repos.organization.findMovieTheaterById(transaction.seller.id);
 
         // 承認アクションを開始する
-        const actionAttributes: factory.action.authorize.creditCard.IAttributes = {
+        const actionAttributes: factory.action.authorize.paymentMethod.creditCard.IAttributes = {
             typeOf: factory.actionType.AuthorizeAction,
             object: {
-                typeOf: factory.action.authorize.creditCard.ObjectType.CreditCard,
+                typeOf: factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard,
                 orderId: orderId,
                 amount: amount,
                 method: method,
@@ -68,7 +68,7 @@ export function create(
             recipient: transaction.seller,
             purpose: transaction // purposeは取引
         };
-        const action = await repos.action.start<factory.action.authorize.creditCard.IAction>(actionAttributes);
+        const action = await repos.action.start<factory.action.authorize.paymentMethod.creditCard.IAction>(actionAttributes);
 
         // GMOオーソリ取得
         let entryTranArgs: GMO.services.credit.IEntryTranArgs;
@@ -136,14 +136,14 @@ export function create(
         // アクションを完了
         debug('ending authorize action...');
 
-        const result: factory.action.authorize.creditCard.IResult = {
+        const result: factory.action.authorize.paymentMethod.creditCard.IResult = {
             price: amount,
             entryTranArgs: entryTranArgs,
             execTranArgs: execTranArgs,
             execTranResult: execTranResult
         };
 
-        return repos.action.complete<factory.action.authorize.creditCard.IAction>(action.typeOf, action.id, result);
+        return repos.action.complete<factory.action.authorize.paymentMethod.creditCard.IAction>(action.typeOf, action.id, result);
     };
 }
 
@@ -163,7 +163,7 @@ export function cancel(
         }
 
         const action = await repos.action.cancel(factory.actionType.AuthorizeAction, actionId);
-        const actionResult = <factory.action.authorize.creditCard.IResult>action.result;
+        const actionResult = <factory.action.authorize.paymentMethod.creditCard.IResult>action.result;
 
         // オーソリ取消
         // 現時点では、ここで失敗したらオーソリ取消をあきらめる

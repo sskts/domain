@@ -88,11 +88,12 @@ export function cancelPecorinoAuth(transactionId: string) {
         pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
     }) => {
         // Pecorino承認アクションを取得
-        const authorizeActions = <factory.action.authorize.pecorino.IAction[]>await repos.action.findAuthorizeByTransactionId(transactionId)
-            .then((actions) => actions
-                .filter((a) => a.object.typeOf === factory.action.authorize.pecorino.ObjectType.Pecorino)
-                .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            );
+        const authorizeActions = <factory.action.authorize.paymentMethod.pecorino.IAction[]>await repos.action.findAuthorizeByTransactionId(
+            transactionId
+        ).then((actions) => actions
+            .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.pecorino.ObjectType.PecorinoPayment)
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        );
 
         await Promise.all(authorizeActions.map(async (action) => {
             // 承認アクション結果は基本的に必ずあるはず
@@ -158,9 +159,9 @@ export function payCreditCard(transactionId: string) {
         const payActionAttributes = orderPotentialActions.payCreditCard;
         if (payActionAttributes !== undefined) {
             // クレジットカード承認アクションがあるはず
-            const authorizeAction = <factory.action.authorize.creditCard.IAction>transaction.object.authorizeActions
+            const authorizeAction = <factory.action.authorize.paymentMethod.creditCard.IAction>transaction.object.authorizeActions
                 .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                .find((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard);
+                .find((a) => a.object.typeOf === factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard);
 
             // アクション開始
             const action = await repos.action.start<factory.action.trade.pay.IAction<factory.paymentMethodType.CreditCard>>(
@@ -169,8 +170,8 @@ export function payCreditCard(transactionId: string) {
 
             let alterTranResult: GMO.services.credit.IAlterTranResult;
             try {
-                const entryTranArgs = (<factory.action.authorize.creditCard.IResult>authorizeAction.result).entryTranArgs;
-                const execTranArgs = (<factory.action.authorize.creditCard.IResult>authorizeAction.result).execTranArgs;
+                const entryTranArgs = (<factory.action.authorize.paymentMethod.creditCard.IResult>authorizeAction.result).entryTranArgs;
+                const execTranArgs = (<factory.action.authorize.paymentMethod.creditCard.IResult>authorizeAction.result).execTranArgs;
 
                 // 取引状態参照
                 const searchTradeResult = await GMO.services.credit.searchTrade({
@@ -235,16 +236,16 @@ export function payCreditCard(transactionId: string) {
 export function cancelCreditCardAuth(transactionId: string) {
     return async (repos: { action: ActionRepo }) => {
         // クレジットカード仮売上アクションを取得
-        const authorizeActions = <factory.action.authorize.creditCard.IAction[]>await repos.action.findAuthorizeByTransactionId(
-            transactionId
-        ).then((actions) => actions
-            .filter((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard)
-            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        );
+        const authorizeActions = <factory.action.authorize.paymentMethod.creditCard.IAction[]>
+            await repos.action.findAuthorizeByTransactionId(transactionId)
+                .then((actions) => actions
+                    .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard)
+                    .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                );
 
         await Promise.all(authorizeActions.map(async (action) => {
-            const entryTranArgs = (<factory.action.authorize.creditCard.IResult>action.result).entryTranArgs;
-            const execTranArgs = (<factory.action.authorize.creditCard.IResult>action.result).execTranArgs;
+            const entryTranArgs = (<factory.action.authorize.paymentMethod.creditCard.IResult>action.result).entryTranArgs;
+            const execTranArgs = (<factory.action.authorize.paymentMethod.creditCard.IResult>action.result).execTranArgs;
 
             debug('calling alterTran...');
             await GMO.services.credit.alterTran({
@@ -279,7 +280,7 @@ export function refundCreditCard(transactionId: string) {
         const placeOrderTransactionResult = placeOrderTransaction.result;
         const authorizeActions = placeOrderTransaction.object.authorizeActions
             .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((action) => action.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard);
+            .filter((action) => action.object.typeOf === factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard);
 
         if (potentialActions === undefined) {
             throw new factory.errors.NotFound('transaction.potentialActions');
@@ -513,7 +514,7 @@ export function useMvtk(transactionId: string) {
         const useActionAttributes = orderPotentialActions.useMvtk;
         if (useActionAttributes !== undefined) {
             // ムビチケ承認アクションがあるはず
-            // const authorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions
+            // const authorizeAction = <factory.action.authorize.discount.mvtk.IAction>transaction.object.authorizeActions
             //     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
             //     .find((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
 
@@ -549,42 +550,25 @@ export function useMvtk(transactionId: string) {
 }
 
 /**
- * Pecorino入金実行
+ * Pecorino賞金入金実行
+ * 取引中に入金取引の承認アクションを完了しているはずなので、その取引を確定するだけの処理です。
  */
-export function givePecorino(params: factory.task.givePecorino.IData) {
-    // tslint:disable-next-line:max-func-body-length
+export function givePecorinoAward(params: factory.task.givePecorinoAward.IData) {
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
         pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
     }) => {
         // アクション開始
-        const action = await repos.action.start<factory.action.transfer.give.pecorino.IAction>(params);
+        const action = await repos.action.start<factory.action.transfer.give.pecorinoAward.IAction>(params);
 
         try {
-            // 入金取引
+            // 入金取引確定
             const depositService = new pecorinoapi.service.transaction.Deposit({
-                endpoint: params.toLocation.pecorinoEndpoint,
+                endpoint: params.object.pecorinoEndpoint,
                 auth: repos.pecorinoAuthClient
             });
-            const transaction = await depositService.start({
-                toAccountNumber: params.toLocation.accountNumber,
-                // tslint:disable-next-line:no-magic-numbers
-                expires: moment().add(5, 'minutes').toDate(),
-                agent: {
-                    ...params.agent,
-                    name: params.purpose.seller.name,
-                    url: params.purpose.seller.url
-                },
-                recipient: {
-                    ...params.recipient,
-                    name: `${params.purpose.customer.familyName} ${params.purpose.customer.givenName}`,
-                    url: params.purpose.customer.url
-                },
-                amount: params.object.amount,
-                notes: 'シネマサンシャインインセンティブ'
-            });
-            await depositService.confirm({ transactionId: transaction.id });
+            await depositService.confirm({ transactionId: params.object.pecorinoTransaction.id });
         } catch (error) {
             // actionにエラー結果を追加
             try {
@@ -600,7 +584,21 @@ export function givePecorino(params: factory.task.givePecorino.IData) {
 
         // アクション完了
         debug('ending action...');
-        const actionResult: factory.action.transfer.give.pecorino.IResult = {};
+        const actionResult: factory.action.transfer.give.pecorinoAward.IResult = {};
         await repos.action.complete(params.typeOf, action.id, actionResult);
+    };
+}
+
+/**
+ * Pecorino賞金返却実行
+ */
+export function returnPecorinoAward(_: factory.task.returnPecorinoAward.IData) {
+    return async (__: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+        pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO 実装
     };
 }

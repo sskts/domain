@@ -357,9 +357,9 @@ export function confirm(params: {
         }
 
         // Pecorino支払いアクション
-        const pecorinotAuthorizeActions = <factory.action.authorize.pecorino.IAction[]>transaction.object.authorizeActions
+        const pecorinotAuthorizeActions = <factory.action.authorize.paymentMethod.pecorino.IAction[]>transaction.object.authorizeActions
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((a) => a.object.typeOf === factory.action.authorize.pecorino.ObjectType.Pecorino);
+            .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.pecorino.ObjectType.PecorinoPayment);
         const payPecorinoActions: factory.action.trade.pay.IAttributes<factory.paymentMethodType.Pecorino>[] =
             pecorinotAuthorizeActions.map((a) => {
                 return {
@@ -370,8 +370,8 @@ export function confirm(params: {
                             paymentMethod: <factory.paymentMethodType.Pecorino>factory.paymentMethodType.Pecorino,
                             paymentMethodId: a.id
                         },
-                        pecorinoTransaction: (<factory.action.authorize.pecorino.IResult>a.result).pecorinoTransaction,
-                        pecorinoEndpoint: (<factory.action.authorize.pecorino.IResult>a.result).pecorinoEndpoint
+                        pecorinoTransaction: (<factory.action.authorize.paymentMethod.pecorino.IResult>a.result).pecorinoTransaction,
+                        pecorinoEndpoint: (<factory.action.authorize.paymentMethod.pecorino.IResult>a.result).pecorinoEndpoint
                     },
                     agent: transaction.agent,
                     purpose: order
@@ -380,9 +380,9 @@ export function confirm(params: {
 
         // ムビチケ使用アクション
         let useMvtkAction: factory.action.consume.use.mvtk.IAttributes | null = null;
-        const mvtkAuthorizeAction = <factory.action.authorize.mvtk.IAction>transaction.object.authorizeActions
+        const mvtkAuthorizeAction = <factory.action.authorize.discount.mvtk.IAction>transaction.object.authorizeActions
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .find((a) => a.object.typeOf === factory.action.authorize.mvtk.ObjectType.Mvtk);
+            .find((a) => a.object.typeOf === factory.action.authorize.discount.mvtk.ObjectType.Mvtk);
         if (mvtkAuthorizeAction !== undefined) {
             useMvtkAction = factory.action.consume.use.mvtk.createAttributes({
                 actionStatus: factory.actionStatusType.ActiveActionStatus,
@@ -398,23 +398,29 @@ export function confirm(params: {
         // Pecorino口座使用ユーザーであればインセンティブ付与
         // tslint:disable-next-line:no-suspicious-comment
         // TODO インセンティブ付与条件が「会員だったら」になっているが、雑なので調整すべし
-        let givePecorinoActions: factory.action.transfer.give.pecorino.IAttributes[] = [];
+        let givePecorinoAwardActions: factory.action.transfer.give.pecorinoAward.IAttributes[] = [];
         if (transaction.agent.memberOf !== undefined && Array.isArray(params.incentives)) {
-            givePecorinoActions = params.incentives.map((i) => {
+            const pecorinoAwardAuthorizeActions = (<factory.action.authorize.award.pecorino.IAction[]>transaction.object.authorizeActions)
+                .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward);
+            givePecorinoAwardActions = pecorinoAwardAuthorizeActions.map((a) => {
+                const actionResult = <factory.action.authorize.award.pecorino.IResult>a.result;
+
                 return {
                     typeOf: <factory.actionType.GiveAction>factory.actionType.GiveAction,
                     agent: transaction.seller,
                     recipient: transaction.agent,
                     object: {
-                        typeOf: factory.action.transfer.give.pecorino.ObjectType.Pecorino,
-                        amount: i.amount
+                        typeOf: factory.action.transfer.give.pecorinoAward.ObjectType.PecorinoAward,
+                        pecorinoTransaction: actionResult.pecorinoTransaction,
+                        pecorinoEndpoint: actionResult.pecorinoEndpoint
                     },
-                    purpose: order,
-                    toLocation: {
-                        typeOf: factory.pecorino.account.AccountType.Account,
-                        accountNumber: i.toAccountNumber,
-                        pecorinoEndpoint: i.pecorinoEndpoint
-                    }
+                    purpose: order
+                    // toLocation: {
+                    //     typeOf: factory.pecorino.account.AccountType.Account,
+                    //     accountNumber: i.toAccountNumber,
+                    //     pecorinoEndpoint: i.pecorinoEndpoint
+                    // }
                 };
             });
         }
@@ -466,7 +472,7 @@ export function confirm(params: {
                             sendEmailMessage: (sendEmailMessageActionAttributes !== null) ? sendEmailMessageActionAttributes : undefined
                         }
                     }),
-                    givePecorino: givePecorinoActions
+                    givePecorinoAward: givePecorinoAwardActions
                 }
             }
         };
@@ -489,15 +495,15 @@ export function confirm(params: {
  */
 export function validateTransaction(transaction: factory.transaction.placeOrder.ITransaction) {
     type IAuthorizeActionResult =
-        factory.action.authorize.creditCard.IResult |
-        factory.action.authorize.mvtk.IResult |
-        factory.action.authorize.seatReservation.IResult |
-        factory.action.authorize.pecorino.IResult;
+        factory.action.authorize.paymentMethod.creditCard.IResult |
+        factory.action.authorize.discount.mvtk.IResult |
+        factory.action.authorize.offer.seatReservation.IResult |
+        factory.action.authorize.paymentMethod.pecorino.IResult;
 
     // クレジットカードオーソリをひとつに限定
     const creditCardAuthorizeActions = transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard);
+        .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard);
     if (creditCardAuthorizeActions.length > 1) {
         throw new factory.errors.Argument('transactionId', 'The number of credit card authorize actions must be one.');
     }
@@ -505,7 +511,7 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
     // ムビチケ着券情報をひとつに限定
     const mvtkAuthorizeActions = transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.mvtk.ObjectType.Mvtk);
+        .filter((a) => a.object.typeOf === factory.action.authorize.discount.mvtk.ObjectType.Mvtk);
     if (mvtkAuthorizeActions.length > 1) {
         throw new factory.errors.Argument('transactionId', 'The number of mvtk authorize actions must be one.');
     }
@@ -522,19 +528,19 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
     debug('priceByAgent priceBySeller:', priceByAgent, priceBySeller);
 
     // ポイント鑑賞券によって必要なポイントがどのくらいあるか算出
-    const seatReservationAuthorizeActions = <factory.action.authorize.seatReservation.IAction[]>transaction.object.authorizeActions
+    const seatReservationAuthorizeActions = <factory.action.authorize.offer.seatReservation.IAction[]>transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.seatReservation.ObjectType.SeatReservation);
+        .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
     if (seatReservationAuthorizeActions.length > 1) {
         throw new factory.errors.Argument('transactionId', 'The number of seat reservation authorize actions must be one.');
     }
     const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
-    const requiredPoint = (<factory.action.authorize.seatReservation.IResult>seatReservationAuthorizeAction.result).pecorinoAmount;
+    const requiredPoint = (<factory.action.authorize.offer.seatReservation.IResult>seatReservationAuthorizeAction.result).pecorinoAmount;
     // 必要ポイントがある場合、Pecorinoのオーソリ金額と比較
     if (requiredPoint > 0) {
-        const authorizedPecorinoAmount = (<factory.action.authorize.pecorino.IAction[]>transaction.object.authorizeActions)
+        const authorizedPecorinoAmount = (<factory.action.authorize.paymentMethod.pecorino.IAction[]>transaction.object.authorizeActions)
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((a) => a.object.typeOf === factory.action.authorize.pecorino.ObjectType.Pecorino)
+            .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.pecorino.ObjectType.PecorinoPayment)
             .reduce((a, b) => a + b.object.amount, 0);
         if (requiredPoint !== authorizedPecorinoAmount) {
             throw new factory.errors.Argument('transactionId', 'Required pecorino amount not satisfied.');
@@ -566,7 +572,7 @@ export function createOrderFromTransaction(params: {
     // seatReservation exists?
     const seatReservationAuthorizeActions = params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.seatReservation.ObjectType.SeatReservation);
+        .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
     if (seatReservationAuthorizeActions.length === 0) {
         throw new factory.errors.Argument('transaction', 'Seat reservation does not exist.');
     }
@@ -592,15 +598,15 @@ export function createOrderFromTransaction(params: {
     const discounts: factory.order.IDiscount[] = [];
     params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.mvtk.ObjectType.Mvtk)
-        .forEach((mvtkAuthorizeAction: factory.action.authorize.mvtk.IAction) => {
+        .filter((a) => a.object.typeOf === factory.action.authorize.discount.mvtk.ObjectType.Mvtk)
+        .forEach((mvtkAuthorizeAction: factory.action.authorize.discount.mvtk.IAction) => {
             const discountCode = mvtkAuthorizeAction.object.seatInfoSyncIn.knyknrNoInfo.map(
                 (knshInfo) => knshInfo.knyknrNo
             ).join(',');
 
             discounts.push({
                 name: 'ムビチケカード',
-                discount: (<factory.action.authorize.mvtk.IResult>mvtkAuthorizeAction.result).price,
+                discount: (<factory.action.authorize.discount.mvtk.IResult>mvtkAuthorizeAction.result).price,
                 discountCode: discountCode,
                 discountCurrency: factory.priceCurrency.JPY
             });
@@ -611,24 +617,26 @@ export function createOrderFromTransaction(params: {
     // クレジットカード決済があれば決済方法に追加
     params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.creditCard.ObjectType.CreditCard)
-        .forEach((creditCardAuthorizeAction: factory.action.authorize.creditCard.IAction) => {
+        .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard)
+        .forEach((creditCardAuthorizeAction: factory.action.authorize.paymentMethod.creditCard.IAction) => {
+            const actionResult = <factory.action.authorize.paymentMethod.creditCard.IResult>creditCardAuthorizeAction.result;
             paymentMethods.push({
                 name: 'クレジットカード',
                 paymentMethod: factory.paymentMethodType.CreditCard,
-                paymentMethodId: (<factory.action.authorize.creditCard.IResult>creditCardAuthorizeAction.result).execTranResult.orderId
+                paymentMethodId: actionResult.execTranResult.orderId
             });
         });
 
     // pecorino決済があれば決済方法に追加
     params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.pecorino.ObjectType.Pecorino)
-        .forEach((pecorinoAuthorizeAction: factory.action.authorize.pecorino.IAction) => {
+        .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.pecorino.ObjectType.PecorinoPayment)
+        .forEach((pecorinoAuthorizeAction: factory.action.authorize.paymentMethod.pecorino.IAction) => {
+            const actionResult = <factory.action.authorize.paymentMethod.pecorino.IResult>pecorinoAuthorizeAction.result;
             paymentMethods.push({
                 name: 'Pecorino',
                 paymentMethod: factory.paymentMethodType.Pecorino,
-                paymentMethodId: (<factory.action.authorize.pecorino.IResult>pecorinoAuthorizeAction.result).pecorinoTransaction.id
+                paymentMethodId: actionResult.pecorinoTransaction.id
             });
         });
 

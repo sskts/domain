@@ -43,9 +43,9 @@ export function sendOrder(transactionId: string) {
             throw new factory.errors.NotFound('transaction.potentialActions');
         }
 
-        const authorizeActions = <factory.action.authorize.seatReservation.IAction[]>transaction.object.authorizeActions
+        const authorizeActions = <factory.action.authorize.offer.seatReservation.IAction[]>transaction.object.authorizeActions
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((a) => a.object.typeOf === factory.action.authorize.seatReservation.ObjectType.SeatReservation);
+            .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
         if (authorizeActions.length !== 1) {
             throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
         }

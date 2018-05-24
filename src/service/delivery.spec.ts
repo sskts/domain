@@ -56,7 +56,7 @@ describe('service.delivery.sendOrder()', () => {
                     {
                         typeOf: sskts.factory.actionType.AuthorizeAction,
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        object: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation },
+                        object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
                         result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
                     }
                 ]
@@ -129,7 +129,7 @@ describe('service.delivery.sendOrder()', () => {
                     {
                         typeOf: sskts.factory.actionType.AuthorizeAction,
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        object: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation },
+                        object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
                         result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
                     }
                 ]
@@ -202,7 +202,7 @@ describe('service.delivery.sendOrder()', () => {
                     {
                         typeOf: sskts.factory.actionType.AuthorizeAction,
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        object: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation },
+                        object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
                         result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
                     }
                 ]
@@ -255,7 +255,7 @@ describe('service.delivery.sendOrder()', () => {
                     {
                         typeOf: sskts.factory.actionType.AuthorizeAction,
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        object: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation },
+                        object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
                         result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
                     }
                 ]
@@ -321,7 +321,7 @@ describe('service.delivery.sendOrder()', () => {
                     {
                         typeOf: sskts.factory.actionType.AuthorizeAction,
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        object: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation }
+                        object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation }
                         // result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
                     }
                 ]
@@ -387,13 +387,13 @@ describe('service.delivery.sendOrder()', () => {
                     {
                         typeOf: sskts.factory.actionType.AuthorizeAction,
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        object: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation },
+                        object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
                         result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
                     },
                     {
                         typeOf: sskts.factory.actionType.AuthorizeAction,
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        object: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation },
+                        object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
                         result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
                     }
                 ]
@@ -459,7 +459,7 @@ describe('service.delivery.sendOrder()', () => {
                     {
                         typeOf: sskts.factory.actionType.AuthorizeAction,
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        object: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation },
+                        object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
                         result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
                     }
                 ]
@@ -525,7 +525,7 @@ describe('service.delivery.sendOrder()', () => {
                     {
                         typeOf: sskts.factory.actionType.AuthorizeAction,
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        object: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation },
+                        object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
                         result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
                     }
                 ]
@@ -589,7 +589,7 @@ describe('service.delivery.sendOrder()', () => {
                     {
                         typeOf: sskts.factory.actionType.AuthorizeAction,
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        object: { typeOf: sskts.factory.action.authorize.seatReservation.ObjectType.SeatReservation },
+                        object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
                         result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
                     }
                 ]

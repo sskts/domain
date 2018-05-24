@@ -22,8 +22,8 @@ export type ICreateOperation<T> = (repos: {
 export function create(
     agentId: string,
     transactionId: string,
-    authorizeObject: factory.action.authorize.mvtk.IObject
-): ICreateOperation<factory.action.authorize.mvtk.IAction> {
+    authorizeObject: factory.action.authorize.discount.mvtk.IObject
+): ICreateOperation<factory.action.authorize.discount.mvtk.IAction> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
@@ -43,9 +43,9 @@ export function create(
                 $exists: true,
                 $eq: transactionId
             },
-            'object.typeOf': factory.action.authorize.seatReservation.ObjectType.SeatReservation
+            'object.typeOf': factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation
         }).exec().then((docs) => docs
-            .map((doc) => <factory.action.authorize.seatReservation.IAction>doc.toObject())
+            .map((doc) => <factory.action.authorize.offer.seatReservation.IAction>doc.toObject())
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus));
         if (seatReservationAuthorizeActions.length === 0) {
             throw new factory.errors.Argument('transactionId', '座席予約が見つかりません。');
@@ -58,7 +58,7 @@ export function create(
         const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
         const seatReservationAuthorizeActionObject = seatReservationAuthorizeAction.object;
         const seatReservationAuthorizeActionResult =
-            <factory.action.authorize.seatReservation.IResult>seatReservationAuthorizeAction.result;
+            <factory.action.authorize.offer.seatReservation.IResult>seatReservationAuthorizeAction.result;
 
         // 購入管理番号が一致しているか
         interface IKnyknrNoNumsByNo { [knyknrNo: string]: number; }
@@ -133,23 +133,23 @@ export function create(
             throw new factory.errors.Argument('authorizeActionResult', 'zskInfo not matched with seat reservation authorizeAction');
         }
 
-        const actionAttributes: factory.action.authorize.mvtk.IAttributes = {
+        const actionAttributes: factory.action.authorize.discount.mvtk.IAttributes = {
             typeOf: factory.actionType.AuthorizeAction,
             object: authorizeObject,
             agent: transaction.agent,
             recipient: transaction.seller,
             purpose: transaction // purposeは取引
         };
-        const action = await repos.action.start<factory.action.authorize.mvtk.IAction>(actionAttributes);
+        const action = await repos.action.start<factory.action.authorize.discount.mvtk.IAction>(actionAttributes);
 
         // 特に何もしない
 
         // アクションを完了
-        const result: factory.action.authorize.mvtk.IResult = {
+        const result: factory.action.authorize.discount.mvtk.IResult = {
             price: authorizeObject.price
         };
 
-        return repos.action.complete<factory.action.authorize.mvtk.IAction>(factory.actionType.AuthorizeAction, action.id, result);
+        return repos.action.complete<factory.action.authorize.discount.mvtk.IAction>(factory.actionType.AuthorizeAction, action.id, result);
     };
 }
 

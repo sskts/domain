@@ -42,7 +42,7 @@ export function create(params: {
      * 支払取引メモ
      */
     notes?: string;
-}): ICreateOperation<factory.action.authorize.pecorino.IAction> {
+}): ICreateOperation<factory.action.authorize.paymentMethod.pecorino.IAction> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
@@ -67,10 +67,10 @@ export function create(params: {
         // }
 
         // 承認アクションを開始する
-        const actionAttributes: factory.action.authorize.pecorino.IAttributes = {
+        const actionAttributes: factory.action.authorize.paymentMethod.pecorino.IAttributes = {
             typeOf: factory.actionType.AuthorizeAction,
             object: {
-                typeOf: factory.action.authorize.pecorino.ObjectType.Pecorino,
+                typeOf: factory.action.authorize.paymentMethod.pecorino.ObjectType.PecorinoPayment,
                 transactionId: params.transactionId,
                 amount: params.amount
             },
@@ -78,7 +78,7 @@ export function create(params: {
             recipient: transaction.seller,
             purpose: transaction
         };
-        const action = await repos.action.start<factory.action.authorize.pecorino.IAction>(actionAttributes);
+        const action = await repos.action.start<factory.action.authorize.paymentMethod.pecorino.IAction>(actionAttributes);
 
         let pecorinoEndpoint: string;
 
@@ -96,7 +96,7 @@ export function create(params: {
                     // 最大1ヵ月のオーソリ
                     expires: moment().add(1, 'month').toDate(),
                     agent: {
-                        name: `kwskfs-transaction-${transaction.id}`
+                        name: `sskts-transaction-${transaction.id}`
                     },
                     recipient: {
                         typeOf: 'Person',
@@ -185,14 +185,14 @@ export function create(params: {
 
         // アクションを完了
         debug('ending authorize action...');
-        const actionResult: factory.action.authorize.pecorino.IResult = {
+        const actionResult: factory.action.authorize.paymentMethod.pecorino.IResult = {
             price: 0, // JPYとして0円
             amount: params.amount,
             pecorinoTransaction: pecorinoTransaction,
             pecorinoEndpoint: pecorinoEndpoint
         };
 
-        return repos.action.complete<factory.action.authorize.pecorino.IAction>(action.typeOf, action.id, actionResult);
+        return repos.action.complete<factory.action.authorize.paymentMethod.pecorino.IAction>(action.typeOf, action.id, actionResult);
     };
 }
 
@@ -228,7 +228,7 @@ export function cancel(params: {
 
         // まずアクションをキャンセル
         const action = await repos.action.cancel(factory.actionType.AuthorizeAction, params.actionId);
-        const actionResult = <factory.action.authorize.pecorino.IResult>action.result;
+        const actionResult = <factory.action.authorize.paymentMethod.pecorino.IResult>action.result;
 
         // Pecorinoで取消中止実行
         if (repos.payTransactionService !== undefined) {

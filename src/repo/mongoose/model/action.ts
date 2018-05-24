@@ -177,7 +177,7 @@ schema.index(
     {
         name: 'searchSeatReservationAuthorizeActionByEvent',
         partialFilterExpression: {
-            'object.typeOf': factory.action.authorize.seatReservation.ObjectType.SeatReservation
+            'object.typeOf': factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation
         }
     }
 );
@@ -188,7 +188,7 @@ schema.index(
     {
         name: 'searchSeatReservationAuthorizeActionByEventAndSeat',
         partialFilterExpression: {
-            'object.typeOf': factory.action.authorize.seatReservation.ObjectType.SeatReservation
+            'object.typeOf': factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation
         }
     }
 );
@@ -199,7 +199,7 @@ schema.index(
     {
         name: 'searchCreditCardAuthorizeActionByOrderId',
         partialFilterExpression: {
-            'object.typeOf': factory.action.authorize.creditCard.ObjectType.CreditCard
+            'object.typeOf': factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard
         }
     }
 );
@@ -210,7 +210,7 @@ schema.index(
     {
         name: 'searchMvtkAuthorizeActionByKnyknrNo',
         partialFilterExpression: {
-            'object.typeOf': factory.action.authorize.mvtk.ObjectType.Mvtk
+            'object.typeOf': factory.action.authorize.discount.mvtk.ObjectType.Mvtk
         }
     }
 );
