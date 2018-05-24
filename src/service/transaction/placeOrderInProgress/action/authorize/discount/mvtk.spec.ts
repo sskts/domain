@@ -6,7 +6,7 @@
 
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
-import * as sskts from '../../../../../index';
+import * as sskts from '../../../../../../index';
 // tslint:disable-next-line:no-require-imports no-var-requires
 require('sinon-mongoose');
 
@@ -87,7 +87,7 @@ describe('action.authorize.mvtk.create()', () => {
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
         sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create(
             agent.id,
             transaction.id,
             <any>authorizeObject
@@ -151,7 +151,7 @@ describe('action.authorize.mvtk.create()', () => {
             .resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create(
             agent.id,
             transaction.id,
             <any>authorizeObject
@@ -187,7 +187,7 @@ describe('action.authorize.mvtk.create()', () => {
         sandbox.mock(actionRepo).expects('start').never();
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create(
             agent.id,
             transaction.id,
             <any>authorizeObject
@@ -242,7 +242,7 @@ describe('action.authorize.mvtk.create()', () => {
             .chain('exec').resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create(
             agent.id,
             transaction.id,
             <any>authorizeObject
@@ -314,7 +314,7 @@ describe('action.authorize.mvtk.create()', () => {
             .chain('exec').resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create(
             agent.id,
             transaction.id,
             <any>authorizeObject
@@ -386,7 +386,7 @@ describe('action.authorize.mvtk.create()', () => {
             .chain('exec').resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create(
             agent.id,
             transaction.id,
             <any>authorizeObject
@@ -458,7 +458,7 @@ describe('action.authorize.mvtk.create()', () => {
             .chain('exec').resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create(
             agent.id,
             transaction.id,
             <any>authorizeObject
@@ -530,7 +530,7 @@ describe('action.authorize.mvtk.create()', () => {
             .chain('exec').resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create(
             agent.id,
             transaction.id,
             <any>authorizeObject
@@ -602,7 +602,7 @@ describe('action.authorize.mvtk.create()', () => {
             .chain('exec').resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create(
             agent.id,
             transaction.id,
             <any>authorizeObject
@@ -646,7 +646,7 @@ describe('action.authorize.mvtk.cancel()', () => {
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(authorizeActionRepo).expects('cancel').once().withExactArgs(action.typeOf, action.id).resolves();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.cancel(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel(
             agent.id,
             transaction.id,
             action.id
@@ -683,7 +683,7 @@ describe('action.authorize.mvtk.cancel()', () => {
             .withExactArgs(transaction.id).resolves(transaction);
         sandbox.mock(authorizeActionRepo).expects('cancel').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.mvtk.cancel(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel(
             agent.id,
             transaction.id,
             action.id

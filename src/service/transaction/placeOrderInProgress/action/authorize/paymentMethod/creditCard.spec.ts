@@ -7,7 +7,7 @@
 
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
-import * as sskts from '../../../../../index';
+import * as sskts from '../../../../../../index';
 
 let sandbox: sinon.SinonSandbox;
 
@@ -60,7 +60,7 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(sskts.GMO.services.credit).expects('execTran').once().resolves(execTranResult);
         sandbox.mock(actionRepo).expects('complete').once().resolves(action);
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(
             agent.id,
             transaction.id,
             orderId,
@@ -111,7 +111,7 @@ describe('action.authorize.creditCard.create()', () => {
     //     sandbox.mock(sskts.GMO.services.credit).expects('entryTran').never();
     //     sandbox.mock(sskts.GMO.services.credit).expects('execTran').never();
 
-    //     const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
+    //     const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(
     //         agent.id,
     //         transaction.id,
     //         orderId,
@@ -171,7 +171,7 @@ describe('action.authorize.creditCard.create()', () => {
             .withArgs(action.typeOf, action.id, sinon.match({ message: entryTranResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(
             agent.id,
             transaction.id,
             orderId,
@@ -230,7 +230,7 @@ describe('action.authorize.creditCard.create()', () => {
             .withArgs(action.typeOf, action.id, entryTranResult).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(
             agent.id,
             transaction.id,
             orderId,
@@ -292,7 +292,7 @@ describe('action.authorize.creditCard.create()', () => {
             .withArgs(action.typeOf, action.id, sinon.match({ message: entryTranResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(
             agent.id,
             transaction.id,
             orderId,
@@ -355,7 +355,7 @@ describe('action.authorize.creditCard.create()', () => {
             .withArgs(action.typeOf, action.id, sinon.match({ message: entryTranResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(
             agent.id,
             transaction.id,
             orderId,
@@ -418,7 +418,7 @@ describe('action.authorize.creditCard.create()', () => {
             .withArgs(action.typeOf, action.id, sinon.match({ message: entryTranResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(
             agent.id,
             transaction.id,
             orderId,
@@ -476,7 +476,7 @@ describe('action.authorize.creditCard.cancel()', () => {
             .withExactArgs(action.typeOf, action.id).resolves(action);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().resolves();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel(
             agent.id,
             transaction.id,
             action.id
@@ -518,7 +518,7 @@ describe('action.authorize.creditCard.cancel()', () => {
         sandbox.mock(actionRepo).expects('cancel').never();
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel(
             agent.id,
             transaction.id,
             actionId
@@ -566,7 +566,7 @@ describe('action.authorize.creditCard.cancel()', () => {
             .withExactArgs(action.typeOf, action.id).resolves(action);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().rejects();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel(
             agent.id,
             transaction.id,
             action.id

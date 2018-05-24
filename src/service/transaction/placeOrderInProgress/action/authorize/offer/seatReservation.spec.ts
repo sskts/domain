@@ -6,7 +6,7 @@
 
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
-import * as sskts from '../../../../../index';
+import * as sskts from '../../../../../../index';
 // tslint:disable-next-line:no-require-imports no-var-requires
 require('sinon-mongoose');
 
@@ -64,7 +64,7 @@ describe('action.authorize.seatReservation.create()', () => {
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().resolves(reserveSeatsTemporarilyResult);
         sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -127,7 +127,7 @@ describe('action.authorize.seatReservation.create()', () => {
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().resolves(reserveSeatsTemporarilyResult);
         sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -192,7 +192,7 @@ describe('action.authorize.seatReservation.create()', () => {
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().resolves(reserveSeatsTemporarilyResult);
         sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -261,7 +261,7 @@ describe('action.authorize.seatReservation.create()', () => {
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().resolves(reserveSeatsTemporarilyResult);
         sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -323,7 +323,7 @@ describe('action.authorize.seatReservation.create()', () => {
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().resolves(reserveSeatsTemporarilyResult);
         sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -385,7 +385,7 @@ describe('action.authorize.seatReservation.create()', () => {
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').never();
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -443,7 +443,7 @@ describe('action.authorize.seatReservation.create()', () => {
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').never();
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -502,7 +502,7 @@ describe('action.authorize.seatReservation.create()', () => {
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').never();
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -556,7 +556,7 @@ describe('action.authorize.seatReservation.create()', () => {
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').never();
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -603,7 +603,7 @@ describe('action.authorize.seatReservation.create()', () => {
         sandbox.mock(actionRepo).expects('start').never();
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -666,7 +666,7 @@ describe('action.authorize.seatReservation.create()', () => {
             .withArgs(action.typeOf, action.id, sinon.match({ message: updTmpReserveSeatResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -728,7 +728,7 @@ describe('action.authorize.seatReservation.create()', () => {
             .withArgs(action.typeOf, action.id, updTmpReserveSeatResult).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -791,7 +791,7 @@ describe('action.authorize.seatReservation.create()', () => {
             .withArgs(action.typeOf, action.id, sinon.match({ message: updTmpReserveSeatResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -856,7 +856,7 @@ describe('action.authorize.seatReservation.create()', () => {
             .withArgs(action.typeOf, action.id, sinon.match({ message: updTmpReserveSeatResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -921,7 +921,7 @@ describe('action.authorize.seatReservation.create()', () => {
             .withArgs(action.typeOf, action.id, sinon.match({ message: updTmpReserveSeatResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -1003,7 +1003,7 @@ describe('action.authorize.seatReservation.create()', () => {
         sandbox.mock(actionRepo).expects('giveUp').never();
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -1088,7 +1088,7 @@ describe('action.authorize.seatReservation.create()', () => {
         sandbox.mock(sskts.COA.services.reserve).expects('updTmpReserveSeat').once().resolves(updTmpReserveSeatResult);
         sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.create(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create(
             agent.id,
             transaction.id,
             eventIdentifier,
@@ -1138,7 +1138,7 @@ describe('action.authorize.seatReservation.cancel()', () => {
         sandbox.mock(actionRepo).expects('cancel').once().withExactArgs(action.typeOf, action.id).resolves(action);
         sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').once().resolves();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel(
             agent.id,
             transaction.id,
             action.id
@@ -1176,7 +1176,7 @@ describe('action.authorize.seatReservation.cancel()', () => {
         sandbox.mock(actionRepo).expects('cancel').never();
         sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.cancel(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel(
             agent.id,
             transaction.id,
             actionId
@@ -1242,7 +1242,7 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
         sandbox.mock(actionRepo.actionModel).expects('findOneAndUpdate').once().chain('exec').resolves(new actionRepo.actionModel(action));
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers(
             agent.id,
             transaction.id,
             action.id,
@@ -1302,7 +1302,7 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
         sandbox.mock(actionRepo).expects('findById').never();
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers(
             agent.id,
             transaction.id,
             action.id,
@@ -1362,7 +1362,7 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
         sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').never();
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers(
             agent.id,
             transaction.id,
             action.id,
@@ -1421,7 +1421,7 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
         sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').never();
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers(
             agent.id,
             transaction.id,
             action.id,
@@ -1485,7 +1485,7 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
         sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').never();
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers(
             agent.id,
             transaction.id,
             action.id,
@@ -1548,7 +1548,7 @@ describe('action.authorize.seatReservation.changeOffers()', () => {
         sandbox.mock(sskts.COA.services.reserve).expects('salesTicket').once().resolves(salesTickets);
         sandbox.mock(actionRepo.actionModel).expects('findOneAndUpdate').once().chain('exec').resolves(null);
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.seatReservation.changeOffers(
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers(
             agent.id,
             transaction.id,
             action.id,

@@ -5,9 +5,9 @@ import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import { MongoRepository as ActionRepo } from '../../../../../repo/action';
-import { MongoRepository as OrganizationRepo } from '../../../../../repo/organization';
-import { MongoRepository as TransactionRepo } from '../../../../../repo/transaction';
+import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
+import { MongoRepository as OrganizationRepo } from '../../../../../../repo/organization';
+import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:creditCard');
 

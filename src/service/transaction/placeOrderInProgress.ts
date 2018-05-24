@@ -14,10 +14,10 @@ import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as OrganizationRepo } from '../../repo/organization';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
-import * as CreditCardAuthorizeActionService from './placeOrderInProgress/action/authorize/creditCard';
-import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/authorize/mvtk';
-import * as PecorinoAuthorizeActionService from './placeOrderInProgress/action/authorize/pecorino';
-import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/action/authorize/seatReservation';
+import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/authorize/discount/mvtk';
+import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/seatReservation';
+import * as CreditCardAuthorizeActionService from './placeOrderInProgress/action/authorize/paymentMethod/creditCard';
+import * as PecorinoAuthorizeActionService from './placeOrderInProgress/action/authorize/paymentMethod/pecorino';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress');
 
@@ -168,29 +168,32 @@ function validatePassport(passport: waiter.factory.passport.IPassport, sellerIde
 export namespace action {
     /**
      * 取引に対する承認アクション
-     * @export
      */
     export namespace authorize {
-        /**
-         * クレジットカード承認アクションサービス
-         * @export
-         */
-        export import creditCard = CreditCardAuthorizeActionService;
-        /**
-         * ムビチケ承認アクションサービス
-         * @export
-         */
-        export import mvtk = MvtkAuthorizeActionService;
-        /**
-         * 座席予約承認アクションサービス
-         * @export
-         */
-        export import seatReservation = SeatReservationAuthorizeActionService;
-        /**
-         * Pecorino承認アクションサービス
-         * @export
-         */
-        export import pecorino = PecorinoAuthorizeActionService;
+        export namespace award {
+        }
+        export namespace discount {
+            /**
+             * ムビチケ承認アクションサービス
+             */
+            export import mvtk = MvtkAuthorizeActionService;
+        }
+        export namespace offer {
+            /**
+             * 座席予約承認アクションサービス
+             */
+            export import seatReservation = SeatReservationAuthorizeActionService;
+        }
+        export namespace paymentMethod {
+            /**
+             * クレジットカード承認アクションサービス
+             */
+            export import creditCard = CreditCardAuthorizeActionService;
+            /**
+             * Pecorino承認アクションサービス
+             */
+            export import pecorino = PecorinoAuthorizeActionService;
+        }
     }
 }
 

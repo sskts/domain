@@ -7,7 +7,7 @@
 
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
-import * as sskts from '../../../../../index';
+import * as sskts from '../../../../../../index';
 
 let sandbox: sinon.SinonSandbox;
 
@@ -55,7 +55,7 @@ describe('action.authorize.pecorino.create()', () => {
         sandbox.mock(actionRepo).expects('complete').once().resolves(action);
         sandbox.mock(payTransactionService).expects('start').once().resolves(pecorinoTransaction);
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.create({
             transactionId: transaction.id,
             amount: amount,
             fromAccountNumber: 'fromAccountNumber',
@@ -100,7 +100,7 @@ describe('action.authorize.pecorino.create()', () => {
     //     sandbox.mock(actionRepo).expects('start').never();
     //     sandbox.mock(payTransactionService).expects('start').never();
 
-    //     const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create(
+    //     const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.create(
     //         agent.id,
     //         transaction.id,
     //         price
@@ -152,7 +152,7 @@ describe('action.authorize.pecorino.create()', () => {
             .withArgs(action.typeOf, action.id, sinon.match({ message: startPayTransactionResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.pecorino.create({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.create({
             transactionId: transaction.id,
             amount: amount,
             fromAccountNumber: 'fromAccountNumber',

@@ -6,9 +6,9 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { INTERNAL_SERVER_ERROR } from 'http-status';
 
-import { MongoRepository as ActionRepo } from '../../../../../repo/action';
-import { MongoRepository as EventRepo } from '../../../../../repo/event';
-import { MongoRepository as TransactionRepo } from '../../../../../repo/transaction';
+import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
+import { MongoRepository as EventRepo } from '../../../../../../repo/event';
+import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:seatReservation');
 

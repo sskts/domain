@@ -7,9 +7,9 @@ import * as createDebug from 'debug';
 import { BAD_REQUEST, FORBIDDEN, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from 'http-status';
 import * as moment from 'moment';
 
-import { MongoRepository as ActionRepo } from '../../../../../repo/action';
-import { MongoRepository as OrganizationRepo } from '../../../../../repo/organization';
-import { MongoRepository as TransactionRepo } from '../../../../../repo/transaction';
+import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
+import { MongoRepository as OrganizationRepo } from '../../../../../../repo/organization';
+import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:pecorino');
 
