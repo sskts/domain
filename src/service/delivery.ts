@@ -1,8 +1,6 @@
 /**
  * 配送サービス
- * @namespace service.delivery
  */
-
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
@@ -33,7 +31,7 @@ export function sendOrder(transactionId: string) {
         transaction: TransactionRepo;
         task: TaskRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
@@ -67,7 +65,7 @@ export function sendOrder(transactionId: string) {
 
         // アクション開始
         const sendOrderActionAttributes = orderPotentialActions.sendOrder;
-        const action = await repos.action.start<factory.action.transfer.send.order.IAction>(sendOrderActionAttributes);
+        const action = await repos.action.start(sendOrderActionAttributes);
 
         try {
             const updTmpReserveSeatArgs = authorizeActionResult.updTmpReserveSeatArgs;

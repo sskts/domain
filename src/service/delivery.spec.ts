@@ -71,7 +71,7 @@ describe('service.delivery.sendOrder()', () => {
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo.taskModel).expects('findOne').once().chain('exec').resolves(null);
         sandbox.mock(actionRepo).expects('start').once().withExactArgs(sendOrderActionAttributes).resolves(action);
         sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
@@ -144,7 +144,7 @@ describe('service.delivery.sendOrder()', () => {
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo.taskModel).expects('findOne').once().chain('exec').resolves(null);
         sandbox.mock(actionRepo).expects('start').once().withExactArgs(sendOrderActionAttributes).resolves(action);
         sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
@@ -215,7 +215,7 @@ describe('service.delivery.sendOrder()', () => {
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo.taskModel).expects('findOne').never();
         sandbox.mock(actionRepo).expects('start').never();
         sandbox.mock(ownershipInfoRepo).expects('save').never();
@@ -268,7 +268,7 @@ describe('service.delivery.sendOrder()', () => {
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo.taskModel).expects('findOne').never();
         sandbox.mock(actionRepo).expects('start').never();
         sandbox.mock(ownershipInfoRepo).expects('save').never();
@@ -334,7 +334,7 @@ describe('service.delivery.sendOrder()', () => {
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo.taskModel).expects('findOne').never();
         sandbox.mock(actionRepo).expects('start').never();
         sandbox.mock(ownershipInfoRepo).expects('save').never();
@@ -406,7 +406,7 @@ describe('service.delivery.sendOrder()', () => {
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo.taskModel).expects('findOne').never();
         sandbox.mock(actionRepo).expects('start').never();
         sandbox.mock(ownershipInfoRepo).expects('save').never();
@@ -472,7 +472,7 @@ describe('service.delivery.sendOrder()', () => {
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo.taskModel).expects('findOne').never();
         sandbox.mock(actionRepo).expects('start').never();
         sandbox.mock(ownershipInfoRepo).expects('save').never();
@@ -540,7 +540,7 @@ describe('service.delivery.sendOrder()', () => {
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('start').once().withExactArgs(sendOrderActionAttributes).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(actionRepo).expects('giveUp').once().withArgs(action.typeOf, action.id).resolves(action);
@@ -602,7 +602,7 @@ describe('service.delivery.sendOrder()', () => {
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo.taskModel).expects('findOne').never();
         sandbox.mock(actionRepo).expects('start').never();
         sandbox.mock(ownershipInfoRepo).expects('save').never();

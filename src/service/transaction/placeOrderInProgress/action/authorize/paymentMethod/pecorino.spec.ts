@@ -96,7 +96,7 @@ describe('action.authorize.pecorino.create()', () => {
     //     const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
     //     const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay(<any>{});
 
-    //     sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
+    //     sandbox.mock(transactionRepo).expects('findInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
     //     sandbox.mock(actionRepo).expects('start').never();
     //     sandbox.mock(payTransactionService).expects('start').never();
 
@@ -203,7 +203,7 @@ describe('action.authorize.pecorino.create()', () => {
 //         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
 //         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-//         sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
+//         sandbox.mock(transactionRepo).expects('findInProgressById').once()
 //             .withExactArgs(transaction.id).resolves(transaction);
 //         sandbox.mock(actionRepo).expects('cancel').once()
 //             .withExactArgs(action.typeOf, action.id).resolves(action);

@@ -78,7 +78,7 @@ export function create(params: {
             recipient: transaction.seller,
             purpose: transaction
         };
-        const action = await repos.action.start<factory.action.authorize.paymentMethod.pecorino.IAction>(actionAttributes);
+        const action = await repos.action.start(actionAttributes);
 
         let pecorinoEndpoint: string;
 
@@ -192,7 +192,7 @@ export function create(params: {
             pecorinoEndpoint: pecorinoEndpoint
         };
 
-        return repos.action.complete<factory.action.authorize.paymentMethod.pecorino.IAction>(action.typeOf, action.id, actionResult);
+        return repos.action.complete(action.typeOf, action.id, actionResult);
     };
 }
 

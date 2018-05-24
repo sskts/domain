@@ -1,8 +1,6 @@
 /**
  * 通知サービス
- * @namespace service.notification
  */
-
 import * as factory from '@motionpicture/sskts-factory';
 // tslint:disable-next-line:no-require-imports
 import sgMail = require('@sendgrid/mail');
@@ -30,7 +28,7 @@ export function sendEmailMessage(actionAttributes: factory.action.transfer.send.
         action: ActionRepo;
     }) => {
         // アクション開始
-        const action = await repos.action.start<factory.action.transfer.send.message.email.IAction>(actionAttributes);
+        const action = await repos.action.start(actionAttributes);
         let result: any = {};
 
         try {

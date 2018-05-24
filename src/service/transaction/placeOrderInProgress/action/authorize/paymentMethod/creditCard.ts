@@ -42,7 +42,7 @@ export function create(
         organization: OrganizationRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, transactionId);
 
         // 他者口座による決済も可能にするためにコメントアウト
         // 基本的に、自分の口座のオーソリを他者に与えても得しないので、
@@ -68,7 +68,7 @@ export function create(
             recipient: transaction.seller,
             purpose: transaction // purposeは取引
         };
-        const action = await repos.action.start<factory.action.authorize.paymentMethod.creditCard.IAction>(actionAttributes);
+        const action = await repos.action.start(actionAttributes);
 
         // GMOオーソリ取得
         let entryTranArgs: GMO.services.credit.IEntryTranArgs;
@@ -143,7 +143,7 @@ export function create(
             execTranResult: execTranResult
         };
 
-        return repos.action.complete<factory.action.authorize.paymentMethod.creditCard.IAction>(action.typeOf, action.id, result);
+        return repos.action.complete(action.typeOf, action.id, result);
     };
 }
 
@@ -156,7 +156,7 @@ export function cancel(
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');

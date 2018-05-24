@@ -235,8 +235,7 @@ describe('payCreditCard()', () => {
         sandbox.mock(actionRepo).expects('complete').once()
             .withArgs(existingTransaction.potentialActions.order.potentialActions.payCreditCard.typeOf, action.id).resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').never();
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(existingTransaction.id).resolves(existingTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(existingTransaction);
         sandbox.mock(sskts.GMO.services.credit).expects('searchTrade').once().resolves(searchTradeResult);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().resolves();
 
@@ -255,8 +254,7 @@ describe('payCreditCard()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.payCreditCard(transaction.id)({
@@ -274,8 +272,7 @@ describe('payCreditCard()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.payCreditCard(transaction.id)({
@@ -301,7 +298,7 @@ describe('payCreditCard()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.payCreditCard(transaction.id)({
@@ -326,8 +323,7 @@ describe('payCreditCard()', () => {
         sandbox.mock(actionRepo).expects('complete').once()
             .withArgs(existingTransaction.potentialActions.order.potentialActions.payCreditCard.typeOf, action.id).resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').never();
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(existingTransaction.id).resolves(existingTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(existingTransaction);
         sandbox.mock(sskts.GMO.services.credit).expects('searchTrade').once().resolves(searchTradeResult);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').never();
 
@@ -353,8 +349,7 @@ describe('payCreditCard()', () => {
         sandbox.mock(actionRepo).expects('giveUp')
             .withArgs(existingTransaction.potentialActions.order.potentialActions.payCreditCard.typeOf, action.id).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(existingTransaction.id).resolves(existingTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(existingTransaction);
         sandbox.mock(sskts.GMO.services.credit).expects('searchTrade').once().resolves(searchTradeResult);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().rejects(alterTranResult);
 
@@ -374,8 +369,7 @@ describe('payCreditCard()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(placeOrderTransaction.id).resolves(placeOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(placeOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.payCreditCard(placeOrderTransaction.id)({
@@ -418,8 +412,7 @@ describe('useMvtk()', () => {
         sandbox.mock(actionRepo).expects('complete').once()
             .withArgs(existingTransaction.potentialActions.order.potentialActions.useMvtk.typeOf, action.id).resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').never();
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(existingTransaction.id).resolves(existingTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(existingTransaction);
 
         const result = await sskts.service.payment.useMvtk(existingTransaction.id)({
             action: actionRepo,
@@ -436,8 +429,7 @@ describe('useMvtk()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(placeOrderTransaction.id).resolves(placeOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(placeOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.useMvtk(existingTransaction.id)({
@@ -456,8 +448,7 @@ describe('useMvtk()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(placeOrderTransaction.id).resolves(placeOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(placeOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.useMvtk(existingTransaction.id)({
@@ -481,7 +472,7 @@ describe('useMvtk()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once().withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.useMvtk(existingTransaction.id)({
@@ -501,8 +492,7 @@ describe('useMvtk()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(placeOrderTransaction.id).resolves(placeOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(placeOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.useMvtk(existingTransaction.id)({
@@ -549,8 +539,7 @@ describe('refundCreditCard()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findReturnOrderById').once()
-            .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
         sandbox.mock(actionRepo).expects('start').once()
             .withExactArgs(refundActionAttributes).resolves(action);
         sandbox.mock(actionRepo).expects('complete').once()
@@ -589,8 +578,7 @@ describe('refundCreditCard()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findReturnOrderById').once()
-            .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.refundCreditCard(returnOrderTransaction.id)({
@@ -630,8 +618,7 @@ describe('refundCreditCard()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findReturnOrderById').once()
-            .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.refundCreditCard(returnOrderTransaction.id)({
@@ -659,8 +646,7 @@ describe('refundCreditCard()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findReturnOrderById').once()
-            .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.payment.refundCreditCard(returnOrderTransaction.id)({
@@ -702,8 +688,7 @@ describe('refundCreditCard()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findReturnOrderById').once()
-            .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
         sandbox.mock(actionRepo).expects('start').once()
             .withExactArgs(refundActionAttributes).resolves(action);
         sandbox.mock(actionRepo).expects('complete').once()
@@ -753,8 +738,7 @@ describe('refundCreditCard()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findReturnOrderById').once()
-            .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
         sandbox.mock(actionRepo).expects('start').once()
             .withExactArgs(refundActionAttributes).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();

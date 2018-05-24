@@ -72,7 +72,7 @@ export function start(params: {
         const now = new Date();
 
         // 返品対象の取引取得
-        const placeOrderTransaction = await repos.transaction.findPlaceOrderById(params.transactionId);
+        const placeOrderTransaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, params.transactionId);
         if (placeOrderTransaction.status !== factory.transactionStatusType.Confirmed) {
             throw new factory.errors.Argument('transactionId', 'Status not Confirmed.');
         }
@@ -160,7 +160,7 @@ export function confirm(
         transaction: TransactionRepo;
         organization: OrganizationRepo;
     }) => {
-        const transaction = await repos.transaction.findReturnOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.ReturnOrder, transactionId);
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
@@ -193,14 +193,14 @@ export function confirm(
             order: placeOrderTransactionResult.order,
             seller: seller
         });
-        const sendEmailMessageActionAttributes = factory.action.transfer.send.message.email.createAttributes({
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
+        const sendEmailMessageActionAttributes: factory.action.transfer.send.message.email.IAttributes = {
+            typeOf: factory.actionType.SendAction,
             object: emailMessage,
             agent: placeOrderTransaction.seller,
             recipient: placeOrderTransaction.agent,
             potentialActions: {},
             purpose: placeOrderTransactionResult.order
-        });
+        };
         // クレジットカード返金アクション
         const refundCreditCardActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.CreditCard>[]>payActions)
             .filter((a) => a.object.paymentMethod.paymentMethod === factory.paymentMethodType.CreditCard)
@@ -366,7 +366,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findReturnOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.ReturnOrder, transactionId);
 
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {

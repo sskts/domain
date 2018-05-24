@@ -15,6 +15,24 @@ export type ITransaction<T> =
     never;
 
 /**
+ * 取引検索条件インターフェース
+ */
+export interface ISearchConditions<T extends factory.transactionType> {
+    /**
+     * 取引タイプ
+     */
+    typeOf: T;
+    /**
+     * 取引開始日時(から)
+     */
+    startFrom: Date;
+    /**
+     * 取引開始日時(まで)
+     */
+    startThrough: Date;
+}
+
+/**
  * 取引リポジトリー
  */
 export class MongoRepository {
@@ -42,6 +60,26 @@ export class MongoRepository {
     }
 
     /**
+     * IDで取引を取得する
+     * @param transactionId 取引ID
+     */
+    public async findById<T extends factory.transactionType>(
+        typeOf: T,
+        transactionId: string
+    ): Promise<ITransaction<T>> {
+        const doc = await this.transactionModel.findOne({
+            _id: transactionId,
+            typeOf: typeOf
+        }).exec();
+
+        if (doc === null) {
+            throw new factory.errors.NotFound('transaction');
+        }
+
+        return doc.toObject();
+    }
+
+    /**
      * 進行中の取引を取得する
      */
     public async findInProgressById<T extends factory.transactionType>(
@@ -59,40 +97,6 @@ export class MongoRepository {
         }
 
         return doc.toObject();
-    }
-
-    /**
-     * find placeOrder transaction by id
-     * @param transactionId transaction id
-     */
-    public async findPlaceOrderById(transactionId: string): Promise<factory.transaction.placeOrder.ITransaction> {
-        const doc = await this.transactionModel.findOne({
-            _id: transactionId,
-            typeOf: factory.transactionType.PlaceOrder
-        }).exec();
-
-        if (doc === null) {
-            throw new factory.errors.NotFound('transaction');
-        }
-
-        return <factory.transaction.placeOrder.ITransaction>doc.toObject();
-    }
-
-    /**
-     * 進行中の取引を取得する
-     */
-    public async findPlaceOrderInProgressById(transactionId: string): Promise<factory.transaction.placeOrder.ITransaction> {
-        const doc = await this.transactionModel.findOne({
-            _id: transactionId,
-            typeOf: factory.transactionType.PlaceOrder,
-            status: factory.transactionStatusType.InProgress
-        }).exec();
-
-        if (doc === null) {
-            throw new factory.errors.NotFound('transaction in progress');
-        }
-
-        return <factory.transaction.placeOrder.ITransaction>doc.toObject();
     }
 
     /**
@@ -152,40 +156,6 @@ export class MongoRepository {
         }
 
         return <factory.transaction.placeOrder.ITransaction>doc.toObject();
-    }
-
-    /**
-     * 進行中の返品取引を取得する
-     */
-    public async findReturnOrderInProgressById(transactionId: string): Promise<factory.transaction.returnOrder.ITransaction> {
-        const doc = await this.transactionModel.findOne({
-            _id: transactionId,
-            typeOf: factory.transactionType.ReturnOrder,
-            status: factory.transactionStatusType.InProgress
-        }).exec();
-
-        if (doc === null) {
-            throw new factory.errors.NotFound('transaction in progress');
-        }
-
-        return <factory.transaction.returnOrder.ITransaction>doc.toObject();
-    }
-
-    /**
-     * IDから返品取引を取得する
-     * @param transactionId transaction id
-     */
-    public async findReturnOrderById(transactionId: string): Promise<factory.transaction.returnOrder.ITransaction> {
-        const doc = await this.transactionModel.findOne({
-            _id: transactionId,
-            typeOf: factory.transactionType.ReturnOrder
-        }).exec();
-
-        if (doc === null) {
-            throw new factory.errors.NotFound('transaction');
-        }
-
-        return <factory.transaction.returnOrder.ITransaction>doc.toObject();
     }
 
     /**
@@ -325,21 +295,16 @@ export class MongoRepository {
      * 注文取引を検索する
      * @param conditions 検索条件
      */
-    public async searchPlaceOrder(
-        conditions: {
-            startFrom: Date;
-            startThrough: Date;
-        }
-    ): Promise<factory.transaction.placeOrder.ITransaction[]> {
+    public async search<T extends factory.transactionType>(conditions: ISearchConditions<T>): Promise<ITransaction<T>[]> {
         return this.transactionModel.find(
             {
-                typeOf: factory.transactionType.PlaceOrder,
+                typeOf: conditions.typeOf,
                 startDate: {
                     $gte: conditions.startFrom,
                     $lte: conditions.startThrough
                 }
             }
         ).exec()
-            .then((docs) => docs.map((doc) => <factory.transaction.placeOrder.ITransaction>doc.toObject()));
+            .then((docs) => docs.map((doc) => doc.toObject()));
     }
 }

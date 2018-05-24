@@ -43,7 +43,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
 
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {
@@ -149,7 +149,7 @@ export function sendEmail(
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
         if (transaction.status !== factory.transactionStatusType.Confirmed) {
             throw new factory.errors.Forbidden('Transaction not confirmed.');
         }
@@ -175,14 +175,14 @@ export function sendEmail(
             about: emailMessageAttributes.about,
             text: emailMessageAttributes.text
         });
-        const actionAttributes = factory.action.transfer.send.message.email.createAttributes({
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
+        const actionAttributes: factory.action.transfer.send.message.email.IAttributes = {
+            typeOf: factory.actionType.SendAction,
             object: emailMessage,
             agent: transaction.seller,
             recipient: transaction.agent,
             potentialActions: {},
             purpose: transactionResult.order
-        });
+        };
 
         // その場で送信ではなく、DBにタスクを登録
         const taskAttributes = factory.task.sendEmailMessage.createAttributes({
@@ -216,7 +216,7 @@ export function download(
 ) {
     return async (repos: { transaction: TransactionRepo }): Promise<string> => {
         // 取引検索
-        const transactions = await repos.transaction.searchPlaceOrder(conditions);
+        const transactions = await repos.transaction.search({ ...conditions, typeOf: factory.transactionType.PlaceOrder });
         debug('transactions:', transactions);
 
         // 取引ごとに詳細を検索し、csvを作成する

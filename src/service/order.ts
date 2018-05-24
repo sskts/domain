@@ -1,7 +1,6 @@
 /**
  * 注文サービス
  */
-
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
@@ -28,7 +27,7 @@ export function createFromTransaction(transactionId: string) {
         transaction: TransactionRepo;
         task: TaskRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
@@ -40,7 +39,7 @@ export function createFromTransaction(transactionId: string) {
 
         // アクション開始
         const orderActionAttributes = potentialActions.order;
-        const action = await repos.action.start<factory.action.trade.order.IAction>(orderActionAttributes);
+        const action = await repos.action.start(orderActionAttributes);
 
         try {
             // 注文保管
@@ -189,7 +188,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
         transactionRepo: TransactionRepo,
         taskRepo: TaskRepo
     ) => {
-        const transaction = await transactionRepo.findReturnOrderById(returnOrderTransactionId);
+        const transaction = await transactionRepo.findById(factory.transactionType.ReturnOrder, returnOrderTransactionId);
         const potentialActions = transaction.potentialActions;
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;
@@ -203,7 +202,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
 
         // アクション開始
         const returnOrderActionAttributes = potentialActions.returnOrder;
-        const action = await actionRepo.start<factory.action.transfer.returnAction.order.IAction>(returnOrderActionAttributes);
+        const action = await actionRepo.start(returnOrderActionAttributes);
 
         try {
             const order = placeOrderTransactionResult.order;

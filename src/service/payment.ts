@@ -25,7 +25,7 @@ export function payPecorino(params: factory.task.payPecorino.IData) {
         pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
     }) => {
         // アクション開始
-        const action = await repos.action.start<factory.action.trade.pay.IAction<factory.paymentMethodType.Pecorino>>(params);
+        const action = await repos.action.start(params);
 
         try {
             const pecorinoTransaction = params.object.pecorinoTransaction;
@@ -142,7 +142,7 @@ export function payCreditCard(transactionId: string) {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
@@ -164,9 +164,7 @@ export function payCreditCard(transactionId: string) {
                 .find((a) => a.object.typeOf === factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard);
 
             // アクション開始
-            const action = await repos.action.start<factory.action.trade.pay.IAction<factory.paymentMethodType.CreditCard>>(
-                payActionAttributes
-            );
+            const action = await repos.action.start(payActionAttributes);
 
             let alterTranResult: GMO.services.credit.IAlterTranResult;
             try {
@@ -274,7 +272,7 @@ export function refundCreditCard(transactionId: string) {
         transaction: TransactionRepo;
         task: TaskRepo;
     }) => {
-        const transaction = await repos.transaction.findReturnOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.ReturnOrder, transactionId);
         const potentialActions = transaction.potentialActions;
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;
@@ -300,9 +298,7 @@ export function refundCreditCard(transactionId: string) {
             if (refundActionAttributes === undefined) {
                 throw new factory.errors.NotFound('returnOrder.potentialActions.refundCreditCard');
             }
-            const action = await repos.action.start<factory.action.trade.refund.IAction<factory.paymentMethodType.CreditCard>>(
-                refundActionAttributes
-            );
+            const action = await repos.action.start(refundActionAttributes);
 
             let alterTranResult: GMO.services.credit.IAlterTranResult;
             try {
@@ -367,7 +363,7 @@ export function refundPecorino(params: factory.task.refundPecorino.IData) {
         task: TaskRepo;
         pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
     }) => {
-        const action = await repos.action.start<factory.action.trade.refund.IAction<factory.paymentMethodType.Pecorino>>(params);
+        const action = await repos.action.start(params);
 
         try {
             // 返金アクション属性から、Pecorino取引属性を取り出す
@@ -497,7 +493,7 @@ export function useMvtk(transactionId: string) {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
@@ -519,7 +515,7 @@ export function useMvtk(transactionId: string) {
             //     .find((a) => a.object.typeOf === factory.action.authorize.authorizeActionPurpose.Mvtk);
 
             // アクション開始
-            const action = await repos.action.start<factory.action.consume.use.mvtk.IAction>(useActionAttributes);
+            const action = await repos.action.start(useActionAttributes);
 
             try {
                 // 実は取引成立の前に着券済みなので何もしない
@@ -560,7 +556,7 @@ export function givePecorinoAward(params: factory.task.givePecorinoAward.IData) 
         pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
     }) => {
         // アクション開始
-        const action = await repos.action.start<factory.action.transfer.give.pecorinoAward.IAction>(params);
+        const action = await repos.action.start(params);
 
         try {
             // 入金取引確定

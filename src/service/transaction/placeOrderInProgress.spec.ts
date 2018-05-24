@@ -372,8 +372,7 @@ describe('setCustomerContact()', () => {
 
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').once()
             .withArgs(transaction.id).resolves();
 
@@ -411,8 +410,7 @@ describe('setCustomerContact()', () => {
 
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact(
@@ -449,8 +447,7 @@ describe('setCustomerContact()', () => {
 
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').never()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findInProgressById').never().resolves(transaction);
         sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact(
@@ -673,8 +670,7 @@ describe('confirm()', () => {
 
         sandbox.mock(moment.fn).expects('toDate').once().returns(orderDate);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withArgs(seller.id).resolves(seller);
-        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .withExactArgs(transaction.id).resolves([
                 ...creditCardAuthorizeActions,
@@ -903,8 +899,7 @@ describe('confirm()', () => {
 
         sandbox.mock(moment.fn).expects('toDate').once().returns(orderDate);
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withArgs(seller.id).resolves(seller);
-        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .withExactArgs(transaction.id).resolves([...mvtkAuthorizeActions, ...seatReservationAuthorizeActions]);
         sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').once().returns(eventReservations);
@@ -945,8 +940,7 @@ describe('confirm()', () => {
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withArgs(seller.id).resolves(seller);
-        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
@@ -1017,8 +1011,7 @@ describe('confirm()', () => {
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').once().withArgs(seller.id).resolves(seller);
-        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .withExactArgs(transaction.id).resolves(authorizeActions);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
@@ -1059,8 +1052,7 @@ describe('confirm()', () => {
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
         sandbox.mock(organizationRepo).expects('findMovieTheaterById').never();
-        sandbox.mock(transactionRepo).expects('findPlaceOrderInProgressById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').never();
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 
@@ -1341,7 +1333,7 @@ describe('createOrderFromTransaction()', () => {
                 clientUser: <any>{ client_id: 'client_id' },
                 authorizeActions: [
                     {
-                        typeOf: sskts.factory.actionType.AuthorizeAction,
+                        typeOf: <sskts.factory.actionType.AuthorizeAction>sskts.factory.actionType.AuthorizeAction,
                         id: 'actionId2',
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
                         agent: agent,
@@ -1360,7 +1352,7 @@ describe('createOrderFromTransaction()', () => {
                         purpose: {}
                     },
                     {
-                        typeOf: sskts.factory.actionType.AuthorizeAction,
+                        typeOf: <sskts.factory.actionType.AuthorizeAction>sskts.factory.actionType.AuthorizeAction,
                         id: 'actionId2',
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
                         agent: agent,
@@ -1381,7 +1373,7 @@ describe('createOrderFromTransaction()', () => {
                         purpose: {}
                     },
                     {
-                        typeOf: sskts.factory.actionType.AuthorizeAction,
+                        typeOf: <sskts.factory.actionType.AuthorizeAction>sskts.factory.actionType.AuthorizeAction,
                         id: 'actionId1',
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
                         agent: seller,

@@ -358,7 +358,7 @@ export function create(
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -382,7 +382,7 @@ export function create(
             recipient: transaction.agent,
             purpose: transaction // purposeは取引
         };
-        const action = await repos.action.start<factory.action.authorize.offer.seatReservation.IAction>(actionAttributes);
+        const action = await repos.action.start(actionAttributes);
 
         // COA仮予約
         const updTmpReserveSeatArgs = {
@@ -444,7 +444,7 @@ export function create(
             updTmpReserveSeatResult: updTmpReserveSeatResult
         };
 
-        return repos.action.complete<factory.action.authorize.offer.seatReservation.IAction>(action.typeOf, action.id, result);
+        return repos.action.complete(action.typeOf, action.id, result);
     };
 }
 
@@ -464,7 +464,7 @@ export function cancel(
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -510,16 +510,15 @@ export function changeOffers(
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
         // アクション中のイベント識別子と座席リストが合っているかどうか確認
-        const authorizeAction = await repos.action.findById<factory.action.authorize.offer.seatReservation.IAction>(
-            factory.actionType.AuthorizeAction, actionId
-        );
+        const authorizeAction = <factory.action.authorize.offer.seatReservation.IAction>
+            await repos.action.findById(factory.actionType.AuthorizeAction, actionId);
         // 完了ステータスのアクションのみ更新可能
         if (authorizeAction.actionStatus !== factory.actionStatusType.CompletedActionStatus) {
             throw new factory.errors.NotFound('authorizeAction');

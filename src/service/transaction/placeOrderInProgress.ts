@@ -227,7 +227,7 @@ export function setCustomerContact(
             telephone: formattedTelephone
         };
 
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, transactionId);
 
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -287,7 +287,7 @@ export function confirm(params: {
         organization: OrganizationRepo;
     }) => {
         const now = moment().toDate();
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(params.transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
@@ -387,15 +387,15 @@ export function confirm(params: {
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
             .find((a) => a.object.typeOf === factory.action.authorize.discount.mvtk.ObjectType.Mvtk);
         if (mvtkAuthorizeAction !== undefined) {
-            useMvtkAction = factory.action.consume.use.mvtk.createAttributes({
-                actionStatus: factory.actionStatusType.ActiveActionStatus,
+            useMvtkAction = {
+                typeOf: factory.actionType.UseAction,
                 object: {
                     typeOf: factory.action.consume.use.mvtk.ObjectType.Mvtk,
                     seatInfoSyncIn: mvtkAuthorizeAction.object.seatInfoSyncIn
                 },
                 agent: transaction.agent,
                 purpose: order
-            });
+            };
         }
 
         // Pecorino口座使用ユーザーであればインセンティブ付与
@@ -445,16 +445,24 @@ export function confirm(params: {
                 order: order,
                 seller: seller
             });
-            sendEmailMessageActionAttributes = factory.action.transfer.send.message.email.createAttributes({
-                actionStatus: factory.actionStatusType.ActiveActionStatus,
+            sendEmailMessageActionAttributes = {
+                typeOf: factory.actionType.SendAction,
                 object: emailMessage,
                 agent: transaction.seller,
                 recipient: transaction.agent,
                 potentialActions: {},
                 purpose: order
-            });
+            };
         }
-
+        const sendOrderActionAttributes: factory.action.transfer.send.order.IAttributes = {
+            typeOf: factory.actionType.SendAction,
+            object: order,
+            agent: transaction.seller,
+            recipient: transaction.agent,
+            potentialActions: {
+                sendEmailMessage: (sendEmailMessageActionAttributes !== null) ? sendEmailMessageActionAttributes : undefined
+            }
+        };
         const potentialActions: factory.transaction.placeOrder.IPotentialActions = {
             order: {
                 typeOf: factory.actionType.OrderAction,
@@ -466,15 +474,7 @@ export function confirm(params: {
                     // Pecorino決済があれば支払アクション追加
                     payPecorino: payPecorinoActions,
                     useMvtk: (useMvtkAction !== null) ? useMvtkAction : undefined,
-                    sendOrder: factory.action.transfer.send.order.createAttributes({
-                        actionStatus: factory.actionStatusType.ActiveActionStatus,
-                        object: order,
-                        agent: transaction.seller,
-                        recipient: transaction.agent,
-                        potentialActions: {
-                            sendEmailMessage: (sendEmailMessageActionAttributes !== null) ? sendEmailMessageActionAttributes : undefined
-                        }
-                    }),
+                    sendOrder: sendOrderActionAttributes,
                     givePecorinoAward: givePecorinoAwardActions
                 }
             }

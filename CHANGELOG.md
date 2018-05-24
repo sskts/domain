@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文取引の潜在アクションにPecorino付与アクションを追加。
 - 注文取引を、ポイント鑑賞券とPecorino決済で成立させることができるように調整。
 - 取引に対する承認アクションを構造化。承認対象として、award,discount,offer,paymentMethodのカテゴリーを追加。
+- アクションインターフェースの汎用性を向上。
 
 ### Deprecated
 
