@@ -155,6 +155,7 @@ export function confirm(
     agentId: string,
     transactionId: string
 ): IConfirmOperation<factory.transaction.returnOrder.IResult> {
+    // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
@@ -231,6 +232,20 @@ export function confirm(
                     }
                 };
             });
+        // Pecorino賞金の承認アクションの数だけ、返却アクションを作成
+        const authorizeActions = placeOrderTransaction.object.authorizeActions;
+        const returnPecorinoAwardActions = authorizeActions
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward)
+            .map((a: factory.action.authorize.award.pecorino.IAction): factory.action.transfer.returnAction.pecorinoAward.IAttributes => {
+                return {
+                    typeOf: factory.actionType.ReturnAction,
+                    object: a,
+                    agent: placeOrderTransaction.seller,
+                    recipient: placeOrderTransaction.agent,
+                    potentialActions: {}
+                };
+            });
         const returnOrderActionAttributes: factory.action.transfer.returnAction.order.IAttributes = {
             typeOf: <factory.actionType.ReturnAction>factory.actionType.ReturnAction,
             object: placeOrderTransactionResult.order,
@@ -238,7 +253,8 @@ export function confirm(
             recipient: placeOrderTransaction.seller,
             potentialActions: {
                 refundCreditCard: refundCreditCardActions[0],
-                refundPecorino: refundPecorinoActions
+                refundPecorino: refundPecorinoActions,
+                returnPecorinoAward: returnPecorinoAwardActions
             }
         };
         const result: factory.transaction.returnOrder.IResult = {

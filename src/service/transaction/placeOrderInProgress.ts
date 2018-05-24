@@ -14,6 +14,7 @@ import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as OrganizationRepo } from '../../repo/organization';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
+import * as PecorinoAwardAuthorizeActionService from './placeOrderInProgress/action/authorize/award/pecorino';
 import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/authorize/discount/mvtk';
 import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/seatReservation';
 import * as CreditCardAuthorizeActionService from './placeOrderInProgress/action/authorize/paymentMethod/creditCard';
@@ -171,6 +172,7 @@ export namespace action {
      */
     export namespace authorize {
         export namespace award {
+            export import pecorino = PecorinoAwardAuthorizeActionService;
         }
         export namespace discount {
             /**

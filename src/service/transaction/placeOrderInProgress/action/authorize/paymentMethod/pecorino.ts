@@ -1,5 +1,5 @@
 /**
- * Pecorino承認アクションサービス
+ * Pecorino決済承認アクションサービス
  */
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';

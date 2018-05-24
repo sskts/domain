@@ -1,5 +1,5 @@
 /**
- * クレジットカード承認アクションサービス
+ * クレジットカード決済承認アクションサービス
  */
 import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';

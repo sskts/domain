@@ -446,7 +446,8 @@ describe('service.transaction.returnOrder.confirm()', () => {
             expires: new Date(),
             status: sskts.factory.transactionStatusType.Confirmed,
             object: {
-                customerContact: { email: 'test@example.com' }
+                customerContact: { email: 'test@example.com' },
+                authorizeActions: []
             },
             result: {
                 order: order,
