@@ -356,11 +356,6 @@ export function exportTasks(status: factory.transactionStatusType) {
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const statusesTasksExportable = [factory.transactionStatusType.Expired, factory.transactionStatusType.Confirmed];
-        if (statusesTasksExportable.indexOf(status) < 0) {
-            throw new factory.errors.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
-        }
-
         const transaction = await repos.transaction.startExportTasks(factory.transactionType.ReturnOrder, status);
         if (transaction === null) {
             return;

@@ -277,6 +277,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
 
 /**
  * 返品アクション後の処理
+ * 注文返品後に何をすべきかは返品アクションのpotentialActionsとして定義されているはずなので、それらをタスクとして登録します。
  * @param transactionId 注文返品取引ID
  * @param returnActionAttributes 返品アクション属性
  */
@@ -313,6 +314,24 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
                     (a): factory.task.refundPecorino.IAttributes => {
                         return {
                             name: factory.taskName.RefundPecorino,
+                            status: factory.taskStatus.Ready,
+                            runsAt: now, // なるはやで実行
+                            remainingNumberOfTries: 10,
+                            lastTriedAt: null,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: a
+                        };
+                    }
+                ));
+            }
+
+            // Pecorinoインセンティブ返却タスク
+            if (Array.isArray(returnActionAttributes.potentialActions.returnPecorinoAward)) {
+                taskAttributes.push(...returnActionAttributes.potentialActions.returnPecorinoAward.map(
+                    (a): factory.task.returnPecorinoAward.IAttributes => {
+                        return {
+                            name: factory.taskName.ReturnPecorinoAward,
                             status: factory.taskStatus.Ready,
                             runsAt: now, // なるはやで実行
                             remainingNumberOfTries: 10,

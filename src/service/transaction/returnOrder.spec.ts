@@ -800,27 +800,6 @@ describe('service.transaction.returnOrder.exportTasks()', () => {
         assert.equal(result, undefined);
         sandbox.verify();
     });
-
-    it('取引ステータスがタスク出力可能なものでなければArgumentエラーとなるはず', async () => {
-        const status = 'invalidStatus';
-
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-
-        sandbox.mock(transactionRepo).expects('startExportTasks').never();
-        sandbox.mock(transactionRepo).expects('findById').never();
-        sandbox.mock(taskRepo).expects('save').never();
-        sandbox.mock(transactionRepo).expects('setTasksExportedById').never();
-
-        const result = await sskts.service.transaction.returnOrder.exportTasks(<any>status)({
-            task: taskRepo,
-            transaction: transactionRepo
-        })
-            .catch((err) => err);
-
-        assert(result instanceof sskts.factory.errors.Argument);
-        sandbox.verify();
-    });
 });
 
 describe('service.transaction.returnOrder.exportTasksById()', () => {
