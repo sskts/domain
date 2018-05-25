@@ -1,16 +1,16 @@
 /**
  * タスクファンクションサービス
  * タスク名ごとに、実行するファンクションをひとつずつ定義しています
- * @namespace service.taskFunctions
  */
-
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as OrderRepo } from '../repo/order';
+import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
+import { MongoRepository as ProgramMembershipRepo } from '../repo/programMembership';
 import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
@@ -19,6 +19,7 @@ import * as DiscountService from '../service/discount';
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
 import * as PaymentService from '../service/payment';
+import * as ProgramMembershipService from '../service/programMembership';
 import * as StockService from '../service/stock';
 
 export type IOperation<T> = (settings: {
@@ -26,9 +27,7 @@ export type IOperation<T> = (settings: {
     pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
 }) => Promise<T>;
 
-export function sendEmailMessage(
-    data: factory.task.sendEmailMessage.IData
-): IOperation<void> {
+export function sendEmailMessage(data: factory.task.sendEmailMessage.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -38,9 +37,7 @@ export function sendEmailMessage(
     };
 }
 
-export function cancelSeatReservation(
-    data: factory.task.cancelSeatReservation.IData
-): IOperation<void> {
+export function cancelSeatReservation(data: factory.task.cancelSeatReservation.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -50,9 +47,7 @@ export function cancelSeatReservation(
     };
 }
 
-export function cancelCreditCard(
-    data: factory.task.cancelCreditCard.IData
-): IOperation<void> {
+export function cancelCreditCard(data: factory.task.cancelCreditCard.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -62,9 +57,7 @@ export function cancelCreditCard(
     };
 }
 
-export function cancelMvtk(
-    data: factory.task.cancelMvtk.IData
-): IOperation<void> {
+export function cancelMvtk(data: factory.task.cancelMvtk.IData): IOperation<void> {
     return async (__: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -73,9 +66,7 @@ export function cancelMvtk(
     };
 }
 
-export function cancelPecorino(
-    data: factory.task.cancelPecorino.IData
-): IOperation<void> {
+export function cancelPecorino(data: factory.task.cancelPecorino.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -92,9 +83,7 @@ export function cancelPecorino(
     };
 }
 
-export function payCreditCard(
-    data: factory.task.payCreditCard.IData
-): IOperation<void> {
+export function payCreditCard(data: factory.task.payCreditCard.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -108,9 +97,7 @@ export function payCreditCard(
     };
 }
 
-export function useMvtk(
-    data: factory.task.useMvtk.IData
-): IOperation<void> {
+export function useMvtk(data: factory.task.useMvtk.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -124,9 +111,7 @@ export function useMvtk(
     };
 }
 
-export function payPecorino(
-    data: factory.task.payPecorino.IData
-): IOperation<void> {
+export function payPecorino(data: factory.task.payPecorino.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -143,9 +128,7 @@ export function payPecorino(
     };
 }
 
-export function placeOrder(
-    data: factory.task.placeOrder.IData
-): IOperation<void> {
+export function placeOrder(data: factory.task.placeOrder.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -163,9 +146,7 @@ export function placeOrder(
     };
 }
 
-export function refundCreditCard(
-    data: factory.task.refundCreditCard.IData
-): IOperation<void> {
+export function refundCreditCard(data: factory.task.refundCreditCard.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -181,9 +162,7 @@ export function refundCreditCard(
     };
 }
 
-export function refundPecorino(
-    data: factory.task.refundPecorino.IData
-): IOperation<void> {
+export function refundPecorino(data: factory.task.refundPecorino.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -202,9 +181,7 @@ export function refundPecorino(
     };
 }
 
-export function returnOrder(
-    data: factory.task.returnOrder.IData
-): IOperation<void> {
+export function returnOrder(data: factory.task.returnOrder.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -218,9 +195,7 @@ export function returnOrder(
     };
 }
 
-export function sendOrder(
-    data: factory.task.returnOrder.IData
-): IOperation<void> {
+export function sendOrder(data: factory.task.returnOrder.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -240,9 +215,7 @@ export function sendOrder(
     };
 }
 
-export function givePecorinoAward(
-    data: factory.task.givePecorinoAward.IData
-): IOperation<void> {
+export function givePecorinoAward(data: factory.task.givePecorinoAward.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -261,9 +234,7 @@ export function givePecorinoAward(
     };
 }
 
-export function returnPecorinoAward(
-    data: factory.task.returnPecorinoAward.IData
-): IOperation<void> {
+export function returnPecorinoAward(data: factory.task.returnPecorinoAward.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -278,6 +249,19 @@ export function returnPecorinoAward(
             action: actionRepo,
             transaction: transactionRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient
+        });
+    };
+}
+
+export function registerProgramMembership(data: factory.task.registerProgramMembership.IData): IOperation<void> {
+    return async (settings: {
+        connection: mongoose.Connection;
+    }) => {
+        await ProgramMembershipService.register(data)({
+            action: new ActionRepo(settings.connection),
+            organization: new OrganizationRepo(settings.connection),
+            programMembership: new ProgramMembershipRepo(settings.connection),
+            transaction: new TransactionRepo(settings.connection)
         });
     };
 }

@@ -305,10 +305,10 @@ export function transaction2report(transaction: factory.transaction.placeOrder.I
     if (transaction.result !== undefined) {
         const order = transaction.result.order;
         const orderItems = order.acceptedOffers;
-        const screeningEvent = orderItems[0].itemOffered.reservationFor;
+        const screeningEvent = (<any>orderItems[0].itemOffered).reservationFor;
         const ticketsStr = orderItems.map(
             // tslint:disable-next-line:max-line-length
-            (orderItem) => `${orderItem.itemOffered.reservedTicket.ticketedSeat.seatNumber} ${orderItem.itemOffered.reservedTicket.coaTicketInfo.ticketName} ￥${orderItem.itemOffered.reservedTicket.coaTicketInfo.salePrice}`
+            (orderItem) => `${(<any>orderItem.itemOffered).reservedTicket.ticketedSeat.seatNumber} ${(<any>orderItem.itemOffered).reservedTicket.coaTicketInfo.ticketName} ￥${(<any>orderItem.itemOffered).reservedTicket.coaTicketInfo.salePrice}`
         ).join('\n');
 
         return {

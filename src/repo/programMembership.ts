@@ -18,12 +18,16 @@ export class MongoRepository {
     /**
      * 検索する
      */
-    public async search(
-        _: any
-    ): Promise<factory.programMembership.IProgramMembership[]> {
+    public async search(params: {
+        id?: string;
+    }): Promise<factory.programMembership.IProgramMembership[]> {
         const andConditions: any[] = [
-            { typeOf: 'ProgramMembership' }
+            { typeOf: <factory.programMembership.ProgramMembershipType>'ProgramMembership' }
         ];
+
+        if (params.id !== undefined) {
+            andConditions.push({ _id: params.id });
+        }
 
         debug('searching programMemberships...', andConditions);
 

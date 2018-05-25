@@ -59,14 +59,14 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(sskts.GMO.services.credit).expects('execTran').once().resolves(execTranResult);
         sandbox.mock(actionRepo).expects('complete').once().resolves(action);
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(
-            agent.id,
-            transaction.id,
-            orderId,
-            amount,
-            sskts.GMO.utils.util.Method.Lump,
-            creditCard
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+            agentId: agent.id,
+            transactionId: transaction.id,
+            orderId: orderId,
+            amount: amount,
+            method: sskts.GMO.utils.util.Method.Lump,
+            creditCard: creditCard
+        })({
             action: actionRepo,
             transaction: transactionRepo,
             organization: organizationRepo
@@ -169,14 +169,14 @@ describe('action.authorize.creditCard.create()', () => {
             .withArgs(action.typeOf, action.id, sinon.match({ message: entryTranResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(
-            agent.id,
-            transaction.id,
-            orderId,
-            amount,
-            sskts.GMO.utils.util.Method.Lump,
-            creditCard
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+            agentId: agent.id,
+            transactionId: transaction.id,
+            orderId: orderId,
+            amount: amount,
+            method: sskts.GMO.utils.util.Method.Lump,
+            creditCard: creditCard
+        })({
             action: actionRepo,
             transaction: transactionRepo,
             organization: organizationRepo
@@ -227,14 +227,14 @@ describe('action.authorize.creditCard.create()', () => {
             .withArgs(action.typeOf, action.id, entryTranResult).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(
-            agent.id,
-            transaction.id,
-            orderId,
-            amount,
-            sskts.GMO.utils.util.Method.Lump,
-            creditCard
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+            agentId: agent.id,
+            transactionId: transaction.id,
+            orderId: orderId,
+            amount: amount,
+            method: sskts.GMO.utils.util.Method.Lump,
+            creditCard: creditCard
+        })({
             action: actionRepo,
             transaction: transactionRepo,
             organization: organizationRepo
@@ -288,14 +288,14 @@ describe('action.authorize.creditCard.create()', () => {
             .withArgs(action.typeOf, action.id, sinon.match({ message: entryTranResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(
-            agent.id,
-            transaction.id,
-            orderId,
-            amount,
-            sskts.GMO.utils.util.Method.Lump,
-            creditCard
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+            agentId: agent.id,
+            transactionId: transaction.id,
+            orderId: orderId,
+            amount: amount,
+            method: sskts.GMO.utils.util.Method.Lump,
+            creditCard: creditCard
+        })({
             action: actionRepo,
             transaction: transactionRepo,
             organization: organizationRepo
@@ -350,14 +350,14 @@ describe('action.authorize.creditCard.create()', () => {
             .withArgs(action.typeOf, action.id, sinon.match({ message: entryTranResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(
-            agent.id,
-            transaction.id,
-            orderId,
-            amount,
-            sskts.GMO.utils.util.Method.Lump,
-            creditCard
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+            agentId: agent.id,
+            transactionId: transaction.id,
+            orderId: orderId,
+            amount: amount,
+            method: sskts.GMO.utils.util.Method.Lump,
+            creditCard: creditCard
+        })({
             action: actionRepo,
             transaction: transactionRepo,
             organization: organizationRepo
@@ -412,14 +412,14 @@ describe('action.authorize.creditCard.create()', () => {
             .withArgs(action.typeOf, action.id, sinon.match({ message: entryTranResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create(
-            agent.id,
-            transaction.id,
-            orderId,
-            amount,
-            sskts.GMO.utils.util.Method.Lump,
-            creditCard
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+            agentId: agent.id,
+            transactionId: transaction.id,
+            orderId: orderId,
+            amount: amount,
+            method: sskts.GMO.utils.util.Method.Lump,
+            creditCard: creditCard
+        })({
             action: actionRepo,
             transaction: transactionRepo,
             organization: organizationRepo
@@ -469,11 +469,11 @@ describe('action.authorize.creditCard.cancel()', () => {
             .withExactArgs(action.typeOf, action.id).resolves(action);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().resolves();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel(
-            agent.id,
-            transaction.id,
-            action.id
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
+            agentId: agent.id,
+            transactionId: transaction.id,
+            actionId: action.id
+        })({
             action: actionRepo,
             transaction: transactionRepo
         });
@@ -510,11 +510,11 @@ describe('action.authorize.creditCard.cancel()', () => {
         sandbox.mock(actionRepo).expects('cancel').never();
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel(
-            agent.id,
-            transaction.id,
-            actionId
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
+            agentId: agent.id,
+            transactionId: transaction.id,
+            actionId: actionId
+        })({
             action: actionRepo,
             transaction: transactionRepo
         }).catch((err) => err);
@@ -557,11 +557,11 @@ describe('action.authorize.creditCard.cancel()', () => {
             .withExactArgs(action.typeOf, action.id).resolves(action);
         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().rejects();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel(
-            agent.id,
-            transaction.id,
-            action.id
-        )({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
+            agentId: agent.id,
+            transactionId: transaction.id,
+            actionId: action.id
+        })({
             action: actionRepo,
             transaction: transactionRepo
         });

@@ -20,6 +20,7 @@ import * as OrderService from './service/order';
 import * as PaymentService from './service/payment';
 import * as PersonContactService from './service/person/contact';
 import * as PersonCreditCardService from './service/person/creditCard';
+import * as ProgramMembershipService from './service/programMembership';
 import * as ReportService from './service/report';
 import * as StockService from './service/stock';
 import * as TaskService from './service/task';
@@ -130,6 +131,7 @@ export namespace service {
         export import contact = PersonContactService;
         export import creditCard = PersonCreditCardService;
     }
+    export import programMembership = ProgramMembershipService;
     export import report = ReportService;
     export import payment = PaymentService;
     export import stock = StockService;

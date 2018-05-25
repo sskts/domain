@@ -376,11 +376,11 @@ describe('setCustomerContact()', () => {
         sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').once()
             .withArgs(transaction.id).resolves();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact(
-            agent.id,
-            transaction.id,
-            <any>contact
-        )({ transaction: transactionRepo });
+        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
+            agentId: agent.id,
+            transactionId: transaction.id,
+            contact: <any>contact
+        })({ transaction: transactionRepo });
 
         assert.equal(typeof result, 'object');
         sandbox.verify();
@@ -413,11 +413,11 @@ describe('setCustomerContact()', () => {
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact(
-            agent.id,
-            transaction.id,
-            <any>contact
-        )({ transaction: transactionRepo }).catch((err) => err);
+        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
+            agentId: agent.id,
+            transactionId: transaction.id,
+            contact: <any>contact
+        })({ transaction: transactionRepo }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
@@ -450,11 +450,11 @@ describe('setCustomerContact()', () => {
         sandbox.mock(transactionRepo).expects('findInProgressById').never().resolves(transaction);
         sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact(
-            agent.id,
-            transaction.id,
-            <any>contact
-        )({ transaction: transactionRepo }).catch((err) => err);
+        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
+            agentId: agent.id,
+            transactionId: transaction.id,
+            contact: <any>contact
+        })({ transaction: transactionRepo }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
     });
@@ -1485,7 +1485,8 @@ describe('createOrderFromTransaction()', () => {
             transaction: transaction,
             orderDate: orderDate,
             orderStatus: orderStatus,
-            isGift: false
+            isGift: false,
+            seller: <any>{ location: { branchCode: '000' } }
         });
 
         assert(typeof result, 'object');
@@ -1574,7 +1575,8 @@ describe('createOrderFromTransaction()', () => {
                     transaction: transaction,
                     orderDate: orderDate,
                     orderStatus: orderStatus,
-                    isGift: false
+                    isGift: false,
+                    seller: <any>{ location: { branchCode: '000' } }
                 });
             },
             (err: any) => {
@@ -1642,7 +1644,8 @@ describe('createOrderFromTransaction()', () => {
                     transaction: transaction,
                     orderDate: orderDate,
                     orderStatus: orderStatus,
-                    isGift: false
+                    isGift: false,
+                    seller: <any>{ location: { branchCode: '000' } }
                 });
             },
             (err: any) => {
@@ -1722,7 +1725,8 @@ describe('createOrderFromTransaction()', () => {
                     transaction: transaction,
                     orderDate: orderDate,
                     orderStatus: orderStatus,
-                    isGift: false
+                    isGift: false,
+                    seller: <any>{ location: { branchCode: '000' } }
                 });
             },
             (err: any) => {
@@ -1796,7 +1800,8 @@ describe('createOrderFromTransaction()', () => {
                     transaction: transaction,
                     orderDate: orderDate,
                     orderStatus: orderStatus,
-                    isGift: false
+                    isGift: false,
+                    seller: <any>{ location: { branchCode: '000' } }
                 });
             },
             (err: any) => {

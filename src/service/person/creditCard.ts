@@ -20,7 +20,8 @@ export type IUncheckedCardTokenized = factory.paymentMethod.paymentCard.creditCa
 export function save(
     personId: string,
     username: string,
-    creditCard: IUncheckedCardRaw | IUncheckedCardTokenized
+    creditCard: IUncheckedCardRaw | IUncheckedCardTokenized,
+    defaultFlag?: boolean
 ): IOperation<GMO.services.card.ISearchCardResult> {
     return async () => {
         // GMOカード登録
@@ -62,7 +63,8 @@ export function save(
                 cardPass: (<IUncheckedCardRaw>creditCard).cardPass,
                 expire: (<IUncheckedCardRaw>creditCard).expire,
                 holderName: (<IUncheckedCardRaw>creditCard).holderName,
-                token: (<IUncheckedCardTokenized>creditCard).token
+                token: (<IUncheckedCardTokenized>creditCard).token,
+                defaultFlag: (defaultFlag === true) ? '1' : '0'
             });
             debug('card saved', saveCardResult);
 
@@ -159,6 +161,7 @@ export function find(
                 // 未削除のものに絞り込む
             }).then((results) => results.filter((result) => result.deleteFlag === '0'));
         } catch (error) {
+            debug(error);
             if (error.name === 'GMOServiceBadRequestError') {
                 // カードが存在しない場合このエラーになる
                 // ErrCode=E01&ErrInfo=E01240002

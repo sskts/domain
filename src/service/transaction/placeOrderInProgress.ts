@@ -16,6 +16,7 @@ import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 import * as PecorinoAwardAuthorizeActionService from './placeOrderInProgress/action/authorize/award/pecorino';
 import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/authorize/discount/mvtk';
+import * as ProgramMembershipAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/programMembership';
 import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/seatReservation';
 import * as CreditCardAuthorizeActionService from './placeOrderInProgress/action/authorize/paymentMethod/creditCard';
 import * as PecorinoAuthorizeActionService from './placeOrderInProgress/action/authorize/paymentMethod/pecorino';
@@ -51,7 +52,7 @@ export interface IStartParams {
     /**
      * WAITER許可証トークン
      */
-    passportToken: waiter.factory.passport.IEncodedPassport;
+    passportToken?: waiter.factory.passport.IEncodedPassport;
 }
 
 /**
@@ -81,7 +82,11 @@ export function start(params: IStartParams):
                 throw new factory.errors.Argument('passportToken', 'Invalid passport.');
             }
         } else {
-            throw new factory.errors.ArgumentNull('passportToken');
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO いったん許可証トークンなしでも通過するようにしているが、これでいいのかどうか。保留事項。
+            // throw new factory.errors.ArgumentNull('passportToken');
+            params.passportToken = moment().valueOf().toString(); // ユニークインデックスがDBにはられているため
+            passport = <any>{};
         }
 
         const agent: factory.transaction.placeOrder.IAgent = {
@@ -110,7 +115,7 @@ export function start(params: IStartParams):
             },
             object: {
                 passportToken: params.passportToken,
-                passport: passport,
+                passport: <any>passport,
                 clientUser: params.clientUser,
                 authorizeActions: []
             },
@@ -182,6 +187,10 @@ export namespace action {
         }
         export namespace offer {
             /**
+             * 会員プログラム承認アクションサービス
+             */
+            export import programMembership = ProgramMembershipAuthorizeActionService;
+            /**
              * 座席予約承認アクションサービス
              */
             export import seatReservation = SeatReservationAuthorizeActionService;
@@ -202,16 +211,16 @@ export namespace action {
 /**
  * 取引中の購入者情報を変更する
  */
-export function setCustomerContact(
-    agentId: string,
-    transactionId: string,
-    contact: factory.transaction.placeOrder.ICustomerContact
-): ITransactionOperation<factory.transaction.placeOrder.ICustomerContact> {
+export function setCustomerContact(params: {
+    agentId: string;
+    transactionId: string;
+    contact: factory.transaction.placeOrder.ICustomerContact;
+}): ITransactionOperation<factory.transaction.placeOrder.ICustomerContact> {
     return async (repos: { transaction: TransactionRepo }) => {
         let formattedTelephone: string;
         try {
             const phoneUtil = PhoneNumberUtil.getInstance();
-            const phoneNumber = phoneUtil.parse(contact.telephone, 'JP'); // 日本の電話番号前提仕様
+            const phoneNumber = phoneUtil.parse(params.contact.telephone, 'JP'); // 日本の電話番号前提仕様
             if (!phoneUtil.isValidNumber(phoneNumber)) {
                 throw new Error('invalid phone number format.');
             }
@@ -223,19 +232,19 @@ export function setCustomerContact(
 
         // 連絡先を再生成(validationの意味も含めて)
         const customerContact: factory.transaction.placeOrder.ICustomerContact = {
-            familyName: contact.familyName,
-            givenName: contact.givenName,
-            email: contact.email,
+            familyName: params.contact.familyName,
+            givenName: params.contact.givenName,
+            email: params.contact.email,
             telephone: formattedTelephone
         };
 
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
 
-        if (transaction.agent.id !== agentId) {
+        if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        await repos.transaction.setCustomerContactOnPlaceOrderInProgress(transactionId, customerContact);
+        await repos.transaction.setCustomerContactOnPlaceOrderInProgress(params.transactionId, customerContact);
 
         return customerContact;
     };
@@ -294,32 +303,54 @@ export function confirm(params: {
             transaction: transaction,
             orderDate: now,
             orderStatus: factory.orderStatus.OrderProcessing,
-            isGift: false
+            isGift: false,
+            seller: seller
         });
 
         // tslint:disable-next-line:max-line-length
-        type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.reservationType>;
+        type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>;
         const ownershipInfos: IOwnershipInfo[] = order.acceptedOffers.map((acceptedOffer) => {
-            // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
-            // saveする際に、identifierでfindOneAndUpdateしている
-            const identifier = `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservedTicket.ticketToken}`;
+            if (acceptedOffer.itemOffered.typeOf === 'ProgramMembership') {
+                const identifier = `${acceptedOffer.itemOffered.typeOf}-${moment().valueOf()}`;
 
-            return {
-                typeOf: <'OwnershipInfo'>'OwnershipInfo',
-                identifier: identifier,
-                ownedBy: {
-                    id: transaction.agent.id,
-                    typeOf: transaction.agent.typeOf,
-                    name: order.customer.name
-                },
-                acquiredFrom: transaction.seller,
-                ownedFrom: now,
-                // イベント予約に対する所有権の有効期限はイベント終了日時までで十分だろう
-                // 現時点では所有権対象がイベント予約のみなので、これで問題ないが、
-                // 対象が他に広がれば、有効期間のコントロールは別でしっかり行う必要があるだろう
-                ownedThrough: acceptedOffer.itemOffered.reservationFor.endDate,
-                typeOfGood: acceptedOffer.itemOffered
-            };
+                return {
+                    typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
+                    identifier: identifier,
+                    ownedBy: {
+                        id: transaction.agent.id,
+                        typeOf: transaction.agent.typeOf,
+                        name: order.customer.name
+                    },
+                    acquiredFrom: transaction.seller,
+                    ownedFrom: now,
+                    // tslint:disable-next-line:no-suspicious-comment
+                    // TODO 期間コントロール
+                    // とりあえず固定で一年
+                    ownedThrough: moment(now).add(1, 'year').toDate(),
+                    typeOfGood: acceptedOffer.itemOffered
+                };
+            } else {
+                // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
+                // saveする際に、identifierでfindOneAndUpdateしている
+                const identifier = `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservedTicket.ticketToken}`;
+
+                return {
+                    typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
+                    identifier: identifier,
+                    ownedBy: {
+                        id: transaction.agent.id,
+                        typeOf: transaction.agent.typeOf,
+                        name: order.customer.name
+                    },
+                    acquiredFrom: transaction.seller,
+                    ownedFrom: now,
+                    // イベント予約に対する所有権の有効期限はイベント終了日時までで十分だろう
+                    // 現時点では所有権対象がイベント予約のみなので、これで問題ないが、
+                    // 対象が他に広がれば、有効期間のコントロールは別でしっかり行う必要があるだろう
+                    ownedThrough: acceptedOffer.itemOffered.reservationFor.endDate,
+                    typeOfGood: acceptedOffer.itemOffered
+                };
+            }
         });
 
         // クレジットカード支払いアクション
@@ -506,22 +537,26 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
     debug('priceByAgent priceBySeller:', priceByAgent, priceBySeller);
 
     // ポイント鑑賞券によって必要なポイントがどのくらいあるか算出
+    let requiredPoint = 0;
     const seatReservationAuthorizeActions = <factory.action.authorize.offer.seatReservation.IAction[]>transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
     if (seatReservationAuthorizeActions.length > 1) {
         throw new factory.errors.Argument('transactionId', 'The number of seat reservation authorize actions must be one.');
     }
-    const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
-    const requiredPoint = (<factory.action.authorize.offer.seatReservation.IResult>seatReservationAuthorizeAction.result).pecorinoAmount;
-    // 必要ポイントがある場合、Pecorinoのオーソリ金額と比較
-    if (requiredPoint > 0) {
-        const authorizedPecorinoAmount = (<factory.action.authorize.paymentMethod.pecorino.IAction[]>transaction.object.authorizeActions)
-            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.pecorino.ObjectType.PecorinoPayment)
-            .reduce((a, b) => a + b.object.amount, 0);
-        if (requiredPoint !== authorizedPecorinoAmount) {
-            throw new factory.errors.Argument('transactionId', 'Required pecorino amount not satisfied.');
+    const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
+    if (seatReservationAuthorizeAction !== undefined) {
+        requiredPoint = (<factory.action.authorize.offer.seatReservation.IResult>seatReservationAuthorizeAction.result).pecorinoAmount;
+        // 必要ポイントがある場合、Pecorinoのオーソリ金額と比較
+        if (requiredPoint > 0) {
+            const authorizedPecorinoAmount =
+                (<factory.action.authorize.paymentMethod.pecorino.IAction[]>transaction.object.authorizeActions)
+                    .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                    .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.pecorino.ObjectType.PecorinoPayment)
+                    .reduce((a, b) => a + b.object.amount, 0);
+            if (requiredPoint !== authorizedPecorinoAmount) {
+                throw new factory.errors.Argument('transactionId', 'Required pecorino amount not satisfied.');
+            }
         }
     }
 
@@ -546,31 +581,122 @@ export function createOrderFromTransaction(params: {
     orderDate: Date;
     orderStatus: factory.orderStatus;
     isGift: boolean;
+    seller: factory.organization.movieTheater.IOrganization;
 }): factory.order.IOrder {
-    // seatReservation exists?
+    // 座席予約に対する承認アクション取り出す
     const seatReservationAuthorizeActions = params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
-    if (seatReservationAuthorizeActions.length === 0) {
-        throw new factory.errors.Argument('transaction', 'Seat reservation does not exist.');
-    }
     if (seatReservationAuthorizeActions.length > 1) {
         throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
     }
-    const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
-    if (seatReservationAuthorizeAction.result === undefined) {
-        throw new factory.errors.Argument('transaction', 'Seat reservation result does not exist.');
+    const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
+    // if (seatReservationAuthorizeAction === undefined) {
+    //     throw new factory.errors.Argument('transaction', 'Seat reservation does not exist.');
+    // }
+
+    // 会員プログラムに対する承認アクションを取り出す
+    const programMembershipAuthorizeActions = params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === 'Offer')
+        .filter((a) => a.object.itemOffered.typeOf === 'ProgramMembership');
+    if (programMembershipAuthorizeActions.length > 1) {
+        throw new factory.errors.NotImplemented('Number of programMembership authorizeAction must be 1.');
     }
+    const programMembershipAuthorizeAction = programMembershipAuthorizeActions.shift();
+    // if (seatReservationAuthorizeAction === undefined) {
+    //     throw new factory.errors.Argument('transaction', 'Seat reservation does not exist.');
+    // }
+
     if (params.transaction.object.customerContact === undefined) {
         throw new factory.errors.Argument('transaction', 'Customer contact does not exist');
     }
 
     const cutomerContact = params.transaction.object.customerContact;
-    const orderInquiryKey = {
-        theaterCode: seatReservationAuthorizeAction.result.updTmpReserveSeatArgs.theaterCode,
-        confirmationNumber: seatReservationAuthorizeAction.result.updTmpReserveSeatResult.tmpReserveNum,
+    const seller: factory.order.ISeller = params.transaction.seller;
+    const customer: factory.order.ICustomer = {
+        ...{
+            id: params.transaction.agent.id,
+            typeOf: params.transaction.agent.typeOf,
+            name: `${cutomerContact.familyName} ${cutomerContact.givenName}`,
+            url: ''
+        },
+        ...params.transaction.object.customerContact
+    };
+    if (params.transaction.agent.memberOf !== undefined) {
+        customer.memberOf = params.transaction.agent.memberOf;
+    }
+
+    let orderInquiryKey = {
+        theaterCode: params.seller.location.branchCode,
+        confirmationNumber: moment().unix(),
         telephone: cutomerContact.telephone
     };
+
+    const acceptedOffers: factory.order.IOffer[] = [];
+    let orderNumber = '';
+
+    // 座席予約がある場合
+    if (seatReservationAuthorizeAction !== undefined) {
+        if (seatReservationAuthorizeAction.result === undefined) {
+            throw new factory.errors.Argument('transaction', 'Seat reservation result does not exist.');
+        }
+
+        orderInquiryKey = {
+            theaterCode: seatReservationAuthorizeAction.result.updTmpReserveSeatArgs.theaterCode,
+            confirmationNumber: seatReservationAuthorizeAction.result.updTmpReserveSeatResult.tmpReserveNum,
+            telephone: cutomerContact.telephone
+        };
+
+        // 座席仮予約から容認供給情報を生成する
+        // 座席予約以外の注文アイテムが追加された場合は、このロジックに修正が加えられることになる
+        acceptedOffers.push(...factory.reservation.event.createFromCOATmpReserve({
+            updTmpReserveSeatResult: seatReservationAuthorizeAction.result.updTmpReserveSeatResult,
+            offers: seatReservationAuthorizeAction.object.offers,
+            individualScreeningEvent: seatReservationAuthorizeAction.object.individualScreeningEvent
+        }).map((eventReservation) => {
+            eventReservation.reservationStatus = factory.reservationStatusType.ReservationConfirmed;
+            eventReservation.underName.name = {
+                ja: customer.name,
+                en: customer.name
+            };
+            eventReservation.reservedTicket.underName.name = {
+                ja: customer.name,
+                en: customer.name
+            };
+
+            return {
+                itemOffered: eventReservation,
+                price: eventReservation.price,
+                priceCurrency: factory.priceCurrency.JPY,
+                seller: {
+                    typeOf: seatReservationAuthorizeAction.object.individualScreeningEvent.superEvent.location.typeOf,
+                    name: seatReservationAuthorizeAction.object.individualScreeningEvent.superEvent.location.name.ja
+                }
+            };
+        }));
+
+        // 注文番号生成
+        orderNumber = util.format(
+            '%s-%s-%s',
+            moment(params.orderDate).tz('Asia/Tokyo').format('YYMMDD'),
+            orderInquiryKey.theaterCode,
+            orderInquiryKey.confirmationNumber
+        );
+    }
+
+    // 会員プログラムがある場合
+    if (programMembershipAuthorizeAction !== undefined) {
+        acceptedOffers.push(programMembershipAuthorizeAction.object);
+
+        // 注文番号生成
+        orderNumber = util.format(
+            'PM%s-%s-%s',
+            moment(params.orderDate).tz('Asia/Tokyo').format('YYMMDD'),
+            orderInquiryKey.theaterCode,
+            orderInquiryKey.confirmationNumber
+        );
+    }
 
     // 結果作成
     const discounts: factory.order.IDiscount[] = [];
@@ -618,61 +744,11 @@ export function createOrderFromTransaction(params: {
             });
         });
 
-    const seller: factory.order.ISeller = params.transaction.seller;
-    const customer: factory.order.ICustomer = {
-        ...{
-            id: params.transaction.agent.id,
-            typeOf: params.transaction.agent.typeOf,
-            name: `${cutomerContact.familyName} ${cutomerContact.givenName}`,
-            url: ''
-        },
-        ...params.transaction.object.customerContact
-    };
-    if (params.transaction.agent.memberOf !== undefined) {
-        customer.memberOf = params.transaction.agent.memberOf;
-    }
-
-    // 座席仮予約から容認供給情報を生成する
-    // 座席予約以外の注文アイテムが追加された場合は、このロジックに修正が加えられることになる
-    const acceptedOffers = factory.reservation.event.createFromCOATmpReserve({
-        updTmpReserveSeatResult: seatReservationAuthorizeAction.result.updTmpReserveSeatResult,
-        offers: seatReservationAuthorizeAction.object.offers,
-        individualScreeningEvent: seatReservationAuthorizeAction.object.individualScreeningEvent
-    }).map((eventReservation) => {
-        eventReservation.reservationStatus = factory.reservationStatusType.ReservationConfirmed;
-        eventReservation.underName.name = {
-            ja: customer.name,
-            en: customer.name
-        };
-        eventReservation.reservedTicket.underName.name = {
-            ja: customer.name,
-            en: customer.name
-        };
-
-        return {
-            itemOffered: eventReservation,
-            price: eventReservation.price,
-            priceCurrency: factory.priceCurrency.JPY,
-            seller: {
-                typeOf: seatReservationAuthorizeAction.object.individualScreeningEvent.superEvent.location.typeOf,
-                name: seatReservationAuthorizeAction.object.individualScreeningEvent.superEvent.location.name.ja
-            }
-        };
-    });
-
-    // 注文番号生成
-    const orderNumber = util.format(
-        '%s-%s-%s',
-        moment(params.orderDate).tz('Asia/Tokyo').format('YYMMDD'),
-        orderInquiryKey.theaterCode,
-        orderInquiryKey.confirmationNumber
-    );
-
     return {
         typeOf: 'Order',
         seller: seller,
         customer: customer,
-        price: seatReservationAuthorizeAction.result.price - discounts.reduce((a, b) => a + b.discount, 0),
+        price: acceptedOffers.reduce((a, b) => a + b.price, 0) - discounts.reduce((a, b) => a + b.discount, 0),
         priceCurrency: factory.priceCurrency.JPY,
         paymentMethods: paymentMethods,
         discounts: discounts,
@@ -696,74 +772,76 @@ export async function createEmailMessageFromTransaction(params: {
 }): Promise<factory.creativeWork.message.email.ICreativeWork> {
     return new Promise<factory.creativeWork.message.email.ICreativeWork>((resolve, reject) => {
         const seller = params.transaction.seller;
-        const event = params.order.acceptedOffers[0].itemOffered.reservationFor;
+        if (params.order.acceptedOffers[0].itemOffered.typeOf === factory.reservationType.EventReservation) {
+            const event = (<factory.reservation.event.IEventReservation<any>>params.order.acceptedOffers[0].itemOffered).reservationFor;
 
-        pug.renderFile(
-            `${__dirname}/../../../emails/sendOrder/text.pug`,
-            {
-                familyName: params.customerContact.familyName,
-                givenName: params.customerContact.givenName,
-                confirmationNumber: params.order.confirmationNumber,
-                eventStartDate: util.format(
-                    '%s - %s',
-                    moment(event.startDate).locale('ja').tz('Asia/Tokyo').format('YYYY年MM月DD日(ddd) HH:mm'),
-                    moment(event.endDate).tz('Asia/Tokyo').format('HH:mm')
-                ),
-                workPerformedName: event.workPerformed.name,
-                screenName: event.location.name.ja,
-                reservedSeats: params.order.acceptedOffers.map((o) => {
-                    return util.format(
-                        '%s %s ￥%s',
-                        o.itemOffered.reservedTicket.ticketedSeat.seatNumber,
-                        o.itemOffered.reservedTicket.coaTicketInfo.ticketName,
-                        o.itemOffered.reservedTicket.coaTicketInfo.salePrice
-                    );
-                }).join('\n'),
-                price: params.order.price,
-                inquiryUrl: params.order.url,
-                sellerName: params.order.seller.name,
-                sellerTelephone: params.seller.telephone
-            },
-            (renderMessageErr, message) => {
-                if (renderMessageErr instanceof Error) {
-                    reject(renderMessageErr);
+            pug.renderFile(
+                `${__dirname}/../../../emails/sendOrder/text.pug`,
+                {
+                    familyName: params.customerContact.familyName,
+                    givenName: params.customerContact.givenName,
+                    confirmationNumber: params.order.confirmationNumber,
+                    eventStartDate: util.format(
+                        '%s - %s',
+                        moment(event.startDate).locale('ja').tz('Asia/Tokyo').format('YYYY年MM月DD日(ddd) HH:mm'),
+                        moment(event.endDate).tz('Asia/Tokyo').format('HH:mm')
+                    ),
+                    workPerformedName: event.workPerformed.name,
+                    screenName: event.location.name.ja,
+                    reservedSeats: params.order.acceptedOffers.map((o) => {
+                        return util.format(
+                            '%s %s ￥%s',
+                            (<factory.reservation.event.IEventReservation<any>>o.itemOffered).reservedTicket.ticketedSeat.seatNumber,
+                            (<factory.reservation.event.IEventReservation<any>>o.itemOffered).reservedTicket.coaTicketInfo.ticketName,
+                            (<factory.reservation.event.IEventReservation<any>>o.itemOffered).reservedTicket.coaTicketInfo.salePrice
+                        );
+                    }).join('\n'),
+                    price: params.order.price,
+                    inquiryUrl: params.order.url,
+                    sellerName: params.order.seller.name,
+                    sellerTelephone: params.seller.telephone
+                },
+                (renderMessageErr, message) => {
+                    if (renderMessageErr instanceof Error) {
+                        reject(renderMessageErr);
 
-                    return;
-                }
-
-                debug('message:', message);
-                pug.renderFile(
-                    `${__dirname}/../../../emails/sendOrder/subject.pug`,
-                    {
-                        sellerName: params.order.seller.name
-                    },
-                    (renderSubjectErr, subject) => {
-                        if (renderSubjectErr instanceof Error) {
-                            reject(renderSubjectErr);
-
-                            return;
-                        }
-
-                        debug('subject:', subject);
-
-                        resolve(factory.creativeWork.message.email.create({
-                            identifier: `placeOrderTransaction-${params.transaction.id}`,
-                            sender: {
-                                typeOf: seller.typeOf,
-                                name: seller.name,
-                                email: 'noreply@ticket-cinemasunshine.com'
-                            },
-                            toRecipient: {
-                                typeOf: params.transaction.agent.typeOf,
-                                name: `${params.customerContact.familyName} ${params.customerContact.givenName}`,
-                                email: params.customerContact.email
-                            },
-                            about: subject,
-                            text: message
-                        }));
+                        return;
                     }
-                );
-            }
-        );
+
+                    debug('message:', message);
+                    pug.renderFile(
+                        `${__dirname}/../../../emails/sendOrder/subject.pug`,
+                        {
+                            sellerName: params.order.seller.name
+                        },
+                        (renderSubjectErr, subject) => {
+                            if (renderSubjectErr instanceof Error) {
+                                reject(renderSubjectErr);
+
+                                return;
+                            }
+
+                            debug('subject:', subject);
+
+                            resolve(factory.creativeWork.message.email.create({
+                                identifier: `placeOrderTransaction-${params.transaction.id}`,
+                                sender: {
+                                    typeOf: seller.typeOf,
+                                    name: seller.name,
+                                    email: 'noreply@ticket-cinemasunshine.com'
+                                },
+                                toRecipient: {
+                                    typeOf: params.transaction.agent.typeOf,
+                                    name: `${params.customerContact.familyName} ${params.customerContact.givenName}`,
+                                    email: params.customerContact.email
+                                },
+                                about: subject,
+                                text: message
+                            }));
+                        }
+                    );
+                }
+            );
+        }
     });
 }

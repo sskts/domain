@@ -48,18 +48,13 @@ export function sendOrder(transactionId: string) {
             throw new factory.errors.NotFound('transaction.potentialActions');
         }
 
-        const authorizeActions = <factory.action.authorize.offer.seatReservation.IAction[]>transaction.object.authorizeActions
-            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
-        if (authorizeActions.length !== 1) {
-            throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
-        }
-
-        const authorizeAction = authorizeActions[0];
-        const authorizeActionResult = authorizeAction.result;
-        if (authorizeActionResult === undefined) {
-            throw new factory.errors.NotFound('authorizeAction.result');
-        }
+        const seatReservationAuthorizeActions = <factory.action.authorize.offer.seatReservation.IAction[]>
+            transaction.object.authorizeActions
+                .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
+        // if (authorizeActions.length !== 1) {
+        //     throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
+        // }
 
         const customerContact = transaction.object.customerContact;
         if (customerContact === undefined) {
@@ -75,45 +70,56 @@ export function sendOrder(transactionId: string) {
         const action = await repos.action.start(sendOrderActionAttributes);
 
         try {
-            const updTmpReserveSeatArgs = authorizeActionResult.updTmpReserveSeatArgs;
-            const updTmpReserveSeatResult = authorizeActionResult.updTmpReserveSeatResult;
-            const order = transactionResult.order;
+            // 座席予約があればCOA本予約
+            const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
+            if (seatReservationAuthorizeAction !== undefined) {
+                const seatReservationAuthorizeActionResult = seatReservationAuthorizeAction.result;
+                if (seatReservationAuthorizeActionResult === undefined) {
+                    throw new factory.errors.NotFound('authorizeAction.result');
+                }
 
-            // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
-            const phoneUtil = PhoneNumberUtil.getInstance();
-            const phoneNumber = phoneUtil.parse(customerContact.telephone, 'JP');
-            let telNum = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
+                const updTmpReserveSeatArgs = seatReservationAuthorizeActionResult.updTmpReserveSeatArgs;
+                const updTmpReserveSeatResult = seatReservationAuthorizeActionResult.updTmpReserveSeatResult;
+                const order = transactionResult.order;
 
-            // COAでは数字のみ受け付けるので数字以外を除去
-            telNum = telNum.replace(/[^\d]/g, '');
+                // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
+                const phoneUtil = PhoneNumberUtil.getInstance();
+                const phoneNumber = phoneUtil.parse(customerContact.telephone, 'JP');
+                let telNum = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
 
-            // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
-            // すでに本予約済みかどうか確認
-            const stateReserveResult = await COA.services.reserve.stateReserve({
-                theaterCode: updTmpReserveSeatArgs.theaterCode,
-                reserveNum: updTmpReserveSeatResult.tmpReserveNum,
-                telNum: telNum
-            });
+                // COAでは数字のみ受け付けるので数字以外を除去
+                telNum = telNum.replace(/[^\d]/g, '');
 
-            // COA本予約
-            // 未本予約であれば実行(COA本予約は一度成功すると成功できない)
-            if (stateReserveResult === null) {
-                await COA.services.reserve.updReserve({
+                // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
+                // すでに本予約済みかどうか確認
+                const stateReserveResult = await COA.services.reserve.stateReserve({
                     theaterCode: updTmpReserveSeatArgs.theaterCode,
-                    dateJouei: updTmpReserveSeatArgs.dateJouei,
-                    titleCode: updTmpReserveSeatArgs.titleCode,
-                    titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
-                    timeBegin: updTmpReserveSeatArgs.timeBegin,
-                    tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum,
-                    // tslint:disable-next-line:no-irregular-whitespace
-                    reserveName: `${customerContact.familyName}　${customerContact.givenName}`,
-                    // tslint:disable-next-line:no-irregular-whitespace
-                    reserveNameJkana: `${customerContact.familyName}　${customerContact.givenName}`,
-                    telNum: telNum,
-                    mailAddr: customerContact.email,
-                    reserveAmount: order.price, // デフォルトのpriceCurrencyがJPYなのでこれでよし
-                    listTicket: order.acceptedOffers.map((offer) => offer.itemOffered.reservedTicket.coaTicketInfo)
+                    reserveNum: updTmpReserveSeatResult.tmpReserveNum,
+                    telNum: telNum
                 });
+
+                // COA本予約
+                // 未本予約であれば実行(COA本予約は一度成功すると成功できない)
+                if (stateReserveResult === null) {
+                    await COA.services.reserve.updReserve({
+                        theaterCode: updTmpReserveSeatArgs.theaterCode,
+                        dateJouei: updTmpReserveSeatArgs.dateJouei,
+                        titleCode: updTmpReserveSeatArgs.titleCode,
+                        titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
+                        timeBegin: updTmpReserveSeatArgs.timeBegin,
+                        tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum,
+                        // tslint:disable-next-line:no-irregular-whitespace
+                        reserveName: `${customerContact.familyName}　${customerContact.givenName}`,
+                        // tslint:disable-next-line:no-irregular-whitespace
+                        reserveNameJkana: `${customerContact.familyName}　${customerContact.givenName}`,
+                        telNum: telNum,
+                        mailAddr: customerContact.email,
+                        reserveAmount: order.price, // デフォルトのpriceCurrencyがJPYなのでこれでよし
+                        listTicket: order.acceptedOffers.map(
+                            (offer) => (<factory.reservation.event.IEventReservation<any>>offer.itemOffered).reservedTicket.coaTicketInfo
+                        )
+                    });
+                }
             }
 
             await Promise.all(transactionResult.ownershipInfos.map(async (ownershipInfo) => {
