@@ -1,10 +1,17 @@
 /**
  * 配送サービス
+ * ここでいう「配送」とは、「エンドユーザーが取得した所有権を利用可能な状態にすること」を指します。
+ * つまり、物理的なモノの配送だけに限らず、
+ * 座席予約で言えば、入場可能、つまり、QRコードが所有権として発行されること
+ * ポイントインセンティブで言えば、口座に振り込まれること
+ * などが配送処理として考えられます。
  */
 import * as COA from '@motionpicture/coa-service';
+import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
+import * as moment from 'moment';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as OrderRepo } from '../repo/order';
@@ -184,5 +191,107 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
         await Promise.all(taskAttributes.map(async (taskAttribute) => {
             return repos.task.save(taskAttribute);
         }));
+    };
+}
+
+/**
+ * Pecorino賞金入金実行
+ * 取引中に入金取引の承認アクションを完了しているはずなので、その取引を確定するだけの処理です。
+ */
+export function givePecorinoAward(params: factory.task.givePecorinoAward.IData) {
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+        pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        // アクション開始
+        const action = await repos.action.start(params);
+
+        try {
+            // 入金取引確定
+            const depositService = new pecorinoapi.service.transaction.Deposit({
+                endpoint: params.object.pecorinoEndpoint,
+                auth: repos.pecorinoAuthClient
+            });
+            await depositService.confirm({ transactionId: params.object.pecorinoTransaction.id });
+        } catch (error) {
+            // actionにエラー結果を追加
+            try {
+                // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                const actionError = { ...error, ...{ message: error.message, name: error.name } };
+                await repos.action.giveUp(params.typeOf, action.id, actionError);
+            } catch (__) {
+                // 失敗したら仕方ない
+            }
+
+            throw error;
+        }
+
+        // アクション完了
+        debug('ending action...');
+        const actionResult: factory.action.transfer.give.pecorinoAward.IResult = {};
+        await repos.action.complete(params.typeOf, action.id, actionResult);
+    };
+}
+
+/**
+ * Pecorino賞金返却実行
+ */
+export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IData) {
+    return async (repos: {
+        action: ActionRepo;
+        transaction: TransactionRepo;
+        pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        // アクション開始
+        const placeOrderTransaction = params.object.purpose;
+        const pecorinoAwardAuthorizeActionResult = params.object.result;
+        if (pecorinoAwardAuthorizeActionResult === undefined) {
+            throw new factory.errors.NotFound('params.object.result');
+        }
+
+        let payTransaction: pecorinoapi.factory.transaction.pay.ITransaction;
+        const action = await repos.action.start(params);
+
+        try {
+            // 入金した分を引き出し取引実行
+            const payService = new pecorinoapi.service.transaction.Pay({
+                endpoint: pecorinoAwardAuthorizeActionResult.pecorinoEndpoint,
+                auth: repos.pecorinoAuthClient
+            });
+            payTransaction = await payService.start({
+                // tslint:disable-next-line:no-magic-numbers
+                expires: moment().add(5, 'minutes').toDate(),
+                agent: {
+                    name: placeOrderTransaction.seller.name
+                },
+                recipient: {
+                    ...params.recipient,
+                    name: `sskts-placeOrder-transaction-${placeOrderTransaction.id}`,
+                    url: ''
+                },
+                amount: pecorinoAwardAuthorizeActionResult.pecorinoTransaction.object.amount,
+                notes: 'シネマサンシャイン返品によるポイントインセンティブ取消',
+                fromAccountNumber: pecorinoAwardAuthorizeActionResult.pecorinoTransaction.object.toAccountNumber
+            });
+            await payService.confirm({ transactionId: payTransaction.id });
+        } catch (error) {
+            // actionにエラー結果を追加
+            try {
+                const actionError = { ...error, ...{ message: error.message, name: error.name } };
+                await repos.action.giveUp(action.typeOf, action.id, actionError);
+            } catch (__) {
+                // 失敗したら仕方ない
+            }
+
+            throw error;
+        }
+
+        // アクション完了
+        debug('ending action...');
+        const actionResult: factory.action.transfer.returnAction.pecorinoAward.IResult = {
+            pecorinoTransaction: payTransaction
+        };
+        await repos.action.complete(action.typeOf, action.id, actionResult);
     };
 }

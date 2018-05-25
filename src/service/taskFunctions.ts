@@ -15,6 +15,7 @@ import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 import * as DeliveryService from '../service/delivery';
+import * as DiscountService from '../service/discount';
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
 import * as PaymentService from '../service/payment';
@@ -57,7 +58,7 @@ export function cancelCreditCard(
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
         const actionRepo = new ActionRepo(settings.connection);
-        await PaymentService.cancelCreditCardAuth(data.transactionId)({ action: actionRepo });
+        await PaymentService.creditCard.cancelCreditCardAuth(data.transactionId)({ action: actionRepo });
     };
 }
 
@@ -68,7 +69,7 @@ export function cancelMvtk(
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
-        await PaymentService.cancelMvtk(data.transactionId)();
+        await DiscountService.mvtk.cancelMvtk(data.transactionId)();
     };
 }
 
@@ -84,7 +85,7 @@ export function cancelPecorino(
         }
 
         const actionRepo = new ActionRepo(settings.connection);
-        await PaymentService.cancelPecorinoAuth(data.transactionId)({
+        await PaymentService.pecorino.cancelPecorinoAuth(data.transactionId)({
             action: actionRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient
         });
@@ -100,7 +101,7 @@ export function payCreditCard(
     }) => {
         const actionRepo = new ActionRepo(settings.connection);
         const transactionRepo = new TransactionRepo(settings.connection);
-        await PaymentService.payCreditCard(data.transactionId)({
+        await PaymentService.creditCard.payCreditCard(data.transactionId)({
             action: actionRepo,
             transaction: transactionRepo
         });
@@ -116,7 +117,7 @@ export function useMvtk(
     }) => {
         const actionRepo = new ActionRepo(settings.connection);
         const transactionRepo = new TransactionRepo(settings.connection);
-        await PaymentService.useMvtk(data.transactionId)({
+        await DiscountService.mvtk.useMvtk(data.transactionId)({
             action: actionRepo,
             transaction: transactionRepo
         });
@@ -135,7 +136,7 @@ export function payPecorino(
         }
 
         const actionRepo = new ActionRepo(settings.connection);
-        await PaymentService.payPecorino(data)({
+        await PaymentService.pecorino.payPecorino(data)({
             action: actionRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient
         });
@@ -172,7 +173,7 @@ export function refundCreditCard(
         const actionRepo = new ActionRepo(settings.connection);
         const transactionRepo = new TransactionRepo(settings.connection);
         const taskRepo = new TaskRepo(settings.connection);
-        await PaymentService.refundCreditCard(data.transactionId)({
+        await PaymentService.creditCard.refundCreditCard(data.transactionId)({
             action: actionRepo,
             transaction: transactionRepo,
             task: taskRepo
@@ -193,7 +194,7 @@ export function refundPecorino(
 
         const actionRepo = new ActionRepo(settings.connection);
         const taskRepo = new TaskRepo(settings.connection);
-        await PaymentService.refundPecorino(data)({
+        await PaymentService.pecorino.refundPecorino(data)({
             action: actionRepo,
             task: taskRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient
@@ -252,7 +253,7 @@ export function givePecorinoAward(
 
         const actionRepo = new ActionRepo(settings.connection);
         const transactionRepo = new TransactionRepo(settings.connection);
-        await PaymentService.givePecorinoAward(data)({
+        await DeliveryService.givePecorinoAward(data)({
             action: actionRepo,
             transaction: transactionRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient
@@ -273,7 +274,7 @@ export function returnPecorinoAward(
 
         const actionRepo = new ActionRepo(settings.connection);
         const transactionRepo = new TransactionRepo(settings.connection);
-        await PaymentService.returnPecorinoAward(data)({
+        await DeliveryService.returnPecorinoAward(data)({
             action: actionRepo,
             transaction: transactionRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient

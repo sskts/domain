@@ -242,24 +242,6 @@ export function setCustomerContact(
 }
 
 /**
- * 注文のインセンティブインターフェース
- */
-export interface IIncentive {
-    /**
-     * 付与ポイント数
-     */
-    amount: number;
-    /**
-     * 入金先口座番号
-     */
-    toAccountNumber: string;
-    /**
-     * PecorinoAPIエンドポイント
-     */
-    pecorinoEndpoint: string;
-}
-
-/**
  * 取引確定
  */
 // tslint:disable-next-line:max-func-body-length
@@ -276,11 +258,6 @@ export function confirm(params: {
      * 注文メールを送信するかどうか
      */
     sendEmailMessage?: boolean;
-    /**
-     * 注文のインセンティブ
-     * ポイント付与する場合指定
-     */
-    incentives?: IIncentive[];
 }) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
@@ -401,10 +378,11 @@ export function confirm(params: {
         }
 
         // Pecorino口座使用ユーザーであればインセンティブ付与
+        // Pecorinoインセンティブに対する承認アクションの分だけ、Pecorinoインセンティブ付与アクションを作成する
         // tslint:disable-next-line:no-suspicious-comment
         // TODO インセンティブ付与条件が「会員だったら」になっているが、雑なので調整すべし
         let givePecorinoAwardActions: factory.action.transfer.give.pecorinoAward.IAttributes[] = [];
-        if (transaction.agent.memberOf !== undefined && Array.isArray(params.incentives)) {
+        if (transaction.agent.memberOf !== undefined) {
             const pecorinoAwardAuthorizeActions = (<factory.action.authorize.award.pecorino.IAction[]>transaction.object.authorizeActions)
                 .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
                 .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward);
@@ -421,11 +399,6 @@ export function confirm(params: {
                         pecorinoEndpoint: actionResult.pecorinoEndpoint
                     },
                     purpose: order
-                    // toLocation: {
-                    //     typeOf: factory.pecorino.account.AccountType.Account,
-                    //     accountNumber: i.toAccountNumber,
-                    //     pecorinoEndpoint: i.pecorinoEndpoint
-                    // }
                 };
             });
         }

@@ -3,7 +3,6 @@
  * taskFunctions test
  * @ignore
  */
-
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../index';
@@ -46,7 +45,7 @@ describe('TaskFunctionsService.cancelCreditCard()', () => {
             transactionId: 'transactionId'
         };
 
-        sandbox.mock(sskts.service.payment).expects('cancelCreditCardAuth').once()
+        sandbox.mock(sskts.service.payment.creditCard).expects('cancelCreditCardAuth').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.cancelCreditCard(<any>data)({ connection: sskts.mongoose.connection });
@@ -66,7 +65,7 @@ describe('TaskFunctionsService.cancelMvtk()', () => {
             transactionId: 'transactionId'
         };
 
-        sandbox.mock(sskts.service.payment).expects('cancelMvtk').once()
+        sandbox.mock(sskts.service.discount.mvtk).expects('cancelMvtk').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.cancelMvtk(<any>data)({ connection: sskts.mongoose.connection });
@@ -86,7 +85,7 @@ describe('TaskFunctionsService.settleCreditCard()', () => {
             transactionId: 'transactionId'
         };
 
-        sandbox.mock(sskts.service.payment).expects('payCreditCard').once()
+        sandbox.mock(sskts.service.payment.creditCard).expects('payCreditCard').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.payCreditCard(<any>data)({ connection: sskts.mongoose.connection });
@@ -106,7 +105,7 @@ describe('TaskFunctionsService.settleMvtk()', () => {
             transactionId: 'transactionId'
         };
 
-        sandbox.mock(sskts.service.payment).expects('useMvtk').once()
+        sandbox.mock(sskts.service.discount.mvtk).expects('useMvtk').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.useMvtk(<any>data)({ connection: sskts.mongoose.connection });
@@ -167,7 +166,7 @@ describe('TaskFunctionsService.refundCreditCard()', () => {
             transactionId: 'transactionId'
         };
 
-        sandbox.mock(sskts.service.payment).expects('refundCreditCard').once()
+        sandbox.mock(sskts.service.payment.creditCard).expects('refundCreditCard').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.refundCreditCard(<any>data)({ connection: sskts.mongoose.connection });
@@ -227,7 +226,7 @@ describe('TaskFunctionsService.payPecorino()', () => {
 
         const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
 
-        sandbox.mock(sskts.service.payment).expects('payPecorino').once().returns(async () => Promise.resolve());
+        sandbox.mock(sskts.service.payment.pecorino).expects('payPecorino').once().returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.payPecorino(<any>data)({
             connection: sskts.mongoose.connection,
@@ -243,7 +242,7 @@ describe('TaskFunctionsService.payPecorino()', () => {
             transactionId: 'transactionId'
         };
 
-        sandbox.mock(sskts.service.payment).expects('payPecorino').never();
+        sandbox.mock(sskts.service.payment.pecorino).expects('payPecorino').never();
 
         const result = await TaskFunctionsService.payPecorino(<any>data)({
             connection: sskts.mongoose.connection

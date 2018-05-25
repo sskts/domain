@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Pecorino取引中止タスクを追加。
 - Pecorinoインセンティブ入金タスクを実装。
 - Pecorinoインセンティブ承認処理を実装。
+- 割引サービスを追加。
 
 ### Changed
 
@@ -25,6 +26,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文取引を、ポイント鑑賞券とPecorino決済で成立させることができるように調整。
 - 取引に対する承認アクションを構造化。承認対象として、award,discount,offer,paymentMethodのカテゴリーを追加。
 - アクションインターフェースの汎用性を向上。
+- 決済サービスを決済方法ごとにソースコードとして分離。
 
 ### Deprecated
 
