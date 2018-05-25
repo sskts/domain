@@ -263,11 +263,11 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
                 // tslint:disable-next-line:no-magic-numbers
                 expires: moment().add(5, 'minutes').toDate(),
                 agent: {
-                    name: placeOrderTransaction.seller.name
+                    name: `sskts-placeOrder-transaction-${placeOrderTransaction.id}`
                 },
                 recipient: {
                     ...params.recipient,
-                    name: `sskts-placeOrder-transaction-${placeOrderTransaction.id}`,
+                    name: placeOrderTransaction.seller.name,
                     url: ''
                 },
                 amount: pecorinoAwardAuthorizeActionResult.pecorinoTransaction.object.amount,
