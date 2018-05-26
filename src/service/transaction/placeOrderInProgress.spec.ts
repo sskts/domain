@@ -1244,6 +1244,7 @@ describe('createEmailMessageFromTransaction()', () => {
             isGift: false,
             acceptedOffers: eventReservations.map((r) => {
                 return {
+                    typeOf: <sskts.factory.offer.OfferType>'Offer',
                     itemOffered: r,
                     price: r.price,
                     priceCurrency: sskts.factory.priceCurrency.JPY,
