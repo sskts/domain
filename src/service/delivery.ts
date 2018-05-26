@@ -191,6 +191,11 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
                     }));
                 }
             }
+
+            // 会員プログラム更新タスクがあれば追加
+            if (Array.isArray(potentialActions.registerProgramMembership)) {
+                taskAttributes.push(...potentialActions.registerProgramMembership);
+            }
         }
 
         // タスク保管

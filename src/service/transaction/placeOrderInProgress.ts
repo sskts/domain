@@ -468,13 +468,54 @@ export function confirm(params: {
                 purpose: order
             };
         }
+
+        // 会員プログラムが注文アイテムにあれば、プログラム更新タスクを追加
+        const registerProgramMembershipTaskAttributes: factory.task.registerProgramMembership.IAttributes[] = [];
+        const programMembershipOffers = <factory.order.IAcceptedOffer<factory.programMembership.IProgramMembership>[]>
+            order.acceptedOffers.filter(
+                (o) => o.itemOffered.typeOf === <factory.programMembership.ProgramMembershipType>'ProgramMembership'
+            );
+        if (programMembershipOffers.length > 0) {
+            registerProgramMembershipTaskAttributes.push(...programMembershipOffers.map((o) => {
+                const actionAttributes: factory.action.interact.register.programMembership.IAttributes = {
+                    typeOf: factory.actionType.RegisterAction,
+                    agent: transaction.agent,
+                    object: o
+                };
+
+                // どういう期間でいくらのオファーなのか
+                const eligibleDuration = o.eligibleDuration;
+                if (eligibleDuration === undefined) {
+                    throw new factory.errors.NotFound('Order.acceptedOffers.eligibleDuration');
+                }
+                // 期間単位としては秒のみ実装
+                if (eligibleDuration.unitCode !== factory.unitCode.Sec) {
+                    throw new factory.errors.NotImplemented('Only \'SEC\' is implemented for eligibleDuration.unitCode ');
+                }
+                // プログラム更新日時は、今回のプログラムの所有期限
+                const runsAt = moment(now).add(eligibleDuration.value, 'seconds').toDate();
+
+                return {
+                    name: <factory.taskName.RegisterProgramMembership>factory.taskName.RegisterProgramMembership,
+                    status: factory.taskStatus.Ready,
+                    runsAt: runsAt,
+                    remainingNumberOfTries: 3,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: actionAttributes
+                };
+            }));
+        }
+
         const sendOrderActionAttributes: factory.action.transfer.send.order.IAttributes = {
             typeOf: factory.actionType.SendAction,
             object: order,
             agent: transaction.seller,
             recipient: transaction.agent,
             potentialActions: {
-                sendEmailMessage: (sendEmailMessageActionAttributes !== null) ? sendEmailMessageActionAttributes : undefined
+                sendEmailMessage: (sendEmailMessageActionAttributes !== null) ? sendEmailMessageActionAttributes : undefined,
+                registerProgramMembership: registerProgramMembershipTaskAttributes
             }
         };
         const potentialActions: factory.transaction.placeOrder.IPotentialActions = {

@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 取引に対する承認アクションを構造化。承認対象として、award,discount,offer,paymentMethodのカテゴリーを追加。
 - アクションインターフェースの汎用性を向上。
 - 決済サービスを決済方法ごとにソースコードとして分離。
+- 注文配送のポストアクションに会員プログラム登録タスクを追加。
 
 ### Deprecated
 
