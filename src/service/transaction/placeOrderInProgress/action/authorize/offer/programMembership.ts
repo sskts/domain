@@ -9,7 +9,7 @@ import { MongoRepository as OrganizationRepo } from '../../../../../../repo/orga
 import { MongoRepository as ProgramMembershipRepo } from '../../../../../../repo/programMembership';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
 
-const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:offer:eventReservation:menuItem');
+const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:offer:programMembership');
 
 export type ICreateOperation<T> = (repos: {
     action: ActionRepo;
@@ -21,8 +21,10 @@ export type ICreateOperation<T> = (repos: {
 export function create(params: {
     agentId: string;
     transactionId: string;
-    programMembershipId: string;
-    offerIdentifier: string;
+    /**
+     * 受け入れられた会員プログラムオファー
+     */
+    acceptedOffer: factory.order.IAcceptedOffer<factory.programMembership.IProgramMembership>;
 }): ICreateOperation<any> {
     return async (repos: {
         action: ActionRepo;
@@ -37,7 +39,7 @@ export function create(params: {
         }
 
         // 会員プログラム検索
-        const programMemberships = await repos.programMembership.search({ id: params.programMembershipId });
+        const programMemberships = await repos.programMembership.search({ id: params.acceptedOffer.itemOffered.id });
         const programMembership = programMemberships.shift();
         if (programMembership === undefined) {
             throw new factory.errors.NotFound('ProgramMembership');
@@ -45,7 +47,7 @@ export function create(params: {
         if (programMembership.offers === undefined) {
             throw new factory.errors.NotFound('ProgramMembership.Offer');
         }
-        const acceptedOffer = programMembership.offers.find((o) => o.identifier === params.offerIdentifier);
+        const acceptedOffer = programMembership.offers.find((o) => o.identifier === params.acceptedOffer.identifier);
         if (acceptedOffer === undefined) {
             throw new factory.errors.NotFound('Offer');
         }
@@ -54,15 +56,10 @@ export function create(params: {
         // 何かしら会員プログラムへの登録に制約を設けたい場合は、ここに処理を追加するとよいかと思われます。
 
         // 承認アクションを開始
-        debug('starting authorize action of programMembership...', params.programMembershipId, params.offerIdentifier);
+        debug('starting authorize action of programMembership...');
         const actionAttributes: any = {
             typeOf: factory.actionType.AuthorizeAction,
-            object: {
-                typeOf: acceptedOffer.typeOf,
-                price: acceptedOffer.price,
-                priceCurrency: acceptedOffer.priceCurrency,
-                itemOffered: programMembership
-            },
+            object: params.acceptedOffer,
             agent: transaction.seller,
             recipient: transaction.agent,
             purpose: transaction

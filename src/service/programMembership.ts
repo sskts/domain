@@ -36,25 +36,15 @@ export function register(
         programMembership: ProgramMembershipRepo;
         transaction: TransactionRepo;
     }) => {
-        // 会員プログラム検索
-        const programMemberships = await repos.programMembership.search({ id: params.object.programMembershipId });
-        const programMembership = programMemberships.shift();
-        if (programMembership === undefined) {
-            throw new factory.errors.NotFound('ProgramMembership');
-        }
-        if (programMembership.offers === undefined) {
-            throw new factory.errors.NotFound('ProgramMembership.Offer');
-        }
-        const acceptedOffer = programMembership.offers.find((o) => o.identifier === params.object.offerIdentifier);
-        if (acceptedOffer === undefined) {
-            throw new factory.errors.NotFound('Offer');
-        }
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO 登録ロック
 
         // アクション開始
         const action = await repos.action.start(params);
 
+        let order: factory.order.IOrder;
         try {
-            await processPlaceOrder(params, acceptedOffer)(repos);
+            order = await processPlaceOrder(params)(repos);
         } catch (error) {
             // actionにエラー結果を追加
             try {
@@ -70,7 +60,9 @@ export function register(
 
         // アクション完了
         debug('ending action...');
-        const actionResult: factory.action.interact.register.programMembership.IResult = {};
+        const actionResult: factory.action.interact.register.programMembership.IResult = {
+            order: order
+        };
 
         return repos.action.complete(action.typeOf, action.id, actionResult);
     };
@@ -87,23 +79,33 @@ export function unRegister(_: factory.action.interact.unRegister.IAttributes) {
     };
 }
 
-function processPlaceOrder(
-    params: factory.action.interact.register.programMembership.IAttributes,
-    acceptedOffer: factory.offer.IOffer
-) {
+/**
+ * 会員プログラム登録アクション属性から、会員プログラムを注文する
+ */
+function processPlaceOrder(params: factory.action.interact.register.programMembership.IAttributes) {
     return async (repos: {
         action: ActionRepo;
         organization: OrganizationRepo;
         programMembership: ProgramMembershipRepo;
         transaction: TransactionRepo;
     }) => {
+        const programMembership = params.object.itemOffered;
+        if (programMembership.offers === undefined) {
+            throw new factory.errors.NotFound('ProgramMembership.offers');
+        }
+        const acceptedOffer = params.object;
+        const seller = programMembership.hostingOrganization;
+        if (seller === undefined) {
+            throw new factory.errors.NotFound('ProgramMembership.hostingOrganization');
+        }
+
         // 会員プログラム注文取引進行
         // 会員プログラム更新タスク作成は、注文後のアクションに定義すればよいか
         const transaction = await PlaceOrderService.start({
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(5, 'minutes').toDate(),
             agentId: params.agent.id,
-            sellerId: params.object.sellerId,
+            sellerId: seller.id,
             clientUser: <any>{}
             // passportToken:
         })(repos);
@@ -113,8 +115,7 @@ function processPlaceOrder(
         await PlaceOrderService.action.authorize.offer.programMembership.create({
             agentId: params.agent.id,
             transactionId: transaction.id,
-            programMembershipId: params.object.programMembershipId,
-            offerIdentifier: params.object.offerIdentifier
+            acceptedOffer: acceptedOffer
         })(repos);
 
         // 会員クレジットカード検索
@@ -156,10 +157,11 @@ function processPlaceOrder(
         debug('customer contact set.');
 
         // 取引確定
-        await PlaceOrderService.confirm({
+        debug('confirming transaction...', transaction.id);
+
+        return PlaceOrderService.confirm({
             agentId: params.agent.id,
             transactionId: transaction.id
         })(repos);
-        debug('transaction confirmed.', transaction.id);
     };
 }

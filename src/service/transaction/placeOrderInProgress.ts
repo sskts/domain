@@ -1,5 +1,4 @@
 /**
- * placeOrder in progress transaction service
  * 進行中注文取引サービス
  */
 import * as factory from '@motionpicture/sskts-factory';
@@ -311,7 +310,19 @@ export function confirm(params: {
         type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>;
         const ownershipInfos: IOwnershipInfo[] = order.acceptedOffers.map((acceptedOffer) => {
             if (acceptedOffer.itemOffered.typeOf === 'ProgramMembership') {
+                const programMembership = acceptedOffer.itemOffered;
                 const identifier = `${acceptedOffer.itemOffered.typeOf}-${moment().valueOf()}`;
+
+                // どういう期間でいくらのオファーなのか
+                const eligibleDuration = acceptedOffer.eligibleDuration;
+                if (eligibleDuration === undefined) {
+                    throw new factory.errors.NotFound('Order.acceptedOffers.eligibleDuration');
+                }
+                // 期間単位としては秒のみ実装
+                if (eligibleDuration.unitCode !== factory.unitCode.Sec) {
+                    throw new factory.errors.NotImplemented('Only \'SEC\' is implemented for eligibleDuration.unitCode ');
+                }
+                const ownedThrough = moment(now).add(eligibleDuration.value, 'seconds').toDate();
 
                 return {
                     typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
@@ -323,11 +334,8 @@ export function confirm(params: {
                     },
                     acquiredFrom: transaction.seller,
                     ownedFrom: now,
-                    // tslint:disable-next-line:no-suspicious-comment
-                    // TODO 期間コントロール
-                    // とりあえず固定で一年
-                    ownedThrough: moment(now).add(1, 'year').toDate(),
-                    typeOfGood: acceptedOffer.itemOffered
+                    ownedThrough: ownedThrough,
+                    typeOfGood: programMembership
                 };
             } else {
                 // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
@@ -633,7 +641,7 @@ export function createOrderFromTransaction(params: {
         telephone: cutomerContact.telephone
     };
 
-    const acceptedOffers: factory.order.IOffer[] = [];
+    const acceptedOffers: factory.order.IAcceptedOffer<factory.order.IItemOffered>[] = [];
     let orderNumber = '';
 
     // 座席予約がある場合
@@ -666,6 +674,7 @@ export function createOrderFromTransaction(params: {
             };
 
             return {
+                typeOf: <factory.offer.OfferType>'Offer',
                 itemOffered: eventReservation,
                 price: eventReservation.price,
                 priceCurrency: factory.priceCurrency.JPY,
