@@ -499,7 +499,7 @@ export function confirm(params: {
                     name: <factory.taskName.RegisterProgramMembership>factory.taskName.RegisterProgramMembership,
                     status: factory.taskStatus.Ready,
                     runsAt: runsAt,
-                    remainingNumberOfTries: 3,
+                    remainingNumberOfTries: 10,
                     lastTriedAt: null,
                     numberOfTried: 0,
                     executionResults: [],

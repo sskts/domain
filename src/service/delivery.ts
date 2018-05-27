@@ -277,7 +277,8 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
                     name: `sskts-placeOrder-transaction-${placeOrderTransaction.id}`
                 },
                 recipient: {
-                    ...params.recipient,
+                    typeOf: params.recipient.typeOf,
+                    id: params.recipient.id,
                     name: placeOrderTransaction.seller.name,
                     url: ''
                 },

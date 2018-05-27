@@ -10,6 +10,7 @@ import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as OrderRepo } from '../repo/order';
 import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
+import { CognitoRepository as PersonRepo } from '../repo/person';
 import { MongoRepository as ProgramMembershipRepo } from '../repo/programMembership';
 import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
@@ -256,10 +257,16 @@ export function returnPecorinoAward(data: factory.task.returnPecorinoAward.IData
 export function registerProgramMembership(data: factory.task.registerProgramMembership.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
+        cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
     }) => {
+        if (settings.cognitoIdentityServiceProvider === undefined) {
+            throw new Error('settings.cognitoIdentityServiceProvider undefined.');
+        }
+
         await ProgramMembershipService.register(data)({
             action: new ActionRepo(settings.connection),
             organization: new OrganizationRepo(settings.connection),
+            person: new PersonRepo(settings.cognitoIdentityServiceProvider),
             programMembership: new ProgramMembershipRepo(settings.connection),
             transaction: new TransactionRepo(settings.connection)
         });

@@ -6,23 +6,130 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
-// import * as ContactService from './person/contact';
 import * as CreditCardService from './person/creditCard';
 import * as PlaceOrderService from './transaction/placeOrderInProgress';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { MongoRepository as OrganizationRepo } from '../repo/organization';
+import { CognitoRepository as PersonRepo } from '../repo/person';
 import { MongoRepository as ProgramMembershipRepo } from '../repo/programMembership';
+import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:programMembership');
 
+export type IStartRegisterOperation<T> = (repos: {
+    organization: OrganizationRepo;
+    programMembership: ProgramMembershipRepo;
+    task: TaskRepo;
+    transaction: TransactionRepo;
+}) => Promise<T>;
+
 export type IRegisterOperation<T> = (repos: {
     action: ActionRepo;
     organization: OrganizationRepo;
+    person: PersonRepo;
     programMembership: ProgramMembershipRepo;
     transaction: TransactionRepo;
 }) => Promise<T>;
+
+/**
+ * 会員登録タスクを作成する
+ */
+export function createRegisterTask(params: {
+    /**
+     * 会員のユーザーID(CognitoのUserId)
+     */
+    userId: string;
+    /**
+     * 会員プログラムID
+     */
+    programMembershipId: string;
+    /**
+     * 会員プログラムのオファー識別子
+     */
+    offerIdentifier: string;
+    /**
+     * 販売者タイプ
+     * どの販売者に属した会員プログラムを登録するか
+     */
+    sellerType: factory.organizationType;
+    /**
+     * 販売者ID
+     * どの販売者に属した会員プログラムを登録するか
+     */
+    sellerId: string;
+}): IStartRegisterOperation<factory.task.ITask> {
+    return async (repos: {
+        organization: OrganizationRepo;
+        programMembership: ProgramMembershipRepo;
+        task: TaskRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const now = new Date();
+        const programMemberships = await repos.programMembership.search({ id: params.programMembershipId });
+        const programMembership = programMemberships.shift();
+        if (programMembership === undefined) {
+            throw new factory.errors.NotFound('ProgramMembership');
+        }
+        if (programMembership.offers === undefined) {
+            throw new factory.errors.NotFound('ProgramMembership.offers');
+        }
+        const offer = programMembership.offers.find((o) => o.identifier === params.offerIdentifier);
+        if (offer === undefined) {
+            throw new factory.errors.NotFound('Offer');
+        }
+        const seller = await repos.organization.findById(params.sellerType, params.sellerId);
+        // 会員プログラムのホスト組織確定(この組織が決済対象となる)
+        programMembership.hostingOrganization = {
+            id: seller.id,
+            identifier: seller.identifier,
+            name: seller.name,
+            legalName: seller.legalName,
+            location: seller.location,
+            typeOf: seller.typeOf,
+            telephone: seller.telephone,
+            url: seller.url
+        };
+
+        // 受け入れれたオファーオブジェクトを作成
+        const acceptedOffer: factory.order.IAcceptedOffer<factory.programMembership.IProgramMembership> = {
+            typeOf: 'Offer',
+            identifier: offer.identifier,
+            price: offer.price,
+            priceCurrency: offer.priceCurrency,
+            eligibleDuration: offer.eligibleDuration,
+            itemOffered: programMembership,
+            seller: {
+                typeOf: seller.typeOf,
+                name: seller.name.ja
+            }
+        };
+        // 登録アクション属性を作成
+        const registerActionAttributes: factory.action.interact.register.programMembership.IAttributes = {
+            typeOf: factory.actionType.RegisterAction,
+            agent: {
+                typeOf: factory.personType.Person,
+                id: params.userId
+            },
+            object: acceptedOffer
+            // potentialActions?: any;
+        };
+        // 会員プログラム登録タスクを作成する
+        const taskAttributes: factory.task.registerProgramMembership.IAttributes = {
+            name: factory.taskName.RegisterProgramMembership,
+            status: factory.taskStatus.Ready,
+            runsAt: now,
+            remainingNumberOfTries: 10,
+            lastTriedAt: null,
+            numberOfTried: 0,
+            executionResults: [],
+            data: registerActionAttributes
+        };
+
+        return repos.task.save(taskAttributes);
+    };
+}
 
 /**
  * 会員プログラム登録
@@ -33,6 +140,7 @@ export function register(
     return async (repos: {
         action: ActionRepo;
         organization: OrganizationRepo;
+        person: PersonRepo;
         programMembership: ProgramMembershipRepo;
         transaction: TransactionRepo;
     }) => {
@@ -86,6 +194,7 @@ function processPlaceOrder(params: factory.action.interact.register.programMembe
     return async (repos: {
         action: ActionRepo;
         organization: OrganizationRepo;
+        person: PersonRepo;
         programMembership: ProgramMembershipRepo;
         transaction: TransactionRepo;
     }) => {
@@ -144,15 +253,20 @@ function processPlaceOrder(params: factory.action.interact.register.programMembe
         })(repos);
         debug('creditCard authorization created.');
 
+        if (params.agent.userPoolId === undefined) {
+            throw new factory.errors.NotFound('params.agent.userPoolId');
+        }
+        if (params.agent.username === undefined) {
+            throw new factory.errors.NotFound('params.agent.username');
+        }
+        const contact = await repos.person.getUserAttributes({
+            userPooId: params.agent.userPoolId,
+            username: params.agent.username
+        });
         await PlaceOrderService.setCustomerContact({
             agentId: params.agent.id,
             transactionId: transaction.id,
-            contact: {
-                givenName: '',
-                familyName: '',
-                telephone: '+819012345678',
-                email: ''
-            }
+            contact: contact
         })(repos);
         debug('customer contact set.');
 
