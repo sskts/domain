@@ -42,6 +42,14 @@ export function createRegisterTask(params: {
      */
     userId: string;
     /**
+     * Cognitoユーザーネーム
+     */
+    username: string;
+    /**
+     * CognitoユーザープールID
+     */
+    userPoolId: string;
+    /**
      * 会員プログラムID
      */
     programMembershipId: string;
@@ -110,7 +118,9 @@ export function createRegisterTask(params: {
             typeOf: factory.actionType.RegisterAction,
             agent: {
                 typeOf: factory.personType.Person,
-                id: params.userId
+                id: params.userId,
+                username: params.username,
+                userPoolId: params.userPoolId
             },
             object: acceptedOffer
             // potentialActions?: any;
