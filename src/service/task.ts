@@ -1,10 +1,9 @@
 /**
  * タスクサービス
- * @namespace service.task
  */
-
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
+import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -16,9 +15,22 @@ import * as TaskFunctionsService from './taskFunctions';
 
 export type TaskOperation<T> = (repos: { task: TaskRepo }) => Promise<T>;
 export type TaskAndConnectionOperation<T> = (settings: {
+    /**
+     * タスクリポジトリー
+     */
     taskRepo: TaskRepo;
+    /**
+     * MongoDBコネクション
+     */
     connection: mongoose.Connection;
+    /**
+     * PecorinoAPI認証クライアント
+     */
     pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    /**
+     * Cognitoサービスプロバイダー
+     */
+    cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
 }) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:task');
@@ -29,13 +41,25 @@ export const ABORT_REPORT_SUBJECT = 'Task aborted !!!';
  * execute a task by taskName
  * タスク名でタスクをひとつ実行する
  * @param taskName タスク名
- * @export
  */
 export function executeByName(taskName: factory.taskName): TaskAndConnectionOperation<void> {
     return async (settings: {
+        /**
+         * タスクリポジトリー
+         */
         taskRepo: TaskRepo;
+        /**
+         * MongoDBコネクション
+         */
         connection: mongoose.Connection;
+        /**
+         * PecorinoAPI認証クライアント
+         */
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+        /**
+         * Cognitoサービスプロバイダー
+         */
+        cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
     }) => {
         // 未実行のタスクを取得
         let task: factory.task.ITask | null = null;
@@ -67,6 +91,7 @@ export function execute(task: factory.task.ITask): TaskAndConnectionOperation<vo
         taskRepo: TaskRepo;
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+        cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
     }) => {
         try {
             // タスク名の関数が定義されていなければ、TypeErrorとなる

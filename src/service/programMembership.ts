@@ -22,7 +22,6 @@ export type IStartRegisterOperation<T> = (repos: {
     organization: OrganizationRepo;
     programMembership: ProgramMembershipRepo;
     task: TaskRepo;
-    transaction: TransactionRepo;
 }) => Promise<T>;
 
 export type IRegisterOperation<T> = (repos: {
@@ -72,7 +71,6 @@ export function createRegisterTask(params: {
         organization: OrganizationRepo;
         programMembership: ProgramMembershipRepo;
         task: TaskRepo;
-        transaction: TransactionRepo;
     }) => {
         const now = new Date();
         const programMemberships = await repos.programMembership.search({ id: params.programMembershipId });
