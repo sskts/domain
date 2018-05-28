@@ -1038,7 +1038,7 @@ describe('createEmailMessageFromTransaction()', () => {
             email: 'test@example.com'
         };
         const transaction = {
-            typeOf: sskts.factory.transactionType.PlaceOrder,
+            typeOf: <sskts.factory.transactionType.PlaceOrder>sskts.factory.transactionType.PlaceOrder,
             id: 'transactionId',
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
@@ -1265,7 +1265,7 @@ describe('createOrderFromTransaction()', () => {
             email: 'test@example.com'
         };
         const transaction = {
-            typeOf: sskts.factory.transactionType.PlaceOrder,
+            typeOf: <sskts.factory.transactionType.PlaceOrder>sskts.factory.transactionType.PlaceOrder,
             id: 'transactionId',
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
@@ -1467,7 +1467,7 @@ describe('createOrderFromTransaction()', () => {
             email: 'test@example.com'
         };
         const transaction = {
-            typeOf: sskts.factory.transactionType.PlaceOrder,
+            typeOf: <sskts.factory.transactionType.PlaceOrder>sskts.factory.transactionType.PlaceOrder,
             id: 'transactionId',
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
@@ -1631,7 +1631,7 @@ describe('createOrderFromTransaction()', () => {
             email: 'test@example.com'
         };
         const transaction = {
-            typeOf: sskts.factory.transactionType.PlaceOrder,
+            typeOf: <sskts.factory.transactionType.PlaceOrder>sskts.factory.transactionType.PlaceOrder,
             id: 'transactionId',
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
@@ -1706,7 +1706,7 @@ describe('createOrderFromTransaction()', () => {
             telephone: '0312345678'
         };
         const transaction = {
-            typeOf: sskts.factory.transactionType.PlaceOrder,
+            typeOf: <sskts.factory.transactionType.PlaceOrder>sskts.factory.transactionType.PlaceOrder,
             id: 'transactionId',
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
