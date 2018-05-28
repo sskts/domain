@@ -92,7 +92,8 @@ export function start(params: IStartParams):
         }
 
         // 取引ファクトリーで新しい進行中取引オブジェクトを作成
-        const transactionAttributes = factory.transaction.placeOrder.createAttributes({
+        const transactionAttributes: factory.transaction.placeOrder.IAttributes = {
+            typeOf: factory.transactionType.PlaceOrder,
             status: factory.transactionStatusType.InProgress,
             agent: params.customer,
             seller: seller,
@@ -105,7 +106,7 @@ export function start(params: IStartParams):
             expires: params.expires,
             startDate: new Date(),
             tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
-        });
+        };
 
         let transaction: factory.transaction.placeOrder.ITransaction;
         try {
@@ -314,11 +315,7 @@ export function confirm(params: {
                 return {
                     typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
                     identifier: identifier,
-                    ownedBy: {
-                        id: transaction.agent.id,
-                        typeOf: transaction.agent.typeOf,
-                        name: order.customer.name
-                    },
+                    ownedBy: transaction.agent,
                     acquiredFrom: transaction.seller,
                     ownedFrom: now,
                     ownedThrough: ownedThrough,

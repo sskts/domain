@@ -1,5 +1,5 @@
 /**
- * 注文返品サービス
+ * 注文返品取引サービス
  */
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
@@ -104,7 +104,8 @@ export function start(params: {
             validateRequest();
         }
 
-        const returnOrderAttributes = factory.transaction.returnOrder.createAttributes({
+        const returnOrderAttributes: factory.transaction.returnOrder.IAttributes = {
+            typeOf: factory.transactionType.ReturnOrder,
             status: factory.transactionStatusType.InProgress,
             agent: {
                 typeOf: factory.personType.Person,
@@ -120,7 +121,7 @@ export function start(params: {
             expires: params.expires,
             startDate: now,
             tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
-        });
+        };
 
         let returnOrderTransaction: factory.transaction.returnOrder.ITransaction;
         try {
