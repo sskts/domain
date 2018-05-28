@@ -63,7 +63,7 @@ export class MongoRepository {
         /* istanbul ignore else */
         if (searchConditions.ownedBy !== undefined) {
             andConditions.push({
-                'ownedBy.id': {
+                'ownedBy.memberOf.membershipNumber': {
                     $exists: true,
                     $eq: searchConditions.ownedBy
                 }
