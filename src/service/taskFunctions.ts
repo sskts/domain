@@ -84,6 +84,22 @@ export function cancelPecorino(data: factory.task.cancelPecorino.IData): IOperat
     };
 }
 
+export function cancelPecorinoAward(data: factory.task.cancelPecorinoAward.IData): IOperation<void> {
+    return async (settings: {
+        connection: mongoose.Connection;
+        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        if (settings.pecorinoAuthClient === undefined) {
+            throw new Error('settings.pecorinoAuthClient undefined.');
+        }
+
+        await DeliveryService.cancelPecorinoAward(data)({
+            action: new ActionRepo(settings.connection),
+            pecorinoAuthClient: settings.pecorinoAuthClient
+        });
+    };
+}
+
 export function payCreditCard(data: factory.task.payCreditCard.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;

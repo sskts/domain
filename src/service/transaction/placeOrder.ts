@@ -115,11 +115,24 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 };
+                const cancelPecorinoAwardTaskAttributes: factory.task.cancelPecorinoAward.IAttributes = {
+                    name: factory.taskName.CancelPecorinoAward,
+                    status: factory.taskStatus.Ready,
+                    runsAt: new Date(), // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transaction.id
+                    }
+                };
                 taskAttributes.push(
                     cancelSeatReservationTaskAttributes,
                     cancelCreditCardTaskAttributes,
                     cancelMvtkTaskAttributes,
-                    cancelPecorinoTaskAttributes
+                    cancelPecorinoTaskAttributes,
+                    cancelPecorinoAwardTaskAttributes
                 );
 
                 break;

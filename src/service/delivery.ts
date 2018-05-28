@@ -307,3 +307,40 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
         await repos.action.complete(action.typeOf, action.id, actionResult);
     };
 }
+
+/**
+ * Pecorinoインセンティブ承認取消
+ * @param params.transactionId 取引ID
+ */
+export function cancelPecorinoAward(params: {
+    transactionId: string;
+}) {
+    return async (repos: {
+        action: ActionRepo;
+        pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
+    }) => {
+        // Pecorinoインセンティブ承認アクションを取得
+        const authorizeActions = <factory.action.authorize.award.pecorino.IAction[]>
+            await repos.action.findAuthorizeByTransactionId(params.transactionId)
+                .then((actions) => actions
+                    .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward)
+                    .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                );
+
+        await Promise.all(authorizeActions.map(async (action) => {
+            // 承認アクション結果は基本的に必ずあるはず
+            if (action.result === undefined) {
+                throw new factory.errors.NotFound('action.result');
+            }
+
+            // 進行中の入金取引を中止する
+            const depositService = new pecorinoapi.service.transaction.Deposit({
+                endpoint: action.result.pecorinoEndpoint,
+                auth: repos.pecorinoAuthClient
+            });
+            await depositService.cancel({
+                transactionId: action.result.pecorinoTransaction.id
+            });
+        }));
+    };
+}
