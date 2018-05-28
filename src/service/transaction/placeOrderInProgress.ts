@@ -263,7 +263,10 @@ export function confirm(params: {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const seller = await repos.organization.findMovieTheaterById(transaction.seller.id);
+        const seller = await repos.organization.findById(
+            <factory.organizationType.MovieTheater>transaction.seller.typeOf,
+            transaction.seller.id
+        );
         debug('seller found.', seller.identifier);
 
         const customerContact = transaction.object.customerContact;

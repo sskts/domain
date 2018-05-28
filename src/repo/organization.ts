@@ -42,26 +42,6 @@ export class MongoRepository {
     }
 
     /**
-     * find a movie theater by id
-     * IDで劇場組織を取得する
-     * @param id organization id
-     */
-    public async findMovieTheaterById(
-        id: string
-    ): Promise<factory.organization.movieTheater.IOrganization> {
-        const doc = await this.organizationModel.findOne({
-            _id: id,
-            typeOf: factory.organizationType.MovieTheater
-        }).exec();
-
-        if (doc === null) {
-            throw new factory.errors.NotFound('movieTheater');
-        }
-
-        return <factory.organization.movieTheater.IOrganization>doc.toObject();
-    }
-
-    /**
      * save a movie theater
      * 劇場を保管する
      * @param movieTheater movieTheater object

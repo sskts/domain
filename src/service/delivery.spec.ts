@@ -327,6 +327,7 @@ describe('service.delivery.sendOrder()', () => {
                 ]
             }
         };
+        const action = { typeOf: sendOrderActionAttributes.typeOf, id: 'actionId' };
 
         const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderRepo = new sskts.repository.Order(mongoose.connection);
@@ -336,7 +337,8 @@ describe('service.delivery.sendOrder()', () => {
 
         sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo.taskModel).expects('findOne').never();
-        sandbox.mock(actionRepo).expects('start').never();
+        sandbox.mock(actionRepo).expects('start').once().withExactArgs(sendOrderActionAttributes).resolves(action);
+        // sandbox.mock(actionRepo).expects('start').never();
         sandbox.mock(ownershipInfoRepo).expects('save').never();
         sandbox.mock(orderRepo).expects('changeStatus').never();
         sandbox.mock(taskRepo).expects('save').never();
@@ -348,82 +350,81 @@ describe('service.delivery.sendOrder()', () => {
             transaction: transactionRepo,
             task: taskRepo
         }).catch((err) => err);
-
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
 
-    it('座席予約承認アクションが2つ以上あればNotImplementedエラーとなるはず', async () => {
-        const sendOrderActionAttributes = {
-            typeOf: sskts.factory.actionType.SendAction,
-            potentialActions: {
-                sendEmailMessage: {
-                    typeOf: sskts.factory.actionType.SendAction,
-                    object: { identifier: 'emailMessageIdentifier' }
-                }
-            }
-        };
-        const orderActionAttributes = {
-            typeOf: sskts.factory.actionType.OrderAction,
-            potentialActions: { sendOrder: sendOrderActionAttributes }
-        };
-        const transaction = {
-            id: 'transactionId',
-            result: {
-                order: {
-                    orderNumber: 'orderNumber',
-                    acceptedOffers: [
-                        { itemOffered: { reservedTicket: {} } }
-                    ]
-                },
-                ownershipInfos: [{ identifier: 'identifier' }]
-            },
-            potentialActions: { order: orderActionAttributes },
-            object: {
-                customerContact: {
-                    telephone: '+819012345678'
-                },
-                authorizeActions: [
-                    {
-                        typeOf: sskts.factory.actionType.AuthorizeAction,
-                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
-                        result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
-                    },
-                    {
-                        typeOf: sskts.factory.actionType.AuthorizeAction,
-                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
-                        result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
-                    }
-                ]
-            }
-        };
+    // it('座席予約承認アクションが2つ以上あればNotImplementedエラーとなるはず', async () => {
+    //     const sendOrderActionAttributes = {
+    //         typeOf: sskts.factory.actionType.SendAction,
+    //         potentialActions: {
+    //             sendEmailMessage: {
+    //                 typeOf: sskts.factory.actionType.SendAction,
+    //                 object: { identifier: 'emailMessageIdentifier' }
+    //             }
+    //         }
+    //     };
+    //     const orderActionAttributes = {
+    //         typeOf: sskts.factory.actionType.OrderAction,
+    //         potentialActions: { sendOrder: sendOrderActionAttributes }
+    //     };
+    //     const transaction = {
+    //         id: 'transactionId',
+    //         result: {
+    //             order: {
+    //                 orderNumber: 'orderNumber',
+    //                 acceptedOffers: [
+    //                     { itemOffered: { reservedTicket: {} } }
+    //                 ]
+    //             },
+    //             ownershipInfos: [{ identifier: 'identifier' }]
+    //         },
+    //         potentialActions: { order: orderActionAttributes },
+    //         object: {
+    //             customerContact: {
+    //                 telephone: '+819012345678'
+    //             },
+    //             authorizeActions: [
+    //                 {
+    //                     typeOf: sskts.factory.actionType.AuthorizeAction,
+    //                     actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+    //                     object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
+    //                     result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
+    //                 },
+    //                 {
+    //                     typeOf: sskts.factory.actionType.AuthorizeAction,
+    //                     actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+    //                     object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
+    //                     result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
+    //                 }
+    //             ]
+    //         }
+    //     };
 
-        const actionRepo = new sskts.repository.Action(mongoose.connection);
-        const orderRepo = new sskts.repository.Order(mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-        const taskRepo = new sskts.repository.Task(mongoose.connection);
+    //     const actionRepo = new sskts.repository.Action(mongoose.connection);
+    //     const orderRepo = new sskts.repository.Order(mongoose.connection);
+    //     const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+    //     const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+    //     const taskRepo = new sskts.repository.Task(mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
-        sandbox.mock(taskRepo.taskModel).expects('findOne').never();
-        sandbox.mock(actionRepo).expects('start').never();
-        sandbox.mock(ownershipInfoRepo).expects('save').never();
-        sandbox.mock(orderRepo).expects('changeStatus').never();
-        sandbox.mock(taskRepo).expects('save').never();
+    //     sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
+    //     sandbox.mock(taskRepo.taskModel).expects('findOne').never();
+    //     sandbox.mock(actionRepo).expects('start').never();
+    //     sandbox.mock(ownershipInfoRepo).expects('save').never();
+    //     sandbox.mock(orderRepo).expects('changeStatus').never();
+    //     sandbox.mock(taskRepo).expects('save').never();
 
-        const result = await sskts.service.delivery.sendOrder(transaction.id)({
-            action: actionRepo,
-            order: orderRepo,
-            ownershipInfo: ownershipInfoRepo,
-            transaction: transactionRepo,
-            task: taskRepo
-        }).catch((err) => err);
+    //     const result = await sskts.service.delivery.sendOrder(transaction.id)({
+    //         action: actionRepo,
+    //         order: orderRepo,
+    //         ownershipInfo: ownershipInfoRepo,
+    //         transaction: transactionRepo,
+    //         task: taskRepo
+    //     }).catch((err) => err);
 
-        assert(result instanceof sskts.factory.errors.NotImplemented);
-        sandbox.verify();
-    });
+    //     assert(result instanceof sskts.factory.errors.NotImplemented);
+    //     sandbox.verify();
+    // });
 
     it('注文取引に購入者連絡先が未定義であればNotFoundエラーとなるはず', async () => {
         const sendOrderActionAttributes = {
