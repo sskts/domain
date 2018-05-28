@@ -811,7 +811,9 @@ export async function createEmailMessageFromTransaction(params: {
     return new Promise<factory.creativeWork.message.email.ICreativeWork>((resolve, reject) => {
         const seller = params.transaction.seller;
         if (params.order.acceptedOffers[0].itemOffered.typeOf === factory.reservationType.EventReservation) {
-            const event = (<factory.reservation.event.IEventReservation<any>>params.order.acceptedOffers[0].itemOffered).reservationFor;
+            const event =
+                // tslint:disable-next-line:max-line-length
+                (<factory.reservation.event.IEventReservation<factory.event.individualScreeningEvent.IEvent>>params.order.acceptedOffers[0].itemOffered).reservationFor;
 
             pug.renderFile(
                 `${__dirname}/../../../emails/sendOrder/text.pug`,

@@ -12,7 +12,7 @@
     "@motionpicture/coa-service": "^4.1.0-alpha.0",
     "@motionpicture/gmo-service": "^4.2.0",
     "@motionpicture/pecorino-api-nodejs-client": "0.0.0-alpha.12",
-    "@motionpicture/sskts-factory": "^4.0.0-alpha.7",
+    "@motionpicture/sskts-factory": "^4.0.0-alpha.8",
     "@motionpicture/waiter-domain": "^2.0.2",
     "@sendgrid/mail": "^6.2.1",
     "@types/google-libphonenumber": "^7.4.15",

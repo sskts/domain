@@ -19,7 +19,7 @@ export class MongoRepository {
      * 所有権情報を保管する
      * @param ownershipInfo ownershipInfo object
      */
-    public async save(ownershipInfo: factory.ownershipInfo.IOwnershipInfo<any>) {
+    public async save(ownershipInfo: factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>) {
         await this.ownershipInfoModel.findOneAndUpdate(
             {
                 identifier: ownershipInfo.identifier

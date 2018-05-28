@@ -1,5 +1,5 @@
 /**
- * 会員プログラム承認アクションサービス
+ * 会員プログラムオファー承認アクションサービス
  */
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
@@ -25,7 +25,7 @@ export function create(params: {
      * 受け入れられた会員プログラムオファー
      */
     acceptedOffer: factory.order.IAcceptedOffer<factory.programMembership.IProgramMembership>;
-}): ICreateOperation<any> {
+}): ICreateOperation<factory.action.authorize.offer.programMembership.IAction> {
     return async (repos: {
         action: ActionRepo;
         organization: OrganizationRepo;
@@ -57,7 +57,7 @@ export function create(params: {
 
         // 承認アクションを開始
         debug('starting authorize action of programMembership...');
-        const actionAttributes: any = {
+        const actionAttributes: factory.action.authorize.offer.programMembership.IAttributes = {
             typeOf: factory.actionType.AuthorizeAction,
             object: params.acceptedOffer,
             agent: transaction.seller,
@@ -82,7 +82,7 @@ export function create(params: {
 
         // アクションを完了
         debug('ending authorize action...');
-        const result: any = {
+        const result: factory.action.authorize.offer.programMembership.IResult = {
             price: acceptedOffer.price,
             priceCurrency: acceptedOffer.priceCurrency
         };
