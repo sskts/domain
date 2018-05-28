@@ -330,7 +330,7 @@ export async function createRefundEmail(params: {
                             identifier: `refundOrder-${params.order.orderNumber}`,
                             sender: {
                                 typeOf: seller.typeOf,
-                                name: seller.name,
+                                name: seller.name.ja,
                                 email: 'noreply@ticket-cinemasunshine.com'
                             },
                             toRecipient: {

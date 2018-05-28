@@ -37,13 +37,16 @@ export interface IStartParams {
      */
     expires: Date;
     /**
-     * 取引主体ID
+     * 消費者
      */
-    agentId: string;
+    customer: factory.person.IPerson;
     /**
-     * 販売者ID
+     * 販売者
      */
-    sellerId: string;
+    seller: {
+        typeOf: factory.organizationType;
+        id: string;
+    };
     /**
      * APIクライアント
      */
@@ -64,7 +67,7 @@ export function start(params: IStartParams):
         transaction: TransactionRepo;
     }) => {
         // 売り手を取得
-        const seller = await repos.organization.findMovieTheaterById(params.sellerId);
+        const seller = await repos.organization.findById(params.seller.typeOf, params.seller.id);
 
         let passport: waiter.factory.passport.IPassport | undefined;
 
@@ -88,30 +91,11 @@ export function start(params: IStartParams):
             passport = <any>{};
         }
 
-        const agent: factory.transaction.placeOrder.IAgent = {
-            typeOf: factory.personType.Person,
-            id: params.agentId,
-            url: ''
-        };
-        if (params.clientUser.username !== undefined) {
-            agent.memberOf = {
-                typeOf: <factory.programMembership.ProgramMembershipType>'ProgramMembership',
-                membershipNumber: params.agentId,
-                programName: 'Amazon Cognito',
-                award: []
-            };
-        }
-
         // 取引ファクトリーで新しい進行中取引オブジェクトを作成
         const transactionAttributes = factory.transaction.placeOrder.createAttributes({
             status: factory.transactionStatusType.InProgress,
-            agent: agent,
-            seller: {
-                typeOf: factory.organizationType.MovieTheater,
-                id: seller.id,
-                name: seller.name.ja,
-                url: seller.url
-            },
+            agent: params.customer,
+            seller: seller,
             object: {
                 passportToken: params.passportToken,
                 passport: <any>passport,
@@ -662,7 +646,11 @@ export function createOrderFromTransaction(params: {
     }
 
     const cutomerContact = params.transaction.object.customerContact;
-    const seller: factory.order.ISeller = params.transaction.seller;
+    const seller: factory.order.ISeller = {
+        typeOf: params.transaction.seller.typeOf,
+        name: params.transaction.seller.name.ja,
+        url: (params.transaction.seller.url !== undefined) ? params.transaction.seller.url : ''
+    };
     const customer: factory.order.ICustomer = {
         ...{
             id: params.transaction.agent.id,
@@ -877,7 +865,7 @@ export async function createEmailMessageFromTransaction(params: {
                                 identifier: `placeOrderTransaction-${params.transaction.id}`,
                                 sender: {
                                     typeOf: seller.typeOf,
-                                    name: seller.name,
+                                    name: seller.name.ja,
                                     email: 'noreply@ticket-cinemasunshine.com'
                                 },
                                 toRecipient: {

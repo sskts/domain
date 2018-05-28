@@ -28,8 +28,12 @@ describe('start()', () => {
     });
 
     it('販売者が存在すれば、開始できるはず', async () => {
-        const agentId = 'agentId';
+        const agent = {
+            typeOf: sskts.factory.personType.Person,
+            id: 'agentId'
+        };
         const seller = {
+            typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
             name: { ja: 'ja', en: 'ne' },
             identifier: 'sellerIdentifier'
@@ -56,8 +60,8 @@ describe('start()', () => {
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
             clientUser: <any>{},
-            agentId: agentId,
-            sellerId: seller.id,
+            customer: agent,
+            seller: seller,
             passportToken: passportToken
         })({
             transaction: transactionRepo,
@@ -70,8 +74,12 @@ describe('start()', () => {
     });
 
     it('クライアントユーザーにusernameが存在すれば、会員として開始できるはず', async () => {
-        const agentId = 'agentId';
+        const agent = {
+            typeOf: sskts.factory.personType.Person,
+            id: 'agentId'
+        };
         const seller = {
+            typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
             name: { ja: 'ja', en: 'ne' },
             identifier: 'sellerIdentifier'
@@ -101,8 +109,8 @@ describe('start()', () => {
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
             clientUser: <any>clientUser,
-            agentId: agentId,
-            sellerId: seller.id,
+            customer: agent,
+            seller: seller,
             passportToken: passportToken
         })({
             transaction: transactionRepo,
@@ -115,8 +123,12 @@ describe('start()', () => {
 
     it('許可証トークンの検証に成功すれば、開始できるはず', async () => {
         process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
-        const agentId = 'agentId';
+        const agent = {
+            typeOf: sskts.factory.personType.Person,
+            id: 'agentId'
+        };
         const seller = {
+            typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
             name: { ja: 'ja', en: 'ne' },
             identifier: 'sellerIdentifier'
@@ -144,8 +156,8 @@ describe('start()', () => {
             expires: transaction.expires,
             passportToken: passportToken,
             clientUser: <any>{},
-            agentId: agentId,
-            sellerId: seller.id
+            customer: agent,
+            seller: seller
         })({
             transaction: transactionRepo,
             organization: organizationRepo
@@ -156,8 +168,12 @@ describe('start()', () => {
 
     it('許可証トークンの検証に失敗すれば、Argumentエラーとなるはず', async () => {
         process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
-        const agentId = 'agentId';
+        const agent = {
+            typeOf: sskts.factory.personType.Person,
+            id: 'agentId'
+        };
         const seller = {
+            typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
             name: { ja: 'ja', en: 'ne' },
             identifier: 'sellerIdentifier'
@@ -179,8 +195,8 @@ describe('start()', () => {
             expires: transaction.expires,
             passportToken: passportToken,
             clientUser: <any>{},
-            agentId: agentId,
-            sellerId: seller.id
+            customer: agent,
+            seller: seller
         })({
             transaction: transactionRepo,
             organization: organizationRepo
@@ -191,8 +207,12 @@ describe('start()', () => {
 
     it('許可証の発行者が期待通りでなければ、Argumentエラーとなるはず', async () => {
         process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
-        const agentId = 'agentId';
+        const agent = {
+            typeOf: sskts.factory.personType.Person,
+            id: 'agentId'
+        };
         const seller = {
+            typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
             name: { ja: 'ja', en: 'ne' },
             identifier: 'sellerIdentifier'
@@ -220,8 +240,8 @@ describe('start()', () => {
             expires: transaction.expires,
             passportToken: passportToken,
             clientUser: <any>{},
-            agentId: agentId,
-            sellerId: seller.id
+            customer: agent,
+            seller: seller
         })({
             transaction: transactionRepo,
             organization: organizationRepo
@@ -231,8 +251,12 @@ describe('start()', () => {
     });
 
     it('許可証がない場合、ArgumentNullエラーとなるはず', async () => {
-        const agentId = 'agentId';
+        const agent = {
+            typeOf: sskts.factory.personType.Person,
+            id: 'agentId'
+        };
         const seller = {
+            typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
             name: { ja: 'ja', en: 'ne' },
             identifier: 'sellerIdentifier'
@@ -250,8 +274,8 @@ describe('start()', () => {
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
             clientUser: <any>{},
-            agentId: agentId,
-            sellerId: seller.id,
+            customer: agent,
+            seller: seller,
             passportToken: <any>undefined
         })({
             transaction: transactionRepo,
@@ -264,8 +288,12 @@ describe('start()', () => {
 
     it('取引作成時に何かしらエラーが発生すれば、そのままのエラーになるはず', async () => {
         process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
-        const agentId = 'agentId';
+        const agent = {
+            typeOf: sskts.factory.personType.Person,
+            id: 'agentId'
+        };
         const seller = {
+            typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
             name: { ja: 'ja', en: 'ne' },
             identifier: 'sellerIdentifier'
@@ -292,8 +320,8 @@ describe('start()', () => {
             expires: expires,
             passportToken: passportToken,
             clientUser: <any>{},
-            agentId: agentId,
-            sellerId: seller.id
+            customer: agent,
+            seller: seller
         })({
             transaction: transactionRepo,
             organization: organizationRepo
@@ -304,8 +332,12 @@ describe('start()', () => {
 
     it('許可証を重複使用しようとすれば、AlreadyInUseエラーとなるはず', async () => {
         process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
-        const agentId = 'agentId';
+        const agent = {
+            typeOf: sskts.factory.personType.Person,
+            id: 'agentId'
+        };
         const seller = {
+            typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
             name: { ja: 'ja', en: 'ne' },
             identifier: 'sellerIdentifier'
@@ -332,8 +364,8 @@ describe('start()', () => {
             expires: expires,
             passportToken: passportToken,
             clientUser: <any>{},
-            agentId: agentId,
-            sellerId: seller.id
+            customer: agent,
+            seller: seller
         })({
             transaction: transactionRepo,
             organization: organizationRepo
@@ -1086,7 +1118,7 @@ describe('createEmailMessageFromTransaction()', () => {
         const seller = {
             typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
-            name: 'sellerName',
+            name: { ja: 'sellerName', en: '' },
             url: '',
             telephone: '0312345678'
         };
@@ -1269,7 +1301,12 @@ describe('createEmailMessageFromTransaction()', () => {
             discounts: [],
             price: 1234,
             priceCurrency: sskts.factory.priceCurrency.JPY,
-            seller: transaction.seller,
+            seller: {
+                id: transaction.seller.id,
+                typeOf: transaction.seller.typeOf,
+                name: transaction.seller.name.ja,
+                url: ''
+            },
             typeOf: 'Order',
             // tslint:disable-next-line:max-line-length
             url: `${process.env.ORDER_INQUIRY_ENDPOINT}/inquiry/login?theater=${seatReservationAuthorizeActions[0].result.updTmpReserveSeatArgs.theaterCode}&reserve=${seatReservationAuthorizeActions[0].result.updTmpReserveSeatResult.tmpReserveNum}`
@@ -1308,7 +1345,7 @@ describe('createOrderFromTransaction()', () => {
         const seller = {
             typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
-            name: 'sellerName',
+            name: { ja: 'sellerName', en: '' },
             url: '',
             telephone: '0312345678'
         };
@@ -1510,7 +1547,7 @@ describe('createOrderFromTransaction()', () => {
         const seller = {
             typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
-            name: 'sellerName',
+            name: { ja: 'sellerName', en: '' },
             url: '',
             telephone: '0312345678'
         };
@@ -1605,7 +1642,7 @@ describe('createOrderFromTransaction()', () => {
         const seller = {
             typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
-            name: 'sellerName',
+            name: { ja: 'sellerName', en: '' },
             url: '',
             telephone: '0312345678'
         };
@@ -1674,7 +1711,7 @@ describe('createOrderFromTransaction()', () => {
         const seller = {
             typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
-            name: 'sellerName',
+            name: { ja: 'sellerName', en: '' },
             url: '',
             telephone: '0312345678'
         };
@@ -1755,7 +1792,7 @@ describe('createOrderFromTransaction()', () => {
         const seller = {
             typeOf: sskts.factory.organizationType.MovieTheater,
             id: 'sellerId',
-            name: 'sellerName',
+            name: { ja: 'sellerName', en: '' },
             url: '',
             telephone: '0312345678'
         };

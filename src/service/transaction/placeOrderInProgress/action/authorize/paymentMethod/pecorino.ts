@@ -101,8 +101,8 @@ export function create(params: {
                     recipient: {
                         typeOf: 'Person',
                         id: transaction.seller.id,
-                        name: transaction.seller.name,
-                        url: transaction.seller.url
+                        name: transaction.seller.name.ja,
+                        url: (transaction.seller.url !== undefined) ? transaction.seller.url : ''
                     },
                     amount: params.amount,
                     notes: (params.notes !== undefined) ? params.notes : 'シネマサンシャイン 注文取引',
@@ -113,10 +113,7 @@ export function create(params: {
                 pecorinoEndpoint = repos.transferTransactionService.options.endpoint;
 
                 // 組織から転送先口座IDを取得する
-                const seller = await repos.organization.findById(
-                    <factory.organizationType>transaction.seller.typeOf, // 現時点で販売者は必ず組織
-                    transaction.seller.id
-                );
+                const seller = await repos.organization.findById(transaction.seller.typeOf, transaction.seller.id);
                 if (seller.paymentAccepted === undefined) {
                     throw new factory.errors.Argument('transactionId', 'Pecorino payment not accepted.');
                 }
@@ -138,8 +135,8 @@ export function create(params: {
                     recipient: {
                         typeOf: 'Person',
                         id: transaction.seller.id,
-                        name: transaction.seller.name,
-                        url: transaction.seller.url
+                        name: transaction.seller.name.ja,
+                        url: (transaction.seller.url !== undefined) ? transaction.seller.url : ''
                     },
                     amount: params.amount,
                     notes: (params.notes !== undefined) ? params.notes : 'シネマサンシャイン 注文取引',

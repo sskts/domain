@@ -85,8 +85,8 @@ export function create(params: {
                 agent: {
                     typeOf: 'Person',
                     id: transaction.seller.id,
-                    name: transaction.seller.name,
-                    url: transaction.seller.url
+                    name: transaction.seller.name.ja,
+                    url: (transaction.seller.url !== undefined) ? transaction.seller.url : ''
                 },
                 recipient: {
                     typeOf: transaction.agent.typeOf,

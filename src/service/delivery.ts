@@ -279,7 +279,7 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
                 recipient: {
                     typeOf: params.recipient.typeOf,
                     id: params.recipient.id,
-                    name: placeOrderTransaction.seller.name,
+                    name: placeOrderTransaction.seller.name.ja,
                     url: ''
                 },
                 amount: pecorinoAwardAuthorizeActionResult.pecorinoTransaction.object.amount,
