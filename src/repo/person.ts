@@ -4,7 +4,6 @@ import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 
 const debug = createDebug('sskts-domain:repository:person');
-const CUSTOM_ATTRIBUTE_NAME_ACCOUNT_NUMBER = 'accountNumbers';
 
 /**
  * 会員リポジトリー
@@ -51,28 +50,6 @@ export class CognitoRepository {
         });
 
         return contact;
-    }
-
-    public async getAccountNumbers(username: string) {
-        return new Promise<string[]>((resolve, reject) => {
-            this.cognitoIdentityServiceProvider.adminGetUser(
-                {
-                    UserPoolId: <string>process.env.COGNITO_USER_POOL_ID,
-                    Username: username
-                },
-                (err, data) => {
-                    if (err instanceof Error) {
-                        reject(err);
-                    } else {
-                        if (data.UserAttributes === undefined) {
-                            reject(new Error('UserAttributes not found.'));
-                        } else {
-                            const attribute = data.UserAttributes.find((a) => a.Name === `custom:${CUSTOM_ATTRIBUTE_NAME_ACCOUNT_NUMBER}`);
-                            resolve((attribute !== undefined && attribute.Value !== undefined) ? JSON.parse(attribute.Value) : []);
-                        }
-                    }
-                });
-        });
     }
 
     public async  getUserAttributes(params: {

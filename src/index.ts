@@ -7,6 +7,7 @@ import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
+import * as AWS from 'aws-sdk';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
@@ -18,7 +19,6 @@ import * as NotificationService from './service/notification';
 import * as OfferService from './service/offer';
 import * as OrderService from './service/order';
 import * as PaymentService from './service/payment';
-import * as PersonContactService from './service/person/contact';
 import * as PersonCreditCardService from './service/person/creditCard';
 import * as ProgramMembershipService from './service/programMembership';
 import * as ReportService from './service/report';
@@ -96,6 +96,11 @@ export import GMO = GMO;
  */
 export import pecorinoapi = pecorinoapi;
 
+/**
+ * AWS SDK
+ */
+export import AWS = AWS;
+
 export namespace repository {
     export class Action extends ActionRepo { }
     export namespace action {
@@ -130,7 +135,6 @@ export namespace service {
     export import notification = NotificationService;
     export import order = OrderService;
     export namespace person {
-        export import contact = PersonContactService;
         export import creditCard = PersonCreditCardService;
     }
     export import programMembership = ProgramMembershipService;
