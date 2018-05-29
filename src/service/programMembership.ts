@@ -138,6 +138,7 @@ export function register(
         programMembership: ProgramMembershipRepo;
         transaction: TransactionRepo;
     }) => {
+        const now = new Date();
         // tslint:disable-next-line:no-suspicious-comment
         // TODO 登録ロック
 
@@ -146,7 +147,10 @@ export function register(
 
         let order: factory.order.IOrder;
         try {
-            order = await processPlaceOrder(params)(repos);
+            order = await processPlaceOrder({
+                registerActionAttributes: params,
+                orderDate: now
+            })(repos);
         } catch (error) {
             // actionにエラー結果を追加
             try {
@@ -184,7 +188,10 @@ export function unRegister(_: factory.action.interact.unRegister.IAttributes) {
 /**
  * 会員プログラム登録アクション属性から、会員プログラムを注文する
  */
-function processPlaceOrder(params: factory.action.interact.register.programMembership.IAttributes) {
+function processPlaceOrder(params: {
+    registerActionAttributes: factory.action.interact.register.programMembership.IAttributes;
+    orderDate: Date;
+}) {
     return async (repos: {
         action: ActionRepo;
         organization: OrganizationRepo;
@@ -192,16 +199,16 @@ function processPlaceOrder(params: factory.action.interact.register.programMembe
         programMembership: ProgramMembershipRepo;
         transaction: TransactionRepo;
     }) => {
-        const programMembership = params.object.itemOffered;
+        const programMembership = params.registerActionAttributes.object.itemOffered;
         if (programMembership.offers === undefined) {
             throw new factory.errors.NotFound('ProgramMembership.offers');
         }
-        const acceptedOffer = params.object;
+        const acceptedOffer = params.registerActionAttributes.object;
         const seller = programMembership.hostingOrganization;
         if (seller === undefined) {
             throw new factory.errors.NotFound('ProgramMembership.hostingOrganization');
         }
-        const customer = (<factory.person.IPerson>params.agent);
+        const customer = (<factory.person.IPerson>params.registerActionAttributes.agent);
         if (customer.memberOf === undefined) {
             throw new factory.errors.NotFound('params.agent.memberOf');
         }
@@ -226,7 +233,7 @@ function processPlaceOrder(params: factory.action.interact.register.programMembe
 
         // 会員プログラムオファー承認
         await PlaceOrderService.action.authorize.offer.programMembership.create({
-            agentId: params.agent.id,
+            agentId: params.registerActionAttributes.agent.id,
             transactionId: transaction.id,
             acceptedOffer: acceptedOffer
         })(repos);
@@ -245,19 +252,19 @@ function processPlaceOrder(params: factory.action.interact.register.programMembe
 
         // クレジットカードオーソリ
         await PlaceOrderService.action.authorize.paymentMethod.creditCard.create({
-            agentId: params.agent.id,
+            agentId: params.registerActionAttributes.agent.id,
             transactionId: transaction.id,
             orderId: moment().valueOf().toString(),
             amount: acceptedOffer.price,
             method: GMO.utils.util.Method.Lump,
             creditCard: {
-                memberId: params.agent.id,
+                memberId: params.registerActionAttributes.agent.id,
                 cardSeq: parseInt(creditCard.cardSeq, 10)
             }
         })(repos);
         debug('creditCard authorization created.');
 
-        if ((<factory.person.IPerson>params.agent).memberOf === undefined) {
+        if ((<factory.person.IPerson>params.registerActionAttributes.agent).memberOf === undefined) {
             throw new factory.errors.NotFound('params.agent.memberOf');
         }
         const contact = await repos.person.getUserAttributes({
@@ -265,7 +272,7 @@ function processPlaceOrder(params: factory.action.interact.register.programMembe
             username: customer.memberOf.membershipNumber
         });
         await PlaceOrderService.setCustomerContact({
-            agentId: params.agent.id,
+            agentId: params.registerActionAttributes.agent.id,
             transactionId: transaction.id,
             contact: contact
         })(repos);
@@ -275,8 +282,9 @@ function processPlaceOrder(params: factory.action.interact.register.programMembe
         debug('confirming transaction...', transaction.id);
 
         return PlaceOrderService.confirm({
-            agentId: params.agent.id,
-            transactionId: transaction.id
+            agentId: params.registerActionAttributes.agent.id,
+            transactionId: transaction.id,
+            orderDate: params.orderDate
         })(repos);
     };
 }

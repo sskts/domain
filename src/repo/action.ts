@@ -143,7 +143,7 @@ export class MongoRepository {
                 $exists: true,
                 $eq: transactionId
             }
-        }).exec().then((docs) => docs.map((doc) => <IAuthorizeAction>doc.toObject()));
+        }).exec().then((docs) => docs.map((doc) => doc.toObject()));
     }
 
     /**

@@ -235,9 +235,8 @@ export function setCustomerContact(params: {
 }
 
 /**
- * 取引確定
+ * 注文取引を確定する
  */
-// tslint:disable-next-line:max-func-body-length
 export function confirm(params: {
     /**
      * 取引進行者ID
@@ -251,14 +250,16 @@ export function confirm(params: {
      * 注文メールを送信するかどうか
      */
     sendEmailMessage?: boolean;
+    /**
+     * 注文日時
+     */
+    orderDate: Date;
 }) {
-    // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
         organization: OrganizationRepo;
     }) => {
-        const now = moment().toDate();
         const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -272,252 +273,43 @@ export function confirm(params: {
 
         const customerContact = transaction.object.customerContact;
         if (customerContact === undefined) {
-            throw new factory.errors.NotFound('customerContact');
+            throw new factory.errors.Argument('Customer contact required');
         }
 
         // 取引に対する全ての承認アクションをマージ
         let authorizeActions = await repos.action.findAuthorizeByTransactionId(params.transactionId);
-
         // 万が一このプロセス中に他処理が発生してもそれらを無視するように、endDateでフィルタリング
-        authorizeActions = authorizeActions.filter((a) => (a.endDate !== undefined && a.endDate < now));
+        authorizeActions = authorizeActions.filter((a) => (a.endDate !== undefined && a.endDate < params.orderDate));
         transaction.object.authorizeActions = authorizeActions;
 
-        // 照会可能になっているかどうか
+        // 取引の確定条件が全て整っているかどうか確認
         validateTransaction(transaction);
 
         // 結果作成
         const order = createOrderFromTransaction({
             transaction: transaction,
-            orderDate: now,
+            orderDate: params.orderDate,
             orderStatus: factory.orderStatus.OrderProcessing,
             isGift: false,
             seller: seller
         });
-
-        // tslint:disable-next-line:max-line-length
-        type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>;
-        const ownershipInfos: IOwnershipInfo[] = order.acceptedOffers.map((acceptedOffer) => {
-            if (acceptedOffer.itemOffered.typeOf === 'ProgramMembership') {
-                const programMembership = acceptedOffer.itemOffered;
-                const identifier = `${acceptedOffer.itemOffered.typeOf}-${moment().valueOf()}`;
-
-                // どういう期間でいくらのオファーなのか
-                const eligibleDuration = acceptedOffer.eligibleDuration;
-                if (eligibleDuration === undefined) {
-                    throw new factory.errors.NotFound('Order.acceptedOffers.eligibleDuration');
-                }
-                // 期間単位としては秒のみ実装
-                if (eligibleDuration.unitCode !== factory.unitCode.Sec) {
-                    throw new factory.errors.NotImplemented('Only \'SEC\' is implemented for eligibleDuration.unitCode ');
-                }
-                const ownedThrough = moment(now).add(eligibleDuration.value, 'seconds').toDate();
-
-                return {
-                    typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
-                    identifier: identifier,
-                    ownedBy: transaction.agent,
-                    acquiredFrom: transaction.seller,
-                    ownedFrom: now,
-                    ownedThrough: ownedThrough,
-                    typeOfGood: programMembership
-                };
-            } else {
-                // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
-                // saveする際に、identifierでfindOneAndUpdateしている
-                const identifier = `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservedTicket.ticketToken}`;
-
-                return {
-                    typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
-                    identifier: identifier,
-                    ownedBy: {
-                        id: transaction.agent.id,
-                        typeOf: transaction.agent.typeOf,
-                        name: order.customer.name
-                    },
-                    acquiredFrom: transaction.seller,
-                    ownedFrom: now,
-                    // イベント予約に対する所有権の有効期限はイベント終了日時までで十分だろう
-                    // 現時点では所有権対象がイベント予約のみなので、これで問題ないが、
-                    // 対象が他に広がれば、有効期間のコントロールは別でしっかり行う必要があるだろう
-                    ownedThrough: acceptedOffer.itemOffered.reservationFor.endDate,
-                    typeOfGood: acceptedOffer.itemOffered
-                };
-            }
+        const ownershipInfos = createOwnershipInfosFromTransaction({
+            transaction: transaction,
+            order: order
         });
-
-        // クレジットカード支払いアクション
-        let payCreditCardAction: factory.action.trade.pay.IAttributes<factory.paymentMethodType.CreditCard> | null = null;
-        const creditCardPayment = order.paymentMethods.find((m) => m.paymentMethod === factory.paymentMethodType.CreditCard);
-        if (creditCardPayment !== undefined) {
-            payCreditCardAction = {
-                typeOf: factory.actionType.PayAction,
-                object: {
-                    paymentMethod: <factory.order.IPaymentMethod<factory.paymentMethodType.CreditCard>>creditCardPayment,
-                    price: order.price,
-                    priceCurrency: order.priceCurrency
-                },
-                agent: transaction.agent,
-                purpose: order
-            };
-        }
-
-        // Pecorino支払いアクション
-        const pecorinotAuthorizeActions = <factory.action.authorize.paymentMethod.pecorino.IAction[]>transaction.object.authorizeActions
-            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.pecorino.ObjectType.PecorinoPayment);
-        const payPecorinoActions: factory.action.trade.pay.IAttributes<factory.paymentMethodType.Pecorino>[] =
-            pecorinotAuthorizeActions.map((a) => {
-                return {
-                    typeOf: <factory.actionType.PayAction>factory.actionType.PayAction,
-                    object: {
-                        paymentMethod: {
-                            name: 'Pecorino',
-                            paymentMethod: <factory.paymentMethodType.Pecorino>factory.paymentMethodType.Pecorino,
-                            paymentMethodId: a.id
-                        },
-                        pecorinoTransaction: (<factory.action.authorize.paymentMethod.pecorino.IResult>a.result).pecorinoTransaction,
-                        pecorinoEndpoint: (<factory.action.authorize.paymentMethod.pecorino.IResult>a.result).pecorinoEndpoint
-                    },
-                    agent: transaction.agent,
-                    purpose: order
-                };
-            });
-
-        // ムビチケ使用アクション
-        let useMvtkAction: factory.action.consume.use.mvtk.IAttributes | null = null;
-        const mvtkAuthorizeAction = <factory.action.authorize.discount.mvtk.IAction>transaction.object.authorizeActions
-            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .find((a) => a.object.typeOf === factory.action.authorize.discount.mvtk.ObjectType.Mvtk);
-        if (mvtkAuthorizeAction !== undefined) {
-            useMvtkAction = {
-                typeOf: factory.actionType.UseAction,
-                object: {
-                    typeOf: factory.action.consume.use.mvtk.ObjectType.Mvtk,
-                    seatInfoSyncIn: mvtkAuthorizeAction.object.seatInfoSyncIn
-                },
-                agent: transaction.agent,
-                purpose: order
-            };
-        }
-
-        // Pecorino口座使用ユーザーであればインセンティブ付与
-        // Pecorinoインセンティブに対する承認アクションの分だけ、Pecorinoインセンティブ付与アクションを作成する
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO インセンティブ付与条件が「会員だったら」になっているが、雑なので調整すべし
-        let givePecorinoAwardActions: factory.action.transfer.give.pecorinoAward.IAttributes[] = [];
-        if (transaction.agent.memberOf !== undefined) {
-            const pecorinoAwardAuthorizeActions = (<factory.action.authorize.award.pecorino.IAction[]>transaction.object.authorizeActions)
-                .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward);
-            givePecorinoAwardActions = pecorinoAwardAuthorizeActions.map((a) => {
-                const actionResult = <factory.action.authorize.award.pecorino.IResult>a.result;
-
-                return {
-                    typeOf: <factory.actionType.GiveAction>factory.actionType.GiveAction,
-                    agent: transaction.seller,
-                    recipient: transaction.agent,
-                    object: {
-                        typeOf: factory.action.transfer.give.pecorinoAward.ObjectType.PecorinoAward,
-                        pecorinoTransaction: actionResult.pecorinoTransaction,
-                        pecorinoEndpoint: actionResult.pecorinoEndpoint
-                    },
-                    purpose: order
-                };
-            });
-        }
-
         const result: factory.transaction.placeOrder.IResult = {
             order: order,
             ownershipInfos: ownershipInfos
         };
 
-        // メール送信ONであれば送信アクション属性を生成
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO メール送信アクションをセットする
-        // 現時点では、フロントエンドからメール送信タスクを作成しているので不要
-        let sendEmailMessageActionAttributes: factory.action.transfer.send.message.email.IAttributes | null = null;
-        if (params.sendEmailMessage === true) {
-            const emailMessage = await createEmailMessageFromTransaction({
-                transaction: transaction,
-                customerContact: customerContact,
-                order: order,
-                seller: seller
-            });
-            sendEmailMessageActionAttributes = {
-                typeOf: factory.actionType.SendAction,
-                object: emailMessage,
-                agent: transaction.seller,
-                recipient: transaction.agent,
-                potentialActions: {},
-                purpose: order
-            };
-        }
-
-        // 会員プログラムが注文アイテムにあれば、プログラム更新タスクを追加
-        const registerProgramMembershipTaskAttributes: factory.task.registerProgramMembership.IAttributes[] = [];
-        const programMembershipOffers = <factory.order.IAcceptedOffer<factory.programMembership.IProgramMembership>[]>
-            order.acceptedOffers.filter(
-                (o) => o.itemOffered.typeOf === <factory.programMembership.ProgramMembershipType>'ProgramMembership'
-            );
-        if (programMembershipOffers.length > 0) {
-            registerProgramMembershipTaskAttributes.push(...programMembershipOffers.map((o) => {
-                const actionAttributes: factory.action.interact.register.programMembership.IAttributes = {
-                    typeOf: factory.actionType.RegisterAction,
-                    agent: transaction.agent,
-                    object: o
-                };
-
-                // どういう期間でいくらのオファーなのか
-                const eligibleDuration = o.eligibleDuration;
-                if (eligibleDuration === undefined) {
-                    throw new factory.errors.NotFound('Order.acceptedOffers.eligibleDuration');
-                }
-                // 期間単位としては秒のみ実装
-                if (eligibleDuration.unitCode !== factory.unitCode.Sec) {
-                    throw new factory.errors.NotImplemented('Only \'SEC\' is implemented for eligibleDuration.unitCode ');
-                }
-                // プログラム更新日時は、今回のプログラムの所有期限
-                const runsAt = moment(now).add(eligibleDuration.value, 'seconds').toDate();
-
-                return {
-                    name: <factory.taskName.RegisterProgramMembership>factory.taskName.RegisterProgramMembership,
-                    status: factory.taskStatus.Ready,
-                    runsAt: runsAt,
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: actionAttributes
-                };
-            }));
-        }
-
-        const sendOrderActionAttributes: factory.action.transfer.send.order.IAttributes = {
-            typeOf: factory.actionType.SendAction,
-            object: order,
-            agent: transaction.seller,
-            recipient: transaction.agent,
-            potentialActions: {
-                sendEmailMessage: (sendEmailMessageActionAttributes !== null) ? sendEmailMessageActionAttributes : undefined,
-                registerProgramMembership: registerProgramMembershipTaskAttributes
-            }
-        };
-        const potentialActions: factory.transaction.placeOrder.IPotentialActions = {
-            order: {
-                typeOf: factory.actionType.OrderAction,
-                object: order,
-                agent: transaction.agent,
-                potentialActions: {
-                    // クレジットカード決済があれば支払アクション追加
-                    payCreditCard: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
-                    // Pecorino決済があれば支払アクション追加
-                    payPecorino: payPecorinoActions,
-                    useMvtk: (useMvtkAction !== null) ? useMvtkAction : undefined,
-                    sendOrder: sendOrderActionAttributes,
-                    givePecorinoAward: givePecorinoAwardActions
-                }
-            }
-        };
+        // ポストアクションを作成
+        const potentialActions = await createPotentialActionsFromTransaction({
+            transaction: transaction,
+            customerContact: customerContact,
+            order: order,
+            seller: seller,
+            sendEmailMessage: params.sendEmailMessage
+        });
 
         // ステータス変更
         debug('updating transaction...');
@@ -538,24 +330,38 @@ export function confirm(params: {
 export function validateTransaction(transaction: factory.transaction.placeOrder.ITransaction) {
     type IAuthorizeActionResult =
         factory.action.authorize.paymentMethod.creditCard.IResult |
+        factory.action.authorize.paymentMethod.pecorino.IResult |
         factory.action.authorize.discount.mvtk.IResult |
+        factory.action.authorize.offer.programMembership.IResult |
         factory.action.authorize.offer.seatReservation.IResult |
-        factory.action.authorize.paymentMethod.pecorino.IResult;
+        factory.action.authorize.award.pecorino.IResult;
+    const authorizeActions = transaction.object.authorizeActions;
 
     // クレジットカードオーソリをひとつに限定
-    const creditCardAuthorizeActions = transaction.object.authorizeActions
+    const creditCardAuthorizeActions = authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard);
     if (creditCardAuthorizeActions.length > 1) {
-        throw new factory.errors.Argument('transactionId', 'The number of credit card authorize actions must be one.');
+        throw new factory.errors.Argument('transactionId', 'The number of credit card authorize actions must be one');
     }
 
     // ムビチケ着券情報をひとつに限定
-    const mvtkAuthorizeActions = transaction.object.authorizeActions
+    const mvtkAuthorizeActions = authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((a) => a.object.typeOf === factory.action.authorize.discount.mvtk.ObjectType.Mvtk);
     if (mvtkAuthorizeActions.length > 1) {
-        throw new factory.errors.Argument('transactionId', 'The number of mvtk authorize actions must be one.');
+        throw new factory.errors.Argument('transactionId', 'The number of mvtk authorize actions must be one');
+    }
+
+    // Pecorinoオーソリは複数可
+
+    // Pecorinoインセンティブは複数可だが、現時点で1注文につき1ポイントに限定
+    const pecorinoAwardAuthorizeActions = <factory.action.authorize.award.pecorino.IAction[]>authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward);
+    const givenAmount = pecorinoAwardAuthorizeActions.reduce((a, b) => a + b.object.amount, 0);
+    if (givenAmount > 1) {
+        throw new factory.errors.Argument('transactionId', 'Incentive amount must be 1');
     }
 
     // agentとsellerで、承認アクションの金額が合うかどうか
@@ -575,7 +381,7 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
     if (seatReservationAuthorizeActions.length > 1) {
-        throw new factory.errors.Argument('transactionId', 'The number of seat reservation authorize actions must be one.');
+        throw new factory.errors.Argument('transactionId', 'The number of seat reservation authorize actions must be one');
     }
     const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
     if (seatReservationAuthorizeAction !== undefined) {
@@ -588,25 +394,23 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
                     .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.pecorino.ObjectType.PecorinoPayment)
                     .reduce((a, b) => a + b.object.amount, 0);
             if (requiredPoint !== authorizedPecorinoAmount) {
-                throw new factory.errors.Argument('transactionId', 'Required pecorino amount not satisfied.');
+                throw new factory.errors.Argument('transactionId', 'Required pecorino amount not satisfied');
             }
         }
     }
 
     // JPYオーソリ金額もPecorinoオーソリポイントも0より大きくなければ取引成立不可
     if (priceByAgent <= 0 && requiredPoint <= 0) {
-        throw new factory.errors.Argument('transactionId', 'Price or point must be over 0.');
+        throw new factory.errors.Argument('transactionId', 'Price or point must be over 0');
     }
 
     if (priceByAgent !== priceBySeller) {
-        throw new factory.errors.Argument('transactionId', 'Transaction cannot be confirmed because prices are not matched.');
+        throw new factory.errors.Argument('transactionId', 'Transaction cannot be confirmed because prices are not matched');
     }
 }
 
 /**
- * create order object from transaction parameters
  * 取引オブジェクトから注文オブジェクトを生成する
- * @export
  */
 // tslint:disable-next-line:max-func-body-length
 export function createOrderFromTransaction(params: {
@@ -884,4 +688,243 @@ export async function createEmailMessageFromTransaction(params: {
             );
         }
     });
+}
+
+/**
+ * 取引から所有権を作成する
+ */
+export function createOwnershipInfosFromTransaction(params: {
+    transaction: factory.transaction.placeOrder.ITransaction;
+    order: factory.order.IOrder;
+}): factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>[] {
+    return params.order.acceptedOffers.map((acceptedOffer) => {
+        if (acceptedOffer.itemOffered.typeOf === 'ProgramMembership') {
+            const programMembership = acceptedOffer.itemOffered;
+            const identifier = `${acceptedOffer.itemOffered.typeOf}-${moment().valueOf()}`;
+
+            // どういう期間でいくらのオファーなのか
+            const eligibleDuration = acceptedOffer.eligibleDuration;
+            if (eligibleDuration === undefined) {
+                throw new factory.errors.NotFound('Order.acceptedOffers.eligibleDuration');
+            }
+            // 期間単位としては秒のみ実装
+            if (eligibleDuration.unitCode !== factory.unitCode.Sec) {
+                throw new factory.errors.NotImplemented('Only \'SEC\' is implemented for eligibleDuration.unitCode ');
+            }
+            const ownedFrom = params.order.orderDate;
+            const ownedThrough = moment(params.order.orderDate).add(eligibleDuration.value, 'seconds').toDate();
+
+            return {
+                typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
+                identifier: identifier,
+                ownedBy: params.transaction.agent,
+                acquiredFrom: params.transaction.seller,
+                ownedFrom: ownedFrom,
+                ownedThrough: ownedThrough,
+                typeOfGood: programMembership
+            };
+        } else {
+            // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
+            // saveする際に、identifierでfindOneAndUpdateしている
+            const identifier = `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservedTicket.ticketToken}`;
+            const ownedFrom = params.order.orderDate;
+            // イベント予約に対する所有権の有効期限はイベント終了日時までで十分だろう
+            // 現時点では所有権対象がイベント予約のみなので、これで問題ないが、
+            // 対象が他に広がれば、有効期間のコントロールは別でしっかり行う必要があるだろう
+            const ownedThrough = acceptedOffer.itemOffered.reservationFor.endDate;
+
+            return {
+                typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
+                identifier: identifier,
+                ownedBy: params.transaction.agent,
+                acquiredFrom: params.transaction.seller,
+                ownedFrom: ownedFrom,
+                ownedThrough: ownedThrough,
+                typeOfGood: acceptedOffer.itemOffered
+            };
+        }
+    });
+}
+
+/**
+ * 取引のポストアクションを作成する
+ */
+// tslint:disable-next-line:max-func-body-length
+export async function createPotentialActionsFromTransaction(params: {
+    transaction: factory.transaction.placeOrder.ITransaction;
+    customerContact: factory.transaction.placeOrder.ICustomerContact;
+    order: factory.order.IOrder;
+    seller: factory.organization.movieTheater.IOrganization;
+    sendEmailMessage?: boolean;
+}): Promise<factory.transaction.placeOrder.IPotentialActions> {
+    // クレジットカード支払いアクション
+    let payCreditCardAction: factory.action.trade.pay.IAttributes<factory.paymentMethodType.CreditCard> | null = null;
+    const creditCardPayment = params.order.paymentMethods.find((m) => m.paymentMethod === factory.paymentMethodType.CreditCard);
+    if (creditCardPayment !== undefined) {
+        payCreditCardAction = {
+            typeOf: factory.actionType.PayAction,
+            object: {
+                paymentMethod: <factory.order.IPaymentMethod<factory.paymentMethodType.CreditCard>>creditCardPayment,
+                price: params.order.price,
+                priceCurrency: params.order.priceCurrency
+            },
+            agent: params.transaction.agent,
+            purpose: params.order
+        };
+    }
+
+    // Pecorino支払いアクション
+    const pecorinotAuthorizeActions = <factory.action.authorize.paymentMethod.pecorino.IAction[]>params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.pecorino.ObjectType.PecorinoPayment);
+    const payPecorinoActions: factory.action.trade.pay.IAttributes<factory.paymentMethodType.Pecorino>[] =
+        pecorinotAuthorizeActions.map((a) => {
+            return {
+                typeOf: <factory.actionType.PayAction>factory.actionType.PayAction,
+                object: {
+                    paymentMethod: {
+                        name: 'Pecorino',
+                        paymentMethod: <factory.paymentMethodType.Pecorino>factory.paymentMethodType.Pecorino,
+                        paymentMethodId: a.id
+                    },
+                    pecorinoTransaction: (<factory.action.authorize.paymentMethod.pecorino.IResult>a.result).pecorinoTransaction,
+                    pecorinoEndpoint: (<factory.action.authorize.paymentMethod.pecorino.IResult>a.result).pecorinoEndpoint
+                },
+                agent: params.transaction.agent,
+                purpose: params.order
+            };
+        });
+
+    // ムビチケ使用アクション
+    let useMvtkAction: factory.action.consume.use.mvtk.IAttributes | null = null;
+    const mvtkAuthorizeAction = <factory.action.authorize.discount.mvtk.IAction>params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .find((a) => a.object.typeOf === factory.action.authorize.discount.mvtk.ObjectType.Mvtk);
+    if (mvtkAuthorizeAction !== undefined) {
+        useMvtkAction = {
+            typeOf: factory.actionType.UseAction,
+            object: {
+                typeOf: factory.action.consume.use.mvtk.ObjectType.Mvtk,
+                seatInfoSyncIn: mvtkAuthorizeAction.object.seatInfoSyncIn
+            },
+            agent: params.transaction.agent,
+            purpose: params.order
+        };
+    }
+
+    // Pecorino口座使用ユーザーであればインセンティブ付与
+    // Pecorinoインセンティブに対する承認アクションの分だけ、Pecorinoインセンティブ付与アクションを作成する
+    // tslint:disable-next-line:no-suspicious-comment
+    // TODO インセンティブ付与条件が「会員だったら」になっているが、雑なので調整すべし
+    let givePecorinoAwardActions: factory.action.transfer.give.pecorinoAward.IAttributes[] = [];
+    if (params.transaction.agent.memberOf !== undefined) {
+        const pecorinoAwardAuthorizeActions =
+            (<factory.action.authorize.award.pecorino.IAction[]>params.transaction.object.authorizeActions)
+                .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward);
+        givePecorinoAwardActions = pecorinoAwardAuthorizeActions.map((a) => {
+            const actionResult = <factory.action.authorize.award.pecorino.IResult>a.result;
+
+            return {
+                typeOf: <factory.actionType.GiveAction>factory.actionType.GiveAction,
+                agent: params.transaction.seller,
+                recipient: params.transaction.agent,
+                object: {
+                    typeOf: factory.action.transfer.give.pecorinoAward.ObjectType.PecorinoAward,
+                    pecorinoTransaction: actionResult.pecorinoTransaction,
+                    pecorinoEndpoint: actionResult.pecorinoEndpoint
+                },
+                purpose: params.order
+            };
+        });
+    }
+
+    // メール送信ONであれば送信アクション属性を生成
+    // tslint:disable-next-line:no-suspicious-comment
+    // TODO メール送信アクションをセットする
+    // 現時点では、フロントエンドからメール送信タスクを作成しているので不要
+    let sendEmailMessageActionAttributes: factory.action.transfer.send.message.email.IAttributes | null = null;
+    if (params.sendEmailMessage === true) {
+        const emailMessage = await createEmailMessageFromTransaction({
+            transaction: params.transaction,
+            customerContact: params.customerContact,
+            order: params.order,
+            seller: params.seller
+        });
+        sendEmailMessageActionAttributes = {
+            typeOf: factory.actionType.SendAction,
+            object: emailMessage,
+            agent: params.transaction.seller,
+            recipient: params.transaction.agent,
+            potentialActions: {},
+            purpose: params.order
+        };
+    }
+
+    // 会員プログラムが注文アイテムにあれば、プログラム更新タスクを追加
+    const registerProgramMembershipTaskAttributes: factory.task.registerProgramMembership.IAttributes[] = [];
+    const programMembershipOffers = <factory.order.IAcceptedOffer<factory.programMembership.IProgramMembership>[]>
+        params.order.acceptedOffers.filter(
+            (o) => o.itemOffered.typeOf === <factory.programMembership.ProgramMembershipType>'ProgramMembership'
+        );
+    if (programMembershipOffers.length > 0) {
+        registerProgramMembershipTaskAttributes.push(...programMembershipOffers.map((o) => {
+            const actionAttributes: factory.action.interact.register.programMembership.IAttributes = {
+                typeOf: factory.actionType.RegisterAction,
+                agent: params.transaction.agent,
+                object: o
+            };
+
+            // どういう期間でいくらのオファーなのか
+            const eligibleDuration = o.eligibleDuration;
+            if (eligibleDuration === undefined) {
+                throw new factory.errors.NotFound('Order.acceptedOffers.eligibleDuration');
+            }
+            // 期間単位としては秒のみ実装
+            if (eligibleDuration.unitCode !== factory.unitCode.Sec) {
+                throw new factory.errors.NotImplemented('Only \'SEC\' is implemented for eligibleDuration.unitCode ');
+            }
+            // プログラム更新日時は、今回のプログラムの所有期限
+            const runsAt = moment(params.order.orderDate).add(eligibleDuration.value, 'seconds').toDate();
+
+            return {
+                name: <factory.taskName.RegisterProgramMembership>factory.taskName.RegisterProgramMembership,
+                status: factory.taskStatus.Ready,
+                runsAt: runsAt,
+                remainingNumberOfTries: 10,
+                lastTriedAt: null,
+                numberOfTried: 0,
+                executionResults: [],
+                data: actionAttributes
+            };
+        }));
+    }
+
+    const sendOrderActionAttributes: factory.action.transfer.send.order.IAttributes = {
+        typeOf: factory.actionType.SendAction,
+        object: params.order,
+        agent: params.transaction.seller,
+        recipient: params.transaction.agent,
+        potentialActions: {
+            sendEmailMessage: (sendEmailMessageActionAttributes !== null) ? sendEmailMessageActionAttributes : undefined,
+            registerProgramMembership: registerProgramMembershipTaskAttributes
+        }
+    };
+
+    return {
+        order: {
+            typeOf: factory.actionType.OrderAction,
+            object: params.order,
+            agent: params.transaction.agent,
+            potentialActions: {
+                // クレジットカード決済があれば支払アクション追加
+                payCreditCard: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
+                // Pecorino決済があれば支払アクション追加
+                payPecorino: payPecorinoActions,
+                useMvtk: (useMvtkAction !== null) ? useMvtkAction : undefined,
+                sendOrder: sendOrderActionAttributes,
+                givePecorinoAward: givePecorinoAwardActions
+            }
+        }
+    };
 }

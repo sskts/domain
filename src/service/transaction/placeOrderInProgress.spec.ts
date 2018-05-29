@@ -648,14 +648,11 @@ describe('confirm()', () => {
                 reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
             }
         ];
-        // tslint:disable-next-line:no-magic-numbers
-        const orderDate = moment().add(10, 'seconds').toDate();
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
-        sandbox.mock(moment.fn).expects('toDate').once().returns(orderDate);
         sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
@@ -669,7 +666,8 @@ describe('confirm()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: agent.id,
-            transactionId: transaction.id
+            transactionId: transaction.id,
+            orderDate: new Date()
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -834,14 +832,11 @@ describe('confirm()', () => {
                 reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
             }
         ];
-        // tslint:disable-next-line:no-magic-numbers
-        const orderDate = moment().add(10, 'seconds').toDate();
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
-        sandbox.mock(moment.fn).expects('toDate').once().returns(orderDate);
         sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
@@ -851,7 +846,8 @@ describe('confirm()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: agent.id,
-            transactionId: transaction.id
+            transactionId: transaction.id,
+            orderDate: new Date()
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -861,7 +857,7 @@ describe('confirm()', () => {
         sandbox.verify();
     });
 
-    it('購入者連絡先がなければNotFoundエラーとなるはず', async () => {
+    it('購入者連絡先がなければArgumentFoundエラーとなるはず', async () => {
         const agent = {
             id: 'agentId'
         };
@@ -888,7 +884,8 @@ describe('confirm()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: agent.id,
-            transactionId: transaction.id
+            transactionId: transaction.id,
+            orderDate: new Date()
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -896,7 +893,7 @@ describe('confirm()', () => {
         })
             .catch((err) => err);
 
-        assert(result instanceof sskts.factory.errors.NotFound);
+        assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
     });
 
@@ -961,7 +958,8 @@ describe('confirm()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: agent.id,
-            transactionId: transaction.id
+            transactionId: transaction.id,
+            orderDate: new Date()
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -999,7 +997,8 @@ describe('confirm()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: agent.id,
-            transactionId: transaction.id
+            transactionId: transaction.id,
+            orderDate: new Date()
         })({
             action: actionRepo,
             transaction: transactionRepo,
