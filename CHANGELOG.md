@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 会員プログラム登録タスクを実装。
 - Pecorinoインセンティブ承認取消タスクを実装。
 - 進行中の会員プログラム登録アクションリポジトリーを追加。
+- 会員プログラム登録解除タスクを実装。
 
 ### Changed
 

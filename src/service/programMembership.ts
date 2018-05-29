@@ -227,11 +227,70 @@ export function register(
 /**
  * 会員プログラム登録解除
  */
-export function unRegister(_: factory.action.interact.unRegister.IAttributes) {
-    return async (__: {
+export function unRegister(params: factory.action.interact.unRegister.programMembership.IAttributes) {
+    return async (repos: {
+        action: ActionRepo;
+        ownershipInfo: OwnershipInfoRepo;
+        task: TaskRepo;
     }) => {
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO 実装
+        // アクション開始
+        const action = await repos.action.start(params);
+
+        try {
+            const memberOf = (<factory.person.IPerson>params.object.ownedBy).memberOf;
+            if (memberOf === undefined) {
+                throw new factory.errors.NotFound('params.object.ownedBy.memberOf');
+            }
+            const membershipNumber = memberOf.membershipNumber;
+            if (membershipNumber === undefined) {
+                throw new factory.errors.NotFound('params.object.ownedBy.memberOf.membershipNumber');
+            }
+            const programMembershipId = params.object.typeOfGood.id;
+            if (programMembershipId === undefined) {
+                throw new factory.errors.NotFound('params.object.typeOfGood.id');
+            }
+
+            // 会員プログラム更新タスク(継続課金タスク)をキャンセル
+            await repos.task.taskModel.findOneAndUpdate(
+                {
+                    name: factory.taskName.RegisterProgramMembership,
+                    status: factory.taskStatus.Ready,
+                    'data.agent.memberOf.membershipNumber': {
+                        $exists: true,
+                        $eq: membershipNumber
+
+                    },
+                    'data.object.itemOffered.id': {
+                        $exists: true,
+                        $eq: programMembershipId
+                    }
+                },
+                { status: factory.taskStatus.Aborted }
+            ).exec();
+
+            // 所有権の期限変更
+            await repos.ownershipInfo.ownershipInfoModel.findOneAndUpdate(
+                { identifier: params.object.identifier },
+                { ownedThrough: new Date() }
+            ).exec();
+        } catch (error) {
+            // actionにエラー結果を追加
+            try {
+                // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                const actionError = { ...error, ...{ message: error.message, name: error.name } };
+                await repos.action.giveUp(action.typeOf, action.id, actionError);
+            } catch (__) {
+                // 失敗したら仕方ない
+            }
+
+            throw error;
+        }
+
+        // アクション完了
+        debug('ending action...');
+        const actionResult: factory.action.interact.unRegister.programMembership.IResult = {};
+
+        await repos.action.complete(action.typeOf, action.id, actionResult);
     };
 }
 
