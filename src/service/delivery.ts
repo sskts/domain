@@ -14,6 +14,7 @@ import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as moment from 'moment';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
+import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../repo/action/registerProgramMembershipInProgress';
 import { MongoRepository as OrderRepo } from '../repo/order';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { MongoRepository as TaskRepo } from '../repo/task';
@@ -28,13 +29,13 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  * COAに本予約連携を行い、内部的には所有権を作成する
  * @param transactionId 注文取引ID
  */
-// tslint:disable-next-line:max-func-body-length
 export function sendOrder(transactionId: string) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
         order: OrderRepo;
         ownershipInfo: OwnershipInfoRepo;
+        registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
         transaction: TransactionRepo;
         task: TaskRepo;
     }) => {
@@ -128,6 +129,17 @@ export function sendOrder(transactionId: string) {
 
             // 注文ステータス変更
             await repos.order.changeStatus(transactionResult.order.orderNumber, factory.orderStatus.OrderDelivered);
+
+            // 会員プログラムがアイテムにある場合は、所有権が作成されたこのタイミングで登録プロセスロック解除
+            const programMembershipOwnershipInfos = <factory.ownershipInfo.IOwnershipInfo<'ProgramMembership'>[]>
+                transactionResult.ownershipInfos.filter((o) => o.typeOfGood.typeOf === 'ProgramMembership');
+            await Promise.all(programMembershipOwnershipInfos.map(async (o) => {
+                const memberOf = <factory.programMembership.IProgramMembership>(<factory.person.IPerson>o.ownedBy).memberOf;
+                await repos.registerActionInProgressRepo.unlock({
+                    membershipNumber: <string>memberOf.membershipNumber,
+                    programMembershipId: <string>o.typeOfGood.id
+                });
+            }));
         } catch (error) {
             // actionにエラー結果を追加
             try {

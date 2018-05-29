@@ -26,8 +26,22 @@ import * as ProgramMembershipService from '../service/programMembership';
 import * as StockService from '../service/stock';
 
 export type IOperation<T> = (settings: {
+    /**
+     * MongoDBコネクション
+     */
     connection: mongoose.Connection;
+    /**
+     * Redisクライアント
+     */
+    redisClient?: redis.RedisClient;
+    /**
+     * PecorinoAPI認証クライアント
+     */
     pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    /**
+     * Cognitoサービスプロバイダー
+     */
+    cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
 }) => Promise<T>;
 
 export function sendEmailMessage(data: factory.task.sendEmailMessage.IData): IOperation<void> {
@@ -217,8 +231,13 @@ export function returnOrder(data: factory.task.returnOrder.IData): IOperation<vo
 export function sendOrder(data: factory.task.returnOrder.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
+        redisClient?: redis.RedisClient;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
+        if (settings.redisClient === undefined) {
+            throw new Error('settings.redisClient undefined.');
+        }
+
         const actionRepo = new ActionRepo(settings.connection);
         const orderRepo = new OrderRepo(settings.connection);
         const ownershipInfoRepo = new OwnershipInfoRepo(settings.connection);
@@ -228,6 +247,7 @@ export function sendOrder(data: factory.task.returnOrder.IData): IOperation<void
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,
+            registerActionInProgressRepo: new RegisterProgramMembershipActionInProgressRepo(settings.redisClient),
             transaction: transactionRepo,
             task: taskRepo
         });

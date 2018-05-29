@@ -3,18 +3,20 @@
  * 配送サービステスト
  * @ignore
  */
-
 import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
+import * as redis from 'redis-mock';
 import * as sinon from 'sinon';
 // tslint:disable-next-line:no-require-imports no-var-requires
 require('sinon-mongoose');
 import * as sskts from '../index';
 
 let sandbox: sinon.SinonSandbox;
+let redisClient: redis.RedisClient;
 
 before(() => {
     sandbox = sinon.sandbox.create();
+    redisClient = redis.createClient();
 });
 
 describe('service.delivery.sendOrder()', () => {
@@ -45,7 +47,7 @@ describe('service.delivery.sendOrder()', () => {
                         { itemOffered: { reservedTicket: {} } }
                     ]
                 },
-                ownershipInfos: [{ identifier: 'identifier' }]
+                ownershipInfos: [{ identifier: 'identifier', typeOfGood: { typeOf: sskts.factory.reservationType.EventReservation } }]
             },
             potentialActions: { order: orderActionAttributes },
             object: {
@@ -68,6 +70,7 @@ describe('service.delivery.sendOrder()', () => {
         const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderRepo = new sskts.repository.Order(mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const registerActionInProgressRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
@@ -82,14 +85,17 @@ describe('service.delivery.sendOrder()', () => {
         sandbox.mock(ownershipInfoRepo).expects('save').exactly(transaction.result.ownershipInfos.length).resolves();
         sandbox.mock(orderRepo).expects('changeStatus').once().resolves();
         sandbox.mock(taskRepo).expects('save').once().resolves();
+        // sandbox.mock(registerActionInProgressRepo).expects('unlock').never();
 
         const result = await sskts.service.delivery.sendOrder(transaction.id)({
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,
+            registerActionInProgressRepo: registerActionInProgressRepo,
             transaction: transactionRepo,
             task: taskRepo
         });
+        console.error('result', result);
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -118,7 +124,7 @@ describe('service.delivery.sendOrder()', () => {
                         { itemOffered: { reservedTicket: {} } }
                     ]
                 },
-                ownershipInfos: [{ identifier: 'identifier' }]
+                ownershipInfos: [{ identifier: 'identifier', typeOfGood: { typeOf: sskts.factory.reservationType.EventReservation } }]
             },
             potentialActions: { order: orderActionAttributes },
             object: {
@@ -141,6 +147,7 @@ describe('service.delivery.sendOrder()', () => {
         const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderRepo = new sskts.repository.Order(mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const registerActionInProgressRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
@@ -160,6 +167,7 @@ describe('service.delivery.sendOrder()', () => {
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,
+            registerActionInProgressRepo: registerActionInProgressRepo,
             transaction: transactionRepo,
             task: taskRepo
         });
@@ -212,6 +220,7 @@ describe('service.delivery.sendOrder()', () => {
         const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderRepo = new sskts.repository.Order(mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const registerActionInProgressRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
@@ -226,6 +235,7 @@ describe('service.delivery.sendOrder()', () => {
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,
+            registerActionInProgressRepo: registerActionInProgressRepo,
             transaction: transactionRepo,
             task: taskRepo
         }).catch((err) => err);
@@ -244,7 +254,7 @@ describe('service.delivery.sendOrder()', () => {
                         { itemOffered: { reservedTicket: {} } }
                     ]
                 },
-                ownershipInfos: [{ identifier: 'identifier' }]
+                ownershipInfos: [{ identifier: 'identifier', typeOfGood: { typeOf: sskts.factory.reservationType.EventReservation } }]
             },
             // potentialActions: { order: orderActionAttributes },
             object: {
@@ -265,6 +275,7 @@ describe('service.delivery.sendOrder()', () => {
         const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderRepo = new sskts.repository.Order(mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const registerActionInProgressRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
@@ -279,6 +290,7 @@ describe('service.delivery.sendOrder()', () => {
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,
+            registerActionInProgressRepo: registerActionInProgressRepo,
             transaction: transactionRepo,
             task: taskRepo
         }).catch((err) => err);
@@ -310,7 +322,7 @@ describe('service.delivery.sendOrder()', () => {
                         { itemOffered: { reservedTicket: {} } }
                     ]
                 },
-                ownershipInfos: [{ identifier: 'identifier' }]
+                ownershipInfos: [{ identifier: 'identifier', typeOfGood: { typeOf: sskts.factory.reservationType.EventReservation } }]
             },
             potentialActions: { order: orderActionAttributes },
             object: {
@@ -332,6 +344,7 @@ describe('service.delivery.sendOrder()', () => {
         const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderRepo = new sskts.repository.Order(mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const registerActionInProgressRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
@@ -347,6 +360,7 @@ describe('service.delivery.sendOrder()', () => {
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,
+            registerActionInProgressRepo: registerActionInProgressRepo,
             transaction: transactionRepo,
             task: taskRepo
         }).catch((err) => err);
@@ -449,7 +463,7 @@ describe('service.delivery.sendOrder()', () => {
                         { itemOffered: { reservedTicket: {} } }
                     ]
                 },
-                ownershipInfos: [{ identifier: 'identifier' }]
+                ownershipInfos: [{ identifier: 'identifier', typeOfGood: { typeOf: sskts.factory.reservationType.EventReservation } }]
             },
             potentialActions: { order: orderActionAttributes },
             object: {
@@ -470,6 +484,7 @@ describe('service.delivery.sendOrder()', () => {
         const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderRepo = new sskts.repository.Order(mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const registerActionInProgressRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
@@ -484,6 +499,7 @@ describe('service.delivery.sendOrder()', () => {
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,
+            registerActionInProgressRepo: registerActionInProgressRepo,
             transaction: transactionRepo,
             task: taskRepo
         }).catch((err) => err);
@@ -515,7 +531,7 @@ describe('service.delivery.sendOrder()', () => {
                         { itemOffered: { reservedTicket: {} } }
                     ]
                 },
-                ownershipInfos: [{ identifier: 'identifier' }]
+                ownershipInfos: [{ identifier: 'identifier', typeOfGood: { typeOf: sskts.factory.reservationType.EventReservation } }]
             },
             potentialActions: { order: orderActionAttributes },
             object: {
@@ -538,6 +554,7 @@ describe('service.delivery.sendOrder()', () => {
         const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderRepo = new sskts.repository.Order(mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const registerActionInProgressRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
@@ -557,6 +574,7 @@ describe('service.delivery.sendOrder()', () => {
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,
+            registerActionInProgressRepo: registerActionInProgressRepo,
             transaction: transactionRepo,
             task: taskRepo
         }).catch((err) => err);
@@ -579,7 +597,7 @@ describe('service.delivery.sendOrder()', () => {
                         { itemOffered: { reservedTicket: {} } }
                     ]
                 },
-                ownershipInfos: [{ identifier: 'identifier' }]
+                ownershipInfos: [{ identifier: 'identifier', typeOfGood: { typeOf: sskts.factory.reservationType.EventReservation } }]
             },
             potentialActions: { order: orderActionAttributes },
             object: {
@@ -600,6 +618,7 @@ describe('service.delivery.sendOrder()', () => {
         const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderRepo = new sskts.repository.Order(mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const registerActionInProgressRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
 
@@ -614,6 +633,7 @@ describe('service.delivery.sendOrder()', () => {
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,
+            registerActionInProgressRepo: registerActionInProgressRepo,
             transaction: transactionRepo,
             task: taskRepo
         }).catch((err) => err);

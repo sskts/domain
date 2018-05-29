@@ -4,6 +4,7 @@
  * @ignore
  */
 import * as assert from 'power-assert';
+import * as redis from 'redis-mock';
 import * as sinon from 'sinon';
 import * as sskts from '../index';
 
@@ -209,7 +210,10 @@ describe('TaskFunctionsService.sendOrder()', () => {
         sandbox.mock(sskts.service.delivery).expects('sendOrder').once()
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.sendOrder(<any>data)({ connection: sskts.mongoose.connection });
+        const result = await TaskFunctionsService.sendOrder(<any>data)({
+            connection: sskts.mongoose.connection,
+            redisClient: redis.createClient()
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();
