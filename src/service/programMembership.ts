@@ -366,7 +366,7 @@ function processPlaceOrder(params: {
             amount: acceptedOffer.price,
             method: GMO.utils.util.Method.Lump,
             creditCard: {
-                memberId: params.registerActionAttributes.agent.id,
+                memberId: customer.memberOf.membershipNumber,
                 cardSeq: parseInt(creditCard.cardSeq, 10)
             }
         })(repos);
