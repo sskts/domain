@@ -39,7 +39,7 @@ export class RedisRepository {
                         reject(err);
                     } else {
                         if (results[0] === 1) {
-                            resolve();
+                            resolve(results[0]);
                         } else {
                             reject(new Error('Already in progress.'));
                         }

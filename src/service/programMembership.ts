@@ -175,9 +175,10 @@ export function register(
         const action = await repos.action.start(params);
 
         let order: factory.order.IOrder;
+        let lockNumber: number | undefined;
         try {
             // 登録処理を進行中に変更。進行中であれば競合エラー。
-            await repos.registerActionInProgressRepo.lock(
+            lockNumber = await repos.registerActionInProgressRepo.lock(
                 {
                     membershipNumber: customer.memberOf.membershipNumber,
                     programMembershipId: programMembershipId
@@ -195,6 +196,18 @@ export function register(
                 const actionError = { ...error, ...{ message: error.message, name: error.name } };
                 await repos.action.giveUp(action.typeOf, action.id, actionError);
             } catch (__) {
+                // 失敗したら仕方ない
+            }
+
+            try {
+                // 本プロセスがlockした場合は解除する。解除しなければタスクのリトライが無駄になってしまう。
+                if (lockNumber !== undefined) {
+                    await repos.registerActionInProgressRepo.unlock({
+                        membershipNumber: customer.memberOf.membershipNumber,
+                        programMembershipId: programMembershipId
+                    });
+                }
+            } catch (error) {
                 // 失敗したら仕方ない
             }
 
