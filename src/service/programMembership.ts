@@ -10,7 +10,9 @@ import * as CreditCardService from './person/creditCard';
 import * as PlaceOrderService from './transaction/placeOrderInProgress';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
+import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../repo/action/registerProgramMembershipInProgress';
 import { MongoRepository as OrganizationRepo } from '../repo/organization';
+import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { CognitoRepository as PersonRepo } from '../repo/person';
 import { MongoRepository as ProgramMembershipRepo } from '../repo/programMembership';
 import { MongoRepository as TaskRepo } from '../repo/task';
@@ -18,7 +20,7 @@ import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:programMembership');
 
-export type IStartRegisterOperation<T> = (repos: {
+export type ICreateTaskOperation<T> = (repos: {
     organization: OrganizationRepo;
     programMembership: ProgramMembershipRepo;
     task: TaskRepo;
@@ -27,8 +29,10 @@ export type IStartRegisterOperation<T> = (repos: {
 export type IRegisterOperation<T> = (repos: {
     action: ActionRepo;
     organization: OrganizationRepo;
+    ownershipInfo: OwnershipInfoRepo;
     person: PersonRepo;
     programMembership: ProgramMembershipRepo;
+    registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
     transaction: TransactionRepo;
 }) => Promise<T>;
 
@@ -57,7 +61,7 @@ export function createRegisterTask(params: {
      * 会員プログラムのオファー識別子
      */
     offerIdentifier: string;
-}): IStartRegisterOperation<factory.task.ITask> {
+}): ICreateTaskOperation<factory.task.ITask> {
     return async (repos: {
         organization: OrganizationRepo;
         programMembership: ProgramMembershipRepo;
@@ -130,26 +134,59 @@ export function createRegisterTask(params: {
  */
 export function register(
     params: factory.action.interact.register.programMembership.IAttributes
-): IRegisterOperation<factory.action.interact.register.programMembership.IAction> {
+): IRegisterOperation<void> {
     return async (repos: {
         action: ActionRepo;
         organization: OrganizationRepo;
+        ownershipInfo: OwnershipInfoRepo;
         person: PersonRepo;
         programMembership: ProgramMembershipRepo;
+        registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
         transaction: TransactionRepo;
     }) => {
         const now = new Date();
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO 登録ロック
+
+        // すでに会員プログラムに加入済であれば何もしない
+        const customer = (<factory.person.IPerson>params.agent);
+        if (customer.memberOf === undefined) {
+            throw new factory.errors.NotFound('params.agent.memberOf');
+        }
+        if (customer.memberOf.membershipNumber === undefined) {
+            throw new factory.errors.NotFound('params.agent.memberOf.membershipNumber');
+        }
+        const programMembershipId = params.object.itemOffered.id;
+        if (programMembershipId === undefined) {
+            throw new factory.errors.NotFound('params.object.itemOffered.id');
+        }
+
+        const programMemberships = await repos.ownershipInfo.search({
+            goodType: 'ProgramMembership',
+            ownedBy: customer.memberOf.membershipNumber,
+            ownedAt: now
+        });
+        const selectedProgramMembership = programMemberships.find((p) => p.typeOfGood.id === params.object.itemOffered.id);
+        if (selectedProgramMembership !== undefined) {
+            debug('Already registered.');
+
+            return;
+        }
 
         // アクション開始
         const action = await repos.action.start(params);
 
         let order: factory.order.IOrder;
         try {
+            // 登録処理を進行中に変更。進行中であれば競合エラー。
+            await repos.registerActionInProgressRepo.lock(
+                {
+                    membershipNumber: customer.memberOf.membershipNumber,
+                    programMembershipId: programMembershipId
+                },
+                action.id
+            );
+
             order = await processPlaceOrder({
-                registerActionAttributes: params,
-                orderDate: now
+                registerActionAttributes: params
             })(repos);
         } catch (error) {
             // actionにエラー結果を追加
@@ -170,7 +207,7 @@ export function register(
             order: order
         };
 
-        return repos.action.complete(action.typeOf, action.id, actionResult);
+        await repos.action.complete(action.typeOf, action.id, actionResult);
     };
 }
 
@@ -190,7 +227,6 @@ export function unRegister(_: factory.action.interact.unRegister.IAttributes) {
  */
 function processPlaceOrder(params: {
     registerActionAttributes: factory.action.interact.register.programMembership.IAttributes;
-    orderDate: Date;
 }) {
     return async (repos: {
         action: ActionRepo;
@@ -284,7 +320,7 @@ function processPlaceOrder(params: {
         return PlaceOrderService.confirm({
             agentId: params.registerActionAttributes.agent.id,
             transactionId: transaction.id,
-            orderDate: params.orderDate
+            orderDate: new Date()
         })(repos);
     };
 }

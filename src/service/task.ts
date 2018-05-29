@@ -7,6 +7,7 @@ import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
+import * as redis from 'redis';
 
 import { MongoRepository as TaskRepo } from '../repo/task';
 
@@ -14,7 +15,7 @@ import * as NotificationService from './notification';
 import * as TaskFunctionsService from './taskFunctions';
 
 export type TaskOperation<T> = (repos: { task: TaskRepo }) => Promise<T>;
-export type TaskAndConnectionOperation<T> = (settings: {
+export type IExecuteOperation<T> = (settings: {
     /**
      * タスクリポジトリー
      */
@@ -23,6 +24,10 @@ export type TaskAndConnectionOperation<T> = (settings: {
      * MongoDBコネクション
      */
     connection: mongoose.Connection;
+    /**
+     * Redisクライアント
+     */
+    redisClient?: redis.RedisClient;
     /**
      * PecorinoAPI認証クライアント
      */
@@ -42,7 +47,7 @@ export const ABORT_REPORT_SUBJECT = 'Task aborted !!!';
  * タスク名でタスクをひとつ実行する
  * @param taskName タスク名
  */
-export function executeByName(taskName: factory.taskName): TaskAndConnectionOperation<void> {
+export function executeByName(taskName: factory.taskName): IExecuteOperation<void> {
     return async (settings: {
         /**
          * タスクリポジトリー
@@ -52,6 +57,10 @@ export function executeByName(taskName: factory.taskName): TaskAndConnectionOper
          * MongoDBコネクション
          */
         connection: mongoose.Connection;
+        /**
+         * Redisクライアント
+         */
+        redisClient?: redis.RedisClient;
         /**
          * PecorinoAPI認証クライアント
          */
@@ -83,13 +92,14 @@ export function executeByName(taskName: factory.taskName): TaskAndConnectionOper
  * @param task タスクオブジェクト
  * @export
  */
-export function execute(task: factory.task.ITask): TaskAndConnectionOperation<void> {
+export function execute(task: factory.task.ITask): IExecuteOperation<void> {
     debug('executing a task...', task);
     const now = new Date();
 
     return async (settings: {
         taskRepo: TaskRepo;
         connection: mongoose.Connection;
+        redisClient?: redis.RedisClient;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
         cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
     }) => {

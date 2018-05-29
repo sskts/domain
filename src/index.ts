@@ -31,6 +31,7 @@ import * as UtilService from './service/util';
 
 import { MongoRepository as ActionRepo } from './repo/action';
 import { MongoRepository as PrintActionRepo } from './repo/action/print';
+import { RedisRepository as RegisterProgramMembershipActionInProgress } from './repo/action/registerProgramMembershipInProgress';
 import { MongoRepository as ClientRepo } from './repo/client';
 import { MongoRepository as CreativeWorkRepo } from './repo/creativeWork';
 import { MongoRepository as EventRepo } from './repo/event';
@@ -105,6 +106,7 @@ export namespace repository {
     export class Action extends ActionRepo { }
     export namespace action {
         export class Print extends PrintActionRepo { }
+        export class RegisterProgramMembershipInProgress extends RegisterProgramMembershipActionInProgress { }
     }
     export class Client extends ClientRepo { }
     export class CreativeWork extends CreativeWorkRepo { }

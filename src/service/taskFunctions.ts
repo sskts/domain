@@ -5,8 +5,10 @@
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
+import * as redis from 'redis';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
+import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../repo/action/registerProgramMembershipInProgress';
 import { MongoRepository as OrderRepo } from '../repo/order';
 import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
@@ -273,8 +275,12 @@ export function returnPecorinoAward(data: factory.task.returnPecorinoAward.IData
 export function registerProgramMembership(data: factory.task.registerProgramMembership.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
+        redisClient?: redis.RedisClient;
         cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
     }) => {
+        if (settings.redisClient === undefined) {
+            throw new Error('settings.redisClient undefined.');
+        }
         if (settings.cognitoIdentityServiceProvider === undefined) {
             throw new Error('settings.cognitoIdentityServiceProvider undefined.');
         }
@@ -282,8 +288,10 @@ export function registerProgramMembership(data: factory.task.registerProgramMemb
         await ProgramMembershipService.register(data)({
             action: new ActionRepo(settings.connection),
             organization: new OrganizationRepo(settings.connection),
+            ownershipInfo: new OwnershipInfoRepo(settings.connection),
             person: new PersonRepo(settings.cognitoIdentityServiceProvider),
             programMembership: new ProgramMembershipRepo(settings.connection),
+            registerActionInProgressRepo: new RegisterProgramMembershipActionInProgressRepo(settings.redisClient),
             transaction: new TransactionRepo(settings.connection)
         });
     };

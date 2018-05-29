@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 割引サービスを追加。
 - 会員プログラム登録タスクを実装。
 - Pecorinoインセンティブ承認取消タスクを実装。
+- 進行中の会員プログラム登録アクションリポジトリーを追加。
 
 ### Changed
 
