@@ -812,32 +812,27 @@ export async function createPotentialActionsFromTransaction(params: {
         };
     }
 
-    // Pecorino口座使用ユーザーであればインセンティブ付与
     // Pecorinoインセンティブに対する承認アクションの分だけ、Pecorinoインセンティブ付与アクションを作成する
-    // tslint:disable-next-line:no-suspicious-comment
-    // TODO インセンティブ付与条件が「会員だったら」になっているが、雑なので調整すべし
     let givePecorinoAwardActions: factory.action.transfer.give.pecorinoAward.IAttributes[] = [];
-    if (params.transaction.agent.memberOf !== undefined) {
-        const pecorinoAwardAuthorizeActions =
-            (<factory.action.authorize.award.pecorino.IAction[]>params.transaction.object.authorizeActions)
-                .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward);
-        givePecorinoAwardActions = pecorinoAwardAuthorizeActions.map((a) => {
-            const actionResult = <factory.action.authorize.award.pecorino.IResult>a.result;
+    const pecorinoAwardAuthorizeActions =
+        (<factory.action.authorize.award.pecorino.IAction[]>params.transaction.object.authorizeActions)
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward);
+    givePecorinoAwardActions = pecorinoAwardAuthorizeActions.map((a) => {
+        const actionResult = <factory.action.authorize.award.pecorino.IResult>a.result;
 
-            return {
-                typeOf: <factory.actionType.GiveAction>factory.actionType.GiveAction,
-                agent: params.transaction.seller,
-                recipient: params.transaction.agent,
-                object: {
-                    typeOf: factory.action.transfer.give.pecorinoAward.ObjectType.PecorinoAward,
-                    pecorinoTransaction: actionResult.pecorinoTransaction,
-                    pecorinoEndpoint: actionResult.pecorinoEndpoint
-                },
-                purpose: params.order
-            };
-        });
-    }
+        return {
+            typeOf: <factory.actionType.GiveAction>factory.actionType.GiveAction,
+            agent: params.transaction.seller,
+            recipient: params.transaction.agent,
+            object: {
+                typeOf: factory.action.transfer.give.pecorinoAward.ObjectType.PecorinoAward,
+                pecorinoTransaction: actionResult.pecorinoTransaction,
+                pecorinoEndpoint: actionResult.pecorinoEndpoint
+            },
+            purpose: params.order
+        };
+    });
 
     // メール送信ONであれば送信アクション属性を生成
     // tslint:disable-next-line:no-suspicious-comment

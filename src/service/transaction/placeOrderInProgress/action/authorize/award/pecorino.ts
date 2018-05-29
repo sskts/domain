@@ -8,6 +8,7 @@ import { BAD_REQUEST, FORBIDDEN, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } fr
 import * as moment from 'moment';
 
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
+import { MongoRepository as OwnershipInfoRepo } from '../../../../../../repo/ownershipInfo';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:award:pecorino');
@@ -15,6 +16,7 @@ const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress
 export type ICreateOperation<T> = (repos: {
     action: ActionRepo;
     transaction: TransactionRepo;
+    ownershipInfo: OwnershipInfoRepo;
     depositTransactionService: pecorinoapi.service.transaction.Deposit;
 }) => Promise<T>;
 
@@ -45,6 +47,7 @@ export function create(params: {
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
+        ownershipInfo: OwnershipInfoRepo;
         /**
          * 入金取引サービス
          */
@@ -54,6 +57,21 @@ export function create(params: {
 
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
+        }
+
+        // インセンティブ付与可能条件は、会員プログラム特典に加入しているかどうか
+        if (transaction.agent.memberOf === undefined) {
+            throw new factory.errors.Forbidden('Membership required');
+        }
+        const programMemberships = await repos.ownershipInfo.search({
+            goodType: 'ProgramMembership',
+            ownedBy: transaction.agent.memberOf.membershipNumber,
+            ownedAt: new Date()
+        });
+        const pecorinoPaymentAward = programMemberships.reduce((a, b) => [...a, ...b.typeOfGood.award], [])
+            .find((a) => a === factory.programMembership.Award.PecorinoPayment);
+        if (pecorinoPaymentAward === undefined) {
+            throw new factory.errors.Forbidden('Membership program requirements not satisfied');
         }
 
         // 承認アクションを開始する

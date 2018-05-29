@@ -22,7 +22,8 @@ describe('action.authorize.pecorino.create()', () => {
 
     it('口座サービスを正常であればエラーにならないはず', async () => {
         const agent = {
-            id: 'agentId'
+            id: 'agentId',
+            memberOf: {}
         };
         const seller = {
             id: 'sellerId',
@@ -44,13 +45,20 @@ describe('action.authorize.pecorino.create()', () => {
             recipient: seller
         };
         const pecorinoTransaction = { typeOf: sskts.factory.pecorino.transactionType.Transfer, id: 'transactionId' };
+        const programMemberships = [{
+            typeOfGood: {
+                award: [sskts.factory.programMembership.Award.PecorinoPayment]
+            }
+        }];
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay(<any>{});
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
+        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves(programMemberships);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
         sandbox.mock(actionRepo).expects('complete').once().resolves(action);
         sandbox.mock(payTransactionService).expects('start').once().resolves(pecorinoTransaction);
@@ -63,6 +71,7 @@ describe('action.authorize.pecorino.create()', () => {
         })({
             action: actionRepo,
             organization: organizationRepo,
+            ownershipInfo: ownershipInfoRepo,
             transaction: transactionRepo,
             payTransactionService: payTransactionService
         });
@@ -116,7 +125,8 @@ describe('action.authorize.pecorino.create()', () => {
 
     it('口座サービスでエラーが発生すればアクションにエラー結果が追加されるはず', async () => {
         const agent = {
-            id: 'agentId'
+            id: 'agentId',
+            memberOf: {}
         };
         const seller = {
             id: 'sellerId',
@@ -142,10 +152,17 @@ describe('action.authorize.pecorino.create()', () => {
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay(<any>{});
+        const programMemberships = [{
+            typeOfGood: {
+                award: [sskts.factory.programMembership.Award.PecorinoPayment]
+            }
+        }];
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
+        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves(programMemberships);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
         sandbox.mock(payTransactionService).expects('start').once().rejects(startPayTransactionResult);
         sandbox.mock(actionRepo).expects('giveUp').once()
@@ -160,6 +177,7 @@ describe('action.authorize.pecorino.create()', () => {
         })({
             action: actionRepo,
             organization: organizationRepo,
+            ownershipInfo: ownershipInfoRepo,
             transaction: transactionRepo,
             payTransactionService: payTransactionService
         }).catch((err) => err);
