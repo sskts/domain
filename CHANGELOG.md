@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - アクションインターフェースの汎用性を向上。
 - 決済サービスを決済方法ごとにソースコードとして分離。
 - 注文配送のポストアクションに会員プログラム登録タスクを追加。
+- 取引レポートサービスを複数アイテムタイプに対応。
 
 ### Deprecated
 
