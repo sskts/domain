@@ -20,9 +20,13 @@ import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:programMembership');
 
-export type ICreateTaskOperation<T> = (repos: {
+export type ICreateRegisterTaskOperation<T> = (repos: {
     organization: OrganizationRepo;
     programMembership: ProgramMembershipRepo;
+    task: TaskRepo;
+}) => Promise<T>;
+export type ICreateUnRegisterTaskOperation<T> = (repos: {
+    ownershipInfo: OwnershipInfoRepo;
     task: TaskRepo;
 }) => Promise<T>;
 
@@ -61,7 +65,7 @@ export function createRegisterTask(params: {
      * 会員プログラムのオファー識別子
      */
     offerIdentifier: string;
-}): ICreateTaskOperation<factory.task.ITask> {
+}): ICreateRegisterTaskOperation<factory.task.ITask> {
     return async (repos: {
         organization: OrganizationRepo;
         programMembership: ProgramMembershipRepo;
@@ -221,6 +225,60 @@ export function register(
         };
 
         await repos.action.complete(action.typeOf, action.id, actionResult);
+    };
+}
+
+/**
+ * 会員登録`解除タスクを作成する
+ */
+export function createUnRegisterTask(params: {
+    agent: factory.person.IPerson;
+    /**
+     * 所有権識別子
+     */
+    ownershipInfoIdentifier: string;
+}): ICreateUnRegisterTaskOperation<factory.task.ITask> {
+    return async (repos: {
+        ownershipInfo: OwnershipInfoRepo;
+        task: TaskRepo;
+    }) => {
+        // 所有している会員プログラムを検索
+        if (params.agent.memberOf === undefined) {
+            throw new factory.errors.NotFound('params.agent.memberOf');
+        }
+        if (params.agent.memberOf.membershipNumber === undefined) {
+            throw new factory.errors.NotFound('params.agent.memberOf.membershipNumber');
+        }
+        const now = new Date();
+        const ownershipInfos = await repos.ownershipInfo.search({
+            identifier: params.ownershipInfoIdentifier,
+            goodType: 'ProgramMembership',
+            ownedBy: params.agent.memberOf.membershipNumber,
+            ownedAt: now
+        });
+        const ownershipInfo = ownershipInfos.shift();
+        if (ownershipInfo === undefined) {
+            throw new factory.errors.NotFound('OwnershipInfo');
+        }
+
+        // 所有が確認できれば、会員プログラム登録解除タスクを作成する
+        const unRegisterActionAttributes: factory.action.interact.unRegister.programMembership.IAttributes = {
+            typeOf: factory.actionType.UnRegisterAction,
+            agent: params.agent,
+            object: ownershipInfo
+        };
+        const taskAttributes: factory.task.unRegisterProgramMembership.IAttributes = {
+            name: factory.taskName.UnRegisterProgramMembership,
+            status: factory.taskStatus.Ready,
+            runsAt: now,
+            remainingNumberOfTries: 10,
+            lastTriedAt: null,
+            numberOfTried: 0,
+            executionResults: [],
+            data: unRegisterActionAttributes
+        };
+
+        return repos.task.save(taskAttributes);
     };
 }
 

@@ -39,6 +39,9 @@ export class MongoRepository {
             { 'typeOfGood.typeOf': searchConditions.goodType }
         ];
 
+        if (searchConditions.identifier !== undefined) {
+            andConditions.push({ identifier: searchConditions.identifier });
+        }
         // if (searchConditions.typeOfGood !== undefined) {
         //     if (searchConditions.typeOfGood.eventReservationFor !== undefined) {
         //         andConditions.push(
