@@ -15,8 +15,8 @@ async function main() {
         const programMembershipId = '5afff104d51e59232c7b481b';
         const ownershipInfo = {
             typeOf: 'OwnershipInfo',
-            identifier: 'ProgramMembership-1527576054708',
-            typeOfGood: { id: 'programMembershipId' },
+            identifier: 'ProgramMembership-MO118-180531-000008-0',
+            typeOfGood: { id: '5afff104d51e59232c7b481b' },
             ownedBy: {
                 memberOf: {
                     typeOf: 'ProgramMembership',

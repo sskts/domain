@@ -61,6 +61,7 @@ async function main() {
             // potentialActions?: any;
         })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
+            orderNumber: new sskts.repository.OrderNumber(redisClient),
             organization: organizationRepo,
             ownershipInfo: new sskts.repository.OwnershipInfo(sskts.mongoose.connection),
             person: new sskts.repository.Person(cognitoIdentityServiceProvider),

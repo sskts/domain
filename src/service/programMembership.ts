@@ -4,7 +4,8 @@
 import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
+import * as util from 'util';
 
 import * as CreditCardService from './person/creditCard';
 import * as PlaceOrderService from './transaction/placeOrderInProgress';
@@ -358,6 +359,7 @@ export function unRegister(params: factory.action.interact.unRegister.programMem
 /**
  * 会員プログラム登録アクション属性から、会員プログラムを注文する
  */
+// tslint:disable-next-line:max-func-body-length
 function processPlaceOrder(params: {
     registerActionAttributes: factory.action.interact.register.programMembership.IAttributes;
 }) {
@@ -421,10 +423,17 @@ function processPlaceOrder(params: {
         debug('creditCard found.', creditCard.cardSeq);
 
         // クレジットカードオーソリ
+        // GMOオーダーIDは27バイト制限。十分ユニークになるようにとりあえず22バイトで作成。
+        const orderId = util.format(
+            'PM-%s-%s', // ProgramMembershipのオーダー
+            // tslint:disable-next-line:no-magic-numbers
+            `${customer.memberOf.membershipNumber}------`.slice(0, 6).toUpperCase(), // ユーザーネームの頭数文字
+            moment().tz('Asia/Tokyo').format('YYMMDDhhmmss') // 秒
+        );
         await PlaceOrderService.action.authorize.paymentMethod.creditCard.create({
             agentId: params.registerActionAttributes.agent.id,
             transactionId: transaction.id,
-            orderId: moment().valueOf().toString(),
+            orderId: orderId,
             amount: acceptedOffer.price,
             method: GMO.utils.util.Method.Lump,
             creditCard: {

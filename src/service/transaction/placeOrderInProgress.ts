@@ -697,52 +697,68 @@ export function createOwnershipInfosFromTransaction(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     order: factory.order.IOrder;
 }): factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>[] {
-    return params.order.acceptedOffers.map((acceptedOffer) => {
-        if (acceptedOffer.itemOffered.typeOf === 'ProgramMembership') {
-            const programMembership = acceptedOffer.itemOffered;
-            const identifier = `${acceptedOffer.itemOffered.typeOf}-${moment().valueOf()}`;
+    return params.order.acceptedOffers.map((acceptedOffer, offerIndex) => {
+        const itemOffered = acceptedOffer.itemOffered;
+        let ownershipInfo: factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>;
+        const identifier = util.format(
+            '%s-%s-%s',
+            itemOffered.typeOf,
+            params.order.orderNumber,
+            offerIndex
+        );
+        const ownedFrom = params.order.orderDate;
+        let ownedThrough: Date;
 
-            // どういう期間でいくらのオファーなのか
-            const eligibleDuration = acceptedOffer.eligibleDuration;
-            if (eligibleDuration === undefined) {
-                throw new factory.errors.NotFound('Order.acceptedOffers.eligibleDuration');
-            }
-            // 期間単位としては秒のみ実装
-            if (eligibleDuration.unitCode !== factory.unitCode.Sec) {
-                throw new factory.errors.NotImplemented('Only \'SEC\' is implemented for eligibleDuration.unitCode ');
-            }
-            const ownedFrom = params.order.orderDate;
-            const ownedThrough = moment(params.order.orderDate).add(eligibleDuration.value, 'seconds').toDate();
+        switch (itemOffered.typeOf) {
+            case 'ProgramMembership':
+                // どういう期間でいくらのオファーなのか
+                const eligibleDuration = acceptedOffer.eligibleDuration;
+                if (eligibleDuration === undefined) {
+                    throw new factory.errors.NotFound('Order.acceptedOffers.eligibleDuration');
+                }
+                // 期間単位としては秒のみ実装
+                if (eligibleDuration.unitCode !== factory.unitCode.Sec) {
+                    throw new factory.errors.NotImplemented('Only \'SEC\' is implemented for eligibleDuration.unitCode ');
+                }
+                ownedThrough = moment(params.order.orderDate).add(eligibleDuration.value, 'seconds').toDate();
+                ownershipInfo = {
+                    typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
+                    identifier: identifier,
+                    ownedBy: params.transaction.agent,
+                    acquiredFrom: params.transaction.seller,
+                    ownedFrom: ownedFrom,
+                    ownedThrough: ownedThrough,
+                    typeOfGood: itemOffered
+                };
 
-            return {
-                typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
-                identifier: identifier,
-                ownedBy: params.transaction.agent,
-                acquiredFrom: params.transaction.seller,
-                ownedFrom: ownedFrom,
-                ownedThrough: ownedThrough,
-                typeOfGood: programMembership
-            };
-        } else {
-            // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
-            // saveする際に、identifierでfindOneAndUpdateしている
-            const identifier = `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservedTicket.ticketToken}`;
-            const ownedFrom = params.order.orderDate;
-            // イベント予約に対する所有権の有効期限はイベント終了日時までで十分だろう
-            // 現時点では所有権対象がイベント予約のみなので、これで問題ないが、
-            // 対象が他に広がれば、有効期間のコントロールは別でしっかり行う必要があるだろう
-            const ownedThrough = acceptedOffer.itemOffered.reservationFor.endDate;
+                break;
 
-            return {
-                typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
-                identifier: identifier,
-                ownedBy: params.transaction.agent,
-                acquiredFrom: params.transaction.seller,
-                ownedFrom: ownedFrom,
-                ownedThrough: ownedThrough,
-                typeOfGood: acceptedOffer.itemOffered
-            };
+            case factory.reservationType.EventReservation:
+                // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
+                // saveする際に、identifierでfindOneAndUpdateしている
+                // const identifier = `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservedTicket.ticketToken}`;
+                // イベント予約に対する所有権の有効期限はイベント終了日時までで十分だろう
+                // 現時点では所有権対象がイベント予約のみなので、これで問題ないが、
+                // 対象が他に広がれば、有効期間のコントロールは別でしっかり行う必要があるだろう
+                ownedThrough = itemOffered.reservationFor.endDate;
+
+                ownershipInfo = {
+                    typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
+                    identifier: identifier,
+                    ownedBy: params.transaction.agent,
+                    acquiredFrom: params.transaction.seller,
+                    ownedFrom: ownedFrom,
+                    ownedThrough: ownedThrough,
+                    typeOfGood: itemOffered
+                };
+
+                break;
+
+            default:
+                throw new factory.errors.NotImplemented(`Offered item type ${(<any>itemOffered).typeOf} not implemented`);
         }
+
+        return ownershipInfo;
     });
 }
 
