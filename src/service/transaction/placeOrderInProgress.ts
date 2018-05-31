@@ -10,6 +10,7 @@ import * as pug from 'pug';
 import * as util from 'util';
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
+import { RedisRepository as OrderNumberRepo } from '../../repo/orderNumber';
 import { MongoRepository as OrganizationRepo } from '../../repo/organization';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
@@ -259,6 +260,7 @@ export function confirm(params: {
         action: ActionRepo;
         transaction: TransactionRepo;
         organization: OrganizationRepo;
+        orderNumber: OrderNumberRepo;
     }) => {
         const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
         if (transaction.agent.id !== params.agentId) {
@@ -285,9 +287,16 @@ export function confirm(params: {
         // 取引の確定条件が全て整っているかどうか確認
         validateTransaction(transaction);
 
+        // 注文番号を発行
+        const orderNumber = await repos.orderNumber.publish({
+            orderDate: params.orderDate,
+            sellerType: seller.typeOf,
+            sellerBranchCode: seller.location.branchCode
+        });
         // 結果作成
         const order = createOrderFromTransaction({
             transaction: transaction,
+            orderNumber: orderNumber,
             orderDate: params.orderDate,
             orderStatus: factory.orderStatus.OrderProcessing,
             isGift: false,
@@ -415,15 +424,17 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
 // tslint:disable-next-line:max-func-body-length
 export function createOrderFromTransaction(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
+    orderNumber: string;
     orderDate: Date;
     orderStatus: factory.orderStatus;
     isGift: boolean;
     seller: factory.organization.movieTheater.IOrganization;
 }): factory.order.IOrder {
     // 座席予約に対する承認アクション取り出す
-    const seatReservationAuthorizeActions = params.transaction.object.authorizeActions
-        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
+    const seatReservationAuthorizeActions = <factory.action.authorize.offer.seatReservation.IAction[]>
+        params.transaction.object.authorizeActions
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
     if (seatReservationAuthorizeActions.length > 1) {
         throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
     }
@@ -468,14 +479,9 @@ export function createOrderFromTransaction(params: {
         customer.memberOf = params.transaction.agent.memberOf;
     }
 
-    let orderInquiryKey = {
-        theaterCode: params.seller.location.branchCode,
-        confirmationNumber: moment().unix(),
-        telephone: cutomerContact.telephone
-    };
-
+    // とりいそぎ確認番号のデフォルトを0に設定しているが、座席予約以外の注文も含めて、本来はもっと丁寧に設計すべき。
+    let confirmationNumber = 0;
     const acceptedOffers: factory.order.IAcceptedOffer<factory.order.IItemOffered>[] = [];
-    let orderNumber = '';
 
     // 座席予約がある場合
     if (seatReservationAuthorizeAction !== undefined) {
@@ -483,11 +489,8 @@ export function createOrderFromTransaction(params: {
             throw new factory.errors.Argument('transaction', 'Seat reservation result does not exist.');
         }
 
-        orderInquiryKey = {
-            theaterCode: seatReservationAuthorizeAction.result.updTmpReserveSeatArgs.theaterCode,
-            confirmationNumber: seatReservationAuthorizeAction.result.updTmpReserveSeatResult.tmpReserveNum,
-            telephone: cutomerContact.telephone
-        };
+        // 確認番号はCOAの仮予約番号と同じ
+        confirmationNumber = seatReservationAuthorizeAction.result.updTmpReserveSeatResult.tmpReserveNum;
 
         // 座席仮予約から容認供給情報を生成する
         // 座席予約以外の注文アイテムが追加された場合は、このロジックに修正が加えられることになる
@@ -512,33 +515,24 @@ export function createOrderFromTransaction(params: {
                 price: eventReservation.price,
                 priceCurrency: factory.priceCurrency.JPY,
                 seller: {
-                    typeOf: seatReservationAuthorizeAction.object.individualScreeningEvent.superEvent.location.typeOf,
+                    typeOf: params.seller.typeOf,
                     name: seatReservationAuthorizeAction.object.individualScreeningEvent.superEvent.location.name.ja
                 }
             };
         }));
-
-        // 注文番号生成
-        orderNumber = util.format(
-            '%s-%s-%s',
-            moment(params.orderDate).tz('Asia/Tokyo').format('YYMMDD'),
-            orderInquiryKey.theaterCode,
-            orderInquiryKey.confirmationNumber
-        );
     }
 
     // 会員プログラムがある場合
     if (programMembershipAuthorizeAction !== undefined) {
         acceptedOffers.push(programMembershipAuthorizeAction.object);
-
-        // 注文番号生成
-        orderNumber = util.format(
-            'PM%s-%s-%s',
-            moment(params.orderDate).tz('Asia/Tokyo').format('YYMMDD'),
-            orderInquiryKey.theaterCode,
-            orderInquiryKey.confirmationNumber
-        );
     }
+
+    // 注文照会キーを作成
+    const orderInquiryKey: factory.order.IOrderInquiryKey = {
+        theaterCode: params.seller.location.branchCode,
+        confirmationNumber: confirmationNumber,
+        telephone: cutomerContact.telephone
+    };
 
     // 結果作成
     const discounts: factory.order.IDiscount[] = [];
@@ -586,6 +580,13 @@ export function createOrderFromTransaction(params: {
             });
         });
 
+    const url = util.format(
+        '%s/inquiry/login?theater=%s&reserve=%s',
+        process.env.ORDER_INQUIRY_ENDPOINT,
+        orderInquiryKey.theaterCode,
+        orderInquiryKey.confirmationNumber
+    );
+
     return {
         typeOf: 'Order',
         seller: seller,
@@ -594,11 +595,10 @@ export function createOrderFromTransaction(params: {
         priceCurrency: factory.priceCurrency.JPY,
         paymentMethods: paymentMethods,
         discounts: discounts,
-        confirmationNumber: orderInquiryKey.confirmationNumber,
-        orderNumber: orderNumber,
+        confirmationNumber: confirmationNumber,
+        orderNumber: params.orderNumber,
         acceptedOffers: acceptedOffers,
-        // tslint:disable-next-line:max-line-length
-        url: `${process.env.ORDER_INQUIRY_ENDPOINT}/inquiry/login?theater=${orderInquiryKey.theaterCode}&reserve=${orderInquiryKey.confirmationNumber}`,
+        url: url,
         orderStatus: params.orderStatus,
         orderDate: params.orderDate,
         isGift: params.isGift,

@@ -7,6 +7,7 @@ import * as waiter from '@motionpicture/waiter-domain';
 import * as moment from 'moment-timezone';
 import * as assert from 'power-assert';
 // import * as pug from 'pug';
+import * as redis from 'redis-mock';
 import * as sinon from 'sinon';
 import * as sskts from '../../index';
 
@@ -651,9 +652,11 @@ describe('confirm()', () => {
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
         sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(orderNumberRepo).expects('publish').once().resolves('orderNumber');
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .withExactArgs(transaction.id).resolves([
@@ -671,6 +674,7 @@ describe('confirm()', () => {
         })({
             action: actionRepo,
             transaction: transactionRepo,
+            orderNumber: orderNumberRepo,
             organization: organizationRepo
         });
         assert.deepEqual(typeof result.orderNumber, 'string');
@@ -835,9 +839,11 @@ describe('confirm()', () => {
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
         sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(orderNumberRepo).expects('publish').once().resolves('orderNumber');
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .withExactArgs(transaction.id).resolves([...mvtkAuthorizeActions, ...seatReservationAuthorizeActions]);
@@ -851,6 +857,7 @@ describe('confirm()', () => {
         })({
             action: actionRepo,
             transaction: transactionRepo,
+            orderNumber: orderNumberRepo,
             organization: organizationRepo
         });
         assert.deepEqual(typeof result.orderNumber, 'string');
@@ -876,10 +883,12 @@ describe('confirm()', () => {
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
         sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
+        sandbox.mock(orderNumberRepo).expects('publish').never();
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
@@ -889,6 +898,7 @@ describe('confirm()', () => {
         })({
             action: actionRepo,
             transaction: transactionRepo,
+            orderNumber: orderNumberRepo,
             organization: organizationRepo
         })
             .catch((err) => err);
@@ -948,12 +958,14 @@ describe('confirm()', () => {
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
         sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .withExactArgs(transaction.id).resolves(authorizeActions);
+        sandbox.mock(orderNumberRepo).expects('publish').never();
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
@@ -963,6 +975,7 @@ describe('confirm()', () => {
         })({
             action: actionRepo,
             transaction: transactionRepo,
+            orderNumber: orderNumberRepo,
             organization: organizationRepo
         }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
@@ -988,11 +1001,13 @@ describe('confirm()', () => {
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
 
         sandbox.mock(organizationRepo).expects('findById').never();
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').never();
+        sandbox.mock(orderNumberRepo).expects('publish').never();
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
@@ -1002,6 +1017,7 @@ describe('confirm()', () => {
         })({
             action: actionRepo,
             transaction: transactionRepo,
+            orderNumber: orderNumberRepo,
             organization: organizationRepo
         })
             .catch((err) => err);
@@ -1429,6 +1445,7 @@ describe('createOrderFromTransaction()', () => {
 
         const result = sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
             transaction: transaction,
+            orderNumber: 'orderNumber',
             orderDate: orderDate,
             orderStatus: orderStatus,
             isGift: false,
@@ -1519,6 +1536,7 @@ describe('createOrderFromTransaction()', () => {
             () => {
                 sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
                     transaction: transaction,
+                    orderNumber: 'orderNumber',
                     orderDate: orderDate,
                     orderStatus: orderStatus,
                     isGift: false,
@@ -1669,6 +1687,7 @@ describe('createOrderFromTransaction()', () => {
             () => {
                 sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
                     transaction: transaction,
+                    orderNumber: 'orderNumber',
                     orderDate: orderDate,
                     orderStatus: orderStatus,
                     isGift: false,
@@ -1744,6 +1763,7 @@ describe('createOrderFromTransaction()', () => {
             () => {
                 sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
                     transaction: transaction,
+                    orderNumber: 'orderNumber',
                     orderDate: orderDate,
                     orderStatus: orderStatus,
                     isGift: false,

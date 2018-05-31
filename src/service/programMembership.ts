@@ -11,6 +11,7 @@ import * as PlaceOrderService from './transaction/placeOrderInProgress';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../repo/action/registerProgramMembershipInProgress';
+import { RedisRepository as OrderNumberRepo } from '../repo/orderNumber';
 import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { CognitoRepository as PersonRepo } from '../repo/person';
@@ -32,6 +33,7 @@ export type ICreateUnRegisterTaskOperation<T> = (repos: {
 
 export type IRegisterOperation<T> = (repos: {
     action: ActionRepo;
+    orderNumber: OrderNumberRepo;
     organization: OrganizationRepo;
     ownershipInfo: OwnershipInfoRepo;
     person: PersonRepo;
@@ -141,6 +143,7 @@ export function register(
 ): IRegisterOperation<void> {
     return async (repos: {
         action: ActionRepo;
+        orderNumber: OrderNumberRepo;
         organization: OrganizationRepo;
         ownershipInfo: OwnershipInfoRepo;
         person: PersonRepo;
@@ -360,6 +363,7 @@ function processPlaceOrder(params: {
 }) {
     return async (repos: {
         action: ActionRepo;
+        orderNumber: OrderNumberRepo;
         organization: OrganizationRepo;
         person: PersonRepo;
         programMembership: ProgramMembershipRepo;

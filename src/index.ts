@@ -38,6 +38,7 @@ import { MongoRepository as EventRepo } from './repo/event';
 import { MongoRepository as GMONotificationRepo } from './repo/gmoNotification';
 import { MongoRepository as IndividualScreeningEventItemAvailabilityRepo } from './repo/itemAvailability/individualScreeningEvent';
 import { MongoRepository as OrderRepo } from './repo/order';
+import { RedisRepository as OrderNumberRepo } from './repo/orderNumber';
 import { MongoRepository as OrganizationRepo } from './repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from './repo/ownershipInfo';
 import { CognitoRepository as PersonRepo } from './repo/person';
@@ -113,6 +114,7 @@ export namespace repository {
     export class Event extends EventRepo { }
     export class GMONotification extends GMONotificationRepo { }
     export class Order extends OrderRepo { }
+    export class OrderNumber extends OrderNumberRepo { }
     export class Organization extends OrganizationRepo { }
     export class OwnershipInfo extends OwnershipInfoRepo { }
     export class Person extends PersonRepo { }

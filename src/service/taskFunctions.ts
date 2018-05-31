@@ -10,6 +10,7 @@ import * as redis from 'redis';
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../repo/action/registerProgramMembershipInProgress';
 import { MongoRepository as OrderRepo } from '../repo/order';
+import { RedisRepository as OrderNumberRepo } from '../repo/orderNumber';
 import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { CognitoRepository as PersonRepo } from '../repo/person';
@@ -307,6 +308,7 @@ export function registerProgramMembership(data: factory.task.registerProgramMemb
 
         await ProgramMembershipService.register(data)({
             action: new ActionRepo(settings.connection),
+            orderNumber: new OrderNumberRepo(settings.redisClient),
             organization: new OrganizationRepo(settings.connection),
             ownershipInfo: new OwnershipInfoRepo(settings.connection),
             person: new PersonRepo(settings.cognitoIdentityServiceProvider),

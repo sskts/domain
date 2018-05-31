@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Pecorinoインセンティブ承認取消タスクを実装。
 - 進行中の会員プログラム登録アクションリポジトリーを追加。
 - 会員プログラム登録解除タスクを実装。
+- 注文番号リポジトリーを追加。注文番号発行方法を汎用的に拡張。
 
 ### Changed
 
