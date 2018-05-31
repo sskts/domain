@@ -462,9 +462,13 @@ export function createOrderFromTransaction(params: {
 
     const cutomerContact = params.transaction.object.customerContact;
     const seller: factory.order.ISeller = {
-        typeOf: params.transaction.seller.typeOf,
+        id: params.transaction.seller.id,
+        identifier: params.transaction.seller.identifier,
         name: params.transaction.seller.name.ja,
-        url: (params.transaction.seller.url !== undefined) ? params.transaction.seller.url : ''
+        legalName: params.transaction.seller.legalName,
+        typeOf: params.transaction.seller.typeOf,
+        telephone: params.transaction.seller.telephone,
+        url: params.transaction.seller.url
     };
     const customer: factory.order.ICustomer = {
         ...{
