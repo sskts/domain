@@ -572,7 +572,8 @@ describe('confirm()', () => {
                         theaterCode: '118'
                     },
                     updTmpReserveSeatResult: {
-                        tmpReserveNum: 12345
+                        tmpReserveNum: 12345,
+                        listTmpReserve: []
                     },
                     price: 1234
                 },
@@ -580,75 +581,75 @@ describe('confirm()', () => {
                 purpose: {}
             }
         ];
-        const event = {
-            // tslint:disable-next-line:no-magic-numbers
-            startDate: moment().add(24, 'hours').toDate(),
-            // tslint:disable-next-line:no-magic-numbers
-            endDate: moment().add(25, 'hours').toDate(),
-            workPerformed: { name: 'workPerformedName' },
-            location: { name: { ja: 'eventLocationName' } }
-        };
-        const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
-            {
-                typeOf: sskts.factory.reservationType.EventReservation,
-                reservationFor: event,
-                reservedTicket: {
-                    dateIssued: new Date(),
-                    typeOf: 'Ticket',
-                    ticketToken: 'ticketToken1',
-                    ticketNumber: 'ticketNumber1',
-                    underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
-                    coaTicketInfo: <any>{
-                        ticketName: 'ticketName1',
-                        salePrice: 234
-                    },
-                    issuedBy: <any>{},
-                    totalPrice: 234,
-                    priceCurrency: sskts.factory.priceCurrency.JPY,
-                    ticketedSeat: <any>{
-                        seatNumber: 'seatNumber1'
-                    }
-                },
-                underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
-                price: 234,
-                additionalTicketText: '',
-                modifiedTime: new Date(),
-                numSeats: 1,
-                priceCurrency: sskts.factory.priceCurrency.JPY,
-                reservationNumber: 'reservationNumber',
-                reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
+        // const event = {
+        //     // tslint:disable-next-line:no-magic-numbers
+        //     startDate: moment().add(24, 'hours').toDate(),
+        //     // tslint:disable-next-line:no-magic-numbers
+        //     endDate: moment().add(25, 'hours').toDate(),
+        //     workPerformed: { name: 'workPerformedName' },
+        //     location: { name: { ja: 'eventLocationName' } }
+        // };
+        // const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
+        //     {
+        //         typeOf: sskts.factory.reservationType.EventReservation,
+        //         reservationFor: event,
+        //         reservedTicket: {
+        //             dateIssued: new Date(),
+        //             typeOf: 'Ticket',
+        //             ticketToken: 'ticketToken1',
+        //             ticketNumber: 'ticketNumber1',
+        //             underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
+        //             coaTicketInfo: <any>{
+        //                 ticketName: 'ticketName1',
+        //                 salePrice: 234
+        //             },
+        //             issuedBy: <any>{},
+        //             totalPrice: 234,
+        //             priceCurrency: sskts.factory.priceCurrency.JPY,
+        //             ticketedSeat: <any>{
+        //                 seatNumber: 'seatNumber1'
+        //             }
+        //         },
+        //         underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
+        //         price: 234,
+        //         additionalTicketText: '',
+        //         modifiedTime: new Date(),
+        //         numSeats: 1,
+        //         priceCurrency: sskts.factory.priceCurrency.JPY,
+        //         reservationNumber: 'reservationNumber',
+        //         reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
 
-            },
-            {
-                typeOf: sskts.factory.reservationType.EventReservation,
-                reservationFor: event,
-                reservedTicket: {
-                    dateIssued: new Date(),
-                    typeOf: 'Ticket',
-                    ticketToken: 'ticketToken2',
-                    ticketNumber: 'ticketNumber2',
-                    underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
-                    coaTicketInfo: <any>{
-                        ticketName: 'ticketName2',
-                        salePrice: 1000
-                    },
-                    issuedBy: <any>{},
-                    totalPrice: 1000,
-                    priceCurrency: sskts.factory.priceCurrency.JPY,
-                    ticketedSeat: <any>{
-                        seatNumber: 'seatNumber2'
-                    }
-                },
-                underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
-                price: 1000,
-                additionalTicketText: '',
-                modifiedTime: new Date(),
-                numSeats: 1,
-                priceCurrency: sskts.factory.priceCurrency.JPY,
-                reservationNumber: 'reservationNumber',
-                reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
-            }
-        ];
+        //     },
+        //     {
+        //         typeOf: sskts.factory.reservationType.EventReservation,
+        //         reservationFor: event,
+        //         reservedTicket: {
+        //             dateIssued: new Date(),
+        //             typeOf: 'Ticket',
+        //             ticketToken: 'ticketToken2',
+        //             ticketNumber: 'ticketNumber2',
+        //             underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
+        //             coaTicketInfo: <any>{
+        //                 ticketName: 'ticketName2',
+        //                 salePrice: 1000
+        //             },
+        //             issuedBy: <any>{},
+        //             totalPrice: 1000,
+        //             priceCurrency: sskts.factory.priceCurrency.JPY,
+        //             ticketedSeat: <any>{
+        //                 seatNumber: 'seatNumber2'
+        //             }
+        //         },
+        //         underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
+        //         price: 1000,
+        //         additionalTicketText: '',
+        //         modifiedTime: new Date(),
+        //         numSeats: 1,
+        //         priceCurrency: sskts.factory.priceCurrency.JPY,
+        //         reservationNumber: 'reservationNumber',
+        //         reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
+        //     }
+        // ];
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
@@ -664,7 +665,6 @@ describe('confirm()', () => {
                 ...seatReservationAuthorizeActions
                 // ...pecorinoAuthorizeActions
             ]);
-        sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').once().returns(eventReservations);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
@@ -759,7 +759,8 @@ describe('confirm()', () => {
                         theaterCode: '118'
                     },
                     updTmpReserveSeatResult: {
-                        tmpReserveNum: 12345
+                        tmpReserveNum: 12345,
+                        listTmpReserve: []
                     },
                     price: 1234
                 },
@@ -767,75 +768,75 @@ describe('confirm()', () => {
                 purpose: {}
             }
         ];
-        const event = {
-            // tslint:disable-next-line:no-magic-numbers
-            startDate: moment().add(24, 'hours').toDate(),
-            // tslint:disable-next-line:no-magic-numbers
-            endDate: moment().add(25, 'hours').toDate(),
-            workPerformed: { name: 'workPerformedName' },
-            location: { name: { ja: 'eventLocationName' } }
-        };
-        const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
-            {
-                typeOf: sskts.factory.reservationType.EventReservation,
-                reservationFor: event,
-                reservedTicket: {
-                    dateIssued: new Date(),
-                    typeOf: 'Ticket',
-                    ticketToken: 'ticketToken1',
-                    ticketNumber: 'ticketNumber1',
-                    underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
-                    coaTicketInfo: <any>{
-                        ticketName: 'ticketName1',
-                        salePrice: 234
-                    },
-                    issuedBy: <any>{},
-                    totalPrice: 234,
-                    priceCurrency: sskts.factory.priceCurrency.JPY,
-                    ticketedSeat: <any>{
-                        seatNumber: 'seatNumber1'
-                    }
-                },
-                underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
-                price: 234,
-                additionalTicketText: '',
-                modifiedTime: new Date(),
-                numSeats: 1,
-                priceCurrency: sskts.factory.priceCurrency.JPY,
-                reservationNumber: 'reservationNumber',
-                reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
+        // const event = {
+        //     // tslint:disable-next-line:no-magic-numbers
+        //     startDate: moment().add(24, 'hours').toDate(),
+        //     // tslint:disable-next-line:no-magic-numbers
+        //     endDate: moment().add(25, 'hours').toDate(),
+        //     workPerformed: { name: 'workPerformedName' },
+        //     location: { name: { ja: 'eventLocationName' } }
+        // };
+        // const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
+        //     {
+        //         typeOf: sskts.factory.reservationType.EventReservation,
+        //         reservationFor: event,
+        //         reservedTicket: {
+        //             dateIssued: new Date(),
+        //             typeOf: 'Ticket',
+        //             ticketToken: 'ticketToken1',
+        //             ticketNumber: 'ticketNumber1',
+        //             underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
+        //             coaTicketInfo: <any>{
+        //                 ticketName: 'ticketName1',
+        //                 salePrice: 234
+        //             },
+        //             issuedBy: <any>{},
+        //             totalPrice: 234,
+        //             priceCurrency: sskts.factory.priceCurrency.JPY,
+        //             ticketedSeat: <any>{
+        //                 seatNumber: 'seatNumber1'
+        //             }
+        //         },
+        //         underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
+        //         price: 234,
+        //         additionalTicketText: '',
+        //         modifiedTime: new Date(),
+        //         numSeats: 1,
+        //         priceCurrency: sskts.factory.priceCurrency.JPY,
+        //         reservationNumber: 'reservationNumber',
+        //         reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
 
-            },
-            {
-                typeOf: sskts.factory.reservationType.EventReservation,
-                reservationFor: event,
-                reservedTicket: {
-                    dateIssued: new Date(),
-                    typeOf: 'Ticket',
-                    ticketToken: 'ticketToken2',
-                    ticketNumber: 'ticketNumber2',
-                    underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
-                    coaTicketInfo: <any>{
-                        ticketName: 'ticketName2',
-                        salePrice: 1000
-                    },
-                    issuedBy: <any>{},
-                    totalPrice: 1000,
-                    priceCurrency: sskts.factory.priceCurrency.JPY,
-                    ticketedSeat: <any>{
-                        seatNumber: 'seatNumber2'
-                    }
-                },
-                underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
-                price: 1000,
-                additionalTicketText: '',
-                modifiedTime: new Date(),
-                numSeats: 1,
-                priceCurrency: sskts.factory.priceCurrency.JPY,
-                reservationNumber: 'reservationNumber',
-                reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
-            }
-        ];
+        //     },
+        //     {
+        //         typeOf: sskts.factory.reservationType.EventReservation,
+        //         reservationFor: event,
+        //         reservedTicket: {
+        //             dateIssued: new Date(),
+        //             typeOf: 'Ticket',
+        //             ticketToken: 'ticketToken2',
+        //             ticketNumber: 'ticketNumber2',
+        //             underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
+        //             coaTicketInfo: <any>{
+        //                 ticketName: 'ticketName2',
+        //                 salePrice: 1000
+        //             },
+        //             issuedBy: <any>{},
+        //             totalPrice: 1000,
+        //             priceCurrency: sskts.factory.priceCurrency.JPY,
+        //             ticketedSeat: <any>{
+        //                 seatNumber: 'seatNumber2'
+        //             }
+        //         },
+        //         underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
+        //         price: 1000,
+        //         additionalTicketText: '',
+        //         modifiedTime: new Date(),
+        //         numSeats: 1,
+        //         priceCurrency: sskts.factory.priceCurrency.JPY,
+        //         reservationNumber: 'reservationNumber',
+        //         reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
+        //     }
+        // ];
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
@@ -847,7 +848,6 @@ describe('confirm()', () => {
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .withExactArgs(transaction.id).resolves([...mvtkAuthorizeActions, ...seatReservationAuthorizeActions]);
-        sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').once().returns(eventReservations);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
@@ -1346,7 +1346,7 @@ describe('createOrderFromTransaction()', () => {
                                 superEvent: {
                                     location: {
                                         typeOf: 'MovieTheater',
-                                        name: { ja: 'naem' }
+                                        name: { ja: 'name' }
                                     }
                                 }
                             }
@@ -1356,7 +1356,8 @@ describe('createOrderFromTransaction()', () => {
                                 theaterCode: '118'
                             },
                             updTmpReserveSeatResult: {
-                                tmpReserveNum: 12345
+                                tmpReserveNum: 12345,
+                                listTmpReserve: []
                             },
                             price: 1234
                         },
@@ -1371,77 +1372,75 @@ describe('createOrderFromTransaction()', () => {
         const orderDate = moment().add(10, 'seconds').toDate();
         const orderStatus = sskts.factory.orderStatus.OrderProcessing;
 
-        const event = {
-            // tslint:disable-next-line:no-magic-numbers
-            startDate: moment().add(24, 'hours').toDate(),
-            // tslint:disable-next-line:no-magic-numbers
-            endDate: moment().add(25, 'hours').toDate(),
-            workPerformed: { name: 'workPerformedName' },
-            location: { name: { ja: 'eventLocationName' } }
-        };
-        const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
-            {
-                typeOf: sskts.factory.reservationType.EventReservation,
-                reservationFor: event,
-                reservedTicket: {
-                    dateIssued: new Date(),
-                    typeOf: 'Ticket',
-                    ticketToken: 'ticketToken1',
-                    ticketNumber: 'ticketNumber1',
-                    underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
-                    coaTicketInfo: <any>{
-                        ticketName: 'ticketName1',
-                        salePrice: 234
-                    },
-                    issuedBy: <any>{},
-                    totalPrice: 234,
-                    priceCurrency: sskts.factory.priceCurrency.JPY,
-                    ticketedSeat: <any>{
-                        seatNumber: 'seatNumber1'
-                    }
-                },
-                underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
-                price: 234,
-                additionalTicketText: '',
-                modifiedTime: new Date(),
-                numSeats: 1,
-                priceCurrency: sskts.factory.priceCurrency.JPY,
-                reservationNumber: 'reservationNumber',
-                reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
+        // const event = {
+        //     // tslint:disable-next-line:no-magic-numbers
+        //     startDate: moment().add(24, 'hours').toDate(),
+        //     // tslint:disable-next-line:no-magic-numbers
+        //     endDate: moment().add(25, 'hours').toDate(),
+        //     workPerformed: { name: 'workPerformedName' },
+        //     location: { name: { ja: 'eventLocationName' } }
+        // };
+        // const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
+        //     {
+        //         typeOf: sskts.factory.reservationType.EventReservation,
+        //         reservationFor: event,
+        //         reservedTicket: {
+        //             dateIssued: new Date(),
+        //             typeOf: 'Ticket',
+        //             ticketToken: 'ticketToken1',
+        //             ticketNumber: 'ticketNumber1',
+        //             underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
+        //             coaTicketInfo: <any>{
+        //                 ticketName: 'ticketName1',
+        //                 salePrice: 234
+        //             },
+        //             issuedBy: <any>{},
+        //             totalPrice: 234,
+        //             priceCurrency: sskts.factory.priceCurrency.JPY,
+        //             ticketedSeat: <any>{
+        //                 seatNumber: 'seatNumber1'
+        //             }
+        //         },
+        //         underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
+        //         price: 234,
+        //         additionalTicketText: '',
+        //         modifiedTime: new Date(),
+        //         numSeats: 1,
+        //         priceCurrency: sskts.factory.priceCurrency.JPY,
+        //         reservationNumber: 'reservationNumber',
+        //         reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
 
-            },
-            {
-                typeOf: sskts.factory.reservationType.EventReservation,
-                reservationFor: event,
-                reservedTicket: {
-                    dateIssued: new Date(),
-                    typeOf: 'Ticket',
-                    ticketToken: 'ticketToken2',
-                    ticketNumber: 'ticketNumber2',
-                    underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
-                    coaTicketInfo: <any>{
-                        ticketName: 'ticketName2',
-                        salePrice: 1000
-                    },
-                    issuedBy: <any>{},
-                    totalPrice: 1000,
-                    priceCurrency: sskts.factory.priceCurrency.JPY,
-                    ticketedSeat: <any>{
-                        seatNumber: 'seatNumber2'
-                    }
-                },
-                underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
-                price: 1000,
-                additionalTicketText: '',
-                modifiedTime: new Date(),
-                numSeats: 1,
-                priceCurrency: sskts.factory.priceCurrency.JPY,
-                reservationNumber: 'reservationNumber',
-                reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
-            }
-        ];
-
-        sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').once().returns(eventReservations);
+        //     },
+        //     {
+        //         typeOf: sskts.factory.reservationType.EventReservation,
+        //         reservationFor: event,
+        //         reservedTicket: {
+        //             dateIssued: new Date(),
+        //             typeOf: 'Ticket',
+        //             ticketToken: 'ticketToken2',
+        //             ticketNumber: 'ticketNumber2',
+        //             underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
+        //             coaTicketInfo: <any>{
+        //                 ticketName: 'ticketName2',
+        //                 salePrice: 1000
+        //             },
+        //             issuedBy: <any>{},
+        //             totalPrice: 1000,
+        //             priceCurrency: sskts.factory.priceCurrency.JPY,
+        //             ticketedSeat: <any>{
+        //                 seatNumber: 'seatNumber2'
+        //             }
+        //         },
+        //         underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
+        //         price: 1000,
+        //         additionalTicketText: '',
+        //         modifiedTime: new Date(),
+        //         numSeats: 1,
+        //         priceCurrency: sskts.factory.priceCurrency.JPY,
+        //         reservationNumber: 'reservationNumber',
+        //         reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
+        //     }
+        // ];
 
         const result = sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
             transaction: transaction,
@@ -1530,8 +1529,6 @@ describe('createOrderFromTransaction()', () => {
         const orderDate = moment().add(10, 'seconds').toDate();
         const orderStatus = sskts.factory.orderStatus.OrderProcessing;
 
-        sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').never();
-
         assert.throws(
             () => {
                 sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
@@ -1599,8 +1596,6 @@ describe('createOrderFromTransaction()', () => {
     //     // tslint:disable-next-line:no-magic-numbers
     //     const orderDate = moment().add(10, 'seconds').toDate();
     //     const orderStatus = sskts.factory.orderStatus.OrderProcessing;
-
-    //     sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').never();
 
     //     assert.throws(
     //         () => {
@@ -1681,8 +1676,6 @@ describe('createOrderFromTransaction()', () => {
         const orderDate = moment().add(10, 'seconds').toDate();
         const orderStatus = sskts.factory.orderStatus.OrderProcessing;
 
-        sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').never();
-
         assert.throws(
             () => {
                 sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
@@ -1756,8 +1749,6 @@ describe('createOrderFromTransaction()', () => {
         // tslint:disable-next-line:no-magic-numbers
         const orderDate = moment().add(10, 'seconds').toDate();
         const orderStatus = sskts.factory.orderStatus.OrderProcessing;
-
-        sandbox.mock(sskts.factory.reservation.event).expects('createFromCOATmpReserve').never();
 
         assert.throws(
             () => {

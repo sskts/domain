@@ -212,10 +212,9 @@ export function transaction2report(params: {
                         let numItems = 1;
                         if (ticketedSeat !== undefined) {
                             name = util.format(
-                                '%s %s ￥%s',
+                                '%s %s',
                                 offer.reservedTicket.ticketedSeat.seatNumber,
-                                offer.reservedTicket.coaTicketInfo.ticketName,
-                                offer.reservedTicket.coaTicketInfo.salePrice
+                                offer.reservedTicket.coaTicketInfo.ticketName
                             );
                         }
                         if (offer.numSeats !== undefined) {

@@ -493,24 +493,66 @@ export function createOrderFromTransaction(params: {
             throw new factory.errors.Argument('transaction', 'Seat reservation result does not exist.');
         }
 
+        const updTmpReserveSeatResult = seatReservationAuthorizeAction.result.updTmpReserveSeatResult;
+        const individualScreeningEvent = seatReservationAuthorizeAction.object.individualScreeningEvent;
+
         // 確認番号はCOAの仮予約番号と同じ
         confirmationNumber = seatReservationAuthorizeAction.result.updTmpReserveSeatResult.tmpReserveNum;
 
-        // 座席仮予約から容認供給情報を生成する
-        // 座席予約以外の注文アイテムが追加された場合は、このロジックに修正が加えられることになる
-        acceptedOffers.push(...factory.reservation.event.createFromCOATmpReserve({
-            updTmpReserveSeatResult: seatReservationAuthorizeAction.result.updTmpReserveSeatResult,
-            offers: seatReservationAuthorizeAction.object.offers,
-            individualScreeningEvent: seatReservationAuthorizeAction.object.individualScreeningEvent
-        }).map((eventReservation) => {
-            eventReservation.reservationStatus = factory.reservationStatusType.ReservationConfirmed;
-            eventReservation.underName.name = {
-                ja: customer.name,
-                en: customer.name
-            };
-            eventReservation.reservedTicket.underName.name = {
-                ja: customer.name,
-                en: customer.name
+        // 座席仮予約からオファー情報を生成する
+        acceptedOffers.push(...updTmpReserveSeatResult.listTmpReserve.map((tmpReserve, index) => {
+            const requestedOffer = seatReservationAuthorizeAction.object.offers.filter((offer) => {
+                return (offer.seatNumber === tmpReserve.seatNum && offer.seatSection === tmpReserve.seatSection);
+            })[0];
+            if (requestedOffer === undefined) {
+                throw new factory.errors.Argument('offers', '要求された供給情報と仮予約結果が一致しません。');
+            }
+
+            // チケットトークン(QRコード文字列)を作成
+            const ticketToken = [
+                individualScreeningEvent.coaInfo.theaterCode,
+                individualScreeningEvent.coaInfo.dateJouei,
+                // tslint:disable-next-line:no-magic-numbers
+                (`00000000${updTmpReserveSeatResult.tmpReserveNum}`).slice(-8),
+                // tslint:disable-next-line:no-magic-numbers
+                (`000${index + 1}`).slice(-3)
+            ].join('');
+
+            const eventReservation: factory.reservation.event.IEventReservation<factory.event.individualScreeningEvent.IEvent> = {
+                typeOf: factory.reservationType.EventReservation,
+                additionalTicketText: '',
+                modifiedTime: params.orderDate,
+                numSeats: 1,
+                price: requestedOffer.price,
+                priceCurrency: requestedOffer.priceCurrency,
+                reservationFor: individualScreeningEvent,
+                reservationNumber: `${updTmpReserveSeatResult.tmpReserveNum}-${index.toString()}`,
+                reservationStatus: factory.reservationStatusType.ReservationConfirmed,
+                reservedTicket: {
+                    typeOf: 'Ticket',
+                    coaTicketInfo: requestedOffer.ticketInfo,
+                    dateIssued: params.orderDate,
+                    issuedBy: individualScreeningEvent.superEvent.organizer,
+                    totalPrice: requestedOffer.price,
+                    priceCurrency: requestedOffer.priceCurrency,
+                    ticketedSeat: {
+                        typeOf: factory.placeType.Seat,
+                        seatingType: '',
+                        seatNumber: tmpReserve.seatNum,
+                        seatRow: '',
+                        seatSection: tmpReserve.seatSection
+                    },
+                    ticketNumber: ticketToken,
+                    ticketToken: ticketToken,
+                    underName: {
+                        typeOf: factory.personType.Person,
+                        name: { ja: customer.name, en: customer.name }
+                    }
+                },
+                underName: {
+                    typeOf: factory.personType.Person,
+                    name: { ja: customer.name, en: customer.name }
+                }
             };
 
             return {
@@ -520,7 +562,7 @@ export function createOrderFromTransaction(params: {
                 priceCurrency: factory.priceCurrency.JPY,
                 seller: {
                     typeOf: params.seller.typeOf,
-                    name: seatReservationAuthorizeAction.object.individualScreeningEvent.superEvent.location.name.ja
+                    name: individualScreeningEvent.superEvent.location.name.ja
                 }
             };
         }));
