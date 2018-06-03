@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 会員プログラム登録解除タスクを実装。
 - 注文番号リポジトリーを追加。注文番号発行方法を汎用的に拡張。
 - 注文リポジトリーに検索メソッドを追加。
+- Pecorino口座リポジトリーを追加。
 
 ### Changed
 
