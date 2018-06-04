@@ -39,7 +39,7 @@ export function create(params: {
      */
     toAccountNumber: string;
     /**
-     * 支払取引メモ
+     * 取引メモ
      */
     notes?: string;
 }): ICreateOperation<factory.action.authorize.award.pecorino.IAction> {

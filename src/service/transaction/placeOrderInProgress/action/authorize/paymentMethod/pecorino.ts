@@ -19,13 +19,13 @@ export type ICreateOperation<T> = (repos: {
     organization: OrganizationRepo;
     ownershipInfo: OwnershipInfoRepo;
     transaction: TransactionRepo;
-    payTransactionService?: pecorinoapi.service.transaction.Pay;
+    withdrawTransactionService?: pecorinoapi.service.transaction.Withdraw;
     transferTransactionService?: pecorinoapi.service.transaction.Transfer;
 }) => Promise<T>;
 
 /**
  * Pecorino残高差し押さえ
- * 口座取引は、支払取引あるいは転送取引のどちらかを選択できます。
+ * 口座取引は、出金取引あるいは転送取引のどちらかを選択できます。
  */
 export function create(params: {
     /**
@@ -41,7 +41,7 @@ export function create(params: {
      */
     fromAccountNumber: string;
     /**
-     * 支払取引メモ
+     * 出金取引メモ
      */
     notes?: string;
 }): ICreateOperation<factory.action.authorize.paymentMethod.pecorino.IAction> {
@@ -52,9 +52,9 @@ export function create(params: {
         ownershipInfo: OwnershipInfoRepo;
         transaction: TransactionRepo;
         /**
-         * 支払取引サービス
+         * 出金取引サービス
          */
-        payTransactionService?: pecorinoapi.service.transaction.Pay;
+        withdrawTransactionService?: pecorinoapi.service.transaction.Withdraw;
         /**
          * 転送取引サービス
          */
@@ -101,16 +101,16 @@ export function create(params: {
         let pecorinoEndpoint: string;
 
         // Pecorinoオーソリ取得
-        type IPecorinoTransaction = pecorinoapi.factory.transaction.pay.ITransaction |
+        type IPecorinoTransaction = pecorinoapi.factory.transaction.withdraw.ITransaction |
             pecorinoapi.factory.transaction.transfer.ITransaction;
         let pecorinoTransaction: IPecorinoTransaction;
 
         try {
-            if (repos.payTransactionService !== undefined) {
-                pecorinoEndpoint = repos.payTransactionService.options.endpoint;
+            if (repos.withdrawTransactionService !== undefined) {
+                pecorinoEndpoint = repos.withdrawTransactionService.options.endpoint;
 
                 debug('starting pecorino pay transaction...', params.amount);
-                pecorinoTransaction = await repos.payTransactionService.start({
+                pecorinoTransaction = await repos.withdrawTransactionService.start({
                     // 最大1ヵ月のオーソリ
                     expires: moment().add(1, 'month').toDate(),
                     agent: {
@@ -163,7 +163,7 @@ export function create(params: {
                 });
                 debug('pecorinoTransaction started.', pecorinoTransaction.id);
             } else {
-                throw new factory.errors.Argument('resos', 'payTransactionService or transferTransactionService required.');
+                throw new factory.errors.Argument('resos', 'withdrawTransactionService or transferTransactionService required.');
             }
         } catch (error) {
             // actionにエラー結果を追加
@@ -231,7 +231,7 @@ export function cancel(params: {
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
-        payTransactionService?: pecorinoapi.service.transaction.Pay;
+        withdrawTransactionService?: pecorinoapi.service.transaction.Withdraw;
         transferTransactionService?: pecorinoapi.service.transaction.Transfer;
     }) => {
         debug('canceling pecorino authorize action...');
@@ -246,8 +246,8 @@ export function cancel(params: {
         const actionResult = <factory.action.authorize.paymentMethod.pecorino.IResult>action.result;
 
         // Pecorinoで取消中止実行
-        if (repos.payTransactionService !== undefined) {
-            await repos.payTransactionService.cancel({
+        if (repos.withdrawTransactionService !== undefined) {
+            await repos.withdrawTransactionService.cancel({
                 transactionId: actionResult.pecorinoTransaction.id
             });
         } else if (repos.transferTransactionService !== undefined) {
@@ -255,7 +255,7 @@ export function cancel(params: {
                 transactionId: actionResult.pecorinoTransaction.id
             });
         } else {
-            throw new factory.errors.Argument('resos', 'payTransactionService or transferTransactionService required.');
+            throw new factory.errors.Argument('resos', 'withdrawTransactionService or transferTransactionService required.');
         }
     };
 }

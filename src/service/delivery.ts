@@ -273,16 +273,16 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
             throw new factory.errors.NotFound('params.object.result');
         }
 
-        let payTransaction: pecorinoapi.factory.transaction.pay.ITransaction;
+        let withdrawTransaction: pecorinoapi.factory.transaction.withdraw.ITransaction;
         const action = await repos.action.start(params);
 
         try {
             // 入金した分を引き出し取引実行
-            const payService = new pecorinoapi.service.transaction.Pay({
+            const withdrawService = new pecorinoapi.service.transaction.Withdraw({
                 endpoint: pecorinoAwardAuthorizeActionResult.pecorinoEndpoint,
                 auth: repos.pecorinoAuthClient
             });
-            payTransaction = await payService.start({
+            withdrawTransaction = await withdrawService.start({
                 // tslint:disable-next-line:no-magic-numbers
                 expires: moment().add(5, 'minutes').toDate(),
                 agent: {
@@ -298,7 +298,7 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
                 notes: 'シネマサンシャイン返品によるポイントインセンティブ取消',
                 fromAccountNumber: pecorinoAwardAuthorizeActionResult.pecorinoTransaction.object.toAccountNumber
             });
-            await payService.confirm({ transactionId: payTransaction.id });
+            await withdrawService.confirm({ transactionId: withdrawTransaction.id });
         } catch (error) {
             // actionにエラー結果を追加
             try {
@@ -314,7 +314,7 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
         // アクション完了
         debug('ending action...');
         const actionResult: factory.action.transfer.returnAction.pecorinoAward.IResult = {
-            pecorinoTransaction: payTransaction
+            pecorinoTransaction: withdrawTransaction
         };
         await repos.action.complete(action.typeOf, action.id, actionResult);
     };

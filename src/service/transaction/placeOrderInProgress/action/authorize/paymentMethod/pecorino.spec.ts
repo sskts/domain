@@ -55,13 +55,13 @@ describe('action.authorize.pecorino.create()', () => {
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay(<any>{});
+        const withdrawTransactionService = new sskts.pecorinoapi.service.transaction.Withdraw(<any>{});
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(ownershipInfoRepo).expects('search').once().resolves(programMemberships);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
         sandbox.mock(actionRepo).expects('complete').once().resolves(action);
-        sandbox.mock(payTransactionService).expects('start').once().resolves(pecorinoTransaction);
+        sandbox.mock(withdrawTransactionService).expects('start').once().resolves(pecorinoTransaction);
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.create({
             transactionId: transaction.id,
@@ -73,7 +73,7 @@ describe('action.authorize.pecorino.create()', () => {
             organization: organizationRepo,
             ownershipInfo: ownershipInfoRepo,
             transaction: transactionRepo,
-            payTransactionService: payTransactionService
+            withdrawTransactionService: withdrawTransactionService
         });
 
         assert.deepEqual(result, action);
@@ -103,11 +103,11 @@ describe('action.authorize.pecorino.create()', () => {
 
     //     const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
     //     const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-    //     const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay(<any>{});
+    //     const withdrawTransactionService = new sskts.pecorinoapi.service.transaction.Pay(<any>{});
 
     //     sandbox.mock(transactionRepo).expects('findInProgressById').once().withExactArgs(transaction.id).resolves(transaction);
     //     sandbox.mock(actionRepo).expects('start').never();
-    //     sandbox.mock(payTransactionService).expects('start').never();
+    //     sandbox.mock(withdrawTransactionService).expects('start').never();
 
     //     const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.create(
     //         agent.id,
@@ -116,7 +116,7 @@ describe('action.authorize.pecorino.create()', () => {
     //     )({
     //         action: actionRepo,
     //         transaction: transactionRepo,
-    //         payTransactionService: payTransactionService
+    //         withdrawTransactionService: withdrawTransactionService
     //     }).catch((err) => err);
 
     //     assert(result instanceof sskts.factory.errors.Forbidden);
@@ -154,7 +154,7 @@ describe('action.authorize.pecorino.create()', () => {
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const payTransactionService = new sskts.pecorinoapi.service.transaction.Pay(<any>{});
+        const withdrawTransactionService = new sskts.pecorinoapi.service.transaction.Withdraw(<any>{});
         const programMemberships = [{
             typeOfGood: {
                 award: [sskts.factory.programMembership.Award.PecorinoPayment]
@@ -164,7 +164,7 @@ describe('action.authorize.pecorino.create()', () => {
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(ownershipInfoRepo).expects('search').once().resolves(programMemberships);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
-        sandbox.mock(payTransactionService).expects('start').once().rejects(startPayTransactionResult);
+        sandbox.mock(withdrawTransactionService).expects('start').once().rejects(startPayTransactionResult);
         sandbox.mock(actionRepo).expects('giveUp').once()
             .withArgs(action.typeOf, action.id, sinon.match({ message: startPayTransactionResult.message })).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
@@ -179,7 +179,7 @@ describe('action.authorize.pecorino.create()', () => {
             organization: organizationRepo,
             ownershipInfo: ownershipInfoRepo,
             transaction: transactionRepo,
-            payTransactionService: payTransactionService
+            withdrawTransactionService: withdrawTransactionService
         }).catch((err) => err);
 
         assert(result instanceof Error);

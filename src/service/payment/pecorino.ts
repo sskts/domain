@@ -26,14 +26,14 @@ export function payPecorino(params: factory.task.payPecorino.IData) {
         try {
             const pecorinoTransaction = params.object.pecorinoTransaction;
             switch (pecorinoTransaction.typeOf) {
-                case pecorinoapi.factory.transactionType.Pay:
+                case pecorinoapi.factory.transactionType.Withdraw:
 
                     // 支払取引の場合、確定
-                    const payTransactionService = new pecorinoapi.service.transaction.Pay({
+                    const withdrawService = new pecorinoapi.service.transaction.Withdraw({
                         endpoint: params.object.pecorinoEndpoint,
                         auth: repos.pecorinoAuthClient
                     });
-                    await payTransactionService.confirm({
+                    await withdrawService.confirm({
                         transactionId: pecorinoTransaction.id
                     });
                     break;
@@ -98,13 +98,13 @@ export function cancelPecorinoAuth(transactionId: string) {
             }
 
             switch (action.result.pecorinoTransaction.typeOf) {
-                case pecorinoapi.factory.transactionType.Pay:
+                case pecorinoapi.factory.transactionType.Withdraw:
                     // 支払取引の場合、中止
-                    const payTransactionService = new pecorinoapi.service.transaction.Pay({
+                    const withdrawService = new pecorinoapi.service.transaction.Withdraw({
                         endpoint: action.result.pecorinoEndpoint,
                         auth: repos.pecorinoAuthClient
                     });
-                    await payTransactionService.cancel({
+                    await withdrawService.cancel({
                         transactionId: action.result.pecorinoTransaction.id
                     });
                     break;
@@ -148,7 +148,7 @@ export function refundPecorino(params: factory.task.refundPecorino.IData) {
             const notes = 'シネマサンシャイン 返金';
 
             switch (pecorinoTransaction.typeOf) {
-                case factory.pecorino.transactionType.Pay:
+                case factory.pecorino.transactionType.Withdraw:
                     // Pecorino入金取引で返金実行
                     const depositService = new pecorinoapi.service.transaction.Deposit({
                         endpoint: pecorinoEndpoint,
