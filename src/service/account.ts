@@ -26,11 +26,11 @@ export function open(params: {
         /**
          * Pecorino口座サービス
          */
-        acconutService: pecorinoapi.service.Account;
+        accountService: pecorinoapi.service.Account;
     }) => {
         const accountNumber = await repos.accountNumber.publish(new Date());
 
-        return repos.acconutService.open({
+        return repos.accountService.open({
             accountNumber: accountNumber,
             name: params.name
         });
