@@ -1,66 +1,77 @@
+/**
+ * ポイント口座サービス
+ * 口座の保管先はPecorinoサービスです。
+ */
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 // import * as createDebug from 'debug';
 import { BAD_REQUEST, FORBIDDEN, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from 'http-status';
 import * as moment from 'moment';
 
-// const debug = createDebug('sskts-domain:repository:account');
+import { RedisRepository as AccountNumberRepo } from '../repo/accountNumber';
+
+// const debug = createDebug('sskts-domain:service:account');
 
 /**
- * ポイント口座リポジトリー
- * 口座の保管先はPecorinoサービスです。
+ * ポイント口座を開設する
  */
-export class PecorinoRepository {
-    /**
-     * PecorinoAPIエンドポイント
-     */
-    public readonly endpoint: string;
-    /**
-     * PecorinoAPI認証クライアント
-     */
-    public readonly authClient: pecorinoapi.auth.ClientCredentials;
+export async function open(params: {
+    name: string;
+}) {
+    return async (repos: {
+        /**
+         * 口座番号リポジトリー
+         */
+        accountNumber: AccountNumberRepo;
+        /**
+         * Pecorino口座サービス
+         */
+        acconutService: pecorinoapi.service.Account;
+    }) => {
+        const accountNumber = await repos.accountNumber.publish(new Date());
 
-    constructor(params: {
-        endpoint: string;
-        authClient: pecorinoapi.auth.ClientCredentials;
-    }) {
-        this.endpoint = params.endpoint;
-        this.authClient = params.authClient;
-    }
+        return repos.acconutService.open({
+            accountNumber: accountNumber,
+            name: params.name
+        });
+    };
+}
 
+/**
+ * 入金処理を実行する
+ */
+export async function deposit(params: {
+    agent: {
+        id: string;
+        name: string;
+        url: string;
+    };
+    recipient: {
+        id: string;
+        name: string;
+        url: string;
+    };
     /**
-     * 入金処理を実行する
+     * 入金先口座番号
      */
-    public async deposit(params: {
-        agent: {
-            id: string;
-            name: string;
-            url: string;
-        };
-        recipient: {
-            id: string;
-            name: string;
-            url: string;
-        };
+    toAccountNumber: string;
+    /**
+     * 入金金額
+     */
+    amount: number;
+    /**
+     * 入金説明
+     */
+    notes: string;
+}) {
+    return async (repos: {
         /**
-         * 入金先口座番号
+         * Pecorino入金サービス
          */
-        toAccountNumber: string;
-        /**
-         * 入金金額
-         */
-        amount: number;
-        /**
-         * 入金説明
-         */
-        notes: string;
-    }) {
+        depositService: pecorinoapi.service.transaction.Deposit;
+    }) => {
         try {
-            const depositService = new pecorinoapi.service.transaction.Deposit({
-                endpoint: this.endpoint,
-                auth: this.authClient
-            });
-            const transaction = await depositService.start({
+            const transaction = await repos.depositService.start({
                 toAccountNumber: params.toAccountNumber,
                 expires: moment().add(1, 'minutes').toDate(),
                 agent: {
@@ -78,7 +89,7 @@ export class PecorinoRepository {
                 amount: params.amount,
                 notes: params.notes
             });
-            await depositService.confirm({ transactionId: transaction.id });
+            await repos.depositService.confirm({ transactionId: transaction.id });
         } catch (error) {
             // PecorinoAPIのレスポンスステータスコードが4xxであればクライアントエラー
             if (error.name === 'PecorinoRequestError') {
@@ -107,5 +118,5 @@ export class PecorinoRepository {
 
             throw error;
         }
-    }
+    };
 }

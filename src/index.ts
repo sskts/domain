@@ -10,6 +10,7 @@ import * as AWS from 'aws-sdk';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
+import * as AccountService from './service/account';
 import * as DeliveryService from './service/delivery';
 import * as DiscountService from './service/discount';
 import * as ItemAvailabilityService from './service/itemAvailability';
@@ -28,7 +29,7 @@ import * as PlaceOrderInProgressTransactionService from './service/transaction/p
 import * as ReturnOrderTransactionService from './service/transaction/returnOrder';
 import * as UtilService from './service/util';
 
-import { PecorinoRepository as AccountRepo } from './repo/account';
+import { RedisRepository as AccountNumberRepo } from './repo/accountNumber';
 import { MongoRepository as ActionRepo } from './repo/action';
 import { MongoRepository as PrintActionRepo } from './repo/action/print';
 import { RedisRepository as RegisterProgramMembershipActionInProgress } from './repo/action/registerProgramMembershipInProgress';
@@ -104,7 +105,7 @@ export import pecorinoapi = pecorinoapi;
 export import AWS = AWS;
 
 export namespace repository {
-    export class Account extends AccountRepo { }
+    export class AccountNumber extends AccountNumberRepo { }
     export class Action extends ActionRepo { }
     export namespace action {
         export class Print extends PrintActionRepo { }
@@ -132,6 +133,7 @@ export namespace repository {
 }
 
 export namespace service {
+    export import account = AccountService;
     export import delivery = DeliveryService;
     export import discount = DiscountService;
     export import offer = OfferService;
