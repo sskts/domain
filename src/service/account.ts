@@ -15,7 +15,7 @@ import { RedisRepository as AccountNumberRepo } from '../repo/accountNumber';
 /**
  * ポイント口座を開設する
  */
-export async function open(params: {
+export function open(params: {
     name: string;
 }) {
     return async (repos: {
@@ -40,7 +40,7 @@ export async function open(params: {
 /**
  * 入金処理を実行する
  */
-export async function deposit(params: {
+export function deposit(params: {
     agent: {
         id: string;
         name: string;
