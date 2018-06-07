@@ -1,10 +1,7 @@
 // tslint:disable:no-implicit-dependencies
-
 /**
- * creativeWork repository test
- * @ignore
+ * 注文リポジトリーテスト
  */
-
 import { } from 'mocha';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
@@ -15,7 +12,7 @@ import * as sskts from '../index';
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 });
 
 describe('findByOrderInquiryKey()', () => {
@@ -141,6 +138,32 @@ describe('findByOrderNumber()', () => {
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+});
+
+describe('注文を検索する', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('MongoDBが正常であれば配列を取得できるはず', async () => {
+        const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
+
+        sandbox.mock(orderRepo.orderModel).expects('find').once()
+            .chain('sort')
+            .chain('exec')
+            .resolves([new orderRepo.orderModel()]);
+
+        const result = await orderRepo.search({
+            sellerId: 'sellerId',
+            customerMembershipNumber: 'customerMembershipNumber',
+            orderNumber: 'orderNumber',
+            orderStatus: sskts.factory.orderStatus.OrderCancelled,
+            orderDateFrom: new Date(),
+            orderDateThrough: new Date()
+        });
+        assert(Array.isArray(result));
         sandbox.verify();
     });
 });

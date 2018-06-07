@@ -1,10 +1,7 @@
 // tslint:disable:no-implicit-dependencies
-
 /**
- * transaction repository test
- * @ignore
+ * 取引リポジトリーテスト
  */
-
 import { } from 'mocha';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
@@ -15,7 +12,7 @@ import * as sskts from '../index';
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 });
 
 describe('start()', () => {
@@ -263,6 +260,74 @@ describe('startExportTasks()', () => {
         const result = await repository.startExportTasks(transaction.typeOf, transaction.status);
 
         assert.equal(result, null);
+        sandbox.verify();
+    });
+});
+
+describe('IDで取引を取得する', () => {
+    beforeEach(() => {
+        sandbox.restore();
+    });
+
+    it('取引が存在すればオブジェクトを取得できるはず', async () => {
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        sandbox.mock(transactionRepo.transactionModel).expects('findOne').once()
+            .chain('exec').resolves(new transactionRepo.transactionModel());
+
+        const result = await transactionRepo.findById(sskts.factory.transactionType.PlaceOrder, 'transactionId');
+        assert.equal(typeof result, 'object');
+        sandbox.verify();
+    });
+});
+
+describe('IDで進行中取引を取得する', () => {
+    beforeEach(() => {
+        sandbox.restore();
+    });
+
+    it('取引が存在すればオブジェクトを取得できるはず', async () => {
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        sandbox.mock(transactionRepo.transactionModel).expects('findOne').once()
+            .chain('exec').resolves(new transactionRepo.transactionModel());
+
+        const result = await transactionRepo.findInProgressById(sskts.factory.transactionType.PlaceOrder, 'transactionId');
+        assert.equal(typeof result, 'object');
+        sandbox.verify();
+    });
+});
+
+describe('取引を中止する', () => {
+    beforeEach(() => {
+        sandbox.restore();
+    });
+
+    it('進行中取引が存在すれば中止できるはず', async () => {
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves(new transactionRepo.transactionModel());
+
+        const result = await transactionRepo.cancel(sskts.factory.transactionType.PlaceOrder, 'transactionId');
+        assert.equal(typeof result, 'object');
+        sandbox.verify();
+    });
+});
+
+describe('取引を検索する', () => {
+    beforeEach(() => {
+        sandbox.restore();
+    });
+
+    it('MongoDBが正常であれば配列を取得できるはず', async () => {
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        sandbox.mock(transactionRepo.transactionModel).expects('find').once()
+            .chain('exec').resolves([new transactionRepo.transactionModel()]);
+
+        const result = await transactionRepo.search({
+            typeOf: sskts.factory.transactionType.PlaceOrder,
+            startFrom: new Date(),
+            startThrough: new Date()
+        });
+        assert(Array.isArray(result));
         sandbox.verify();
     });
 });

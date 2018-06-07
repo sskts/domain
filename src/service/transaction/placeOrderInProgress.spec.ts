@@ -1,7 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * 進行中の注文取引サービステスト
- * @ignore
  */
 import * as waiter from '@motionpicture/waiter-domain';
 import * as moment from 'moment-timezone';
@@ -14,7 +13,7 @@ import * as sskts from '../../index';
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 });
 
 describe('start()', () => {
@@ -546,7 +545,7 @@ describe('confirm()', () => {
                     },
                     price: 1234
                 },
-                endDate: new Date(),
+                endDate: moment().add(-1, 'minute').toDate(),
                 purpose: {}
             }
         ];
@@ -577,7 +576,7 @@ describe('confirm()', () => {
                     },
                     price: 1234
                 },
-                endDate: new Date(),
+                endDate: moment().add(-1, 'minute').toDate(),
                 purpose: {}
             }
         ];
@@ -720,7 +719,7 @@ describe('confirm()', () => {
         const mvtkAuthorizeActions = [
             {
                 id: 'actionId',
-                actionStatus: 'CompletedActionStatus',
+                actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
                 agent: transaction.agent,
                 object: {
                     typeOf: sskts.factory.action.authorize.discount.mvtk.ObjectType.Mvtk,
@@ -733,14 +732,14 @@ describe('confirm()', () => {
                 result: {
                     price: 1234
                 },
-                endDate: new Date(),
+                endDate: moment().add(-1, 'minute').toDate(),
                 purpose: {}
             }
         ];
         const seatReservationAuthorizeActions = [
             {
                 id: 'actionId1',
-                actionStatus: 'CompletedActionStatus',
+                actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
                 agent: transaction.seller,
                 object: {
                     typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
@@ -764,7 +763,7 @@ describe('confirm()', () => {
                     },
                     price: 1234
                 },
-                endDate: new Date(),
+                endDate: moment().add(-1, 'minute').toDate(),
                 purpose: {}
             }
         ];

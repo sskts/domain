@@ -56,44 +56,6 @@ export class RedisRepository {
         return (checkDigit >= 10) ? 0 : checkDigit;
     }
 
-    // public static VALIDATE(paymentNo: string): boolean {
-    //     // if (paymentNo.length !== RedisRepository.MAX_LENGTH_OF_SEQUENCE_NO + 2) {
-    //     //     return false;
-    //     // }
-    //     if (paymentNo.length !== RedisRepository.MAX_LENGTH_OF_SEQUENCE_NO + 1) {
-    //         return false;
-    //     }
-
-    //     const sequeceNo = RedisRepository.DECODE(paymentNo);
-    //     const checkDigit = RedisRepository.GET_CHECK_DIGIT(
-    //         RedisRepository.PAD(sequeceNo.toString(), RedisRepository.MAX_LENGTH_OF_SEQUENCE_NO, '0')
-    //     );
-    //     // const checkDigit2 = RedisRepository.getCheckDigit2(pad(sequeceNo.toString(), RedisRepository.MAX_LENGTH_OF_SEQUENCE_NO, '0'));
-    //     debug('validating...', paymentNo, sequeceNo, checkDigit);
-
-    //     return (
-    //         // parseInt(paymentNo.substr(-1), 10) === checkDigit
-    //         parseInt(paymentNo.substr(0, 1), 10) === checkDigit
-    //     );
-    // }
-
-    // public static DECODE(paymentNo: string): number {
-    //     // 購入番号から、並び替えられた連番を取り出し、元の連番に並び替えなおす
-    //     // const checkDigit = parseInt(paymentNo.substr(-1), 10);
-    //     const checkDigit = parseInt(paymentNo.substr(0, 1), 10);
-    //     // const strs = paymentNo.substr(1, paymentNo.length - 2);
-    //     const strs = paymentNo.substr(1);
-    //     const sortType = RedisRepository.SORT_TYPES[checkDigit];
-    //     debug(checkDigit, strs, sortType);
-
-    //     const source = Array.from(Array(RedisRepository.MAX_LENGTH_OF_SEQUENCE_NO)).reduce(
-    //         (a, __, weightNumber) => <string>a + strs.substr(sortType.indexOf(weightNumber), 1),
-    //         ''
-    //     );
-
-    //     return Number(source);
-    // }
-
     /**
      * 口座番号を発行する
      * @param date 採番対象の日付
