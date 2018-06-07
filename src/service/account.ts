@@ -91,32 +91,42 @@ export function deposit(params: {
             });
             await repos.depositService.confirm({ transactionId: transaction.id });
         } catch (error) {
-            // PecorinoAPIのレスポンスステータスコードが4xxであればクライアントエラー
-            if (error.name === 'PecorinoRequestError') {
-                // Pecorino APIのステータスコード4xxをハンドリング
-                const message = `${error.name}:${error.message}`;
-                switch (error.code) {
-                    case BAD_REQUEST: // 400
-                        error = new factory.errors.Argument('PecorinoArgument', message);
-                        break;
-                    case UNAUTHORIZED: // 401
-                        error = new factory.errors.Unauthorized(message);
-                        break;
-                    case FORBIDDEN: // 403
-                        error = new factory.errors.Forbidden(message);
-                        break;
-                    case NOT_FOUND: // 404
-                        error = new factory.errors.NotFound(message);
-                        break;
-                    case TOO_MANY_REQUESTS: // 429
-                        error = new factory.errors.RateLimitExceeded(message);
-                        break;
-                    default:
-                        error = new factory.errors.ServiceUnavailable(message);
-                }
-            }
-
+            error = handlePecorinoError(error);
             throw error;
         }
     };
+}
+
+/**
+ * Pecorinoサービスエラーをハンドリングして本ドメインのエラーに変換する
+ */
+export function handlePecorinoError(error: any) {
+    let handledError: Error = error;
+
+    // PecorinoAPIのレスポンスステータスコードが4xxであればクライアントエラー
+    if (error.name === 'PecorinoRequestError') {
+        // Pecorino APIのステータスコード4xxをハンドリング
+        const message = `${error.name}:${error.message}`;
+        switch (error.code) {
+            case BAD_REQUEST: // 400
+                handledError = new factory.errors.Argument('PecorinoArgument', message);
+                break;
+            case UNAUTHORIZED: // 401
+                handledError = new factory.errors.Unauthorized(message);
+                break;
+            case FORBIDDEN: // 403
+                handledError = new factory.errors.Forbidden(message);
+                break;
+            case NOT_FOUND: // 404
+                handledError = new factory.errors.NotFound(message);
+                break;
+            case TOO_MANY_REQUESTS: // 429
+                handledError = new factory.errors.RateLimitExceeded(message);
+                break;
+            default:
+                handledError = new factory.errors.ServiceUnavailable(message);
+        }
+    }
+
+    return handledError;
 }

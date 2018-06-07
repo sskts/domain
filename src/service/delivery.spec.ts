@@ -15,12 +15,12 @@ let sandbox: sinon.SinonSandbox;
 let redisClient: redis.RedisClient;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
     redisClient = redis.createClient();
 });
 
-describe('service.delivery.sendOrder()', () => {
-    afterEach(() => {
+describe('注文アイテムを配送する', () => {
+    beforeEach(() => {
         sandbox.restore();
     });
 
@@ -95,8 +95,6 @@ describe('service.delivery.sendOrder()', () => {
             transaction: transactionRepo,
             task: taskRepo
         });
-        console.error('result', result);
-
         assert.equal(result, undefined);
         sandbox.verify();
     });
@@ -639,6 +637,93 @@ describe('service.delivery.sendOrder()', () => {
         }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
+});
+
+describe('ポイントインセンティブを適用する', () => {
+    beforeEach(() => {
+        sandbox.restore();
+    });
+
+    it('Pecorinoサービスが正常であればアクションを完了できるはず', async () => {
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
+        sandbox.mock(actionRepo).expects('start').once().resolves({});
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Deposit.prototype).expects('confirm').once().resolves();
+        sandbox.mock(actionRepo).expects('complete').once().resolves({});
+
+        const result = await sskts.service.delivery.givePecorinoAward(<any>{
+            object: {
+                pecorinoEndpoint: 'https://example.com',
+                pecorinoTransaction: {}
+            }
+        })({
+            action: actionRepo,
+            pecorinoAuthClient: pecorinoAuthClient
+        });
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
+
+describe('ポイントインセンティブを返却する', () => {
+    beforeEach(() => {
+        sandbox.restore();
+    });
+
+    it('Pecorinoサービスが正常であればアクションを完了できるはず', async () => {
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
+        sandbox.mock(actionRepo).expects('start').once().resolves({});
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Withdraw.prototype).expects('start').once().resolves({});
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Withdraw.prototype).expects('confirm').once().resolves();
+        sandbox.mock(actionRepo).expects('complete').once().resolves({});
+
+        const result = await sskts.service.delivery.returnPecorinoAward(<any>{
+            object: {
+                purpose: {
+                    agent: {},
+                    seller: { name: {} }
+                },
+                result: {
+                    pecorinoEndpoint: 'https://example.com',
+                    pecorinoTransaction: { object: {} }
+                }
+            }
+        })({
+            action: actionRepo,
+            pecorinoAuthClient: pecorinoAuthClient
+        });
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
+
+describe('ポイントインセンティブ承認取消', () => {
+    beforeEach(() => {
+        sandbox.restore();
+    });
+
+    it('Pecorinoサービスが正常であればインセンティブをキャンセルできるはず', async () => {
+        const authorizeActions = [{
+            object: { typeOf: sskts.factory.action.authorize.award.pecorino.ObjectType.PecorinoAward },
+            actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+            result: {
+                pecorinoEndpoint: 'pecorinoEndpoint',
+                pecorinoTransaction: {}
+            }
+        }];
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
+        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once().resolves(authorizeActions);
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Deposit.prototype).expects('cancel').once().resolves({});
+
+        const result = await sskts.service.delivery.cancelPecorinoAward(<any>{})({
+            action: actionRepo,
+            pecorinoAuthClient: pecorinoAuthClient
+        });
+        assert.equal(result, undefined);
         sandbox.verify();
     });
 });

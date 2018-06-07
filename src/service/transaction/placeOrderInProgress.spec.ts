@@ -279,7 +279,6 @@ describe('start()', () => {
     //         transaction: transactionRepo,
     //         organization: organizationRepo
     //     }).catch((err) => err);
-    //     console.error(result);
     //     assert(result instanceof sskts.factory.errors.ArgumentNull);
     //     sandbox.verify();
     // });

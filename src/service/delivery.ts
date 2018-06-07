@@ -220,13 +220,12 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
 }
 
 /**
- * Pecorino賞金入金実行
+ * ポイントインセンティブ入金実行
  * 取引中に入金取引の承認アクションを完了しているはずなので、その取引を確定するだけの処理です。
  */
 export function givePecorinoAward(params: factory.task.givePecorinoAward.IData) {
     return async (repos: {
         action: ActionRepo;
-        transaction: TransactionRepo;
         pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
     }) => {
         // アクション開始
@@ -260,12 +259,11 @@ export function givePecorinoAward(params: factory.task.givePecorinoAward.IData) 
 }
 
 /**
- * Pecorino賞金返却実行
+ * ポイントインセンティブ返却実行
  */
 export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IData) {
     return async (repos: {
         action: ActionRepo;
-        transaction: TransactionRepo;
         pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
     }) => {
         // アクション開始
@@ -294,13 +292,13 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
                     url: placeOrderTransaction.agent.url
                 },
                 recipient: {
-                    typeOf: <factory.pecorino.organizationType>params.recipient.typeOf,
-                    id: params.recipient.id,
+                    typeOf: <factory.pecorino.organizationType>placeOrderTransaction.seller.typeOf,
+                    id: placeOrderTransaction.seller.id,
                     name: placeOrderTransaction.seller.name.ja,
-                    url: params.recipient.url
+                    url: placeOrderTransaction.seller.url
                 },
                 amount: pecorinoAwardAuthorizeActionResult.pecorinoTransaction.object.amount,
-                notes: 'シネマサンシャイン返品によるポイントインセンティブ取消',
+                notes: 'シネマサンシャイン 返品によるポイントインセンティブ取消',
                 fromAccountNumber: pecorinoAwardAuthorizeActionResult.pecorinoTransaction.object.toAccountNumber
             });
             await withdrawService.confirm({ transactionId: withdrawTransaction.id });
@@ -326,7 +324,7 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
 }
 
 /**
- * Pecorinoインセンティブ承認取消
+ * ポイントインセンティブ承認取消
  * @param params.transactionId 取引ID
  */
 export function cancelPecorinoAward(params: {

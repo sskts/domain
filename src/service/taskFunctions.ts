@@ -265,10 +265,8 @@ export function givePecorinoAward(data: factory.task.givePecorinoAward.IData): I
         }
 
         const actionRepo = new ActionRepo(settings.connection);
-        const transactionRepo = new TransactionRepo(settings.connection);
         await DeliveryService.givePecorinoAward(data)({
             action: actionRepo,
-            transaction: transactionRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient
         });
     };
@@ -284,10 +282,8 @@ export function returnPecorinoAward(data: factory.task.returnPecorinoAward.IData
         }
 
         const actionRepo = new ActionRepo(settings.connection);
-        const transactionRepo = new TransactionRepo(settings.connection);
         await DeliveryService.returnPecorinoAward(data)({
             action: actionRepo,
-            transaction: transactionRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient
         });
     };
