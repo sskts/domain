@@ -330,8 +330,10 @@ export async function createRefundEmail(params: {
 
                         debug('subject:', subject);
 
-                        resolve(factory.creativeWork.message.email.create({
+                        const email: factory.creativeWork.message.email.ICreativeWork = {
+                            typeOf: factory.creativeWorkType.EmailMessage,
                             identifier: `refundOrder-${params.order.orderNumber}`,
+                            name: `refundOrder-${params.order.orderNumber}`,
                             sender: {
                                 typeOf: seller.typeOf,
                                 name: seller.name.ja,
@@ -344,7 +346,8 @@ export async function createRefundEmail(params: {
                             },
                             about: subject,
                             text: message
-                        }));
+                        };
+                        resolve(email);
                     }
                 );
             }
@@ -387,7 +390,8 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
                 // 注文返品タスク
-                taskAttributes.push(factory.task.returnOrder.createAttributes({
+                const returnOrderTask: factory.task.returnOrder.IAttributes = {
+                    name: factory.taskName.ReturnOrder,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -397,7 +401,8 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     data: {
                         transactionId: transaction.id
                     }
-                }));
+                };
+                taskAttributes.push(returnOrderTask);
 
                 break;
 

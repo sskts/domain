@@ -85,7 +85,8 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
             if (orderPotentialActions.sendOrder !== undefined) {
-                taskAttributes.push(factory.task.sendOrder.createAttributes({
+                const sendOrderTask: factory.task.sendOrder.IAttributes = {
+                    name: factory.taskName.SendOrder,
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -95,14 +96,16 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     data: {
                         transactionId: transactionId
                     }
-                }));
+                };
+                taskAttributes.push(sendOrderTask);
             }
 
             // クレジットカード決済
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
             if (orderPotentialActions.payCreditCard !== undefined) {
-                taskAttributes.push(factory.task.payCreditCard.createAttributes({
+                const payCreditCardTask: factory.task.payCreditCard.IAttributes = {
+                    name: factory.taskName.PayCreditCard,
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -112,7 +115,8 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     data: {
                         transactionId: transactionId
                     }
-                }));
+                };
+                taskAttributes.push(payCreditCardTask);
             }
 
             // Pecorino決済
@@ -137,7 +141,8 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
             if (orderPotentialActions.useMvtk !== undefined) {
-                taskAttributes.push(factory.task.useMvtk.createAttributes({
+                const useMvtkTask: factory.task.useMvtk.IAttributes = {
+                    name: factory.taskName.UseMvtk,
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -147,7 +152,8 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     data: {
                         transactionId: transactionId
                     }
-                }));
+                };
+                taskAttributes.push(useMvtkTask);
             }
 
             // Pecorinoポイント付与

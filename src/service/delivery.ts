@@ -190,7 +190,8 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
                 // tslint:disable-next-line:no-single-line-block-comment
                 /* istanbul ignore else */
                 if (sendEmailMessageTaskDoc === null) {
-                    taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
+                    const sendEmailMessageTask: factory.task.sendEmailMessage.IAttributes = {
+                        name: factory.taskName.SendEmailMessage,
                         status: factory.taskStatus.Ready,
                         runsAt: now, // なるはやで実行
                         remainingNumberOfTries: 3,
@@ -200,7 +201,8 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
                         data: {
                             actionAttributes: potentialActions.sendEmailMessage
                         }
-                    }));
+                    };
+                    taskAttributes.push(sendEmailMessageTask);
                 }
             }
 
@@ -286,13 +288,16 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
                 // tslint:disable-next-line:no-magic-numbers
                 expires: moment().add(5, 'minutes').toDate(),
                 agent: {
-                    name: `sskts-placeOrder-transaction-${placeOrderTransaction.id}`
+                    typeOf: placeOrderTransaction.agent.typeOf,
+                    id: placeOrderTransaction.agent.id,
+                    name: `sskts-placeOrder-transaction-${placeOrderTransaction.id}`,
+                    url: placeOrderTransaction.agent.url
                 },
                 recipient: {
-                    typeOf: params.recipient.typeOf,
+                    typeOf: <factory.pecorino.organizationType>params.recipient.typeOf,
                     id: params.recipient.id,
                     name: placeOrderTransaction.seller.name.ja,
-                    url: ''
+                    url: params.recipient.url
                 },
                 amount: pecorinoAwardAuthorizeActionResult.pecorinoTransaction.object.amount,
                 notes: 'シネマサンシャイン返品によるポイントインセンティブ取消',

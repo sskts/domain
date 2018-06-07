@@ -225,7 +225,8 @@ function onRefund(refundActionAttributes: factory.action.trade.refund.IAttribute
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
             if (potentialActions.sendEmailMessage !== undefined) {
-                taskAttributes.push(factory.task.sendEmailMessage.createAttributes({
+                const sendEmailMessageTask: factory.task.sendEmailMessage.IAttributes = {
+                    name: factory.taskName.SendEmailMessage,
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 3,
@@ -235,7 +236,8 @@ function onRefund(refundActionAttributes: factory.action.trade.refund.IAttribute
                     data: {
                         actionAttributes: potentialActions.sendEmailMessage
                     }
-                }));
+                };
+                taskAttributes.push(sendEmailMessageTask);
             }
         }
 

@@ -172,8 +172,10 @@ export function sendEmail(
             throw new factory.errors.NotFound('transaction.result');
         }
 
-        const emailMessage = factory.creativeWork.message.email.create({
+        const emailMessage: factory.creativeWork.message.email.ICreativeWork = {
+            typeOf: factory.creativeWorkType.EmailMessage,
             identifier: `placeOrderTransaction-${transactionId}`,
+            name: `placeOrderTransaction-${transactionId}`,
             sender: {
                 typeOf: transaction.seller.typeOf,
                 name: emailMessageAttributes.sender.name,
@@ -186,7 +188,7 @@ export function sendEmail(
             },
             about: emailMessageAttributes.about,
             text: emailMessageAttributes.text
-        });
+        };
         const actionAttributes: factory.action.transfer.send.message.email.IAttributes = {
             typeOf: factory.actionType.SendAction,
             object: emailMessage,
@@ -197,7 +199,8 @@ export function sendEmail(
         };
 
         // その場で送信ではなく、DBにタスクを登録
-        const taskAttributes = factory.task.sendEmailMessage.createAttributes({
+        const sendEmailMessageTask: factory.task.sendEmailMessage.IAttributes = {
+            name: factory.taskName.SendEmailMessage,
             status: factory.taskStatus.Ready,
             runsAt: new Date(), // なるはやで実行
             remainingNumberOfTries: 10,
@@ -207,8 +210,8 @@ export function sendEmail(
             data: {
                 actionAttributes: actionAttributes
             }
-        });
+        };
 
-        return <factory.task.sendEmailMessage.ITask>await repos.task.save(taskAttributes);
+        return <factory.task.sendEmailMessage.ITask>await repos.task.save(sendEmailMessageTask);
     };
 }

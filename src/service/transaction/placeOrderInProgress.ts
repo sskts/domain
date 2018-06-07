@@ -713,8 +713,10 @@ export async function createEmailMessageFromTransaction(params: {
 
                             debug('subject:', subject);
 
-                            resolve(factory.creativeWork.message.email.create({
+                            const email: factory.creativeWork.message.email.ICreativeWork = {
+                                typeOf: factory.creativeWorkType.EmailMessage,
                                 identifier: `placeOrderTransaction-${params.transaction.id}`,
+                                name: `placeOrderTransaction-${params.transaction.id}`,
                                 sender: {
                                     typeOf: seller.typeOf,
                                     name: seller.name.ja,
@@ -727,7 +729,8 @@ export async function createEmailMessageFromTransaction(params: {
                                 },
                                 about: subject,
                                 text: message
-                            }));
+                            };
+                            resolve(email);
                         }
                     );
                 }

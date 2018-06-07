@@ -114,13 +114,16 @@ export function create(params: {
                     // 最大1ヵ月のオーソリ
                     expires: moment().add(1, 'month').toDate(),
                     agent: {
-                        name: `sskts-transaction-${transaction.id}`
+                        typeOf: transaction.agent.typeOf,
+                        id: transaction.agent.id,
+                        name: `sskts-transaction-${transaction.id}`,
+                        url: transaction.agent.url
                     },
                     recipient: {
-                        typeOf: 'Person',
+                        typeOf: <factory.pecorino.organizationType>transaction.seller.typeOf,
                         id: transaction.seller.id,
                         name: transaction.seller.name.ja,
-                        url: (transaction.seller.url !== undefined) ? transaction.seller.url : ''
+                        url: transaction.seller.url
                     },
                     amount: params.amount,
                     notes: (params.notes !== undefined) ? params.notes : 'シネマサンシャイン 注文取引',
@@ -148,13 +151,16 @@ export function create(params: {
                     // 最大1ヵ月のオーソリ
                     expires: moment().add(1, 'month').toDate(),
                     agent: {
-                        name: `sskts-transaction-${transaction.id}`
+                        typeOf: transaction.agent.typeOf,
+                        id: transaction.agent.id,
+                        name: `sskts-transaction-${transaction.id}`,
+                        url: transaction.agent.url
                     },
                     recipient: {
-                        typeOf: 'Person',
+                        typeOf: <factory.pecorino.organizationType>transaction.seller.typeOf,
                         id: transaction.seller.id,
                         name: transaction.seller.name.ja,
-                        url: (transaction.seller.url !== undefined) ? transaction.seller.url : ''
+                        url: transaction.seller.url
                     },
                     amount: params.amount,
                     notes: (params.notes !== undefined) ? params.notes : 'シネマサンシャイン 注文取引',
