@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
+const safe = { j: true, w: 'majority', wtimeout: 10000 };
 
 const customerSchema = new mongoose.Schema(
     {},
@@ -129,6 +129,44 @@ schema.index(
             'customer.memberOf.membershipNumber': { $exists: true },
             'customer.memberOf.programName': { $exists: true }
         }
+    }
+);
+
+// 注文検索に使用
+schema.index(
+    {
+        'seller.id': 1
+    },
+    {
+        name: 'searchOrdersBySeller',
+        partialFilterExpression: {
+            'seller.id': { $exists: true }
+        }
+    }
+);
+
+// 注文検索に使用
+schema.index(
+    {
+        'customer.memberOf.membershipNumber': 1
+    },
+    {
+        name: 'searchOrdersByCustomer',
+        partialFilterExpression: {
+            'customer.memberOf.membershipNumber': { $exists: true }
+        }
+    }
+);
+
+// 注文検索に使用
+schema.index(
+    {
+        orderNumber: 1,
+        orderStatus: 1,
+        orderDate: 1
+    },
+    {
+        name: 'searchOrders'
     }
 );
 

@@ -1,7 +1,7 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
-const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
+const safe = { j: true, w: 'majority', wtimeout: 10000 };
 
 const agentSchema = new mongoose.Schema(
     {},
@@ -66,6 +66,15 @@ const potentialActionsSchema = new mongoose.Schema(
     }
 );
 
+const locationSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
 /**
  * アクションスキーマ
  * @ignore
@@ -82,7 +91,10 @@ const schema = new mongoose.Schema(
         startDate: Date,
         endDate: Date,
         purpose: purposeSchema,
-        potentialActions: potentialActionsSchema
+        potentialActions: potentialActionsSchema,
+        amount: Number,
+        fromLocation: locationSchema,
+        toLocation: locationSchema
     },
     {
         collection: 'actions',
@@ -165,7 +177,7 @@ schema.index(
     {
         name: 'searchSeatReservationAuthorizeActionByEvent',
         partialFilterExpression: {
-            'object.typeOf': factory.action.authorize.seatReservation.ObjectType.SeatReservation
+            'object.typeOf': factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation
         }
     }
 );
@@ -176,7 +188,7 @@ schema.index(
     {
         name: 'searchSeatReservationAuthorizeActionByEventAndSeat',
         partialFilterExpression: {
-            'object.typeOf': factory.action.authorize.seatReservation.ObjectType.SeatReservation
+            'object.typeOf': factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation
         }
     }
 );
@@ -187,7 +199,7 @@ schema.index(
     {
         name: 'searchCreditCardAuthorizeActionByOrderId',
         partialFilterExpression: {
-            'object.typeOf': factory.action.authorize.creditCard.ObjectType.CreditCard
+            'object.typeOf': factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard
         }
     }
 );
@@ -198,7 +210,7 @@ schema.index(
     {
         name: 'searchMvtkAuthorizeActionByKnyknrNo',
         partialFilterExpression: {
-            'object.typeOf': factory.action.authorize.mvtk.ObjectType.Mvtk
+            'object.typeOf': factory.action.authorize.discount.mvtk.ObjectType.Mvtk
         }
     }
 );

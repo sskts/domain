@@ -1,8 +1,6 @@
 /**
  * ユーティリティサービス
- * @namespace service.util
  */
-
 import * as azureStorage from 'azure-storage';
 import * as createDebug from 'debug';
 

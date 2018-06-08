@@ -1,13 +1,11 @@
 /**
  * ムビチケ承認アクションサービス
- * @namespace service.transaction.placeOrderInProgress.action.authorize.mvtk
  */
-
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
-import { MongoRepository as ActionRepo } from '../../../../../repo/action';
-import { MongoRepository as TransactionRepo } from '../../../../../repo/transaction';
+import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
+import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:mvtk');
 
@@ -19,21 +17,20 @@ export type ICreateOperation<T> = (repos: {
 /**
  * create a mvtk authorizeAction
  * add the result of using a mvtk card
- * @export
  */
-export function create(
-    agentId: string,
-    transactionId: string,
-    authorizeObject: factory.action.authorize.mvtk.IObject
-): ICreateOperation<factory.action.authorize.mvtk.IAction> {
+export function create(params: {
+    agentId: string;
+    transactionId: string;
+    authorizeObject: factory.action.authorize.discount.mvtk.IObject;
+}): ICreateOperation<factory.action.authorize.discount.mvtk.IAction> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
 
-        if (transaction.agent.id !== agentId) {
+        if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
@@ -43,11 +40,11 @@ export function create(
             typeOf: factory.actionType.AuthorizeAction,
             'purpose.id': {
                 $exists: true,
-                $eq: transactionId
+                $eq: params.transactionId
             },
-            'object.typeOf': factory.action.authorize.seatReservation.ObjectType.SeatReservation
+            'object.typeOf': factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation
         }).exec().then((docs) => docs
-            .map((doc) => <factory.action.authorize.seatReservation.IAction>doc.toObject())
+            .map((doc) => <factory.action.authorize.offer.seatReservation.IAction>doc.toObject())
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus));
         if (seatReservationAuthorizeActions.length === 0) {
             throw new factory.errors.Argument('transactionId', '座席予約が見つかりません。');
@@ -60,7 +57,7 @@ export function create(
         const seatReservationAuthorizeAction = seatReservationAuthorizeActions[0];
         const seatReservationAuthorizeActionObject = seatReservationAuthorizeAction.object;
         const seatReservationAuthorizeActionResult =
-            <factory.action.authorize.seatReservation.IResult>seatReservationAuthorizeAction.result;
+            <factory.action.authorize.offer.seatReservation.IResult>seatReservationAuthorizeAction.result;
 
         // 購入管理番号が一致しているか
         interface IKnyknrNoNumsByNo { [knyknrNo: string]: number; }
@@ -81,7 +78,7 @@ export function create(
             },
             {}
         );
-        const knyknrNoNumsByNo: IKnyknrNoNumsByNo = authorizeObject.seatInfoSyncIn.knyknrNoInfo.reduce(
+        const knyknrNoNumsByNo: IKnyknrNoNumsByNo = params.authorizeObject.seatInfoSyncIn.knyknrNoInfo.reduce(
             (a: IKnyknrNoNumsByNo, b) => {
                 // tslint:disable-next-line:no-single-line-block-comment
                 /* istanbul ignore else */
@@ -108,7 +105,7 @@ export function create(
         // サイトコードが一致しているか (COAの劇場コードから頭の0をとった値)
         // tslint:disable-next-line:no-magic-numbers
         const stCdShouldBe = parseInt(seatReservationAuthorizeActionResult.updTmpReserveSeatArgs.theaterCode.slice(-2), 10).toString();
-        if (authorizeObject.seatInfoSyncIn.stCd !== stCdShouldBe) {
+        if (params.authorizeObject.seatInfoSyncIn.stCd !== stCdShouldBe) {
             throw new factory.errors.Argument('authorizeActionResult', 'stCd not matched with seat reservation authorizeAction');
         }
 
@@ -117,59 +114,60 @@ export function create(
         // tslint:disable-next-line:no-magic-numbers
         const titleBranchNum4mvtk = `0${seatReservationAuthorizeActionResult.updTmpReserveSeatArgs.titleBranchNum}`.slice(-2);
         const skhnCdShouldBe = `${seatReservationAuthorizeActionResult.updTmpReserveSeatArgs.titleCode}${titleBranchNum4mvtk}`;
-        if (authorizeObject.seatInfoSyncIn.skhnCd !== skhnCdShouldBe) {
+        if (params.authorizeObject.seatInfoSyncIn.skhnCd !== skhnCdShouldBe) {
             throw new factory.errors.Argument('authorizeActionResult', 'skhnCd not matched with seat reservation authorizeAction');
         }
 
         // スクリーンコードが一致しているか
-        if (authorizeObject.seatInfoSyncIn.screnCd !== seatReservationAuthorizeActionResult.updTmpReserveSeatArgs.screenCode) {
+        if (params.authorizeObject.seatInfoSyncIn.screnCd !== seatReservationAuthorizeActionResult.updTmpReserveSeatArgs.screenCode) {
             throw new factory.errors.Argument('authorizeActionResult', 'screnCd not matched with seat reservation authorizeAction');
         }
 
         // 座席番号が一致しているか
         const seatNumsInSeatReservationAuthorization =
             seatReservationAuthorizeActionResult.updTmpReserveSeatResult.listTmpReserve.map((tmpReserve) => tmpReserve.seatNum);
-        if (!authorizeObject.seatInfoSyncIn.zskInfo.every(
+        if (!params.authorizeObject.seatInfoSyncIn.zskInfo.every(
             (zskInfo) => seatNumsInSeatReservationAuthorization.indexOf(zskInfo.zskCd) >= 0
         )) {
             throw new factory.errors.Argument('authorizeActionResult', 'zskInfo not matched with seat reservation authorizeAction');
         }
 
-        const actionAttributes = factory.action.authorize.mvtk.createAttributes({
-            object: authorizeObject,
+        const actionAttributes: factory.action.authorize.discount.mvtk.IAttributes = {
+            typeOf: factory.actionType.AuthorizeAction,
+            object: params.authorizeObject,
             agent: transaction.agent,
             recipient: transaction.seller,
             purpose: transaction // purposeは取引
-        });
-        const action = await repos.action.start<factory.action.authorize.mvtk.IAction>(actionAttributes);
+        };
+        const action = await repos.action.start(actionAttributes);
 
         // 特に何もしない
 
         // アクションを完了
-        const result: factory.action.authorize.mvtk.IResult = {
-            price: authorizeObject.price
+        const result: factory.action.authorize.discount.mvtk.IResult = {
+            price: params.authorizeObject.price
         };
 
-        return repos.action.complete<factory.action.authorize.mvtk.IAction>(factory.actionType.AuthorizeAction, action.id, result);
+        return repos.action.complete(factory.actionType.AuthorizeAction, action.id, result);
     };
 }
 
-export function cancel(
-    agentId: string,
-    transactionId: string,
-    actionId: string
-) {
+export function cancel(params: {
+    agentId: string;
+    transactionId: string;
+    actionId: string;
+}) {
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
 
-        if (transaction.agent.id !== agentId) {
+        if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        await repos.action.cancel(factory.actionType.AuthorizeAction, actionId);
+        await repos.action.cancel(factory.actionType.AuthorizeAction, params.actionId);
 
         // 特に何もしない
     };

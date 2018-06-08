@@ -5,6 +5,11 @@ import organizationModel from './mongoose/model/organization';
 
 const debug = createDebug('sskts-domain:repository:organization');
 
+export type IOrganization<T> =
+    T extends factory.organizationType.Corporation ? factory.organization.corporation.IOrganization :
+    T extends factory.organizationType.MovieTheater ? factory.organization.movieTheater.IOrganization :
+    factory.organization.IOrganization;
+
 /**
  * 組織リポジトリー
  */
@@ -20,19 +25,20 @@ export class MongoRepository {
      * IDで劇場組織を取得する
      * @param id organization id
      */
-    public async findMovieTheaterById(
+    public async findById<T extends factory.organizationType>(
+        typeOf: T,
         id: string
-    ): Promise<factory.organization.movieTheater.IOrganization> {
+    ): Promise<IOrganization<T>> {
         const doc = await this.organizationModel.findOne({
-            _id: id,
-            typeOf: factory.organizationType.MovieTheater
+            typeOf: typeOf,
+            _id: id
         }).exec();
 
         if (doc === null) {
-            throw new factory.errors.NotFound('movieTheater');
+            throw new factory.errors.NotFound('organization');
         }
 
-        return <factory.organization.movieTheater.IOrganization>doc.toObject();
+        return doc.toObject();
     }
 
     /**

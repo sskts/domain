@@ -1,8 +1,6 @@
 /**
  * 通知サービス
- * @namespace service.notification
  */
-
 import * as factory from '@motionpicture/sskts-factory';
 // tslint:disable-next-line:no-require-imports
 import sgMail = require('@sendgrid/mail');
@@ -30,7 +28,7 @@ export function sendEmailMessage(actionAttributes: factory.action.transfer.send.
         action: ActionRepo;
     }) => {
         // アクション開始
-        const action = await repos.action.start<factory.action.transfer.send.message.email.IAction>(actionAttributes);
+        const action = await repos.action.start(actionAttributes);
         let result: any = {};
 
         try {
@@ -70,14 +68,13 @@ export function sendEmailMessage(actionAttributes: factory.action.transfer.send.
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                // tslint:disable-next-line:max-line-length no-single-line-block-comment
-                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next*/ error;
+                const actionError = { ...error, ...{ message: error.message, name: error.name } };
                 await repos.action.giveUp(actionAttributes.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
 
-            throw new Error(error);
+            throw error;
         }
 
         // アクション完了

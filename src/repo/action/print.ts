@@ -17,7 +17,10 @@ export class MongoRepository {
         agentId: string,
         ticket: factory.action.transfer.print.ticket.ITicket
     ): Promise<factory.action.transfer.print.ticket.IAction> {
-        const actionAttributes = factory.action.transfer.print.ticket.createAttributes({
+        const now = new Date();
+        const action: factory.action.transfer.print.ticket.IAction = {
+            id: '',
+            typeOf: factory.actionType.PrintAction,
             actionStatus: factory.actionStatusType.CompletedActionStatus,
             object: {
                 typeOf: 'Ticket',
@@ -26,10 +29,12 @@ export class MongoRepository {
             agent: {
                 typeOf: factory.personType.Person,
                 id: agentId
-            }
-        });
+            },
+            startDate: now,
+            endDate: now
+        };
 
-        return this.actionModel.create(actionAttributes).then((doc) => <factory.action.transfer.print.ticket.IAction>doc.toObject());
+        return this.actionModel.create(action).then((doc) => <factory.action.transfer.print.ticket.IAction>doc.toObject());
     }
 
     public async searchPrintTicket(

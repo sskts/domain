@@ -2,9 +2,7 @@ import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
 import ownershipInfoModel from './mongoose/model/ownershipInfo';
 
-export type IScreeningEvent = factory.event.individualScreeningEvent.IEvent;
-export type IScreeningEventReservation = factory.reservation.event.IEventReservation<IScreeningEvent>;
-export type IScreeningEventReservationOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<IScreeningEventReservation>;
+export type IOwnershipInfo<T extends factory.ownershipInfo.IGoodType> = factory.ownershipInfo.IOwnershipInfo<T>;
 
 /**
  * 所有権リポジトリー
@@ -17,11 +15,10 @@ export class MongoRepository {
     }
 
     /**
-     * save an ownershipInfo
      * 所有権情報を保管する
      * @param ownershipInfo ownershipInfo object
      */
-    public async save(ownershipInfo: factory.ownershipInfo.IOwnershipInfo<any>) {
+    public async save(ownershipInfo: factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>) {
         await this.ownershipInfoModel.findOneAndUpdate(
             {
                 identifier: ownershipInfo.identifier
@@ -32,28 +29,27 @@ export class MongoRepository {
     }
 
     /**
-     * 上映イベント予約の所有権を検索する
+     * 所有権を検索する
      */
-    public async searchScreeningEventReservation(searchConditions: {
-        ownedBy?: string;
-        ownedAt?: Date;
-    }): Promise<IScreeningEventReservationOwnershipInfo[]> {
+    public async search<T extends factory.ownershipInfo.IGoodType>(
+        searchConditions: factory.ownershipInfo.ISearchConditions<T>
+    ): Promise<IOwnershipInfo<T>[]> {
         const andConditions: any[] = [
-            { 'typeOfGood.typeOf': factory.reservationType.EventReservation }, // 所有対象がイベント予約
-            {
-                'typeOfGood.reservationFor.typeOf': {
-                    $exists: true,
-                    $eq: factory.eventType.IndividualScreeningEvent
-                }
-            } // 予約対象が個々の上映イベント
+            { 'typeOfGood.typeOf': searchConditions.goodType }
         ];
+
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (searchConditions.identifier !== undefined) {
+            andConditions.push({ identifier: searchConditions.identifier });
+        }
 
         // 誰の所有か
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (searchConditions.ownedBy !== undefined) {
             andConditions.push({
-                'ownedBy.id': {
+                'ownedBy.memberOf.membershipNumber': {
                     $exists: true,
                     $eq: searchConditions.ownedBy
                 }
@@ -73,6 +69,6 @@ export class MongoRepository {
         return this.ownershipInfoModel.find({ $and: andConditions })
             .sort({ ownedFrom: 1 })
             .exec()
-            .then((docs) => docs.map((doc) => <IScreeningEventReservationOwnershipInfo>doc.toObject()));
+            .then((docs) => docs.map((doc) => doc.toObject()));
     }
 }

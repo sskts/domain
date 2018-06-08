@@ -1,11 +1,8 @@
 /**
- * 注文返品サービス
- * @namespace service.transaction.returnOrder
+ * 注文返品取引サービス
  */
-
-import * as createDebug from 'debug';
-
 import * as factory from '@motionpicture/sskts-factory';
+import * as createDebug from 'debug';
 import * as pug from 'pug';
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
@@ -75,7 +72,7 @@ export function start(params: {
         const now = new Date();
 
         // 返品対象の取引取得
-        const placeOrderTransaction = await repos.transaction.findPlaceOrderById(params.transactionId);
+        const placeOrderTransaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, params.transactionId);
         if (placeOrderTransaction.status !== factory.transactionStatusType.Confirmed) {
             throw new factory.errors.Argument('transactionId', 'Status not Confirmed.');
         }
@@ -92,14 +89,11 @@ export function start(params: {
         }
 
         const actionsOnOrder = await repos.action.findByOrderNumber(order.orderNumber);
-        const payAction = <factory.action.trade.pay.IAction | undefined>actionsOnOrder.find(
-            (a) => {
-                return a.typeOf === factory.actionType.PayAction &&
-                    a.actionStatus === factory.actionStatusType.CompletedActionStatus;
-            }
-        );
+        const payActions = <factory.action.trade.pay.IAction<factory.paymentMethodType>[]>actionsOnOrder
+            .filter((a) => a.typeOf === factory.actionType.PayAction)
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus);
         // もし支払アクションがなければエラー
-        if (payAction === undefined) {
+        if (payActions.length === 0) {
             throw new factory.errors.NotFound('PayAction');
         }
 
@@ -110,7 +104,8 @@ export function start(params: {
             validateRequest();
         }
 
-        const returnOrderAttributes = factory.transaction.returnOrder.createAttributes({
+        const returnOrderAttributes: factory.transaction.returnOrder.IAttributes = {
+            typeOf: factory.transactionType.ReturnOrder,
             status: factory.transactionStatusType.InProgress,
             agent: {
                 typeOf: factory.personType.Person,
@@ -126,11 +121,11 @@ export function start(params: {
             expires: params.expires,
             startDate: now,
             tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
-        });
+        };
 
         let returnOrderTransaction: factory.transaction.returnOrder.ITransaction;
         try {
-            returnOrderTransaction = await repos.transaction.start<factory.transaction.returnOrder.ITransaction>(returnOrderAttributes);
+            returnOrderTransaction = await repos.transaction.start(factory.transactionType.ReturnOrder, returnOrderAttributes);
         } catch (error) {
             if (error.name === 'MongoError') {
                 // 同一取引に対して返品取引を作成しようとすると、MongoDBでE11000 duplicate key errorが発生する
@@ -156,16 +151,18 @@ export function start(params: {
 /**
  * 取引確定
  */
+// tslint:disable-next-line:max-func-body-length
 export function confirm(
     agentId: string,
     transactionId: string
 ): IConfirmOperation<factory.transaction.returnOrder.IResult> {
+    // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
         organization: OrganizationRepo;
     }) => {
-        const transaction = await repos.transaction.findReturnOrderInProgressById(transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.ReturnOrder, transactionId);
         if (transaction.agent.id !== agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
@@ -181,17 +178,17 @@ export function confirm(
             throw new factory.errors.NotFound('customerContact');
         }
 
-        const seller = await repos.organization.findMovieTheaterById(placeOrderTransaction.seller.id);
+        const seller = await repos.organization.findById(
+            <factory.organizationType.MovieTheater>placeOrderTransaction.seller.typeOf,
+            placeOrderTransaction.seller.id
+        );
 
         const actionsOnOrder = await repos.action.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
-        const payAction = <factory.action.trade.pay.IAction | undefined>actionsOnOrder.find(
-            (a) => {
-                return a.typeOf === factory.actionType.PayAction &&
-                    a.actionStatus === factory.actionStatusType.CompletedActionStatus;
-            }
-        );
+        const payActions = <factory.action.trade.pay.IAction<factory.paymentMethodType>[]>actionsOnOrder
+            .filter((a) => a.typeOf === factory.actionType.PayAction)
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus);
         // もし支払アクションがなければエラー
-        if (payAction === undefined) {
+        if (payActions.length === 0) {
             throw new factory.errors.NotFound('PayAction');
         }
 
@@ -201,31 +198,69 @@ export function confirm(
             order: placeOrderTransactionResult.order,
             seller: seller
         });
-        const sendEmailMessageActionAttributes = factory.action.transfer.send.message.email.createAttributes({
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
+        const sendEmailMessageActionAttributes: factory.action.transfer.send.message.email.IAttributes = {
+            typeOf: factory.actionType.SendAction,
             object: emailMessage,
             agent: placeOrderTransaction.seller,
             recipient: placeOrderTransaction.agent,
             potentialActions: {},
             purpose: placeOrderTransactionResult.order
-        });
-        const refundActionAttributes = factory.action.trade.refund.createAttributes({
-            object: payAction,
-            agent: placeOrderTransaction.seller,
-            recipient: placeOrderTransaction.agent,
-            purpose: placeOrderTransactionResult.order,
-            potentialActions: {
-                sendEmailMessage: sendEmailMessageActionAttributes
-            }
-        });
-        const returnOrderActionAttributes = factory.action.transfer.returnAction.order.createAttributes({
+        };
+        // クレジットカード返金アクション
+        const refundCreditCardActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.CreditCard>[]>payActions)
+            .filter((a) => a.object.paymentMethod.paymentMethod === factory.paymentMethodType.CreditCard)
+            .map((a): factory.action.trade.refund.IAttributes<factory.paymentMethodType.CreditCard> => {
+                return {
+                    typeOf: <factory.actionType.RefundAction>factory.actionType.RefundAction,
+                    object: a,
+                    agent: placeOrderTransaction.seller,
+                    recipient: placeOrderTransaction.agent,
+                    purpose: placeOrderTransactionResult.order,
+                    potentialActions: {
+                        sendEmailMessage: sendEmailMessageActionAttributes
+                    }
+                };
+            });
+        // Pecorino返金アクション
+        const refundPecorinoActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.Pecorino>[]>payActions)
+            .filter((a) => a.object.paymentMethod.paymentMethod === factory.paymentMethodType.Pecorino)
+            .map((a): factory.action.trade.refund.IAttributes<factory.paymentMethodType.Pecorino> => {
+                return {
+                    typeOf: <factory.actionType.RefundAction>factory.actionType.RefundAction,
+                    object: a,
+                    agent: placeOrderTransaction.seller,
+                    recipient: placeOrderTransaction.agent,
+                    purpose: placeOrderTransactionResult.order,
+                    potentialActions: {
+                        sendEmailMessage: sendEmailMessageActionAttributes
+                    }
+                };
+            });
+        // Pecorino賞金の承認アクションの数だけ、返却アクションを作成
+        const authorizeActions = placeOrderTransaction.object.authorizeActions;
+        const returnPecorinoAwardActions = authorizeActions
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward)
+            .map((a: factory.action.authorize.award.pecorino.IAction): factory.action.transfer.returnAction.pecorinoAward.IAttributes => {
+                return {
+                    typeOf: factory.actionType.ReturnAction,
+                    object: a,
+                    agent: placeOrderTransaction.seller,
+                    recipient: placeOrderTransaction.agent,
+                    potentialActions: {}
+                };
+            });
+        const returnOrderActionAttributes: factory.action.transfer.returnAction.order.IAttributes = {
+            typeOf: <factory.actionType.ReturnAction>factory.actionType.ReturnAction,
             object: placeOrderTransactionResult.order,
             agent: placeOrderTransaction.agent,
             recipient: placeOrderTransaction.seller,
             potentialActions: {
-                refund: refundActionAttributes
+                refundCreditCard: refundCreditCardActions[0],
+                refundPecorino: refundPecorinoActions,
+                returnPecorinoAward: returnPecorinoAwardActions
             }
-        });
+        };
         const result: factory.transaction.returnOrder.IResult = {
         };
         const potentialActions: factory.transaction.returnOrder.IPotentialActions = {
@@ -295,11 +330,13 @@ export async function createRefundEmail(params: {
 
                         debug('subject:', subject);
 
-                        resolve(factory.creativeWork.message.email.create({
+                        const email: factory.creativeWork.message.email.ICreativeWork = {
+                            typeOf: factory.creativeWorkType.EmailMessage,
                             identifier: `refundOrder-${params.order.orderNumber}`,
+                            name: `refundOrder-${params.order.orderNumber}`,
                             sender: {
                                 typeOf: seller.typeOf,
-                                name: seller.name,
+                                name: seller.name.ja,
                                 email: 'noreply@ticket-cinemasunshine.com'
                             },
                             toRecipient: {
@@ -309,7 +346,8 @@ export async function createRefundEmail(params: {
                             },
                             about: subject,
                             text: message
-                        }));
+                        };
+                        resolve(email);
                     }
                 );
             }
@@ -325,11 +363,6 @@ export function exportTasks(status: factory.transactionStatusType) {
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const statusesTasksExportable = [factory.transactionStatusType.Expired, factory.transactionStatusType.Confirmed];
-        if (statusesTasksExportable.indexOf(status) < 0) {
-            throw new factory.errors.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
-        }
-
         const transaction = await repos.transaction.startExportTasks(factory.transactionType.ReturnOrder, status);
         if (transaction === null) {
             return;
@@ -351,13 +384,14 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findReturnOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.ReturnOrder, transactionId);
 
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
                 // 注文返品タスク
-                taskAttributes.push(factory.task.returnOrder.createAttributes({
+                const returnOrderTask: factory.task.returnOrder.IAttributes = {
+                    name: factory.taskName.ReturnOrder,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -367,7 +401,8 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     data: {
                         transactionId: transaction.id
                     }
-                }));
+                };
+                taskAttributes.push(returnOrderTask);
 
                 break;
 

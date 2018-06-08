@@ -1,9 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * 会員クレジットカードサービステスト
- * @ignore
  */
-
 import * as GMO from '@motionpicture/gmo-service';
 import { errors } from '@motionpicture/sskts-factory';
 import * as assert from 'power-assert';
@@ -15,7 +13,7 @@ const gmoErrorMemberNotFound = { errors: [{ info: 'E01390002' }] };
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 });
 
 describe('PersonCreditCardService.save()', () => {
@@ -24,7 +22,6 @@ describe('PersonCreditCardService.save()', () => {
     });
 
     it('GMOが正常であれば、オブジェクトを取得できるはず', async () => {
-        const personId = 'personId';
         const username = 'username';
         const creditCard = {};
         const gmoMember = {};
@@ -37,13 +34,12 @@ describe('PersonCreditCardService.save()', () => {
         sandbox.mock(GMO.services.card).expects('saveCard').once().resolves(saveCardResult);
         sandbox.mock(GMO.services.card).expects('searchCard').once().resolves(searchCardResults);
 
-        const result = await PersonCreditCardService.save(personId, username, <any>creditCard)();
+        const result = await PersonCreditCardService.save(username, <any>creditCard)();
         assert.equal(typeof result, 'object');
         sandbox.verify();
     });
 
     it('会員未登録であれば、登録してから、オブジェクトを取得できるはず', async () => {
-        const personId = 'personId';
         const username = 'username';
         const creditCard = {};
         const searchMemberError = gmoErrorMemberNotFound;
@@ -57,13 +53,12 @@ describe('PersonCreditCardService.save()', () => {
         sandbox.mock(GMO.services.card).expects('saveCard').once().resolves(saveCardResult);
         sandbox.mock(GMO.services.card).expects('searchCard').once().resolves(searchCardResults);
 
-        const result = await PersonCreditCardService.save(personId, username, <any>creditCard)();
+        const result = await PersonCreditCardService.save(username, <any>creditCard)();
         assert.equal(typeof result, 'object');
         sandbox.verify();
     });
 
     it('会員検索時にエラーが発生すればそのままArgumentエラーになるはず', async () => {
-        const personId = 'personId';
         const username = 'username';
         const creditCard = {};
         const searchMemberError = {
@@ -76,13 +71,12 @@ describe('PersonCreditCardService.save()', () => {
         sandbox.mock(GMO.services.card).expects('saveCard').once().never();
         sandbox.mock(GMO.services.card).expects('searchCard').once().never();
 
-        const result = await PersonCreditCardService.save(personId, username, <any>creditCard)().catch((err) => err);
+        const result = await PersonCreditCardService.save(username, <any>creditCard)().catch((err) => err);
         assert(result instanceof errors.Argument);
         sandbox.verify();
     });
 
     it('GMOServiceBadRequestErrorが投げられれば、Argumentエラーになるはず', async () => {
-        const personId = 'personId';
         const username = 'username';
         const creditCard = {};
         const searchMemberError = gmoErrorMemberNotFound;
@@ -97,13 +91,12 @@ describe('PersonCreditCardService.save()', () => {
         sandbox.mock(GMO.services.card).expects('saveCard').once().rejects(saveCardResult);
         sandbox.mock(GMO.services.card).expects('searchCard').never();
 
-        const result = await PersonCreditCardService.save(personId, username, <any>creditCard)().catch((err) => err);
+        const result = await PersonCreditCardService.save(username, <any>creditCard)().catch((err) => err);
         assert(result instanceof errors.Argument);
         sandbox.verify();
     });
 
     it('GMOが何かしらエラーを投げれば、そのままエラーになるはず', async () => {
-        const personId = 'personId';
         const username = 'username';
         const creditCard = {};
         const searchMemberError = gmoErrorMemberNotFound;
@@ -115,7 +108,7 @@ describe('PersonCreditCardService.save()', () => {
         sandbox.mock(GMO.services.card).expects('saveCard').once().rejects(saveCardResult);
         sandbox.mock(GMO.services.card).expects('searchCard').never();
 
-        const result = await PersonCreditCardService.save(personId, username, <any>creditCard)().catch((err) => err);
+        const result = await PersonCreditCardService.save(username, <any>creditCard)().catch((err) => err);
         assert(result instanceof Error);
         assert.deepStrictEqual(result, saveCardResult);
         sandbox.verify();
@@ -128,19 +121,19 @@ describe('PersonCreditCardService.unsubscribe()', () => {
     });
 
     it('GMOが正常であれば、voidを返すはず', async () => {
-        const personId = 'personId';
+        const username = 'username';
         const cardSeq = 'cardSeq';
         const deleteCardResult = {};
 
         sandbox.mock(GMO.services.card).expects('deleteCard').once().resolves(deleteCardResult);
 
-        const result = await PersonCreditCardService.unsubscribe(personId, cardSeq)();
+        const result = await PersonCreditCardService.unsubscribe(username, cardSeq)();
         assert.equal(result, undefined);
         sandbox.verify();
     });
 
     it('GMOServiceBadRequestErrorが投げられれば、Argumentエラーになるはず', async () => {
-        const personId = 'personId';
+        const username = 'username';
         const cardSeq = 'cardSeq';
         const deleteCardResult = {
             name: 'GMOServiceBadRequestError',
@@ -149,19 +142,19 @@ describe('PersonCreditCardService.unsubscribe()', () => {
 
         sandbox.mock(GMO.services.card).expects('deleteCard').once().rejects(deleteCardResult);
 
-        const result = await PersonCreditCardService.unsubscribe(personId, cardSeq)().catch((err) => err);
+        const result = await PersonCreditCardService.unsubscribe(username, cardSeq)().catch((err) => err);
         assert(result instanceof errors.Argument);
         sandbox.verify();
     });
 
     it('GMOが何かしらエラーを投げれば、そのままエラーになるはず', async () => {
-        const personId = 'personId';
+        const username = 'username';
         const cardSeq = 'cardSeq';
         const deleteCardResult = new Error('GMOError');
 
         sandbox.mock(GMO.services.card).expects('deleteCard').once().rejects(deleteCardResult);
 
-        const result = await PersonCreditCardService.unsubscribe(personId, cardSeq)().catch((err) => err);
+        const result = await PersonCreditCardService.unsubscribe(username, cardSeq)().catch((err) => err);
         assert(result instanceof Error);
         assert.deepStrictEqual(result, deleteCardResult);
         sandbox.verify();
@@ -174,7 +167,6 @@ describe('PersonCreditCardService.find()', () => {
     });
 
     it('GMOが正常であれば、配列を返すはず', async () => {
-        const personId = 'personId';
         const username = 'username';
         const gmoMember = {};
         const searchCardResults = [{ deleteFlag: '0' }, { deleteFlag: '1' }];
@@ -183,13 +175,12 @@ describe('PersonCreditCardService.find()', () => {
         sandbox.mock(GMO.services.card).expects('saveMember').never();
         sandbox.mock(GMO.services.card).expects('searchCard').once().resolves(searchCardResults);
 
-        const result = await PersonCreditCardService.find(personId, username)();
+        const result = await PersonCreditCardService.find(username)();
         assert(Array.isArray(result));
         sandbox.verify();
     });
 
     it('会員未登録であれば、登録してから、配列を返すはず', async () => {
-        const personId = 'personId';
         const username = 'username';
         const searchMemberError = gmoErrorMemberNotFound;
         const saveMemberResult = {};
@@ -199,13 +190,12 @@ describe('PersonCreditCardService.find()', () => {
         sandbox.mock(GMO.services.card).expects('saveMember').once().resolves(saveMemberResult);
         sandbox.mock(GMO.services.card).expects('searchCard').once().resolves(searchCardResults);
 
-        const result = await PersonCreditCardService.find(personId, username)();
+        const result = await PersonCreditCardService.find(username)();
         assert(Array.isArray(result));
         sandbox.verify();
     });
 
     it('会員検索時にエラーが発生すればそのままArgumentエラーになるはず', async () => {
-        const personId = 'personId';
         const username = 'username';
         const searchMemberError = {
             name: 'GMOServiceBadRequestError',
@@ -216,13 +206,12 @@ describe('PersonCreditCardService.find()', () => {
         sandbox.mock(GMO.services.card).expects('saveMember').once().never();
         sandbox.mock(GMO.services.card).expects('searchCard').once().never();
 
-        const result = await PersonCreditCardService.find(personId, username)().catch((err) => err);
+        const result = await PersonCreditCardService.find(username)().catch((err) => err);
         assert(result instanceof errors.Argument);
         sandbox.verify();
     });
 
     it('GMOが何かしらエラーを投げれば、そのままエラーになるはず', async () => {
-        const personId = 'personId';
         const username = 'username';
         const searchMemberError = new Error('GMOError');
 
@@ -230,7 +219,7 @@ describe('PersonCreditCardService.find()', () => {
         sandbox.mock(GMO.services.card).expects('saveMember').once().never();
         sandbox.mock(GMO.services.card).expects('searchCard').once().never();
 
-        const result = await PersonCreditCardService.find(personId, username)().catch((err) => err);
+        const result = await PersonCreditCardService.find(username)().catch((err) => err);
         assert(result instanceof Error);
         assert.deepStrictEqual(result, searchMemberError);
         sandbox.verify();

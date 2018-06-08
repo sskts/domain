@@ -74,4 +74,66 @@ export class MongoRepository {
 
         return <factory.order.IOrder>doc.toObject();
     }
+
+    /**
+     * 注文を検索する
+     * @param searchConditions 検索条件
+     */
+    public async search(
+        searchConditions: factory.order.ISearchConditions
+    ): Promise<factory.order.IOrder[]> {
+        const andConditions: any[] = [
+            // 注文日時の範囲条件
+            {
+                orderDate: {
+                    $exists: true,
+                    $gte: searchConditions.orderDateFrom,
+                    $lte: searchConditions.orderDateThrough
+                }
+            }
+        ];
+
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (searchConditions.sellerId !== undefined) {
+            andConditions.push({
+                'seller.id': {
+                    $exists: true,
+                    $eq: searchConditions.sellerId
+                }
+            });
+        }
+
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (searchConditions.customerMembershipNumber !== undefined) {
+            andConditions.push({
+                'customer.memberOf.membershipNumber': {
+                    $exists: true,
+                    $eq: searchConditions.customerMembershipNumber
+                }
+            });
+        }
+
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (searchConditions.orderNumber !== undefined) {
+            andConditions.push({
+                orderNumber: searchConditions.orderNumber
+            });
+        }
+
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (searchConditions.orderStatus !== undefined) {
+            andConditions.push({
+                orderStatus: searchConditions.orderStatus
+            });
+        }
+
+        return this.orderModel.find({ $and: andConditions })
+            .sort({ orderDate: 1 })
+            .exec()
+            .then((docs) => docs.map((doc) => doc.toObject()));
+    }
 }

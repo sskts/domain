@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 
 import MultilingualStringSchemaType from '../schemaTypes/multilingualString';
 
-const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
+const safe = { j: true, w: 'majority', wtimeout: 10000 };
 
 const locationSchema = new mongoose.Schema(
     {},

@@ -15,19 +15,18 @@ export type IUncheckedCardTokenized = factory.paymentMethod.paymentCard.creditCa
 
 /**
  * クレジットカード追加
- * @export
  */
 export function save(
-    personId: string,
     username: string,
-    creditCard: IUncheckedCardRaw | IUncheckedCardTokenized
+    creditCard: IUncheckedCardRaw | IUncheckedCardTokenized,
+    defaultFlag?: boolean
 ): IOperation<GMO.services.card.ISearchCardResult> {
     return async () => {
         // GMOカード登録
         let addedCreditCard: GMO.services.card.ISearchCardResult;
         try {
             // まずGMO会員登録
-            const memberId = personId;
+            const memberId = username;
             const memberName = username;
             try {
                 await GMO.services.card.searchMember({
@@ -62,7 +61,9 @@ export function save(
                 cardPass: (<IUncheckedCardRaw>creditCard).cardPass,
                 expire: (<IUncheckedCardRaw>creditCard).expire,
                 holderName: (<IUncheckedCardRaw>creditCard).holderName,
-                token: (<IUncheckedCardTokenized>creditCard).token
+                token: (<IUncheckedCardTokenized>creditCard).token,
+                // tslint:disable-next-line:no-single-line-block-comment
+                defaultFlag: (defaultFlag === true) ? /* istanbul ignore next */ '1' : '0'
             });
             debug('card saved', saveCardResult);
 
@@ -89,13 +90,12 @@ export function save(
 
 /**
  * クレジットカード削除
- * @export
  */
-export function unsubscribe(personId: string, cardSeq: string): IOperation<void> {
+export function unsubscribe(username: string, cardSeq: string): IOperation<void> {
     return async () => {
         try {
             // GMOからカード削除
-            const memberId = personId;
+            const memberId = username;
             const deleteCardResult = await GMO.services.card.deleteCard({
                 siteId: <string>process.env.GMO_SITE_ID,
                 sitePass: <string>process.env.GMO_SITE_PASS,
@@ -116,16 +116,15 @@ export function unsubscribe(personId: string, cardSeq: string): IOperation<void>
 
 /**
  * クレジットカード検索
- * @export
  */
 export function find(
-    personId: string,
     username: string
 ): IOperation<GMO.services.card.ISearchCardResult[]> {
     return async () => {
+        let creditCards: GMO.services.card.ISearchCardResult[] = [];
         try {
             // まずGMO会員登録
-            const memberId = personId;
+            const memberId = username;
             const memberName = username;
             try {
                 await GMO.services.card.searchMember({
@@ -150,7 +149,7 @@ export function find(
                 }
             }
 
-            return GMO.services.card.searchCard({
+            creditCards = await GMO.services.card.searchCard({
                 siteId: <string>process.env.GMO_SITE_ID,
                 sitePass: <string>process.env.GMO_SITE_PASS,
                 memberId: memberId,
@@ -158,11 +157,25 @@ export function find(
                 // 未削除のものに絞り込む
             }).then((results) => results.filter((result) => result.deleteFlag === '0'));
         } catch (error) {
+            debug(error);
             if (error.name === 'GMOServiceBadRequestError') {
-                throw new factory.errors.Argument('personId', error.errors[0].content);
+                // カードが存在しない場合このエラーになる
+                // ErrCode=E01&ErrInfo=E01240002
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore if: please write tests */
+                if (Array.isArray(error.errors) &&
+                    error.errors.length === 1 &&
+                    error.errors[0].info === 'E01240002') {
+                    // no op
+                    // 存在しないだけなので何もしない
+                } else {
+                    throw new factory.errors.Argument('username', error.errors[0].content);
+                }
             } else {
                 throw error;
             }
         }
+
+        return creditCards;
     };
 }

@@ -15,15 +15,15 @@ import * as sskts from '../index';
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 });
 
-describe('findMovieTheaterById()', () => {
+describe('findById()', () => {
     afterEach(() => {
         sandbox.restore();
     });
 
-    it('劇場が存在すれば、取得できるはず', async () => {
+    it('`組織が存在すれば、取得できるはず', async () => {
         const theaterId = 'theaterId';
 
         const repository = new sskts.repository.Organization(sskts.mongoose.connection);
@@ -31,7 +31,7 @@ describe('findMovieTheaterById()', () => {
         sandbox.mock(repository.organizationModel).expects('findOne').once()
             .chain('exec').resolves(new repository.organizationModel());
 
-        const result = await repository.findMovieTheaterById(theaterId);
+        const result = await repository.findById(sskts.factory.organizationType.MovieTheater, theaterId);
 
         assert.notEqual(result, undefined);
         sandbox.verify();
@@ -45,7 +45,7 @@ describe('findMovieTheaterById()', () => {
         sandbox.mock(repository.organizationModel).expects('findOne').once()
             .chain('exec').resolves(null);
 
-        const result = await repository.findMovieTheaterById(theaterId).catch((err) => err);
+        const result = await repository.findById(sskts.factory.organizationType.MovieTheater, theaterId).catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });

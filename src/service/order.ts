@@ -1,7 +1,6 @@
 /**
  * 注文サービス
  */
-
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
@@ -28,7 +27,7 @@ export function createFromTransaction(transactionId: string) {
         transaction: TransactionRepo;
         task: TaskRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
@@ -40,7 +39,7 @@ export function createFromTransaction(transactionId: string) {
 
         // アクション開始
         const orderActionAttributes = potentialActions.order;
-        const action = await repos.action.start<factory.action.trade.order.IAction>(orderActionAttributes);
+        const action = await repos.action.start(orderActionAttributes);
 
         try {
             // 注文保管
@@ -48,14 +47,13 @@ export function createFromTransaction(transactionId: string) {
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                // tslint:disable-next-line:max-line-length no-single-line-block-comment
-                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
+                const actionError = { ...error, ...{ message: error.message, name: error.name } };
                 await repos.action.giveUp(orderActionAttributes.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
 
-            throw new Error(error);
+            throw error;
         }
 
         // アクション完了
@@ -73,6 +71,7 @@ export function createFromTransaction(transactionId: string) {
  * @param orderActionAttributes 注文アクション属性
  */
 function onCreate(transactionId: string, orderActionAttributes: factory.action.trade.order.IAttributes) {
+    // tslint:disable-next-line:max-func-body-length
     return async (repos: { task: TaskRepo }) => {
         // potentialActionsのためのタスクを生成
         const orderPotentialActions = orderActionAttributes.potentialActions;
@@ -85,7 +84,8 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
             if (orderPotentialActions.sendOrder !== undefined) {
-                taskAttributes.push(factory.task.sendOrder.createAttributes({
+                const sendOrderTask: factory.task.sendOrder.IAttributes = {
+                    name: factory.taskName.SendOrder,
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -95,14 +95,16 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     data: {
                         transactionId: transactionId
                     }
-                }));
+                };
+                taskAttributes.push(sendOrderTask);
             }
 
             // クレジットカード決済
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
             if (orderPotentialActions.payCreditCard !== undefined) {
-                taskAttributes.push(factory.task.payCreditCard.createAttributes({
+                const payCreditCardTask: factory.task.payCreditCard.IAttributes = {
+                    name: factory.taskName.PayCreditCard,
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -112,23 +114,25 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     data: {
                         transactionId: transactionId
                     }
-                }));
+                };
+                taskAttributes.push(payCreditCardTask);
             }
 
             // Pecorino決済
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (orderPotentialActions.payPecorino !== undefined) {
-                taskAttributes.push(factory.task.payPecorino.createAttributes({
-                    status: factory.taskStatus.Ready,
-                    runsAt: now, // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    lastTriedAt: null,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transactionId
-                    }
+            if (Array.isArray(orderPotentialActions.payPecorino)) {
+                taskAttributes.push(...orderPotentialActions.payPecorino.map((a): factory.task.payPecorino.IAttributes => {
+                    return {
+                        name: factory.taskName.PayPecorino,
+                        status: factory.taskStatus.Ready,
+                        runsAt: now, // なるはやで実行
+                        remainingNumberOfTries: 10,
+                        lastTriedAt: null,
+                        numberOfTried: 0,
+                        executionResults: [],
+                        data: a
+                    };
                 }));
             }
 
@@ -136,7 +140,8 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
             if (orderPotentialActions.useMvtk !== undefined) {
-                taskAttributes.push(factory.task.useMvtk.createAttributes({
+                const useMvtkTask: factory.task.useMvtk.IAttributes = {
+                    name: factory.taskName.UseMvtk,
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -146,6 +151,25 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     data: {
                         transactionId: transactionId
                     }
+                };
+                taskAttributes.push(useMvtkTask);
+            }
+
+            // Pecorinoポイント付与
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(orderPotentialActions.givePecorinoAward)) {
+                taskAttributes.push(...orderPotentialActions.givePecorinoAward.map((a): factory.task.givePecorinoAward.IAttributes => {
+                    return {
+                        name: factory.taskName.GivePecorinoAward,
+                        status: factory.taskStatus.Ready,
+                        runsAt: now, // なるはやで実行
+                        remainingNumberOfTries: 10,
+                        lastTriedAt: null,
+                        numberOfTried: 0,
+                        executionResults: [],
+                        data: a
+                    };
                 }));
             }
         }
@@ -169,7 +193,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
         transactionRepo: TransactionRepo,
         taskRepo: TaskRepo
     ) => {
-        const transaction = await transactionRepo.findReturnOrderById(returnOrderTransactionId);
+        const transaction = await transactionRepo.findById(factory.transactionType.ReturnOrder, returnOrderTransactionId);
         const potentialActions = transaction.potentialActions;
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;
@@ -183,7 +207,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
 
         // アクション開始
         const returnOrderActionAttributes = potentialActions.returnOrder;
-        const action = await actionRepo.start<factory.action.transfer.returnAction.order.IAction>(returnOrderActionAttributes);
+        const action = await actionRepo.start(returnOrderActionAttributes);
 
         try {
             const order = placeOrderTransactionResult.order;
@@ -237,14 +261,13 @@ export function cancelReservations(returnOrderTransactionId: string) {
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                // tslint:disable-next-line:max-line-length no-single-line-block-comment
-                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
+                const actionError = { ...error, ...{ message: error.message, name: error.name } };
                 await actionRepo.giveUp(returnOrderActionAttributes.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
 
-            throw new Error(error);
+            throw error;
         }
 
         // アクション完了
@@ -258,6 +281,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
 
 /**
  * 返品アクション後の処理
+ * 注文返品後に何をすべきかは返品アクションのpotentialActionsとして定義されているはずなので、それらをタスクとして登録します。
  * @param transactionId 注文返品取引ID
  * @param returnActionAttributes 返品アクション属性
  */
@@ -271,9 +295,10 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
         if (returnActionAttributes.potentialActions !== undefined) {
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (returnActionAttributes.potentialActions.refund !== undefined) {
+            if (returnActionAttributes.potentialActions.refundCreditCard !== undefined) {
                 // 返金タスク作成
-                taskAttributes.push(factory.task.refundCreditCard.createAttributes({
+                const task: factory.task.refundCreditCard.IAttributes = {
+                    name: factory.taskName.RefundCreditCard,
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -283,7 +308,48 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
                     data: {
                         transactionId: transactionId
                     }
-                }));
+                };
+                taskAttributes.push(task);
+            }
+
+            // Pecorino返金タスク
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(returnActionAttributes.potentialActions.refundPecorino)) {
+                taskAttributes.push(...returnActionAttributes.potentialActions.refundPecorino.map(
+                    (a): factory.task.refundPecorino.IAttributes => {
+                        return {
+                            name: factory.taskName.RefundPecorino,
+                            status: factory.taskStatus.Ready,
+                            runsAt: now, // なるはやで実行
+                            remainingNumberOfTries: 10,
+                            lastTriedAt: null,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: a
+                        };
+                    }
+                ));
+            }
+
+            // Pecorinoインセンティブ返却タスク
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(returnActionAttributes.potentialActions.returnPecorinoAward)) {
+                taskAttributes.push(...returnActionAttributes.potentialActions.returnPecorinoAward.map(
+                    (a): factory.task.returnPecorinoAward.IAttributes => {
+                        return {
+                            name: factory.taskName.ReturnPecorinoAward,
+                            status: factory.taskStatus.Ready,
+                            runsAt: now, // なるはやで実行
+                            remainingNumberOfTries: 10,
+                            lastTriedAt: null,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: a
+                        };
+                    }
+                ));
             }
         }
 

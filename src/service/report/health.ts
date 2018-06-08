@@ -65,7 +65,7 @@ export function checkGMOSales(madeFrom: Date, madeThrough: Date) {
             typeOf: factory.actionType.PayAction,
             actionStatus: factory.actionStatusType.CompletedActionStatus,
             'object.paymentMethod.paymentMethodId': { $in: orderIds }
-        }).exec().then((docs) => docs.map((doc) => <factory.action.trade.pay.IAction>doc.toObject()));
+        }).exec().then((docs) => docs.map((doc) => <factory.action.trade.pay.IAction<factory.paymentMethodType.CreditCard>>doc.toObject()));
         debug(payActions.length, 'payActions found.');
 
         const errors: IUnhealthGMOSale[] = [];

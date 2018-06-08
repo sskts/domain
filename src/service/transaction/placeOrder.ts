@@ -1,12 +1,8 @@
 /**
- * placeOrder transaction service
  * 注文取引サービス
- * @namespace service.transaction.placeOrder
  */
-
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
-import * as json2csv from 'json2csv';
 
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
@@ -26,11 +22,6 @@ export function exportTasks(status: factory.transactionStatusType) {
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const statusesTasksExportable = [factory.transactionStatusType.Expired, factory.transactionStatusType.Confirmed];
-        if (statusesTasksExportable.indexOf(status) < 0) {
-            throw new factory.errors.Argument('status', `transaction status should be in [${statusesTasksExportable.join(',')}]`);
-        }
-
         const transaction = await repos.transaction.startExportTasks(factory.transactionType.PlaceOrder, status);
         if (transaction === null) {
             return;
@@ -38,7 +29,6 @@ export function exportTasks(status: factory.transactionStatusType) {
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
         await exportTasksById(transaction.id)(repos);
-
         await repos.transaction.setTasksExportedById(transaction.id);
     };
 }
@@ -52,12 +42,13 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
 
         const taskAttributes: factory.task.IAttributes[] = [];
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
-                taskAttributes.push(factory.task.placeOrder.createAttributes({
+                const placeOrderTaskAttributes: factory.task.placeOrder.IAttributes = {
+                    name: factory.taskName.PlaceOrder,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -67,13 +58,16 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     data: {
                         transactionId: transaction.id
                     }
-                }));
+                };
+                taskAttributes.push(placeOrderTaskAttributes);
 
                 break;
 
-            // 期限切れの場合は、タスクリストを作成する
+            // 期限切れor中止の場合は、タスクリストを作成する
+            case factory.transactionStatusType.Canceled:
             case factory.transactionStatusType.Expired:
-                taskAttributes.push(factory.task.cancelSeatReservation.createAttributes({
+                const cancelSeatReservationTaskAttributes: factory.task.cancelSeatReservation.IAttributes = {
+                    name: factory.taskName.CancelSeatReservation,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -83,8 +77,9 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     data: {
                         transactionId: transaction.id
                     }
-                }));
-                taskAttributes.push(factory.task.cancelCreditCard.createAttributes({
+                };
+                const cancelCreditCardTaskAttributes: factory.task.cancelCreditCard.IAttributes = {
+                    name: factory.taskName.CancelCreditCard,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -94,8 +89,9 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     data: {
                         transactionId: transaction.id
                     }
-                }));
-                taskAttributes.push(factory.task.cancelMvtk.createAttributes({
+                };
+                const cancelMvtkTaskAttributes: factory.task.cancelMvtk.IAttributes = {
+                    name: factory.taskName.CancelMvtk,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -105,7 +101,38 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     data: {
                         transactionId: transaction.id
                     }
-                }));
+                };
+                const cancelPecorinoTaskAttributes: factory.task.cancelPecorino.IAttributes = {
+                    name: factory.taskName.CancelPecorino,
+                    status: factory.taskStatus.Ready,
+                    runsAt: new Date(), // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transaction.id
+                    }
+                };
+                const cancelPecorinoAwardTaskAttributes: factory.task.cancelPecorinoAward.IAttributes = {
+                    name: factory.taskName.CancelPecorinoAward,
+                    status: factory.taskStatus.Ready,
+                    runsAt: new Date(), // なるはやで実行
+                    remainingNumberOfTries: 10,
+                    lastTriedAt: null,
+                    numberOfTried: 0,
+                    executionResults: [],
+                    data: {
+                        transactionId: transaction.id
+                    }
+                };
+                taskAttributes.push(
+                    cancelSeatReservationTaskAttributes,
+                    cancelCreditCardTaskAttributes,
+                    cancelMvtkTaskAttributes,
+                    cancelPecorinoTaskAttributes,
+                    cancelPecorinoAwardTaskAttributes
+                );
 
                 break;
 
@@ -122,8 +149,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
 
 /**
  * 確定取引についてメールを送信する
- * @deprecated v24.0.0で廃止予定
- * @export
+ * @deprecated どこかのバージョンで廃止予定
  * @param transactionId 取引ID
  * @param emailMessageAttributes Eメールメッセージ属性
  */
@@ -135,7 +161,7 @@ export function sendEmail(
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findPlaceOrderById(transactionId);
+        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
         if (transaction.status !== factory.transactionStatusType.Confirmed) {
             throw new factory.errors.Forbidden('Transaction not confirmed.');
         }
@@ -146,8 +172,10 @@ export function sendEmail(
             throw new factory.errors.NotFound('transaction.result');
         }
 
-        const emailMessage = factory.creativeWork.message.email.create({
+        const emailMessage: factory.creativeWork.message.email.ICreativeWork = {
+            typeOf: factory.creativeWorkType.EmailMessage,
             identifier: `placeOrderTransaction-${transactionId}`,
+            name: `placeOrderTransaction-${transactionId}`,
             sender: {
                 typeOf: transaction.seller.typeOf,
                 name: emailMessageAttributes.sender.name,
@@ -160,18 +188,19 @@ export function sendEmail(
             },
             about: emailMessageAttributes.about,
             text: emailMessageAttributes.text
-        });
-        const actionAttributes = factory.action.transfer.send.message.email.createAttributes({
-            actionStatus: factory.actionStatusType.ActiveActionStatus,
+        };
+        const actionAttributes: factory.action.transfer.send.message.email.IAttributes = {
+            typeOf: factory.actionType.SendAction,
             object: emailMessage,
             agent: transaction.seller,
             recipient: transaction.agent,
             potentialActions: {},
             purpose: transactionResult.order
-        });
+        };
 
         // その場で送信ではなく、DBにタスクを登録
-        const taskAttributes = factory.task.sendEmailMessage.createAttributes({
+        const sendEmailMessageTask: factory.task.sendEmailMessage.IAttributes = {
+            name: factory.taskName.SendEmailMessage,
             status: factory.taskStatus.Ready,
             runsAt: new Date(), // なるはやで実行
             remainingNumberOfTries: 10,
@@ -181,175 +210,8 @@ export function sendEmail(
             data: {
                 actionAttributes: actionAttributes
             }
-        });
-
-        return <factory.task.sendEmailMessage.ITask>await repos.task.save(taskAttributes);
-    };
-}
-
-/**
- * フォーマット指定でダウンロード
- * @export
- * @param conditions 検索条件
- * @param format フォーマット
- */
-export function download(
-    conditions: {
-        startFrom: Date;
-        startThrough: Date;
-    },
-    format: 'csv'
-) {
-    return async (repos: { transaction: TransactionRepo }): Promise<string> => {
-        // 取引検索
-        const transactions = await repos.transaction.searchPlaceOrder(conditions);
-        debug('transactions:', transactions);
-
-        // 取引ごとに詳細を検索し、csvを作成する
-        const data = await Promise.all(transactions.map(async (transaction) => transaction2report(transaction)));
-        debug('data:', data);
-
-        if (format === 'csv') {
-            return new Promise<string>((resolve) => {
-                const fields = [
-                    'id', 'status', 'startDate', 'endDate',
-                    'customer.name', 'customer.email', 'customer.telephone', 'customer.memberOf.membershipNumber',
-                    'eventName', 'eventStartDate', 'eventEndDate', 'superEventLocationBranchCode', 'superEventLocation', 'eventLocation',
-                    'reservedTickets', 'orderNumber', 'confirmationNumber', 'price',
-                    'paymentMethod.0', 'paymentMethodId.0',
-                    'paymentMethod.1', 'paymentMethodId.1',
-                    'paymentMethod.2', 'paymentMethodId.2',
-                    'paymentMethod.3', 'paymentMethodId.3',
-                    'discounts.0', 'discountCodes.0', 'discountPrices.0',
-                    'discounts.1', 'discountCodes.1', 'discountPrices.1',
-                    'discounts.2', 'discountCodes.2', 'discountPrices.2',
-                    'discounts.3', 'discountCodes.3', 'discountPrices.3'
-                ];
-                const fieldNames = [
-                    '取引ID', '取引ステータス', '開始日時', '終了日時',
-                    'お名前', 'メールアドレス', '電話番号', '会員ID',
-                    'イベント名', 'イベント開始日時', 'イベント終了日時', '劇場コード', '劇場名', 'スクリーン名',
-                    '予約座席チケット', '注文番号', '確認番号', '金額',
-                    '決済方法1', '決済ID1', '決済方法2', '決済ID2', '決済方法3', '決済ID3', '決済方法4', '決済ID4',
-                    '割引1', '割引コード1', '割引金額1', '割引2', '割引コード2', '割引金額2', '割引3', '割引コード3', '割引金額3', '割引4', '割引コード4', '割引金額4'
-                ];
-                const output = json2csv(<any>{
-                    data: data,
-                    fields: fields,
-                    fieldNames: fieldNames,
-                    del: ',',
-                    newLine: '\n',
-                    flatten: true,
-                    preserveNewLinesInValues: true
-                });
-                debug('output:', output);
-
-                resolve(output);
-                // resolve(jconv.convert(output, 'UTF8', 'SJIS'));
-            });
-        } else {
-            throw new factory.errors.NotImplemented('specified format not implemented.');
-        }
-    };
-}
-
-/**
- * 取引レポートインターフェース
- * @export
- */
-export interface ITransactionReport {
-    id: string;
-    status: string;
-    startDate: string;
-    endDate: string;
-    customer: {
-        name: string;
-        email: string;
-        telephone: string;
-        memberOf?: {
-            membershipNumber: string;
         };
+
+        return <factory.task.sendEmailMessage.ITask>await repos.task.save(sendEmailMessageTask);
     };
-    eventName: string;
-    eventStartDate: string;
-    eventEndDate: string;
-    superEventLocationBranchCode: string;
-    superEventLocation: string;
-    eventLocation: string;
-    reservedTickets: string;
-    orderNumber: string;
-    confirmationNumber: string;
-    price: string;
-    paymentMethod: string[];
-    paymentMethodId: string[];
-    discounts: string[];
-    discountCodes: string[];
-    discountPrices: string[];
-}
-
-export function transaction2report(transaction: factory.transaction.placeOrder.ITransaction): ITransactionReport {
-    if (transaction.result !== undefined) {
-        const order = transaction.result.order;
-        const orderItems = order.acceptedOffers;
-        const screeningEvent = orderItems[0].itemOffered.reservationFor;
-        const ticketsStr = orderItems.map(
-            // tslint:disable-next-line:max-line-length
-            (orderItem) => `${orderItem.itemOffered.reservedTicket.ticketedSeat.seatNumber} ${orderItem.itemOffered.reservedTicket.coaTicketInfo.ticketName} ￥${orderItem.itemOffered.reservedTicket.coaTicketInfo.salePrice}`
-        ).join('\n');
-
-        return {
-            id: transaction.id,
-            status: transaction.status,
-            startDate: (transaction.startDate !== undefined) ? transaction.startDate.toISOString() : '',
-            endDate: (transaction.endDate !== undefined) ? transaction.endDate.toISOString() : '',
-            customer: order.customer,
-            eventName: screeningEvent.superEvent.workPerformed.name,
-            eventStartDate: screeningEvent.startDate.toISOString(),
-            eventEndDate: screeningEvent.endDate.toISOString(),
-            superEventLocationBranchCode: `${screeningEvent.superEvent.location.branchCode}`,
-            superEventLocation: screeningEvent.superEvent.location.name.ja,
-            eventLocation: screeningEvent.location.name.ja,
-            reservedTickets: ticketsStr,
-            orderNumber: order.orderNumber,
-            confirmationNumber: order.confirmationNumber.toString(),
-            price: `${order.price} ${order.priceCurrency}`,
-            paymentMethod: order.paymentMethods.map((method) => method.name),
-            paymentMethodId: order.paymentMethods.map((method) => method.paymentMethodId),
-            discounts: order.discounts.map((discount) => discount.name),
-            discountCodes: order.discounts.map((discount) => discount.discountCode),
-            discountPrices: order.discounts.map((discount) => `${discount.discount} ${discount.discountCurrency}`)
-        };
-    } else {
-        const customerContact = transaction.object.customerContact;
-
-        return {
-            id: transaction.id,
-            status: transaction.status,
-            startDate: (transaction.startDate !== undefined) ? transaction.startDate.toISOString() : '',
-            endDate: (transaction.endDate !== undefined) ? transaction.endDate.toISOString() : '',
-            customer: {
-                name: (customerContact !== undefined) ? `${customerContact.familyName} ${customerContact.givenName}` : '',
-                email: (customerContact !== undefined) ? customerContact.email : '',
-                telephone: (customerContact !== undefined) ? customerContact.telephone : '',
-                memberOf: {
-                    membershipNumber: (transaction.agent.memberOf !== undefined) ? transaction.agent.memberOf.membershipNumber : ''
-                }
-            },
-            eventName: '',
-            eventStartDate: '',
-            eventEndDate: '',
-            superEventLocationBranchCode: '',
-            superEventLocation: '',
-            eventLocation: '',
-            reservedTickets: '',
-            orderNumber: '',
-            confirmationNumber: '',
-            price: '',
-            paymentMethod: [],
-            paymentMethodId: [],
-            discounts: [],
-            discountCodes: [],
-            discountPrices: []
-        };
-    }
 }

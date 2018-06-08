@@ -13,7 +13,7 @@ require('sinon-mongoose');
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 });
 
 describe('createFromTransaction()', () => {
@@ -33,8 +33,9 @@ describe('createFromTransaction()', () => {
                     potentialActions: {
                         sendOrder: { typeOf: sskts.factory.actionType.SendAction },
                         payCreditCard: { typeOf: sskts.factory.actionType.PayAction },
-                        payPecorino: { typeOf: sskts.factory.actionType.PayAction },
-                        useMvtk: { typeOf: sskts.factory.actionType.UseAction }
+                        payPecorino: [{ typeOf: sskts.factory.actionType.PayAction }],
+                        useMvtk: { typeOf: sskts.factory.actionType.UseAction },
+                        givePecorinoAward: [{ typeOf: sskts.factory.actionType.GiveAction }]
                     }
                 }
             }
@@ -51,11 +52,11 @@ describe('createFromTransaction()', () => {
         sandbox.mock(actionRepo).expects('complete').once()
             .withArgs(transaction.potentialActions.order.typeOf, action.id).resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').never();
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(orderRepo).expects('createIfNotExist').once()
             .withExactArgs(transaction.result.order).resolves();
-        sandbox.mock(taskRepo).expects('save').exactly(Object.keys(transaction.potentialActions.order.potentialActions).length);
+        // tslint:disable-next-line:no-magic-numbers
+        sandbox.mock(taskRepo).expects('save').exactly(5);
 
         const result = await sskts.service.order.createFromTransaction(transaction.id)({
             action: actionRepo,
@@ -78,8 +79,7 @@ describe('createFromTransaction()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('start').never();
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(actionRepo).expects('giveUp').never();
@@ -109,8 +109,7 @@ describe('createFromTransaction()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('start').never();
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(actionRepo).expects('giveUp').never();
@@ -152,8 +151,7 @@ describe('createFromTransaction()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findPlaceOrderById').once()
-            .withExactArgs(transaction.id).resolves(transaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').once().withArgs(action.typeOf, action.id).resolves(action);
         sandbox.mock(orderRepo).expects('createIfNotExist').once().rejects(createOrderError);
@@ -204,7 +202,9 @@ describe('cancelReservations()', () => {
                     typeOf: sskts.factory.actionType.ReturnAction,
                     object: order,
                     potentialActions: {
-                        refund: {}
+                        refundCreditCard: {},
+                        refundPecorino: [{}],
+                        returnPecorinoAward: [{}]
                     }
                 }
             }
@@ -218,8 +218,7 @@ describe('cancelReservations()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findReturnOrderById').once()
-            .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
         sandbox.mock(actionRepo).expects('start').once()
             .withExactArgs(returnOrderTransaction.potentialActions.returnOrder).resolves(action);
         sandbox.mock(actionRepo).expects('complete').once()
@@ -230,7 +229,8 @@ describe('cancelReservations()', () => {
         sandbox.mock(ownershipInfoRepo.ownershipInfoModel).expects('findOneAndUpdate')
             .exactly(ownershipInfos.length).chain('exec');
         sandbox.mock(orderRepo).expects('changeStatus').once().withArgs(order.orderNumber);
-        sandbox.mock(taskRepo).expects('save').once();
+        // tslint:disable-next-line:no-magic-numbers
+        sandbox.mock(taskRepo).expects('save').exactly(3);
 
         const result = await sskts.service.order.cancelReservations(returnOrderTransaction.id)(
             actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
@@ -254,8 +254,7 @@ describe('cancelReservations()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findReturnOrderById').once()
-            .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(actionRepo).expects('giveUp').never();
@@ -288,8 +287,7 @@ describe('cancelReservations()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findReturnOrderById').once()
-            .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
         sandbox.mock(actionRepo).expects('start').never();
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(actionRepo).expects('giveUp').never();
@@ -348,8 +346,7 @@ describe('cancelReservations()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findReturnOrderById').once()
-            .withExactArgs(returnOrderTransaction.id).resolves(returnOrderTransaction);
+        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
         sandbox.mock(actionRepo).expects('start').once()
             .withExactArgs(returnOrderTransaction.potentialActions.returnOrder).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();

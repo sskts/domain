@@ -1,13 +1,13 @@
 /**
  * タスクサービス
- * @namespace service.task
  */
-
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
+import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
+import * as redis from 'redis';
 
 import { MongoRepository as TaskRepo } from '../repo/task';
 
@@ -15,10 +15,27 @@ import * as NotificationService from './notification';
 import * as TaskFunctionsService from './taskFunctions';
 
 export type TaskOperation<T> = (repos: { task: TaskRepo }) => Promise<T>;
-export type TaskAndConnectionOperation<T> = (settings: {
+export type IExecuteOperation<T> = (settings: {
+    /**
+     * タスクリポジトリー
+     */
     taskRepo: TaskRepo;
+    /**
+     * MongoDBコネクション
+     */
     connection: mongoose.Connection;
+    /**
+     * Redisクライアント
+     */
+    redisClient?: redis.RedisClient;
+    /**
+     * PecorinoAPI認証クライアント
+     */
     pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    /**
+     * Cognitoサービスプロバイダー
+     */
+    cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
 }) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:task');
@@ -29,13 +46,29 @@ export const ABORT_REPORT_SUBJECT = 'Task aborted !!!';
  * execute a task by taskName
  * タスク名でタスクをひとつ実行する
  * @param taskName タスク名
- * @export
  */
-export function executeByName(taskName: factory.taskName): TaskAndConnectionOperation<void> {
+export function executeByName(taskName: factory.taskName): IExecuteOperation<void> {
     return async (settings: {
+        /**
+         * タスクリポジトリー
+         */
         taskRepo: TaskRepo;
+        /**
+         * MongoDBコネクション
+         */
         connection: mongoose.Connection;
+        /**
+         * Redisクライアント
+         */
+        redisClient?: redis.RedisClient;
+        /**
+         * PecorinoAPI認証クライアント
+         */
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+        /**
+         * Cognitoサービスプロバイダー
+         */
+        cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
     }) => {
         // 未実行のタスクを取得
         let task: factory.task.ITask | null = null;
@@ -59,14 +92,16 @@ export function executeByName(taskName: factory.taskName): TaskAndConnectionOper
  * @param task タスクオブジェクト
  * @export
  */
-export function execute(task: factory.task.ITask): TaskAndConnectionOperation<void> {
+export function execute(task: factory.task.ITask): IExecuteOperation<void> {
     debug('executing a task...', task);
     const now = new Date();
 
     return async (settings: {
         taskRepo: TaskRepo;
         connection: mongoose.Connection;
+        redisClient?: redis.RedisClient;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+        cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
     }) => {
         try {
             // タスク名の関数が定義されていなければ、TypeErrorとなる

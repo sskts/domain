@@ -3,8 +3,12 @@ import { Connection } from 'mongoose';
 
 import ActionModel from './mongoose/model/action';
 
-export type IAction = factory.action.IAction<factory.action.IAttributes<any, any>>;
 export type IAuthorizeAction = factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>>;
+
+export type IAction<T extends factory.actionType> =
+    T extends factory.actionType.OrderAction ? factory.action.trade.order.IAction :
+    T extends factory.actionType.AuthorizeAction ? factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>> :
+    factory.action.IAction<factory.action.IAttributes<T, any, any>>;
 
 /**
  * アクションリポジトリー
@@ -19,36 +23,22 @@ export class MongoRepository {
     /**
      * アクション開始
      */
-    public async start<T extends IAction>(params: {
-        typeOf: factory.actionType;
-        agent: factory.action.IParticipant;
-        object: any;
-        recipient?: factory.action.IParticipant;
-        purpose?: any;
-    }): Promise<T> {
-        const actionAttributes = {
+    public async start<T extends factory.actionType>(attributes: factory.action.IAttributes<T, any, any>): Promise<IAction<T>> {
+        return this.actionModel.create({
+            ...attributes,
             actionStatus: factory.actionStatusType.ActiveActionStatus,
-            typeOf: params.typeOf,
-            agent: params.agent,
-            recipient: params.recipient,
-            object: params.object,
-            startDate: new Date(),
-            purpose: params.purpose
-        };
-
-        return this.actionModel.create(actionAttributes).then(
-            (doc) => <T>doc.toObject()
-        );
+            startDate: new Date()
+        }).then((doc) => doc.toObject());
     }
 
     /**
      * アクション完了
      */
-    public async complete<T extends IAction>(
-        typeOf: factory.actionType,
+    public async complete<T extends factory.actionType>(
+        typeOf: T,
         actionId: string,
         result: any
-    ): Promise<T> {
+    ): Promise<IAction<T>> {
         return this.actionModel.findOneAndUpdate(
             {
                 typeOf: typeOf,
@@ -65,17 +55,17 @@ export class MongoRepository {
                 throw new factory.errors.NotFound('action');
             }
 
-            return <T>doc.toObject();
+            return doc.toObject();
         });
     }
 
     /**
      * アクション中止
      */
-    public async cancel<T extends IAction>(
-        typeOf: factory.actionType,
+    public async cancel<T extends factory.actionType>(
+        typeOf: T,
         actionId: string
-    ): Promise<T> {
+    ): Promise<IAction<T>> {
         return this.actionModel.findOneAndUpdate(
             {
                 typeOf: typeOf,
@@ -83,25 +73,24 @@ export class MongoRepository {
             },
             { actionStatus: factory.actionStatusType.CanceledActionStatus },
             { new: true }
-        ).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new factory.errors.NotFound('action');
+        ).exec().then((doc) => {
+            if (doc === null) {
+                throw new factory.errors.NotFound('action');
 
-                }
+            }
 
-                return <T>doc.toObject();
-            });
+            return doc.toObject();
+        });
     }
 
     /**
      * アクション失敗
      */
-    public async giveUp<T extends IAction>(
-        typeOf: factory.actionType,
+    public async giveUp<T extends factory.actionType>(
+        typeOf: T,
         actionId: string,
         error: any
-    ): Promise<T> {
+    ): Promise<IAction<T>> {
         return this.actionModel.findOneAndUpdate(
             {
                 typeOf: typeOf,
@@ -118,30 +107,29 @@ export class MongoRepository {
                 throw new factory.errors.NotFound('action');
             }
 
-            return <T>doc.toObject();
+            return doc.toObject();
         });
     }
 
     /**
      * IDで取得する
      */
-    public async findById<T extends IAction>(
-        typeOf: factory.actionType,
+    public async findById<T extends factory.actionType>(
+        typeOf: T,
         actionId: string
-    ): Promise<T> {
+    ): Promise<IAction<T>> {
         return this.actionModel.findOne(
             {
                 typeOf: typeOf,
                 _id: actionId
             }
-        ).exec()
-            .then((doc) => {
-                if (doc === null) {
-                    throw new factory.errors.NotFound('action');
-                }
+        ).exec().then((doc) => {
+            if (doc === null) {
+                throw new factory.errors.NotFound('action');
+            }
 
-                return <T>doc.toObject();
-            });
+            return doc.toObject();
+        });
     }
 
     /**
@@ -155,14 +143,14 @@ export class MongoRepository {
                 $exists: true,
                 $eq: transactionId
             }
-        }).exec().then((docs) => docs.map((doc) => <IAuthorizeAction>doc.toObject()));
+        }).exec().then((docs) => docs.map((doc) => doc.toObject()));
     }
 
     /**
      * 注文番号から、注文に対するアクションを検索する
      * @param orderNumber 注文番号
      */
-    public async findByOrderNumber(orderNumber: string): Promise<IAction[]> {
+    public async findByOrderNumber(orderNumber: string): Promise<IAction<factory.actionType>[]> {
         return this.actionModel.find({
             $or: [
                 { 'object.orderNumber': orderNumber },
@@ -171,7 +159,7 @@ export class MongoRepository {
         })
             .sort({ endDate: -1 })
             .exec()
-            .then((docs) => docs.map((doc) => <IAction>doc.toObject()));
+            .then((docs) => docs.map((doc) => doc.toObject()));
 
     }
 }

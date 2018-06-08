@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
+const safe = { j: true, w: 'majority', wtimeout: 10000 };
 
 const ownedBySchema = new mongoose.Schema(
     {},
@@ -68,20 +68,18 @@ schema.index(
     { unique: true }
 );
 
-// 上映イベント予約の所有権検索時に使用
+// 所有権検索時に使用
 schema.index(
     {
         'typeOfGood.typeOf': 1,
-        'typeOfGood.reservationFor.typeOf': 1,
-        'ownedBy.id': 1,
+        'ownedBy.memberOf.membershipNumber': 1,
         ownedFrom: 1,
         ownedThrough: 1
     },
     {
-        name: 'searchScreeningEventReservations',
+        name: 'searchByOwner',
         partialFilterExpression: {
-            'typeOfGood.reservationFor.typeOf': { $exists: true },
-            'ownedBy.id': { $exists: true }
+            'ownedBy.memberOf.membershipNumber': { $exists: true }
         }
     }
 );

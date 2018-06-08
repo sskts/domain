@@ -1,7 +1,7 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 
-const safe: any = { j: 1, w: 'majority', wtimeout: 10000 };
+const safe = { j: true, w: 'majority', wtimeout: 10000 };
 
 const executionResultSchema = new mongoose.Schema(
     {},
@@ -98,6 +98,23 @@ schema.index(
         partialFilterExpression: {
             name: factory.taskName.SendEmailMessage,
             'data.actionAttributes.object.identifier': { $exists: true }
+        }
+    }
+);
+
+// 会員プログラム登録解除に使用
+schema.index(
+    {
+        name: 1,
+        'data.agent.memberOf.membershipNumber': 1,
+        'data.object.itemOffered.id': 1
+    },
+    {
+        name: 'findRegisterProgramMembershipByMemberAndProgram',
+        partialFilterExpression: {
+            name: factory.taskName.RegisterProgramMembership,
+            'data.agent.memberOf.membershipNumber': { $exists: true },
+            'data.object.itemOffered.id': { $exists: true }
         }
     }
 );
