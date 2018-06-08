@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v25.0.0 - 2018-06-08
+
+### Added
+
 - 会員プログラムリポジトリーを追加。
 - Pecorino承認アクション取消処理を実装。
 - 取引リポジトリーに中止メソッドを追加。
@@ -38,15 +52,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文配送のポストアクションに会員プログラム登録タスクを追加。
 - 取引レポートサービスを複数アイテムタイプに対応。
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 
 - クレジットカード検索結果が0個の場合にGMOが投げるエラーをハンドリング。
-
-### Security
 
 ## v24.1.1 - 2018-05-02
 
