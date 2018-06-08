@@ -25,6 +25,8 @@ export class MongoRepository {
             { typeOf: <factory.programMembership.ProgramMembershipType>'ProgramMembership' }
         ];
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (params.id !== undefined) {
             andConditions.push({ _id: params.id });
         }

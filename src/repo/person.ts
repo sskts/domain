@@ -1,9 +1,9 @@
 import * as factory from '@motionpicture/sskts-factory';
 import * as AWS from 'aws-sdk';
-import * as createDebug from 'debug';
+// import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 
-const debug = createDebug('sskts-domain:repository:person');
+// const debug = createDebug('sskts-domain:repository:person');
 
 /**
  * 会員リポジトリー
@@ -27,13 +27,16 @@ export class CognitoRepository {
         userAttributes.forEach((userAttribute) => {
             switch (userAttribute.Name) {
                 case 'given_name':
-                    contact.givenName = (userAttribute.Value !== undefined) ? userAttribute.Value : '';
+                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                    contact.givenName = (userAttribute.Value !== undefined) ? userAttribute.Value : /* istanbul ignore next: please write tests */ '';
                     break;
                 case 'family_name':
-                    contact.familyName = (userAttribute.Value !== undefined) ? userAttribute.Value : '';
+                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                    contact.familyName = (userAttribute.Value !== undefined) ? userAttribute.Value : /* istanbul ignore next: please write tests */ '';
                     break;
                 case 'email':
-                    contact.email = (userAttribute.Value !== undefined) ? userAttribute.Value : '';
+                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                    contact.email = (userAttribute.Value !== undefined) ? userAttribute.Value : /* istanbul ignore next: please write tests */ '';
                     break;
                 case 'phone_number':
                     // tslint:disable-next-line:no-single-line-block-comment
@@ -45,6 +48,8 @@ export class CognitoRepository {
                         contact.telephone = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
                     }
                     break;
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore next */
                 default:
             }
         });
@@ -52,6 +57,9 @@ export class CognitoRepository {
         return contact;
     }
 
+    /**
+     * 管理者権限でユーザー属性を取得する
+     */
     public async  getUserAttributes(params: {
         userPooId: string;
         username: string;
@@ -66,8 +74,10 @@ export class CognitoRepository {
                     if (err instanceof Error) {
                         reject(err);
                     } else {
+                        // tslint:disable-next-line:no-single-line-block-comment
+                        /* istanbul ignore if: please write tests */
                         if (data.UserAttributes === undefined) {
-                            reject(new Error('UserAttributes not found.'));
+                            reject(new factory.errors.NotFound('User'));
                         } else {
                             resolve(CognitoRepository.ATTRIBUTE2CONTACT(data.UserAttributes));
                         }
@@ -76,6 +86,9 @@ export class CognitoRepository {
         });
     }
 
+    /**
+     * 管理者権限でsubでユーザーを検索する
+     */
     public async findById(params: {
         userPooId: string;
         userId: string;
@@ -90,8 +103,10 @@ export class CognitoRepository {
                     if (err instanceof Error) {
                         reject(err);
                     } else {
+                        // tslint:disable-next-line:no-single-line-block-comment
+                        /* istanbul ignore if: please write tests */
                         if (data.Users === undefined) {
-                            reject(new Error('Users not found.'));
+                            reject(new factory.errors.NotFound('User'));
                         } else {
                             const user = data.Users.shift();
                             if (user === undefined || user.Attributes === undefined) {
@@ -105,7 +120,7 @@ export class CognitoRepository {
     }
 
     /**
-     * retrieve contact from Amazon Cognito
+     * アクセストークンでユーザー属性を取得する
      */
     public async getUserAttributesByAccessToken(accessToken: string): Promise<factory.person.IContact> {
         return new Promise<factory.person.IContact>((resolve, reject) => {
@@ -135,7 +150,6 @@ export class CognitoRepository {
             try {
                 const phoneUtil = PhoneNumberUtil.getInstance();
                 const phoneNumber = phoneUtil.parse(params.contact.telephone, 'JP');
-                debug('isValidNumber:', phoneUtil.isValidNumber(phoneNumber));
                 if (!phoneUtil.isValidNumber(phoneNumber)) {
                     throw new Error('Invalid phone number format.');
                 }

@@ -15,7 +15,6 @@ export class MongoRepository {
     }
 
     /**
-     * save an ownershipInfo
      * 所有権情報を保管する
      * @param ownershipInfo ownershipInfo object
      */
@@ -39,27 +38,11 @@ export class MongoRepository {
             { 'typeOfGood.typeOf': searchConditions.goodType }
         ];
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (searchConditions.identifier !== undefined) {
             andConditions.push({ identifier: searchConditions.identifier });
         }
-        // if (searchConditions.typeOfGood !== undefined) {
-        //     if (searchConditions.typeOfGood.eventReservationFor !== undefined) {
-        //         andConditions.push(
-        //             {
-        //                 'typeOfGood.reservationFor.typeOf': {
-        //                     $exists: true,
-        //                     $eq: searchConditions.typeOfGood.eventReservationFor.typeOf
-        //                 }
-        //             },
-        //             {
-        //                 'typeOfGood.reservationFor.identifier': {
-        //                     $exists: true,
-        //                     $eq: searchConditions.typeOfGood.eventReservationFor.identifier
-        //                 }
-        //             }
-        //         );
-        //     }
-        // }
 
         // 誰の所有か
         // tslint:disable-next-line:no-single-line-block-comment

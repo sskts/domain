@@ -15,7 +15,6 @@ export class RedisRepository {
      * {RedisRepository.MAX_LENGTH_OF_SEQUENCE_NO}と数が連動している必要がある
      */
     public static CHECK_DIGIT_WEIGHTS: number[] = [3, 1, 4, 2, 4, 1, 5, 4, 5, 3];
-
     public static SORT_TYPES: number[][] = [
         [1, 0, 7, 4, 5, 6, 8, 2, 3, 9],
         [2, 7, 4, 1, 6, 3, 9, 8, 0, 5],
@@ -28,10 +27,8 @@ export class RedisRepository {
         [1, 0, 7, 3, 5, 6, 2, 4, 9, 8],
         [7, 4, 0, 1, 3, 9, 6, 8, 5, 2]
     ];
-
     public static REDIS_KEY_PREFIX: string = 'sskts-domain:accountNumber';
     public static MAX_LENGTH_OF_SEQUENCE_NO: number = 10;
-
     public readonly redisClient: redis.RedisClient;
 
     constructor(redisClient: redis.RedisClient) {
@@ -41,7 +38,9 @@ export class RedisRepository {
     /**
      * チェックディジットを求める
      */
-    public static GET_CHECK_DIGIT(source: string): number {
+    private static calculateCheckDegit(source: string): number {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if: please write tests */
         if (source.length !== RedisRepository.MAX_LENGTH_OF_SEQUENCE_NO) {
             throw new factory.errors.Argument('source', `Source length must be ${RedisRepository.MAX_LENGTH_OF_SEQUENCE_NO}.`);
         }
@@ -53,12 +52,13 @@ export class RedisRepository {
         const checkDigit = 11 - (sum % 11);
 
         // 2桁の場合0、1桁であればそのまま(必ず1桁になるように)
-        return (checkDigit >= 10) ? 0 : checkDigit;
+        // tslint:disable-next-line:no-single-line-block-comment
+        return (checkDigit < 10) ? checkDigit : /* istanbul ignore next */ 0;
     }
 
     /**
      * 口座番号を発行する
-     * @param date 採番対象の日付
+     * @param openDate 口座開設日時
      */
     public async publish(openDate: Date): Promise<string> {
         // 上映日を過ぎたら期限が切れるようにTTLを設定
@@ -74,6 +74,8 @@ export class RedisRepository {
                 .expire(key, TTL)
                 .exec((err, res) => {
                     debug('incr,expire executed.', err, res);
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore if: please write tests */
                     if (err instanceof Error) {
                         reject(err);
                     } else {
@@ -83,7 +85,10 @@ export class RedisRepository {
         });
         debug('results:', results);
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (results[0] === undefined || !Number.isInteger(results[0])) {
+            // 基本的にありえないフロー
             throw new factory.errors.ServiceUnavailable();
         }
 
@@ -92,7 +97,7 @@ export class RedisRepository {
 
         // {RedisRepository.MAX_LENGTH_OF_SEQUENCE_NO}桁になるように0で埋める
         const source = `${date}${`0000${no.toString()}`.slice(-(RedisRepository.MAX_LENGTH_OF_SEQUENCE_NO - date.length))}`;
-        const checKDigit = RedisRepository.GET_CHECK_DIGIT(source);
+        const checKDigit = RedisRepository.calculateCheckDegit(source);
         debug('source:', source, 'checKDigit:', checKDigit);
 
         // sortTypes[checkDigit]で並べ替える

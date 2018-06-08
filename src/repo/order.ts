@@ -93,6 +93,8 @@ export class MongoRepository {
             }
         ];
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (searchConditions.sellerId !== undefined) {
             andConditions.push({
                 'seller.id': {
@@ -102,6 +104,8 @@ export class MongoRepository {
             });
         }
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (searchConditions.customerMembershipNumber !== undefined) {
             andConditions.push({
                 'customer.memberOf.membershipNumber': {
@@ -111,12 +115,16 @@ export class MongoRepository {
             });
         }
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (searchConditions.orderNumber !== undefined) {
             andConditions.push({
                 orderNumber: searchConditions.orderNumber
             });
         }
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (searchConditions.orderStatus !== undefined) {
             andConditions.push({
                 orderStatus: searchConditions.orderStatus

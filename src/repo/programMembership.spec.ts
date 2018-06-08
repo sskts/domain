@@ -21,13 +21,14 @@ describe('会員プログラムを検索する', () => {
     });
 
     it('MongoDBが正常であれば配列を取得できるはず', async () => {
+        const searchConditions = { id: 'id' };
         const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
         sandbox.mock(programMembershipRepo.programMembershipModel).expects('find').once()
             .chain('sort')
             .chain('exec')
             .resolves([new programMembershipRepo.programMembershipModel()]);
 
-        const result = await programMembershipRepo.search(<any>{});
+        const result = await programMembershipRepo.search(searchConditions);
         assert(Array.isArray(result));
         sandbox.verify();
     });

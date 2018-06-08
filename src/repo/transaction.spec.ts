@@ -278,6 +278,15 @@ describe('IDで取引を取得する', () => {
         assert.equal(typeof result, 'object');
         sandbox.verify();
     });
+
+    it('取引が存在しなければNotFoundエラー', async () => {
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        sandbox.mock(transactionRepo.transactionModel).expects('findOne').once().chain('exec').resolves(null);
+
+        const result = await transactionRepo.findById(sskts.factory.transactionType.PlaceOrder, 'transactionId').catch((err) => err);
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
 });
 
 describe('IDで進行中取引を取得する', () => {
@@ -294,6 +303,16 @@ describe('IDで進行中取引を取得する', () => {
         assert.equal(typeof result, 'object');
         sandbox.verify();
     });
+
+    it('取引が存在しなければNotFoundエラー', async () => {
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        sandbox.mock(transactionRepo.transactionModel).expects('findOne').once().chain('exec').resolves(null);
+
+        const result = await transactionRepo.findInProgressById(sskts.factory.transactionType.PlaceOrder, 'transactionId')
+            .catch((err) => err);
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
 });
 
 describe('取引を中止する', () => {
@@ -308,6 +327,16 @@ describe('取引を中止する', () => {
 
         const result = await transactionRepo.cancel(sskts.factory.transactionType.PlaceOrder, 'transactionId');
         assert.equal(typeof result, 'object');
+        sandbox.verify();
+    });
+
+    it('進行中取引が存在しなければNotFoundエラー', async () => {
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').once().chain('exec').resolves(null);
+
+        const result = await transactionRepo.cancel(sskts.factory.transactionType.PlaceOrder, 'transactionId')
+            .catch((err) => err);
+        assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
 });

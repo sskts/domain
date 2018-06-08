@@ -59,9 +59,13 @@ export class RedisRepository {
                 .expire(key, TTL)
                 .exec((err, results) => {
                     debug('results:', results);
-                    if (err !== null) {
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore if: please write tests */
+                    if (err instanceof Error) {
                         reject(err);
                     } else {
+                        // tslint:disable-next-line:no-single-line-block-comment
+                        /* istanbul ignore else: please write tests */
                         if (Number.isInteger(results[0])) {
                             const no: number = results[0];
                             debug('no incremented.', no);
@@ -72,6 +76,7 @@ export class RedisRepository {
                                 (`000000${no}`).slice(-6) // 一販売者につき一日あたり最大100000件以内の注文想定
                             ));
                         } else {
+                            // 基本的にありえないフロー
                             reject(new factory.errors.ServiceUnavailable('Order number not published'));
                         }
                     }

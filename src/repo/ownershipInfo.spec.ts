@@ -48,19 +48,17 @@ describe('所有権検索', () => {
 
     it('MongoDBの状態が正常であれば、配列を返すはず', async () => {
         const searchConditions = {
+            identifier: 'identifier',
             goodType: factory.reservationType.EventReservation,
             ownedBy: '',
             ownedAt: new Date()
         };
         const repository = new OwnershipInfoRepo(mongoose.connection);
-        const docs = [new repository.ownershipInfoModel()];
-
         sandbox.mock(repository.ownershipInfoModel).expects('find').once()
-            .chain('exec').resolves(docs);
+            .chain('exec').resolves([new repository.ownershipInfoModel()]);
 
         const result = await repository.search(searchConditions);
         assert(Array.isArray(result));
-        assert.equal(result.length, docs.length);
         sandbox.verify();
     });
 });
