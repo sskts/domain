@@ -2,7 +2,6 @@
 /**
  * 口座サービステスト
  */
-import { BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from 'http-status';
 import * as assert from 'power-assert';
 import * as redis from 'redis-mock';
 import * as sinon from 'sinon';
@@ -57,31 +56,4 @@ describe('ポイントを入金する', () => {
         assert.equal(result, undefined);
         sandbox.verify();
     });
-});
-
-describe('Pecorinoエラーをハンドリングする', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    // tslint:disable-next-line:mocha-no-side-effect-code
-    [
-        BAD_REQUEST,
-        UNAUTHORIZED,
-        FORBIDDEN,
-        NOT_FOUND,
-        TOO_MANY_REQUESTS,
-        INTERNAL_SERVER_ERROR
-    ].map((code) => {
-        it(`Pecorinoサービスが${code}であればSSKTSErrorに変換されるはず`, async () => {
-            const error = {
-                name: 'PecorinoRequestError',
-                code: code
-            };
-
-            const result = await sskts.service.account.handlePecorinoError(error);
-            assert(result instanceof sskts.factory.errors.SSKTS);
-            sandbox.verify();
-        });
-    })
 });

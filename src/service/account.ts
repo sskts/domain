@@ -5,9 +5,9 @@
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 // import * as createDebug from 'debug';
-import { BAD_REQUEST, FORBIDDEN, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from 'http-status';
 import * as moment from 'moment';
 
+import { handlePecorinoError } from '../errorHandler';
 import { RedisRepository as AccountNumberRepo } from '../repo/accountNumber';
 
 // const debug = createDebug('sskts-domain:service:account');
@@ -95,38 +95,4 @@ export function deposit(params: {
             throw error;
         }
     };
-}
-
-/**
- * Pecorinoサービスエラーをハンドリングして本ドメインのエラーに変換する
- */
-export function handlePecorinoError(error: any) {
-    let handledError: Error = error;
-
-    // PecorinoAPIのレスポンスステータスコードが4xxであればクライアントエラー
-    if (error.name === 'PecorinoRequestError') {
-        // Pecorino APIのステータスコード4xxをハンドリング
-        const message = `${error.name}:${error.message}`;
-        switch (error.code) {
-            case BAD_REQUEST: // 400
-                handledError = new factory.errors.Argument('PecorinoArgument', message);
-                break;
-            case UNAUTHORIZED: // 401
-                handledError = new factory.errors.Unauthorized(message);
-                break;
-            case FORBIDDEN: // 403
-                handledError = new factory.errors.Forbidden(message);
-                break;
-            case NOT_FOUND: // 404
-                handledError = new factory.errors.NotFound(message);
-                break;
-            case TOO_MANY_REQUESTS: // 429
-                handledError = new factory.errors.RateLimitExceeded(message);
-                break;
-            default:
-                handledError = new factory.errors.ServiceUnavailable(message);
-        }
-    }
-
-    return handledError;
 }
