@@ -6,14 +6,11 @@
 
 SSKTSのバックエンドサービスをnode.jsで簡単に使用するためのパッケージを提供します。
 
-
 ## Table of contents
 
 * [Usage](#usage)
 * [Code Samples](#code-samples)
-* [Jsdoc](#jsdoc)
 * [License](#license)
-
 
 ## Usage
 
@@ -23,22 +20,22 @@ npm install @motionpicture/sskts-domain
 
 ### Environment variables
 
-| Name                                       | Required | Value                            | Purpose                  |
-| ------------------------------------------ | -------- | -------------------------------- | ------------------------ |
-| `DEBUG`                                    | false    | sskts-domain:*                   | Debug                    |
-| `NPM_TOKEN`                                | true     |                                  | NPM auth token           |
-| `NODE_ENV`                                 | true     |                                  | environment name         |
-| `MONGOLAB_URI`                             | true     |                                  | MongoDB connection URI   |
-| `SENDGRID_API_KEY`                         | true     |                                  | SendGrid API Key         |
-| `GMO_ENDPOINT`                             | true     |                                  | GMO API endpoint         |
-| `GMO_SITE_ID`                              | true     |                                  | GMO SiteID               |
-| `GMO_SITE_PASS`                            | true     |                                  | GMO SitePass             |
-| `COA_ENDPOINT`                             | true     |                                  | COA API endpoint         |
-| `COA_REFRESH_TOKEN`                        | true     |                                  | COA API refresh token    |
-| `SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN` | true     |                                  | 開発者通知用LINEアクセストークン |
-| `WAITER_SECRET`                            | true     |                                  | WAITER許可証トークン秘密鍵   |
-| `WAITER_PASSPORT_ISSUER`                   | true     | https://sskts-waiter-example.com | WAITER許可証発行者       |
-| `ORDER_INQUIRY_ENDPOINT`                   | true     |                                  | 注文照会エンドポイント          |
+| Name                                       | Required | Value          | Purpose                |
+|--------------------------------------------|----------|----------------|------------------------|
+| `DEBUG`                                    | false    | sskts-domain:* | Debug                  |
+| `NPM_TOKEN`                                | true     |                | NPM auth token         |
+| `NODE_ENV`                                 | true     |                | environment name       |
+| `MONGOLAB_URI`                             | true     |                | MongoDB connection URI |
+| `SENDGRID_API_KEY`                         | true     |                | SendGrid API Key       |
+| `GMO_ENDPOINT`                             | true     |                | GMO API endpoint       |
+| `GMO_SITE_ID`                              | true     |                | GMO SiteID             |
+| `GMO_SITE_PASS`                            | true     |                | GMO SitePass           |
+| `COA_ENDPOINT`                             | true     |                | COA API endpoint       |
+| `COA_REFRESH_TOKEN`                        | true     |                | COA API refresh token  |
+| `SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN` | true     |                | 開発者通知用LINEアクセストークン     |
+| `WAITER_SECRET`                            | true     |                | WAITER許可証トークン秘密鍵       |
+| `WAITER_PASSPORT_ISSUER`                   | true     |                | WAITER許可証発行者           |
+| `ORDER_INQUIRY_ENDPOINT`                   | true     |                | 注文照会エンドポイント            |
 
 ### Search individual screening events sample
 
@@ -72,10 +69,6 @@ sskts.service.offer.searchIndividualScreeningEvents({
 ## Code Samples
 
 Code sample are [here](https://github.com/motionpicture/sskts-domain/tree/master/example).
-
-## Jsdoc
-
-`npm run doc` emits jsdoc to ./doc.
 
 ## License
 
