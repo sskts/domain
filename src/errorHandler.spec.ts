@@ -14,7 +14,7 @@ before(() => {
     sandbox = sinon.createSandbox();
 });
 
-describe('Pecorinoエラーをハンドリングする', () => {
+describe('Pecorinoリクエストエラーをハンドリングする', () => {
     beforeEach(() => {
         sandbox.restore();
     });
@@ -28,7 +28,7 @@ describe('Pecorinoエラーをハンドリングする', () => {
         TOO_MANY_REQUESTS,
         INTERNAL_SERVER_ERROR
     ].map((code) => {
-        it(`Pecorinoサービスが${code}であればSSKTSErrorに変換されるはず`, async () => {
+        it(`Pecorinoサービスが${code}であればSSKTSErrorに変換されるはず`, () => {
             const error = {
                 name: 'PecorinoRequestError',
                 code: code

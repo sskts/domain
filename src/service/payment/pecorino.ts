@@ -27,7 +27,6 @@ export function payPecorino(params: factory.task.payPecorino.IData) {
             const pecorinoTransaction = params.object.pecorinoTransaction;
             switch (pecorinoTransaction.typeOf) {
                 case pecorinoapi.factory.transactionType.Withdraw:
-
                     // 支払取引の場合、確定
                     const withdrawService = new pecorinoapi.service.transaction.Withdraw({
                         endpoint: params.object.pecorinoEndpoint,

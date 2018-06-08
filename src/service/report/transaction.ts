@@ -23,11 +23,11 @@ export type IDownloadFormat = 'csv';
 
 /**
  * フォーマット指定でダウンロード
- * @export
  * @param conditions 検索条件
  * @param format フォーマット
  */
-// tslint:disable-next-line:max-func-body-length
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 export function download(
     conditions: {
         startFrom: Date;
@@ -178,6 +178,8 @@ export interface ITransactionReport {
     discountPrices: string[];
 }
 
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 // tslint:disable-next-line:max-func-body-length
 export function transaction2report(params: {
     order?: factory.order.IOrder;
@@ -188,9 +190,8 @@ export function transaction2report(params: {
     if (params.transaction.result !== undefined) {
         // 注文データがまだ存在しなければ取引結果から参照
         const order = (params.order !== undefined) ? params.order : params.transaction.result.order;
-        const orderItems = order.acceptedOffers;
         let event: factory.event.individualScreeningEvent.IEvent | undefined;
-        const items = orderItems.map(
+        const items = order.acceptedOffers.map(
             (orderItem) => {
                 const offer = orderItem.itemOffered;
                 let item = {
