@@ -20,7 +20,7 @@ let healthGMONotifications: any[];
 let healthyPayActions: any[];
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 });
 
 describe('service.report.health.checkGMOSales()', () => {

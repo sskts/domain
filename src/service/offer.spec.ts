@@ -16,7 +16,7 @@ import * as OfferService from './offer';
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 });
 
 describe('searchIndividualScreeningEvents()', () => {

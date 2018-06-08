@@ -10,7 +10,7 @@ import * as sskts from '../../../../../../index';
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 });
 
 describe('action.authorize.creditCard.create()', () => {

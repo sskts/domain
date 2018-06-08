@@ -14,7 +14,7 @@ import * as TaskFunctionsService from './taskFunctions';
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 });
 
 describe('executeByName()', () => {

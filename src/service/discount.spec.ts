@@ -11,7 +11,7 @@ let sandbox: sinon.SinonSandbox;
 let existingTransaction: any;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
     existingTransaction = {
         id: '123',
         agent: { typeOf: 'Person' },

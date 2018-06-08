@@ -16,7 +16,7 @@ import { MongoRepository as OwnershipInfoRepo } from './ownershipInfo';
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 });
 
 describe('OwnershipInfoRepo.save()', () => {

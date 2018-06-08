@@ -18,7 +18,7 @@ import * as MasterSyncService from './masterSync';
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 });
 
 describe('importMovies()', () => {

@@ -15,7 +15,7 @@ const gmoErrorMemberNotFound = { errors: [{ info: 'E01390002' }] };
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
 });
 
 describe('PersonCreditCardService.save()', () => {

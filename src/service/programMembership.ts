@@ -44,7 +44,7 @@ export type IRegisterOperation<T> = (repos: {
 }) => Promise<T>;
 
 /**
- * 会員登録タスクを作成する
+ * 会員プログラム登録タスクを作成する
  */
 export function createRegisterTask(params: {
     agent: factory.person.IPerson;
@@ -233,7 +233,7 @@ export function register(
 }
 
 /**
- * 会員登録`解除タスクを作成する
+ * 会員プログラム登録解除タスクを作成する
  */
 export function createUnRegisterTask(params: {
     agent: factory.person.IPerson;
