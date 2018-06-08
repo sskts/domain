@@ -315,6 +315,8 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
             }
 
             // Pecorino返金タスク
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
             if (Array.isArray(returnActionAttributes.potentialActions.refundPecorino)) {
                 taskAttributes.push(...returnActionAttributes.potentialActions.refundPecorino.map(
                     (a): factory.task.refundPecorino.IAttributes => {
@@ -333,6 +335,8 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
             }
 
             // Pecorinoインセンティブ返却タスク
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
             if (Array.isArray(returnActionAttributes.potentialActions.returnPecorinoAward)) {
                 taskAttributes.push(...returnActionAttributes.potentialActions.returnPecorinoAward.map(
                     (a): factory.task.returnPecorinoAward.IAttributes => {

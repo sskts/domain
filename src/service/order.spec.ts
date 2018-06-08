@@ -34,7 +34,8 @@ describe('createFromTransaction()', () => {
                         sendOrder: { typeOf: sskts.factory.actionType.SendAction },
                         payCreditCard: { typeOf: sskts.factory.actionType.PayAction },
                         payPecorino: [{ typeOf: sskts.factory.actionType.PayAction }],
-                        useMvtk: { typeOf: sskts.factory.actionType.UseAction }
+                        useMvtk: { typeOf: sskts.factory.actionType.UseAction },
+                        givePecorinoAward: [{ typeOf: sskts.factory.actionType.GiveAction }]
                     }
                 }
             }
@@ -54,7 +55,8 @@ describe('createFromTransaction()', () => {
         sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(orderRepo).expects('createIfNotExist').once()
             .withExactArgs(transaction.result.order).resolves();
-        sandbox.mock(taskRepo).expects('save').exactly(Object.keys(transaction.potentialActions.order.potentialActions).length);
+        // tslint:disable-next-line:no-magic-numbers
+        sandbox.mock(taskRepo).expects('save').exactly(5);
 
         const result = await sskts.service.order.createFromTransaction(transaction.id)({
             action: actionRepo,
@@ -200,7 +202,9 @@ describe('cancelReservations()', () => {
                     typeOf: sskts.factory.actionType.ReturnAction,
                     object: order,
                     potentialActions: {
-                        refundCreditCard: {}
+                        refundCreditCard: {},
+                        refundPecorino: [{}],
+                        returnPecorinoAward: [{}]
                     }
                 }
             }
@@ -225,7 +229,8 @@ describe('cancelReservations()', () => {
         sandbox.mock(ownershipInfoRepo.ownershipInfoModel).expects('findOneAndUpdate')
             .exactly(ownershipInfos.length).chain('exec');
         sandbox.mock(orderRepo).expects('changeStatus').once().withArgs(order.orderNumber);
-        sandbox.mock(taskRepo).expects('save').once();
+        // tslint:disable-next-line:no-magic-numbers
+        sandbox.mock(taskRepo).expects('save').exactly(3);
 
         const result = await sskts.service.order.cancelReservations(returnOrderTransaction.id)(
             actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo

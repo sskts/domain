@@ -77,13 +77,19 @@ export function createRegisterTask(params: {
         const now = new Date();
         const programMemberships = await repos.programMembership.search({ id: params.programMembershipId });
         const programMembership = programMemberships.shift();
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (programMembership === undefined) {
             throw new factory.errors.NotFound('ProgramMembership');
         }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (programMembership.offers === undefined) {
             throw new factory.errors.NotFound('ProgramMembership.offers');
         }
         const offer = programMembership.offers.find((o) => o.identifier === params.offerIdentifier);
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (offer === undefined) {
             throw new factory.errors.NotFound('Offer');
         }
@@ -154,15 +160,20 @@ export function register(
     }) => {
         const now = new Date();
 
-        // すでに会員プログラムに加入済であれば何もしない
         const customer = (<factory.person.IPerson>params.agent);
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (customer.memberOf === undefined) {
             throw new factory.errors.NotFound('params.agent.memberOf');
         }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (customer.memberOf.membershipNumber === undefined) {
             throw new factory.errors.NotFound('params.agent.memberOf.membershipNumber');
         }
         const programMembershipId = params.object.itemOffered.id;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (programMembershipId === undefined) {
             throw new factory.errors.NotFound('params.object.itemOffered.id');
         }
@@ -172,6 +183,7 @@ export function register(
             ownedBy: customer.memberOf.membershipNumber,
             ownedAt: now
         });
+        // すでに会員プログラムに加入済であれば何もしない
         const selectedProgramMembership = programMemberships.find((p) => p.typeOfGood.id === params.object.itemOffered.id);
         if (selectedProgramMembership !== undefined) {
             debug('Already registered.');
@@ -209,6 +221,8 @@ export function register(
 
             try {
                 // 本プロセスがlockした場合は解除する。解除しなければタスクのリトライが無駄になってしまう。
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore else */
                 if (lockNumber !== undefined) {
                     await repos.registerActionInProgressRepo.unlock({
                         membershipNumber: customer.memberOf.membershipNumber,
@@ -247,9 +261,13 @@ export function createUnRegisterTask(params: {
         task: TaskRepo;
     }) => {
         // 所有している会員プログラムを検索
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (params.agent.memberOf === undefined) {
             throw new factory.errors.NotFound('params.agent.memberOf');
         }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (params.agent.memberOf.membershipNumber === undefined) {
             throw new factory.errors.NotFound('params.agent.memberOf.membershipNumber');
         }
@@ -261,6 +279,8 @@ export function createUnRegisterTask(params: {
             ownedAt: now
         });
         const ownershipInfo = ownershipInfos.shift();
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if: please write tests */
         if (ownershipInfo === undefined) {
             throw new factory.errors.NotFound('OwnershipInfo');
         }
@@ -300,14 +320,20 @@ export function unRegister(params: factory.action.interact.unRegister.programMem
 
         try {
             const memberOf = (<factory.person.IPerson>params.object.ownedBy).memberOf;
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
             if (memberOf === undefined) {
                 throw new factory.errors.NotFound('params.object.ownedBy.memberOf');
             }
             const membershipNumber = memberOf.membershipNumber;
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
             if (membershipNumber === undefined) {
                 throw new factory.errors.NotFound('params.object.ownedBy.memberOf.membershipNumber');
             }
             const programMembershipId = params.object.typeOfGood.id;
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
             if (programMembershipId === undefined) {
                 throw new factory.errors.NotFound('params.object.typeOfGood.id');
             }
@@ -359,10 +385,10 @@ export function unRegister(params: factory.action.interact.unRegister.programMem
 /**
  * 会員プログラム登録アクション属性から、会員プログラムを注文する
  */
-// tslint:disable-next-line:max-func-body-length
 function processPlaceOrder(params: {
     registerActionAttributes: factory.action.interact.register.programMembership.IAttributes;
 }) {
+    // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
         orderNumber: OrderNumberRepo;
@@ -372,18 +398,26 @@ function processPlaceOrder(params: {
         transaction: TransactionRepo;
     }) => {
         const programMembership = params.registerActionAttributes.object.itemOffered;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (programMembership.offers === undefined) {
             throw new factory.errors.NotFound('ProgramMembership.offers');
         }
         const acceptedOffer = params.registerActionAttributes.object;
         const seller = programMembership.hostingOrganization;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (seller === undefined) {
             throw new factory.errors.NotFound('ProgramMembership.hostingOrganization');
         }
         const customer = (<factory.person.IPerson>params.registerActionAttributes.agent);
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (customer.memberOf === undefined) {
             throw new factory.errors.NotFound('params.agent.memberOf');
         }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (customer.memberOf.membershipNumber === undefined) {
             throw new factory.errors.NotFound('params.agent.memberOf.membershipNumber');
         }
@@ -443,6 +477,8 @@ function processPlaceOrder(params: {
         })(repos);
         debug('creditCard authorization created.');
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if ((<factory.person.IPerson>params.registerActionAttributes.agent).memberOf === undefined) {
             throw new factory.errors.NotFound('params.agent.memberOf');
         }

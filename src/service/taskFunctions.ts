@@ -89,6 +89,8 @@ export function cancelPecorino(data: factory.task.cancelPecorino.IData): IOperat
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (settings.pecorinoAuthClient === undefined) {
             throw new Error('settings.pecorinoAuthClient undefined.');
         }
@@ -106,6 +108,8 @@ export function cancelPecorinoAward(data: factory.task.cancelPecorinoAward.IData
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (settings.pecorinoAuthClient === undefined) {
             throw new Error('settings.pecorinoAuthClient undefined.');
         }
@@ -150,6 +154,8 @@ export function payPecorino(data: factory.task.payPecorino.IData): IOperation<vo
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (settings.pecorinoAuthClient === undefined) {
             throw new Error('settings.pecorinoAuthClient undefined.');
         }
@@ -201,6 +207,8 @@ export function refundPecorino(data: factory.task.refundPecorino.IData): IOperat
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (settings.pecorinoAuthClient === undefined) {
             throw new Error('settings.pecorinoAuthClient undefined.');
         }
@@ -235,6 +243,8 @@ export function sendOrder(data: factory.task.returnOrder.IData): IOperation<void
         redisClient?: redis.RedisClient;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (settings.redisClient === undefined) {
             throw new Error('settings.redisClient undefined.');
         }
@@ -260,6 +270,8 @@ export function givePecorinoAward(data: factory.task.givePecorinoAward.IData): I
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (settings.pecorinoAuthClient === undefined) {
             throw new Error('settings.pecorinoAuthClient undefined.');
         }
@@ -277,6 +289,8 @@ export function returnPecorinoAward(data: factory.task.returnPecorinoAward.IData
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (settings.pecorinoAuthClient === undefined) {
             throw new Error('settings.pecorinoAuthClient undefined.');
         }
@@ -295,9 +309,13 @@ export function registerProgramMembership(data: factory.task.registerProgramMemb
         redisClient?: redis.RedisClient;
         cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
     }) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (settings.redisClient === undefined) {
             throw new Error('settings.redisClient undefined.');
         }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (settings.cognitoIdentityServiceProvider === undefined) {
             throw new Error('settings.cognitoIdentityServiceProvider undefined.');
         }

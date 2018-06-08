@@ -108,6 +108,135 @@ describe('会員プログラムに登録する', () => {
         assert.equal(result, undefined);
         sandbox.verify();
     });
+
+    it('すでに登録済であれば何もしないはず', async () => {
+        const ownershipInfo = {
+            typeOfGood: { id: 'programMembershipId' }
+        };
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
+        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+        const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
+        const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([ownershipInfo]);
+        sandbox.mock(actionRepo).expects('start').never();
+
+        const result = await sskts.service.programMembership.register(<any>{
+            agent: {
+                memberOf: { membershipNumber: 'membershipNumber' }
+            },
+            object: {
+                itemOffered: {
+                    id: 'programMembershipId',
+                    offers: [],
+                    hostingOrganization: {}
+                }
+            }
+        })({
+            action: actionRepo,
+            orderNumber: orderNumberRepo,
+            organization: organizationRepo,
+            ownershipInfo: ownershipInfoRepo,
+            person: personRepo,
+            programMembership: programMembershipRepo,
+            registerActionInProgressRepo: registerActionInProgressRepoRepo,
+            transaction: transactionRepo
+        });
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('注文プロセスでエラーが発生すればアクションを断念するはず', async () => {
+        const startPlaceOrderError = new Error('startPlaceOrderError');
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
+        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+        const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
+        const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([]);
+        sandbox.mock(actionRepo).expects('start').once().resolves({});
+        sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
+        sandbox.mock(sskts.service.transaction.placeOrderInProgress).expects('start').once()
+            .returns(async () => Promise.reject(startPlaceOrderError));
+        sandbox.mock(registerActionInProgressRepoRepo).expects('unlock').once().resolves();
+        sandbox.mock(actionRepo).expects('complete').never();
+        sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
+
+        const result = await sskts.service.programMembership.register(<any>{
+            agent: {
+                memberOf: { membershipNumber: 'membershipNumber' }
+            },
+            object: {
+                itemOffered: {
+                    id: 'programMembershipId',
+                    offers: [],
+                    hostingOrganization: {}
+                }
+            }
+        })({
+            action: actionRepo,
+            orderNumber: orderNumberRepo,
+            organization: organizationRepo,
+            ownershipInfo: ownershipInfoRepo,
+            person: personRepo,
+            programMembership: programMembershipRepo,
+            registerActionInProgressRepo: registerActionInProgressRepoRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
+        assert.deepEqual(result, startPlaceOrderError);
+        sandbox.verify();
+    });
+
+    it('クレジットカードが見つからなければアクションを断念するはず', async () => {
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
+        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+        const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
+        const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([]);
+        sandbox.mock(actionRepo).expects('start').once().resolves({});
+        sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
+        sandbox.mock(sskts.service.transaction.placeOrderInProgress).expects('start').once().returns(async () => Promise.resolve({}));
+        sandbox.mock(sskts.service.transaction.placeOrderInProgress.action.authorize.offer.programMembership)
+            .expects('create').once().returns(async () => Promise.resolve({}));
+        sandbox.mock(sskts.service.person.creditCard).expects('find').once().returns(async () => Promise.resolve([]));
+        sandbox.mock(registerActionInProgressRepoRepo).expects('unlock').once().resolves(1);
+        sandbox.mock(actionRepo).expects('complete').never();
+        sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
+
+        const result = await sskts.service.programMembership.register(<any>{
+            agent: {
+                memberOf: { membershipNumber: 'membershipNumber' }
+            },
+            object: {
+                itemOffered: {
+                    id: 'programMembershipId',
+                    offers: [],
+                    hostingOrganization: {}
+                }
+            }
+        })({
+            action: actionRepo,
+            orderNumber: orderNumberRepo,
+            organization: organizationRepo,
+            ownershipInfo: ownershipInfoRepo,
+            person: personRepo,
+            programMembership: programMembershipRepo,
+            registerActionInProgressRepo: registerActionInProgressRepoRepo,
+            transaction: transactionRepo
+        }).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.NotFound);
+        sandbox.verify();
+    });
 });
 
 describe('会員プログラム登録解除タスクを作成する', () => {
@@ -162,6 +291,30 @@ describe('会員プログラム登録解除', () => {
             task: taskRepo
         });
         assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('リポジトリーでエラーが発生すればアクションを断念するはず', async () => {
+        const findTaskError = new Error('findTaskError');
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        sandbox.mock(actionRepo).expects('start').once().resolves({});
+        sandbox.mock(taskRepo.taskModel).expects('findOneAndUpdate').once().chain('exec').rejects(findTaskError);
+        sandbox.mock(actionRepo).expects('complete').never();
+        sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
+
+        const result = await sskts.service.programMembership.unRegister(<any>{
+            object: {
+                typeOfGood: { id: 'programMembershipId' },
+                ownedBy: { memberOf: { membershipNumber: 'membershipNumber' } }
+            }
+        })({
+            action: actionRepo,
+            ownershipInfo: ownershipInfoRepo,
+            task: taskRepo
+        }).catch((err) => err);
+        assert.deepEqual(result, findTaskError);
         sandbox.verify();
     });
 });
