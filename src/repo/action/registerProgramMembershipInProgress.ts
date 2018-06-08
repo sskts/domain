@@ -35,9 +35,13 @@ export class RedisRepository {
                 .expire(key, ttl, debug)
                 .exec((err, results) => {
                     debug('results:', results);
-                    if (err !== null) {
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore if: please write tests */
+                    if (err instanceof Error) {
                         reject(err);
                     } else {
+                        // tslint:disable-next-line:no-single-line-block-comment
+                        /* istanbul ignore else: please write tests */
                         if (results[0] === 1) {
                             resolve(results[0]);
                         } else {
@@ -48,11 +52,16 @@ export class RedisRepository {
         });
     }
 
+    /**
+     * 会員プログラム進行ロックを解除する
+     */
     public async unlock(progressKey: IProgressKey) {
         return new Promise<void>((resolve, reject) => {
             const key = `${RedisRepository.KEY_PREFIX}:${progressKey.membershipNumber}:${progressKey.programMembershipId}`;
             this.redisClient.del([key], (err, res) => {
                 debug(err, res);
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore if: please write tests */
                 if (err instanceof Error) {
                     reject(err);
                 } else {

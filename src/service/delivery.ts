@@ -73,6 +73,8 @@ export function sendOrder(transactionId: string) {
         try {
             // 座席予約があればCOA本予約
             const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
             if (seatReservationAuthorizeAction !== undefined) {
                 const seatReservationAuthorizeActionResult = seatReservationAuthorizeAction.result;
                 if (seatReservationAuthorizeActionResult === undefined) {
@@ -269,6 +271,8 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
         // アクション開始
         const placeOrderTransaction = params.object.purpose;
         const pecorinoAwardAuthorizeActionResult = params.object.result;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (pecorinoAwardAuthorizeActionResult === undefined) {
             throw new factory.errors.NotFound('params.object.result');
         }
@@ -344,6 +348,8 @@ export function cancelPecorinoAward(params: {
 
         await Promise.all(authorizeActions.map(async (action) => {
             // 承認アクション結果は基本的に必ずあるはず
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
             if (action.result === undefined) {
                 throw new factory.errors.NotFound('action.result');
             }

@@ -31,7 +31,8 @@ describe('注文アイテムを配送する', () => {
                 sendEmailMessage: {
                     typeOf: sskts.factory.actionType.SendAction,
                     object: { identifier: 'emailMessageIdentifier' }
-                }
+                },
+                registerProgramMembership: [{}]
             }
         };
         const orderActionAttributes = {
@@ -84,7 +85,7 @@ describe('注文アイテムを配送する', () => {
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(ownershipInfoRepo).expects('save').exactly(transaction.result.ownershipInfos.length).resolves();
         sandbox.mock(orderRepo).expects('changeStatus').once().resolves();
-        sandbox.mock(taskRepo).expects('save').once().resolves();
+        sandbox.mock(taskRepo).expects('save').twice().resolves();
         // sandbox.mock(registerActionInProgressRepo).expects('unlock').never();
 
         const result = await sskts.service.delivery.sendOrder(transaction.id)({
@@ -122,9 +123,18 @@ describe('注文アイテムを配送する', () => {
                         { itemOffered: { reservedTicket: {} } }
                     ]
                 },
-                ownershipInfos: [{ identifier: 'identifier', typeOfGood: { typeOf: sskts.factory.reservationType.EventReservation } }]
+                ownershipInfos: [
+                    { identifier: 'identifier', typeOfGood: { typeOf: sskts.factory.reservationType.EventReservation } },
+                    {
+                        identifier: 'identifier2',
+                        ownedBy: { memberOf: {} },
+                        typeOfGood: { typeOf: 'ProgramMembership' }
+                    }
+                ]
             },
-            potentialActions: { order: orderActionAttributes },
+            potentialActions: {
+                order: orderActionAttributes
+            },
             object: {
                 customerContact: {
                     telephone: '+819012345678'
@@ -135,6 +145,12 @@ describe('注文アイテムを配送する', () => {
                         actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
                         object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
                         result: { updTmpReserveSeatArgs: {}, updTmpReserveSeatResult: {} }
+                    },
+                    {
+                        typeOf: sskts.factory.actionType.AuthorizeAction,
+                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
+                        object: { typeOf: 'Offer' },
+                        result: {}
                     }
                 ]
             }
@@ -160,6 +176,7 @@ describe('注文アイテムを配送する', () => {
         sandbox.mock(ownershipInfoRepo).expects('save').exactly(transaction.result.ownershipInfos.length).resolves();
         sandbox.mock(orderRepo).expects('changeStatus').once().resolves();
         sandbox.mock(taskRepo).expects('save').once().resolves();
+        sandbox.mock(registerActionInProgressRepo).expects('unlock').once().resolves();
 
         const result = await sskts.service.delivery.sendOrder(transaction.id)({
             action: actionRepo,
@@ -169,7 +186,6 @@ describe('注文アイテムを配送する', () => {
             transaction: transactionRepo,
             task: taskRepo
         });
-
         assert.equal(result, undefined);
         sandbox.verify();
     });
@@ -665,6 +681,28 @@ describe('ポイントインセンティブを適用する', () => {
         assert.equal(result, undefined);
         sandbox.verify();
     });
+
+    it('Pecorinoサービスがエラーを返せばアクションを断念するはず', async () => {
+        const pecorinoError = new Error('pecorinoError');
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
+        sandbox.mock(actionRepo).expects('start').once().resolves({});
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Deposit.prototype).expects('confirm').once().rejects(pecorinoError);
+        sandbox.mock(actionRepo).expects('complete').never();
+        sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
+
+        const result = await sskts.service.delivery.givePecorinoAward(<any>{
+            object: {
+                pecorinoEndpoint: 'https://example.com',
+                pecorinoTransaction: {}
+            }
+        })({
+            action: actionRepo,
+            pecorinoAuthClient: pecorinoAuthClient
+        }).catch((err) => err);
+        assert.deepEqual(result, pecorinoError);
+        sandbox.verify();
+    });
 });
 
 describe('ポイントインセンティブを返却する', () => {
@@ -696,6 +734,35 @@ describe('ポイントインセンティブを返却する', () => {
             pecorinoAuthClient: pecorinoAuthClient
         });
         assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('Pecorinoサービスがエラーを返せばアクションを断念するはず', async () => {
+        const pecorinoError = new Error('pecorinoError');
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
+        sandbox.mock(actionRepo).expects('start').once().resolves({});
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Withdraw.prototype).expects('start').once().rejects(pecorinoError);
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Withdraw.prototype).expects('confirm').never();
+        sandbox.mock(actionRepo).expects('complete').never();
+        sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
+
+        const result = await sskts.service.delivery.returnPecorinoAward(<any>{
+            object: {
+                purpose: {
+                    agent: {},
+                    seller: { name: {} }
+                },
+                result: {
+                    pecorinoEndpoint: 'https://example.com',
+                    pecorinoTransaction: { object: {} }
+                }
+            }
+        })({
+            action: actionRepo,
+            pecorinoAuthClient: pecorinoAuthClient
+        }).catch((err) => err);
+        assert.deepEqual(result, pecorinoError);
         sandbox.verify();
     });
 });

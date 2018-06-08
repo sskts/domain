@@ -28,12 +28,21 @@ export function open(params: {
          */
         accountService: pecorinoapi.service.Account;
     }) => {
+        // 口座番号を発行
         const accountNumber = await repos.accountNumber.publish(new Date());
 
-        return repos.accountService.open({
-            accountNumber: accountNumber,
-            name: params.name
-        });
+        let account: factory.pecorino.account.IAccount;
+        try {
+            account = await repos.accountService.open({
+                accountNumber: accountNumber,
+                name: params.name
+            });
+        } catch (error) {
+            error = handlePecorinoError(error);
+            throw error;
+        }
+
+        return account;
     };
 }
 

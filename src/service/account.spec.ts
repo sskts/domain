@@ -34,10 +34,25 @@ describe('ポイント口座を開設する', () => {
         assert.equal(typeof result, 'object');
         sandbox.verify();
     });
+
+    it('Pecorinoサービスがエラーを返せばSSKTSエラーに変換されるはず', async () => {
+        const pecorinoRequestError = { name: 'PecorinoRequestError' };
+        const accountNumberRepo = new sskts.repository.AccountNumber(redisClient);
+        const accountService = new sskts.pecorinoapi.service.Account(<any>{});
+        sandbox.mock(accountNumberRepo).expects('publish').once().resolves('accountNumber');
+        sandbox.mock(accountService).expects('open').once().rejects(pecorinoRequestError);
+
+        const result = await sskts.service.account.open(<any>{})({
+            accountNumber: accountNumberRepo,
+            accountService: accountService
+        }).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.SSKTS);
+        sandbox.verify();
+    });
 });
 
 describe('ポイントを入金する', () => {
-    afterEach(() => {
+    beforeEach(() => {
         sandbox.restore();
     });
 
@@ -54,6 +69,22 @@ describe('ポイントを入金する', () => {
             depositService: depositService
         });
         assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('Pecorinoサービスがエラーを返せばSSKTSエラーに変換されるはず', async () => {
+        const pecorinoRequestError = { name: 'PecorinoRequestError' };
+        const depositService = new sskts.pecorinoapi.service.transaction.Deposit(<any>{});
+        sandbox.mock(depositService).expects('start').once().rejects(pecorinoRequestError);
+        sandbox.mock(depositService).expects('confirm').never();
+
+        const result = await sskts.service.account.deposit(<any>{
+            agent: {},
+            recipient: {}
+        })({
+            depositService: depositService
+        }).catch((err) => err);
+        assert(result instanceof sskts.factory.errors.SSKTS);
         sandbox.verify();
     });
 });
