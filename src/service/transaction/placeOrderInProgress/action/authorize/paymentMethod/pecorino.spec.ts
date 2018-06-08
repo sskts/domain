@@ -1,10 +1,8 @@
 // tslint:disable:no-implicit-dependencies
-
 /**
- * Pecorino承認アクションテスト
+ * Pecorino決済承認アクションテスト
  * @ignore
  */
-
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../../../../../../index';
@@ -15,8 +13,8 @@ before(() => {
     sandbox = sinon.createSandbox();
 });
 
-describe('action.authorize.pecorino.create()', () => {
-    afterEach(() => {
+describe('Pecorino決済を承認する', () => {
+    beforeEach(() => {
         sandbox.restore();
     });
 
@@ -187,53 +185,72 @@ describe('action.authorize.pecorino.create()', () => {
     });
 });
 
-// describe('action.authorize.creditCard.cancel()', () => {
-//     afterEach(() => {
-//         sandbox.restore();
-//     });
+describe('Pecorino決済承認を取り消す', () => {
+    beforeEach(() => {
+        sandbox.restore();
+    });
 
-//     it('アクションが存在すれば、キャンセルできるはず', async () => {
-//         const agent = {
-//             id: 'agentId'
-//         };
-//         const seller = {
-//             id: 'sellerId',
-//             name: { ja: 'ja', en: 'ne' },
-//             gmoInfo: {
-//                 shopId: 'shopId',
-//                 shopPass: 'shopPass'
-//             }
-//         };
-//         const action = {
-//             typeOf: sskts.factory.actionType.AuthorizeAction,
-//             id: 'actionId',
-//             result: {
-//                 execTranArgs: {},
-//                 entryTranArgs: {}
-//             }
-//         };
-//         const transaction = {
-//             id: 'transactionId',
-//             agent: agent,
-//             seller: seller
-//         };
+    it('出金取引による承認アクションが存在すれば、キャンセルできるはず', async () => {
+        const transaction = {
+            id: 'transactionId',
+            agent: { id: 'agentId' },
+            seller: {}
+        };
+        const action = {
+            result: {
+                pecorinoTransaction: {}
+            }
+        };
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const withdrawService = new sskts.pecorinoapi.service.transaction.Withdraw(<any>{});
+        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
+        sandbox.mock(actionRepo).expects('cancel').once().resolves(action);
+        sandbox.mock(withdrawService).expects('cancel').once().resolves();
 
-//         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-//         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.cancel({
+            agentId: transaction.agent.id,
+            transactionId: transaction.id,
+            actionId: 'actionId'
+        })({
+            action: actionRepo,
+            transaction: transactionRepo,
+            withdrawTransactionService: withdrawService
+        });
 
-//         sandbox.mock(transactionRepo).expects('findInProgressById').once()
-//             .withExactArgs(transaction.id).resolves(transaction);
-//         sandbox.mock(actionRepo).expects('cancel').once()
-//             .withExactArgs(action.typeOf, action.id).resolves(action);
-//         sandbox.mock(sskts.GMO.services.credit).expects('alterTran').once().resolves();
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
 
-//         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.creditCard.cancel(
-//             agent.id,
-//             transaction.id,
-//             action.id
-//         )(actionRepo, transactionRepo);
+    it('転送取引による承認アクションが存在すれば、キャンセルできるはず', async () => {
+        const transaction = {
+            id: 'transactionId',
+            agent: { id: 'agentId' },
+            seller: {}
+        };
+        const action = {
+            result: {
+                pecorinoTransaction: {}
+            }
+        };
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
+        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
+        sandbox.mock(actionRepo).expects('cancel').once().resolves(action);
+        sandbox.mock(transferService).expects('cancel').once().resolves();
 
-//         assert.equal(result, undefined);
-//         sandbox.verify();
-//     });
-// });
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.cancel({
+            agentId: transaction.agent.id,
+            transactionId: transaction.id,
+            actionId: 'actionId'
+        })({
+            action: actionRepo,
+            transaction: transactionRepo,
+            transferTransactionService: transferService
+        });
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});

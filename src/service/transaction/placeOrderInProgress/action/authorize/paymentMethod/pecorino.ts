@@ -4,13 +4,14 @@
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
-import { BAD_REQUEST, FORBIDDEN, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from 'http-status';
 import * as moment from 'moment';
 
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
 import { MongoRepository as OrganizationRepo } from '../../../../../../repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from '../../../../../../repo/ownershipInfo';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
+
+import { handlePecorinoError } from '../../../../../../errorHandler';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:pecorino');
 
@@ -181,26 +182,8 @@ export function create(params: {
                 // 失敗したら仕方ない
             }
 
-            // PecorinoAPIのレスポンスステータスコードが4xxであればクライアントエラー
-            if (error.name === 'PecorinoRequestError') {
-                // Pecorino APIのステータスコード4xxをハンドリング
-                const message = `${error.name}:${error.message}`;
-                switch (error.code) {
-                    case BAD_REQUEST: // 400
-                        throw new factory.errors.Argument('fromAccountNumber', message);
-                    case UNAUTHORIZED: // 401
-                        throw new factory.errors.Unauthorized(message);
-                    case FORBIDDEN: // 403
-                        throw new factory.errors.Forbidden(message);
-                    case NOT_FOUND: // 404
-                        throw new factory.errors.NotFound(message);
-                    case TOO_MANY_REQUESTS: // 429
-                        throw new factory.errors.RateLimitExceeded(message);
-                    default:
-                        throw new factory.errors.ServiceUnavailable(message);
-                }
-            }
-
+            // PecorinoAPIのエラーｗｐハンドリング
+            error = handlePecorinoError(error);
             throw error;
         }
 
