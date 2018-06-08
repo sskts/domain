@@ -1,9 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * 会員クレジットカードサービステスト
- * @ignore
  */
-
 import * as GMO from '@motionpicture/gmo-service';
 import { errors } from '@motionpicture/sskts-factory';
 import * as assert from 'power-assert';

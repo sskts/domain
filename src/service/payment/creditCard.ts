@@ -85,8 +85,7 @@ export function payCreditCard(transactionId: string) {
             } catch (error) {
                 // actionにエラー結果を追加
                 try {
-                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
-                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
+                    const actionError = { ...error, ...{ message: error.message, name: error.name } };
                     await repos.action.giveUp(payActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない
@@ -173,6 +172,8 @@ export function refundCreditCard(transactionId: string) {
         await Promise.all(authorizeActions.map(async (authorizeAction) => {
             // アクション開始
             const refundActionAttributes = returnOrderPotentialActions.refundCreditCard;
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
             if (refundActionAttributes === undefined) {
                 throw new factory.errors.NotFound('returnOrder.potentialActions.refundCreditCard');
             }

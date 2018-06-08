@@ -47,8 +47,7 @@ export function createFromTransaction(transactionId: string) {
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                // tslint:disable-next-line:max-line-length no-single-line-block-comment
-                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
+                const actionError = { ...error, ...{ message: error.message, name: error.name } };
                 await repos.action.giveUp(orderActionAttributes.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
@@ -262,8 +261,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                // tslint:disable-next-line:max-line-length no-single-line-block-comment
-                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
+                const actionError = { ...error, ...{ message: error.message, name: error.name } };
                 await actionRepo.giveUp(returnOrderActionAttributes.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない

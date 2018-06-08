@@ -60,11 +60,9 @@ export function useMvtk(transactionId: string) {
             } catch (error) {
                 // tslint:disable-next-line:no-single-line-block-comment
                 /* istanbul ignore next */
-
                 // actionにエラー結果を追加
                 try {
-                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
-                    const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : /* istanbul ignore next */ error;
+                    const actionError = { ...error, ...{ message: error.message, name: error.name } };
                     await repos.action.giveUp(useActionAttributes.typeOf, action.id, actionError);
                 } catch (__) {
                     // 失敗したら仕方ない

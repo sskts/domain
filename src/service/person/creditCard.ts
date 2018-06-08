@@ -15,7 +15,6 @@ export type IUncheckedCardTokenized = factory.paymentMethod.paymentCard.creditCa
 
 /**
  * クレジットカード追加
- * @export
  */
 export function save(
     username: string,
@@ -63,7 +62,8 @@ export function save(
                 expire: (<IUncheckedCardRaw>creditCard).expire,
                 holderName: (<IUncheckedCardRaw>creditCard).holderName,
                 token: (<IUncheckedCardTokenized>creditCard).token,
-                defaultFlag: (defaultFlag === true) ? '1' : '0'
+                // tslint:disable-next-line:no-single-line-block-comment
+                defaultFlag: (defaultFlag === true) ? /* istanbul ignore next */ '1' : '0'
             });
             debug('card saved', saveCardResult);
 
@@ -90,7 +90,6 @@ export function save(
 
 /**
  * クレジットカード削除
- * @export
  */
 export function unsubscribe(username: string, cardSeq: string): IOperation<void> {
     return async () => {
@@ -117,7 +116,6 @@ export function unsubscribe(username: string, cardSeq: string): IOperation<void>
 
 /**
  * クレジットカード検索
- * @export
  */
 export function find(
     username: string
@@ -163,6 +161,8 @@ export function find(
             if (error.name === 'GMOServiceBadRequestError') {
                 // カードが存在しない場合このエラーになる
                 // ErrCode=E01&ErrInfo=E01240002
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore if: please write tests */
                 if (Array.isArray(error.errors) &&
                     error.errors.length === 1 &&
                     error.errors[0].info === 'E01240002') {

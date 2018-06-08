@@ -60,6 +60,28 @@ describe('Pecorino支払を実行する', () => {
         assert.equal(result, undefined);
         sandbox.verify();
     });
+
+    it('Pecorinoサービスがエラーを返せば、アクションを断念するはず', async () => {
+        const action = { id: 'actionId' };
+        const pecorinoError = new Error('pecorinoError');
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        sandbox.mock(actionRepo).expects('start').once().resolves(action);
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Transfer.prototype).expects('confirm').once().rejects(pecorinoError);
+        sandbox.mock(actionRepo).expects('complete').never();
+        sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
+
+        const result = await sskts.service.payment.pecorino.payPecorino(<any>{
+            object: {
+                pecorinoEndpoint: 'pecorinoEndpoint',
+                pecorinoTransaction: { typeOf: sskts.pecorinoapi.factory.transactionType.Transfer }
+            }
+        })({
+            action: actionRepo,
+            pecorinoAuthClient: pecorinoAuthClient
+        }).catch((err) => err);
+        assert.deepEqual(result, pecorinoError);
+        sandbox.verify();
+    });
 });
 
 describe('Pecorino支払を中止する', () => {
@@ -176,6 +198,37 @@ describe('Pecorino支払を返金する', () => {
             pecorinoAuthClient: pecorinoAuthClient
         });
         assert.equal(result, undefined);
+        sandbox.verify();
+    });
+
+    it('Pecorinoサービスがエラーを返せば、アクションを断念するはず', async () => {
+        const pecorinoError = new Error('pecorinoError');
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        sandbox.mock(actionRepo).expects('start').once().resolves({});
+        sandbox.mock(sskts.pecorinoapi.service.transaction.Deposit.prototype).expects('start').once().rejects(pecorinoError);
+        sandbox.mock(actionRepo).expects('complete').never();
+        sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
+
+        const result = await sskts.service.payment.pecorino.refundPecorino(<any>{
+            object: {
+                object: {
+                    pecorinoEndpoint: 'pecorinoEndpoint',
+                    pecorinoTransaction: {
+                        typeOf: sskts.pecorinoapi.factory.transactionType.Withdraw,
+                        agent: {},
+                        recipient: {},
+                        object: {}
+                    }
+                }
+            },
+            potentialActions: { sendEmailMessage: {} }
+        })({
+            action: actionRepo,
+            task: taskRepo,
+            pecorinoAuthClient: pecorinoAuthClient
+        }).catch((err) => err);
+        assert.deepEqual(result, pecorinoError);
         sandbox.verify();
     });
 });

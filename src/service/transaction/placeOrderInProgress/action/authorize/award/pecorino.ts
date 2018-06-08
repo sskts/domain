@@ -55,6 +55,8 @@ export function create(params: {
     }) => {
         const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if: please write tests */
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
@@ -113,7 +115,8 @@ export function create(params: {
                     url: transaction.agent.url
                 },
                 amount: params.amount,
-                notes: (params.notes !== undefined) ? params.notes : 'シネマサンシャイン 注文取引インセンティブ',
+                // tslint:disable-next-line:no-single-line-block-comment
+                notes: (params.notes !== undefined) ? /* istanbul ignore next */ params.notes : 'シネマサンシャイン 注文取引インセンティブ',
                 toAccountNumber: params.toAccountNumber
             });
             debug('pecorinoTransaction started.', pecorinoTransaction.id);
@@ -169,6 +172,8 @@ export function cancel(params: {
         debug('canceling pecorino authorize action...');
         const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }

@@ -107,6 +107,8 @@ export function create(params: {
         let pecorinoTransaction: IPecorinoTransaction;
 
         try {
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else *//* istanbul ignore next */
             if (repos.withdrawTransactionService !== undefined) {
                 pecorinoEndpoint = repos.withdrawTransactionService.options.endpoint;
 
@@ -136,6 +138,8 @@ export function create(params: {
 
                 // 組織から転送先口座IDを取得する
                 const seller = await repos.organization.findById(transaction.seller.typeOf, transaction.seller.id);
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore if */
                 if (seller.paymentAccepted === undefined) {
                     throw new factory.errors.Argument('transactionId', 'Pecorino payment not accepted.');
                 }
@@ -143,6 +147,8 @@ export function create(params: {
                     seller.paymentAccepted.find(
                         (a) => a.paymentMethodType === factory.paymentMethodType.Pecorino
                     );
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore if */
                 if (pecorinoPaymentAccepted === undefined) {
                     throw new factory.errors.Argument('transactionId', 'Pecorino payment not accepted.');
                 }
@@ -164,13 +170,16 @@ export function create(params: {
                         url: transaction.seller.url
                     },
                     amount: params.amount,
-                    notes: (params.notes !== undefined) ? params.notes : 'シネマサンシャイン 注文取引',
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    notes: (params.notes !== undefined) ? /* istanbul ignore next */ params.notes : 'シネマサンシャイン 注文取引',
                     fromAccountNumber: params.fromAccountNumber,
                     toAccountNumber: pecorinoPaymentAccepted.accountNumber
                 });
                 debug('pecorinoTransaction started.', pecorinoTransaction.id);
             } else {
-                throw new factory.errors.Argument('resos', 'withdrawTransactionService or transferTransactionService required.');
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore next */
+                throw new factory.errors.Argument('repos', 'withdrawTransactionService or transferTransactionService required.');
             }
         } catch (error) {
             // actionにエラー結果を追加
@@ -226,6 +235,8 @@ export function cancel(params: {
         debug('canceling pecorino authorize action...');
         const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
@@ -235,6 +246,8 @@ export function cancel(params: {
         const actionResult = <factory.action.authorize.paymentMethod.pecorino.IResult>action.result;
 
         // Pecorinoで取消中止実行
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else *//* istanbul ignore next */
         if (repos.withdrawTransactionService !== undefined) {
             await repos.withdrawTransactionService.cancel({
                 transactionId: actionResult.pecorinoTransaction.id
@@ -244,6 +257,8 @@ export function cancel(params: {
                 transactionId: actionResult.pecorinoTransaction.id
             });
         } else {
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore next */
             throw new factory.errors.Argument('resos', 'withdrawTransactionService or transferTransactionService required.');
         }
     };

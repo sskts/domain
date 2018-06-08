@@ -34,6 +34,8 @@ export function create(params: {
     }) => {
         const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
@@ -41,13 +43,19 @@ export function create(params: {
         // 会員プログラム検索
         const programMemberships = await repos.programMembership.search({ id: params.acceptedOffer.itemOffered.id });
         const programMembership = programMemberships.shift();
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (programMembership === undefined) {
             throw new factory.errors.NotFound('ProgramMembership');
         }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (programMembership.offers === undefined) {
             throw new factory.errors.NotFound('ProgramMembership.Offer');
         }
         const acceptedOffer = programMembership.offers.find((o) => o.identifier === params.acceptedOffer.identifier);
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (acceptedOffer === undefined) {
             throw new factory.errors.NotFound('Offer');
         }
@@ -69,14 +77,18 @@ export function create(params: {
         try {
             // 在庫確保？
         } catch (error) {
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore next: ありえないフロー */
             // actionにエラー結果を追加
             try {
-                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                const actionError = { ...error, ...{ message: error.message, name: error.name } };
                 await repos.action.giveUp(action.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない
             }
 
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore next: ありえないフロー */
             throw new factory.errors.ServiceUnavailable('Unexepected error occurred.');
         }
 
@@ -108,6 +120,8 @@ export function cancel(params: {
     }) => {
         const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }

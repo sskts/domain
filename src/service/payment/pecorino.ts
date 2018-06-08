@@ -17,7 +17,6 @@ const debug = createDebug('sskts-domain:service:payment:pecorino');
 export function payPecorino(params: factory.task.payPecorino.IData) {
     return async (repos: {
         action: ActionRepo;
-        // transaction: TransactionRepo;
         pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
     }) => {
         // アクション開始
@@ -48,6 +47,8 @@ export function payPecorino(params: factory.task.payPecorino.IData) {
                     });
                     break;
 
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore next */
                 default:
                     throw new factory.errors.NotImplemented(
                         `transaction type '${(<any>pecorinoTransaction).typeOf}' not implemented.`
@@ -92,6 +93,8 @@ export function cancelPecorinoAuth(transactionId: string) {
 
         await Promise.all(authorizeActions.map(async (action) => {
             // 承認アクション結果は基本的に必ずあるはず
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
             if (action.result === undefined) {
                 throw new factory.errors.NotFound('action.result');
             }
@@ -119,6 +122,8 @@ export function cancelPecorinoAuth(transactionId: string) {
                     });
                     break;
 
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore next */
                 default:
                     throw new factory.errors.NotImplemented(
                         `transaction type '${(<any>action.result.pecorinoTransaction).typeOf}' not implemented.`
@@ -186,7 +191,13 @@ export function refundPecorino(params: factory.task.refundPecorino.IData) {
 
                     break;
 
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore next */
                 default:
+                    throw new factory.errors.NotImplemented(
+                        `transaction type '${(<any>pecorinoTransaction).typeOf}' not implemented.`
+                    );
+
             }
         } catch (error) {
             // actionにエラー結果を追加

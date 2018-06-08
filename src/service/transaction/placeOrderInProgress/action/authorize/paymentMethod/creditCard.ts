@@ -106,7 +106,7 @@ export function create(params: {
         } catch (error) {
             // actionにエラー結果を追加
             try {
-                const actionError = (error instanceof Error) ? { ...error, ...{ message: error.message } } : error;
+                const actionError = { ...error, ...{ message: error.message, name: error.name } };
                 await repos.action.giveUp(action.typeOf, action.id, actionError);
             } catch (__) {
                 // 失敗したら仕方ない

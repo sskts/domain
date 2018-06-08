@@ -210,7 +210,7 @@ describe('action.authorize.creditCard.create()', () => {
             agent: agent,
             recipient: seller
         };
-        const entryTranResult = 123;
+        const entryTranResult = new Error('entryTranResult');
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
@@ -221,8 +221,7 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
         sandbox.mock(sskts.GMO.services.credit).expects('entryTran').once().rejects(entryTranResult);
         sandbox.mock(sskts.GMO.services.credit).expects('execTran').never();
-        sandbox.mock(actionRepo).expects('giveUp').once()
-            .withArgs(action.typeOf, action.id, entryTranResult).resolves(action);
+        sandbox.mock(actionRepo).expects('giveUp').once().resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
