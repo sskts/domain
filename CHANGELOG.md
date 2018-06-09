@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v25.0.1 - 2018-06-09
+
+### Fixed
+
+- エラーハンドラーを読み込むパスの間違いを修正。
+
 ## v25.0.0 - 2018-06-08
 
 ### Added
