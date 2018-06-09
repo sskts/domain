@@ -6,7 +6,7 @@ import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
-import { handlePecorinoError } from '../../.../../../../../../errorHandler';
+import { handlePecorinoError } from '../../../../../../errorHandler';
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
 import { MongoRepository as OwnershipInfoRepo } from '../../../../../../repo/ownershipInfo';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';

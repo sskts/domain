@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- エラーハンドラーを読み込むパスの間違いを修正。
+
 ### Security
 
 ## v25.0.0 - 2018-06-08
