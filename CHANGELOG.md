@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 組織コレクションスキーマに足りないフィールドを追加。
-- redisクライアントのバージョンを最新化。
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v25.0.2 - 2018-06-11
+
+### Changed
+
+- 組織コレクションスキーマに足りないフィールドを追加。
+- redisクライアントのバージョンを最新化。
 
 ## v25.0.1 - 2018-06-09
 
