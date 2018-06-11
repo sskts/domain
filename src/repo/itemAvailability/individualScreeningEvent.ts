@@ -38,7 +38,7 @@ export class MongoRepository {
 
         return new Promise<factory.event.individualScreeningEvent.IItemAvailability | null>((resolve, reject) => {
             // 上映イベント在庫状況を取得
-            this.redisClient.hget([key, eventIdentifier], (err, res) => {
+            this.redisClient.hget(key, eventIdentifier, (err, res) => {
                 debug('hget processed.', err, res);
                 if (err instanceof Error) {
                     reject(err);
@@ -54,7 +54,7 @@ export class MongoRepository {
                 }
 
                 // tslint:disable-next-line:no-magic-numbers
-                const itemAvailability = parseInt((res instanceof Buffer) ? res.toString() : res, 10);
+                const itemAvailability = parseInt(res.toString(), 10);
                 resolve(itemAvailability);
             });
         });
@@ -74,7 +74,7 @@ export class MongoRepository {
         const key = MongoRepository.CREATE_REDIS_KEY(screeningDay);
 
         return new Promise<void>(async (resolve, reject) => {
-            this.redisClient.hset([key, eventIdentifier, itemAvailability], (err) => {
+            this.redisClient.hset(key, eventIdentifier, itemAvailability.toString(), (err) => {
                 debug('hset processed.', err);
                 if (err instanceof Error) {
                     reject(err);
@@ -112,7 +112,7 @@ export class MongoRepository {
         const key = MongoRepository.CREATE_REDIS_KEY(screeningDay);
 
         return new Promise<void>((resolve, reject) => {
-            this.redisClient.ttl([key], (err, ttl) => {
+            this.redisClient.ttl(key, (err, ttl) => {
                 debug('ttl:', ttl);
                 if (err instanceof Error) {
                     reject(err);
@@ -128,7 +128,7 @@ export class MongoRepository {
                 }
 
                 // 期限セット
-                this.redisClient.expire([key, TIMEOUT_IN_SECONDS], () => {
+                this.redisClient.expire(key, TIMEOUT_IN_SECONDS, () => {
                     debug('set expire.', key, TIMEOUT_IN_SECONDS);
                     resolve();
                 });

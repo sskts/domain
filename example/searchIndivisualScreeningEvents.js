@@ -11,10 +11,10 @@ async function main() {
     try {
         await sskts.mongoose.connect(process.env.MONGOLAB_URI);
         redisClient = sskts.redis.createClient({
-            host: process.env.TEST_REDIS_HOST,
-            port: parseInt(process.env.TEST_REDIS_PORT, 10),
-            password: process.env.TEST_REDIS_KEY,
-            tls: { servername: process.env.TEST_REDIS_HOST }
+            host: process.env.REDIS_HOST,
+            port: parseInt(process.env.REDIS_PORT, 10),
+            password: process.env.REDIS_KEY,
+            tls: { servername: process.env.REDIS_HOST }
         });
 
         const events = await sskts.service.offer.searchIndividualScreeningEvents({

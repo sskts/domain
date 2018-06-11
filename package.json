@@ -17,7 +17,7 @@
     "@sendgrid/mail": "^6.2.1",
     "@types/google-libphonenumber": "^7.4.15",
     "@types/mongoose": "^5.0.15",
-    "@types/redis": "^0.12.36",
+    "@types/redis": "^2.8.6",
     "aws-sdk": "^2.249.1",
     "azure-storage": "^2.8.3",
     "debug": "^3.1.0",
@@ -107,5 +107,5 @@
     "postversion": "git push origin --tags",
     "prepublishOnly": "npm run clean && npm run build && npm test && npm run doc"
   },
-  "version": "25.0.1"
+  "version": "25.0.2"
 }
