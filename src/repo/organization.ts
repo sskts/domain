@@ -76,7 +76,12 @@ export class MongoRepository {
         // GMOのセキュアな情報を公開しないように注意
         return <factory.organization.movieTheater.IPublicFields[]>await this.organizationModel.find(
             conditions,
-            'identifier name legalName typeOf location url branchCode parentOrganization gmoInfo.shopId'
+            {
+                __v: 0,
+                createdAt: 0,
+                updatedAt: 0,
+                'gmoInfo.shopPass': 0
+            }
         )
             .setOptions({ maxTimeMS: 10000 })
             .exec()
@@ -94,7 +99,12 @@ export class MongoRepository {
                 typeOf: factory.organizationType.MovieTheater,
                 'location.branchCode': branchCode
             },
-            'identifier name legalName typeOf location url branchCode parentOrganization gmoInfo.shopId'
+            {
+                __v: 0,
+                createdAt: 0,
+                updatedAt: 0,
+                'gmoInfo.shopPass': 0
+            }
         ).exec();
 
         if (doc === null) {
