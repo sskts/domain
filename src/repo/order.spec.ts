@@ -157,9 +157,13 @@ describe('注文を検索する', () => {
 
         const result = await orderRepo.search({
             sellerId: 'sellerId',
+            sellerIds: ['sellerId'],
             customerMembershipNumber: 'customerMembershipNumber',
+            customerMembershipNumbers: ['customerMembershipNumber'],
             orderNumber: 'orderNumber',
+            orderNumbers: ['orderNumber'],
             orderStatus: sskts.factory.orderStatus.OrderCancelled,
+            orderStatuses: [sskts.factory.orderStatus.OrderCancelled],
             orderDateFrom: new Date(),
             orderDateThrough: new Date()
         });
