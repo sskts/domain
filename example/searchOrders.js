@@ -1,0 +1,30 @@
+/**
+ * 注文検索サンプル
+ */
+const moment = require('moment');
+const sskts = require('../');
+
+async function main() {
+    await sskts.mongoose.connect(process.env.MONGOLAB_URI);
+
+    const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
+    const orders = await orderRepo.search({
+        orderDateFrom: moment().add(-1, 'day').toDate(),
+        orderDateThrough: moment().toDate(),
+        orderNumbers: ['MO118-180612-000063'],
+        // sellerIds: ['59d20831e53ebc2b4e774466'],
+        // customerMembershipNumbers: ['yamazaki']
+        // orderStatus: sskts.factory.orderStatus.OrderReturned,
+        orderStatuses: [sskts.factory.orderStatus.OrderDelivered, sskts.factory.orderStatus.OrderReturned]
+    });
+    console.log(orders.length, 'orders found.');
+
+    await sskts.mongoose.disconnect();
+}
+
+main().then(() => {
+    console.log('success!');
+}).catch((error) => {
+    console.error(error);
+    process.exit(1);
+});

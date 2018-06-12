@@ -169,6 +169,22 @@ schema.index(
         name: 'searchOrders'
     }
 );
+schema.index(
+    {
+        orderDate: 1
+    },
+    {
+        name: 'searchOrdersByOrderDate'
+    }
+);
+schema.index(
+    {
+        orderStatus: 1
+    },
+    {
+        name: 'searchOrdersByOrderStatus'
+    }
+);
 
 export default mongoose.model('Order', schema).on(
     'index',

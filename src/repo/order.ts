@@ -96,10 +96,15 @@ export class MongoRepository {
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (searchConditions.sellerId !== undefined) {
+            searchConditions.sellerIds = [searchConditions.sellerId];
+        }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (Array.isArray(searchConditions.sellerIds)) {
             andConditions.push({
                 'seller.id': {
                     $exists: true,
-                    $eq: searchConditions.sellerId
+                    $in: searchConditions.sellerIds
                 }
             });
         }
@@ -107,10 +112,15 @@ export class MongoRepository {
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (searchConditions.customerMembershipNumber !== undefined) {
+            searchConditions.customerMembershipNumbers = [searchConditions.customerMembershipNumber];
+        }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (Array.isArray(searchConditions.customerMembershipNumbers)) {
             andConditions.push({
                 'customer.memberOf.membershipNumber': {
                     $exists: true,
-                    $eq: searchConditions.customerMembershipNumber
+                    $in: searchConditions.customerMembershipNumbers
                 }
             });
         }
@@ -118,16 +128,26 @@ export class MongoRepository {
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (searchConditions.orderNumber !== undefined) {
+            searchConditions.orderNumbers = [searchConditions.orderNumber];
+        }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (Array.isArray(searchConditions.orderNumbers)) {
             andConditions.push({
-                orderNumber: searchConditions.orderNumber
+                orderNumber: { $in: searchConditions.orderNumbers }
             });
         }
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (searchConditions.orderStatus !== undefined) {
+            searchConditions.orderStatuses = [searchConditions.orderStatus];
+        }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (Array.isArray(searchConditions.orderStatuses)) {
             andConditions.push({
-                orderStatus: searchConditions.orderStatus
+                orderStatus: { $in: searchConditions.orderStatuses }
             });
         }
 
