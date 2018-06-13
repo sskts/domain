@@ -9,13 +9,15 @@ async function main() {
 
     const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
     const orders = await orderRepo.search({
-        orderDateFrom: moment().add(-1, 'day').toDate(),
+        orderDateFrom: moment().add(-3, 'days').toDate(),
         orderDateThrough: moment().toDate(),
-        orderNumbers: ['MO118-180612-000063'],
+        // orderNumbers: ['MO118-180612-000074'],
         // sellerIds: ['59d20831e53ebc2b4e774466'],
         // customerMembershipNumbers: ['yamazaki']
         // orderStatus: sskts.factory.orderStatus.OrderReturned,
-        orderStatuses: [sskts.factory.orderStatus.OrderDelivered, sskts.factory.orderStatus.OrderReturned]
+        orderStatuses: [sskts.factory.orderStatus.OrderDelivered, sskts.factory.orderStatus.OrderReturned],
+        confirmationNumbers: ['476742'],
+        reservedEventIdentifiers: ['11816227020180612901510']
     });
     console.log(orders.length, 'orders found.');
 

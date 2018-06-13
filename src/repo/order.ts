@@ -151,6 +151,28 @@ export class MongoRepository {
             });
         }
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (Array.isArray(searchConditions.confirmationNumbers)) {
+            andConditions.push({
+                confirmationNumber: {
+                    $exists: true,
+                    $in: searchConditions.confirmationNumbers
+                }
+            });
+        }
+
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (Array.isArray(searchConditions.reservedEventIdentifiers)) {
+            andConditions.push({
+                'acceptedOffers.itemOffered.reservationFor.identifier': {
+                    $exists: true,
+                    $in: searchConditions.reservedEventIdentifiers
+                }
+            });
+        }
+
         return this.orderModel.find({ $and: andConditions })
             .sort({ orderDate: 1 })
             .exec()

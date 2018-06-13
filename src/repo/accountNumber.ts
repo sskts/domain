@@ -53,7 +53,7 @@ export class RedisRepository {
 
         // 2桁の場合0、1桁であればそのまま(必ず1桁になるように)
         // tslint:disable-next-line:no-single-line-block-comment
-        return (checkDigit < 10) ? checkDigit : /* istanbul ignore next */ 0;
+        return (checkDigit < 10) ? /* istanbul ignore next */ checkDigit : /* istanbul ignore next */ 0;
     }
 
     /**

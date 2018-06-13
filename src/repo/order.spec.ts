@@ -165,7 +165,9 @@ describe('注文を検索する', () => {
             orderStatus: sskts.factory.orderStatus.OrderCancelled,
             orderStatuses: [sskts.factory.orderStatus.OrderCancelled],
             orderDateFrom: new Date(),
-            orderDateThrough: new Date()
+            orderDateThrough: new Date(),
+            confirmationNumbers: ['confirmationNumber'],
+            reservedEventIdentifiers: ['identifier']
         });
         assert(Array.isArray(result));
         sandbox.verify();

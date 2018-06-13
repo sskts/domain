@@ -185,6 +185,28 @@ schema.index(
         name: 'searchOrdersByOrderStatus'
     }
 );
+schema.index(
+    {
+        'acceptedOffers.itemOffered.reservationFor.identifier': 1
+    },
+    {
+        name: 'searchOrdersByReservedEvent',
+        partialFilterExpression: {
+            'acceptedOffers.itemOffered.reservationFor.identifier': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        confirmationNumber: 1
+    },
+    {
+        name: 'searchOrdersByConfirmationNumber',
+        partialFilterExpression: {
+            confirmationNumber: { $exists: true }
+        }
+    }
+);
 
 export default mongoose.model('Order', schema).on(
     'index',
