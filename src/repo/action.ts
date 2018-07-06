@@ -4,10 +4,12 @@ import { Connection } from 'mongoose';
 import ActionModel from './mongoose/model/action';
 
 export type IAuthorizeAction = factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>>;
+export type IValidateAction = factory.action.validate.IAction<factory.action.validate.IAttributes<any, any>>;
 
 export type IAction<T extends factory.actionType> =
     T extends factory.actionType.OrderAction ? factory.action.trade.order.IAction :
     T extends factory.actionType.AuthorizeAction ? factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>> :
+    T extends factory.actionType.ValidateAction ? factory.action.validate.IAction<factory.action.validate.IAttributes<any, any>> :
     factory.action.IAction<factory.action.IAttributes<T, any, any>>;
 
 /**

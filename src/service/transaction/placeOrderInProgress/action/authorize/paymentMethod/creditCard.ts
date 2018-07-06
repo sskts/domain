@@ -182,3 +182,125 @@ export function cancel(params: {
         }
     };
 }
+
+/**
+ * クレジットカード有効性チェック
+ */
+export function check(params: {
+    agentId: string;
+    transactionId: string;
+    orderId: string;
+    amount: number;
+    method: GMO.utils.util.Method;
+    creditCard: ICreditCard4authorizeAction;
+}): ICreateOperation<factory.action.validate.paymentMethod.creditCard.IAction> {
+    // tslint:disable-next-line:max-func-body-length
+    return async (repos: {
+        action: ActionRepo;
+        organization: OrganizationRepo;
+        transaction: TransactionRepo;
+    }) => {
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+
+        // 他者口座による決済も可能にするためにコメントアウト
+        // 基本的に、自分の口座のオーソリを他者に与えても得しないので、
+        // これが問題になるとすれば、本当にただサービスを荒らしたい悪質な攻撃のみ、ではある
+        // if (transaction.agent.id !== agentId) {
+        //     throw new factory.errors.Forbidden('A specified transaction is not yours.');
+        // }
+
+        // GMOショップ情報取得
+        const movieTheater = await repos.organization.findById(factory.organizationType.MovieTheater, transaction.seller.id);
+
+        // 検証アクションを開始する
+        const actionAttributes: factory.action.validate.paymentMethod.creditCard.IAttributes = {
+            typeOf: factory.actionType.ValidateAction,
+            object: {
+                typeOf: factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard,
+                orderId: params.orderId,
+                amount: params.amount,
+                method: params.method,
+                payType: GMO.utils.util.PayType.Credit
+            },
+            agent: transaction.agent,
+            recipient: transaction.seller,
+            purpose: transaction // purposeは取引
+        };
+        const action = await repos.action.start(actionAttributes);
+
+        // GMO有効性チェック
+        let entryTranArgs: GMO.services.credit.IEntryTranArgs;
+        let execTranArgs: GMO.services.credit.IExecTranArgs;
+        let entryTranResult: GMO.services.credit.IEntryTranResult;
+        let execTranResult: GMO.services.credit.IExecTranResult;
+        try {
+            entryTranArgs = {
+                shopId: movieTheater.gmoInfo.shopId,
+                shopPass: movieTheater.gmoInfo.shopPass,
+                orderId: params.orderId,
+                jobCd: GMO.utils.util.JobCd.Check,
+                amount: params.amount
+            };
+            entryTranResult = await GMO.services.credit.entryTran(entryTranArgs);
+            debug('entryTranResult:', entryTranResult);
+
+            execTranArgs = {
+                accessId: entryTranResult.accessId,
+                accessPass: entryTranResult.accessPass,
+                orderId: params.orderId,
+                method: params.method,
+                siteId: <string>process.env.GMO_SITE_ID,
+                sitePass: <string>process.env.GMO_SITE_PASS,
+                cardNo: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw>params.creditCard).cardNo,
+                cardPass: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw>params.creditCard).cardPass,
+                expire: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw>params.creditCard).expire,
+                token: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardTokenized>params.creditCard).token,
+                memberId: (<factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember>params.creditCard).memberId,
+                cardSeq: (<factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember>params.creditCard).cardSeq,
+                seqMode: GMO.utils.util.SeqMode.Physics
+            };
+            execTranResult = await GMO.services.credit.execTran(execTranArgs);
+            debug('execTranResult:', execTranResult);
+        } catch (error) {
+            // actionにエラー結果を追加
+            try {
+                const actionError = { ...error, ...{ message: error.message, name: error.name } };
+                await repos.action.giveUp(action.typeOf, action.id, actionError);
+            } catch (__) {
+                // 失敗したら仕方ない
+            }
+
+            if (error.name === 'GMOServiceBadRequestError') {
+                // consider E92000001,E92000002
+                // GMO流量制限オーバーエラーの場合
+                const serviceUnavailableError = error.errors.find((gmoError: any) => gmoError.info.match(/^E92000001|E92000002$/));
+                if (serviceUnavailableError !== undefined) {
+                    throw new factory.errors.RateLimitExceeded(serviceUnavailableError.userMessage);
+                }
+
+                // オーダーID重複エラーの場合
+                const duplicateError = error.errors.find((gmoError: any) => gmoError.info.match(/^E01040010$/));
+                if (duplicateError !== undefined) {
+                    throw new factory.errors.AlreadyInUse('action.object', ['orderId'], duplicateError.userMessage);
+                }
+
+                // その他のGMOエラーに場合、なんらかのクライアントエラー
+                throw new factory.errors.Argument('payment');
+            }
+
+            throw error;
+        }
+
+        // アクションを完了
+        debug('ending authorize action...');
+
+        const result: factory.action.validate.paymentMethod.creditCard.IResult = {
+            price: params.amount,
+            entryTranArgs: entryTranArgs,
+            execTranArgs: execTranArgs,
+            execTranResult: execTranResult
+        };
+
+        return repos.action.complete(action.typeOf, action.id, result);
+    };
+}
