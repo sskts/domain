@@ -2,6 +2,7 @@
  * タスクファンクションサービス
  * タスク名ごとに、実行するファンクションをひとつずつ定義しています
  */
+import * as mocoinapi from '@mocoin/api-nodejs-client';
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
@@ -164,6 +165,25 @@ export function payPecorino(data: factory.task.payPecorino.IData): IOperation<vo
         await PaymentService.pecorino.payPecorino(data)({
             action: actionRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient
+        });
+    };
+}
+
+export function payMocoin(data: factory.task.payMocoin.IData): IOperation<void> {
+    return async (settings: {
+        connection: mongoose.Connection;
+        mocoinAuthClient?: mocoinapi.auth.ClientCredentials;
+    }) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (settings.mocoinAuthClient === undefined) {
+            throw new Error('settings.mocoinAuthClient undefined.');
+        }
+
+        const actionRepo = new ActionRepo(settings.connection);
+        await PaymentService.mocoin.payMocoin(data)({
+            action: actionRepo,
+            mocoinAuthClient: settings.mocoinAuthClient
         });
     };
 }

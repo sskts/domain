@@ -2,6 +2,7 @@
 /**
  * sskts-domain index module
  */
+import * as mocoinapi from '@mocoin/api-nodejs-client';
 import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
@@ -98,6 +99,7 @@ export import GMO = GMO;
  * Pecorinoサービスとの連携は全てこのクライアントを通じて行います。
  */
 export import pecorinoapi = pecorinoapi;
+export import mocoin = mocoinapi;
 
 /**
  * AWS SDK

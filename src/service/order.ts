@@ -136,6 +136,24 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                 }));
             }
 
+            // Mocoin決済
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(orderPotentialActions.payMocoin)) {
+                taskAttributes.push(...orderPotentialActions.payMocoin.map((a): factory.task.payMocoin.IAttributes => {
+                    return {
+                        name: factory.taskName.PayMocoin,
+                        status: factory.taskStatus.Ready,
+                        runsAt: now, // なるはやで実行
+                        remainingNumberOfTries: 10,
+                        lastTriedAt: null,
+                        numberOfTried: 0,
+                        executionResults: [],
+                        data: a
+                    };
+                }));
+            }
+
             // ムビチケ使用
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */

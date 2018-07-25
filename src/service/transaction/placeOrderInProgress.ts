@@ -19,6 +19,7 @@ import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/autho
 import * as ProgramMembershipAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/programMembership';
 import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/seatReservation';
 import * as CreditCardAuthorizeActionService from './placeOrderInProgress/action/authorize/paymentMethod/creditCard';
+import * as MocoinAuthorizeActionService from './placeOrderInProgress/action/authorize/paymentMethod/mocoin';
 import * as PecorinoAuthorizeActionService from './placeOrderInProgress/action/authorize/paymentMethod/pecorino';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress');
@@ -185,6 +186,7 @@ export namespace action {
              * クレジットカード承認アクションサービス
              */
             export import creditCard = CreditCardAuthorizeActionService;
+            export import mocoin = MocoinAuthorizeActionService;
             /**
              * Pecorino承認アクションサービス
              */
@@ -626,6 +628,19 @@ export function createOrderFromTransaction(params: {
             });
         });
 
+    // mocoin決済があれば決済方法に追加
+    params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.mocoin.ObjectType.MocoinPayment)
+        .forEach((a: factory.action.authorize.paymentMethod.mocoin.IAction) => {
+            const actionResult = <factory.action.authorize.paymentMethod.mocoin.IResult>a.result;
+            paymentMethods.push({
+                name: 'Mocoin',
+                paymentMethod: factory.paymentMethodType.Mocoin,
+                paymentMethodId: actionResult.mocoinTransaction.token
+            });
+        });
+
     const url = util.format(
         '%s/inquiry/login?theater=%s&reserve=%s',
         process.env.ORDER_INQUIRY_ENDPOINT,
@@ -860,6 +875,28 @@ export async function createPotentialActionsFromTransaction(params: {
             };
         });
 
+    // mocoin支払いアクション
+    const mocoinAuthorizeActions = <factory.action.authorize.paymentMethod.mocoin.IAction[]>params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.mocoin.ObjectType.MocoinPayment);
+    const payMocoinActions: factory.action.trade.pay.IAttributes<factory.paymentMethodType.Mocoin>[] =
+        mocoinAuthorizeActions.map((a) => {
+            return {
+                typeOf: <factory.actionType.PayAction>factory.actionType.PayAction,
+                object: {
+                    paymentMethod: {
+                        name: 'Mocoin',
+                        paymentMethod: <factory.paymentMethodType.Mocoin>factory.paymentMethodType.Mocoin,
+                        paymentMethodId: a.id
+                    },
+                    mocoinTransaction: (<factory.action.authorize.paymentMethod.mocoin.IResult>a.result).mocoinTransaction,
+                    mocoinEndpoint: (<factory.action.authorize.paymentMethod.mocoin.IResult>a.result).mocoinEndpoint
+                },
+                agent: params.transaction.agent,
+                purpose: params.order
+            };
+        });
+
     // ムビチケ使用アクション
     let useMvtkAction: factory.action.consume.use.mvtk.IAttributes | null = null;
     const mvtkAuthorizeAction = <factory.action.authorize.discount.mvtk.IAction>params.transaction.object.authorizeActions
@@ -981,6 +1018,7 @@ export async function createPotentialActionsFromTransaction(params: {
                 payCreditCard: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
                 // Pecorino決済があれば支払アクション追加
                 payPecorino: payPecorinoActions,
+                payMocoin: payMocoinActions,
                 useMvtk: (useMvtkAction !== null) ? useMvtkAction : undefined,
                 sendOrder: sendOrderActionAttributes,
                 givePecorinoAward: givePecorinoAwardActions

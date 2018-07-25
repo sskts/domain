@@ -1,6 +1,7 @@
 /**
  * タスクサービス
  */
+import * as mocoinapi from '@mocoin/api-nodejs-client';
 import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
 import * as AWS from 'aws-sdk';
@@ -32,6 +33,10 @@ export type IExecuteOperation<T> = (settings: {
      * PecorinoAPI認証クライアント
      */
     pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+    /**
+     * MocoinAPI認証クライアント
+     */
+    mocoinAuthClient?: mocoinapi.auth.ClientCredentials;
     /**
      * Cognitoサービスプロバイダー
      */
