@@ -76,4 +76,4 @@ Code sample are [here](https://github.com/motionpicture/sskts-domain/tree/master
 
 ## License
 
-UNLICENSED
+ISC
