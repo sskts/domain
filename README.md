@@ -2,7 +2,12 @@
 
 # SSKTS Domain Library for Node.js
 
-[![CircleCI](https://circleci.com/gh/motionpicture/sskts-domain.svg?style=svg&circle-token=26025d5a2df8ffd61173c72bbc1257fc6a2ad66d)](https://circleci.com/gh/motionpicture/sskts-domain)
+[![npm (scoped)](https://img.shields.io/npm/v/@motionpicture/sskts-domain.svg)](https://www.npmjs.com/package/@motionpicture/sskts-domain)
+[![CircleCI](https://circleci.com/gh/motionpicture/sskts-domain.svg?style=svg)](https://circleci.com/gh/motionpicture/sskts-domain)
+[![Coverage Status](https://coveralls.io/repos/github/motionpicture/sskts-domain/badge.svg?branch=master)](https://coveralls.io/github/motionpicture/sskts-domain?branch=master)
+[![Dependency Status](https://img.shields.io/david/motionpicture/sskts-domain.svg)](https://david-dm.org/motionpicture/sskts-domain)
+[![Known Vulnerabilities](https://snyk.io/test/github/motionpicture/sskts-domain/badge.svg)](https://snyk.io/test/github/motionpicture/sskts-domain)
+[![npm](https://img.shields.io/npm/dm/@motionpicture/sskts-domain.svg)](https://nodei.co/npm/@motionpicture/sskts-domain/)
 
 SSKTSのバックエンドサービスをnode.jsで簡単に使用するためのパッケージを提供します。
 

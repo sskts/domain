@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - PecorinoSDKを推奨版に変更。
+- パブリックパッケージ化。
 
 ### Deprecated
 
