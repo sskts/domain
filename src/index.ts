@@ -4,8 +4,8 @@
  */
 import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
-import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
+import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as AWS from 'aws-sdk';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';

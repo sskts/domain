@@ -11,9 +11,9 @@
   "dependencies": {
     "@motionpicture/coa-service": "^4.1.0",
     "@motionpicture/gmo-service": "^4.2.0",
-    "@motionpicture/pecorino-api-nodejs-client": "0.0.2",
     "@motionpicture/sskts-factory": "^4.2.0",
     "@motionpicture/waiter-domain": "^2.0.2",
+    "@pecorino/api-nodejs-client": "0.0.3",
     "@sendgrid/mail": "^6.2.1",
     "@types/google-libphonenumber": "^7.4.15",
     "@types/mongoose": "^5.0.15",
