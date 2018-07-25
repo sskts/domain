@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- PecorinoSDKを推奨版に変更。
-- パブリックパッケージ化。
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v25.2.1 - 2018-07-25
+
+### Changed
+
+- PecorinoSDKを推奨版に変更。
+- パブリックパッケージ化。
 
 ## v25.2.0 - 2018-06-13
 
