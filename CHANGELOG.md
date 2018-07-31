@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 口座タイプを追加して、Pecorinoに指定するように変更。
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v25.3.0 - 2018-07-31
+
+### Changed
+
+- 口座タイプを追加して、Pecorinoに指定するように変更。
 
 ## v25.2.1 - 2018-07-25
 
