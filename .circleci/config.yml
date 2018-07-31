@@ -23,7 +23,7 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: install npm packages
-          command: npm install
+          command: npm ci
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
@@ -86,7 +86,6 @@ jobs:
 # Used for orchestrating all jobs.
 workflows:
   version: 2
-
   build-test-doc-and-deploy:
     jobs:
       - build
