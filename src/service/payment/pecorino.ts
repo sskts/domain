@@ -159,6 +159,7 @@ export function refundPecorino(params: factory.task.refundPecorino.IData) {
                         auth: repos.pecorinoAuthClient
                     });
                     const depositTransaction = await depositService.start({
+                        accountType: factory.accountType.Point,
                         toAccountNumber: pecorinoTransaction.object.fromAccountNumber,
                         // tslint:disable-next-line:no-magic-numbers
                         expires: moment().add(5, 'minutes').toDate(),
@@ -178,6 +179,7 @@ export function refundPecorino(params: factory.task.refundPecorino.IData) {
                         auth: repos.pecorinoAuthClient
                     });
                     const transferTransaction = await transferService.start({
+                        accountType: factory.accountType.Point,
                         toAccountNumber: pecorinoTransaction.object.fromAccountNumber,
                         fromAccountNumber: pecorinoTransaction.object.toAccountNumber,
                         // tslint:disable-next-line:no-magic-numbers

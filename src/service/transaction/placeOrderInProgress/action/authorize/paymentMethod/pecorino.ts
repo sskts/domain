@@ -102,8 +102,8 @@ export function create(params: {
         let pecorinoEndpoint: string;
 
         // Pecorinoオーソリ取得
-        type IPecorinoTransaction = pecorinoapi.factory.transaction.withdraw.ITransaction |
-            pecorinoapi.factory.transaction.transfer.ITransaction;
+        type IPecorinoTransaction = pecorinoapi.factory.transaction.withdraw.ITransaction<factory.accountType.Point> |
+            pecorinoapi.factory.transaction.transfer.ITransaction<factory.accountType.Point>;
         let pecorinoTransaction: IPecorinoTransaction;
 
         try {
@@ -123,13 +123,14 @@ export function create(params: {
                         url: transaction.agent.url
                     },
                     recipient: {
-                        typeOf: <factory.pecorino.organizationType>transaction.seller.typeOf,
+                        typeOf: transaction.seller.typeOf,
                         id: transaction.seller.id,
                         name: transaction.seller.name.ja,
                         url: transaction.seller.url
                     },
                     amount: params.amount,
                     notes: (params.notes !== undefined) ? params.notes : 'シネマサンシャイン 注文取引',
+                    accountType: factory.accountType.Point,
                     fromAccountNumber: params.fromAccountNumber
                 });
                 debug('pecorinoTransaction started.', pecorinoTransaction.id);
@@ -164,7 +165,7 @@ export function create(params: {
                         url: transaction.agent.url
                     },
                     recipient: {
-                        typeOf: <factory.pecorino.organizationType>transaction.seller.typeOf,
+                        typeOf: transaction.seller.typeOf,
                         id: transaction.seller.id,
                         name: transaction.seller.name.ja,
                         url: transaction.seller.url
@@ -172,6 +173,7 @@ export function create(params: {
                     amount: params.amount,
                     // tslint:disable-next-line:no-single-line-block-comment
                     notes: (params.notes !== undefined) ? /* istanbul ignore next */ params.notes : 'シネマサンシャイン 注文取引',
+                    accountType: factory.accountType.Point,
                     fromAccountNumber: params.fromAccountNumber,
                     toAccountNumber: pecorinoPaymentAccepted.accountNumber
                 });
