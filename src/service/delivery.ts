@@ -276,7 +276,7 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
             throw new factory.errors.NotFound('params.object.result');
         }
 
-        let withdrawTransaction: pecorinoapi.factory.transaction.withdraw.ITransaction;
+        let withdrawTransaction: pecorinoapi.factory.transaction.withdraw.ITransaction<factory.accountType.Point>;
         const action = await repos.action.start(params);
 
         try {
@@ -295,13 +295,14 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
                     url: placeOrderTransaction.agent.url
                 },
                 recipient: {
-                    typeOf: <factory.pecorino.organizationType>placeOrderTransaction.seller.typeOf,
+                    typeOf: placeOrderTransaction.seller.typeOf,
                     id: placeOrderTransaction.seller.id,
                     name: placeOrderTransaction.seller.name.ja,
                     url: placeOrderTransaction.seller.url
                 },
                 amount: pecorinoAwardAuthorizeActionResult.pecorinoTransaction.object.amount,
                 notes: 'シネマサンシャイン 返品によるポイントインセンティブ取消',
+                accountType: factory.accountType.Point,
                 fromAccountNumber: pecorinoAwardAuthorizeActionResult.pecorinoTransaction.object.toAccountNumber
             });
             await withdrawService.confirm({ transactionId: withdrawTransaction.id });
