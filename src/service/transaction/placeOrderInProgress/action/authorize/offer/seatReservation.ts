@@ -173,14 +173,15 @@ async function validateOffers(
             };
 
             // メガネ代込みの要求の場合は、販売単価調整&メガネ代をセット
-            // 販売券種抽出に対して無料鑑賞券を出力する改修がCOAで未対応なので、現時点ではこのケースは受け付けられない
-            // const includeGlasses = (offer.ticketInfo.addGlasses > 0);
-            // if (includeGlasses) {
-            //     offerWithDetails.ticketInfo.ticketName = `${availableSalesTicket.ticketName}メガネ込み`;
-            //     offerWithDetails.price += availableSalesTicket.addGlasses;
-            //     offerWithDetails.ticketInfo.salePrice += availableSalesTicket.addGlasses;
-            //     offerWithDetails.ticketInfo.addGlasses = availableSalesTicket.addGlasses;
-            // }
+            // 販売券種抽出に対して無料鑑賞券を出力する改修がCOAで未対応なので、
+            // 販売可能チケットからセットする。
+            const includeGlasses = (offer.ticketInfo.addGlasses > 0);
+            if (includeGlasses) {
+                offerWithDetails.ticketInfo.ticketName = `${availableSalesTicket.ticketName}メガネ込み`;
+                offerWithDetails.price += availableSalesTicket.addGlasses;
+                offerWithDetails.ticketInfo.salePrice += availableSalesTicket.addGlasses;
+                offerWithDetails.ticketInfo.addGlasses = availableSalesTicket.addGlasses;
+            }
 
             offersWithDetails.push(offerWithDetails);
         } else if (offer.ticketInfo.mvtkAppPrice > 0) {
