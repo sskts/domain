@@ -150,14 +150,10 @@ async function validateOffers(
                     ticketName: coaTicket.ticketName,
                     ticketNameEng: coaTicket.ticketNameEng,
                     ticketNameKana: coaTicket.ticketNameKana,
-                    // tslint:disable-next-line:no-suspicious-comment
-                    stdPrice: 0, // TODO これでいい？
-                    // tslint:disable-next-line:no-suspicious-comment
-                    addPrice: 0, // TODO これでいい？
-                    // tslint:disable-next-line:no-suspicious-comment
-                    disPrice: 0, // TODO これでいい？
-                    // tslint:disable-next-line:no-suspicious-comment
-                    salePrice: 0, // TODO これでいい？
+                    stdPrice: availableSalesTicket.stdPrice,
+                    addPrice: availableSalesTicket.addPrice,
+                    disPrice: 0,
+                    salePrice: availableSalesTicket.salePrice,
                     addGlasses: 0,
                     mvtkAppPrice: 0,
                     ticketCount: 1,
@@ -173,7 +169,6 @@ async function validateOffers(
             };
 
             // メガネ代込みの要求の場合は、販売単価調整&メガネ代をセット
-            // 販売券種抽出に対して無料鑑賞券を出力する改修がCOAで未対応なので、
             // 販売可能チケットからセットする。
             const includeGlasses = (offer.ticketInfo.addGlasses > 0);
             if (includeGlasses) {
