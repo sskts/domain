@@ -1,8 +1,8 @@
 /**
  * Pecorino賞金承認アクションサービス
  */
-import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
+import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
@@ -103,7 +103,7 @@ export function create(params: {
                 // 最大1ヵ月のオーソリ
                 expires: moment().add(1, 'month').toDate(),
                 agent: {
-                    typeOf: <factory.pecorino.organizationType>transaction.seller.typeOf,
+                    typeOf: transaction.seller.typeOf,
                     id: transaction.seller.id,
                     name: transaction.seller.name.ja,
                     url: transaction.seller.url
@@ -117,6 +117,7 @@ export function create(params: {
                 amount: params.amount,
                 // tslint:disable-next-line:no-single-line-block-comment
                 notes: (params.notes !== undefined) ? /* istanbul ignore next */ params.notes : 'シネマサンシャイン 注文取引インセンティブ',
+                accountType: factory.accountType.Point,
                 toAccountNumber: params.toAccountNumber
             });
             debug('pecorinoTransaction started.', pecorinoTransaction.id);

@@ -3,8 +3,8 @@
  * タスク名ごとに、実行するファンクションをひとつずつ定義しています
  */
 import * as mocoinapi from '@mocoin/api-nodejs-client';
-import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
+import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 

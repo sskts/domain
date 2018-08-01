@@ -2,8 +2,8 @@
  * ポイント口座サービス
  * 口座の保管先はPecorinoサービスです。
  */
-import * as pecorinoapi from '@motionpicture/pecorino-api-nodejs-client';
 import * as factory from '@motionpicture/sskts-factory';
+import * as pecorinoapi from '@pecorino/api-nodejs-client';
 // import * as createDebug from 'debug';
 import * as moment from 'moment';
 
@@ -31,9 +31,10 @@ export function open(params: {
         // 口座番号を発行
         const accountNumber = await repos.accountNumber.publish(new Date());
 
-        let account: factory.pecorino.account.IAccount;
+        let account: factory.pecorino.account.IAccount<factory.accountType.Point>;
         try {
             account = await repos.accountService.open({
+                accountType: factory.accountType.Point,
                 accountNumber: accountNumber,
                 name: params.name
             });
@@ -81,6 +82,7 @@ export function deposit(params: {
     }) => {
         try {
             const transaction = await repos.depositService.start({
+                accountType: factory.accountType.Point,
                 toAccountNumber: params.toAccountNumber,
                 expires: moment().add(1, 'minutes').toDate(),
                 agent: {

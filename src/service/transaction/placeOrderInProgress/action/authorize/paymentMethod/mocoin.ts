@@ -116,7 +116,7 @@ export function create(params: {
                     url: transaction.agent.url
                 },
                 recipient: {
-                    typeOf: <factory.pecorino.organizationType>transaction.seller.typeOf,
+                    typeOf: transaction.seller.typeOf,
                     id: transaction.seller.id,
                     name: transaction.seller.name.ja,
                     url: transaction.seller.url
@@ -125,11 +125,13 @@ export function create(params: {
                 // tslint:disable-next-line:no-single-line-block-comment
                 notes: (params.notes !== undefined) ? /* istanbul ignore next */ params.notes : 'シネマサンシャイン 注文取引',
                 fromLocation: {
-                    typeOf: mocoinapi.factory.ownershipInfo.AccountGoodType.CoinAccount,
+                    typeOf: mocoinapi.factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: mocoinapi.factory.accountType.Coin,
                     accountNumber: params.fromAccountNumber
                 },
                 toLocation: {
-                    typeOf: mocoinapi.factory.ownershipInfo.AccountGoodType.CoinAccount,
+                    typeOf: mocoinapi.factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: mocoinapi.factory.accountType.Coin,
                     accountNumber: mocoinPaymentAccepted.accountNumber
                 }
             });
