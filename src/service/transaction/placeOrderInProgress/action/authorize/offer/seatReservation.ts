@@ -130,7 +130,7 @@ async function validateOffers(
                 throw error;
             }
 
-            // 金額を取得する。            
+            // 金額を取得する。
             const availableSalesTicket = availableSalesTickets.find(
                 (salesTicket) => salesTicket.ticketCode === offer.ticketInfo.ticketCode
             );
