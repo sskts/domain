@@ -336,11 +336,13 @@ export function registerProgramMembership(data: factory.task.registerProgramMemb
 export function unRegisterProgramMembership(data: factory.task.unRegisterProgramMembership.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
+        cognitoIdentityServiceProvider: AWS.CognitoIdentityServiceProvider;
     }) => {
         await ProgramMembershipService.unRegister(data)({
             action: new ActionRepo(settings.connection),
             ownershipInfo: new OwnershipInfoRepo(settings.connection),
-            task: new TaskRepo(settings.connection)
+            task: new TaskRepo(settings.connection),
+            person: new PersonRepo(settings.cognitoIdentityServiceProvider)
         });
     };
 }
