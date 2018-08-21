@@ -317,4 +317,91 @@ describe('会員プログラム登録解除', () => {
         assert.deepEqual(result, findTaskError);
         sandbox.verify();
     });
+
+    it('パラメーターに所属会員プログラムがない場合、エラーとなるはず', async () => {
+        const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        sandbox.mock(actionRepo).expects('start').once().resolves({});
+        sandbox.mock(taskRepo.taskModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves({});
+        sandbox.mock(ownershipInfoRepo.ownershipInfoModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves({});
+        sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
+        sandbox.mock(cognitoIdentityServiceProvider).expects('adminDisableUser').never();
+
+        const result = await sskts.service.programMembership.unRegister(<any>{
+            object: {
+                typeOfGood: { id: 'programMembershipId' },
+                ownedBy: { memberOf: { membershipNumber: 'membershipNumber' } }
+            },
+            agent: {}
+        })({
+            action: actionRepo,
+            ownershipInfo: ownershipInfoRepo,
+            task: taskRepo,
+            person: personRepo
+        }).catch((err) => (err));
+        assert.deepEqual(result, new sskts.factory.errors.NotFound('params.agent.memberOf'));
+        sandbox.verify();
+    });
+
+    it('パラメーターにcognitoのusernameがない場合、エラーとなるはず', async () => {
+        const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        sandbox.mock(actionRepo).expects('start').once().resolves({});
+        sandbox.mock(taskRepo.taskModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves({});
+        sandbox.mock(ownershipInfoRepo.ownershipInfoModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves({});
+        sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
+        sandbox.mock(cognitoIdentityServiceProvider).expects('adminDisableUser').never();
+
+        const result = await sskts.service.programMembership.unRegister(<any>{
+            object: {
+                typeOfGood: { id: 'programMembershipId' },
+                ownedBy: { memberOf: { membershipNumber: 'membershipNumber' } }
+            },
+            agent: { memberOf: {} }
+        })({
+            action: actionRepo,
+            ownershipInfo: ownershipInfoRepo,
+            task: taskRepo,
+            person: personRepo
+        }).catch((err) => (err));
+        assert.deepEqual(result, new sskts.factory.errors.NotFound('params.agent.memberOf.membershipNumber'));
+        sandbox.verify();
+    });
+
+    it('リポジトリーとAWS正常であればアクションを完了できるはず', async () => {
+        const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        sandbox.mock(actionRepo).expects('start').once().resolves({});
+        sandbox.mock(taskRepo.taskModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves({});
+        sandbox.mock(ownershipInfoRepo.ownershipInfoModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves({});
+        sandbox.mock(actionRepo).expects('complete').once().resolves({});
+        sandbox.mock(cognitoIdentityServiceProvider).expects('adminDisableUser').once();
+
+        const result = await sskts.service.programMembership.unRegister(<any>{
+            object: {
+                typeOfGood: { id: 'programMembershipId' },
+                ownedBy: { memberOf: { membershipNumber: 'membershipNumber' } }
+            },
+            agent: { memberOf: { membershipNumber: 'username' } }
+        })({
+            action: actionRepo,
+            ownershipInfo: ownershipInfoRepo,
+            task: taskRepo,
+            person: personRepo
+        });
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
 });

@@ -184,3 +184,36 @@ describe('アクセストークンでユーザー属性を更新する', () => {
         sandbox.verify();
     });
 });
+
+describe('unregister', () => {
+    beforeEach(() => {
+        sandbox.restore();
+    });
+
+    it('AWSがエラーを返せばエラーとなるはず', async () => {
+        const args = {
+            userPooId: 'userPoolId',
+            username: 'username'
+        };
+        const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+        const awsError = new Error('awsError');
+        sandbox.mock(cognitoIdentityServiceProvider).expects('adminDisableUser').once().callsArgWith(1, awsError);
+
+        const result = await personRepo.unregister(args).catch((err) => err);
+        assert.deepEqual(result, awsError);
+        sandbox.verify();
+    });
+
+    it('AWSが正常であれば成功するはず', async () => {
+        const args = {
+            userPooId: 'userPoolId',
+            username: 'username'
+        };
+        const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+        sandbox.mock(cognitoIdentityServiceProvider).expects('adminDisableUser').once().callsArgWith(1, null);
+
+        const result = await personRepo.unregister(args);
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});

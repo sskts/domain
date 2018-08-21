@@ -314,6 +314,7 @@ export function unRegister(params: factory.action.interact.unRegister.programMem
         action: ActionRepo;
         ownershipInfo: OwnershipInfoRepo;
         task: TaskRepo;
+        person?: PersonRepo;
     }) => {
         // アクション開始
         const action = await repos.action.start(params);
@@ -361,6 +362,22 @@ export function unRegister(params: factory.action.interact.unRegister.programMem
                 { identifier: params.object.identifier },
                 { ownedThrough: new Date() }
             ).exec();
+
+            if (repos.person !== undefined) {
+                const customer = (<factory.person.IPerson>params.agent);
+                if (customer.memberOf === undefined) {
+                    throw new factory.errors.NotFound('params.agent.memberOf');
+                }
+                if (customer.memberOf.membershipNumber === undefined) {
+                    throw new factory.errors.NotFound('params.agent.memberOf.membershipNumber');
+                }
+
+                // Cognitoユーザを無効にする
+                repos.person.unregister({
+                    userPooId: <string>process.env.COGNITO_USER_POOL_ID,
+                    username: customer.memberOf.membershipNumber
+                });
+            }
         } catch (error) {
             // actionにエラー結果を追加
             try {
