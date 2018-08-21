@@ -373,7 +373,7 @@ export function unRegister(params: factory.action.interact.unRegister.programMem
                 }
 
                 // Cognitoユーザを無効にする
-                repos.person.unregister({
+                await repos.person.unregister({
                     userPooId: <string>process.env.COGNITO_USER_POOL_ID,
                     username: customer.memberOf.membershipNumber
                 });
