@@ -3,6 +3,7 @@
  */
 import * as GMO from '@motionpicture/gmo-service';
 import * as factory from '@motionpicture/sskts-factory';
+import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as createDebug from 'debug';
 import * as moment from 'moment-timezone';
 import * as util from 'util';
@@ -19,6 +20,8 @@ import { CognitoRepository as PersonRepo } from '../repo/person';
 import { MongoRepository as ProgramMembershipRepo } from '../repo/programMembership';
 import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
+
+import { handlePecorinoError } from '../errorHandler';
 
 const debug = createDebug('sskts-domain:service:programMembership');
 
@@ -41,6 +44,7 @@ export type IRegisterOperation<T> = (repos: {
     programMembership: ProgramMembershipRepo;
     registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
     transaction: TransactionRepo;
+    depositService?: pecorinoapi.service.transaction.Deposit;
 }) => Promise<T>;
 
 /**
@@ -157,6 +161,7 @@ export function register(
         programMembership: ProgramMembershipRepo;
         registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
         transaction: TransactionRepo;
+        depositService: pecorinoapi.service.transaction.Deposit;
     }) => {
         const now = new Date();
 
@@ -413,6 +418,8 @@ function processPlaceOrder(params: {
         person: PersonRepo;
         programMembership: ProgramMembershipRepo;
         transaction: TransactionRepo;
+        depositService: pecorinoapi.service.transaction.Deposit;
+        ownershipInfo: OwnershipInfoRepo;
     }) => {
         const programMembership = params.registerActionAttributes.object.itemOffered;
         // tslint:disable-next-line:no-single-line-block-comment
@@ -453,6 +460,89 @@ function processPlaceOrder(params: {
             // passportToken:
         })(repos);
         debug('transaction started', transaction.id);
+
+        // シネサンのスマフォアプリ登録時、元から1ポイント追加される
+        if (repos.depositService !== undefined) {
+            const now = new Date();
+            const accountOwnershipInfos = await repos.ownershipInfo.search({
+                goodType: factory.pecorino.account.TypeOf.Account,
+                ownedBy: customer.memberOf.membershipNumber,
+                ownedAt: now
+            });
+
+            if (accountOwnershipInfos.length === 0) {
+                throw new factory.errors.NotFound('accountOwnershipInfos');
+            }
+
+            // 承認アクションを開始する
+            const actionAttributes: factory.action.authorize.award.pecorino.IAttributes = {
+                typeOf: factory.actionType.AuthorizeAction,
+                object: {
+                    typeOf: factory.action.authorize.award.pecorino.ObjectType.PecorinoAward,
+                    transactionId: transaction.id,
+                    amount: 1
+                },
+                agent: transaction.seller,
+                recipient: transaction.agent,
+                purpose: transaction
+            };
+            const action = await repos.action.start(actionAttributes);
+
+            let pecorinoEndpoint: string;
+
+            // Pecorinoオーソリ取得
+            let pecorinoTransaction: factory.action.authorize.award.pecorino.IPecorinoTransaction;
+
+            try {
+                pecorinoEndpoint = repos.depositService.options.endpoint;
+
+                debug('starting pecorino pay transaction...', 1);
+                pecorinoTransaction = await repos.depositService.start({
+                    // 最大1ヵ月のオーソリ
+                    expires: moment().add(1, 'month').toDate(),
+                    agent: {
+                        typeOf: transaction.seller.typeOf,
+                        id: transaction.seller.id,
+                        name: transaction.seller.name.ja,
+                        url: transaction.seller.url
+                    },
+                    recipient: {
+                        typeOf: transaction.agent.typeOf,
+                        id: transaction.agent.id,
+                        name: `sskts-transaction-${transaction.id}`,
+                        url: transaction.agent.url
+                    },
+                    amount: 1,
+                    notes: 'シネマサンシャイン 新規登録インセンティブ',
+                    accountType: factory.accountType.Point,
+                    toAccountNumber: accountOwnershipInfos[0].typeOfGood.accountNumber
+                });
+                debug('pecorinoTransaction started.', pecorinoTransaction.id);
+            } catch (error) {
+                // actionにエラー結果を追加
+                try {
+                    // tslint:disable-next-line:max-line-length no-single-line-block-comment
+                    const actionError = { ...error, ...{ name: error.name, message: error.message } };
+                    await repos.action.giveUp(action.typeOf, action.id, actionError);
+                } catch (__) {
+                    // 失敗したら仕方ない
+                }
+
+                error = handlePecorinoError(error);
+                throw error;
+            }
+
+            // アクションを完了
+            debug('ending authorize action...');
+            const actionResult: factory.action.authorize.award.pecorino.IResult = {
+                price: 0, // JPYとして0円
+                amount: 1,
+                pecorinoTransaction: pecorinoTransaction,
+                pecorinoEndpoint: pecorinoEndpoint
+            };
+
+            await repos.action.complete(action.typeOf, action.id, actionResult);
+        }
 
         // 会員プログラムオファー承認
         await PlaceOrderService.action.authorize.offer.programMembership.create({
