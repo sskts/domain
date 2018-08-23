@@ -36,6 +36,10 @@ export type IExecuteOperation<T> = (settings: {
      * Cognitoサービスプロバイダー
      */
     cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
+    /**
+     * pecorino転送取引サービスクライアント
+     */
+    depositService?: pecorinoapi.service.transaction.Deposit;
 }) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:task');
@@ -69,6 +73,10 @@ export function executeByName(taskName: factory.taskName): IExecuteOperation<voi
          * Cognitoサービスプロバイダー
          */
         cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
+        /**
+         * pecorino転送取引サービスクライアント
+         */
+        depositService?: pecorinoapi.service.transaction.Deposit;
     }) => {
         // 未実行のタスクを取得
         let task: factory.task.ITask | null = null;

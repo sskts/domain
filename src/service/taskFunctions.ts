@@ -308,6 +308,7 @@ export function registerProgramMembership(data: factory.task.registerProgramMemb
         connection: mongoose.Connection;
         redisClient?: redis.RedisClient;
         cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
+        depositService?: pecorinoapi.service.transaction.Deposit;
     }) => {
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
@@ -328,7 +329,8 @@ export function registerProgramMembership(data: factory.task.registerProgramMemb
             person: new PersonRepo(settings.cognitoIdentityServiceProvider),
             programMembership: new ProgramMembershipRepo(settings.connection),
             registerActionInProgressRepo: new RegisterProgramMembershipActionInProgressRepo(settings.redisClient),
-            transaction: new TransactionRepo(settings.connection)
+            transaction: new TransactionRepo(settings.connection),
+            depositService: settings.depositService
         });
     };
 }
@@ -336,11 +338,13 @@ export function registerProgramMembership(data: factory.task.registerProgramMemb
 export function unRegisterProgramMembership(data: factory.task.unRegisterProgramMembership.IData): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
+        cognitoIdentityServiceProvider: AWS.CognitoIdentityServiceProvider;
     }) => {
         await ProgramMembershipService.unRegister(data)({
             action: new ActionRepo(settings.connection),
             ownershipInfo: new OwnershipInfoRepo(settings.connection),
-            task: new TaskRepo(settings.connection)
+            task: new TaskRepo(settings.connection),
+            person: new PersonRepo(settings.cognitoIdentityServiceProvider)
         });
     };
 }

@@ -1,5 +1,5 @@
 import * as factory from '@motionpicture/sskts-factory';
-import { Connection } from 'mongoose';
+import { Connection, Types } from 'mongoose';
 import ownershipInfoModel from './mongoose/model/ownershipInfo';
 
 export type IOwnershipInfo<T extends factory.ownershipInfo.IGoodType> = factory.ownershipInfo.IOwnershipInfo<T>;
@@ -70,5 +70,41 @@ export class MongoRepository {
             .sort({ ownedFrom: 1 })
             .exec()
             .then((docs) => docs.map((doc) => doc.toObject()));
+    }
+
+    /**
+     * 会員プログラムを検索する
+     */
+    public async searchProgramMembership(
+        searchConditions: factory.ownershipInfo.ISearchProgramMembershipConditions
+    ): Promise<number> {
+        const andConditions: any[] = [
+            { 'typeOfGood.typeOf': 'ProgramMembership' }
+        ];
+
+        andConditions.push({
+            createdAt: {
+                $lte: searchConditions.createdAtTo,
+                $gte: searchConditions.createdAtFrom
+            }
+        });
+
+        if (searchConditions.theaterIds.length > 0) {
+            let theaterIdArray: Types.ObjectId[];
+            try {
+                theaterIdArray = searchConditions.theaterIds.map((id) => {
+                    return new Types.ObjectId(id);
+                });
+            } catch (__) {
+                throw(new Error('theaterIds not valid'));
+            }
+            andConditions.push({
+                'acquiredFrom._id': { $in: theaterIdArray }
+            });
+        }
+
+        return this.ownershipInfoModel.distinct('ownedBy.id', { $and: andConditions })
+            .exec()
+            .then((result) => result.length);
     }
 }

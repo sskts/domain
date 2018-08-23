@@ -192,4 +192,28 @@ export class CognitoRepository {
                 });
         });
     }
+
+    /**
+     * 退会
+     */
+    public async unregister(params: {
+        userPooId: string;
+        username: string;
+    }): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.cognitoIdentityServiceProvider.adminDisableUser(
+                {
+                    UserPoolId: params.userPooId,
+                    Username: params.username
+                },
+                (err) => {
+                    if (err instanceof Error) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                }
+            );
+        });
+    }
 }
