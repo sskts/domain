@@ -18,6 +18,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v26.0.0 - 2018-08-23
+
+### Changed
+
+- 新規会員1ポイント付与
+- スケジュールXMLと同期
+- 会員数チェック機能追加
+- 退会処理追加
+
 ## v25.3.0 - 2018-07-31
 
 ### Changed

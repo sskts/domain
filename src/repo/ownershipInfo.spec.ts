@@ -62,3 +62,54 @@ describe('所有権検索', () => {
         sandbox.verify();
     });
 });
+
+describe('OwnershipInfo.searchProgramMembership', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('theaterIdsがない場合、全ての劇場で検索するはず', async () => {
+        const searchConditions: factory.ownershipInfo.ISearchProgramMembershipConditions = {
+            createdAtFrom: new Date(),
+            createdAtTo: new Date(),
+            theaterIds: []
+        };
+        const repository = new OwnershipInfoRepo(mongoose.connection);
+        const data = [1, 1];
+        sandbox.mock(repository.ownershipInfoModel).expects('distinct').once()
+            .chain('exec').resolves(data);
+
+        const result = await repository.searchProgramMembership(searchConditions);
+        assert.equal(result, data.length);
+        sandbox.verify();
+    });
+
+    it('theaterIdsが正しくない場合、エラーになるはず', async () => {
+        const searchConditions: factory.ownershipInfo.ISearchProgramMembershipConditions = {
+            createdAtFrom: new Date(),
+            createdAtTo: new Date(),
+            theaterIds: ['59d20797e53ebc2b4e774465', '1']
+        };
+        const repository = new OwnershipInfoRepo(mongoose.connection);
+
+        const result = await repository.searchProgramMembership(searchConditions).catch((e) => e);
+        assert(result instanceof Error);
+        sandbox.verify();
+    });
+
+    it('theaterIdsが正しい場合、エラーがないはず', async () => {
+        const searchConditions: factory.ownershipInfo.ISearchProgramMembershipConditions = {
+            createdAtFrom: new Date(),
+            createdAtTo: new Date(),
+            theaterIds: ['59d20797e53ebc2b4e774465']
+        };
+        const repository = new OwnershipInfoRepo(mongoose.connection);
+        const data = [1, 1];
+        sandbox.mock(repository.ownershipInfoModel).expects('distinct').once()
+            .chain('exec').resolves(data);
+
+        const result = await repository.searchProgramMembership(searchConditions);
+        assert.equal(result, data.length);
+        sandbox.verify();
+    });
+});
