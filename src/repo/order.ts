@@ -178,27 +178,4 @@ export class MongoRepository {
             .exec()
             .then((docs) => docs.map((doc) => doc.toObject()));
     }
-
-    /**
-     * リミテッド注文を検索する
-     * @param searchConditions 検索条件
-     */
-    public async isLimitedOrdered(
-        searchConditions: factory.order.ILimitedOrderSearchConditions
-    ): Promise<boolean> {
-        const andConditions = [
-            {
-                'acceptedOffers.itemOffered.reservedTicket.coaTicketInfo.ticketCode': {
-                    $exists: true,
-                    $in: searchConditions.limitedTicketCode
-                }
-            },
-            { 'customer.memberOf.membershipNumber': searchConditions.customerMembershipNumber },
-            { 'acceptedOffers.itemOffered.reservationFor.coaInfo.dateJouei': searchConditions.screenDate }
-        ];
-
-        return this.orderModel.count({ $and: andConditions })
-            .exec()
-            .then((count) => count !== 0);
-    }
 }
