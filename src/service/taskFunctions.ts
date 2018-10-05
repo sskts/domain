@@ -348,3 +348,12 @@ export function unRegisterProgramMembership(data: factory.task.unRegisterProgram
         });
     };
 }
+
+export function triggerWebhook(data: any): IOperation<void> {
+    return async (_: {
+        connection: mongoose.Connection;
+        cognitoIdentityServiceProvider: AWS.CognitoIdentityServiceProvider;
+    }) => {
+        await NotificationService.triggerWebhook(data)();
+    };
+}

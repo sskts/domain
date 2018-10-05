@@ -124,7 +124,7 @@ describe('会員プログラムに登録する', () => {
             typeOfGood: { accountNumber: '123' }
         }];
         const fakeTransaction = {
-            seller: { name: {}},
+            seller: { name: {} },
             agent: {}
         };
 
@@ -174,7 +174,7 @@ describe('会員プログラムに登録する', () => {
     });
 
     it('ポイントを追加する時、所有権が見つけなかったら、エラーとなるはず', async () => {
-        const creditCard = { cardSeq: 'cardSeq' };
+        // const creditCard = { cardSeq: 'cardSeq' };
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
@@ -185,7 +185,7 @@ describe('会員プログラムに登録する', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const depositService = new sskts.pecorinoapi.service.transaction.Deposit(<any>{});
         const fakeTransaction = {
-            seller: { name: {}},
+            seller: { name: {} },
             agent: {}
         };
 
@@ -233,7 +233,7 @@ describe('会員プログラムに登録する', () => {
     });
 
     it('ポイントを追加する時、エラーが発生すればエラーとなるはず', async () => {
-        const creditCard = { cardSeq: 'cardSeq' };
+        // const creditCard = { cardSeq: 'cardSeq' };
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
@@ -247,7 +247,7 @@ describe('会員プログラムに登録する', () => {
             typeOfGood: { accountNumber: '123' }
         }];
         const fakeTransaction = {
-            seller: { name: {}},
+            seller: { name: {} },
             agent: {}
         };
 

@@ -144,3 +144,38 @@ ${content}`
         });
     };
 }
+
+export function triggerWebhook(params: {
+    url: string;
+    payload: any;
+}) {
+    return async () => {
+        return new Promise<void>((resolve, reject) => {
+            request.post(
+                {
+                    url: params.url,
+                    body: {
+                        data: params.payload
+                    },
+                    json: true
+                },
+                (error, response, body) => {
+                    if (error instanceof Error) {
+                        reject(error);
+                    } else {
+                        switch (response.statusCode) {
+                            case httpStatus.OK:
+                            case httpStatus.CREATED:
+                            case httpStatus.ACCEPTED:
+                            case httpStatus.NO_CONTENT:
+                                resolve();
+                                break;
+                            default:
+                                reject(body);
+                        }
+                    }
+                }
+            );
+        });
+    };
+}
