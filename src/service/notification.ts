@@ -145,6 +145,12 @@ ${content}`
     };
 }
 
+/**
+ * ウェブフックをたたく
+ * @experimental
+ */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 export function triggerWebhook(params: {
     url: string;
     payload: any;

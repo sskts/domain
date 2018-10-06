@@ -572,7 +572,7 @@ describe('会員プログラム登録解除', () => {
         sandbox.mock(ownershipInfoRepo.ownershipInfoModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves({});
         sandbox.mock(actionRepo).expects('complete').once().resolves({});
-        sandbox.mock(cognitoIdentityServiceProvider).expects('adminDisableUser').once();
+        sandbox.mock(personRepo).expects('unregister').once();
 
         const result = await sskts.service.programMembership.unRegister(<any>{
             object: {

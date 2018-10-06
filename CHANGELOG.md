@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ## Unreleased
 
 ### Added
+- 実験的に注文取引をテレメトリーサービスへ連携。
 
 ### Changed
 

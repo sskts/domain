@@ -63,7 +63,7 @@
     "sinon": "^4.5.0",
     "sinon-mongoose": "^2.2.1",
     "snyk": "^1.89.1",
-    "ts-node": "^6.2.0",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-microsoft-contrib": "^5.1.0",
     "typescript": "^2.9.2"
@@ -101,7 +101,7 @@
     "clean": "rimraf ./lib \"npm-debug.log*\" ./doc ./coverage ./.nyc_output",
     "doc": "jsdoc -c jsdoc.json",
     "mocha": "mocha",
-    "coverage": "nyc mocha \"src/**/*.spec.ts\" | coveralls",
+    "coverage": "nyc mocha \"src/**/*.spec.ts\" && nyc report --reporter=text-lcov | coveralls",
     "snyk": "snyk wizard",
     "test": "npm run check && npm run coverage",
     "tslint": "tslint --project tsconfig.json -c tslint.json --exclude \"**/*.spec.ts\" \"src/**/*.ts\"",
