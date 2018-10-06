@@ -4,6 +4,8 @@ import * as AWS from 'aws-sdk';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 
 // const debug = createDebug('sskts-domain:repository:person');
+export type AttributeListType = AWS.CognitoIdentityServiceProvider.AttributeListType;
+export type IPerson = factory.person.IContact & factory.person.IPerson;
 
 /**
  * 会員リポジトリー
@@ -16,7 +18,7 @@ export class CognitoRepository {
         this.cognitoIdentityServiceProvider = cognitoIdentityServiceProvider;
     }
 
-    public static ATTRIBUTE2CONTACT(userAttributes: AWS.CognitoIdentityServiceProvider.AttributeListType) {
+    public static ATTRIBUTE2CONTACT(userAttributes: AttributeListType) {
         const contact: factory.person.IContact = {
             givenName: '',
             familyName: '',
@@ -55,6 +57,37 @@ export class CognitoRepository {
         });
 
         return contact;
+    }
+
+    public static ATTRIBUTE2PERSON(params: {
+        username?: string;
+        attributes: AttributeListType;
+    }) {
+        const contact = CognitoRepository.ATTRIBUTE2CONTACT(params.attributes);
+        const person: IPerson = {
+            typeOf: factory.personType.Person,
+            id: '',
+            memberOf: {
+                typeOf: 'ProgramMembership',
+                membershipNumber: params.username,
+                programName: 'Amazon Cognito',
+                award: []
+            },
+            ...contact
+        };
+        params.attributes.forEach((a) => {
+            switch (a.Name) {
+                case 'sub':
+                    // tslint:no-single-line-block-comment
+                    person.id = (a.Value !== undefined) ? a.Value : /* istanbul ignore next: please write tests */ '';
+                    break;
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore next */
+                default:
+            }
+        });
+
+        return person;
     }
 
     /**
@@ -214,6 +247,58 @@ export class CognitoRepository {
                     }
                 }
             );
+        });
+    }
+
+    /**
+     * 検索
+     */
+    public async search(params: {
+        userPooId: string;
+        username?: string;
+        email?: string;
+        telephone?: string;
+        givenName?: string;
+        familyName?: string;
+    }) {
+        return new Promise<IPerson[]>((resolve, reject) => {
+            const request: AWS.CognitoIdentityServiceProvider.Types.ListUsersRequest = {
+                // Limit: 60,
+                UserPoolId: params.userPooId
+            };
+            if (params.username !== undefined) {
+                request.Filter = `username^="${params.username}"`;
+            }
+            if (params.email !== undefined) {
+                request.Filter = `email^="${params.email}"`;
+            }
+            if (params.telephone !== undefined) {
+                request.Filter = `phone_number^="${params.telephone}"`;
+            }
+            if (params.givenName !== undefined) {
+                request.Filter = `given_name^="${params.givenName}"`;
+            }
+            if (params.familyName !== undefined) {
+                request.Filter = `family_name^="${params.familyName}"`;
+            }
+            this.cognitoIdentityServiceProvider.listUsers(
+                request,
+                (err, data) => {
+                    if (err instanceof Error) {
+                        reject(err);
+                    } else {
+                        // tslint:disable-next-line:no-single-line-block-comment
+                        /* istanbul ignore if: please write tests */
+                        if (data.Users === undefined) {
+                            reject(new factory.errors.NotFound('User'));
+                        } else {
+                            resolve(data.Users.map((u) => CognitoRepository.ATTRIBUTE2PERSON({
+                                username: u.Username,
+                                attributes: <AttributeListType>u.Attributes
+                            })));
+                        }
+                    }
+                });
         });
     }
 }
