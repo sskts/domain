@@ -149,20 +149,21 @@ describe('注文を検索する', () => {
 
     it('MongoDBが正常であれば配列を取得できるはず', async () => {
         const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
-
         sandbox.mock(orderRepo.orderModel).expects('find').once()
-            .chain('sort')
+            .chain('setOptions')
             .chain('exec')
             .resolves([new orderRepo.orderModel()]);
 
         const result = await orderRepo.search({
-            sellerId: 'sellerId',
-            sellerIds: ['sellerId'],
-            customerMembershipNumber: 'customerMembershipNumber',
-            customerMembershipNumbers: ['customerMembershipNumber'],
-            orderNumber: 'orderNumber',
+            seller: {
+                typeOf: sskts.factory.organizationType.MovieTheater,
+                ids: ['sellerId']
+            },
+            customer: {
+                typeOf: sskts.factory.personType.Person,
+                membershipNumbers: ['customerMembershipNumber'],
+            },
             orderNumbers: ['orderNumber'],
-            orderStatus: sskts.factory.orderStatus.OrderCancelled,
             orderStatuses: [sskts.factory.orderStatus.OrderCancelled],
             orderDateFrom: new Date(),
             orderDateThrough: new Date(),

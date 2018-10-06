@@ -12,6 +12,116 @@ export class MongoRepository {
         this.orderModel = connection.model(OrderModel.modelName);
     }
 
+    // tslint:disable-next-line:max-func-body-length
+    public static CREATE_MONGO_CONDITIONS(params: factory.order.ISearchConditions) {
+        const andConditions: any[] = [
+            // 注文日時の範囲条件
+            {
+                orderDate: {
+                    $exists: true,
+                    $gte: params.orderDateFrom,
+                    $lte: params.orderDateThrough
+                }
+            }
+        ];
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (params.seller !== undefined) {
+            andConditions.push({
+                'seller.typeOf': {
+                    $exists: true,
+                    $eq: params.seller.typeOf
+                }
+            });
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(params.seller.ids)) {
+                andConditions.push({
+                    'seller.id': {
+                        $exists: true,
+                        $in: params.seller.ids
+                    }
+                });
+            }
+        }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (params.customer !== undefined) {
+            andConditions.push({
+                'customer.typeOf': {
+                    $exists: true,
+                    $eq: params.customer.typeOf
+                }
+            });
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(params.customer.ids)) {
+                andConditions.push({
+                    'customer.id': {
+                        $exists: true,
+                        $in: params.customer.ids
+                    }
+                });
+            }
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(params.customer.identifiers)) {
+                andConditions.push({
+                    'customer.identifier': {
+                        $exists: true,
+                        $in: params.customer.identifiers
+                    }
+                });
+            }
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(params.customer.membershipNumbers)) {
+                andConditions.push({
+                    'customer.memberOf.membershipNumber': {
+                        $exists: true,
+                        $in: params.customer.membershipNumbers
+                    }
+                });
+            }
+        }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (Array.isArray(params.orderNumbers)) {
+            andConditions.push({
+                orderNumber: { $in: params.orderNumbers }
+            });
+        }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (Array.isArray(params.orderStatuses)) {
+            andConditions.push({
+                orderStatus: { $in: params.orderStatuses }
+            });
+        }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (Array.isArray(params.confirmationNumbers)) {
+            andConditions.push({
+                confirmationNumber: {
+                    $exists: true,
+                    $in: params.confirmationNumbers
+                }
+            });
+        }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (Array.isArray(params.reservedEventIdentifiers)) {
+            andConditions.push({
+                'acceptedOffers.itemOffered.reservationFor.identifier': {
+                    $exists: true,
+                    $in: params.reservedEventIdentifiers
+                }
+            });
+        }
+
+        return andConditions;
+    }
+
     /**
      * find an order by an inquiry key
      */
@@ -75,107 +185,39 @@ export class MongoRepository {
         return <factory.order.IOrder>doc.toObject();
     }
 
+    public async count(params: factory.order.ISearchConditions): Promise<number> {
+        const conditions = MongoRepository.CREATE_MONGO_CONDITIONS(params);
+
+        return this.orderModel.countDocuments(
+            { $and: conditions }
+        ).setOptions({ maxTimeMS: 10000 })
+            .exec();
+    }
+
     /**
      * 注文を検索する
-     * @param searchConditions 検索条件
      */
-    public async search(
-        searchConditions: factory.order.ISearchConditions
-    ): Promise<factory.order.IOrder[]> {
-        const andConditions: any[] = [
-            // 注文日時の範囲条件
+    public async search(params: factory.order.ISearchConditions): Promise<factory.order.IOrder[]> {
+        const conditions = MongoRepository.CREATE_MONGO_CONDITIONS(params);
+        const query = this.orderModel.find(
+            { $and: conditions },
             {
-                orderDate: {
-                    $exists: true,
-                    $gte: searchConditions.orderDateFrom,
-                    $lte: searchConditions.orderDateThrough
-                }
+                __v: 0,
+                createdAt: 0,
+                updatedAt: 0
             }
-        ];
-
+        );
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (searchConditions.sellerId !== undefined) {
-            searchConditions.sellerIds = [searchConditions.sellerId];
+        if (params.limit !== undefined && params.page !== undefined) {
+            query.limit(params.limit).skip(params.limit * (params.page - 1));
         }
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (Array.isArray(searchConditions.sellerIds)) {
-            andConditions.push({
-                'seller.id': {
-                    $exists: true,
-                    $in: searchConditions.sellerIds
-                }
-            });
+        if (params.sort !== undefined) {
+            query.sort(params.sort);
         }
 
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (searchConditions.customerMembershipNumber !== undefined) {
-            searchConditions.customerMembershipNumbers = [searchConditions.customerMembershipNumber];
-        }
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (Array.isArray(searchConditions.customerMembershipNumbers)) {
-            andConditions.push({
-                'customer.memberOf.membershipNumber': {
-                    $exists: true,
-                    $in: searchConditions.customerMembershipNumbers
-                }
-            });
-        }
-
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (searchConditions.orderNumber !== undefined) {
-            searchConditions.orderNumbers = [searchConditions.orderNumber];
-        }
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (Array.isArray(searchConditions.orderNumbers)) {
-            andConditions.push({
-                orderNumber: { $in: searchConditions.orderNumbers }
-            });
-        }
-
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (searchConditions.orderStatus !== undefined) {
-            searchConditions.orderStatuses = [searchConditions.orderStatus];
-        }
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (Array.isArray(searchConditions.orderStatuses)) {
-            andConditions.push({
-                orderStatus: { $in: searchConditions.orderStatuses }
-            });
-        }
-
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (Array.isArray(searchConditions.confirmationNumbers)) {
-            andConditions.push({
-                confirmationNumber: {
-                    $exists: true,
-                    $in: searchConditions.confirmationNumbers
-                }
-            });
-        }
-
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (Array.isArray(searchConditions.reservedEventIdentifiers)) {
-            andConditions.push({
-                'acceptedOffers.itemOffered.reservationFor.identifier': {
-                    $exists: true,
-                    $in: searchConditions.reservedEventIdentifiers
-                }
-            });
-        }
-
-        return this.orderModel.find({ $and: andConditions })
-            .sort({ orderDate: 1 })
-            .exec()
-            .then((docs) => docs.map((doc) => doc.toObject()));
+        return query.setOptions({ maxTimeMS: 10000 }).exec().then((docs) => docs.map((doc) => doc.toObject()));
     }
 }
