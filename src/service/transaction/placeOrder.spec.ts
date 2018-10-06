@@ -74,8 +74,8 @@ describe('exportTasksById()', () => {
         sandbox.restore();
     });
 
-    it('確定取引であれば1つのタスクがエクスポートされるはず', async () => {
-        const numberOfTasks = 1;
+    it('確定取引であれば2つのタスクがエクスポートされるはず', async () => {
+        const numberOfTasks = 2;
         const transaction = {
             id: 'transactionId',
             status: sskts.factory.transactionStatusType.Confirmed
@@ -98,8 +98,8 @@ describe('exportTasksById()', () => {
         sandbox.verify();
     });
 
-    it('期限切れ取引であれば5つのタスクがエクスポートされるはず', async () => {
-        const numberOfTasks = 5;
+    it('期限切れ取引であれば6つのタスクがエクスポートされるはず', async () => {
+        const numberOfTasks = 6;
         const transaction = {
             id: 'transactionId',
             status: sskts.factory.transactionStatusType.Expired

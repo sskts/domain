@@ -385,3 +385,19 @@ describe('TaskFunctionsService.unRegisterProgramMembership()', () => {
         sandbox.verify();
     });
 });
+
+describe('TaskFunctionsService.triggerWebhook()', () => {
+    beforeEach(() => {
+        sandbox.restore();
+    });
+
+    it('通知サービスが正常であればエラーにならないはず', async () => {
+        const data = {};
+        sandbox.mock(sskts.service.notification).expects('triggerWebhook').once()
+            .withArgs(data).returns(async () => Promise.resolve());
+
+        const result = await TaskFunctionsService.triggerWebhook(<any>data)({ connection: sskts.mongoose.connection });
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
