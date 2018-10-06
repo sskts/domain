@@ -45,6 +45,28 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
 
         const taskAttributes: factory.task.IAttributes[] = [];
+
+        // ウェブフックタスクを追加
+        const webhookUrl =
+            // tslint:disable-next-line:max-line-length
+            `${process.env.TELEMETRY_API_ENDPOINT}/organizations/project/${process.env.PROJECT_ID}/tasks/AnalyzePlaceOrder`;
+        const triggerWebhookTaskAttributes: factory.task.IAttributes = {
+            name: <any>'triggerWebhook',
+            status: factory.taskStatus.Ready,
+            runsAt: new Date(), // なるはやで実行
+            remainingNumberOfTries: 3,
+            lastTriedAt: null,
+            numberOfTried: 0,
+            executionResults: [],
+            data: {
+                url: webhookUrl,
+                payload: { transaction: transaction }
+            }
+        };
+        taskAttributes.push(
+            triggerWebhookTaskAttributes
+        );
+
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
                 const placeOrderTaskAttributes: factory.task.placeOrder.IAttributes = {
