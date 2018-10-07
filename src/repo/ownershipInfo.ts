@@ -96,7 +96,7 @@ export class MongoRepository {
                     return new Types.ObjectId(id);
                 });
             } catch (__) {
-                throw(new Error('theaterIds not valid'));
+                throw new Error('theaterIds not valid');
             }
             andConditions.push({
                 'acquiredFrom._id': { $in: theaterIdArray }
