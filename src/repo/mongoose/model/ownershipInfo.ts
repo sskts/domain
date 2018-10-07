@@ -83,6 +83,17 @@ schema.index(
         }
     }
 );
+schema.index(
+    {
+        'ownedBy.id': 1
+    },
+    {
+        name: 'searchByOwnerId',
+        partialFilterExpression: {
+            'ownedBy.id': { $exists: true }
+        }
+    }
+);
 
 // トークンで所有権検索時に使用
 schema.index(
