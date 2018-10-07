@@ -126,7 +126,7 @@ export class CognitoRepository {
         userPooId: string;
         userId: string;
     }) {
-        return new Promise<factory.person.IContact>((resolve, reject) => {
+        return new Promise<IPerson>((resolve, reject) => {
             this.cognitoIdentityServiceProvider.listUsers(
                 {
                     UserPoolId: params.userPooId,
@@ -143,9 +143,13 @@ export class CognitoRepository {
                         } else {
                             const user = data.Users.shift();
                             if (user === undefined || user.Attributes === undefined) {
-                                throw new factory.errors.NotFound('User');
+                                reject(new factory.errors.NotFound('User'));
+                            } else {
+                                resolve(CognitoRepository.ATTRIBUTE2PERSON({
+                                    username: user.Username,
+                                    attributes: user.Attributes
+                                }));
                             }
-                            resolve(CognitoRepository.ATTRIBUTE2CONTACT(user.Attributes));
                         }
                     }
                 });
@@ -255,6 +259,7 @@ export class CognitoRepository {
      */
     public async search(params: {
         userPooId: string;
+        id?: string;
         username?: string;
         email?: string;
         telephone?: string;
@@ -266,6 +271,9 @@ export class CognitoRepository {
                 // Limit: 60,
                 UserPoolId: params.userPooId
             };
+            if (params.id !== undefined) {
+                request.Filter = `sub^="${params.id}"`;
+            }
             if (params.username !== undefined) {
                 request.Filter = `username^="${params.username}"`;
             }

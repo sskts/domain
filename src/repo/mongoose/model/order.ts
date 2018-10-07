@@ -207,6 +207,20 @@ schema.index(
         }
     }
 );
+// CustomerIDで検索
+schema.index(
+    {
+        'customer.typeOf': 1,
+        'customer.id': 1
+    },
+    {
+        name: 'searchByCustomerId',
+        partialFilterExpression: {
+            'customer.typeOf': { $exists: true },
+            'customer.id': { $exists: true }
+        }
+    }
+);
 
 export default mongoose.model('Order', schema).on(
     'index',
