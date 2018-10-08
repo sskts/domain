@@ -349,7 +349,7 @@ export function unRegisterProgramMembership(data: factory.task.unRegisterProgram
     };
 }
 
-export function triggerWebhook(data: any): IOperation<void> {
+export function triggerWebhook(data: factory.task.triggerWebhook.IData): IOperation<void> {
     return async (_: {
         connection: mongoose.Connection;
         cognitoIdentityServiceProvider: AWS.CognitoIdentityServiceProvider;

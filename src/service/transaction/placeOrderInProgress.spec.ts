@@ -499,7 +499,8 @@ describe('confirm()', () => {
         const agent = {
             typeOf: sskts.factory.personType.Person,
             id: 'agentId',
-            url: ''
+            url: '',
+            identifier: [{ name: 'xxx', value: 'xxx' }]
         };
         const seller = {
             typeOf: sskts.factory.organizationType.MovieTheater,
@@ -526,7 +527,7 @@ describe('confirm()', () => {
             seller: seller,
             object: {
                 customerContact: customerContact,
-                clientUser: <any>{ client_id: 'client_id' },
+                clientUser: <any>{ client_id: 'client_id', iss: 'https://example.com' },
                 authorizeActions: []
             }
         };

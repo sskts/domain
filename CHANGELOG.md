@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v26.1.2 - 2018-10-08
+
+### Changed
+
+- 注文に決済と購入者の属性追加。
+
 ## v26.1.1 - 2018-10-07
 
 ### Changed
