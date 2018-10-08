@@ -51,7 +51,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
             // tslint:disable-next-line:max-line-length
             `${process.env.TELEMETRY_API_ENDPOINT}/organizations/project/${process.env.PROJECT_ID}/tasks/analyzePlaceOrder`;
         const triggerWebhookTaskAttributes: factory.task.IAttributes = {
-            name: <any>'triggerWebhook',
+            name: factory.taskName.TriggerWebhook,
             status: factory.taskStatus.Ready,
             runsAt: new Date(), // なるはやで実行
             remainingNumberOfTries: 3,

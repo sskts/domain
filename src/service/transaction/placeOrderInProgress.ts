@@ -470,13 +470,29 @@ export function createOrderFromTransaction(params: {
         telephone: params.transaction.seller.telephone,
         url: params.transaction.seller.url
     };
+
+    // 購入者を識別する情報をまとめる
+    const customerIdentifier = (Array.isArray(params.transaction.agent.identifier)) ? params.transaction.agent.identifier : [];
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore else */
+    if (params.transaction.object.clientUser !== undefined) {
+        customerIdentifier.push(
+            {
+                name: 'tokenIssuer',
+                value: params.transaction.object.clientUser.iss
+            },
+            {
+                name: 'clientId',
+                value: params.transaction.object.clientUser.client_id
+            }
+        );
+    }
     const customer: factory.order.ICustomer = {
-        ...{
-            id: params.transaction.agent.id,
-            typeOf: params.transaction.agent.typeOf,
-            name: `${cutomerContact.familyName} ${cutomerContact.givenName}`,
-            url: ''
-        },
+        id: params.transaction.agent.id,
+        typeOf: params.transaction.agent.typeOf,
+        name: `${cutomerContact.familyName} ${cutomerContact.givenName}`,
+        url: '',
+        identifier: customerIdentifier,
         ...params.transaction.object.customerContact
     };
     if (params.transaction.agent.memberOf !== undefined) {
@@ -488,6 +504,8 @@ export function createOrderFromTransaction(params: {
     const acceptedOffers: factory.order.IAcceptedOffer<factory.order.IItemOffered>[] = [];
 
     // 座席予約がある場合
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore else */
     if (seatReservationAuthorizeAction !== undefined) {
         if (seatReservationAuthorizeAction.result === undefined) {
             throw new factory.errors.Argument('transaction', 'Seat reservation result does not exist.');
@@ -569,6 +587,8 @@ export function createOrderFromTransaction(params: {
     }
 
     // 会員プログラムがある場合
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore else */
     if (programMembershipAuthorizeAction !== undefined) {
         acceptedOffers.push(programMembershipAuthorizeAction.object);
     }
@@ -608,6 +628,7 @@ export function createOrderFromTransaction(params: {
             const actionResult = <factory.action.authorize.paymentMethod.creditCard.IResult>creditCardAuthorizeAction.result;
             paymentMethods.push({
                 name: 'クレジットカード',
+                typeOf: factory.paymentMethodType.CreditCard,
                 paymentMethod: factory.paymentMethodType.CreditCard,
                 paymentMethodId: actionResult.execTranResult.orderId
             });
@@ -620,7 +641,8 @@ export function createOrderFromTransaction(params: {
         .forEach((pecorinoAuthorizeAction: factory.action.authorize.paymentMethod.pecorino.IAction) => {
             const actionResult = <factory.action.authorize.paymentMethod.pecorino.IResult>pecorinoAuthorizeAction.result;
             paymentMethods.push({
-                name: 'Pecorino',
+                name: 'ポイント口座',
+                typeOf: factory.paymentMethodType.Pecorino,
                 paymentMethod: factory.paymentMethodType.Pecorino,
                 paymentMethodId: actionResult.pecorinoTransaction.id
             });
