@@ -37,45 +37,48 @@ export function importMovies(theaterCode: string) {
 }
 
 export function matchWithXML(
-    xmlSchedule: COA.services.master.IXMLScheduleResult[],
+    xmlSchedules: COA.services.master.IXMLScheduleResult[][],
     coaSchedule: COA.services.master.IScheduleResult
 ): boolean {
-    const matchSchedule = xmlSchedule.find((schedule) => {
-        if (schedule.date !== coaSchedule.dateJouei) { return false; }
-        const matchMovie = schedule.movie.find((movie) => {
-            if (movie.movieShortCode !== coaSchedule.titleCode) { return false; }
-            const matchScreen = movie.screen.find((screen) => {
-                if (screen.screenCode !== coaSchedule.screenCode) { return false; }
-                const matchTime = screen.time.find((time) => {
-                    if (time.startTime !== coaSchedule.timeBegin || time.endTime !== coaSchedule.timeEnd) {
-                        return false;
-                    } else {
+    let result = false;
+    xmlSchedules.forEach((xmlSchedule) => {
+        const matchSchedule = xmlSchedule.find((schedule) => {
+            if (schedule.date !== coaSchedule.dateJouei) { return false; }
+            const matchMovie = schedule.movie.find((movie) => {
+                if (movie.movieShortCode !== coaSchedule.titleCode) { return false; }
+                const matchScreen = movie.screen.find((screen) => {
+                    if (screen.screenCode !== coaSchedule.screenCode) { return false; }
+                    const matchTime = screen.time.find((time) => {
+                        if (time.startTime !== coaSchedule.timeBegin || time.endTime !== coaSchedule.timeEnd) {
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    });
+                    if (matchTime !== undefined) {
                         return true;
+                    } else {
+                        return false;
                     }
                 });
-                if (matchTime !== undefined) {
+                if (matchScreen !== undefined) {
                     return true;
                 } else {
                     return false;
                 }
             });
-            if (matchScreen !== undefined) {
+            if (matchMovie !== undefined) {
                 return true;
             } else {
                 return false;
             }
         });
-        if (matchMovie !== undefined) {
-            return true;
-        } else {
-            return false;
+        if (matchSchedule !== undefined) {
+            result = true;
         }
     });
-    if (matchSchedule !== undefined) {
-        return true;
-    } else {
-        return false;
-    }
+
+    return result;
 }
 
 /**
@@ -120,7 +123,7 @@ export function importScreeningEvents(
             end: moment(targetImportThrough).add(-1, 'day').tz('Asia/Tokyo').format('YYYYMMDD') // COAは日本時間で判断
         });
 
-        let schedulesFromXML: COA.services.master.IXMLScheduleResult[] = [];
+        let schedulesFromXML: COA.services.master.IXMLScheduleResult[][] = [];
         if (xmlEndPoint !== undefined) {
             try {
                 schedulesFromXML = await COA.services.master.xmlSchedule({
