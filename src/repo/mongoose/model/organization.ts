@@ -40,6 +40,15 @@ const paymentAcceptedSchema = new mongoose.Schema(
     }
 );
 
+const xmlEndpointSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+
 /**
  * 組織スキーマ
  * @ignore
@@ -60,7 +69,8 @@ const schema = new mongoose.Schema(
         telephone: String,
         location: locationSchema,
         branchCode: String,
-        paymentAccepted: [paymentAcceptedSchema]
+        paymentAccepted: [paymentAcceptedSchema],
+        xmlEndPoint: xmlEndpointSchema
     },
     {
         collection: 'organizations',

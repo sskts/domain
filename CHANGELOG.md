@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 劇場組織にXML情報を追加。
+
 ### Changed
 
 ### Deprecated
