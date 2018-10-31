@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v26.2.0 - 2018-10-31
+
+### Added
+
+- 劇場組織にXML情報を追加。
+
 ## v26.1.3 - 2018-10-10
 
 ### Changed
