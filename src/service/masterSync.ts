@@ -12,11 +12,10 @@ import * as moment from 'moment-timezone';
 
 import { Repository as CreativeWorkRepo } from '../repo/creativeWork';
 import { Repository as EventRepo } from '../repo/event';
+import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { Repository as PlaceRepo } from '../repo/place';
 
 const debug = createDebug('sskts-domain:service:masterSync');
-
-export type IPlaceOperation<T> = (placeRepo: PlaceRepo) => Promise<T>;
 
 /**
  * 映画作品インポート
@@ -257,15 +256,34 @@ export function importScreeningEvents(
 /**
  * 劇場インポート
  */
-export function importMovieTheater(theaterCode: string): IPlaceOperation<void> {
-    return async (placeRepo: PlaceRepo) => {
+export function importMovieTheater(theaterCode: string) {
+    return async (repos: {
+        place: PlaceRepo;
+        organization: OrganizationRepo;
+    }): Promise<void> => {
         const movieTheater = factory.place.movieTheater.createFromCOA(
             await COA.services.master.theater({ theaterCode: theaterCode }),
             await COA.services.master.screen({ theaterCode: theaterCode })
         );
 
+        // 場所を保管
         debug('storing movieTheater...', movieTheater);
-        await placeRepo.saveMovieTheater(movieTheater);
+        await repos.place.saveMovieTheater(movieTheater);
         debug('movieTheater stored.');
+
+        // 組織の属性を更新
+        await repos.organization.organizationModel.findOneAndUpdate(
+            {
+                typeOf: factory.organizationType.MovieTheater,
+                'location.branchCode': movieTheater.branchCode
+            },
+            {
+                'name.ja': movieTheater.name.ja,
+                'name.en': movieTheater.name.en,
+                'location.name.ja': movieTheater.name.ja,
+                'location.name.en': movieTheater.name.en,
+                telephone: movieTheater.telephone
+            }
+        ).exec();
     };
 }

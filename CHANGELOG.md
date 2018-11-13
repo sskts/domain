@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v26.2.1 - 2018-11-13
+
+### Changed
+
+- 劇場マスタ情報を組織へも反映するように変更。
+
 ## v26.2.0 - 2018-10-31
 
 ### Added
