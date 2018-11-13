@@ -13,6 +13,7 @@ import * as sinon from 'sinon';
 
 import { MongoRepository as CreativeWorkRepo } from '../repo/creativeWork';
 import { MongoRepository as EventRepo } from '../repo/event';
+import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { MongoRepository as PlaceRepo } from '../repo/place';
 import * as MasterSyncService from './masterSync';
 
@@ -64,7 +65,7 @@ describe('matchWitchXML', () => {
         timeEnd: 'time end'
     };
 
-    const xmlSchedule = [ [ {
+    const xmlSchedule = [[{
         date: 'other date',
         movie: [{
             movieShortCode: 'other title code',
@@ -124,7 +125,7 @@ describe('matchWitchXML', () => {
                 }]
             }]
         }]
-    } ] ];
+    }]];
 
     it('coaとXMLのデータが一緒の場合、結果はtrueはず', () => {
         const result = MasterSyncService.matchWithXML(<any>xmlSchedule, <any>coaSchedule);
@@ -250,7 +251,7 @@ describe('importScreeningEvents()', () => {
                 timeEnd: 'time end'
             }
         ];
-        const xmlSchedule = [ [ {
+        const xmlSchedule = [[{
             date: 'date',
             movie: [{
                 movieShortCode: 'title code',
@@ -262,7 +263,7 @@ describe('importScreeningEvents()', () => {
                     }]
                 }]
             }]
-        } ] ];
+        }]];
         const screeningEvent = {
             identifier: 'identifier'
         };
@@ -294,7 +295,7 @@ describe('importScreeningEvents()', () => {
         sandbox.mock(eventRepo).expects('cancelIndividualScreeningEvent').once().withExactArgs('cancellingIdentifier');
 
         const result = await MasterSyncService.importScreeningEvents(
-            '123', new Date(), new Date(), { baseUrl: 'baseUrl', theaterCodeName: 'codeName'}
+            '123', new Date(), new Date(), { baseUrl: 'baseUrl', theaterCodeName: 'codeName' }
         )({ event: eventRepo, place: placeRepo });
 
         assert.equal(result, undefined);
@@ -446,7 +447,7 @@ describe('importScreeningEvents()', () => {
         sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').never();
 
         const result = await MasterSyncService.importScreeningEvents(
-            '123', new Date(), new Date(), { baseUrl: 'baseUrl', theaterCodeName: 'codeName'}
+            '123', new Date(), new Date(), { baseUrl: 'baseUrl', theaterCodeName: 'codeName' }
         )({ event: eventRepo, place: placeRepo });
 
         assert.equal(result, undefined);
@@ -460,14 +461,21 @@ describe('importMovieTheater()', () => {
     });
 
     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
+        const movieTheater = { branchCode: '', name: {} };
+        const organizationRepo = new OrganizationRepo(mongoose.connection);
         const placeRepo = new PlaceRepo(mongoose.connection);
 
-        sandbox.mock(placeRepo).expects('saveMovieTheater').once();
         sandbox.stub(COA.services.master, 'theater').returns({});
         sandbox.stub(COA.services.master, 'screen').returns({});
-        sandbox.stub(factory.place.movieTheater, 'createFromCOA').returns({});
+        sandbox.stub(factory.place.movieTheater, 'createFromCOA').returns(movieTheater);
+        sandbox.mock(placeRepo).expects('saveMovieTheater').once();
+        sandbox.mock(organizationRepo.organizationModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves();
 
-        const result = await MasterSyncService.importMovieTheater('123')(placeRepo);
+        const result = await MasterSyncService.importMovieTheater('123')({
+            organization: organizationRepo,
+            place: placeRepo
+        });
 
         assert.equal(result, undefined);
         sandbox.verify();

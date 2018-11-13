@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 劇場マスタ情報を組織へも反映するように変更。
+
 ### Deprecated
 
 ### Removed
