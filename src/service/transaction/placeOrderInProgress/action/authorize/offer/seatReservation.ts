@@ -204,7 +204,8 @@ async function validateOffers(
                     appPrice: offer.ticketInfo.mvtkAppPrice,
                     kbnEisyahousiki: offer.ticketInfo.kbnEisyahousiki,
                     titleCode: individualScreeningEvent.coaInfo.titleCode,
-                    titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum
+                    titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum,
+                    dateJouei: individualScreeningEvent.coaInfo.dateJouei
                 });
             } catch (error) {
                 // COAサービスエラーの場合ハンドリング
