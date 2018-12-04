@@ -58,7 +58,6 @@ const orderInquiryKeySchema = new mongoose.Schema(
 
 /**
  * 注文スキーマ
- * @ignore
  */
 const schema = new mongoose.Schema(
     {
@@ -79,6 +78,7 @@ const schema = new mongoose.Schema(
         orderStatus: String,
         orderDate: Date,
         isGift: Boolean,
+        dateReturned: Date,
         orderInquiryKey: orderInquiryKeySchema
     },
     {
@@ -92,11 +92,29 @@ const schema = new mongoose.Schema(
             createdAt: 'createdAt',
             updatedAt: 'updatedAt'
         },
-        toJSON: { getters: true },
-        toObject: { getters: true }
+        toJSON: {
+            getters: true,
+            virtuals: true,
+            minimize: false,
+            versionKey: false
+        },
+        toObject: {
+            getters: true,
+            virtuals: true,
+            minimize: false,
+            versionKey: false
+        }
     }
 );
 
+schema.index(
+    { createdAt: 1 },
+    { name: 'searchByCreatedAt' }
+);
+schema.index(
+    { updatedAt: 1 },
+    { name: 'searchByUpdatedAt' }
+);
 // 注文番号はユニークなはず
 schema.index(
     { orderNumber: 1 },
@@ -144,7 +162,6 @@ schema.index(
         }
     }
 );
-
 // 注文検索に使用
 schema.index(
     {
@@ -238,16 +255,136 @@ schema.index(
 );
 schema.index(
     {
-        'customer.memberOf.membershipNumber': 1
+        'customer.telephone': 1
     },
     {
-        name: 'searchOrdersByCustomer',
+        name: 'searchByCustomerTelephone',
         partialFilterExpression: {
-            'customer.memberOf.membershipNumber': { $exists: true }
+            'customer.telephone': { $exists: true }
         }
     }
 );
-
+schema.index(
+    {
+        'paymentMethods.typeOf': 1
+    },
+    {
+        name: 'searchByPaymentMethodType',
+        partialFilterExpression: {
+            'paymentMethods.typeOf': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        'paymentMethods.paymentMethodId': 1
+    },
+    {
+        name: 'searchByPaymentMethodId',
+        partialFilterExpression: {
+            'paymentMethods.paymentMethodId': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        'acceptedOffers.itemOffered.id': 1
+    },
+    {
+        name: 'searchByItemOfferedId',
+        partialFilterExpression: {
+            'acceptedOffers.itemOffered.id': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        'acceptedOffers.itemOffered.reservationFor.id': 1
+    },
+    {
+        name: 'searchByItemOfferedReservationForId',
+        partialFilterExpression: {
+            'acceptedOffers.itemOffered.reservationFor.id': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        'acceptedOffers.itemOffered.reservationFor.name': 1
+    },
+    {
+        name: 'searchByItemOfferedReservationForName',
+        partialFilterExpression: {
+            'acceptedOffers.itemOffered.reservationFor.name': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        'acceptedOffers.itemOffered.reservationFor.endDate': 1
+    },
+    {
+        name: 'searchByItemOfferedReservationForEndDate',
+        partialFilterExpression: {
+            'acceptedOffers.itemOffered.reservationFor.endDate': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        'acceptedOffers.itemOffered.reservationFor.startDate': 1
+    },
+    {
+        name: 'searchByItemOfferedReservationForStartDate',
+        partialFilterExpression: {
+            'acceptedOffers.itemOffered.reservationFor.startDate': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        'acceptedOffers.itemOffered.reservationFor.location.branchCode': 1
+    },
+    {
+        name: 'searchByItemOfferedReservationForLocationBranchCode',
+        partialFilterExpression: {
+            'acceptedOffers.itemOffered.reservationFor.location.branchCode': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        'acceptedOffers.itemOffered.reservationFor.superEvent.id': 1
+    },
+    {
+        name: 'searchByItemOfferedReservationForLocationSuperEventId',
+        partialFilterExpression: {
+            'acceptedOffers.itemOffered.reservationFor.superEvent.id': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        'acceptedOffers.itemOffered.reservationFor.superEvent.location.branchCode': 1
+    },
+    {
+        name: 'searchByItemOfferedReservationForLocationSuperEventLocationBranchCode',
+        partialFilterExpression: {
+            'acceptedOffers.itemOffered.reservationFor.superEvent.location.branchCode': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        'acceptedOffers.itemOffered.reservationFor.superEvent.workPerformed.identifier': 1
+    },
+    {
+        name: 'searchByItemOfferedReservationForLocationSuperEventWorkPerformedIdentifier',
+        partialFilterExpression: {
+            'acceptedOffers.itemOffered.reservationFor.superEvent.workPerformed.identifier': { $exists: true }
+        }
+    }
+);
 export default mongoose.model('Order', schema).on(
     'index',
     // tslint:disable-next-line:no-single-line-block-comment

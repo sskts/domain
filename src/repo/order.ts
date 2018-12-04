@@ -12,18 +12,32 @@ export class MongoRepository {
         this.orderModel = connection.model(OrderModel.modelName);
     }
 
-    // tslint:disable-next-line:max-func-body-length
+    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     public static CREATE_MONGO_CONDITIONS(params: factory.order.ISearchConditions) {
         const andConditions: any[] = [
             // 注文日時の範囲条件
             {
                 orderDate: {
-                    $exists: true,
-                    $gte: params.orderDateFrom,
-                    $lte: params.orderDateThrough
+                    $exists: true
                 }
             }
         ];
+
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (params.orderDateFrom instanceof Date) {
+            andConditions.push({
+                orderDate: { $gte: params.orderDateFrom }
+            });
+        }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (params.orderDateThrough instanceof Date) {
+            andConditions.push({
+                orderDate: { $lte: params.orderDateThrough }
+            });
+        }
+
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (params.seller !== undefined) {
@@ -83,6 +97,16 @@ export class MongoRepository {
                     }
                 });
             }
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (params.customer.telephone !== undefined) {
+                andConditions.push({
+                    'customer.telephone': {
+                        $exists: true,
+                        $regex: new RegExp(params.customer.telephone, 'i')
+                    }
+                });
+            }
         }
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
@@ -108,6 +132,175 @@ export class MongoRepository {
                 }
             });
         }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (params.acceptedOffers !== undefined) {
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (params.acceptedOffers.itemOffered !== undefined) {
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore else */
+                if (Array.isArray(params.acceptedOffers.itemOffered.ids)) {
+                    andConditions.push({
+                        'acceptedOffers.itemOffered.id': {
+                            $exists: true,
+                            $in: params.acceptedOffers.itemOffered.ids
+                        }
+                    });
+                }
+
+                const reservationForConditions = params.acceptedOffers.itemOffered.reservationFor;
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore else */
+                if (reservationForConditions !== undefined) {
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore else */
+                    if (Array.isArray(reservationForConditions.ids)) {
+                        andConditions.push({
+                            'acceptedOffers.itemOffered.reservationFor.id': {
+                                $exists: true,
+                                $in: reservationForConditions.ids
+                            }
+                        });
+                    }
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore else */
+                    if (reservationForConditions.name !== undefined) {
+                        andConditions.push({
+                            $or: [
+                                {
+                                    'acceptedOffers.itemOffered.reservationFor.name.ja': {
+                                        $exists: true,
+                                        $regex: new RegExp(reservationForConditions.name, 'i')
+                                    }
+                                },
+                                {
+                                    'acceptedOffers.itemOffered.reservationFor.name.en': {
+                                        $exists: true,
+                                        $regex: new RegExp(reservationForConditions.name, 'i')
+                                    }
+                                }
+                            ]
+                        });
+                    }
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore else */
+                    if (reservationForConditions.location !== undefined) {
+                        if (Array.isArray(reservationForConditions.location.branchCodes)) {
+                            andConditions.push({
+                                'acceptedOffers.itemOffered.reservationFor.location.branchCode': {
+                                    $exists: true,
+                                    $in: reservationForConditions.location.branchCodes
+                                }
+                            });
+                        }
+                    }
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore else */
+                    if (reservationForConditions.superEvent !== undefined) {
+                        // tslint:disable-next-line:no-single-line-block-comment
+                        /* istanbul ignore else */
+                        if (Array.isArray(reservationForConditions.superEvent.ids)) {
+                            andConditions.push({
+                                'acceptedOffers.itemOffered.reservationFor.superEvent.id': {
+                                    $exists: true,
+                                    $in: reservationForConditions.superEvent.ids
+                                }
+                            });
+                        }
+                        // tslint:disable-next-line:no-single-line-block-comment
+                        /* istanbul ignore else */
+                        if (reservationForConditions.superEvent.location !== undefined) {
+                            if (Array.isArray(reservationForConditions.superEvent.location.branchCodes)) {
+                                andConditions.push({
+                                    'acceptedOffers.itemOffered.reservationFor.superEvent.location.branchCode': {
+                                        $exists: true,
+                                        $in: reservationForConditions.superEvent.location.branchCodes
+                                    }
+                                });
+                            }
+                        }
+                        // tslint:disable-next-line:no-single-line-block-comment
+                        /* istanbul ignore else */
+                        if (reservationForConditions.superEvent.workPerformed !== undefined) {
+                            if (Array.isArray(reservationForConditions.superEvent.workPerformed.identifiers)) {
+                                andConditions.push({
+                                    'acceptedOffers.itemOffered.reservationFor.superEvent.workPerformed.identifier': {
+                                        $exists: true,
+                                        $in: reservationForConditions.superEvent.workPerformed.identifiers
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore else */
+                    if (reservationForConditions.inSessionFrom instanceof Date) {
+                        andConditions.push({
+                            'acceptedOffers.itemOffered.reservationFor.endDate': {
+                                $exists: true,
+                                $gt: reservationForConditions.inSessionFrom.toISOString()
+                            }
+                        });
+                    }
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore else */
+                    if (reservationForConditions.inSessionThrough instanceof Date) {
+                        andConditions.push({
+                            'acceptedOffers.itemOffered.reservationFor.startDate': {
+                                $exists: true,
+                                $lt: reservationForConditions.inSessionThrough.toISOString()
+                            }
+                        });
+                    }
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore else */
+                    if (reservationForConditions.startFrom instanceof Date) {
+                        andConditions.push({
+                            'acceptedOffers.itemOffered.reservationFor.startDate': {
+                                $exists: true,
+                                $gte: reservationForConditions.startFrom.toISOString()
+                            }
+                        });
+                    }
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore else */
+                    if (reservationForConditions.startThrough instanceof Date) {
+                        andConditions.push({
+                            'acceptedOffers.itemOffered.reservationFor.startDate': {
+                                $exists: true,
+                                $lt: reservationForConditions.startThrough.toISOString()
+                            }
+                        });
+                    }
+                }
+            }
+        }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (params.paymentMethods !== undefined) {
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(params.paymentMethods.typeOfs)) {
+                andConditions.push({
+                    'paymentMethods.typeOf': {
+                        $exists: true,
+                        $in: params.paymentMethods.typeOfs
+                    }
+                });
+            }
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(params.paymentMethods.paymentMethodIds)) {
+                andConditions.push({
+                    'paymentMethods.paymentMethodId': {
+                        $exists: true,
+                        $in: params.paymentMethods.paymentMethodIds
+                    }
+                });
+            }
+        }
+
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (Array.isArray(params.reservedEventIdentifiers)) {
