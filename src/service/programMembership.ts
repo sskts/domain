@@ -72,7 +72,7 @@ export function createRegisterTask(params: {
      * 会員プログラムのオファー識別子
      */
     offerIdentifier: string;
-}): ICreateRegisterTaskOperation<factory.task.ITask> {
+}): ICreateRegisterTaskOperation<factory.task.ITask<factory.taskName.RegisterProgramMembership>> {
     return async (repos: {
         organization: OrganizationRepo;
         programMembership: ProgramMembershipRepo;
@@ -142,7 +142,7 @@ export function createRegisterTask(params: {
             data: registerActionAttributes
         };
 
-        return repos.task.save(taskAttributes);
+        return repos.task.save<factory.taskName.RegisterProgramMembership>(taskAttributes);
     };
 }
 
@@ -260,7 +260,7 @@ export function createUnRegisterTask(params: {
      * 所有権識別子
      */
     ownershipInfoIdentifier: string;
-}): ICreateUnRegisterTaskOperation<factory.task.ITask> {
+}): ICreateUnRegisterTaskOperation<factory.task.ITask<factory.taskName.UnRegisterProgramMembership>> {
     return async (repos: {
         ownershipInfo: OwnershipInfoRepo;
         task: TaskRepo;
@@ -307,7 +307,7 @@ export function createUnRegisterTask(params: {
             data: unRegisterActionAttributes
         };
 
-        return repos.task.save(taskAttributes);
+        return repos.task.save<factory.taskName.UnRegisterProgramMembership>(taskAttributes);
     };
 }
 

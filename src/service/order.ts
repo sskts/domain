@@ -76,7 +76,7 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
         // potentialActionsのためのタスクを生成
         const orderPotentialActions = orderActionAttributes.potentialActions;
         const now = new Date();
-        const taskAttributes: factory.task.IAttributes[] = [];
+        const taskAttributes: factory.task.IAttributes<factory.taskName>[] = [];
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
@@ -288,7 +288,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
 function onReturn(transactionId: string, returnActionAttributes: factory.action.transfer.returnAction.order.IAttributes) {
     return async (taskRepo: TaskRepo) => {
         const now = new Date();
-        const taskAttributes: factory.task.IAttributes[] = [];
+        const taskAttributes: factory.task.IAttributes<factory.taskName>[] = [];
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */

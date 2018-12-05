@@ -36,7 +36,7 @@ export function exportTasks(status: factory.transactionStatusType) {
 /**
  * ID指定で取引のタスク出力
  */
-export function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask[]> {
+export function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask<factory.taskName>[]> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         task: TaskRepo;
@@ -44,13 +44,13 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
     }) => {
         const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
 
-        const taskAttributes: factory.task.IAttributes[] = [];
+        const taskAttributes: factory.task.IAttributes<factory.taskName>[] = [];
 
         // ウェブフックタスクを追加
         const webhookUrl =
             // tslint:disable-next-line:max-line-length
             `${process.env.TELEMETRY_API_ENDPOINT}/organizations/project/${process.env.PROJECT_ID}/tasks/analyzePlaceOrder`;
-        const triggerWebhookTaskAttributes: factory.task.IAttributes = {
+        const triggerWebhookTaskAttributes: factory.task.IAttributes<factory.taskName.TriggerWebhook> = {
             name: factory.taskName.TriggerWebhook,
             status: factory.taskStatus.Ready,
             runsAt: new Date(), // なるはやで実行

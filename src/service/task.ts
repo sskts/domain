@@ -79,7 +79,7 @@ export function executeByName(taskName: factory.taskName): IExecuteOperation<voi
         depositService?: pecorinoapi.service.transaction.Deposit;
     }) => {
         // 未実行のタスクを取得
-        let task: factory.task.ITask | null = null;
+        let task: factory.task.ITask<factory.taskName> | null = null;
         try {
             task = await settings.taskRepo.executeOneByName(taskName);
             debug('task found', task);
@@ -100,7 +100,7 @@ export function executeByName(taskName: factory.taskName): IExecuteOperation<voi
  * @param task タスクオブジェクト
  * @export
  */
-export function execute(task: factory.task.ITask): IExecuteOperation<void> {
+export function execute(task: factory.task.ITask<factory.taskName>): IExecuteOperation<void> {
     debug('executing a task...', task);
     const now = new Date();
 
@@ -153,6 +153,9 @@ export function retry(intervalInMinutes: number): TaskOperation<void> {
 export function abort(intervalInMinutes: number): TaskOperation<void> {
     return async (repos: { task: TaskRepo }) => {
         const abortedTask = await repos.task.abortOne(intervalInMinutes);
+        if (abortedTask === null) {
+            return;
+        }
         debug('abortedTask found', abortedTask);
 
         // 開発者へ報告
