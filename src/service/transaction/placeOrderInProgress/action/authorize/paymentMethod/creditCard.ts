@@ -76,9 +76,19 @@ export function create(params: {
         let entryTranResult: GMO.services.credit.IEntryTranResult;
         let execTranResult: GMO.services.credit.IExecTranResult;
         try {
+            if (movieTheater.paymentAccepted === undefined) {
+                throw new factory.errors.Argument('transaction', 'Credit card payment not accepted.');
+            }
+            const creditCardPaymentAccepted = <factory.organization.IPaymentAccepted<factory.paymentMethodType.CreditCard>>
+                movieTheater.paymentAccepted.find(
+                    (a) => a.paymentMethodType === factory.paymentMethodType.CreditCard
+                );
+            if (creditCardPaymentAccepted === undefined) {
+                throw new factory.errors.Argument('transaction', 'Credit card payment not accepted.');
+            }
             entryTranArgs = {
-                shopId: movieTheater.gmoInfo.shopId,
-                shopPass: movieTheater.gmoInfo.shopPass,
+                shopId: creditCardPaymentAccepted.gmoInfo.shopId,
+                shopPass: creditCardPaymentAccepted.gmoInfo.shopPass,
                 orderId: params.orderId,
                 jobCd: GMO.utils.util.JobCd.Auth,
                 amount: params.amount
