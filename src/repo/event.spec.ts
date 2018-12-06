@@ -76,18 +76,15 @@ describe('searchIndividualScreeningEvents()', () => {
             endFrom: new Date(),
             endThrough: new Date()
         };
-        const numberOfEvents = 123;
 
         const repository = new sskts.repository.Event(sskts.mongoose.connection);
-        const docs = Array.from(Array(numberOfEvents).map(() => new repository.eventModel()));
+        const docs = [new repository.eventModel()];
 
         sandbox.mock(repository.eventModel).expects('find').once()
             .chain('exec').resolves(docs);
 
         const result = await repository.searchIndividualScreeningEvents(<any>conditions);
-
         assert(Array.isArray(result));
-        assert.equal(result.length, numberOfEvents);
         sandbox.verify();
     });
 });
