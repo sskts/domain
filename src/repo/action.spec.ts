@@ -226,3 +226,25 @@ describe('findByOrderNumber()', () => {
         sandbox.verify();
     });
 });
+
+describe('取引に対するアクション検索', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('配列が返却されるはず', async () => {
+        const actions = [
+            { id: 'actionId' }
+        ];
+
+        const repository = new sskts.repository.Action(sskts.mongoose.connection);
+
+        sandbox.mock(repository.actionModel).expects('find').once()
+            .chain('exec').resolves(actions.map((a) => new repository.actionModel(a)));
+
+        const result = await repository.searchByTransactionId(<any>{ sort: {} });
+        assert(Array.isArray(result));
+        assert.equal(result.length, actions.length);
+        sandbox.verify();
+    });
+});

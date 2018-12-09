@@ -113,6 +113,77 @@ const schema = new mongoose.Schema(
 );
 
 schema.index(
+    { createdAt: 1 },
+    { name: 'searchByCreatedAt' }
+);
+schema.index(
+    { updatedAt: 1 },
+    { name: 'searchByUpdatedAt' }
+);
+schema.index(
+    { typeOf: 1 },
+    { name: 'searchByTypeOf' }
+);
+schema.index(
+    { startDate: 1 },
+    { name: 'searchByStartDate' }
+);
+schema.index(
+    { 'purpose.typeOf': 1 },
+    {
+        name: 'searchByPurposeTypeOf',
+        partialFilterExpression: {
+            'purpose.typeOf': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'purpose.id': 1 },
+    {
+        name: 'searchByPurposeId',
+        partialFilterExpression: {
+            'purpose.id': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'object.typeOf': 1 },
+    {
+        name: 'searchByObjectTypeOf',
+        partialFilterExpression: {
+            'object.typeOf': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'object.orderNumber': 1 },
+    {
+        name: 'searchByObjectOrderNumber',
+        partialFilterExpression: {
+            'object.orderNumber': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'purpose.orderNumber': 1 },
+    {
+        name: 'searchByPurposeOrderNumber',
+        partialFilterExpression: {
+            'purpose.orderNumber': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'object.paymentMethod.paymentMethodId': 1 },
+    {
+        name: 'searchByObjectPaymentMethodId',
+        partialFilterExpression: {
+            'object.paymentMethod.paymentMethodId': { $exists: true }
+        }
+    }
+);
+
+schema.index(
     { typeOf: 1, _id: 1 }
 );
 
@@ -133,35 +204,6 @@ schema.index(
         partialFilterExpression: {
             'object.typeOf': { $exists: true },
             'purpose.id': { $exists: true }
-        }
-    }
-);
-
-// 注文に対するアクション検索に使用
-schema.index(
-    { 'object.orderNumber': 1 },
-    {
-        partialFilterExpression: {
-            'object.orderNumber': { $exists: true }
-        }
-    }
-);
-schema.index(
-    { 'purpose.orderNumber': 1 },
-    {
-        partialFilterExpression: {
-            'purpose.orderNumber': { $exists: true }
-        }
-    }
-);
-
-// GMOオーダーIDから支払アクションを検索する際に使用
-schema.index(
-    { 'object.paymentMethod.paymentMethodId': 1 },
-    {
-        partialFilterExpression: {
-            typeOf: factory.actionType.PayAction,
-            'object.paymentMethod.paymentMethodId': { $exists: true }
         }
     }
 );

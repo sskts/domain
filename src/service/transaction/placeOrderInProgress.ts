@@ -73,6 +73,8 @@ export function start(params: IStartParams):
         let passport: waiter.factory.passport.IPassport | undefined;
 
         // WAITER許可証トークンがあれば検証する
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignroe else */
         if (params.passportToken !== undefined) {
             try {
                 passport = await waiter.service.passport.verify({
@@ -143,6 +145,8 @@ export function start(params: IStartParams):
  * @param sellerIdentifier 販売者識別子
  */
 function validatePassport(passport: waiter.factory.passport.IPassport, sellerIdentifier: string) {
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignroe next */
     if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
         throw new Error('WAITER_PASSPORT_ISSUER unset');
     }

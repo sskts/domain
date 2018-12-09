@@ -114,6 +114,7 @@ export function start(params: {
             },
             object: {
                 clientUser: params.clientUser,
+                order: order,
                 transaction: placeOrderTransaction,
                 cancellationFee: params.cancellationFee,
                 reason: params.reason

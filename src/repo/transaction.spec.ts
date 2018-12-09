@@ -341,21 +341,86 @@ describe('取引を中止する', () => {
     });
 });
 
+describe('取引をカウントする', () => {
+    beforeEach(() => {
+        sandbox.restore();
+    });
+
+    it('MongoDBが正常であれば数字を取得できるはず', async () => {
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        sandbox.mock(transactionRepo.transactionModel).expects('countDocuments').once()
+            .chain('exec').resolves(1);
+
+        const result = await transactionRepo.count({
+            typeOf: sskts.factory.transactionType.PlaceOrder,
+            startFrom: new Date(),
+            startThrough: new Date()
+        });
+        assert(Number.isInteger(result));
+        sandbox.verify();
+    });
+});
+
 describe('取引を検索する', () => {
     beforeEach(() => {
         sandbox.restore();
     });
 
-    it('MongoDBが正常であれば配列を取得できるはず', async () => {
+    it('MongoDBが正常であれば注文取引配列を取得できるはず', async () => {
+        const searchConditions = {
+            typeOf: sskts.factory.transactionType.PlaceOrder,
+            ids: [],
+            statuses: [],
+            agent: {
+                typeOf: '',
+                ids: [],
+                identifiers: []
+            },
+            startFrom: new Date(),
+            startThrough: new Date(),
+            endFrom: new Date(),
+            endThrough: new Date(),
+            seller: {
+                typeOf: '',
+                ids: []
+            },
+            object: {
+                customerContact: {
+                    givenName: '',
+                    familyName: '',
+                    telephone: '',
+                    email: ''
+                }
+            },
+            result: {
+                order: {
+                    orderNumbers: []
+                }
+            }
+        };
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('find').once()
             .chain('exec').resolves([new transactionRepo.transactionModel()]);
 
-        const result = await transactionRepo.search({
-            typeOf: sskts.factory.transactionType.PlaceOrder,
-            startFrom: new Date(),
-            startThrough: new Date()
-        });
+        const result = await transactionRepo.search(<any>searchConditions);
+        assert(Array.isArray(result));
+        sandbox.verify();
+    });
+
+    it('MongoDBが正常であれば返品注文取引配列を取得できるはず', async () => {
+        const searchConditions = {
+            typeOf: sskts.factory.transactionType.ReturnOrder,
+            object: {
+                order: {
+                    orderNumbers: [],
+                }
+            }
+        };
+        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        sandbox.mock(transactionRepo.transactionModel).expects('find').once()
+            .chain('exec').resolves([new transactionRepo.transactionModel()]);
+
+        const result = await transactionRepo.search(<any>searchConditions);
         assert(Array.isArray(result));
         sandbox.verify();
     });

@@ -1,3 +1,4 @@
+// tslint:disable:max-func-body-length
 /**
  * 取引レポートサービス
  */
@@ -37,7 +38,10 @@ export function download(
 ) {
     return async (repos: { transaction: TransactionRepo }): Promise<string> => {
         // 取引検索
-        const transactions = await repos.transaction.search({ ...conditions, typeOf: factory.transactionType.PlaceOrder });
+        const transactions = await repos.transaction.search<factory.transactionType.PlaceOrder>({
+            ...conditions,
+            typeOf: factory.transactionType.PlaceOrder
+        });
         debug('transactions:', transactions);
 
         // 取引ごとに詳細を検索し、csvを作成する
@@ -180,7 +184,6 @@ export interface ITransactionReport {
 
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
-// tslint:disable-next-line:max-func-body-length
 export function transaction2report(params: {
     order?: factory.order.IOrder;
     // ownershipInfos?: factory.ownershipInfo.IOwnershipInfo<factory.reservationType.EventReservation>[];
