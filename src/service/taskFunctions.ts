@@ -9,17 +9,20 @@ import * as redis from 'redis';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../repo/action/registerProgramMembershipInProgress';
+import { MongoRepository as EventRepo } from '../repo/event';
 import { MongoRepository as OrderRepo } from '../repo/order';
 import { RedisRepository as OrderNumberRepo } from '../repo/orderNumber';
 import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { CognitoRepository as PersonRepo } from '../repo/person';
+import { MongoRepository as PlaceRepo } from '../repo/place';
 import { MongoRepository as ProgramMembershipRepo } from '../repo/programMembership';
 import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 import * as DeliveryService from '../service/delivery';
 import * as DiscountService from '../service/discount';
+import * as MasterSyncService from '../service/masterSync';
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
 import * as PaymentService from '../service/payment';
@@ -355,5 +358,24 @@ export function triggerWebhook(data: factory.task.triggerWebhook.IData): IOperat
         cognitoIdentityServiceProvider: AWS.CognitoIdentityServiceProvider;
     }) => {
         await NotificationService.triggerWebhook(data)();
+    };
+}
+
+export function importScreeningEvents(data: factory.task.IData<factory.taskName.ImportScreeningEvents>): IOperation<void> {
+    return async (settings: {
+        connection: mongoose.Connection;
+    }) => {
+        const eventRepo = new EventRepo(settings.connection);
+        const placeRepo = new PlaceRepo(settings.connection);
+
+        await MasterSyncService.importScreeningEvents(
+            data.locationBranchCode,
+            data.importFrom,
+            data.importThrough,
+            data.xmlEndPoint
+        )({
+            event: eventRepo,
+            place: placeRepo
+        });
     };
 }

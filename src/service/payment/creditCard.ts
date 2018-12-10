@@ -241,7 +241,7 @@ function onRefund(refundActionAttributes: factory.action.trade.refund.IAttribute
     return async (repos: { task: TaskRepo }) => {
         const potentialActions = refundActionAttributes.potentialActions;
         const now = new Date();
-        const taskAttributes: factory.task.IAttributes[] = [];
+        const taskAttributes: factory.task.IAttributes<factory.taskName>[] = [];
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (potentialActions !== undefined) {

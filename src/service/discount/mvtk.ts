@@ -33,14 +33,20 @@ export function useMvtk(transactionId: string) {
     }) => {
         const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
         const transactionResult = transaction.result;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
         }
         const potentialActions = transaction.potentialActions;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (potentialActions === undefined) {
             throw new factory.errors.NotFound('transaction.potentialActions');
         }
         const orderPotentialActions = potentialActions.order.potentialActions;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (orderPotentialActions === undefined) {
             throw new factory.errors.NotFound('order.potentialActions');
         }

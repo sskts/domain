@@ -93,6 +93,19 @@ const schema = new mongoose.Schema(
     }
 );
 
+schema.index(
+    { createdAt: 1 },
+    { name: 'searchByCreatedAt' }
+);
+schema.index(
+    { updatedAt: 1 },
+    { name: 'searchByUpdatedAt' }
+);
+schema.index(
+    { status: 1 },
+    { name: 'searchByStatus' }
+);
+
 // タスクエクスポート時の検索で使用
 schema.index(
     { tasksExportationStatus: 1, status: 1, typeOf: 1 }
@@ -259,7 +272,20 @@ schema.index(
         }
     }
 );
-
+// イベント識別子で注文取引検索する際に使用
+schema.index(
+    {
+        typeOf: 1,
+        status: 1,
+        'result.order.acceptedOffers.itemOffered.reservationFor.id': 1
+    },
+    {
+        name: 'searchPlaceOrderByEvent',
+        partialFilterExpression: {
+            'result.order.acceptedOffers.itemOffered.reservationFor.id': { $exists: true }
+        }
+    }
+);
 // イベント識別子で注文取引検索する際に使用
 schema.index(
     {
@@ -271,6 +297,52 @@ schema.index(
         name: 'searchPlaceOrderByEvent',
         partialFilterExpression: {
             'result.order.acceptedOffers.itemOffered.reservationFor.identifier': { $exists: true }
+        }
+    }
+);
+
+// agentIDで検索
+schema.index(
+    {
+        typeOf: 1,
+        'agent.typeOf': 1,
+        'agent.id': 1
+    },
+    {
+        name: 'searchByAgentId',
+        partialFilterExpression: {
+            'agent.typeOf': { $exists: true },
+            'agent.id': { $exists: true }
+        }
+    }
+);
+// agent識別子で検索
+schema.index(
+    {
+        typeOf: 1,
+        'agent.typeOf': 1,
+        'agent.identifier': 1
+    },
+    {
+        name: 'searchByAgentIdentifier',
+        partialFilterExpression: {
+            'agent.typeOf': { $exists: true },
+            'agent.identifier': { $exists: true }
+        }
+    }
+);
+// 販売者で検索
+schema.index(
+    {
+        typeOf: 1,
+        'seller.typeOf': 1,
+        'seller.id': 1
+    },
+    {
+        name: 'searchBySellerId',
+        partialFilterExpression: {
+            'seller.typeOf': { $exists: true },
+            'seller.id': { $exists: true }
         }
     }
 );

@@ -401,3 +401,19 @@ describe('TaskFunctionsService.triggerWebhook()', () => {
         sandbox.verify();
     });
 });
+
+describe('TaskFunctionsService.importScreeningEvents()', () => {
+    beforeEach(() => {
+        sandbox.restore();
+    });
+
+    it('マスタ同期サービスが正常であればエラーにならないはず', async () => {
+        const data = {};
+        sandbox.mock(sskts.service.masterSync).expects('importScreeningEvents').once()
+            .returns(async () => Promise.resolve());
+
+        const result = await TaskFunctionsService.importScreeningEvents(<any>data)({ connection: sskts.mongoose.connection });
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});

@@ -2,7 +2,7 @@
  * 進行中注文取引サービス
  */
 import * as factory from '@motionpicture/sskts-factory';
-import * as waiter from '@motionpicture/waiter-domain';
+import * as waiter from '@waiter/domain';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as moment from 'moment-timezone';
@@ -73,9 +73,14 @@ export function start(params: IStartParams):
         let passport: waiter.factory.passport.IPassport | undefined;
 
         // WAITER許可証トークンがあれば検証する
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignroe else */
         if (params.passportToken !== undefined) {
             try {
-                passport = await waiter.service.passport.verify(params.passportToken, <string>process.env.WAITER_SECRET);
+                passport = await waiter.service.passport.verify({
+                    token: params.passportToken,
+                    secret: <string>process.env.WAITER_SECRET
+                });
             } catch (error) {
                 throw new factory.errors.Argument('passportToken', `Invalid token. ${error.message}`);
             }
@@ -140,16 +145,24 @@ export function start(params: IStartParams):
  * @param sellerIdentifier 販売者識別子
  */
 function validatePassport(passport: waiter.factory.passport.IPassport, sellerIdentifier: string) {
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignroe next */
+    if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
+        throw new Error('WAITER_PASSPORT_ISSUER unset');
+    }
+    const issuers = process.env.WAITER_PASSPORT_ISSUER.split(',');
+    const validIssuer = issuers.indexOf(passport.iss) >= 0;
+
     // スコープのフォーマットは、placeOrderTransaction.{sellerId}
     const explodedScopeStrings = passport.scope.split('.');
-
-    return (
-        passport.iss === <string>process.env.WAITER_PASSPORT_ISSUER && // 許可証発行者確認
+    const validScope = (
         // tslint:disable-next-line:no-magic-numbers
         explodedScopeStrings.length === 2 &&
         explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
         explodedScopeStrings[1] === sellerIdentifier // 販売者識別子確認
     );
+
+    return validIssuer && validScope;
 }
 
 /**
@@ -611,6 +624,7 @@ export function createOrderFromTransaction(params: {
             ).join(',');
 
             discounts.push({
+                typeOf: 'Discount',
                 name: 'ムビチケカード',
                 discount: (<factory.action.authorize.discount.mvtk.IResult>mvtkAuthorizeAction.result).price,
                 discountCode: discountCode,
@@ -870,6 +884,7 @@ export async function createPotentialActionsFromTransaction(params: {
                 typeOf: <factory.actionType.PayAction>factory.actionType.PayAction,
                 object: {
                     paymentMethod: {
+                        typeOf: <factory.paymentMethodType.Pecorino>factory.paymentMethodType.Pecorino,
                         name: 'Pecorino',
                         paymentMethod: <factory.paymentMethodType.Pecorino>factory.paymentMethodType.Pecorino,
                         paymentMethodId: a.id

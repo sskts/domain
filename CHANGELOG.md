@@ -18,6 +18,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v26.3.0 - 2018-12-10
+
+### Added
+
+- タスク検索を追加
+- 組織の対応決済方法にクレジットカードを追加
+- 上映イベントインポートタスクを追加
+- 取引検索を追加
+
+### Changed
+
+- 注文検索条件強化
+- install @waiter/domain@3.0.0
+- イベントのID属性を文字列型に変更
+
+### Fixed
+
+- スケジュールXMLのschedule属性が未定義の場合にスケジュールの読み込みをスルーするように対応
+
 ## v26.2.2 - 2018-11-16
 
 ### Changed

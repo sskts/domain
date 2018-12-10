@@ -42,8 +42,11 @@ export class MongoRepository implements Repository {
                 identifier: screeningEvent.identifier,
                 typeOf: factory.eventType.ScreeningEvent
             },
-            screeningEvent,
-            { upsert: true }
+            {
+                $set: { ...screeningEvent },
+                $setOnInsert: { _id: screeningEvent.id }
+            },
+            { new: true, upsert: true }
         ).exec();
     }
 
@@ -58,7 +61,10 @@ export class MongoRepository implements Repository {
                 identifier: individualScreeningEvent.identifier,
                 typeOf: factory.eventType.IndividualScreeningEvent
             },
-            individualScreeningEvent,
+            {
+                $set: { ...individualScreeningEvent },
+                $setOnInsert: { _id: individualScreeningEvent.id }
+            },
             { new: true, upsert: true }
         ).exec();
     }
@@ -82,6 +88,7 @@ export class MongoRepository implements Repository {
      * 個々の上映イベントを検索する
      * @param searchConditions 検索条件
      */
+    // tslint:disable-next-line:max-func-body-length
     public async searchIndividualScreeningEvents(
         searchConditions: factory.event.individualScreeningEvent.ISearchConditions
     ): Promise<factory.event.individualScreeningEvent.IEvent[]> {
@@ -174,26 +181,40 @@ export class MongoRepository implements Repository {
             });
         }
 
-        return <factory.event.individualScreeningEvent.IEvent[]>await this.eventModel.find({ $and: andConditions })
+        return this.eventModel.find(
+            { $and: andConditions },
+            {
+                __v: 0,
+                createdAt: 0,
+                updatedAt: 0
+            }
+        )
             .sort({ startDate: 1 })
             .setOptions({ maxTimeMS: 10000 })
-            .lean()
-            .exec();
+            .exec()
+            .then((docs) => docs.map((doc) => doc.toObject()));
     }
 
     /**
      * identifierで上映イベントを取得する
      */
     public async findIndividualScreeningEventByIdentifier(identifier: string): Promise<factory.event.individualScreeningEvent.IEvent> {
-        const event = await this.eventModel.findOne({
-            typeOf: factory.eventType.IndividualScreeningEvent,
-            identifier: identifier
-        }).lean().exec();
+        const doc = await this.eventModel.findOne(
+            {
+                typeOf: factory.eventType.IndividualScreeningEvent,
+                identifier: identifier
+            },
+            {
+                __v: 0,
+                createdAt: 0,
+                updatedAt: 0
+            }
+        ).exec();
 
-        if (event === null) {
+        if (doc === null) {
             throw new factory.errors.NotFound('individualScreeningEvent');
         }
 
-        return <factory.event.individualScreeningEvent.IEvent>event;
+        return doc.toObject();
     }
 }

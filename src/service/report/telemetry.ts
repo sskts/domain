@@ -791,7 +791,7 @@ function createGlobalFlow(
                     status: factory.taskStatus.Executed
                 },
                 'runsAt lastTriedAt numberOfTried'
-            ).exec().then((docs) => docs.map((doc) => <factory.task.ITask>doc.toObject()));
+            ).exec().then((docs) => docs.map((doc) => <factory.task.ITask<factory.taskName>>doc.toObject()));
             debug(executedTasks.length, 'executedTasks found.');
 
             const numberOfTasksExecuted = executedTasks.length;

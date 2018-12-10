@@ -2,7 +2,7 @@
 /**
  * 進行中の注文取引サービステスト
  */
-import * as waiter from '@motionpicture/waiter-domain';
+import * as waiter from '@waiter/domain';
 import * as moment from 'moment-timezone';
 import * as assert from 'power-assert';
 // import * as pug from 'pug';
@@ -26,6 +26,7 @@ describe('start()', () => {
     });
 
     it('販売者が存在すれば、開始できるはず', async () => {
+        process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
         const agent = {
             typeOf: sskts.factory.personType.Person,
             id: 'agentId'
@@ -72,6 +73,7 @@ describe('start()', () => {
     });
 
     it('クライアントユーザーにusernameが存在すれば、会員として開始できるはず', async () => {
+        process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
         const agent = {
             typeOf: sskts.factory.personType.Person,
             id: 'agentId'
@@ -1230,7 +1232,7 @@ describe('createEmailMessageFromTransaction()', () => {
                 name: transaction.seller.name.ja,
                 url: ''
             },
-            typeOf: 'Order',
+            typeOf: <sskts.factory.order.TypeOf>'Order',
             // tslint:disable-next-line:max-line-length
             url: `${process.env.ORDER_INQUIRY_ENDPOINT}/inquiry/login?theater=${seatReservationAuthorizeActions[0].result.updTmpReserveSeatArgs.theaterCode}&reserve=${seatReservationAuthorizeActions[0].result.updTmpReserveSeatResult.tmpReserveNum}`
         };

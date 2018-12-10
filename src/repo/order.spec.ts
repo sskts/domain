@@ -162,13 +162,45 @@ describe('注文を検索する', () => {
             customer: {
                 typeOf: sskts.factory.personType.Person,
                 membershipNumbers: ['customerMembershipNumber'],
+                ids: ['id'],
+                identifiers: [{ name: '', value: '' }],
+                telephone: ''
             },
             orderNumbers: ['orderNumber'],
             orderStatuses: [sskts.factory.orderStatus.OrderCancelled],
             orderDateFrom: new Date(),
             orderDateThrough: new Date(),
             confirmationNumbers: ['confirmationNumber'],
-            reservedEventIdentifiers: ['identifier']
+            reservedEventIdentifiers: ['identifier'],
+            acceptedOffers: {
+                itemOffered: {
+                    ids: ['id'],
+                    reservationFor: {
+                        ids: [''],
+                        name: 'name',
+                        location: {
+                            branchCodes: ['branchCodes']
+                        },
+                        superEvent: {
+                            ids: [''],
+                            location: {
+                                branchCodes: ['branchCodes']
+                            },
+                            workPerformed: {
+                                identifiers: ['identifiers']
+                            }
+                        },
+                        inSessionFrom: new Date(),
+                        inSessionThrough: new Date(),
+                        startFrom: new Date(),
+                        startThrough: new Date()
+                    }
+                }
+            },
+            paymentMethods: {
+                typeOfs: [sskts.factory.paymentMethodType.CreditCard],
+                paymentMethodIds: ['paymentMethodId']
+            }
         });
         assert(Array.isArray(result));
         sandbox.verify();
