@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v26.3.0 - 2018-12-10
+
+### Added
+
 - タスク検索を追加
 - 組織の対応決済方法にクレジットカードを追加
 - 上映イベントインポートタスクを追加
@@ -19,15 +33,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - install @waiter/domain@3.0.0
 - イベントのID属性を文字列型に変更
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 
 - スケジュールXMLのschedule属性が未定義の場合にスケジュールの読み込みをスルーするように対応
-
-### Security
 
 ## v26.2.2 - 2018-11-16
 
