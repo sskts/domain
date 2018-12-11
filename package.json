@@ -11,7 +11,7 @@
   "dependencies": {
     "@motionpicture/coa-service": "^6.0.1",
     "@motionpicture/gmo-service": "^4.2.1",
-    "@motionpicture/sskts-factory": "^5.3.0",
+    "@motionpicture/sskts-factory": "^5.3.1",
     "@pecorino/api-nodejs-client": "^1.0.0",
     "@sendgrid/mail": "^6.3.1",
     "@types/google-libphonenumber": "^7.4.16",
@@ -97,7 +97,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "check": "npm run tslint && nsp check",
+    "check": "npm run tslint",
     "clean": "rimraf ./lib \"npm-debug.log*\" ./doc ./coverage ./.nyc_output",
     "doc": "jsdoc -c jsdoc.json",
     "mocha": "mocha",
@@ -110,5 +110,5 @@
     "postversion": "git push origin --tags",
     "prepublishOnly": "npm run clean && npm run build && npm test && npm run doc"
   },
-  "version": "26.3.0"
+  "version": "26.3.1"
 }
