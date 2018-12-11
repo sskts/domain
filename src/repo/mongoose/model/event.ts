@@ -92,6 +92,79 @@ const schema = new mongoose.Schema(
     }
 );
 
+schema.index(
+    { createdAt: 1 },
+    { name: 'searchByCreatedAt' }
+);
+schema.index(
+    { updatedAt: 1 },
+    { name: 'searchByUpdatedAt' }
+);
+schema.index(
+    { typeOf: 1 },
+    { name: 'searchByTypeOf' }
+);
+schema.index(
+    { identifier: 1 },
+    { name: 'searchByIdentifier' }
+);
+schema.index(
+    {
+        doorTime: 1
+    },
+    {
+        name: 'searchByDoorTime',
+        partialFilterExpression: {
+            doorTime: { $exists: true }
+        }
+    }
+);
+schema.index(
+    { startDate: 1 },
+    { name: 'searchByStartDate' }
+);
+schema.index(
+    { endDate: 1 },
+    { name: 'searchByEndDate' }
+);
+schema.index(
+    { eventStatus: 1 },
+    { name: 'searchByEventStatus' }
+);
+schema.index(
+    {
+        'superEvent.location.branchCode': 1
+    },
+    {
+        name: 'searchBySuperEventLocationBranchCode',
+        partialFilterExpression: {
+            'superEvent.location.branchCode': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        'superEvent.location.identifier': 1
+    },
+    {
+        name: 'searchBySuperEventLocationIdentifier',
+        partialFilterExpression: {
+            'superEvent.location.identifier': { $exists: true }
+        }
+    }
+);
+schema.index(
+    {
+        'workPerformed.identifier': 1
+    },
+    {
+        name: 'searchByWorkPerformedIdentifier',
+        partialFilterExpression: {
+            'workPerformed.identifier': { $exists: true }
+        }
+    }
+);
+
 // 上映イベント検索に使用
 schema.index(
     {

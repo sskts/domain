@@ -18,22 +18,44 @@ async function main() {
         });
 
         const events = await sskts.service.offer.searchIndividualScreeningEvents({
-            // day: moment().format('YYYYMMDD'),
-            // superEventLocationIdentifiers: ['MovieTheater-112', 'MovieTheater-118'],
+            limit: 10,
+            page: 1,
+            sort: {
+                startDate: sskts.factory.sortType.Ascending
+            },
+            eventStatuses: [
+                sskts.factory.eventStatusType.EventCancelled,
+                sskts.factory.eventStatusType.EventScheduled,
+                sskts.factory.eventStatusType.EventRescheduled
+            ],
+            superEventLocationIdentifiers: [
+                'MovieTheater-112', 'MovieTheater-118', 'MovieTheater-119', 'MovieTheater-115',
+                'MovieTheater-101', 'MovieTheater-116', 'MovieTheater-117', 'MovieTheater-114',
+                'MovieTheater-102', 'MovieTheater-106', 'MovieTheater-113', 'MovieTheater-109',
+                'MovieTheater-108', 'MovieTheater-110', 'MovieTheater-107'
+            ],
             startFrom: moment().toDate(),
-            startThrough: moment().add(2, 'day').toDate()
+            startThrough: moment().add(7, 'days').toDate()
         })({
             event: new sskts.repository.Event(sskts.mongoose.connection),
             itemAvailability: new sskts.repository.itemAvailability.IndividualScreeningEvent(redisClient)
         });
-        console.log(events.length);
-        console.log(events[0]);
+        console.log(events.length, 'events found');
+        // console.log(events[0]);
     } catch (error) {
         console.error(error);
     }
 
-    redisClient.quit();
-    await sskts.mongoose.disconnect();
+    await new Promise((resolve) => {
+        setTimeout(
+            async () => {
+                redisClient.quit();
+                await sskts.mongoose.disconnect();
+                resolve();
+            },
+            5000
+        );
+    });
 }
 
 main().then(() => {
