@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 会員プログラム所有権カウントメソッドを追加
+
 ### Changed
 
 ### Deprecated
