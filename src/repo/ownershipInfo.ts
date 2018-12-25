@@ -1,5 +1,5 @@
 import * as factory from '@motionpicture/sskts-factory';
-import { Connection, Types } from 'mongoose';
+import { Connection } from 'mongoose';
 import ownershipInfoModel from './mongoose/model/ownershipInfo';
 
 export type IOwnershipInfo<T extends factory.ownershipInfo.IGoodType> = factory.ownershipInfo.IOwnershipInfo<T>;
@@ -89,17 +89,9 @@ export class MongoRepository {
             }
         });
 
-        if (searchConditions.theaterIds.length > 0) {
-            let theaterIdArray: Types.ObjectId[];
-            try {
-                theaterIdArray = searchConditions.theaterIds.map((id) => {
-                    return new Types.ObjectId(id);
-                });
-            } catch (__) {
-                throw new Error('theaterIds not valid');
-            }
+        if (Array.isArray(searchConditions.theaterIds)) {
             andConditions.push({
-                'acquiredFrom.id': { $in: theaterIdArray }
+                'acquiredFrom.id': { $in: searchConditions.theaterIds }
             });
         }
 
