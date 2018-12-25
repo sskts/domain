@@ -73,6 +73,32 @@ export class MongoRepository {
     }
 
     /**
+     * 会員プログラムをカウントする
+     */
+    public async countProgramMembership(
+        searchConditions: factory.ownershipInfo.ISearchProgramMembershipConditions
+    ): Promise<number> {
+        const andConditions: any[] = [
+            { 'typeOfGood.typeOf': 'ProgramMembership' }
+        ];
+
+        andConditions.push({
+            createdAt: {
+                $lte: searchConditions.createdAtTo,
+                $gte: searchConditions.createdAtFrom
+            }
+        });
+
+        if (Array.isArray(searchConditions.theaterIds)) {
+            andConditions.push({
+                'acquiredFrom.id': { $in: searchConditions.theaterIds }
+            });
+        }
+
+        return this.ownershipInfoModel.countDocuments({ $and: andConditions }).exec();
+    }
+
+    /**
      * 会員プログラムを検索する
      */
     public async searchProgramMembership(
