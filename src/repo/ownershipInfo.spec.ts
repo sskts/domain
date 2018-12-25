@@ -84,19 +84,6 @@ describe('OwnershipInfo.searchProgramMembership', () => {
         sandbox.verify();
     });
 
-    it('theaterIdsが正しくない場合、エラーになるはず', async () => {
-        const searchConditions: factory.ownershipInfo.ISearchProgramMembershipConditions = {
-            createdAtFrom: new Date(),
-            createdAtTo: new Date(),
-            theaterIds: ['59d20797e53ebc2b4e774465', '1']
-        };
-        const repository = new OwnershipInfoRepo(mongoose.connection);
-
-        const result = await repository.searchProgramMembership(searchConditions).catch((e) => e);
-        assert(result instanceof Error);
-        sandbox.verify();
-    });
-
     it('theaterIdsが正しい場合、エラーがないはず', async () => {
         const searchConditions: factory.ownershipInfo.ISearchProgramMembershipConditions = {
             createdAtFrom: new Date(),
