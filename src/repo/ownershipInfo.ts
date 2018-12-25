@@ -99,7 +99,7 @@ export class MongoRepository {
                 throw new Error('theaterIds not valid');
             }
             andConditions.push({
-                'acquiredFrom._id': { $in: theaterIdArray }
+                'acquiredFrom.id': { $in: theaterIdArray }
             });
         }
 

@@ -62,6 +62,37 @@ const schema = new mongoose.Schema(
     }
 );
 
+schema.index(
+    { createdAt: 1 },
+    { name: 'searchByCreatedAt' }
+);
+schema.index(
+    { updatedAt: 1 },
+    { name: 'searchByUpdatedAt' }
+);
+schema.index(
+    { typeOf: 1 },
+    { name: 'searchByTypeOf' }
+);
+schema.index(
+    { 'acquiredFrom.id': 1 },
+    {
+        name: 'searchByAcquiredFromId',
+        partialFilterExpression: {
+            'acquiredFrom.id': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'typeOfGood.typeOf': 1 },
+    {
+        name: 'searchByTypeOfGoodTypeOf',
+        partialFilterExpression: {
+            'typeOfGood.typeOf': { $exists: true }
+        }
+    }
+);
+
 // identifierはユニーク
 schema.index(
     { identifier: 1 },
