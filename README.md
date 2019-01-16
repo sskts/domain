@@ -1,12 +1,10 @@
-<img src="https://motionpicture.jp/images/common/logo_01.svg" alt="motionpicture" title="motionpicture" align="right" height="56" width="98"/>
-
-# SSKTS Domain Library for Node.js
+# Cinema Sunshine Domain Library for Node.js
 
 [![npm (scoped)](https://img.shields.io/npm/v/@motionpicture/sskts-domain.svg)](https://www.npmjs.com/package/@motionpicture/sskts-domain)
-[![CircleCI](https://circleci.com/gh/motionpicture/sskts-domain.svg?style=svg)](https://circleci.com/gh/motionpicture/sskts-domain)
-[![Coverage Status](https://coveralls.io/repos/github/motionpicture/sskts-domain/badge.svg?branch=master)](https://coveralls.io/github/motionpicture/sskts-domain?branch=master)
+[![CircleCI](https://circleci.com/gh/cinemasunshine/domain.svg?style=svg)](https://circleci.com/gh/cinemasunshine/domain)
+[![Coverage Status](https://coveralls.io/repos/github/cinemasunshine/domain/badge.svg?branch=master)](https://coveralls.io/github/cinemasunshine/domain?branch=master)
 [![Dependency Status](https://img.shields.io/david/motionpicture/sskts-domain.svg)](https://david-dm.org/motionpicture/sskts-domain)
-[![Known Vulnerabilities](https://snyk.io/test/github/motionpicture/sskts-domain/badge.svg)](https://snyk.io/test/github/motionpicture/sskts-domain)
+[![Known Vulnerabilities](https://snyk.io/test/github/cinemasunshine/domain/badge.svg)](https://snyk.io/test/github/cinemasunshine/domain)
 [![npm](https://img.shields.io/npm/dm/@motionpicture/sskts-domain.svg)](https://nodei.co/npm/@motionpicture/sskts-domain/)
 
 SSKTSのバックエンドサービスをNode.jsで簡単に使用するためのパッケージを提供します。
@@ -72,7 +70,7 @@ sskts.service.offer.searchIndividualScreeningEvents({
 
 ## Code Samples
 
-Code sample are [here](https://github.com/motionpicture/sskts-domain/tree/master/example).
+Code sample are [here](https://github.com/cinemasunshine/domain/tree/master/example).
 
 ## License
 
