@@ -10,11 +10,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- ソースリポジトリを[motionpicture](https://github.com/motionpicture/sskts-domain)から[cinemasunshine](https://github.com/cinemasunshine/domain)へ移行
+
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- 日をまたぐイベントの終了日時インポート処理を修正
 
 ### Security
 
