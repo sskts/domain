@@ -62,6 +62,7 @@ describe('IDでユーザーを検索する', () => {
         const data = {
             Users: [{
                 Attributes: [
+                    { Name: 'sub', Value: 'value' },
                     { Name: 'given_name', Value: '' },
                     { Name: 'family_name', Value: '' },
                     { Name: 'email', Value: '' },
@@ -116,7 +117,7 @@ describe('アクセストークンでユーザー属性を取得する', () => {
     it('ユーザーが存在すればオブジェクトを取得できるはず', async () => {
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         const data = {
-            UserAttributes: []
+            UserAttributes: [{ Name: 'sub', Value: 'value' }]
         };
         sandbox.mock(cognitoIdentityServiceProvider).expects('getUser').once().callsArgWith(1, null, data);
 
@@ -145,10 +146,13 @@ describe('アクセストークンでユーザー属性を更新する', () => {
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         sandbox.mock(cognitoIdentityServiceProvider).expects('updateUserAttributes').once().callsArgWith(1, null);
 
-        const result = await personRepo.updateContactByAccessToken({
+        const result = await personRepo.updateProfileByAccessToken({
             accessToken: '',
-            contact: <any>{
-                telephone: '09012345678'
+            profile: <any>{
+                telephone: '+819012345678',
+                addtionalProperty: [
+                    { name: 'custom', value: 'value' }
+                ]
             }
         });
         assert.equal(result, undefined);
@@ -160,10 +164,10 @@ describe('アクセストークンでユーザー属性を更新する', () => {
         const awsError = new Error('awsError');
         sandbox.mock(cognitoIdentityServiceProvider).expects('updateUserAttributes').once().callsArgWith(1, awsError);
 
-        const result = await personRepo.updateContactByAccessToken({
+        const result = await personRepo.updateProfileByAccessToken({
             accessToken: '',
-            contact: <any>{
-                telephone: '09012345678'
+            profile: <any>{
+                telephone: '+819012345678'
             }
         }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
@@ -174,9 +178,9 @@ describe('アクセストークンでユーザー属性を更新する', () => {
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         sandbox.mock(cognitoIdentityServiceProvider).expects('updateUserAttributes').never();
 
-        const result = await personRepo.updateContactByAccessToken({
+        const result = await personRepo.updateProfileByAccessToken({
             accessToken: '',
-            contact: <any>{
+            profile: <any>{
                 telephone: '00000000000000000'
             }
         }).catch((err) => err);
@@ -226,7 +230,12 @@ describe('会員検索', () => {
     it('AWSがエラーを返せばエラーとなるはず', async () => {
         const args = {
             userPooId: 'userPoolId',
-            username: 'username'
+            username: 'username',
+            id: 'id',
+            email: 'email',
+            telephone: 'telephone',
+            givenName: 'givenName',
+            familyName: 'familyName'
         };
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         const awsError = new Error('awsError');
