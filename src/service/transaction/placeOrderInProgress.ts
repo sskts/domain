@@ -648,7 +648,7 @@ export function createOrderFromTransaction(params: {
             });
         });
 
-    // pecorino決済があれば決済方法に追加
+    // ポイント口座決済があれば決済方法に追加
     params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.pecorino.ObjectType.PecorinoPayment)
@@ -660,6 +660,24 @@ export function createOrderFromTransaction(params: {
                 paymentMethod: factory.paymentMethodType.Pecorino,
                 paymentMethodId: actionResult.pecorinoTransaction.id
             });
+        });
+
+    // ムビチケ決済があれば決済方法に追加
+    params.transaction.object.authorizeActions
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === factory.action.authorize.discount.mvtk.ObjectType.Mvtk)
+        .forEach((mvtkAuthorizeAction: factory.action.authorize.discount.mvtk.IAction) => {
+            // ムビチケ購入管理番号を決済IDに指定
+            paymentMethods.push(...mvtkAuthorizeAction.object.seatInfoSyncIn.knyknrNoInfo.map(
+                (knshInfo) => {
+                    return {
+                        name: 'ムビチケ',
+                        typeOf: factory.paymentMethodType.MovieTicket,
+                        paymentMethod: factory.paymentMethodType.MovieTicket,
+                        paymentMethodId: knshInfo.knyknrNo
+                    };
+                }
+            ));
         });
 
     const url = util.format(

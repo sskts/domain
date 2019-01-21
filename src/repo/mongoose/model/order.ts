@@ -134,27 +134,8 @@ schema.index(
     { name: 'orderInquiryKey' }
 );
 
-// 会員情報で注文検索
 schema.index(
-    {
-        orderDate: 1,
-        'customer.memberOf.membershipNumber': 1,
-        'customer.memberOf.programName': 1
-    },
-    {
-        name: 'searchOrdersByProgramMembership',
-        partialFilterExpression: {
-            'customer.memberOf.membershipNumber': { $exists: true },
-            'customer.memberOf.programName': { $exists: true }
-        }
-    }
-);
-
-// 注文検索に使用
-schema.index(
-    {
-        'seller.id': 1
-    },
+    { 'seller.id': 1 },
     {
         name: 'searchOrdersBySeller',
         partialFilterExpression: {
@@ -162,37 +143,20 @@ schema.index(
         }
     }
 );
-// 注文検索に使用
 schema.index(
-    {
-        orderNumber: 1,
-        orderStatus: 1,
-        orderDate: 1
-    },
-    {
-        name: 'searchOrders'
-    }
-);
-schema.index(
-    {
-        orderDate: 1
-    },
+    { orderDate: 1 },
     {
         name: 'searchOrdersByOrderDate'
     }
 );
 schema.index(
-    {
-        orderStatus: 1
-    },
+    { orderStatus: 1 },
     {
         name: 'searchOrdersByOrderStatus'
     }
 );
 schema.index(
-    {
-        'acceptedOffers.itemOffered.reservationFor.identifier': 1
-    },
+    { 'acceptedOffers.itemOffered.reservationFor.identifier': 1 },
     {
         name: 'searchOrdersByReservedEvent',
         partialFilterExpression: {
@@ -201,9 +165,7 @@ schema.index(
     }
 );
 schema.index(
-    {
-        confirmationNumber: 1
-    },
+    { confirmationNumber: 1 },
     {
         name: 'searchOrdersByConfirmationNumber',
         partialFilterExpression: {
@@ -211,52 +173,71 @@ schema.index(
         }
     }
 );
-// CustomerIDで検索
 schema.index(
+    { 'customer.typeOf': 1 },
     {
-        'customer.typeOf': 1,
-        'customer.id': 1
-    },
+        name: 'searchByCustomerTypeOf',
+        partialFilterExpression: {
+            'customer.typeOf': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'customer.id': 1 },
     {
         name: 'searchByCustomerId',
         partialFilterExpression: {
-            'customer.typeOf': { $exists: true },
             'customer.id': { $exists: true }
         }
     }
 );
-// Customer識別子で検索
 schema.index(
-    {
-        'customer.typeOf': 1,
-        'customer.identifier': 1
-    },
+    { 'customer.identifier': 1 },
     {
         name: 'searchByCustomerIdentifier',
         partialFilterExpression: {
-            'customer.typeOf': { $exists: true },
             'customer.identifier': { $exists: true }
         }
     }
 );
-// CustomerMembershipNumberで検索
 schema.index(
-    {
-        'customer.typeOf': 1,
-        'customer.memberOf.membershipNumber': 1
-    },
+    { 'customer.memberOf.membershipNumber': 1 },
     {
         name: 'searchByCustomerMemberhipNumber',
         partialFilterExpression: {
-            'customer.typeOf': { $exists: true },
             'customer.memberOf.membershipNumber': { $exists: true }
         }
     }
 );
 schema.index(
+    { 'customer.givenName': 1 },
     {
-        'customer.telephone': 1
-    },
+        name: 'searchByCustomerGivenName',
+        partialFilterExpression: {
+            'customer.givenName': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'customer.familyName': 1 },
+    {
+        name: 'searchByCustomerFamilyName',
+        partialFilterExpression: {
+            'customer.familyName': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'customer.email': 1 },
+    {
+        name: 'searchByCustomerEmail',
+        partialFilterExpression: {
+            'customer.email': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'customer.telephone': 1 },
     {
         name: 'searchByCustomerTelephone',
         partialFilterExpression: {
@@ -265,9 +246,7 @@ schema.index(
     }
 );
 schema.index(
-    {
-        'paymentMethods.typeOf': 1
-    },
+    { 'paymentMethods.typeOf': 1 },
     {
         name: 'searchByPaymentMethodType',
         partialFilterExpression: {
@@ -276,9 +255,7 @@ schema.index(
     }
 );
 schema.index(
-    {
-        'paymentMethods.paymentMethodId': 1
-    },
+    { 'paymentMethods.paymentMethodId': 1 },
     {
         name: 'searchByPaymentMethodId',
         partialFilterExpression: {
@@ -287,9 +264,7 @@ schema.index(
     }
 );
 schema.index(
-    {
-        'acceptedOffers.itemOffered.id': 1
-    },
+    { 'acceptedOffers.itemOffered.id': 1 },
     {
         name: 'searchByItemOfferedId',
         partialFilterExpression: {
@@ -298,9 +273,7 @@ schema.index(
     }
 );
 schema.index(
-    {
-        'acceptedOffers.itemOffered.reservationFor.id': 1
-    },
+    { 'acceptedOffers.itemOffered.reservationFor.id': 1 },
     {
         name: 'searchByItemOfferedReservationForId',
         partialFilterExpression: {
@@ -309,9 +282,7 @@ schema.index(
     }
 );
 schema.index(
-    {
-        'acceptedOffers.itemOffered.reservationFor.name': 1
-    },
+    { 'acceptedOffers.itemOffered.reservationFor.name': 1 },
     {
         name: 'searchByItemOfferedReservationForName',
         partialFilterExpression: {
@@ -320,9 +291,7 @@ schema.index(
     }
 );
 schema.index(
-    {
-        'acceptedOffers.itemOffered.reservationFor.endDate': 1
-    },
+    { 'acceptedOffers.itemOffered.reservationFor.endDate': 1 },
     {
         name: 'searchByItemOfferedReservationForEndDate',
         partialFilterExpression: {
@@ -331,9 +300,7 @@ schema.index(
     }
 );
 schema.index(
-    {
-        'acceptedOffers.itemOffered.reservationFor.startDate': 1
-    },
+    { 'acceptedOffers.itemOffered.reservationFor.startDate': 1 },
     {
         name: 'searchByItemOfferedReservationForStartDate',
         partialFilterExpression: {
@@ -342,9 +309,7 @@ schema.index(
     }
 );
 schema.index(
-    {
-        'acceptedOffers.itemOffered.reservationFor.location.branchCode': 1
-    },
+    { 'acceptedOffers.itemOffered.reservationFor.location.branchCode': 1 },
     {
         name: 'searchByItemOfferedReservationForLocationBranchCode',
         partialFilterExpression: {
@@ -353,9 +318,7 @@ schema.index(
     }
 );
 schema.index(
-    {
-        'acceptedOffers.itemOffered.reservationFor.superEvent.id': 1
-    },
+    { 'acceptedOffers.itemOffered.reservationFor.superEvent.id': 1 },
     {
         name: 'searchByItemOfferedReservationForLocationSuperEventId',
         partialFilterExpression: {
@@ -364,9 +327,7 @@ schema.index(
     }
 );
 schema.index(
-    {
-        'acceptedOffers.itemOffered.reservationFor.superEvent.location.branchCode': 1
-    },
+    { 'acceptedOffers.itemOffered.reservationFor.superEvent.location.branchCode': 1 },
     {
         name: 'searchByItemOfferedReservationForLocationSuperEventLocationBranchCode',
         partialFilterExpression: {
@@ -375,9 +336,7 @@ schema.index(
     }
 );
 schema.index(
-    {
-        'acceptedOffers.itemOffered.reservationFor.superEvent.workPerformed.identifier': 1
-    },
+    { 'acceptedOffers.itemOffered.reservationFor.superEvent.workPerformed.identifier': 1 },
     {
         name: 'searchByItemOfferedReservationForLocationSuperEventWorkPerformedIdentifier',
         partialFilterExpression: {
@@ -385,13 +344,15 @@ schema.index(
         }
     }
 );
-export default mongoose.model('Order', schema).on(
-    'index',
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore next */
-    (error) => {
-        if (error !== undefined) {
-            console.error(error);
+
+export default mongoose.model('Order', schema)
+    .on(
+        'index',
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore next */
+        (error) => {
+            if (error !== undefined) {
+                console.error(error);
+            }
         }
-    }
-);
+    );
