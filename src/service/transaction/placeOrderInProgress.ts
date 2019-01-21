@@ -643,8 +643,8 @@ export function createOrderFromTransaction(params: {
             paymentMethods.push({
                 name: 'クレジットカード',
                 typeOf: factory.paymentMethodType.CreditCard,
-                paymentMethod: factory.paymentMethodType.CreditCard,
-                paymentMethodId: actionResult.execTranResult.orderId
+                paymentMethodId: actionResult.execTranResult.orderId,
+                additionalProperty: []
             });
         });
 
@@ -657,8 +657,8 @@ export function createOrderFromTransaction(params: {
             paymentMethods.push({
                 name: 'ポイント口座',
                 typeOf: factory.paymentMethodType.Pecorino,
-                paymentMethod: factory.paymentMethodType.Pecorino,
-                paymentMethodId: actionResult.pecorinoTransaction.id
+                paymentMethodId: actionResult.pecorinoTransaction.object.fromAccountNumber,
+                additionalProperty: []
             });
         });
 
@@ -674,7 +674,8 @@ export function createOrderFromTransaction(params: {
                         name: 'ムビチケ',
                         typeOf: factory.paymentMethodType.MovieTicket,
                         paymentMethod: factory.paymentMethodType.MovieTicket,
-                        paymentMethodId: knshInfo.knyknrNo
+                        paymentMethodId: knshInfo.knyknrNo,
+                        additionalProperty: []
                     };
                 }
             ));
@@ -878,7 +879,7 @@ export async function createPotentialActionsFromTransaction(params: {
 }): Promise<factory.transaction.placeOrder.IPotentialActions> {
     // クレジットカード支払いアクション
     let payCreditCardAction: factory.action.trade.pay.IAttributes<factory.paymentMethodType.CreditCard> | null = null;
-    const creditCardPayment = params.order.paymentMethods.find((m) => m.paymentMethod === factory.paymentMethodType.CreditCard);
+    const creditCardPayment = params.order.paymentMethods.find((m) => m.typeOf === factory.paymentMethodType.CreditCard);
     if (creditCardPayment !== undefined) {
         payCreditCardAction = {
             typeOf: factory.actionType.PayAction,
@@ -898,17 +899,20 @@ export async function createPotentialActionsFromTransaction(params: {
         .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.pecorino.ObjectType.PecorinoPayment);
     const payPecorinoActions: factory.action.trade.pay.IAttributes<factory.paymentMethodType.Pecorino>[] =
         pecorinotAuthorizeActions.map((a) => {
+            const actionResult = <factory.action.authorize.paymentMethod.pecorino.IResult>a.result;
+
             return {
                 typeOf: <factory.actionType.PayAction>factory.actionType.PayAction,
                 object: {
                     paymentMethod: {
                         typeOf: <factory.paymentMethodType.Pecorino>factory.paymentMethodType.Pecorino,
-                        name: 'Pecorino',
+                        name: factory.paymentMethodType.Pecorino,
                         paymentMethod: <factory.paymentMethodType.Pecorino>factory.paymentMethodType.Pecorino,
-                        paymentMethodId: a.id
+                        paymentMethodId: actionResult.pecorinoTransaction.object.fromAccountNumber,
+                        additionalProperty: []
                     },
-                    pecorinoTransaction: (<factory.action.authorize.paymentMethod.pecorino.IResult>a.result).pecorinoTransaction,
-                    pecorinoEndpoint: (<factory.action.authorize.paymentMethod.pecorino.IResult>a.result).pecorinoEndpoint
+                    pecorinoTransaction: actionResult.pecorinoTransaction,
+                    pecorinoEndpoint: actionResult.pecorinoEndpoint
                 },
                 agent: params.transaction.agent,
                 purpose: params.order

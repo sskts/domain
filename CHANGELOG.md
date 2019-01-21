@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 人物インターフェースを拡張
 - 注文の決済方法にムビチケを追加するように変更
+- ポイント口座決済時の注文に対する決済IDを、口座取引IDから口座番号へ変更
 
 ### Deprecated
 
