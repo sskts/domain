@@ -1220,8 +1220,9 @@ describe('createEmailMessageFromTransaction()', () => {
             },
             paymentMethods: [{
                 name: 'クレジットカード',
-                paymentMethod: sskts.factory.paymentMethodType.CreditCard,
-                paymentMethodId: creditCardAuthorizeActions[0].result.execTranResult.orderId
+                typeOf: sskts.factory.paymentMethodType.CreditCard,
+                paymentMethodId: creditCardAuthorizeActions[0].result.execTranResult.orderId,
+                additionalProperty: []
             }],
             discounts: [],
             price: 1234,
