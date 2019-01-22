@@ -174,7 +174,7 @@ export function importScreeningEvents(
                     jimakufukikaeKubuns: jimakufukikaeKubuns
                 });
 
-                await repos.event.saveScreeningEventSeries(screeningEventSeries);
+                await repos.event.save(screeningEventSeries);
 
                 return screeningEventSeries;
             }));
@@ -222,7 +222,7 @@ export function importScreeningEvents(
             debug(`storing ${individualScreeningEvents.length} individualScreeningEvents...`);
             await Promise.all(individualScreeningEvents.map(async (individualScreeningEvent) => {
                 try {
-                    await repos.event.saveIndividualScreeningEvent(individualScreeningEvent);
+                    await repos.event.save(individualScreeningEvent);
                 } catch (error) {
                     // tslint:disable-next-line:no-single-line-block-comment
                     /* istanbul ignore next */

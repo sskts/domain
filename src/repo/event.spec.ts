@@ -19,6 +19,26 @@ before(() => {
     sandbox = sinon.createSandbox();
 });
 
+describe('save()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('repositoryの状態が正常であれば、保管できるはず', async () => {
+        const event = { identifier: 'identifier' };
+
+        const repository = new sskts.repository.Event(sskts.mongoose.connection);
+
+        sandbox.mock(repository.eventModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves();
+
+        const result = await repository.save(<any>event);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
+
 describe('saveScreeningEvent()', () => {
     afterEach(() => {
         sandbox.restore();
@@ -33,6 +53,26 @@ describe('saveScreeningEvent()', () => {
             .chain('exec').resolves();
 
         const result = await repository.saveScreeningEvent(<any>event);
+
+        assert.equal(result, undefined);
+        sandbox.verify();
+    });
+});
+
+describe('saveScreeningEventSeries()', () => {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    it('repositoryの状態が正常であれば、保管できるはず', async () => {
+        const event = { identifier: 'identifier' };
+
+        const repository = new sskts.repository.Event(sskts.mongoose.connection);
+
+        sandbox.mock(repository.eventModel).expects('findOneAndUpdate').once()
+            .chain('exec').resolves();
+
+        const result = await repository.saveScreeningEventSeries(<any>event);
 
         assert.equal(result, undefined);
         sandbox.verify();

@@ -3,12 +3,15 @@ import * as moment from 'moment';
 import { Connection } from 'mongoose';
 import eventModel from './mongoose/model/event';
 
+export type IEvent = factory.event.individualScreeningEvent.IEvent | factory.event.screeningEventSeries.IEvent;
+
 /**
  * イベント抽象リポジトリー
  */
 export abstract class Repository {
+    public abstract async save(event: IEvent): Promise<void>;
     public abstract async saveScreeningEventSeries(event: factory.event.screeningEventSeries.IEvent): Promise<void>;
-    public abstract async saveScreeningEvent(screeningEvent: factory.event.screeningEvent.IEvent): Promise<void>;
+    public abstract async saveScreeningEvent(event: factory.event.screeningEvent.IEvent): Promise<void>;
     public abstract async saveIndividualScreeningEvent(
         individualScreeningEvent: factory.event.individualScreeningEvent.IEvent
     ): Promise<void>;
@@ -127,6 +130,20 @@ export class MongoRepository implements Repository {
         }
 
         return andConditions;
+    }
+
+    /**
+     * イベントを保管する
+     */
+    public async save(event: IEvent) {
+        await this.eventModel.findOneAndUpdate(
+            { _id: event.id },
+            {
+                $set: event,
+                $setOnInsert: { _id: event.id }
+            },
+            { new: true, upsert: true }
+        ).exec();
     }
 
     /**
