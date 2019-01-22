@@ -551,24 +551,32 @@ export function createOrderFromTransaction(params: {
 
             const eventReservation: factory.reservation.event.IEventReservation<factory.event.individualScreeningEvent.IEvent> = {
                 typeOf: factory.reservationType.EventReservation,
+                id: `${updTmpReserveSeatResult.tmpReserveNum}-${index.toString()}`,
+                checkedIn: false,
+                attended: false,
                 additionalTicketText: '',
                 modifiedTime: params.orderDate,
                 numSeats: 1,
                 price: requestedOffer.price,
                 priceCurrency: requestedOffer.priceCurrency,
                 reservationFor: individualScreeningEvent,
-                reservationNumber: `${updTmpReserveSeatResult.tmpReserveNum}-${index.toString()}`,
+                reservationNumber: `${updTmpReserveSeatResult.tmpReserveNum}`,
                 reservationStatus: factory.reservationStatusType.ReservationConfirmed,
                 reservedTicket: {
                     typeOf: 'Ticket',
                     coaTicketInfo: requestedOffer.ticketInfo,
                     dateIssued: params.orderDate,
-                    issuedBy: individualScreeningEvent.superEvent.organizer,
+                    issuedBy: {
+                        typeOf: individualScreeningEvent.superEvent.organizer.typeOf,
+                        name: individualScreeningEvent.superEvent.organizer.name.ja
+                    },
                     totalPrice: requestedOffer.price,
                     priceCurrency: requestedOffer.priceCurrency,
                     ticketedSeat: {
                         typeOf: factory.placeType.Seat,
-                        seatingType: '',
+                        seatingType: {
+                            typeOf: 'Default'
+                        },
                         seatNumber: tmpReserve.seatNum,
                         seatRow: '',
                         seatSection: tmpReserve.seatSection
@@ -577,12 +585,19 @@ export function createOrderFromTransaction(params: {
                     ticketToken: ticketToken,
                     underName: {
                         typeOf: factory.personType.Person,
-                        name: { ja: customer.name, en: customer.name }
+                        name: customer.name
+                    },
+                    ticketType: <any>{
+                        id: requestedOffer.ticketInfo.ticketCode,
+                        name: {
+                            ja: requestedOffer.ticketInfo.ticketName,
+                            en: requestedOffer.ticketInfo.ticketNameEng
+                        }
                     }
                 },
                 underName: {
                     typeOf: factory.personType.Person,
-                    name: { ja: customer.name, en: customer.name }
+                    name: customer.name
                 }
             };
 
@@ -734,11 +749,14 @@ export async function createEmailMessageFromTransaction(params: {
                     workPerformedName: event.workPerformed.name,
                     screenName: event.location.name.ja,
                     reservedSeats: params.order.acceptedOffers.map((o) => {
+                        const reservation = (<factory.reservation.event.IEventReservation<any>>o.itemOffered);
+                        const ticketedSeat = reservation.reservedTicket.ticketedSeat;
+
                         return util.format(
                             '%s %s ￥%s',
-                            (<factory.reservation.event.IEventReservation<any>>o.itemOffered).reservedTicket.ticketedSeat.seatNumber,
-                            (<factory.reservation.event.IEventReservation<any>>o.itemOffered).reservedTicket.coaTicketInfo.ticketName,
-                            (<factory.reservation.event.IEventReservation<any>>o.itemOffered).reservedTicket.coaTicketInfo.salePrice
+                            (ticketedSeat !== undefined) ? ticketedSeat.seatNumber : '',
+                            reservation.reservedTicket.coaTicketInfo.ticketName,
+                            reservation.reservedTicket.coaTicketInfo.salePrice
                         );
                     }).join('\n'),
                     price: params.order.price,

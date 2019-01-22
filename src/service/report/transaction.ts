@@ -217,7 +217,9 @@ export function transaction2report(params: {
                         if (ticketedSeat !== undefined) {
                             name = util.format(
                                 '%s %s',
-                                offer.reservedTicket.ticketedSeat.seatNumber,
+                                (offer.reservedTicket.ticketedSeat !== undefined)
+                                    ? offer.reservedTicket.ticketedSeat.seatNumber
+                                    : '',
                                 offer.reservedTicket.coaTicketInfo.ticketName
                             );
                         }
@@ -243,7 +245,7 @@ export function transaction2report(params: {
 
                         item = {
                             typeOf: offer.typeOf,
-                            ticketToken: ticket.ticketToken,
+                            ticketToken: (ticket.ticketToken !== undefined) ? ticket.ticketToken : '',
                             totalPrice: ticket.totalPrice,
                             name: name,
                             numItems: numItems,
