@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - ポイント口座決済時の注文に対する決済IDを、口座取引IDから口座番号へ変更
 - 予約インターフェースに予約ID属性を追加
 - 予約インターフェースに対する予約番号の割り当てをCOA予約番号そのものに変更
+- 上映イベントタイプを上映イベントシリーズタイプに変更
 
 ### Deprecated
 

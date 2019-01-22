@@ -7,6 +7,7 @@ import eventModel from './mongoose/model/event';
  * イベント抽象リポジトリー
  */
 export abstract class Repository {
+    public abstract async saveScreeningEventSeries(event: factory.event.screeningEventSeries.IEvent): Promise<void>;
     public abstract async saveScreeningEvent(screeningEvent: factory.event.screeningEvent.IEvent): Promise<void>;
     public abstract async saveIndividualScreeningEvent(
         individualScreeningEvent: factory.event.individualScreeningEvent.IEvent
@@ -142,6 +143,23 @@ export class MongoRepository implements Repository {
             {
                 $set: { ...screeningEvent },
                 $setOnInsert: { _id: screeningEvent.id }
+            },
+            { new: true, upsert: true }
+        ).exec();
+    }
+
+    /**
+     * 上映イベントシリーズを保管する
+     */
+    public async saveScreeningEventSeries(event: factory.event.screeningEventSeries.IEvent) {
+        await this.eventModel.findOneAndUpdate(
+            {
+                identifier: event.identifier,
+                typeOf: factory.eventType.ScreeningEventSeries
+            },
+            {
+                $set: { ...event },
+                $setOnInsert: { _id: event.id }
             },
             { new: true, upsert: true }
         ).exec();

@@ -203,11 +203,11 @@ describe('importScreeningEvents()', () => {
         sandbox.mock(COA.services.master).expects('schedule').once().resolves(schedulesFromCOA);
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(COA.services.master).expects('kubunName').exactly(6).resolves([{}]);
-        sandbox.mock(eventRepo).expects('saveScreeningEvent').exactly(filmFromCOA.length);
-        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').exactly(filmFromCOA.length)
+        sandbox.mock(eventRepo).expects('saveScreeningEventSeries').exactly(filmFromCOA.length);
+        sandbox.mock(factory.event.screeningEventSeries).expects('createFromCOA').exactly(filmFromCOA.length)
             .returns(screeningEvent);
         sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns(movieTheater);
-        sandbox.mock(factory.event.screeningEvent).expects('createIdentifier').exactly(schedulesFromCOA.length)
+        sandbox.mock(factory.event.screeningEventSeries).expects('createIdentifier').exactly(schedulesFromCOA.length)
             .returns(screeningEvent.identifier);
         sandbox.mock(factory.event.individualScreeningEvent).expects('createFromCOA').exactly(schedulesFromCOA.length)
             .returns(individualScreeningEvent);
@@ -282,11 +282,11 @@ describe('importScreeningEvents()', () => {
         sandbox.mock(COA.services.master).expects('xmlSchedule').once().resolves(xmlSchedule);
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(COA.services.master).expects('kubunName').exactly(6).resolves([{}]);
-        sandbox.mock(eventRepo).expects('saveScreeningEvent').exactly(filmFromCOA.length);
-        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').exactly(filmFromCOA.length)
+        sandbox.mock(eventRepo).expects('saveScreeningEventSeries').exactly(filmFromCOA.length);
+        sandbox.mock(factory.event.screeningEventSeries).expects('createFromCOA').exactly(filmFromCOA.length)
             .returns(screeningEvent);
         sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns(movieTheater);
-        sandbox.mock(factory.event.screeningEvent).expects('createIdentifier').exactly(1)
+        sandbox.mock(factory.event.screeningEventSeries).expects('createIdentifier').exactly(1)
             .returns(screeningEvent.identifier);
         sandbox.mock(factory.event.individualScreeningEvent).expects('createFromCOA').exactly(1)
             .returns(individualScreeningEvent);
@@ -332,11 +332,11 @@ describe('importScreeningEvents()', () => {
         sandbox.mock(COA.services.master).expects('schedule').once().resolves(schedulesFromCOA);
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(COA.services.master).expects('kubunName').exactly(6).resolves([{}]);
-        sandbox.mock(eventRepo).expects('saveScreeningEvent').exactly(filmFromCOA.length);
-        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').exactly(filmFromCOA.length)
+        sandbox.mock(eventRepo).expects('saveScreeningEventSeries').exactly(filmFromCOA.length);
+        sandbox.mock(factory.event.screeningEventSeries).expects('createFromCOA').exactly(filmFromCOA.length)
             .returns(screeningEvent);
         sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns(movieTheater);
-        sandbox.mock(factory.event.screeningEvent).expects('createIdentifier').exactly(schedulesFromCOA.length)
+        sandbox.mock(factory.event.screeningEventSeries).expects('createIdentifier').exactly(schedulesFromCOA.length)
             .returns(screeningEvent.identifier);
         sandbox.mock(factory.event.individualScreeningEvent).expects('createFromCOA').never();
         sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').never();
@@ -385,11 +385,11 @@ describe('importScreeningEvents()', () => {
         sandbox.mock(COA.services.master).expects('schedule').once().resolves(schedulesFromCOA);
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(COA.services.master).expects('kubunName').exactly(6).resolves([{}]);
-        sandbox.mock(eventRepo).expects('saveScreeningEvent').exactly(filmFromCOA.length);
-        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').exactly(filmFromCOA.length)
+        sandbox.mock(eventRepo).expects('saveScreeningEventSeries').exactly(filmFromCOA.length);
+        sandbox.mock(factory.event.screeningEventSeries).expects('createFromCOA').exactly(filmFromCOA.length)
             .returns(screeningEvent);
         sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns(movieTheater);
-        sandbox.mock(factory.event.screeningEvent).expects('createIdentifier').exactly(schedulesFromCOA.length)
+        sandbox.mock(factory.event.screeningEventSeries).expects('createIdentifier').exactly(schedulesFromCOA.length)
             .returns('invalidIdentifier');
         sandbox.mock(factory.event.individualScreeningEvent).expects('createFromCOA').never();
         sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').never();
@@ -438,10 +438,10 @@ describe('importScreeningEvents()', () => {
         sandbox.mock(COA.services.master).expects('schedule').once().resolves(schedulesFromCOA);
         sandbox.mock(COA.services.master).expects('xmlSchedule').once().rejects(new Error('some random error'));
         sandbox.mock(COA.services.master).expects('kubunName').never();
-        sandbox.mock(eventRepo).expects('saveScreeningEvent').never();
-        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').never();
+        sandbox.mock(eventRepo).expects('saveScreeningEventSeries').never();
+        sandbox.mock(factory.event.screeningEventSeries).expects('createFromCOA').never();
         sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns(movieTheater);
-        sandbox.mock(factory.event.screeningEvent).expects('createIdentifier').never();
+        sandbox.mock(factory.event.screeningEventSeries).expects('createIdentifier').never();
         sandbox.mock(factory.event.individualScreeningEvent).expects('createFromCOA').never();
         sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').never();
         sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').never();

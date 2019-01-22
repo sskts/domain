@@ -164,8 +164,8 @@ export function importScreeningEvents(
             debug('kubunNames found.');
 
             // 永続化
-            const screeningEvents = await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
-                const screeningEvent = factory.event.screeningEvent.createFromCOA({
+            const screeningEventSerieses = await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
+                const screeningEventSeries = factory.event.screeningEventSeries.createFromCOA({
                     filmFromCOA: filmFromCOA,
                     movieTheater: movieTheater,
                     eirinKubuns: eirinKubuns,
@@ -173,16 +173,17 @@ export function importScreeningEvents(
                     joueihousikiKubuns: joueihousikiKubuns,
                     jimakufukikaeKubuns: jimakufukikaeKubuns
                 });
-                await repos.event.saveScreeningEvent(screeningEvent);
 
-                return screeningEvent;
+                await repos.event.saveScreeningEventSeries(screeningEventSeries);
+
+                return screeningEventSeries;
             }));
 
             // 上映イベントごとに永続化トライ
             const individualScreeningEvents: factory.event.individualScreeningEvent.IEvent[] = [];
             schedulesFromCOA.forEach((scheduleFromCOA) => {
                 if (xmlEndPoint === undefined || matchWithXML(schedulesFromXML, scheduleFromCOA)) {
-                    const screeningEventIdentifier = factory.event.screeningEvent.createIdentifier({
+                    const screeningEventSeriesIdentifier = factory.event.screeningEventSeries.createIdentifier({
                         theaterCode: theaterCode,
                         titleCode: scheduleFromCOA.titleCode,
                         titleBranchNum: scheduleFromCOA.titleBranchNum
@@ -198,10 +199,10 @@ export function importScreeningEvents(
                         return;
                     }
 
-                    // 上映イベント取得
-                    const screeningEvent = screeningEvents.find((event) => event.identifier === screeningEventIdentifier);
-                    if (screeningEvent === undefined) {
-                        console.error('screeningEvent not found.', screeningEventIdentifier);
+                    // 上映イベントシリーズ取得
+                    const screeningEventSeries = screeningEventSerieses.find((e) => e.identifier === screeningEventSeriesIdentifier);
+                    if (screeningEventSeries === undefined) {
+                        console.error('screeningEventSeries not found.', screeningEventSeriesIdentifier);
 
                         return;
                     }
@@ -210,7 +211,7 @@ export function importScreeningEvents(
                     const individualScreeningEvent = factory.event.individualScreeningEvent.createFromCOA({
                         performanceFromCOA: scheduleFromCOA,
                         screenRoom: screenRoom,
-                        screeningEvent: screeningEvent,
+                        superEvent: screeningEventSeries,
                         serviceKubuns: serviceKubuns,
                         acousticKubuns: acousticKubuns
                     });
