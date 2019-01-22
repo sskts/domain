@@ -264,6 +264,15 @@ schema.index(
     }
 );
 schema.index(
+    { 'acceptedOffers.itemOffered.reservationNumber': 1 },
+    {
+        name: 'searchByItemOfferedReservationNumber',
+        partialFilterExpression: {
+            'acceptedOffers.itemOffered.reservationNumber': { $exists: true }
+        }
+    }
+);
+schema.index(
     { 'acceptedOffers.itemOffered.reservationFor.id': 1 },
     {
         name: 'searchByItemOfferedReservationForId',

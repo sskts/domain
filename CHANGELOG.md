@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- orderInquiryKeyを使用せずに予約番号で注文を紹介できるようにメソッドを追加
+
 ### Changed
 
 - 人物インターフェースを拡張
