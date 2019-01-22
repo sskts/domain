@@ -1127,6 +1127,9 @@ describe('createEmailMessageFromTransaction()', () => {
         };
         const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
             {
+                id: '',
+                checkedIn: false,
+                attended: false,
                 typeOf: sskts.factory.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
@@ -1144,7 +1147,8 @@ describe('createEmailMessageFromTransaction()', () => {
                     priceCurrency: sskts.factory.priceCurrency.JPY,
                     ticketedSeat: <any>{
                         seatNumber: 'seatNumber1'
-                    }
+                    },
+                    ticketType: <any>{}
                 },
                 underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
                 price: 234,
@@ -1157,6 +1161,9 @@ describe('createEmailMessageFromTransaction()', () => {
 
             },
             {
+                id: '',
+                checkedIn: false,
+                attended: false,
                 typeOf: sskts.factory.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
@@ -1174,7 +1181,8 @@ describe('createEmailMessageFromTransaction()', () => {
                     priceCurrency: sskts.factory.priceCurrency.JPY,
                     ticketedSeat: <any>{
                         seatNumber: 'seatNumber2'
-                    }
+                    },
+                    ticketType: <any>{}
                 },
                 underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
                 price: 1000,
