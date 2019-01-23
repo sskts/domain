@@ -31,27 +31,12 @@ const superEventSchema = new mongoose.Schema(
     }
 );
 
-const videoFormatSchema = new mongoose.Schema(
-    {},
-    {
-        id: false,
-        _id: false,
-        strict: false
-    }
-);
-
-const coaInfoSchema = new mongoose.Schema(
-    {},
-    {
-        id: false,
-        _id: false,
-        strict: false
-    }
-);
+const videoFormatSchema = mongoose.SchemaTypes.Mixed;
+const identifierSchema = mongoose.SchemaTypes.Mixed;
+const alternativeHeadlineSchema = mongoose.SchemaTypes.Mixed;
 
 /**
- * イベント(公演など)スキーマ
- * @ignore
+ * イベントスキーマ
  */
 const schema = new mongoose.Schema(
     {
@@ -60,7 +45,7 @@ const schema = new mongoose.Schema(
             type: String,
             required: true
         },
-        identifier: String,
+        identifier: identifierSchema,
         name: MultilingualStringSchemaType,
         description: MultilingualStringSchemaType,
         doorTime: Date,
@@ -73,22 +58,34 @@ const schema = new mongoose.Schema(
         superEvent: superEventSchema,
         videoFormat: videoFormatSchema,
         kanaName: String,
-        alternativeHeadline: String,
-        coaInfo: coaInfoSchema
+        alternativeHeadline: alternativeHeadlineSchema,
+        ticketTypeGroup: String,
+        maximumAttendeeCapacity: Number,
+        remainingAttendeeCapacity: Number
     },
     {
         collection: 'events',
         id: true,
         read: 'primaryPreferred',
         safe: safe,
-        strict: true,
+        strict: false, // Chevreの型に柔軟に対応
         useNestedStrict: true,
         timestamps: {
             createdAt: 'createdAt',
             updatedAt: 'updatedAt'
         },
-        toJSON: { getters: true },
-        toObject: { getters: true }
+        toJSON: {
+            getters: true,
+            virtuals: true,
+            minimize: false,
+            versionKey: false
+        },
+        toObject: {
+            getters: true,
+            virtuals: true,
+            minimize: false,
+            versionKey: false
+        }
     }
 );
 
@@ -106,12 +103,19 @@ schema.index(
 );
 schema.index(
     { identifier: 1 },
-    { name: 'searchByIdentifier' }
+    {
+        name: 'searchByIdentifier',
+        partialFilterExpression: {
+            identifier: { $exists: true }
+        }
+    }
 );
 schema.index(
-    {
-        doorTime: 1
-    },
+    { name: 1 },
+    { name: 'searchByName' }
+);
+schema.index(
+    { doorTime: 1 },
     {
         name: 'searchByDoorTime',
         partialFilterExpression: {
@@ -132,9 +136,16 @@ schema.index(
     { name: 'searchByEventStatus' }
 );
 schema.index(
+    { 'superEvent.id': 1 },
     {
-        'superEvent.location.branchCode': 1
-    },
+        name: 'searchBySuperEventId',
+        partialFilterExpression: {
+            'superEvent.id': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'superEvent.location.branchCode': 1 },
     {
         name: 'searchBySuperEventLocationBranchCode',
         partialFilterExpression: {
@@ -143,9 +154,7 @@ schema.index(
     }
 );
 schema.index(
-    {
-        'superEvent.location.identifier': 1
-    },
+    { 'superEvent.location.identifier': 1 },
     {
         name: 'searchBySuperEventLocationIdentifier',
         partialFilterExpression: {
@@ -154,9 +163,16 @@ schema.index(
     }
 );
 schema.index(
+    { 'superEvent.workPerformed.identifier': 1 },
     {
-        'workPerformed.identifier': 1
-    },
+        name: 'searchBySuperEventWorkPerformedIdentifier',
+        partialFilterExpression: {
+            'superEvent.workPerformed.identifier': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'workPerformed.identifier': 1 },
     {
         name: 'searchByWorkPerformedIdentifier',
         partialFilterExpression: {
@@ -164,47 +180,60 @@ schema.index(
         }
     }
 );
-
-// 上映イベント検索に使用
 schema.index(
+    { 'offers.availabilityEnds': 1 },
     {
-        typeOf: 1,
-        'superEvent.location.branchCode': 1
-    },
-    {
+        name: 'searchByOffersAvailabilityEnds',
         partialFilterExpression: {
-            'superEvent.location.branchCode': { $exists: true }
+            'offers.availabilityEnds': { $exists: true }
         }
     }
 );
 schema.index(
+    { 'offers.availabilityStarts': 1 },
     {
-        typeOf: 1,
-        'superEvent.location.identifier': 1,
-        startDate: 1
-    },
-    {
+        name: 'searchByOffersAvailabilityStarts',
         partialFilterExpression: {
-            'superEvent.location.identifier': { $exists: true }
-        },
-        name: 'searchScreeningEventsConditions'
-    }
-);
-schema.index({ typeOf: 1, startDate: 1 });
-schema.index({ typeOf: 1, endDate: 1 });
-
-// 上映イベント取得に使用
-schema.index(
-    { identifier: 1, typeOf: 1 }
-);
-
-export default mongoose.model('Event', schema).on(
-    'index',
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore next */
-    (error) => {
-        if (error !== undefined) {
-            console.error(error);
+            'offers.availabilityStarts': { $exists: true }
         }
     }
 );
+schema.index(
+    { 'offers.validThrough': 1 },
+    {
+        name: 'searchByOffersValidThrough',
+        partialFilterExpression: {
+            'offers.validThrough': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'offers.validFrom': 1 },
+    {
+        name: 'searchByOffersValidFrom',
+        partialFilterExpression: {
+            'offers.validFrom': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { 'offers.id': 1 },
+    {
+        name: 'searchByOffersId',
+        partialFilterExpression: {
+            'offers.id': { $exists: true }
+        }
+    }
+);
+
+export default mongoose.model('Event', schema)
+    .on(
+        'index',
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore next */
+        (error) => {
+            if (error !== undefined) {
+                console.error(error);
+            }
+        }
+    );
