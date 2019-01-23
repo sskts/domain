@@ -126,7 +126,7 @@ describe('ポイントインセンティブ承認を作成する', () => {
             ownershipInfo: ownershipInfoRepo,
             depositTransactionService: depositService
         }).catch((err) => err);
-        assert(result instanceof sskts.factory.errors.SSKTS);
+        assert(result instanceof sskts.factory.errors.Cinerino);
         sandbox.verify();
     });
 });

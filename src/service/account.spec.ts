@@ -35,7 +35,7 @@ describe('ポイント口座を開設する', () => {
         sandbox.verify();
     });
 
-    it('Pecorinoサービスがエラーを返せばSSKTSエラーに変換されるはず', async () => {
+    it('Pecorinoサービスがエラーを返せばCinerinoエラーに変換されるはず', async () => {
         const pecorinoRequestError = { name: 'PecorinoRequestError' };
         const accountNumberRepo = new sskts.repository.AccountNumber(redisClient);
         const accountService = new sskts.pecorinoapi.service.Account(<any>{});
@@ -46,7 +46,7 @@ describe('ポイント口座を開設する', () => {
             accountNumber: accountNumberRepo,
             accountService: accountService
         }).catch((err) => err);
-        assert(result instanceof sskts.factory.errors.SSKTS);
+        assert(result instanceof sskts.factory.errors.Cinerino);
         sandbox.verify();
     });
 });
@@ -72,7 +72,7 @@ describe('ポイントを入金する', () => {
         sandbox.verify();
     });
 
-    it('Pecorinoサービスがエラーを返せばSSKTSエラーに変換されるはず', async () => {
+    it('Pecorinoサービスがエラーを返せばCinerinoエラーに変換されるはず', async () => {
         const pecorinoRequestError = { name: 'PecorinoRequestError' };
         const depositService = new sskts.pecorinoapi.service.transaction.Deposit(<any>{});
         sandbox.mock(depositService).expects('start').once().rejects(pecorinoRequestError);
@@ -84,7 +84,7 @@ describe('ポイントを入金する', () => {
         })({
             depositService: depositService
         }).catch((err) => err);
-        assert(result instanceof sskts.factory.errors.SSKTS);
+        assert(result instanceof sskts.factory.errors.Cinerino);
         sandbox.verify();
     });
 });

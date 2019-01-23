@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 予約インターフェースに予約ID属性を追加
 - 予約インターフェースに対する予約番号の割り当てをCOA予約番号そのものに変更
 - 上映イベントタイプを上映イベントシリーズタイプに変更
+- SSKTSエラーをCinerinoエラーへ変更
 
 ### Deprecated
 

@@ -48,7 +48,9 @@ export class MongoRepository implements Repository {
         // MongoDB検索条件
         const andConditions: any[] = [
             {
-                typeOf: factory.eventType.IndividualScreeningEvent
+                typeOf: {
+                    $in: [factory.eventType.IndividualScreeningEvent, factory.eventType.ScreeningEvent]
+                }
             }
         ];
 
@@ -209,7 +211,9 @@ export class MongoRepository implements Repository {
         await this.eventModel.findOneAndUpdate(
             {
                 identifier: identifier,
-                typeOf: factory.eventType.IndividualScreeningEvent
+                typeOf: {
+                    $in: [factory.eventType.IndividualScreeningEvent, factory.eventType.ScreeningEvent]
+                }
             },
             { eventStatus: factory.eventStatusType.EventCancelled },
             { new: true }
@@ -260,7 +264,9 @@ export class MongoRepository implements Repository {
     public async findIndividualScreeningEventByIdentifier(identifier: string): Promise<factory.event.individualScreeningEvent.IEvent> {
         const doc = await this.eventModel.findOne(
             {
-                typeOf: factory.eventType.IndividualScreeningEvent,
+                typeOf: {
+                    $in: [factory.eventType.IndividualScreeningEvent, factory.eventType.ScreeningEvent]
+                },
                 identifier: identifier
             },
             {
