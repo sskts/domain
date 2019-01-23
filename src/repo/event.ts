@@ -136,7 +136,10 @@ export class MongoRepository {
     public async cancelIndividualScreeningEvent(identifier: string) {
         await this.eventModel.findOneAndUpdate(
             {
-                identifier: identifier,
+                identifier: {
+                    $exists: true,
+                    $eq: identifier
+                },
                 typeOf: {
                     $in: [factory.eventType.IndividualScreeningEvent, factory.eventType.ScreeningEvent]
                 }
@@ -193,7 +196,10 @@ export class MongoRepository {
                 typeOf: {
                     $in: [factory.eventType.IndividualScreeningEvent, factory.eventType.ScreeningEvent]
                 },
-                identifier: identifier
+                identifier: {
+                    $exists: true,
+                    $eq: identifier
+                }
             },
             {
                 __v: 0,
@@ -203,7 +209,7 @@ export class MongoRepository {
         ).exec();
 
         if (doc === null) {
-            throw new factory.errors.NotFound('individualScreeningEvent');
+            throw new factory.errors.NotFound('ScreeningEvent');
         }
 
         return doc.toObject();
