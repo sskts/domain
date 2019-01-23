@@ -24,6 +24,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- クライアントイベントリポジトリを削除
+- GMO通知リポジトリを削除
+- SendGridイベントリポジトリを削除
+- 健康診断サービスを削除
+
 ### Fixed
 
 ### Security

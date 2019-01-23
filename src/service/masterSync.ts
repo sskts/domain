@@ -1,8 +1,6 @@
 /**
  * マスターデータ同期サービス
- * @namespace service.masterSync
  */
-
 import * as COA from '@motionpicture/coa-service';
 import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
@@ -11,7 +9,7 @@ import * as difference from 'lodash.difference';
 import * as moment from 'moment-timezone';
 
 import { Repository as CreativeWorkRepo } from '../repo/creativeWork';
-import { Repository as EventRepo } from '../repo/event';
+import { MongoRepository as EventRepo } from '../repo/event';
 import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { Repository as PlaceRepo } from '../repo/place';
 

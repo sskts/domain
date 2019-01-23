@@ -6,28 +6,9 @@ import eventModel from './mongoose/model/event';
 export type IEvent = factory.event.individualScreeningEvent.IEvent | factory.event.screeningEventSeries.IEvent;
 
 /**
- * イベント抽象リポジトリー
- */
-export abstract class Repository {
-    public abstract async save(event: IEvent): Promise<void>;
-    public abstract async saveScreeningEventSeries(event: factory.event.screeningEventSeries.IEvent): Promise<void>;
-    public abstract async saveScreeningEvent(event: factory.event.screeningEvent.IEvent): Promise<void>;
-    public abstract async saveIndividualScreeningEvent(
-        individualScreeningEvent: factory.event.individualScreeningEvent.IEvent
-    ): Promise<void>;
-    public abstract async cancelIndividualScreeningEvent(identifier: string): Promise<void>;
-    public abstract async searchIndividualScreeningEvents(
-        searchConditions: factory.event.individualScreeningEvent.ISearchConditions
-    ): Promise<factory.event.individualScreeningEvent.IEvent[]>;
-    public abstract async findIndividualScreeningEventByIdentifier(
-        identifier: string
-    ): Promise<factory.event.individualScreeningEvent.IEvent>;
-}
-
-/**
  * イベントリポジトリー
  */
-export class MongoRepository implements Repository {
+export class MongoRepository {
     public readonly eventModel: typeof eventModel;
 
     constructor(connection: Connection) {
@@ -143,61 +124,6 @@ export class MongoRepository implements Repository {
             {
                 $set: event,
                 $setOnInsert: { _id: event.id }
-            },
-            { new: true, upsert: true }
-        ).exec();
-    }
-
-    /**
-     * save a screening event
-     * 上映イベントを保管する
-     * @param screeningEvent screeningEvent object
-     */
-    public async saveScreeningEvent(screeningEvent: factory.event.screeningEvent.IEvent) {
-        await this.eventModel.findOneAndUpdate(
-            {
-                identifier: screeningEvent.identifier,
-                typeOf: factory.eventType.ScreeningEvent
-            },
-            {
-                $set: { ...screeningEvent },
-                $setOnInsert: { _id: screeningEvent.id }
-            },
-            { new: true, upsert: true }
-        ).exec();
-    }
-
-    /**
-     * 上映イベントシリーズを保管する
-     */
-    public async saveScreeningEventSeries(event: factory.event.screeningEventSeries.IEvent) {
-        await this.eventModel.findOneAndUpdate(
-            {
-                identifier: event.identifier,
-                typeOf: factory.eventType.ScreeningEventSeries
-            },
-            {
-                $set: { ...event },
-                $setOnInsert: { _id: event.id }
-            },
-            { new: true, upsert: true }
-        ).exec();
-    }
-
-    /**
-     * save a individual screening event
-     * 個々の上映イベントを保管する
-     * @param individualScreeningEvent individualScreeningEvent object
-     */
-    public async saveIndividualScreeningEvent(individualScreeningEvent: factory.event.individualScreeningEvent.IEvent) {
-        await this.eventModel.findOneAndUpdate(
-            {
-                identifier: individualScreeningEvent.identifier,
-                typeOf: factory.eventType.IndividualScreeningEvent
-            },
-            {
-                $set: { ...individualScreeningEvent },
-                $setOnInsert: { _id: individualScreeningEvent.id }
             },
             { new: true, upsert: true }
         ).exec();
