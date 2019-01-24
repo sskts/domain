@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 上映イベントタイプを上映イベントシリーズタイプに変更
 - SSKTSエラーをCinerinoエラーへ変更
 - イベントスキーマをCinerinoに統一
+- 決済方法承認アクションインターフェースを強化
 
 ### Deprecated
 

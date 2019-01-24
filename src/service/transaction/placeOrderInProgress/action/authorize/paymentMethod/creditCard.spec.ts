@@ -62,12 +62,15 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(actionRepo).expects('complete').once().resolves(action);
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderId: orderId,
-            amount: amount,
-            method: sskts.GMO.utils.util.Method.Lump,
-            creditCard: creditCard
+            agent: agent,
+            transaction: transaction,
+            object: {
+                typeOf: sskts.factory.paymentMethodType.CreditCard,
+                orderId: orderId,
+                amount: amount,
+                method: sskts.GMO.utils.util.Method.Lump,
+                creditCard: creditCard
+            }
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -177,12 +180,15 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(actionRepo).expects('complete').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderId: orderId,
-            amount: amount,
-            method: sskts.GMO.utils.util.Method.Lump,
-            creditCard: creditCard
+            agent: agent,
+            transaction: transaction,
+            object: {
+                typeOf: sskts.factory.paymentMethodType.CreditCard,
+                orderId: orderId,
+                amount: amount,
+                method: sskts.GMO.utils.util.Method.Lump,
+                creditCard: creditCard
+            }
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -239,12 +245,15 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(actionRepo).expects('complete').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderId: orderId,
-            amount: amount,
-            method: sskts.GMO.utils.util.Method.Lump,
-            creditCard: creditCard
+            agent: agent,
+            transaction: transaction,
+            object: {
+                typeOf: sskts.factory.paymentMethodType.CreditCard,
+                orderId: orderId,
+                amount: amount,
+                method: sskts.GMO.utils.util.Method.Lump,
+                creditCard: creditCard
+            }
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -305,12 +314,15 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(actionRepo).expects('complete').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderId: orderId,
-            amount: amount,
-            method: sskts.GMO.utils.util.Method.Lump,
-            creditCard: creditCard
+            agent: agent,
+            transaction: transaction,
+            object: {
+                typeOf: sskts.factory.paymentMethodType.CreditCard,
+                orderId: orderId,
+                amount: amount,
+                method: sskts.GMO.utils.util.Method.Lump,
+                creditCard: creditCard
+            }
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -372,12 +384,15 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(actionRepo).expects('complete').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderId: orderId,
-            amount: amount,
-            method: sskts.GMO.utils.util.Method.Lump,
-            creditCard: creditCard
+            agent: agent,
+            transaction: transaction,
+            object: {
+                typeOf: sskts.factory.paymentMethodType.CreditCard,
+                orderId: orderId,
+                amount: amount,
+                method: sskts.GMO.utils.util.Method.Lump,
+                creditCard: creditCard
+            }
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -439,12 +454,15 @@ describe('action.authorize.creditCard.create()', () => {
         sandbox.mock(actionRepo).expects('complete').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderId: orderId,
-            amount: amount,
-            method: sskts.GMO.utils.util.Method.Lump,
-            creditCard: creditCard
+            agent: agent,
+            transaction: transaction,
+            object: {
+                typeOf: sskts.factory.paymentMethodType.CreditCard,
+                orderId: orderId,
+                amount: amount,
+                method: sskts.GMO.utils.util.Method.Lump,
+                creditCard: creditCard
+            }
         })({
             action: actionRepo,
             transaction: transactionRepo,

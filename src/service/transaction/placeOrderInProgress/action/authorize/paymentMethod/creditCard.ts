@@ -30,12 +30,9 @@ export type ICreditCard4authorizeAction =
  * クレジットカードオーソリ取得
  */
 export function create(params: {
-    agentId: string;
-    transactionId: string;
-    orderId: string;
-    amount: number;
-    method: GMO.utils.util.Method;
-    creditCard: ICreditCard4authorizeAction;
+    object: factory.action.authorize.paymentMethod.creditCard.IObject;
+    agent: { id: string };
+    transaction: { id: string };
 }): ICreateOperation<factory.action.authorize.paymentMethod.creditCard.IAction> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
@@ -43,7 +40,7 @@ export function create(params: {
         organization: OrganizationRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transaction.id);
 
         // 他者口座による決済も可能にするためにコメントアウト
         // 基本的に、自分の口座のオーソリを他者に与えても得しないので、
@@ -58,13 +55,7 @@ export function create(params: {
         // 承認アクションを開始する
         const actionAttributes: factory.action.authorize.paymentMethod.creditCard.IAttributes = {
             typeOf: factory.actionType.AuthorizeAction,
-            object: {
-                typeOf: factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard,
-                orderId: params.orderId,
-                amount: params.amount,
-                method: params.method,
-                payType: GMO.utils.util.PayType.Credit
-            },
+            object: params.object,
             agent: transaction.agent,
             recipient: transaction.seller,
             purpose: transaction // purposeは取引
@@ -90,9 +81,9 @@ export function create(params: {
             entryTranArgs = {
                 shopId: creditCardPaymentAccepted.gmoInfo.shopId,
                 shopPass: creditCardPaymentAccepted.gmoInfo.shopPass,
-                orderId: params.orderId,
+                orderId: params.object.orderId,
                 jobCd: GMO.utils.util.JobCd.Auth,
-                amount: params.amount
+                amount: params.object.amount
             };
             entryTranResult = await GMO.services.credit.entryTran(entryTranArgs);
             debug('entryTranResult:', entryTranResult);
@@ -100,16 +91,16 @@ export function create(params: {
             execTranArgs = {
                 accessId: entryTranResult.accessId,
                 accessPass: entryTranResult.accessPass,
-                orderId: params.orderId,
-                method: params.method,
+                orderId: params.object.orderId,
+                method: params.object.method,
                 siteId: <string>process.env.GMO_SITE_ID,
                 sitePass: <string>process.env.GMO_SITE_PASS,
-                cardNo: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw>params.creditCard).cardNo,
-                cardPass: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw>params.creditCard).cardPass,
-                expire: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw>params.creditCard).expire,
-                token: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardTokenized>params.creditCard).token,
-                memberId: (<factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember>params.creditCard).memberId,
-                cardSeq: (<factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember>params.creditCard).cardSeq,
+                cardNo: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw>params.object.creditCard).cardNo,
+                cardPass: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw>params.object.creditCard).cardPass,
+                expire: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardRaw>params.object.creditCard).expire,
+                token: (<factory.paymentMethod.paymentCard.creditCard.IUncheckedCardTokenized>params.object.creditCard).token,
+                memberId: (<factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember>params.object.creditCard).memberId,
+                cardSeq: (<factory.paymentMethod.paymentCard.creditCard.IUnauthorizedCardOfMember>params.object.creditCard).cardSeq,
                 seqMode: GMO.utils.util.SeqMode.Physics
             };
             execTranResult = await GMO.services.credit.execTran(execTranArgs);
@@ -148,8 +139,19 @@ export function create(params: {
         debug('ending authorize action...');
 
         const result: factory.action.authorize.paymentMethod.creditCard.IResult = {
-            price: params.amount,
+            accountId: '',
+            price: params.object.amount,
+            paymentMethod: factory.paymentMethodType.CreditCard,
+            paymentStatus: factory.paymentStatusType.PaymentDue,
+            paymentMethodId: params.object.orderId,
+            name: factory.paymentMethodType.CreditCard,
+            totalPaymentDue: {
+                typeOf: 'MonetaryAmount',
+                currency: factory.priceCurrency.JPY,
+                value: params.object.amount
+            },
             entryTranArgs: entryTranArgs,
+            entryTranResult: entryTranResult,
             execTranArgs: execTranArgs,
             execTranResult: execTranResult
         };

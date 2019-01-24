@@ -572,14 +572,17 @@ function processPlaceOrder(params: {
             moment().tz('Asia/Tokyo').format('YYMMDDhhmmss') // 秒
         );
         await PlaceOrderService.action.authorize.paymentMethod.creditCard.create({
-            agentId: params.registerActionAttributes.agent.id,
-            transactionId: transaction.id,
-            orderId: orderId,
-            amount: acceptedOffer.price,
-            method: GMO.utils.util.Method.Lump,
-            creditCard: {
-                memberId: customer.memberOf.membershipNumber,
-                cardSeq: parseInt(creditCard.cardSeq, 10)
+            agent: params.registerActionAttributes.agent,
+            transaction: transaction,
+            object: {
+                typeOf: factory.paymentMethodType.CreditCard,
+                orderId: orderId,
+                amount: acceptedOffer.price,
+                method: GMO.utils.util.Method.Lump,
+                creditCard: {
+                    memberId: customer.memberOf.membershipNumber,
+                    cardSeq: parseInt(creditCard.cardSeq, 10)
+                }
             }
         })(repos);
         debug('creditCard authorization created.');

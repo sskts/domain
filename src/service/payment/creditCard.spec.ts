@@ -23,7 +23,7 @@ before(() => {
                     actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
                     purpose: {},
                     object: {
-                        typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard,
+                        typeOf: sskts.factory.paymentMethodType.CreditCard,
                         amount: 123,
                         orderId: 'orderId'
                     },
@@ -61,7 +61,7 @@ describe('cancelCreditCardAuth()', () => {
             {
                 id: 'actionId',
                 actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                object: { typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard },
+                object: { typeOf: sskts.factory.paymentMethodType.CreditCard },
                 purpose: {},
                 result: {
                     entryTranArgs: {},

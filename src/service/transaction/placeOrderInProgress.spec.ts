@@ -539,7 +539,7 @@ describe('confirm()', () => {
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.agent,
                 object: {
-                    typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard
+                    typeOf: sskts.factory.paymentMethodType.CreditCard
                 },
                 result: {
                     execTranResult: {
@@ -946,7 +946,7 @@ describe('confirm()', () => {
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.agent,
                 object: {
-                    typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard,
+                    typeOf: sskts.factory.paymentMethodType.CreditCard,
                     offers: []
                 },
                 result: {
@@ -1076,7 +1076,7 @@ describe('createEmailMessageFromTransaction()', () => {
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.agent,
                 object: {
-                    typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard
+                    typeOf: sskts.factory.paymentMethodType.CreditCard
                 },
                 result: {
                     execTranResult: {
@@ -1311,7 +1311,7 @@ describe('createOrderFromTransaction()', () => {
                         agent: agent,
                         recipient: seller,
                         object: {
-                            typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard
+                            typeOf: sskts.factory.paymentMethodType.CreditCard
                         },
                         result: {
                             execTranResult: {
@@ -1831,7 +1831,7 @@ describe('validateTransaction()', () => {
                         agent: agent,
                         recipient: seller,
                         object: {
-                            typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard
+                            typeOf: sskts.factory.paymentMethodType.CreditCard
                         },
                         startDate: new Date(),
                         endDate: new Date()
@@ -1843,7 +1843,7 @@ describe('validateTransaction()', () => {
                         agent: agent,
                         recipient: seller,
                         object: {
-                            typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard
+                            typeOf: sskts.factory.paymentMethodType.CreditCard
                         },
                         startDate: new Date(),
                         endDate: new Date()

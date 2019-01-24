@@ -362,7 +362,7 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
     // クレジットカードオーソリをひとつに限定
     const creditCardAuthorizeActions = authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard);
+        .filter((a) => a.object.typeOf === factory.paymentMethodType.CreditCard);
     if (creditCardAuthorizeActions.length > 1) {
         throw new factory.errors.Argument('transactionId', 'The number of credit card authorize actions must be one');
     }
@@ -652,7 +652,7 @@ export function createOrderFromTransaction(params: {
     // クレジットカード決済があれば決済方法に追加
     params.transaction.object.authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard)
+        .filter((a) => a.object.typeOf === factory.paymentMethodType.CreditCard)
         .forEach((creditCardAuthorizeAction: factory.action.authorize.paymentMethod.creditCard.IAction) => {
             const actionResult = <factory.action.authorize.paymentMethod.creditCard.IResult>creditCardAuthorizeAction.result;
             paymentMethods.push({
