@@ -1,9 +1,11 @@
-import * as factory from '@motionpicture/sskts-factory';
 import * as moment from 'moment';
 import { Connection } from 'mongoose';
+
 import eventModel from './mongoose/model/event';
 
-export type IEvent = factory.event.individualScreeningEvent.IEvent | factory.event.screeningEventSeries.IEvent;
+import * as factory from '../factory';
+
+export type IEvent = factory.event.screeningEvent.IEvent | factory.event.screeningEventSeries.IEvent;
 
 /**
  * イベントリポジトリー
@@ -16,7 +18,7 @@ export class MongoRepository {
     }
 
     public static CREATE_INDIVIDUAL_SCREENING_EVENT_MONGO_CONDITIONS(
-        searchConditions: factory.event.individualScreeningEvent.ISearchConditions
+        searchConditions: factory.event.screeningEvent.ISearchConditions
     ) {
         // dayプロパティがあればstartFrom & startThroughに変換(互換性維持のため)
         // tslint:disable-next-line:no-single-line-block-comment
@@ -131,15 +133,11 @@ export class MongoRepository {
 
     /**
      * 上映イベントをキャンセルする
-     * @param identifier イベント識別子
      */
-    public async cancelIndividualScreeningEvent(identifier: string) {
+    public async cancelIndividualScreeningEvent(id: string) {
         await this.eventModel.findOneAndUpdate(
             {
-                identifier: {
-                    $exists: true,
-                    $eq: identifier
-                },
+                _id: id,
                 typeOf: {
                     $in: [factory.eventType.IndividualScreeningEvent, factory.eventType.ScreeningEvent]
                 }
@@ -149,7 +147,7 @@ export class MongoRepository {
         ).exec();
     }
 
-    public async countIndividualScreeningEvents(params: factory.event.individualScreeningEvent.ISearchConditions): Promise<number> {
+    public async countIndividualScreeningEvents(params: factory.event.screeningEvent.ISearchConditions): Promise<number> {
         const conditions = MongoRepository.CREATE_INDIVIDUAL_SCREENING_EVENT_MONGO_CONDITIONS(params);
 
         return this.eventModel.countDocuments(
@@ -162,8 +160,8 @@ export class MongoRepository {
      * 個々の上映イベントを検索する
      */
     public async searchIndividualScreeningEvents(
-        params: factory.event.individualScreeningEvent.ISearchConditions
-    ): Promise<factory.event.individualScreeningEvent.IEvent[]> {
+        params: factory.event.screeningEvent.ISearchConditions
+    ): Promise<factory.event.screeningEvent.IEvent[]> {
         const conditions = MongoRepository.CREATE_INDIVIDUAL_SCREENING_EVENT_MONGO_CONDITIONS(params);
         const query = this.eventModel.find(
             { $and: conditions },
@@ -188,18 +186,15 @@ export class MongoRepository {
     }
 
     /**
-     * identifierで上映イベントを取得する
+     * 上映イベントを取得する
      */
-    public async findIndividualScreeningEventByIdentifier(identifier: string): Promise<factory.event.individualScreeningEvent.IEvent> {
+    public async findIndividualScreeningEventByIdentifier(id: string): Promise<factory.event.screeningEvent.IEvent> {
         const doc = await this.eventModel.findOne(
             {
                 typeOf: {
                     $in: [factory.eventType.IndividualScreeningEvent, factory.eventType.ScreeningEvent]
                 },
-                identifier: {
-                    $exists: true,
-                    $eq: identifier
-                }
+                _id: id
             },
             {
                 __v: 0,

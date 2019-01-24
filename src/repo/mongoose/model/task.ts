@@ -1,5 +1,6 @@
-import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
+
+import * as factory from '../../../factory';
 
 const safe = { j: true, w: 'majority', wtimeout: 10000 };
 
@@ -147,6 +148,7 @@ export default mongoose.model('Task', schema).on(
     /* istanbul ignore next */
     (error) => {
         if (error !== undefined) {
+            // tslint:disable-next-line:no-console
             console.error(error);
         }
     }

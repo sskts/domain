@@ -1,10 +1,7 @@
 // tslint:disable:no-implicit-dependencies
-
 /**
  * organization repository test
- * @ignore
  */
-
 import { } from 'mocha';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';

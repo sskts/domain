@@ -1,11 +1,12 @@
 /**
  * ムビチケ承認アクションサービス
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
+
+import * as factory from '../../../../../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:mvtk');
 

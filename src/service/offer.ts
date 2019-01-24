@@ -1,38 +1,37 @@
 /**
  * 販売情報サービス
  */
-
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
 import { MongoRepository as EventRepository } from '../repo/event';
-import { MongoRepository as IndividualScreeningEventItemAvailabilityRepository } from '../repo/itemAvailability/individualScreeningEvent';
+import { MongoRepository as ScreeningEventItemAvailabilityRepo } from '../repo/itemAvailability/screeningEvent';
+
+import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:service:offer');
 
 export type IEventOperation<T> = (repos: {
     event: EventRepository;
-    itemAvailability?: IndividualScreeningEventItemAvailabilityRepository;
+    itemAvailability?: ScreeningEventItemAvailabilityRepo;
 }) => Promise<T>;
 
 /**
  * 個々の上映イベントを検索する
  * 在庫状況リポジトリーをパラメーターとして渡せば、在庫状況も取得してくれる
- * @export
  */
 export function searchIndividualScreeningEvents(
-    searchConditions: factory.event.individualScreeningEvent.ISearchConditions
-): IEventOperation<factory.event.individualScreeningEvent.IEventWithOffer[]> {
+    searchConditions: factory.event.screeningEvent.ISearchConditions
+): IEventOperation<factory.event.screeningEvent.IEventWithOffer[]> {
     return async (repos: {
         event: EventRepository;
-        itemAvailability?: IndividualScreeningEventItemAvailabilityRepository;
+        itemAvailability?: ScreeningEventItemAvailabilityRepo;
     }) => {
-        debug('finding individualScreeningEvents...', searchConditions);
+        debug('finding screeningEvents...', searchConditions);
         const events = await repos.event.searchIndividualScreeningEvents(searchConditions);
 
         return Promise.all(events.map(async (event) => {
             // 空席状況情報を追加
-            const offer: factory.event.individualScreeningEvent.IOffer = {
+            const offer: factory.event.screeningEvent.IOffer = {
                 typeOf: 'Offer',
                 availability: null,
                 url: ''
@@ -50,19 +49,18 @@ export function searchIndividualScreeningEvents(
 
 /**
  * 個々の上映イベントを識別子で取得する
- * @export
  */
 export function findIndividualScreeningEventByIdentifier(
     identifier: string
-): IEventOperation<factory.event.individualScreeningEvent.IEventWithOffer> {
+): IEventOperation<factory.event.screeningEvent.IEventWithOffer> {
     return async (repos: {
         event: EventRepository;
-        itemAvailability?: IndividualScreeningEventItemAvailabilityRepository;
+        itemAvailability?: ScreeningEventItemAvailabilityRepo;
     }) => {
         const event = await repos.event.findIndividualScreeningEventByIdentifier(identifier);
 
         // add item availability info
-        const offer: factory.event.individualScreeningEvent.IOffer = {
+        const offer: factory.event.screeningEvent.IOffer = {
             typeOf: 'Offer',
             availability: null,
             url: ''

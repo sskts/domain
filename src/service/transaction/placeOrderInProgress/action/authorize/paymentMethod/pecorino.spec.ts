@@ -1,7 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * Pecorino決済承認アクションテスト
- * @ignore
  */
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';

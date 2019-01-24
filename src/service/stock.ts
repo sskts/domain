@@ -2,10 +2,11 @@
  * 在庫管理(在庫数調整)サービス
  */
 import * as COA from '@motionpicture/coa-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
+
+import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:service:stock');
 
@@ -13,8 +14,6 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 
 /**
  * 資産承認解除(COA座席予約)
- * @export
- * @param transactionId 取引ID
  */
 export function cancelSeatReservationAuth(transactionId: string) {
     return async (repos: { action: ActionRepo }) => {

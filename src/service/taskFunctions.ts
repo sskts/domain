@@ -2,7 +2,6 @@
  * タスクファンクションサービス
  * タスク名ごとに、実行するファンクションをひとつずつ定義しています
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
@@ -28,6 +27,8 @@ import * as OrderService from '../service/order';
 import * as PaymentService from '../service/payment';
 import * as ProgramMembershipService from '../service/programMembership';
 import * as StockService from '../service/stock';
+
+import * as factory from '../factory';
 
 export type IOperation<T> = (settings: {
     /**

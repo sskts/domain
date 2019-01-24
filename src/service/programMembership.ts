@@ -2,7 +2,6 @@
  * 会員プログラムサービス
  */
 import * as GMO from '@motionpicture/gmo-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as createDebug from 'debug';
 import * as moment from 'moment-timezone';
@@ -22,6 +21,7 @@ import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 import { handlePecorinoError } from '../errorHandler';
+import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:service:programMembership');
 

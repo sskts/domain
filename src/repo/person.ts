@@ -1,7 +1,8 @@
-import * as factory from '@motionpicture/sskts-factory';
 import * as AWS from 'aws-sdk';
 // import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
+
+import * as factory from '../factory';
 
 // const debug = createDebug('sskts-domain:repository:person');
 export type AttributeListType = AWS.CognitoIdentityServiceProvider.AttributeListType;

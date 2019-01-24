@@ -1,9 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * ownershipInfo repository test
- * @ignore
  */
-import * as factory from '@motionpicture/sskts-factory';
 import { } from 'mocha';
 import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
@@ -12,6 +10,8 @@ import * as sinon from 'sinon';
 require('sinon-mongoose');
 
 import { MongoRepository as OwnershipInfoRepo } from './ownershipInfo';
+
+import * as factory from '../factory';
 
 let sandbox: sinon.SinonSandbox;
 

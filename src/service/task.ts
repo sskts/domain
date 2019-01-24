@@ -1,7 +1,6 @@
 /**
  * タスクサービス
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
@@ -13,6 +12,8 @@ import { MongoRepository as TaskRepo } from '../repo/task';
 
 import * as NotificationService from './notification';
 import * as TaskFunctionsService from './taskFunctions';
+
+import * as factory from '../factory';
 
 export type TaskOperation<T> = (repos: { task: TaskRepo }) => Promise<T>;
 export type IExecuteOperation<T> = (settings: {
@@ -97,8 +98,6 @@ export function executeByName(taskName: factory.taskName): IExecuteOperation<voi
 /**
  * execute a task
  * タスクを実行する
- * @param task タスクオブジェクト
- * @export
  */
 export function execute(task: factory.task.ITask<factory.taskName>): IExecuteOperation<void> {
     debug('executing a task...', task);
@@ -135,8 +134,6 @@ export function execute(task: factory.task.ITask<factory.taskName>): IExecuteOpe
 /**
  * retry tasks in running status
  * 実行中ステータスのままになっているタスクをリトライする
- * @param intervalInMinutes 最終トライ日時から何分経過したタスクをリトライするか
- * @export
  */
 export function retry(intervalInMinutes: number): TaskOperation<void> {
     return async (repos: { task: TaskRepo }) => {
@@ -147,8 +144,6 @@ export function retry(intervalInMinutes: number): TaskOperation<void> {
 /**
  * abort a task
  * トライ可能回数が0に達したタスクを実行中止する
- * @param intervalInMinutes 最終トライ日時から何分経過したタスクを中止するか
- * @export
  */
 export function abort(intervalInMinutes: number): TaskOperation<void> {
     return async (repos: { task: TaskRepo }) => {

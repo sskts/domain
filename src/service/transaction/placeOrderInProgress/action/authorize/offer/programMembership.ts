@@ -1,13 +1,14 @@
 /**
  * 会員プログラムオファー承認アクションサービス
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
 import { MongoRepository as OrganizationRepo } from '../../../../../../repo/organization';
 import { MongoRepository as ProgramMembershipRepo } from '../../../../../../repo/programMembership';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
+
+import * as factory from '../../../../../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:offer:programMembership');
 

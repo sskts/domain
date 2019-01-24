@@ -1,13 +1,14 @@
 /**
  * Pecorino決済サービス
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as TaskRepo } from '../../repo/task';
+
+import * as factory from '../../factory';
 
 const debug = createDebug('sskts-domain:service:payment:pecorino');
 

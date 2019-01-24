@@ -1,7 +1,6 @@
 /**
  * 注文返品取引サービス
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as pug from 'pug';
 
@@ -10,6 +9,8 @@ import { MongoRepository as OrderRepo } from '../../repo/order';
 import { MongoRepository as OrganizationRepo } from '../../repo/organization';
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
+
+import * as factory from '../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:returnOrder');
 

@@ -1,11 +1,12 @@
 /**
  * 注文取引サービス
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
+
+import * as factory from '../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrder');
 

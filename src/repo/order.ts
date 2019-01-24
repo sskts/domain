@@ -1,6 +1,8 @@
-import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
+
 import OrderModel from './mongoose/model/order';
+
+import * as factory from '../factory';
 
 /**
  * 注文リポジトリー

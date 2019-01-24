@@ -1,7 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * ムビチケ承認サービステスト
- * @ignore
  */
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';

@@ -1,7 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * discount service test
- * @ignore
  */
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';

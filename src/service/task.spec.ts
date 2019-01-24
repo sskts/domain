@@ -1,10 +1,7 @@
 // tslint:disable:no-implicit-dependencies
-
 /**
  * task service test
- * @ignore
  */
-
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../index';

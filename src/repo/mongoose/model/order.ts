@@ -361,6 +361,7 @@ export default mongoose.model('Order', schema)
         /* istanbul ignore next */
         (error) => {
             if (error !== undefined) {
+                // tslint:disable-next-line:no-console
                 console.error(error);
             }
         }

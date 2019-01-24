@@ -1,7 +1,6 @@
 /**
  * 進行中注文取引サービス
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as waiter from '@waiter/domain';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
@@ -20,6 +19,8 @@ import * as ProgramMembershipAuthorizeActionService from './placeOrderInProgress
 import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/seatReservation';
 import * as CreditCardAuthorizeActionService from './placeOrderInProgress/action/authorize/paymentMethod/creditCard';
 import * as PecorinoAuthorizeActionService from './placeOrderInProgress/action/authorize/paymentMethod/pecorino';
+
+import * as factory from '../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress');
 
@@ -167,7 +168,6 @@ function validatePassport(passport: waiter.factory.passport.IPassport, sellerIde
 
 /**
  * 取引に対するアクション
- * @export
  */
 export namespace action {
     /**
@@ -525,7 +525,7 @@ export function createOrderFromTransaction(params: {
         }
 
         const updTmpReserveSeatResult = seatReservationAuthorizeAction.result.updTmpReserveSeatResult;
-        const individualScreeningEvent = seatReservationAuthorizeAction.object.individualScreeningEvent;
+        const screeningEvent = seatReservationAuthorizeAction.object.individualScreeningEvent;
 
         // 確認番号はCOAの仮予約番号と同じ
         confirmationNumber = seatReservationAuthorizeAction.result.updTmpReserveSeatResult.tmpReserveNum;
@@ -541,15 +541,15 @@ export function createOrderFromTransaction(params: {
 
             // チケットトークン(QRコード文字列)を作成
             const ticketToken = [
-                individualScreeningEvent.coaInfo.theaterCode,
-                individualScreeningEvent.coaInfo.dateJouei,
+                screeningEvent.coaInfo.theaterCode,
+                screeningEvent.coaInfo.dateJouei,
                 // tslint:disable-next-line:no-magic-numbers
                 (`00000000${updTmpReserveSeatResult.tmpReserveNum}`).slice(-8),
                 // tslint:disable-next-line:no-magic-numbers
                 (`000${index + 1}`).slice(-3)
             ].join('');
 
-            const eventReservation: factory.reservation.event.IEventReservation<factory.event.individualScreeningEvent.IEvent> = {
+            const eventReservation: factory.reservation.event.IEventReservation<factory.event.screeningEvent.IEvent> = {
                 typeOf: factory.reservationType.EventReservation,
                 id: `${updTmpReserveSeatResult.tmpReserveNum}-${index.toString()}`,
                 checkedIn: false,
@@ -559,7 +559,7 @@ export function createOrderFromTransaction(params: {
                 numSeats: 1,
                 price: requestedOffer.price,
                 priceCurrency: requestedOffer.priceCurrency,
-                reservationFor: individualScreeningEvent,
+                reservationFor: screeningEvent,
                 reservationNumber: `${updTmpReserveSeatResult.tmpReserveNum}`,
                 reservationStatus: factory.reservationStatusType.ReservationConfirmed,
                 reservedTicket: {
@@ -567,8 +567,8 @@ export function createOrderFromTransaction(params: {
                     coaTicketInfo: requestedOffer.ticketInfo,
                     dateIssued: params.orderDate,
                     issuedBy: {
-                        typeOf: individualScreeningEvent.superEvent.organizer.typeOf,
-                        name: individualScreeningEvent.superEvent.organizer.name.ja
+                        typeOf: screeningEvent.superEvent.organizer.typeOf,
+                        name: screeningEvent.superEvent.organizer.name.ja
                     },
                     totalPrice: requestedOffer.price,
                     priceCurrency: requestedOffer.priceCurrency,
@@ -608,7 +608,7 @@ export function createOrderFromTransaction(params: {
                 priceCurrency: factory.priceCurrency.JPY,
                 seller: {
                     typeOf: params.seller.typeOf,
-                    name: individualScreeningEvent.superEvent.location.name.ja
+                    name: screeningEvent.superEvent.location.name.ja
                 }
             };
         }));
@@ -731,9 +731,7 @@ export async function createEmailMessageFromTransaction(params: {
     return new Promise<factory.creativeWork.message.email.ICreativeWork>((resolve, reject) => {
         const seller = params.transaction.seller;
         if (params.order.acceptedOffers[0].itemOffered.typeOf === factory.reservationType.EventReservation) {
-            const event =
-                // tslint:disable-next-line:max-line-length
-                (<factory.reservation.event.IEventReservation<factory.event.individualScreeningEvent.IEvent>>params.order.acceptedOffers[0].itemOffered).reservationFor;
+            const event = params.order.acceptedOffers[0].itemOffered.reservationFor;
 
             pug.renderFile(
                 `${__dirname}/../../../emails/sendOrder/text.pug`,

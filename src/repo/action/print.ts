@@ -1,7 +1,8 @@
-import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
 
 import ActionModel from '../mongoose/model/action';
+
+import * as factory from '../../factory';
 
 /**
  * print action repository

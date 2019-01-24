@@ -1,7 +1,6 @@
 /**
  * Pecorino賞金承認アクションサービス
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
@@ -10,6 +9,8 @@ import { handlePecorinoError } from '../../../../../../errorHandler';
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
 import { MongoRepository as OwnershipInfoRepo } from '../../../../../../repo/ownershipInfo';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
+
+import * as factory from '../../../../../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:award:pecorino');
 

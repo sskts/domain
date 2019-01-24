@@ -2,12 +2,13 @@
  * クレジットカード決済承認アクションサービス
  */
 import * as GMO from '@motionpicture/gmo-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
 import { MongoRepository as OrganizationRepo } from '../../../../../../repo/organization';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
+
+import * as factory from '../../../../../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:creditCard');
 

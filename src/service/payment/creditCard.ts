@@ -2,12 +2,13 @@
  * クレジットカード決済サービス
  */
 import * as GMO from '@motionpicture/gmo-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
+
+import * as factory from '../../factory';
 
 const debug = createDebug('sskts-domain:service:payment:creditCard');
 

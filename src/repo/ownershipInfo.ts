@@ -1,6 +1,8 @@
-import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
+
 import ownershipInfoModel from './mongoose/model/ownershipInfo';
+
+import * as factory from '../factory';
 
 export type IOwnershipInfo<T extends factory.ownershipInfo.IGoodType> = factory.ownershipInfo.IOwnershipInfo<T>;
 

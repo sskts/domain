@@ -1,7 +1,9 @@
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { Connection } from 'mongoose';
+
 import placeModel from './mongoose/model/place';
+
+import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:repository:place');
 

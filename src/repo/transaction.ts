@@ -1,18 +1,13 @@
-import * as factory from '@motionpicture/sskts-factory';
 import * as moment from 'moment';
 import { Connection } from 'mongoose';
 
 import TransactionModel from './mongoose/model/transaction';
 
-export type ITransactionAttributes<T> =
-    T extends factory.transactionType.PlaceOrder ? factory.transaction.placeOrder.IAttributes :
-    T extends factory.transactionType.ReturnOrder ? factory.transaction.returnOrder.IAttributes :
-    never;
+import * as factory from '../factory';
 
-export type ITransaction<T> =
-    T extends factory.transactionType.PlaceOrder ? factory.transaction.placeOrder.ITransaction :
-    T extends factory.transactionType.ReturnOrder ? factory.transaction.returnOrder.ITransaction :
-    never;
+export type ITransactionAttributes<T extends factory.transactionType> = factory.transaction.IAttributes<T>;
+export type ITransaction<T extends factory.transactionType> = factory.transaction.ITransaction<T>;
+
 /**
  * 取引リポジトリー
  */

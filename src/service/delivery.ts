@@ -7,7 +7,6 @@
  * などが配送処理として考えられます。
  */
 import * as COA from '@motionpicture/coa-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
@@ -19,6 +18,8 @@ import { MongoRepository as OrderRepo } from '../repo/order';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
+
+import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:service:delivery');
 

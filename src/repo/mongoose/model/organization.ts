@@ -51,7 +51,6 @@ const xmlEndpointSchema = new mongoose.Schema(
 
 /**
  * 組織スキーマ
- * @ignore
  */
 const schema = new mongoose.Schema(
     {
@@ -106,6 +105,7 @@ export default mongoose.model('Organization', schema).on(
     /* istanbul ignore next */
     (error) => {
         if (error !== undefined) {
+            // tslint:disable-next-line:no-console
             console.error(error);
         }
     }

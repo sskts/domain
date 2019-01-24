@@ -8,10 +8,6 @@ const debug = createDebug('sskts-domain:service:util');
 
 /**
  * ファイルをアップロードする
- * @export
- * @param params.fileName ファイル
- * @param params.text ファイルコンテンツ
- * @param [params.expiryDate] ファイルコンテンツ
  */
 export function uploadFile(
     params: {

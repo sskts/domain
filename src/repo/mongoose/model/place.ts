@@ -42,7 +42,6 @@ const coaInfoSchema = new mongoose.Schema(
 
 /**
  * 場所スキーマ
- * @ignore
  */
 const schema = new mongoose.Schema(
     {
@@ -93,6 +92,7 @@ export default mongoose.model('Place', schema).on(
     /* istanbul ignore next */
     (error) => {
         if (error !== undefined) {
+            // tslint:disable-next-line:no-console
             console.error(error);
         }
     }

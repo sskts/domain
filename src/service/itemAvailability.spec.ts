@@ -1,9 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * itemAvailability service test
- * @ignore
  */
-
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../index';
@@ -36,7 +34,7 @@ describe('updatePerformanceStockStatuses()', () => {
         };
         const availability = 100;
 
-        const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(<any>{});
+        const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(<any>{});
         const numberOfEvents = countFreeSeatResult.listDate.reduce(
             (a, b) => a + b.listPerformance.length,
             0
@@ -44,7 +42,7 @@ describe('updatePerformanceStockStatuses()', () => {
 
         sandbox.mock(sskts.COA.services.reserve).expects('countFreeSeat').once()
             .withArgs(sinon.match({ theaterCode: theaterCode })).resolves(countFreeSeatResult);
-        sandbox.mock(sskts.factory.event.individualScreeningEvent).expects('createItemAvailability').exactly(numberOfEvents)
+        sandbox.mock(sskts.factory.event.screeningEvent).expects('createItemAvailability').exactly(numberOfEvents)
             .returns(availability);
         sandbox.mock(itemAvailabilityRepo).expects('updateOne').exactly(numberOfEvents)
             .resolves();

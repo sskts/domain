@@ -1,8 +1,9 @@
-import * as factory from '@motionpicture/sskts-factory';
 import * as moment from 'moment';
 import { Connection } from 'mongoose';
 
 import taskModel from './mongoose/model/task';
+
+import * as factory from '../factory';
 
 /**
  * タスク実行時のソート条件

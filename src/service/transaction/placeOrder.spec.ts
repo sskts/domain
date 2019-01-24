@@ -1,9 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * placeOrder transaction service test
- * @ignore
  */
-
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 // tslint:disable-next-line:no-require-imports no-var-requires

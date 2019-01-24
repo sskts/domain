@@ -2,13 +2,14 @@
  * 座席予約承認アクションサービス
  */
 import * as COA from '@motionpicture/coa-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { INTERNAL_SERVER_ERROR } from 'http-status';
 
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
 import { MongoRepository as EventRepo } from '../../../../../../repo/event';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
+
+import * as factory from '../../../../../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:seatReservation');
 
@@ -34,7 +35,7 @@ export type IActionAndTransactionOperation<T> = (repos: {
 // tslint:disable-next-line:max-func-body-length
 async function validateOffers(
     isMember: boolean,
-    individualScreeningEvent: factory.event.individualScreeningEvent.IEvent,
+    individualScreeningEvent: factory.event.screeningEvent.IEvent,
     offers: factory.offer.seatReservation.IOffer[]
 ): Promise<factory.offer.seatReservation.IOfferWithDetails[]> {
     debug('individualScreeningEvent:', individualScreeningEvent);

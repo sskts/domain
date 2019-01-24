@@ -1,9 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * 注文返品取引サービステスト
- * @ignore
  */
-
 import * as assert from 'power-assert';
 import * as pug from 'pug';
 import * as sinon from 'sinon';
