@@ -30,6 +30,10 @@ export type IExecuteOperation<T> = (settings: {
      */
     redisClient?: redis.RedisClient;
     /**
+     * PecorinoAPIエンドポイント
+     */
+    pecorinoEndpoint?: string;
+    /**
      * PecorinoAPI認証クライアント
      */
     pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;

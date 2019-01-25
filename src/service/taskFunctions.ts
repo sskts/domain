@@ -40,6 +40,10 @@ export type IOperation<T> = (settings: {
      */
     redisClient?: redis.RedisClient;
     /**
+     * PecorinoAPIエンドポイント
+     */
+    pecorinoEndpoint?: string;
+    /**
      * PecorinoAPI認証クライアント
      */
     pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -88,11 +92,17 @@ export function cancelMvtk(data: factory.task.cancelMvtk.IData): IOperation<void
     };
 }
 
-export function cancelPecorino(data: factory.task.cancelPecorino.IData): IOperation<void> {
+export function cancelAccount(data: factory.task.IData<factory.taskName.CancelAccount>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
+        pecorinoEndpoint?: string;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (settings.pecorinoEndpoint === undefined) {
+            throw new Error('settings.pecorinoEndpoint undefined.');
+        }
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
         if (settings.pecorinoAuthClient === undefined) {
@@ -100,9 +110,18 @@ export function cancelPecorino(data: factory.task.cancelPecorino.IData): IOperat
         }
 
         const actionRepo = new ActionRepo(settings.connection);
-        await PaymentService.pecorino.cancelPecorinoAuth(data.transactionId)({
+        const withdrawService = new pecorinoapi.service.transaction.Withdraw({
+            endpoint: settings.pecorinoEndpoint,
+            auth: settings.pecorinoAuthClient
+        });
+        const transferService = new pecorinoapi.service.transaction.Transfer({
+            endpoint: settings.pecorinoEndpoint,
+            auth: settings.pecorinoAuthClient
+        });
+        await PaymentService.account.cancelAccountAuth(data)({
             action: actionRepo,
-            pecorinoAuthClient: settings.pecorinoAuthClient
+            withdrawService: withdrawService,
+            transferService: transferService
         });
     };
 }
@@ -153,11 +172,17 @@ export function useMvtk(data: factory.task.useMvtk.IData): IOperation<void> {
     };
 }
 
-export function payPecorino(data: factory.task.payPecorino.IData): IOperation<void> {
+export function payAccount(data: factory.task.IData<factory.taskName.PayAccount>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
+        pecorinoEndpoint?: string;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (settings.pecorinoEndpoint === undefined) {
+            throw new Error('settings.pecorinoEndpoint undefined.');
+        }
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
         if (settings.pecorinoAuthClient === undefined) {
@@ -165,9 +190,18 @@ export function payPecorino(data: factory.task.payPecorino.IData): IOperation<vo
         }
 
         const actionRepo = new ActionRepo(settings.connection);
-        await PaymentService.pecorino.payPecorino(data)({
+        const withdrawService = new pecorinoapi.service.transaction.Withdraw({
+            endpoint: settings.pecorinoEndpoint,
+            auth: settings.pecorinoAuthClient
+        });
+        const transferService = new pecorinoapi.service.transaction.Transfer({
+            endpoint: settings.pecorinoEndpoint,
+            auth: settings.pecorinoAuthClient
+        });
+        await PaymentService.account.payAccount(data)({
             action: actionRepo,
-            pecorinoAuthClient: settings.pecorinoAuthClient
+            withdrawService: withdrawService,
+            transferService: transferService
         });
     };
 }
@@ -206,11 +240,17 @@ export function refundCreditCard(data: factory.task.refundCreditCard.IData): IOp
     };
 }
 
-export function refundPecorino(data: factory.task.refundPecorino.IData): IOperation<void> {
+export function refundAccount(data: factory.task.IData<factory.taskName.RefundAccount>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
+        pecorinoEndpoint?: string;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (settings.pecorinoEndpoint === undefined) {
+            throw new Error('settings.pecorinoEndpoint undefined.');
+        }
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
         if (settings.pecorinoAuthClient === undefined) {
@@ -219,10 +259,19 @@ export function refundPecorino(data: factory.task.refundPecorino.IData): IOperat
 
         const actionRepo = new ActionRepo(settings.connection);
         const taskRepo = new TaskRepo(settings.connection);
-        await PaymentService.pecorino.refundPecorino(data)({
+        const depositService = new pecorinoapi.service.transaction.Deposit({
+            endpoint: settings.pecorinoEndpoint,
+            auth: settings.pecorinoAuthClient
+        });
+        const transferService = new pecorinoapi.service.transaction.Transfer({
+            endpoint: settings.pecorinoEndpoint,
+            auth: settings.pecorinoAuthClient
+        });
+        await PaymentService.account.refundAccount(data)({
             action: actionRepo,
             task: taskRepo,
-            pecorinoAuthClient: settings.pecorinoAuthClient
+            depositService: depositService,
+            transferService: transferService
         });
     };
 }

@@ -210,7 +210,7 @@ export function confirm(
         };
         // クレジットカード返金アクション
         const refundCreditCardActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.CreditCard>[]>payActions)
-            .filter((a) => a.object.paymentMethod.typeOf === factory.paymentMethodType.CreditCard)
+            .filter((a) => a.object[0].paymentMethod.typeOf === factory.paymentMethodType.CreditCard)
             .map((a): factory.action.trade.refund.IAttributes<factory.paymentMethodType.CreditCard> => {
                 return {
                     typeOf: <factory.actionType.RefundAction>factory.actionType.RefundAction,
@@ -224,9 +224,9 @@ export function confirm(
                 };
             });
         // Pecorino返金アクション
-        const refundPecorinoActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.Pecorino>[]>payActions)
-            .filter((a) => a.object.paymentMethod.typeOf === factory.paymentMethodType.Pecorino)
-            .map((a): factory.action.trade.refund.IAttributes<factory.paymentMethodType.Pecorino> => {
+        const refundAccountActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.Account>[]>payActions)
+            .filter((a) => a.object[0].paymentMethod.typeOf === factory.paymentMethodType.Account)
+            .map((a): factory.action.trade.refund.IAttributes<factory.paymentMethodType.Account> => {
                 return {
                     typeOf: <factory.actionType.RefundAction>factory.actionType.RefundAction,
                     object: a,
@@ -259,7 +259,7 @@ export function confirm(
             recipient: placeOrderTransaction.seller,
             potentialActions: {
                 refundCreditCard: refundCreditCardActions[0],
-                refundPecorino: refundPecorinoActions,
+                refundAccount: refundAccountActions,
                 returnPecorinoAward: returnPecorinoAwardActions
             }
         };

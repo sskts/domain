@@ -29,7 +29,7 @@ describe('Pecorino決済を承認する', () => {
                 shopId: 'shopId',
                 shopPass: 'shopPass'
             },
-            paymentAccepted: [{ paymentMethodType: sskts.factory.paymentMethodType.Pecorino }]
+            paymentAccepted: [{ paymentMethodType: sskts.factory.paymentMethodType.Account, accountType: sskts.factory.accountType.Point }]
         };
         const transaction = {
             id: 'transactionId',
@@ -42,7 +42,7 @@ describe('Pecorino決済を承認する', () => {
             agent: agent,
             recipient: seller
         };
-        const pecorinoTransaction = { typeOf: sskts.factory.pecorino.transactionType.Transfer, id: 'transactionId' };
+        const pendingTransaction = { typeOf: sskts.factory.pecorino.transactionType.Transfer, id: 'transactionId' };
         const programMemberships = [{
             typeOfGood: {
                 award: [sskts.factory.programMembership.Award.PecorinoPayment]
@@ -58,13 +58,20 @@ describe('Pecorino決済を承認する', () => {
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
         sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
         sandbox.mock(actionRepo).expects('complete').once().resolves(action);
-        sandbox.mock(transferService).expects('start').once().resolves(pecorinoTransaction);
+        sandbox.mock(transferService).expects('start').once().resolves(pendingTransaction);
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.create({
-            transactionId: transaction.id,
-            amount: amount,
-            fromAccountNumber: 'fromAccountNumber',
-            notes: 'notes'
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
+            transaction: transaction,
+            agent: transaction.agent,
+            object: {
+                typeOf: sskts.factory.paymentMethodType.Account,
+                amount: amount,
+                fromAccount: {
+                    accountType: sskts.factory.accountType.Point,
+                    accountNumber: 'fromAccountNumber'
+                },
+                notes: 'notes'
+            }
         })({
             action: actionRepo,
             organization: organizationRepo,
@@ -106,11 +113,18 @@ describe('Pecorino決済を承認する', () => {
         sandbox.mock(ownershipInfoRepo).expects('search').never();
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.create({
-            transactionId: transaction.id,
-            amount: amount,
-            fromAccountNumber: 'fromAccountNumber',
-            notes: 'notes'
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
+            transaction: transaction,
+            agent: transaction.agent,
+            object: {
+                typeOf: sskts.factory.paymentMethodType.Account,
+                amount: amount,
+                fromAccount: {
+                    accountType: sskts.factory.accountType.Point,
+                    accountNumber: 'fromAccountNumber'
+                },
+                notes: 'notes'
+            }
         })({
             action: actionRepo,
             organization: organizationRepo,
@@ -155,11 +169,18 @@ describe('Pecorino決済を承認する', () => {
         sandbox.mock(ownershipInfoRepo).expects('search').once().resolves(programMemberships);
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.create({
-            transactionId: transaction.id,
-            amount: amount,
-            fromAccountNumber: 'fromAccountNumber',
-            notes: 'notes'
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
+            transaction: transaction,
+            agent: transaction.agent,
+            object: {
+                typeOf: sskts.factory.paymentMethodType.Account,
+                amount: amount,
+                fromAccount: {
+                    accountType: sskts.factory.accountType.Point,
+                    accountNumber: 'fromAccountNumber'
+                },
+                notes: 'notes'
+            }
         })({
             action: actionRepo,
             organization: organizationRepo,
@@ -183,7 +204,7 @@ describe('Pecorino決済を承認する', () => {
                 shopId: 'shopId',
                 shopPass: 'shopPass'
             },
-            paymentAccepted: [{ paymentMethodType: sskts.factory.paymentMethodType.Pecorino }]
+            paymentAccepted: [{ paymentMethodType: sskts.factory.paymentMethodType.Account, accountType: sskts.factory.accountType.Point }]
         };
         const transaction = {
             id: 'transactionId',
@@ -216,11 +237,18 @@ describe('Pecorino決済を承認する', () => {
         sandbox.mock(actionRepo).expects('giveUp').once().resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.create({
-            transactionId: transaction.id,
-            amount: amount,
-            fromAccountNumber: 'fromAccountNumber',
-            notes: 'notes'
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
+            transaction: transaction,
+            agent: transaction.agent,
+            object: {
+                typeOf: sskts.factory.paymentMethodType.Account,
+                amount: amount,
+                fromAccount: {
+                    accountType: sskts.factory.accountType.Point,
+                    accountNumber: 'fromAccountNumber'
+                },
+                notes: 'notes'
+            }
         })({
             action: actionRepo,
             organization: organizationRepo,
@@ -247,7 +275,7 @@ describe('Pecorino決済承認を取り消す', () => {
         };
         const action = {
             result: {
-                pecorinoTransaction: {}
+                pendingTransaction: {}
             }
         };
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
@@ -257,10 +285,10 @@ describe('Pecorino決済承認を取り消す', () => {
         sandbox.mock(actionRepo).expects('cancel').once().resolves(action);
         sandbox.mock(transferService).expects('cancel').once().resolves();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.cancel({
-            agentId: transaction.agent.id,
-            transactionId: transaction.id,
-            actionId: 'actionId'
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.cancel({
+            id: 'actionId',
+            agent: transaction.agent,
+            transaction: transaction
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -279,7 +307,7 @@ describe('Pecorino決済承認を取り消す', () => {
         };
         const action = {
             result: {
-                pecorinoTransaction: {}
+                pendingTransaction: {}
             }
         };
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
@@ -289,10 +317,10 @@ describe('Pecorino決済承認を取り消す', () => {
         sandbox.mock(actionRepo).expects('cancel').once().resolves(action);
         sandbox.mock(transferService).expects('cancel').once().resolves();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.cancel({
-            agentId: transaction.agent.id,
-            transactionId: transaction.id,
-            actionId: 'actionId'
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.cancel({
+            id: 'actionId',
+            agent: transaction.agent,
+            transaction: transaction
         })({
             action: actionRepo,
             transaction: transactionRepo,

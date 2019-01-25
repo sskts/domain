@@ -125,8 +125,8 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 };
-                const cancelPecorinoTaskAttributes: factory.task.cancelPecorino.IAttributes = {
-                    name: factory.taskName.CancelPecorino,
+                const cancelAccountTaskAttributes: factory.task.IAttributes<factory.taskName.CancelAccount> = {
+                    name: factory.taskName.CancelAccount,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -153,7 +153,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     cancelSeatReservationTaskAttributes,
                     cancelCreditCardTaskAttributes,
                     cancelMvtkTaskAttributes,
-                    cancelPecorinoTaskAttributes,
+                    cancelAccountTaskAttributes,
                     cancelPecorinoAwardTaskAttributes
                 );
 

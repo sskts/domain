@@ -43,7 +43,7 @@ before(() => {
                 typeOf: sskts.factory.actionType.OrderAction,
                 potentialActions: {
                     payCreditCard: { typeOf: sskts.factory.actionType.PayAction },
-                    payPecorino: { typeOf: sskts.factory.actionType.PayAction },
+                    payAccount: { typeOf: sskts.factory.actionType.PayAction },
                     useMvtk: { typeOf: sskts.factory.actionType.UseAction }
                 }
             }

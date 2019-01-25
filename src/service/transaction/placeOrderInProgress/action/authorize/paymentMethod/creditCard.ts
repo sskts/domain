@@ -139,8 +139,9 @@ export function create(params: {
         debug('ending authorize action...');
 
         const result: factory.action.authorize.paymentMethod.creditCard.IResult = {
-            accountId: '',
             price: params.object.amount,
+            accountId: '',
+            amount: params.object.amount,
             paymentMethod: factory.paymentMethodType.CreditCard,
             paymentStatus: factory.paymentStatusType.PaymentDue,
             paymentMethodId: params.object.orderId,
