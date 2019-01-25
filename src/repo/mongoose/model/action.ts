@@ -12,7 +12,6 @@ const agentSchema = new mongoose.Schema(
         strict: false
     }
 );
-
 const recipientSchema = new mongoose.Schema(
     {},
     {
@@ -21,16 +20,6 @@ const recipientSchema = new mongoose.Schema(
         strict: false
     }
 );
-
-const resultSchema = new mongoose.Schema(
-    {},
-    {
-        id: false,
-        _id: false,
-        strict: false
-    }
-);
-
 const errorSchema = new mongoose.Schema(
     {},
     {
@@ -39,16 +28,8 @@ const errorSchema = new mongoose.Schema(
         strict: false
     }
 );
-
-const objectSchema = new mongoose.Schema(
-    {},
-    {
-        id: false,
-        _id: false,
-        strict: false
-    }
-);
-
+const objectSchema = mongoose.SchemaTypes.Mixed;
+const resultSchema = mongoose.SchemaTypes.Mixed;
 const purposeSchema = new mongoose.Schema(
     {},
     {
@@ -57,7 +38,6 @@ const purposeSchema = new mongoose.Schema(
         strict: false
     }
 );
-
 const potentialActionsSchema = new mongoose.Schema(
     {},
     {
@@ -66,8 +46,15 @@ const potentialActionsSchema = new mongoose.Schema(
         strict: false
     }
 );
-
 const locationSchema = new mongoose.Schema(
+    {},
+    {
+        id: false,
+        _id: false,
+        strict: false
+    }
+);
+const instrumentSchema = new mongoose.Schema(
     {},
     {
         id: false,
@@ -94,7 +81,8 @@ const schema = new mongoose.Schema(
         potentialActions: potentialActionsSchema,
         amount: Number,
         fromLocation: locationSchema,
-        toLocation: locationSchema
+        toLocation: locationSchema,
+        instrument: instrumentSchema
     },
     {
         collection: 'actions',
@@ -107,8 +95,18 @@ const schema = new mongoose.Schema(
             createdAt: 'createdAt',
             updatedAt: 'updatedAt'
         },
-        toJSON: { getters: true },
-        toObject: { getters: true }
+        toJSON: {
+            getters: true,
+            virtuals: true,
+            minimize: false,
+            versionKey: false
+        },
+        toObject: {
+            getters: true,
+            virtuals: true,
+            minimize: false,
+            versionKey: false
+        }
     }
 );
 
