@@ -913,6 +913,7 @@ export async function createPotentialActionsFromTransaction(params: {
         payCreditCardAction = {
             typeOf: factory.actionType.PayAction,
             object: [{
+                typeOf: <'PaymentMethod'>'PaymentMethod',
                 paymentMethod: <factory.order.IPaymentMethod<factory.paymentMethodType.CreditCard>>creditCardPayment,
                 price: params.order.price,
                 priceCurrency: params.order.priceCurrency
@@ -935,6 +936,7 @@ export async function createPotentialActionsFromTransaction(params: {
             return {
                 typeOf: <factory.actionType.PayAction>factory.actionType.PayAction,
                 object: [{
+                    typeOf: <'PaymentMethod'>'PaymentMethod',
                     paymentMethod: {
                         name: result.name,
                         typeOf: <factory.paymentMethodType.Account>result.paymentMethod,

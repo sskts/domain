@@ -98,7 +98,7 @@ export function payCreditCard(transactionId: string) {
             // アクション完了
             debug('ending action...');
             const actionResult: factory.action.trade.pay.IResult<factory.paymentMethodType.CreditCard> = {
-                creditCardSales: alterTranResult
+                creditCardSales: [alterTranResult]
             };
             await repos.action.complete(payActionAttributes.typeOf, action.id, actionResult);
         }
