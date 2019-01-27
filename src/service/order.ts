@@ -28,7 +28,10 @@ export function createFromTransaction(transactionId: string) {
         transaction: TransactionRepo;
         task: TaskRepo;
     }) => {
-        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
+        const transaction = await repos.transaction.findById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: transactionId
+        });
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
@@ -194,7 +197,10 @@ export function cancelReservations(returnOrderTransactionId: string) {
         transactionRepo: TransactionRepo,
         taskRepo: TaskRepo
     ) => {
-        const transaction = await transactionRepo.findById(factory.transactionType.ReturnOrder, returnOrderTransactionId);
+        const transaction = await transactionRepo.findById({
+            typeOf: factory.transactionType.ReturnOrder,
+            id: returnOrderTransactionId
+        });
         const potentialActions = transaction.potentialActions;
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;

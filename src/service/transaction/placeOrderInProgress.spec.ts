@@ -404,8 +404,7 @@ describe('setCustomerContact()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').once()
-            .withArgs(transaction.id).resolves();
+        sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').once().resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
             agentId: agent.id,
@@ -666,7 +665,7 @@ describe('confirm()', () => {
                 ...seatReservationAuthorizeActions
                 // ...pecorinoAuthorizeActions
             ]);
-        sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();
+        sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: agent.id,
@@ -848,8 +847,8 @@ describe('confirm()', () => {
         sandbox.mock(orderNumberRepo).expects('publish').once().resolves('orderNumber');
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
-            .withExactArgs(transaction.id).resolves([...mvtkAuthorizeActions, ...seatReservationAuthorizeActions]);
-        sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();
+            .resolves([...mvtkAuthorizeActions, ...seatReservationAuthorizeActions]);
+        sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: agent.id,
@@ -1060,6 +1059,7 @@ describe('createEmailMessageFromTransaction()', () => {
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(10, 'minutes').toDate(),
+            startDate: moment().toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
             seller: <any>seller,
@@ -1296,6 +1296,7 @@ describe('createOrderFromTransaction()', () => {
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(10, 'minutes').toDate(),
+            startDate: moment().toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
             seller: <any>seller,
@@ -1498,6 +1499,7 @@ describe('createOrderFromTransaction()', () => {
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(10, 'minutes').toDate(),
+            startDate: moment().toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
             seller: <any>seller,
@@ -1659,6 +1661,7 @@ describe('createOrderFromTransaction()', () => {
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(10, 'minutes').toDate(),
+            startDate: moment().toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
             seller: <any>seller,
@@ -1733,6 +1736,7 @@ describe('createOrderFromTransaction()', () => {
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(10, 'minutes').toDate(),
+            startDate: moment().toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
             seller: <any>seller,

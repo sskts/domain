@@ -23,14 +23,17 @@ export function exportTasks(status: factory.transactionStatusType) {
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.startExportTasks(factory.transactionType.PlaceOrder, status);
+        const transaction = await repos.transaction.startExportTasks({
+            typeOf: factory.transactionType.PlaceOrder,
+            status: status
+        });
         if (transaction === null) {
             return;
         }
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
         await exportTasksById(transaction.id)(repos);
-        await repos.transaction.setTasksExportedById(transaction.id);
+        await repos.transaction.setTasksExportedById(transaction);
     };
 }
 
@@ -43,7 +46,10 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
+        const transaction = await repos.transaction.findById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: transactionId
+        });
 
         const taskAttributes: factory.task.IAttributes<factory.taskName>[] = [];
 
@@ -184,7 +190,10 @@ export function sendEmail(
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
+        const transaction = await repos.transaction.findById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: transactionId
+        });
         if (transaction.status !== factory.transactionStatusType.Confirmed) {
             throw new factory.errors.Forbidden('Transaction not confirmed.');
         }

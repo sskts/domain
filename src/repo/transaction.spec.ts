@@ -8,6 +8,7 @@ import * as sinon from 'sinon';
 // tslint:disable-next-line:no-require-imports no-var-requires
 require('sinon-mongoose');
 import * as sskts from '../index';
+import { factory } from '@pecorino/api-nodejs-client';
 
 let sandbox: sinon.SinonSandbox;
 
@@ -29,7 +30,7 @@ describe('start()', () => {
             .expects('create').once()
             .resolves(new repository.transactionModel());
 
-        const result = await repository.start(transaction.typeOf, <any>transaction);
+        const result = await repository.start(<any>transaction);
 
         assert.equal(typeof result, 'object');
         sandbox.verify();
@@ -52,7 +53,7 @@ describe('setCustomerContactOnPlaceOrderInProgress()', () => {
             .chain('exec')
             .resolves(new repository.transactionModel());
 
-        const result = await repository.setCustomerContactOnPlaceOrderInProgress(transactionId, <any>contact);
+        const result = await repository.setCustomerContactOnPlaceOrderInProgress({ id: transactionId, contact: <any>contact });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -67,7 +68,8 @@ describe('setCustomerContactOnPlaceOrderInProgress()', () => {
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(null);
 
-        const result = await repository.setCustomerContactOnPlaceOrderInProgress(transactionId, <any>contact).catch((err) => err);
+        const result = await repository.setCustomerContactOnPlaceOrderInProgress({ id: transactionId, contact: <any>contact })
+            .catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
@@ -90,9 +92,9 @@ describe('confirmPlaceOrder()', () => {
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(doc);
 
-        const result = await repository.confirmPlaceOrder(
-            transactionId, authorizeActions, <any>transactionResult, <any>potentialActions
-        );
+        const result = await repository.confirmPlaceOrder({
+            id: transactionId, authorizeActions, result: <any>transactionResult, potentialActions: <any>potentialActions
+        });
         assert.equal(typeof result, 'object');
         sandbox.verify();
     });
@@ -107,10 +109,12 @@ describe('confirmPlaceOrder()', () => {
 
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(null);
+        sandbox.mock(repository.transactionModel).expects('findOne').once()
+            .chain('exec').resolves(null);
 
-        const result = await repository.confirmPlaceOrder(
-            transactionId, authorizeActions, <any>transactionResult, <any>potentialActions
-        )
+        const result = await repository.confirmPlaceOrder({
+            id: transactionId, authorizeActions, result: <any>transactionResult, potentialActions: <any>potentialActions
+        })
             .catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -132,7 +136,7 @@ describe('reexportTasks()', () => {
             .chain('exec')
             .resolves(new repository.transactionModel());
 
-        const result = await repository.reexportTasks(intervalInMinutes);
+        const result = await repository.reexportTasks({ intervalInMinutes });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -154,7 +158,7 @@ describe('setTasksExportedById()', () => {
             .chain('exec')
             .resolves(new repository.transactionModel());
 
-        const result = await repository.setTasksExportedById(transactionId);
+        const result = await repository.setTasksExportedById({ id: transactionId });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -197,9 +201,9 @@ describe('confirmReturnOrder()', () => {
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(doc);
 
-        const result = await repository.confirmReturnOrder(
-            transactionId, <any>transactionResult, <any>potentialActions
-        );
+        const result = await repository.confirmReturnOrder({
+            id: transactionId, result: <any>transactionResult, potentialActions: <any>potentialActions
+        });
         assert.equal(typeof result, 'object');
         sandbox.verify();
     });
@@ -213,10 +217,12 @@ describe('confirmReturnOrder()', () => {
 
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(null);
+        sandbox.mock(repository.transactionModel).expects('findOne').once()
+            .chain('exec').resolves(null);
 
-        const result = await repository.confirmReturnOrder(
-            transactionId, <any>transactionResult, <any>potentialActions
-        ).catch((err) => err);
+        const result = await repository.confirmReturnOrder({
+            id: transactionId, result: <any>transactionResult, potentialActions: <any>potentialActions
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
@@ -239,7 +245,7 @@ describe('startExportTasks()', () => {
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(new repository.transactionModel());
 
-        const result = await repository.startExportTasks(transaction.typeOf, transaction.status);
+        const result = await repository.startExportTasks(transaction);
 
         assert.equal(typeof result, 'object');
         sandbox.verify();
@@ -257,7 +263,7 @@ describe('startExportTasks()', () => {
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(null);
 
-        const result = await repository.startExportTasks(transaction.typeOf, transaction.status);
+        const result = await repository.startExportTasks(transaction);
 
         assert.equal(result, null);
         sandbox.verify();
@@ -274,7 +280,10 @@ describe('IDで取引を取得する', () => {
         sandbox.mock(transactionRepo.transactionModel).expects('findOne').once()
             .chain('exec').resolves(new transactionRepo.transactionModel());
 
-        const result = await transactionRepo.findById(sskts.factory.transactionType.PlaceOrder, 'transactionId');
+        const result = await transactionRepo.findById({
+            typeOf: sskts.factory.transactionType.PlaceOrder,
+            id: 'transactionId'
+        });
         assert.equal(typeof result, 'object');
         sandbox.verify();
     });
@@ -283,7 +292,10 @@ describe('IDで取引を取得する', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('findOne').once().chain('exec').resolves(null);
 
-        const result = await transactionRepo.findById(sskts.factory.transactionType.PlaceOrder, 'transactionId').catch((err) => err);
+        const result = await transactionRepo.findById({
+            typeOf: sskts.factory.transactionType.PlaceOrder,
+            id: 'transactionId'
+        }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
@@ -299,7 +311,10 @@ describe('IDで進行中取引を取得する', () => {
         sandbox.mock(transactionRepo.transactionModel).expects('findOne').once()
             .chain('exec').resolves(new transactionRepo.transactionModel());
 
-        const result = await transactionRepo.findInProgressById(sskts.factory.transactionType.PlaceOrder, 'transactionId');
+        const result = await transactionRepo.findInProgressById({
+            typeOf: sskts.factory.transactionType.PlaceOrder,
+            id: 'transactionId'
+        });
         assert.equal(typeof result, 'object');
         sandbox.verify();
     });
@@ -308,7 +323,10 @@ describe('IDで進行中取引を取得する', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('findOne').once().chain('exec').resolves(null);
 
-        const result = await transactionRepo.findInProgressById(sskts.factory.transactionType.PlaceOrder, 'transactionId')
+        const result = await transactionRepo.findInProgressById({
+            typeOf: sskts.factory.transactionType.PlaceOrder,
+            id: 'transactionId'
+        })
             .catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -325,7 +343,10 @@ describe('取引を中止する', () => {
         sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(new transactionRepo.transactionModel());
 
-        const result = await transactionRepo.cancel(sskts.factory.transactionType.PlaceOrder, 'transactionId');
+        const result = await transactionRepo.cancel({
+            typeOf: sskts.factory.transactionType.PlaceOrder,
+            id: 'transactionId'
+        });
         assert.equal(typeof result, 'object');
         sandbox.verify();
     });
@@ -333,8 +354,12 @@ describe('取引を中止する', () => {
     it('進行中取引が存在しなければNotFoundエラー', async () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').once().chain('exec').resolves(null);
+        sandbox.mock(transactionRepo.transactionModel).expects('findOne').once().chain('exec').resolves(null);
 
-        const result = await transactionRepo.cancel(sskts.factory.transactionType.PlaceOrder, 'transactionId')
+        const result = await transactionRepo.cancel({
+            typeOf: sskts.factory.transactionType.PlaceOrder,
+            id: 'transactionId'
+        })
             .catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -396,7 +421,10 @@ describe('取引を検索する', () => {
                 order: {
                     orderNumbers: []
                 }
-            }
+            },
+            tasksExportationStatuses: [factory.transactionTasksExportationStatus.Exported],
+            limit: 10,
+            sort: { startDate: factory.sortType.Ascending }
         };
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('find').once()
@@ -412,7 +440,7 @@ describe('取引を検索する', () => {
             typeOf: sskts.factory.transactionType.ReturnOrder,
             object: {
                 order: {
-                    orderNumbers: [],
+                    orderNumbers: []
                 }
             }
         };

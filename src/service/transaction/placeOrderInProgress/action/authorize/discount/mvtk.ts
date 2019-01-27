@@ -29,7 +29,10 @@ export function create(params: {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: params.transactionId
+        });
 
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -146,7 +149,9 @@ export function create(params: {
 
         // アクションを完了
         const result: factory.action.authorize.discount.mvtk.IResult = {
-            price: params.authorizeObject.price
+            // ムビチケ承認は決済方法承認に移行予定
+            // 実質、このdiscountは意味がない
+            price: 0
         };
 
         return repos.action.complete(factory.actionType.AuthorizeAction, action.id, result);
@@ -162,7 +167,10 @@ export function cancel(params: {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: params.transactionId
+        });
 
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');

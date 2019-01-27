@@ -50,7 +50,10 @@ export function create<T extends factory.accountType>(params: {
          */
         transferTransactionService?: pecorinoapi.service.transaction.Transfer;
     }) => {
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transaction.id);
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: params.transaction.id
+        });
 
         // 他者口座による決済も可能にするためにコメントアウト
         // 基本的に、自分の口座のオーソリを他者に与えても得しないので、
@@ -180,7 +183,6 @@ export function create<T extends factory.accountType>(params: {
         // アクションを完了
         debug('ending authorize action...');
         const actionResult: factory.action.authorize.paymentMethod.account.IResult<T> = {
-            price: 0, // JPYとして0円
             accountId: params.object.fromAccount.accountNumber,
             amount: params.object.amount,
             paymentMethod: factory.paymentMethodType.Account,
@@ -225,7 +227,10 @@ export function cancel(params: {
         transferTransactionService?: pecorinoapi.service.transaction.Transfer;
     }) => {
         debug('canceling pecorino authorize action...');
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transaction.id);
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: params.transaction.id
+        });
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */

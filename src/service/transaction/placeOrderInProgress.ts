@@ -106,9 +106,8 @@ export function start(params: IStartParams):
         }
 
         // 取引ファクトリーで新しい進行中取引オブジェクトを作成
-        const transactionAttributes: factory.transaction.placeOrder.IAttributes = {
+        const transactionAttributes: factory.transaction.placeOrder.IStartParams = {
             typeOf: factory.transactionType.PlaceOrder,
-            status: factory.transactionStatusType.InProgress,
             agent: params.customer,
             seller: seller,
             object: {
@@ -117,14 +116,12 @@ export function start(params: IStartParams):
                 clientUser: params.clientUser,
                 authorizeActions: []
             },
-            expires: params.expires,
-            startDate: new Date(),
-            tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
+            expires: params.expires
         };
 
         let transaction: factory.transaction.placeOrder.ITransaction;
         try {
-            transaction = await repos.transaction.start(factory.transactionType.PlaceOrder, transactionAttributes);
+            transaction = await repos.transaction.start<factory.transactionType.PlaceOrder>(transactionAttributes);
         } catch (error) {
             if (error.name === 'MongoError') {
                 // 許可証を重複使用しようとすると、MongoDBでE11000 duplicate key errorが発生する
@@ -243,13 +240,19 @@ export function setCustomerContact(params: {
             telephone: formattedTelephone
         };
 
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: params.transactionId
+        });
 
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        await repos.transaction.setCustomerContactOnPlaceOrderInProgress(params.transactionId, customerContact);
+        await repos.transaction.setCustomerContactOnPlaceOrderInProgress({
+            id: params.transactionId,
+            contact: customerContact
+        });
 
         return customerContact;
     };
@@ -282,7 +285,10 @@ export function confirm(params: {
         organization: OrganizationRepo;
         orderNumber: OrderNumberRepo;
     }) => {
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: params.transactionId
+        });
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
@@ -342,12 +348,12 @@ export function confirm(params: {
 
         // ステータス変更
         debug('updating transaction...');
-        await repos.transaction.confirmPlaceOrder(
-            params.transactionId,
-            authorizeActions,
-            result,
-            potentialActions
-        );
+        await repos.transaction.confirmPlaceOrder({
+            id: params.transactionId,
+            authorizeActions: authorizeActions,
+            result: result,
+            potentialActions: potentialActions
+        });
 
         return order;
     };

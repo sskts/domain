@@ -33,7 +33,10 @@ export function create(params: {
         programMembership: ProgramMembershipRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: params.transactionId
+        });
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
@@ -119,7 +122,10 @@ export function cancel(params: {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: params.transactionId
+        });
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */

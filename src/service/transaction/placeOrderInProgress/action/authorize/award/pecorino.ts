@@ -54,7 +54,10 @@ export function create(params: {
          */
         depositTransactionService: pecorinoapi.service.transaction.Deposit;
     }) => {
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: params.transactionId
+        });
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if: please write tests */
@@ -172,7 +175,10 @@ export function cancel(params: {
         depositTransactionService: pecorinoapi.service.transaction.Deposit;
     }) => {
         debug('canceling pecorino authorize action...');
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: params.transactionId
+        });
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */

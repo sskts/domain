@@ -738,7 +738,7 @@ describe('service.transaction.returnOrder.exportTasks()', () => {
         sandbox.mock(transactionRepo).expects('startExportTasks').once().resolves(returnOrderTransaction);
         sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
         sandbox.mock(taskRepo).expects('save').once().resolves(task);
-        sandbox.mock(transactionRepo).expects('setTasksExportedById').once().withArgs(returnOrderTransaction.id).resolves();
+        sandbox.mock(transactionRepo).expects('setTasksExportedById').once().resolves();
 
         const result = await sskts.service.transaction.returnOrder.exportTasks(status)({
             task: taskRepo,
@@ -767,7 +767,7 @@ describe('service.transaction.returnOrder.exportTasks()', () => {
         sandbox.mock(transactionRepo).expects('startExportTasks').once().resolves(returnOrderTransaction);
         sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
         sandbox.mock(taskRepo).expects('save').never();
-        sandbox.mock(transactionRepo).expects('setTasksExportedById').once().withArgs(returnOrderTransaction.id).resolves();
+        sandbox.mock(transactionRepo).expects('setTasksExportedById').once().resolves();
 
         const result = await sskts.service.transaction.returnOrder.exportTasks(status)({
             task: taskRepo,

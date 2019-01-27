@@ -21,7 +21,10 @@ export function payCreditCard(transactionId: string) {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
+        const transaction = await repos.transaction.findById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: transactionId
+        });
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
@@ -150,7 +153,10 @@ export function refundCreditCard(transactionId: string) {
         transaction: TransactionRepo;
         task: TaskRepo;
     }) => {
-        const transaction = await repos.transaction.findById(factory.transactionType.ReturnOrder, transactionId);
+        const transaction = await repos.transaction.findById({
+            typeOf: factory.transactionType.ReturnOrder,
+            id: transactionId
+        });
         const potentialActions = transaction.potentialActions;
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;

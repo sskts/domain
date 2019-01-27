@@ -28,10 +28,13 @@ export function useMvtk(transactionId: string) {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
+        const transaction = await repos.transaction.findById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: transactionId
+        });
         const transactionResult = transaction.result;
         // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
+        /* istanbul ignore next */
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
         }
