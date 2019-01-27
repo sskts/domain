@@ -164,6 +164,9 @@ describe('注文を検索する', () => {
                 membershipNumbers: ['customerMembershipNumber'],
                 ids: ['id'],
                 identifiers: [{ name: '', value: '' }],
+                familyName: '',
+                givenName: '',
+                email: '',
                 telephone: ''
             },
             orderNumbers: ['orderNumber'],
@@ -171,7 +174,6 @@ describe('注文を検索する', () => {
             orderDateFrom: new Date(),
             orderDateThrough: new Date(),
             confirmationNumbers: ['confirmationNumber'],
-            reservedEventIdentifiers: ['identifier'],
             acceptedOffers: {
                 itemOffered: {
                     ids: ['id'],
