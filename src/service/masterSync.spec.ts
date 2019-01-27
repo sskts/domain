@@ -38,11 +38,11 @@ describe('importMovies()', () => {
                 titleBranchNum: 'titleBranchNum'
             }
         ];
-        const movie = {};
+        // const movie = {};
         const creativeWorkRepo = new CreativeWorkRepo(mongoose.connection);
 
         sandbox.mock(COA.services.master).expects('title').once().resolves(filmsFromCOA);
-        sandbox.mock(factory.creativeWork.movie).expects('createFromCOA').exactly(filmsFromCOA.length).returns(movie);
+        // sandbox.mock(factory.creativeWork.movie).expects('createFromCOA').exactly(filmsFromCOA.length).returns(movie);
         sandbox.mock(creativeWorkRepo).expects('saveMovie').exactly(filmsFromCOA.length).resolves();
 
         const result = await MasterSyncService.importMovies('123')({ creativeWork: creativeWorkRepo });

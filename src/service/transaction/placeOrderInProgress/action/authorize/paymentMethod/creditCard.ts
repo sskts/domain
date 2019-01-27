@@ -139,7 +139,7 @@ export function create(params: {
         debug('ending authorize action...');
 
         const result: factory.action.authorize.paymentMethod.creditCard.IResult = {
-            price: params.object.amount,
+            // price: params.object.amount,
             accountId: '',
             amount: params.object.amount,
             paymentMethod: factory.paymentMethodType.CreditCard,

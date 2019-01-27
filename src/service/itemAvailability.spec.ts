@@ -25,14 +25,19 @@ describe('updatePerformanceStockStatuses()', () => {
             theaterCode: theaterCode,
             listDate: [
                 {
-                    listPerformance: [{}, {}]
+                    listPerformance: [
+                        { cntReserveFree: 90, cntReserveMax: 100 },
+                        { cntReserveFree: 90, cntReserveMax: 100 }
+                    ]
                 },
                 {
-                    listPerformance: [{}, {}]
+                    listPerformance: [
+                        { cntReserveFree: 90, cntReserveMax: 100 },
+                        { cntReserveFree: 90, cntReserveMax: 100 }
+                    ]
                 }
             ]
         };
-        const availability = 100;
 
         const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(<any>{});
         const numberOfEvents = countFreeSeatResult.listDate.reduce(
@@ -42,8 +47,6 @@ describe('updatePerformanceStockStatuses()', () => {
 
         sandbox.mock(sskts.COA.services.reserve).expects('countFreeSeat').once()
             .withArgs(sinon.match({ theaterCode: theaterCode })).resolves(countFreeSeatResult);
-        sandbox.mock(sskts.factory.event.screeningEvent).expects('createItemAvailability').exactly(numberOfEvents)
-            .returns(availability);
         sandbox.mock(itemAvailabilityRepo).expects('updateOne').exactly(numberOfEvents)
             .resolves();
 

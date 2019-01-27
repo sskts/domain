@@ -545,7 +545,7 @@ describe('confirm()', () => {
                     execTranResult: {
                         orderId: 'orderId'
                     },
-                    price: 1234
+                    amount: 1234
                 },
                 endDate: moment().add(-1, 'minute').toDate(),
                 purpose: {}
@@ -732,7 +732,7 @@ describe('confirm()', () => {
                     }
                 },
                 result: {
-                    price: 1234
+                    price: 0
                 },
                 endDate: moment().add(-1, 'minute').toDate(),
                 purpose: {}
@@ -763,7 +763,7 @@ describe('confirm()', () => {
                         tmpReserveNum: 12345,
                         listTmpReserve: []
                     },
-                    price: 1234
+                    price: 0
                 },
                 endDate: moment().add(-1, 'minute').toDate(),
                 purpose: {}
@@ -925,6 +925,7 @@ describe('confirm()', () => {
                 customerContact: {}
             }
         };
+        const orderDate = moment().toDate();
         const authorizeActions = [
             {
                 id: 'actionId1',
@@ -938,7 +939,7 @@ describe('confirm()', () => {
                     updTmpReserveSeatArgs: {},
                     price: 1234
                 },
-                endDate: new Date(),
+                endDate: moment(orderDate).add(-1, 'minute').toDate(),
                 purpose: { typeOf: sskts.factory.transactionType.PlaceOrder }
             },
             {
@@ -950,9 +951,9 @@ describe('confirm()', () => {
                     offers: []
                 },
                 result: {
-                    price: 1235
+                    amount: 1
                 },
-                endDate: new Date(),
+                endDate: moment(orderDate).add(-1, 'minute').toDate(),
                 purpose: { typeOf: sskts.factory.transactionType.PlaceOrder }
             }
         ];
@@ -972,7 +973,7 @@ describe('confirm()', () => {
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: agent.id,
             transactionId: transaction.id,
-            orderDate: new Date()
+            orderDate: orderDate
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -1061,7 +1062,7 @@ describe('createEmailMessageFromTransaction()', () => {
             expires: moment().add(10, 'minutes').toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
-            seller: seller,
+            seller: <any>seller,
             object: {
                 customerContact: customerContact,
                 clientUser: <any>{ client_id: 'client_id' },
@@ -1082,7 +1083,7 @@ describe('createEmailMessageFromTransaction()', () => {
                     execTranResult: {
                         orderId: 'orderId'
                     },
-                    price: 1234
+                    amount: 1234
                 },
                 endDate: new Date(),
                 purpose: {}
@@ -1297,7 +1298,7 @@ describe('createOrderFromTransaction()', () => {
             expires: moment().add(10, 'minutes').toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
-            seller: seller,
+            seller: <any>seller,
             object: {
                 passportToken: 'passportToken',
                 passport: <any>{},
@@ -1317,7 +1318,7 @@ describe('createOrderFromTransaction()', () => {
                             execTranResult: {
                                 orderId: 'orderId'
                             },
-                            price: 234
+                            amount: 234
                         },
                         startDate: new Date(),
                         endDate: new Date(),
@@ -1499,7 +1500,7 @@ describe('createOrderFromTransaction()', () => {
             expires: moment().add(10, 'minutes').toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
-            seller: seller,
+            seller: <any>seller,
             object: {
                 passportToken: 'passportToken',
                 passport: <any>{},
@@ -1660,7 +1661,7 @@ describe('createOrderFromTransaction()', () => {
             expires: moment().add(10, 'minutes').toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
-            seller: seller,
+            seller: <any>seller,
             object: {
                 passportToken: 'passportToken',
                 passport: <any>{},
@@ -1734,7 +1735,7 @@ describe('createOrderFromTransaction()', () => {
             expires: moment().add(10, 'minutes').toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
-            seller: seller,
+            seller: <any>seller,
             object: {
                 passportToken: 'passportToken',
                 passport: <any>{},

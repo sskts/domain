@@ -26,11 +26,23 @@ export function importMovies(theaterCode: string) {
 
         // 永続化
         await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
-            const movie = factory.creativeWork.movie.createFromCOA(filmFromCOA);
+            const movie = createMovieFromCOA(filmFromCOA);
             debug('storing movie...', movie);
             await repos.creativeWork.saveMovie(movie);
             debug('movie stored.');
         }));
+    };
+}
+
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+function createMovieFromCOA(filmFromCOA: COA.services.master.ITitleResult): factory.creativeWork.movie.ICreativeWork {
+    return {
+        identifier: filmFromCOA.titleCode,
+        name: filmFromCOA.titleNameOrig,
+        duration: moment.duration(filmFromCOA.showTime, 'm').toISOString(),
+        contentRating: filmFromCOA.kbnEirin,
+        typeOf: factory.creativeWorkType.Movie
     };
 }
 

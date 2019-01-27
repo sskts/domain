@@ -235,7 +235,9 @@ async function validateOffers(
 
             const offerWithDetails: factory.offer.seatReservation.IOfferWithDetails = {
                 typeOf: 'Offer',
-                price: offer.ticketInfo.mvtkSalesPrice + availableSalesTicket.addPrice,
+                price: availableSalesTicket.addPrice,
+                // ムビチケ販売単価を発生金額に加算しつつ、ムビチケを割引として捉える場合はこちら
+                // price: offer.ticketInfo.mvtkSalesPrice + availableSalesTicket.addPrice,
                 priceCurrency: factory.priceCurrency.JPY,
                 seatNumber: offer.seatNumber,
                 seatSection: offer.seatSection,

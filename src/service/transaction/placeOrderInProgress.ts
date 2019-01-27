@@ -29,6 +29,7 @@ export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (repos:
     organization: OrganizationRepo;
     transaction: TransactionRepo;
 }) => Promise<T>;
+export type IAuthorizeAnyPaymentResult = factory.action.authorize.paymentMethod.any.IResult<factory.paymentMethodType>;
 
 /**
  * 取引開始パラメーターインターフェース
@@ -84,6 +85,12 @@ export function start(params: IStartParams):
                 });
             } catch (error) {
                 throw new factory.errors.Argument('passportToken', `Invalid token. ${error.message}`);
+            }
+
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore next */
+            if (seller.identifier === undefined) {
+                throw new factory.errors.ServiceUnavailable('Seller identifier undefined');
             }
 
             // スコープを判別
@@ -349,11 +356,9 @@ export function confirm(params: {
 /**
  * 取引が確定可能な状態かどうかをチェックする
  */
+// tslint:disable-next-line:max-func-body-length
 export function validateTransaction(transaction: factory.transaction.placeOrder.ITransaction) {
-    type IAuthorizeActionResult =
-        factory.action.authorize.paymentMethod.creditCard.IResult |
-        factory.action.authorize.paymentMethod.account.IResult<factory.accountType> |
-        factory.action.authorize.discount.mvtk.IResult |
+    type IAuthorizeActionResultBySeller =
         factory.action.authorize.offer.programMembership.IResult |
         factory.action.authorize.offer.seatReservation.IResult |
         factory.action.authorize.award.pecorino.IResult;
@@ -387,14 +392,21 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
     }
 
     // agentとsellerで、承認アクションの金額が合うかどうか
-    const priceByAgent = transaction.object.authorizeActions
-        .filter((authorizeAction) => authorizeAction.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((authorizeAction) => authorizeAction.agent.id === transaction.agent.id)
-        .reduce((a, b) => a + (<IAuthorizeActionResult>b.result).price, 0);
-    const priceBySeller = transaction.object.authorizeActions
+    let priceByAgent = 0;
+    let priceBySeller = 0;
+
+    // 現時点で購入者に金額が発生するのはクレジットカード決済のみ
+    priceByAgent += creditCardAuthorizeActions.reduce((a, b) => a + Number((<IAuthorizeAnyPaymentResult>b.result).amount), 0);
+    // priceByAgent = transaction.object.authorizeActions
+    //     .filter((authorizeAction) => authorizeAction.actionStatus === factory.actionStatusType.CompletedActionStatus)
+    //     .filter((authorizeAction) => authorizeAction.agent.id === transaction.agent.id)
+    //     .reduce((a, b) => a + (<IAuthorizeActionResult>b.result).price, 0);
+
+    // 販売者が提供するアイテムの発生金額
+    priceBySeller += transaction.object.authorizeActions
         .filter((authorizeAction) => authorizeAction.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((authorizeAction) => authorizeAction.agent.id === transaction.seller.id)
-        .reduce((a, b) => a + (<IAuthorizeActionResult>b.result).price, 0);
+        .reduce((a, b) => a + (<IAuthorizeActionResultBySeller>b.result).price, 0);
     debug('priceByAgent priceBySeller:', priceByAgent, priceBySeller);
 
     // ポイント鑑賞券によって必要なポイントがどのくらいあるか算出
@@ -430,10 +442,9 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
     // JPYオーソリ金額もPecorinoオーソリポイントも0より大きくなければ取引成立不可
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore next */
-    if (priceByAgent <= 0 && requiredPoint <= 0) {
-        throw new factory.errors.Argument('transactionId', 'Price or point must be over 0');
-    }
-
+    // if (priceByAgent <= 0 && requiredPoint <= 0) {
+    //     throw new factory.errors.Argument('transactionId', 'Price or point must be over 0');
+    // }
     if (priceByAgent !== priceBySeller) {
         throw new factory.errors.Argument('transactionId', 'Transaction cannot be confirmed because prices are not matched');
     }
