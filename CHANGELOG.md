@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 決済方法承認アクションインターフェースを強化
 - Pecorinoを利用した口座とのやりとりを実行するタスク名を再命名
 - ムビチケを決済方法として解釈し、注文における顧客の発生金額が0となるように変更
+- 注文番号で返品取引を開始できるように変更
 
 ### Deprecated
 

@@ -424,18 +424,22 @@ export class MongoRepository {
 
     /**
      * 注文番号から注文を取得する
-     * @param orderNumber 注文番号
      */
-    public async findByOrderNumber(orderNumber: string): Promise<factory.order.IOrder> {
+    public async findByOrderNumber(params: { orderNumber: string }): Promise<factory.order.IOrder> {
         const doc = await this.orderModel.findOne(
-            { orderNumber: orderNumber }
-        ).exec();
-
+            { orderNumber: params.orderNumber },
+            {
+                __v: 0,
+                createdAt: 0,
+                updatedAt: 0
+            }
+        )
+            .exec();
         if (doc === null) {
-            throw new factory.errors.NotFound('order');
+            throw new factory.errors.NotFound('Order');
         }
 
-        return <factory.order.IOrder>doc.toObject();
+        return doc.toObject();
     }
 
     public async count(params: factory.order.ISearchConditions): Promise<number> {

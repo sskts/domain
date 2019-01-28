@@ -19,7 +19,6 @@ export type IStartOperation<T> = (repos: {
     order: OrderRepo;
     transaction: TransactionRepo;
 }) => Promise<T>;
-export type ITransactionOperation<T> = (repos: { transaction: TransactionRepo }) => Promise<T>;
 export type ITaskAndTransactionOperation<T> = (repos: {
     task: TaskRepo;
     transaction: TransactionRepo;
@@ -32,93 +31,63 @@ export type IConfirmOperation<T> = (repos: {
 
 /**
  * 注文返品取引開始
- * @param params 開始パラメーター
  */
-export function start(params: {
-    /**
-     * 取引期限
-     */
-    expires: Date;
-    /**
-     * 主体者ID
-     */
-    agentId: string;
-    /**
-     * APIクライアント
-     */
-    clientUser: factory.clientUser.IClientUser;
-    /**
-     * 取引ID
-     */
-    transactionId: string;
-    /**
-     * キャンセル手数料
-     */
-    cancellationFee: number;
-    /**
-     * 強制的に返品するかどうか
-     * 管理者の判断で返品する場合、バリデーションをかけない
-     */
-    forcibly: boolean;
-    /**
-     * 返品理由
-     */
-    reason: factory.transaction.returnOrder.Reason;
-}): IStartOperation<factory.transaction.returnOrder.ITransaction> {
+export function start(
+    params: factory.transaction.returnOrder.IStartParamsWithoutDetail
+): IStartOperation<factory.transaction.returnOrder.ITransaction> {
     return async (repos: {
         action: ActionRepo;
         order: OrderRepo;
         transaction: TransactionRepo;
     }) => {
         // 返品対象の取引取得
-        const placeOrderTransaction = await repos.transaction.findById({
-            typeOf: factory.transactionType.PlaceOrder,
-            id: params.transactionId
-        });
-        if (placeOrderTransaction.status !== factory.transactionStatusType.Confirmed) {
-            throw new factory.errors.Argument('transactionId', 'Status not Confirmed.');
-        }
-
-        const placeOrderTransactionResult = placeOrderTransaction.result;
-        if (placeOrderTransactionResult === undefined) {
-            throw new factory.errors.NotFound('placeOrderTransaction.result');
-        }
+        const order = await repos.order.findByOrderNumber({ orderNumber: params.object.order.orderNumber });
 
         // 注文ステータスが配送済の場合のみ受け付け
-        const order = await repos.order.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
         if (order.orderStatus !== factory.orderStatus.OrderDelivered) {
-            throw new factory.errors.Argument('transaction', 'order status is not OrderDelivered');
+            throw new factory.errors.Argument('Order Number', `Invalid Order Status: ${order.orderStatus}`);
         }
 
-        const actionsOnOrder = await repos.action.findByOrderNumber(order.orderNumber);
-        const payActions = <factory.action.trade.pay.IAction<factory.paymentMethodType>[]>actionsOnOrder
-            .filter((a) => a.typeOf === factory.actionType.PayAction)
-            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus);
-        // もし支払アクションがなければエラー
-        if (payActions.length === 0) {
-            throw new factory.errors.NotFound('PayAction');
+        const placeOrderTransactions = await repos.transaction.search<factory.transactionType.PlaceOrder>({
+            typeOf: factory.transactionType.PlaceOrder,
+            result: {
+                order: { orderNumbers: [params.object.order.orderNumber] }
+            }
+        });
+        const placeOrderTransaction = placeOrderTransactions.shift();
+        if (placeOrderTransaction === undefined) {
+            throw new factory.errors.NotFound('Transaction');
+        }
+
+        // 決済がある場合、請求書の状態を検証
+        if (order.paymentMethods.length > 0) {
+            // const invoices = await repos.invoice.search({ referencesOrder: { orderNumbers: [order.orderNumber] } });
+            // const allPaymentCompleted = invoices.every((invoice) => invoice.paymentStatus === factory.paymentStatusType.PaymentComplete);
+            // if (!allPaymentCompleted) {
+            //     throw new factory.errors.Argument('order.orderNumber', 'Payment not completed');
+            // }
         }
 
         // 検証
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (!params.forcibly) {
-            validateRequest();
-        }
+        // if (!params.forcibly) {
+        //     validateRequest();
+        // }
 
-        const returnOrderAttributes: factory.transaction.returnOrder.IStartParams = {
+        const returnOrderAttributes: factory.transaction.IStartParams<factory.transactionType.ReturnOrder> = {
             typeOf: factory.transactionType.ReturnOrder,
             agent: {
                 typeOf: factory.personType.Person,
-                id: params.agentId,
+                id: params.agent.id,
                 url: ''
             },
             object: {
-                clientUser: params.clientUser,
+                clientUser: <any>params.object.clientUser,
                 order: order,
                 transaction: placeOrderTransaction,
-                cancellationFee: params.cancellationFee,
-                reason: params.reason
+                cancellationFee: params.object.cancellationFee,
+                reason: params.object.reason
             },
             expires: params.expires
         };
@@ -137,7 +106,7 @@ export function start(params: {
                 /* istanbul ignore else */
                 // tslint:disable-next-line:no-magic-numbers
                 if (error.code === 11000) {
-                    throw new factory.errors.AlreadyInUse('transaction', ['object.transaction'], 'Already returned.');
+                    throw new factory.errors.Argument('Order number', 'Already returned');
                 }
             }
 
@@ -152,10 +121,10 @@ export function start(params: {
  * 取引確定
  */
 // tslint:disable-next-line:max-func-body-length
-export function confirm(
-    agentId: string,
-    transactionId: string
-): IConfirmOperation<factory.transaction.returnOrder.IResult> {
+export function confirm(params: {
+    id: string;
+    agent: { id: string };
+}): IConfirmOperation<factory.transaction.returnOrder.IResult> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
@@ -164,9 +133,9 @@ export function confirm(
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.ReturnOrder,
-            id: transactionId
+            id: params.id
         });
-        if (transaction.agent.id !== agentId) {
+        if (transaction.agent.id !== params.agent.id) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
@@ -190,10 +159,6 @@ export function confirm(
         const payActions = <factory.action.trade.pay.IAction<factory.paymentMethodType>[]>actionsOnOrder
             .filter((a) => a.typeOf === factory.actionType.PayAction)
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus);
-        // もし支払アクションがなければエラー
-        if (payActions.length === 0) {
-            throw new factory.errors.NotFound('PayAction');
-        }
 
         const emailMessage = await createRefundEmail({
             transaction: placeOrderTransaction,
@@ -273,7 +238,7 @@ export function confirm(
         // ステータス変更
         debug('updating transaction...');
         await repos.transaction.confirmReturnOrder({
-            id: transactionId,
+            id: params.id,
             result: result,
             potentialActions: potentialActions
         });
