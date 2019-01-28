@@ -11,7 +11,7 @@
   "dependencies": {
     "@motionpicture/coa-service": "^6.0.1",
     "@motionpicture/gmo-service": "^4.3.0",
-    "@motionpicture/sskts-factory": "^6.0.0-alpha.7",
+    "@motionpicture/sskts-factory": "^6.0.0",
     "@pecorino/api-nodejs-client": "^1.2.0",
     "@sendgrid/mail": "^6.3.1",
     "@types/google-libphonenumber": "^7.4.17",
@@ -33,7 +33,7 @@
     "request": "^2.88.0",
     "validator": "^10.11.0"
   },
-  "description": "SSKTS Domain Library for Node.js",
+  "description": "Cinemasunshine Domain Library for Node.js",
   "devDependencies": {
     "@types/debug": "0.0.30",
     "@types/http-status": "^0.2.30",
