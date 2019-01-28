@@ -1,6 +1,8 @@
-import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
+
 import creativeWorkModel from './mongoose/model/creativeWork';
+
+import * as factory from '../factory';
 
 /**
  * 作品抽象リポジトリー

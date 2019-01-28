@@ -1,11 +1,8 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * masterSync service test
- * @ignore
  */
-
 import * as COA from '@motionpicture/coa-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
@@ -16,6 +13,8 @@ import { MongoRepository as EventRepo } from '../repo/event';
 import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { MongoRepository as PlaceRepo } from '../repo/place';
 import * as MasterSyncService from './masterSync';
+
+import * as factory from '../factory';
 
 let sandbox: sinon.SinonSandbox;
 
@@ -39,11 +38,11 @@ describe('importMovies()', () => {
                 titleBranchNum: 'titleBranchNum'
             }
         ];
-        const movie = {};
+        // const movie = {};
         const creativeWorkRepo = new CreativeWorkRepo(mongoose.connection);
 
         sandbox.mock(COA.services.master).expects('title').once().resolves(filmsFromCOA);
-        sandbox.mock(factory.creativeWork.movie).expects('createFromCOA').exactly(filmsFromCOA.length).returns(movie);
+        // sandbox.mock(factory.creativeWork.movie).expects('createFromCOA').exactly(filmsFromCOA.length).returns(movie);
         sandbox.mock(creativeWorkRepo).expects('saveMovie').exactly(filmsFromCOA.length).resolves();
 
         const result = await MasterSyncService.importMovies('123')({ creativeWork: creativeWorkRepo });
@@ -186,14 +185,14 @@ describe('importScreeningEvents()', () => {
                 screenCode: '02'
             }
         ];
+        const screeningEventSeries = {
+            identifier: 'identifier'
+        };
         const screeningEvent = {
             identifier: 'identifier'
         };
-        const individualScreeningEvent = {
-            identifier: 'identifier'
-        };
-        const individualScreeningEventsInMongo = [
-            { identifier: individualScreeningEvent.identifier },
+        const screeningEventsInMongo = [
+            { identifier: screeningEvent.identifier },
             { identifier: 'cancellingIdentifier' }
         ];
         const eventRepo = new EventRepo(mongoose.connection);
@@ -203,16 +202,15 @@ describe('importScreeningEvents()', () => {
         sandbox.mock(COA.services.master).expects('schedule').once().resolves(schedulesFromCOA);
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(COA.services.master).expects('kubunName').exactly(6).resolves([{}]);
-        sandbox.mock(eventRepo).expects('saveScreeningEvent').exactly(filmFromCOA.length);
-        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').exactly(filmFromCOA.length)
+        sandbox.mock(eventRepo).expects('save').exactly(filmFromCOA.length + schedulesFromCOA.length);
+        sandbox.mock(factory.event.screeningEventSeries).expects('createFromCOA').exactly(filmFromCOA.length)
             .returns(screeningEvent);
         sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns(movieTheater);
-        sandbox.mock(factory.event.screeningEvent).expects('createIdentifier').exactly(schedulesFromCOA.length)
-            .returns(screeningEvent.identifier);
-        sandbox.mock(factory.event.individualScreeningEvent).expects('createFromCOA').exactly(schedulesFromCOA.length)
-            .returns(individualScreeningEvent);
-        sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').exactly(schedulesFromCOA.length);
-        sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').once().resolves(individualScreeningEventsInMongo);
+        sandbox.mock(factory.event.screeningEventSeries).expects('createIdentifier').exactly(schedulesFromCOA.length)
+            .returns(screeningEventSeries.identifier);
+        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').exactly(schedulesFromCOA.length)
+            .returns(screeningEvent);
+        sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').once().resolves(screeningEventsInMongo);
         sandbox.mock(eventRepo).expects('cancelIndividualScreeningEvent').once().withExactArgs('cancellingIdentifier');
 
         const result = await MasterSyncService.importScreeningEvents(
@@ -264,14 +262,14 @@ describe('importScreeningEvents()', () => {
                 }]
             }]
         }]];
+        const screeningEventSeries = {
+            identifier: 'identifier'
+        };
         const screeningEvent = {
             identifier: 'identifier'
         };
-        const individualScreeningEvent = {
-            identifier: 'identifier'
-        };
-        const individualScreeningEventsInMongo = [
-            { identifier: individualScreeningEvent.identifier },
+        const screeningEventsInMongo = [
+            { identifier: screeningEvent.identifier },
             { identifier: 'cancellingIdentifier' }
         ];
         const eventRepo = new EventRepo(mongoose.connection);
@@ -282,16 +280,15 @@ describe('importScreeningEvents()', () => {
         sandbox.mock(COA.services.master).expects('xmlSchedule').once().resolves(xmlSchedule);
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(COA.services.master).expects('kubunName').exactly(6).resolves([{}]);
-        sandbox.mock(eventRepo).expects('saveScreeningEvent').exactly(filmFromCOA.length);
-        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').exactly(filmFromCOA.length)
-            .returns(screeningEvent);
+        sandbox.mock(eventRepo).expects('save').exactly(filmFromCOA.length + 1);
+        sandbox.mock(factory.event.screeningEventSeries).expects('createFromCOA').exactly(filmFromCOA.length)
+            .returns(screeningEventSeries);
         sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns(movieTheater);
-        sandbox.mock(factory.event.screeningEvent).expects('createIdentifier').exactly(1)
+        sandbox.mock(factory.event.screeningEventSeries).expects('createIdentifier').exactly(1)
             .returns(screeningEvent.identifier);
-        sandbox.mock(factory.event.individualScreeningEvent).expects('createFromCOA').exactly(1)
-            .returns(individualScreeningEvent);
-        sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').exactly(1);
-        sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').once().resolves(individualScreeningEventsInMongo);
+        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').exactly(1)
+            .returns(screeningEvent);
+        sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').once().resolves(screeningEventsInMongo);
         sandbox.mock(eventRepo).expects('cancelIndividualScreeningEvent').once().withExactArgs('cancellingIdentifier');
 
         const result = await MasterSyncService.importScreeningEvents(
@@ -332,14 +329,13 @@ describe('importScreeningEvents()', () => {
         sandbox.mock(COA.services.master).expects('schedule').once().resolves(schedulesFromCOA);
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(COA.services.master).expects('kubunName').exactly(6).resolves([{}]);
-        sandbox.mock(eventRepo).expects('saveScreeningEvent').exactly(filmFromCOA.length);
-        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').exactly(filmFromCOA.length)
+        sandbox.mock(eventRepo).expects('save').exactly(filmFromCOA.length);
+        sandbox.mock(factory.event.screeningEventSeries).expects('createFromCOA').exactly(filmFromCOA.length)
             .returns(screeningEvent);
         sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns(movieTheater);
-        sandbox.mock(factory.event.screeningEvent).expects('createIdentifier').exactly(schedulesFromCOA.length)
+        sandbox.mock(factory.event.screeningEventSeries).expects('createIdentifier').exactly(schedulesFromCOA.length)
             .returns(screeningEvent.identifier);
-        sandbox.mock(factory.event.individualScreeningEvent).expects('createFromCOA').never();
-        sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').never();
+        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').never();
         sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').once().resolves([]);
 
         const result = await MasterSyncService.importScreeningEvents(
@@ -385,14 +381,13 @@ describe('importScreeningEvents()', () => {
         sandbox.mock(COA.services.master).expects('schedule').once().resolves(schedulesFromCOA);
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(COA.services.master).expects('kubunName').exactly(6).resolves([{}]);
-        sandbox.mock(eventRepo).expects('saveScreeningEvent').exactly(filmFromCOA.length);
-        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').exactly(filmFromCOA.length)
+        sandbox.mock(eventRepo).expects('save').exactly(filmFromCOA.length);
+        sandbox.mock(factory.event.screeningEventSeries).expects('createFromCOA').exactly(filmFromCOA.length)
             .returns(screeningEvent);
         sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns(movieTheater);
-        sandbox.mock(factory.event.screeningEvent).expects('createIdentifier').exactly(schedulesFromCOA.length)
+        sandbox.mock(factory.event.screeningEventSeries).expects('createIdentifier').exactly(schedulesFromCOA.length)
             .returns('invalidIdentifier');
-        sandbox.mock(factory.event.individualScreeningEvent).expects('createFromCOA').never();
-        sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').never();
+        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').never();
         sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').once().resolves([]);
 
         const result = await MasterSyncService.importScreeningEvents(
@@ -438,12 +433,11 @@ describe('importScreeningEvents()', () => {
         sandbox.mock(COA.services.master).expects('schedule').once().resolves(schedulesFromCOA);
         sandbox.mock(COA.services.master).expects('xmlSchedule').once().rejects(new Error('some random error'));
         sandbox.mock(COA.services.master).expects('kubunName').never();
-        sandbox.mock(eventRepo).expects('saveScreeningEvent').never();
-        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').never();
+        sandbox.mock(eventRepo).expects('save').never();
+        sandbox.mock(factory.event.screeningEventSeries).expects('createFromCOA').never();
         sandbox.mock(placeRepo).expects('findMovieTheaterByBranchCode').once().returns(movieTheater);
-        sandbox.mock(factory.event.screeningEvent).expects('createIdentifier').never();
-        sandbox.mock(factory.event.individualScreeningEvent).expects('createFromCOA').never();
-        sandbox.mock(eventRepo).expects('saveIndividualScreeningEvent').never();
+        sandbox.mock(factory.event.screeningEventSeries).expects('createIdentifier').never();
+        sandbox.mock(factory.event.screeningEvent).expects('createFromCOA').never();
         sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').never();
 
         const result = await MasterSyncService.importScreeningEvents(

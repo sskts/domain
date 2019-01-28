@@ -1,9 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * 注文サービステスト
- * @ignore
  */
-
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../index';
@@ -33,7 +31,7 @@ describe('createFromTransaction()', () => {
                     potentialActions: {
                         sendOrder: { typeOf: sskts.factory.actionType.SendAction },
                         payCreditCard: { typeOf: sskts.factory.actionType.PayAction },
-                        payPecorino: [{ typeOf: sskts.factory.actionType.PayAction }],
+                        payAccount: [{ typeOf: sskts.factory.actionType.PayAction }],
                         useMvtk: { typeOf: sskts.factory.actionType.UseAction },
                         givePecorinoAward: [{ typeOf: sskts.factory.actionType.GiveAction }]
                     }
@@ -203,7 +201,7 @@ describe('cancelReservations()', () => {
                     object: order,
                     potentialActions: {
                         refundCreditCard: {},
-                        refundPecorino: [{}],
+                        refundAccount: [{}],
                         returnPecorinoAward: [{}]
                     }
                 }

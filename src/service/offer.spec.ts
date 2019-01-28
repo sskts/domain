@@ -1,16 +1,13 @@
 // tslint:disable:no-implicit-dependencies
-
 /**
  * 販売情報サービステスト
- * @ignore
  */
-
 import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 
 import { MongoRepository as EventRepo } from '../repo/event';
-import { MongoRepository as ScreeningEventItemAvailabilityRepo } from '../repo/itemAvailability/individualScreeningEvent';
+import { MongoRepository as ScreeningEventItemAvailabilityRepo } from '../repo/itemAvailability/screeningEvent';
 import * as OfferService from './offer';
 
 let sandbox: sinon.SinonSandbox;

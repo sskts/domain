@@ -1,11 +1,10 @@
 /**
  * 会員クレジットカードサービス
- * @namespace service.person.creditCard
  */
-
 import * as GMO from '@motionpicture/gmo-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
+
+import * as factory from '../../factory';
 
 const debug = createDebug('sskts-domain:service:person:creditCard');
 

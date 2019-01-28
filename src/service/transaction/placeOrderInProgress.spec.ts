@@ -404,8 +404,7 @@ describe('setCustomerContact()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').once()
-            .withArgs(transaction.id).resolves();
+        sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').once().resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
             agentId: agent.id,
@@ -539,13 +538,13 @@ describe('confirm()', () => {
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.agent,
                 object: {
-                    typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard
+                    typeOf: sskts.factory.paymentMethodType.CreditCard
                 },
                 result: {
                     execTranResult: {
                         orderId: 'orderId'
                     },
-                    price: 1234
+                    amount: 1234
                 },
                 endDate: moment().add(-1, 'minute').toDate(),
                 purpose: {}
@@ -666,7 +665,7 @@ describe('confirm()', () => {
                 ...seatReservationAuthorizeActions
                 // ...pecorinoAuthorizeActions
             ]);
-        sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();
+        sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: agent.id,
@@ -732,7 +731,7 @@ describe('confirm()', () => {
                     }
                 },
                 result: {
-                    price: 1234
+                    price: 0
                 },
                 endDate: moment().add(-1, 'minute').toDate(),
                 purpose: {}
@@ -763,7 +762,7 @@ describe('confirm()', () => {
                         tmpReserveNum: 12345,
                         listTmpReserve: []
                     },
-                    price: 1234
+                    price: 0
                 },
                 endDate: moment().add(-1, 'minute').toDate(),
                 purpose: {}
@@ -848,8 +847,8 @@ describe('confirm()', () => {
         sandbox.mock(orderNumberRepo).expects('publish').once().resolves('orderNumber');
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
-            .withExactArgs(transaction.id).resolves([...mvtkAuthorizeActions, ...seatReservationAuthorizeActions]);
-        sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().withArgs(transaction.id).resolves();
+            .resolves([...mvtkAuthorizeActions, ...seatReservationAuthorizeActions]);
+        sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: agent.id,
@@ -925,6 +924,7 @@ describe('confirm()', () => {
                 customerContact: {}
             }
         };
+        const orderDate = moment().toDate();
         const authorizeActions = [
             {
                 id: 'actionId1',
@@ -938,7 +938,7 @@ describe('confirm()', () => {
                     updTmpReserveSeatArgs: {},
                     price: 1234
                 },
-                endDate: new Date(),
+                endDate: moment(orderDate).add(-1, 'minute').toDate(),
                 purpose: { typeOf: sskts.factory.transactionType.PlaceOrder }
             },
             {
@@ -946,13 +946,13 @@ describe('confirm()', () => {
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.agent,
                 object: {
-                    typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard,
+                    typeOf: sskts.factory.paymentMethodType.CreditCard,
                     offers: []
                 },
                 result: {
-                    price: 1235
+                    amount: 1
                 },
-                endDate: new Date(),
+                endDate: moment(orderDate).add(-1, 'minute').toDate(),
                 purpose: { typeOf: sskts.factory.transactionType.PlaceOrder }
             }
         ];
@@ -972,7 +972,7 @@ describe('confirm()', () => {
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: agent.id,
             transactionId: transaction.id,
-            orderDate: new Date()
+            orderDate: orderDate
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -1059,9 +1059,10 @@ describe('createEmailMessageFromTransaction()', () => {
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(10, 'minutes').toDate(),
+            startDate: moment().toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
-            seller: seller,
+            seller: <any>seller,
             object: {
                 customerContact: customerContact,
                 clientUser: <any>{ client_id: 'client_id' },
@@ -1076,13 +1077,13 @@ describe('createEmailMessageFromTransaction()', () => {
                 actionStatus: 'CompletedActionStatus',
                 agent: transaction.agent,
                 object: {
-                    typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard
+                    typeOf: sskts.factory.paymentMethodType.CreditCard
                 },
                 result: {
                     execTranResult: {
                         orderId: 'orderId'
                     },
-                    price: 1234
+                    amount: 1234
                 },
                 endDate: new Date(),
                 purpose: {}
@@ -1127,6 +1128,9 @@ describe('createEmailMessageFromTransaction()', () => {
         };
         const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
             {
+                id: '',
+                checkedIn: false,
+                attended: false,
                 typeOf: sskts.factory.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
@@ -1144,7 +1148,8 @@ describe('createEmailMessageFromTransaction()', () => {
                     priceCurrency: sskts.factory.priceCurrency.JPY,
                     ticketedSeat: <any>{
                         seatNumber: 'seatNumber1'
-                    }
+                    },
+                    ticketType: <any>{}
                 },
                 underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
                 price: 234,
@@ -1157,6 +1162,9 @@ describe('createEmailMessageFromTransaction()', () => {
 
             },
             {
+                id: '',
+                checkedIn: false,
+                attended: false,
                 typeOf: sskts.factory.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
@@ -1174,7 +1182,8 @@ describe('createEmailMessageFromTransaction()', () => {
                     priceCurrency: sskts.factory.priceCurrency.JPY,
                     ticketedSeat: <any>{
                         seatNumber: 'seatNumber2'
-                    }
+                    },
+                    ticketType: <any>{}
                 },
                 underName: { typeOf: sskts.factory.personType.Person, name: <any>{} },
                 price: 1000,
@@ -1220,8 +1229,9 @@ describe('createEmailMessageFromTransaction()', () => {
             },
             paymentMethods: [{
                 name: 'クレジットカード',
-                paymentMethod: sskts.factory.paymentMethodType.CreditCard,
-                paymentMethodId: creditCardAuthorizeActions[0].result.execTranResult.orderId
+                typeOf: sskts.factory.paymentMethodType.CreditCard,
+                paymentMethodId: creditCardAuthorizeActions[0].result.execTranResult.orderId,
+                additionalProperty: []
             }],
             discounts: [],
             price: 1234,
@@ -1286,9 +1296,10 @@ describe('createOrderFromTransaction()', () => {
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(10, 'minutes').toDate(),
+            startDate: moment().toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
-            seller: seller,
+            seller: <any>seller,
             object: {
                 passportToken: 'passportToken',
                 passport: <any>{},
@@ -1302,13 +1313,13 @@ describe('createOrderFromTransaction()', () => {
                         agent: agent,
                         recipient: seller,
                         object: {
-                            typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard
+                            typeOf: sskts.factory.paymentMethodType.CreditCard
                         },
                         result: {
                             execTranResult: {
                                 orderId: 'orderId'
                             },
-                            price: 234
+                            amount: 234
                         },
                         startDate: new Date(),
                         endDate: new Date(),
@@ -1488,9 +1499,10 @@ describe('createOrderFromTransaction()', () => {
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(10, 'minutes').toDate(),
+            startDate: moment().toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
-            seller: seller,
+            seller: <any>seller,
             object: {
                 passportToken: 'passportToken',
                 passport: <any>{},
@@ -1649,9 +1661,10 @@ describe('createOrderFromTransaction()', () => {
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(10, 'minutes').toDate(),
+            startDate: moment().toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
-            seller: seller,
+            seller: <any>seller,
             object: {
                 passportToken: 'passportToken',
                 passport: <any>{},
@@ -1723,9 +1736,10 @@ describe('createOrderFromTransaction()', () => {
             status: sskts.factory.transactionStatusType.InProgress,
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(10, 'minutes').toDate(),
+            startDate: moment().toDate(),
             tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
             agent: agent,
-            seller: seller,
+            seller: <any>seller,
             object: {
                 passportToken: 'passportToken',
                 passport: <any>{},
@@ -1822,7 +1836,7 @@ describe('validateTransaction()', () => {
                         agent: agent,
                         recipient: seller,
                         object: {
-                            typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard
+                            typeOf: sskts.factory.paymentMethodType.CreditCard
                         },
                         startDate: new Date(),
                         endDate: new Date()
@@ -1834,7 +1848,7 @@ describe('validateTransaction()', () => {
                         agent: agent,
                         recipient: seller,
                         object: {
-                            typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard
+                            typeOf: sskts.factory.paymentMethodType.CreditCard
                         },
                         startDate: new Date(),
                         endDate: new Date()

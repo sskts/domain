@@ -1,6 +1,8 @@
-import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
+
 import OrderModel from './mongoose/model/order';
+
+import * as factory from '../factory';
 
 /**
  * 注文リポジトリー
@@ -41,12 +43,16 @@ export class MongoRepository {
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (params.seller !== undefined) {
-            andConditions.push({
-                'seller.typeOf': {
-                    $exists: true,
-                    $eq: params.seller.typeOf
-                }
-            });
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (params.seller.typeOf !== undefined) {
+                andConditions.push({
+                    'seller.typeOf': {
+                        $exists: true,
+                        $eq: params.seller.typeOf
+                    }
+                });
+            }
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
             if (Array.isArray(params.seller.ids)) {
@@ -61,12 +67,16 @@ export class MongoRepository {
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (params.customer !== undefined) {
-            andConditions.push({
-                'customer.typeOf': {
-                    $exists: true,
-                    $eq: params.customer.typeOf
-                }
-            });
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (params.customer.typeOf !== undefined) {
+                andConditions.push({
+                    'customer.typeOf': {
+                        $exists: true,
+                        $eq: params.customer.typeOf
+                    }
+                });
+            }
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
             if (Array.isArray(params.customer.ids)) {
@@ -94,6 +104,36 @@ export class MongoRepository {
                     'customer.memberOf.membershipNumber': {
                         $exists: true,
                         $in: params.customer.membershipNumbers
+                    }
+                });
+            }
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (params.customer.givenName !== undefined) {
+                andConditions.push({
+                    'customer.givenName': {
+                        $exists: true,
+                        $regex: new RegExp(params.customer.givenName, 'i')
+                    }
+                });
+            }
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (params.customer.familyName !== undefined) {
+                andConditions.push({
+                    'customer.familyName': {
+                        $exists: true,
+                        $regex: new RegExp(params.customer.familyName, 'i')
+                    }
+                });
+            }
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (params.customer.email !== undefined) {
+                andConditions.push({
+                    'customer.email': {
+                        $exists: true,
+                        $regex: new RegExp(params.customer.email, 'i')
                     }
                 });
             }
@@ -301,22 +341,12 @@ export class MongoRepository {
             }
         }
 
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (Array.isArray(params.reservedEventIdentifiers)) {
-            andConditions.push({
-                'acceptedOffers.itemOffered.reservationFor.identifier': {
-                    $exists: true,
-                    $in: params.reservedEventIdentifiers
-                }
-            });
-        }
-
         return andConditions;
     }
 
     /**
      * find an order by an inquiry key
+     * @deprecated Use findByLocationBranchCodeAndReservationNumber
      */
     public async findByOrderInquiryKey(orderInquiryKey: factory.order.IOrderInquiryKey) {
         const doc = await this.orderModel.findOne(
@@ -332,6 +362,36 @@ export class MongoRepository {
         }
 
         return <factory.order.IOrder>doc.toObject();
+    }
+
+    /**
+     * イベント場所と予約番号から検索する
+     */
+    public async findByLocationBranchCodeAndReservationNumber(
+        orderInquiryKey: factory.order.IOrderInquiryKey
+    ): Promise<factory.order.IOrder> {
+        const doc = await this.orderModel.findOne(
+            {
+                'acceptedOffers.itemOffered.reservationFor.superEvent.location.branchCode': {
+                    $exists: true,
+                    $eq: orderInquiryKey.theaterCode
+                },
+                'acceptedOffers.itemOffered.reservationNumber': {
+                    $exists: true,
+                    $eq: orderInquiryKey.confirmationNumber.toString()
+                },
+                'customer.telephone': {
+                    $exists: true,
+                    $eq: orderInquiryKey.telephone
+                }
+            }
+        ).exec();
+
+        if (doc === null) {
+            throw new factory.errors.NotFound('order');
+        }
+
+        return doc.toObject();
     }
 
     /**
@@ -364,18 +424,22 @@ export class MongoRepository {
 
     /**
      * 注文番号から注文を取得する
-     * @param orderNumber 注文番号
      */
-    public async findByOrderNumber(orderNumber: string): Promise<factory.order.IOrder> {
+    public async findByOrderNumber(params: { orderNumber: string }): Promise<factory.order.IOrder> {
         const doc = await this.orderModel.findOne(
-            { orderNumber: orderNumber }
-        ).exec();
-
+            { orderNumber: params.orderNumber },
+            {
+                __v: 0,
+                createdAt: 0,
+                updatedAt: 0
+            }
+        )
+            .exec();
         if (doc === null) {
-            throw new factory.errors.NotFound('order');
+            throw new factory.errors.NotFound('Order');
         }
 
-        return <factory.order.IOrder>doc.toObject();
+        return doc.toObject();
     }
 
     public async count(params: factory.order.ISearchConditions): Promise<number> {

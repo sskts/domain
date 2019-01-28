@@ -1,7 +1,6 @@
 /**
  * 注文返品取引サービス
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as pug from 'pug';
 
@@ -11,6 +10,8 @@ import { MongoRepository as OrganizationRepo } from '../../repo/organization';
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
+import * as factory from '../../factory';
+
 const debug = createDebug('sskts-domain:service:transaction:returnOrder');
 
 export type IStartOperation<T> = (repos: {
@@ -18,7 +19,6 @@ export type IStartOperation<T> = (repos: {
     order: OrderRepo;
     transaction: TransactionRepo;
 }) => Promise<T>;
-export type ITransactionOperation<T> = (repos: { transaction: TransactionRepo }) => Promise<T>;
 export type ITaskAndTransactionOperation<T> = (repos: {
     task: TaskRepo;
     transaction: TransactionRepo;
@@ -31,102 +31,70 @@ export type IConfirmOperation<T> = (repos: {
 
 /**
  * 注文返品取引開始
- * @param params 開始パラメーター
  */
-export function start(params: {
-    /**
-     * 取引期限
-     */
-    expires: Date;
-    /**
-     * 主体者ID
-     */
-    agentId: string;
-    /**
-     * APIクライアント
-     */
-    clientUser: factory.clientUser.IClientUser;
-    /**
-     * 取引ID
-     */
-    transactionId: string;
-    /**
-     * キャンセル手数料
-     */
-    cancellationFee: number;
-    /**
-     * 強制的に返品するかどうか
-     * 管理者の判断で返品する場合、バリデーションをかけない
-     */
-    forcibly: boolean;
-    /**
-     * 返品理由
-     */
-    reason: factory.transaction.returnOrder.Reason;
-}): IStartOperation<factory.transaction.returnOrder.ITransaction> {
+export function start(
+    params: factory.transaction.returnOrder.IStartParamsWithoutDetail
+): IStartOperation<factory.transaction.returnOrder.ITransaction> {
     return async (repos: {
         action: ActionRepo;
         order: OrderRepo;
         transaction: TransactionRepo;
     }) => {
-        const now = new Date();
-
         // 返品対象の取引取得
-        const placeOrderTransaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, params.transactionId);
-        if (placeOrderTransaction.status !== factory.transactionStatusType.Confirmed) {
-            throw new factory.errors.Argument('transactionId', 'Status not Confirmed.');
-        }
-
-        const placeOrderTransactionResult = placeOrderTransaction.result;
-        if (placeOrderTransactionResult === undefined) {
-            throw new factory.errors.NotFound('placeOrderTransaction.result');
-        }
+        const order = await repos.order.findByOrderNumber({ orderNumber: params.object.order.orderNumber });
 
         // 注文ステータスが配送済の場合のみ受け付け
-        const order = await repos.order.findByOrderNumber(placeOrderTransactionResult.order.orderNumber);
         if (order.orderStatus !== factory.orderStatus.OrderDelivered) {
-            throw new factory.errors.Argument('transaction', 'order status is not OrderDelivered');
+            throw new factory.errors.Argument('Order Number', `Invalid Order Status: ${order.orderStatus}`);
         }
 
-        const actionsOnOrder = await repos.action.findByOrderNumber(order.orderNumber);
-        const payActions = <factory.action.trade.pay.IAction<factory.paymentMethodType>[]>actionsOnOrder
-            .filter((a) => a.typeOf === factory.actionType.PayAction)
-            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus);
-        // もし支払アクションがなければエラー
-        if (payActions.length === 0) {
-            throw new factory.errors.NotFound('PayAction');
+        const placeOrderTransactions = await repos.transaction.search<factory.transactionType.PlaceOrder>({
+            typeOf: factory.transactionType.PlaceOrder,
+            result: {
+                order: { orderNumbers: [params.object.order.orderNumber] }
+            }
+        });
+        const placeOrderTransaction = placeOrderTransactions.shift();
+        if (placeOrderTransaction === undefined) {
+            throw new factory.errors.NotFound('Transaction');
+        }
+
+        // 決済がある場合、請求書の状態を検証
+        if (order.paymentMethods.length > 0) {
+            // const invoices = await repos.invoice.search({ referencesOrder: { orderNumbers: [order.orderNumber] } });
+            // const allPaymentCompleted = invoices.every((invoice) => invoice.paymentStatus === factory.paymentStatusType.PaymentComplete);
+            // if (!allPaymentCompleted) {
+            //     throw new factory.errors.Argument('order.orderNumber', 'Payment not completed');
+            // }
         }
 
         // 検証
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (!params.forcibly) {
-            validateRequest();
-        }
+        // if (!params.forcibly) {
+        //     validateRequest();
+        // }
 
-        const returnOrderAttributes: factory.transaction.returnOrder.IAttributes = {
+        const returnOrderAttributes: factory.transaction.IStartParams<factory.transactionType.ReturnOrder> = {
             typeOf: factory.transactionType.ReturnOrder,
-            status: factory.transactionStatusType.InProgress,
             agent: {
                 typeOf: factory.personType.Person,
-                id: params.agentId,
+                id: params.agent.id,
                 url: ''
             },
             object: {
-                clientUser: params.clientUser,
+                clientUser: <any>params.object.clientUser,
                 order: order,
                 transaction: placeOrderTransaction,
-                cancellationFee: params.cancellationFee,
-                reason: params.reason
+                cancellationFee: params.object.cancellationFee,
+                reason: params.object.reason
             },
-            expires: params.expires,
-            startDate: now,
-            tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
+            expires: params.expires
         };
 
         let returnOrderTransaction: factory.transaction.returnOrder.ITransaction;
         try {
-            returnOrderTransaction = await repos.transaction.start(factory.transactionType.ReturnOrder, returnOrderAttributes);
+            returnOrderTransaction = await repos.transaction.start<factory.transactionType.ReturnOrder>(returnOrderAttributes);
         } catch (error) {
             if (error.name === 'MongoError') {
                 // 同一取引に対して返品取引を作成しようとすると、MongoDBでE11000 duplicate key errorが発生する
@@ -138,7 +106,7 @@ export function start(params: {
                 /* istanbul ignore else */
                 // tslint:disable-next-line:no-magic-numbers
                 if (error.code === 11000) {
-                    throw new factory.errors.AlreadyInUse('transaction', ['object.transaction'], 'Already returned.');
+                    throw new factory.errors.Argument('Order number', 'Already returned');
                 }
             }
 
@@ -153,18 +121,21 @@ export function start(params: {
  * 取引確定
  */
 // tslint:disable-next-line:max-func-body-length
-export function confirm(
-    agentId: string,
-    transactionId: string
-): IConfirmOperation<factory.transaction.returnOrder.IResult> {
+export function confirm(params: {
+    id: string;
+    agent: { id: string };
+}): IConfirmOperation<factory.transaction.returnOrder.IResult> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
         organization: OrganizationRepo;
     }) => {
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.ReturnOrder, transactionId);
-        if (transaction.agent.id !== agentId) {
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.ReturnOrder,
+            id: params.id
+        });
+        if (transaction.agent.id !== params.agent.id) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
@@ -188,10 +159,6 @@ export function confirm(
         const payActions = <factory.action.trade.pay.IAction<factory.paymentMethodType>[]>actionsOnOrder
             .filter((a) => a.typeOf === factory.actionType.PayAction)
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus);
-        // もし支払アクションがなければエラー
-        if (payActions.length === 0) {
-            throw new factory.errors.NotFound('PayAction');
-        }
 
         const emailMessage = await createRefundEmail({
             transaction: placeOrderTransaction,
@@ -209,7 +176,7 @@ export function confirm(
         };
         // クレジットカード返金アクション
         const refundCreditCardActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.CreditCard>[]>payActions)
-            .filter((a) => a.object.paymentMethod.paymentMethod === factory.paymentMethodType.CreditCard)
+            .filter((a) => a.object[0].paymentMethod.typeOf === factory.paymentMethodType.CreditCard)
             .map((a): factory.action.trade.refund.IAttributes<factory.paymentMethodType.CreditCard> => {
                 return {
                     typeOf: <factory.actionType.RefundAction>factory.actionType.RefundAction,
@@ -223,9 +190,9 @@ export function confirm(
                 };
             });
         // Pecorino返金アクション
-        const refundPecorinoActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.Pecorino>[]>payActions)
-            .filter((a) => a.object.paymentMethod.paymentMethod === factory.paymentMethodType.Pecorino)
-            .map((a): factory.action.trade.refund.IAttributes<factory.paymentMethodType.Pecorino> => {
+        const refundAccountActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.Account>[]>payActions)
+            .filter((a) => a.object[0].paymentMethod.typeOf === factory.paymentMethodType.Account)
+            .map((a): factory.action.trade.refund.IAttributes<factory.paymentMethodType.Account> => {
                 return {
                     typeOf: <factory.actionType.RefundAction>factory.actionType.RefundAction,
                     object: a,
@@ -258,7 +225,7 @@ export function confirm(
             recipient: placeOrderTransaction.seller,
             potentialActions: {
                 refundCreditCard: refundCreditCardActions[0],
-                refundPecorino: refundPecorinoActions,
+                refundAccount: refundAccountActions,
                 returnPecorinoAward: returnPecorinoAwardActions
             }
         };
@@ -270,11 +237,11 @@ export function confirm(
 
         // ステータス変更
         debug('updating transaction...');
-        await repos.transaction.confirmReturnOrder(
-            transactionId,
-            result,
-            potentialActions
-        );
+        await repos.transaction.confirmReturnOrder({
+            id: params.id,
+            result: result,
+            potentialActions: potentialActions
+        });
 
         return result;
     };
@@ -364,7 +331,10 @@ export function exportTasks(status: factory.transactionStatusType) {
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.startExportTasks(factory.transactionType.ReturnOrder, status);
+        const transaction = await repos.transaction.startExportTasks({
+            typeOf: factory.transactionType.ReturnOrder,
+            status: status
+        });
         if (transaction === null) {
             return;
         }
@@ -372,7 +342,7 @@ export function exportTasks(status: factory.transactionStatusType) {
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
         await exportTasksById(transaction.id)(repos);
 
-        await repos.transaction.setTasksExportedById(transaction.id);
+        await repos.transaction.setTasksExportedById(transaction);
     };
 }
 
@@ -385,7 +355,10 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findById(factory.transactionType.ReturnOrder, transactionId);
+        const transaction = await repos.transaction.findById({
+            typeOf: factory.transactionType.ReturnOrder,
+            id: transactionId
+        });
 
         const taskAttributes: factory.task.IAttributes<factory.taskName>[] = [];
         switch (transaction.status) {

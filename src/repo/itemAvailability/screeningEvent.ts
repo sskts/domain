@@ -1,8 +1,9 @@
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as redis from 'redis';
 
-const debug = createDebug('sskts-domain:repository:itemAvailability:individualScreeningEvent');
+import * as factory from '../../factory';
+
+const debug = createDebug('sskts-domain:repository:');
 const REDIS_KEY_PREFIX = 'sskts-domain:itemAvailability:individualScreeningEvent';
 /**
  * 上映イベント在庫状況のRedisで有効期間
@@ -33,10 +34,10 @@ export class MongoRepository {
      * @param eventIdentifier 上映イベント識別子
      */
     public async findOne(screeningDay: string, eventIdentifier: string):
-        Promise<factory.event.individualScreeningEvent.IItemAvailability | null> {
+        Promise<factory.event.screeningEvent.IItemAvailability | null> {
         const key = MongoRepository.CREATE_REDIS_KEY(screeningDay);
 
-        return new Promise<factory.event.individualScreeningEvent.IItemAvailability | null>((resolve, reject) => {
+        return new Promise<factory.event.screeningEvent.IItemAvailability | null>((resolve, reject) => {
             // 上映イベント在庫状況を取得
             this.redisClient.hget(key, eventIdentifier, (err, res) => {
                 debug('hget processed.', err, res);
@@ -69,7 +70,7 @@ export class MongoRepository {
     public async updateOne(
         screeningDay: string,
         eventIdentifier: string,
-        itemAvailability: factory.event.individualScreeningEvent.IItemAvailability
+        itemAvailability: factory.event.screeningEvent.IItemAvailability
     ): Promise<void> {
         const key = MongoRepository.CREATE_REDIS_KEY(screeningDay);
 

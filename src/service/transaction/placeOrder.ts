@@ -1,11 +1,12 @@
 /**
  * 注文取引サービス
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
+
+import * as factory from '../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrder');
 
@@ -22,14 +23,17 @@ export function exportTasks(status: factory.transactionStatusType) {
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.startExportTasks(factory.transactionType.PlaceOrder, status);
+        const transaction = await repos.transaction.startExportTasks({
+            typeOf: factory.transactionType.PlaceOrder,
+            status: status
+        });
         if (transaction === null) {
             return;
         }
 
         // 失敗してもここでは戻さない(RUNNINGのまま待機)
         await exportTasksById(transaction.id)(repos);
-        await repos.transaction.setTasksExportedById(transaction.id);
+        await repos.transaction.setTasksExportedById(transaction);
     };
 }
 
@@ -42,7 +46,10 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
+        const transaction = await repos.transaction.findById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: transactionId
+        });
 
         const taskAttributes: factory.task.IAttributes<factory.taskName>[] = [];
 
@@ -124,8 +131,8 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 };
-                const cancelPecorinoTaskAttributes: factory.task.cancelPecorino.IAttributes = {
-                    name: factory.taskName.CancelPecorino,
+                const cancelAccountTaskAttributes: factory.task.IAttributes<factory.taskName.CancelAccount> = {
+                    name: factory.taskName.CancelAccount,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -152,7 +159,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     cancelSeatReservationTaskAttributes,
                     cancelCreditCardTaskAttributes,
                     cancelMvtkTaskAttributes,
-                    cancelPecorinoTaskAttributes,
+                    cancelAccountTaskAttributes,
                     cancelPecorinoAwardTaskAttributes
                 );
 
@@ -183,7 +190,10 @@ export function sendEmail(
         task: TaskRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
+        const transaction = await repos.transaction.findById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: transactionId
+        });
         if (transaction.status !== factory.transactionStatusType.Confirmed) {
             throw new factory.errors.Forbidden('Transaction not confirmed.');
         }

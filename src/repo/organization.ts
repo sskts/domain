@@ -1,14 +1,13 @@
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { Connection } from 'mongoose';
+
 import organizationModel from './mongoose/model/organization';
+
+import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:repository:organization');
 
-export type IOrganization<T> =
-    T extends factory.organizationType.Corporation ? factory.organization.corporation.IOrganization :
-    T extends factory.organizationType.MovieTheater ? factory.organization.movieTheater.IOrganization :
-    factory.organization.IOrganization;
+export type IOrganization<T extends factory.organizationType> = factory.organization.IOrganization<T>;
 
 /**
  * 組織リポジトリー

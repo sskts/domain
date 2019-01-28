@@ -1,9 +1,7 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * placeOrder transaction service test
- * @ignore
  */
-
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 // tslint:disable-next-line:no-require-imports no-var-requires
@@ -35,7 +33,7 @@ describe('exportTasks()', () => {
         sandbox.mock(transactionRepo).expects('startExportTasks').once().resolves(transaction);
         sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo).expects('save').atLeast(1).resolves(task);
-        sandbox.mock(transactionRepo).expects('setTasksExportedById').once().withArgs(transaction.id).resolves();
+        sandbox.mock(transactionRepo).expects('setTasksExportedById').once().resolves();
 
         const result = await sskts.service.transaction.placeOrder.exportTasks(
             status

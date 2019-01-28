@@ -1,19 +1,18 @@
 /**
  * マスターデータ同期サービス
- * @namespace service.masterSync
  */
-
 import * as COA from '@motionpicture/coa-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 // @ts-ignore
 import * as difference from 'lodash.difference';
 import * as moment from 'moment-timezone';
 
 import { Repository as CreativeWorkRepo } from '../repo/creativeWork';
-import { Repository as EventRepo } from '../repo/event';
+import { MongoRepository as EventRepo } from '../repo/event';
 import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { Repository as PlaceRepo } from '../repo/place';
+
+import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:service:masterSync');
 
@@ -27,11 +26,23 @@ export function importMovies(theaterCode: string) {
 
         // 永続化
         await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
-            const movie = factory.creativeWork.movie.createFromCOA(filmFromCOA);
+            const movie = createMovieFromCOA(filmFromCOA);
             debug('storing movie...', movie);
             await repos.creativeWork.saveMovie(movie);
             debug('movie stored.');
         }));
+    };
+}
+
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+function createMovieFromCOA(filmFromCOA: COA.services.master.ITitleResult): factory.creativeWork.movie.ICreativeWork {
+    return {
+        identifier: filmFromCOA.titleCode,
+        name: filmFromCOA.titleNameOrig,
+        duration: moment.duration(filmFromCOA.showTime, 'm').toISOString(),
+        contentRating: filmFromCOA.kbnEirin,
+        typeOf: factory.creativeWorkType.Movie
     };
 }
 
@@ -130,6 +141,7 @@ export function importScreeningEvents(
                     theaterCodeName: xmlEndPoint.theaterCodeName
                 });
             } catch (err) {
+                // tslint:disable-next-line:no-console
                 console.error(err);
             }
         }
@@ -164,8 +176,8 @@ export function importScreeningEvents(
             debug('kubunNames found.');
 
             // 永続化
-            const screeningEvents = await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
-                const screeningEvent = factory.event.screeningEvent.createFromCOA({
+            const screeningEventSerieses = await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
+                const screeningEventSeries = factory.event.screeningEventSeries.createFromCOA({
                     filmFromCOA: filmFromCOA,
                     movieTheater: movieTheater,
                     eirinKubuns: eirinKubuns,
@@ -173,16 +185,17 @@ export function importScreeningEvents(
                     joueihousikiKubuns: joueihousikiKubuns,
                     jimakufukikaeKubuns: jimakufukikaeKubuns
                 });
-                await repos.event.saveScreeningEvent(screeningEvent);
 
-                return screeningEvent;
+                await repos.event.save(screeningEventSeries);
+
+                return screeningEventSeries;
             }));
 
             // 上映イベントごとに永続化トライ
-            const individualScreeningEvents: factory.event.individualScreeningEvent.IEvent[] = [];
+            const screeningEvents: factory.event.screeningEvent.IEvent[] = [];
             schedulesFromCOA.forEach((scheduleFromCOA) => {
                 if (xmlEndPoint === undefined || matchWithXML(schedulesFromXML, scheduleFromCOA)) {
-                    const screeningEventIdentifier = factory.event.screeningEvent.createIdentifier({
+                    const screeningEventSeriesIdentifier = factory.event.screeningEventSeries.createIdentifier({
                         theaterCode: theaterCode,
                         titleCode: scheduleFromCOA.titleCode,
                         titleBranchNum: scheduleFromCOA.titleBranchNum
@@ -193,42 +206,45 @@ export function importScreeningEvents(
                         (place) => place.branchCode === scheduleFromCOA.screenCode
                     );
                     if (screenRoom === undefined) {
+                        // tslint:disable-next-line:no-console
                         console.error('screenRoom not found.', scheduleFromCOA.screenCode);
 
                         return;
                     }
 
-                    // 上映イベント取得
-                    const screeningEvent = screeningEvents.find((event) => event.identifier === screeningEventIdentifier);
-                    if (screeningEvent === undefined) {
-                        console.error('screeningEvent not found.', screeningEventIdentifier);
+                    // 上映イベントシリーズ取得
+                    const screeningEventSeries = screeningEventSerieses.find((e) => e.identifier === screeningEventSeriesIdentifier);
+                    if (screeningEventSeries === undefined) {
+                        // tslint:disable-next-line:no-console
+                        console.error('screeningEventSeries not found.', screeningEventSeriesIdentifier);
 
                         return;
                     }
 
                     // 永続化
-                    const individualScreeningEvent = factory.event.individualScreeningEvent.createFromCOA({
+                    const screeningEvent = factory.event.screeningEvent.createFromCOA({
                         performanceFromCOA: scheduleFromCOA,
                         screenRoom: screenRoom,
-                        screeningEvent: screeningEvent,
+                        superEvent: screeningEventSeries,
                         serviceKubuns: serviceKubuns,
                         acousticKubuns: acousticKubuns
                     });
-                    individualScreeningEvents.push(individualScreeningEvent);
+                    screeningEvents.push(screeningEvent);
                 }
             });
 
-            debug(`storing ${individualScreeningEvents.length} individualScreeningEvents...`);
-            await Promise.all(individualScreeningEvents.map(async (individualScreeningEvent) => {
+            debug(`storing ${screeningEvents.length} screeningEvents...`);
+            await Promise.all(screeningEvents.map(async (screeningEvent) => {
                 try {
-                    await repos.event.saveIndividualScreeningEvent(individualScreeningEvent);
+                    await repos.event.save(screeningEvent);
                 } catch (error) {
                     // tslint:disable-next-line:no-single-line-block-comment
                     /* istanbul ignore next */
+                    // tslint:disable-next-line:no-console
                     console.error(error);
                 }
             }));
-            debug(`${individualScreeningEvents.length} individualScreeningEvents stored.`);
+            debug(`${screeningEvents.length} screeningEvents stored.`);
 
             // COAから削除されたイベントをキャンセル済ステータスへ変更
             const identifiers = await repos.event.searchIndividualScreeningEvents({
@@ -236,7 +252,7 @@ export function importScreeningEvents(
                 startFrom: targetImportFrom.toDate(),
                 startThrough: targetImportThrough.toDate()
             }).then((events) => events.map((e) => e.identifier));
-            const identifiersShouldBe = individualScreeningEvents.map((e) => e.identifier);
+            const identifiersShouldBe = screeningEvents.map((e) => e.identifier);
             const cancelledIdentifiers = difference(identifiers, identifiersShouldBe);
             debug(`cancelling ${cancelledIdentifiers.length} events...`);
             await Promise.all(cancelledIdentifiers.map(async (identifier) => {
@@ -245,6 +261,7 @@ export function importScreeningEvents(
                 } catch (error) {
                     // tslint:disable-next-line:no-single-line-block-comment
                     /* istanbul ignore next */
+                    // tslint:disable-next-line:no-console
                     console.error(error);
                 }
             }));

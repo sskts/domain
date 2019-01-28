@@ -1,8 +1,9 @@
 // tslint:disable:no-magic-numbers
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as redis from 'redis';
+
+import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:repository:accountNumber');
 

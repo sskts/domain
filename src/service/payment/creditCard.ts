@@ -2,12 +2,13 @@
  * クレジットカード決済サービス
  */
 import * as GMO from '@motionpicture/gmo-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
+
+import * as factory from '../../factory';
 
 const debug = createDebug('sskts-domain:service:payment:creditCard');
 
@@ -20,7 +21,10 @@ export function payCreditCard(transactionId: string) {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
+        const transaction = await repos.transaction.findById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: transactionId
+        });
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
@@ -39,7 +43,7 @@ export function payCreditCard(transactionId: string) {
             // クレジットカード承認アクションがあるはず
             const authorizeAction = <factory.action.authorize.paymentMethod.creditCard.IAction>transaction.object.authorizeActions
                 .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                .find((a) => a.object.typeOf === factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard);
+                .find((a) => a.object.typeOf === factory.paymentMethodType.CreditCard);
 
             // アクション開始
             const action = await repos.action.start(payActionAttributes);
@@ -97,7 +101,7 @@ export function payCreditCard(transactionId: string) {
             // アクション完了
             debug('ending action...');
             const actionResult: factory.action.trade.pay.IResult<factory.paymentMethodType.CreditCard> = {
-                creditCardSales: alterTranResult
+                creditCardSales: [alterTranResult]
             };
             await repos.action.complete(payActionAttributes.typeOf, action.id, actionResult);
         }
@@ -114,7 +118,7 @@ export function cancelCreditCardAuth(transactionId: string) {
         const authorizeActions = <factory.action.authorize.paymentMethod.creditCard.IAction[]>
             await repos.action.findAuthorizeByTransactionId(transactionId)
                 .then((actions) => actions
-                    .filter((a) => a.object.typeOf === factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard)
+                    .filter((a) => a.object.typeOf === factory.paymentMethodType.CreditCard)
                     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
                 );
 
@@ -149,13 +153,16 @@ export function refundCreditCard(transactionId: string) {
         transaction: TransactionRepo;
         task: TaskRepo;
     }) => {
-        const transaction = await repos.transaction.findById(factory.transactionType.ReturnOrder, transactionId);
+        const transaction = await repos.transaction.findById({
+            typeOf: factory.transactionType.ReturnOrder,
+            id: transactionId
+        });
         const potentialActions = transaction.potentialActions;
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;
         const authorizeActions = placeOrderTransaction.object.authorizeActions
             .filter((action) => action.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((action) => action.object.typeOf === factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard);
+            .filter((action) => action.object.typeOf === factory.paymentMethodType.CreditCard);
 
         if (potentialActions === undefined) {
             throw new factory.errors.NotFound('transaction.potentialActions');

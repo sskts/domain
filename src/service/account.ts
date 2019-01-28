@@ -2,7 +2,6 @@
  * ポイント口座サービス
  * 口座の保管先はPecorinoサービスです。
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as pecorinoapi from '@pecorino/api-nodejs-client';
 // import * as createDebug from 'debug';
 import * as moment from 'moment';
@@ -10,6 +9,7 @@ import * as moment from 'moment';
 import { handlePecorinoError } from '../errorHandler';
 import { RedisRepository as AccountNumberRepo } from '../repo/accountNumber';
 
+import * as factory from '../factory';
 // const debug = createDebug('sskts-domain:service:account');
 
 /**

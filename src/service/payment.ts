@@ -1,8 +1,10 @@
 /**
  * 決済サービス
  */
+import * as AccountPaymentService from './payment/account';
 import * as CreditCardPaymentService from './payment/creditCard';
-import * as PecorinoPaymentService from './payment/pecorino';
+// import * as MovieTicketPaymentService from './payment/movieTicket';
 
+export import account = AccountPaymentService;
 export import creditCard = CreditCardPaymentService;
-export import pecorino = PecorinoPaymentService;
+// export import movietTicket = MovieTicketPaymentService;

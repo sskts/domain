@@ -2,13 +2,14 @@
  * 座席予約承認アクションサービス
  */
 import * as COA from '@motionpicture/coa-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { INTERNAL_SERVER_ERROR } from 'http-status';
 
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
 import { MongoRepository as EventRepo } from '../../../../../../repo/event';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
+
+import * as factory from '../../../../../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:seatReservation');
 
@@ -34,7 +35,7 @@ export type IActionAndTransactionOperation<T> = (repos: {
 // tslint:disable-next-line:max-func-body-length
 async function validateOffers(
     isMember: boolean,
-    individualScreeningEvent: factory.event.individualScreeningEvent.IEvent,
+    individualScreeningEvent: factory.event.screeningEvent.IEvent,
     offers: factory.offer.seatReservation.IOffer[]
 ): Promise<factory.offer.seatReservation.IOfferWithDetails[]> {
     debug('individualScreeningEvent:', individualScreeningEvent);
@@ -234,7 +235,9 @@ async function validateOffers(
 
             const offerWithDetails: factory.offer.seatReservation.IOfferWithDetails = {
                 typeOf: 'Offer',
-                price: offer.ticketInfo.mvtkSalesPrice + availableSalesTicket.addPrice,
+                price: availableSalesTicket.addPrice,
+                // ムビチケ販売単価を発生金額に加算しつつ、ムビチケを割引として捉える場合はこちら
+                // price: offer.ticketInfo.mvtkSalesPrice + availableSalesTicket.addPrice,
                 priceCurrency: factory.priceCurrency.JPY,
                 seatNumber: offer.seatNumber,
                 seatSection: offer.seatSection,
@@ -375,7 +378,10 @@ export function create(params: {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: params.transactionId
+        });
 
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -480,7 +486,10 @@ export function cancel(params: {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: params.transactionId
+        });
 
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
@@ -525,7 +534,10 @@ export function changeOffers(params: {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findInProgressById(factory.transactionType.PlaceOrder, params.transactionId);
+        const transaction = await repos.transaction.findInProgressById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: params.transactionId
+        });
 
         if (transaction.agent.id !== params.agentId) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');

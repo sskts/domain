@@ -3,9 +3,10 @@
  * 会員クレジットカードサービステスト
  */
 import * as GMO from '@motionpicture/gmo-service';
-import { errors } from '@motionpicture/sskts-factory';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
+
+import { errors } from '../../factory';
 
 import * as PersonCreditCardService from './creditCard';
 

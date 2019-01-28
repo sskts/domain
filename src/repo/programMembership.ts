@@ -1,7 +1,9 @@
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import { Connection } from 'mongoose';
+
 import programMembershipModel from './mongoose/model/programMembership';
+
+import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:repository:programMembership');
 

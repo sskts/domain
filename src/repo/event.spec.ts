@@ -1,10 +1,7 @@
 // tslint:disable:no-implicit-dependencies
-
 /**
  * event repository test
- * @ignore
  */
-
 import { } from 'mocha';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
@@ -19,7 +16,7 @@ before(() => {
     sandbox = sinon.createSandbox();
 });
 
-describe('saveScreeningEvent()', () => {
+describe('save()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -32,27 +29,7 @@ describe('saveScreeningEvent()', () => {
         sandbox.mock(repository.eventModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves();
 
-        const result = await repository.saveScreeningEvent(<any>event);
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
-describe('saveIndividualScreeningEvent()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('repositoryの状態が正常であれば、保管できるはず', async () => {
-        const event = { identifier: 'identifier' };
-
-        const repository = new sskts.repository.Event(sskts.mongoose.connection);
-
-        sandbox.mock(repository.eventModel).expects('findOneAndUpdate').once()
-            .chain('exec').resolves();
-
-        const result = await repository.saveIndividualScreeningEvent(<any>event);
+        const result = await repository.save(<any>event);
 
         assert.equal(result, undefined);
         sandbox.verify();

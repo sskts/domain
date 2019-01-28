@@ -1,10 +1,7 @@
 /**
  * データ測定サービス
  * 実験的実装中
- * @namespace service.report.telemetry
  */
-
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
@@ -12,6 +9,8 @@ import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TelemetryRepo } from '../../repo/telemetry';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
+
+import * as factory from '../../factory';
 
 export type TelemetryOperation<T> =
     (repos: { telemetry: TelemetryRepo }) => Promise<T>;

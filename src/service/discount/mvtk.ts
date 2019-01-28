@@ -1,18 +1,17 @@
 /**
  * ムビチケ割引サービス
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
+import * as factory from '../../factory';
+
 const debug = createDebug('sskts-domain:service:discount:mvtk');
 
 /**
  * ムビチケ着券取消し
- * @export
- * @param transactionId 取引ID
  */
 export function cancelMvtk(transactionId: string) {
     return async () => {
@@ -23,18 +22,19 @@ export function cancelMvtk(transactionId: string) {
 
 /**
  * ムビチケ資産移動
- * @export
- * @param transactionId 取引ID
  */
 export function useMvtk(transactionId: string) {
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
     }) => {
-        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
+        const transaction = await repos.transaction.findById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: transactionId
+        });
         const transactionResult = transaction.result;
         // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
+        /* istanbul ignore next */
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
         }

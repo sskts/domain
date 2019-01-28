@@ -1,7 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * 配送サービステスト
- * @ignore
  */
 import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';

@@ -1,10 +1,7 @@
 // tslint:disable:no-implicit-dependencies
-
 /**
  * 通知サービステスト
- * @ignore
  */
-
 // tslint:disable-next-line:no-require-imports
 import sgMail = require('@sendgrid/mail');
 import { ACCEPTED, BAD_REQUEST, OK } from 'http-status';

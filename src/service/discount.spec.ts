@@ -1,7 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 /**
  * discount service test
- * @ignore
  */
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
@@ -24,7 +23,7 @@ before(() => {
                     actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
                     purpose: {},
                     object: {
-                        typeOf: sskts.factory.action.authorize.paymentMethod.creditCard.ObjectType.CreditCard,
+                        typeOf: sskts.factory.paymentMethodType.CreditCard,
                         amount: 123,
                         orderId: 'orderId'
                     },
@@ -44,7 +43,7 @@ before(() => {
                 typeOf: sskts.factory.actionType.OrderAction,
                 potentialActions: {
                     payCreditCard: { typeOf: sskts.factory.actionType.PayAction },
-                    payPecorino: { typeOf: sskts.factory.actionType.PayAction },
+                    payAccount: { typeOf: sskts.factory.actionType.PayAction },
                     useMvtk: { typeOf: sskts.factory.actionType.UseAction }
                 }
             }

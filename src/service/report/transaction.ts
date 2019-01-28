@@ -2,13 +2,14 @@
 /**
  * 取引レポートサービス
  */
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as json2csv from 'json2csv';
 import * as util from 'util';
 
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
+
+import * as factory from '../../factory';
 
 const debug = createDebug('sskts-domain:service:report:transaction');
 
@@ -135,7 +136,6 @@ export function download(
 
 /**
  * 取引レポートインターフェース
- * @export
  */
 export interface ITransactionReport {
     id: string;
@@ -193,7 +193,7 @@ export function transaction2report(params: {
     if (params.transaction.result !== undefined) {
         // 注文データがまだ存在しなければ取引結果から参照
         const order = (params.order !== undefined) ? params.order : params.transaction.result.order;
-        let event: factory.event.individualScreeningEvent.IEvent | undefined;
+        let event: factory.event.screeningEvent.IEvent | undefined;
         const items = order.acceptedOffers.map(
             (orderItem) => {
                 const offer = orderItem.itemOffered;
@@ -217,7 +217,9 @@ export function transaction2report(params: {
                         if (ticketedSeat !== undefined) {
                             name = util.format(
                                 '%s %s',
-                                offer.reservedTicket.ticketedSeat.seatNumber,
+                                (offer.reservedTicket.ticketedSeat !== undefined)
+                                    ? offer.reservedTicket.ticketedSeat.seatNumber
+                                    : '',
                                 offer.reservedTicket.coaTicketInfo.ticketName
                             );
                         }
@@ -243,7 +245,7 @@ export function transaction2report(params: {
 
                         item = {
                             typeOf: offer.typeOf,
-                            ticketToken: ticket.ticketToken,
+                            ticketToken: (ticket.ticketToken !== undefined) ? ticket.ticketToken : '',
                             totalPrice: ticket.totalPrice,
                             name: name,
                             numItems: numItems,

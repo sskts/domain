@@ -1,7 +1,8 @@
-import * as factory from '@motionpicture/sskts-factory';
 import { Connection } from 'mongoose';
 
 import ActionModel from './mongoose/model/action';
+
+import * as factory from '../factory';
 
 export type IAuthorizeAction = factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>>;
 
@@ -177,7 +178,7 @@ export class MongoRepository {
 
     /**
      * 注文番号から、注文に対するアクションを検索する
-     * @param orderNumber 注文番号
+     * @deprecated Use searchByOrderNumber
      */
     public async findByOrderNumber(orderNumber: string): Promise<IAction<factory.actionType>[]> {
         return this.actionModel.find({
@@ -190,5 +191,32 @@ export class MongoRepository {
             .exec()
             .then((docs) => docs.map((doc) => doc.toObject()));
 
+    }
+
+    /**
+     * 注文番号から、注文に対するアクションを検索する
+     */
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    public async searchByOrderNumber(params: {
+        orderNumber: string;
+        sort?: factory.action.ISortOrder;
+    }): Promise<IAction<factory.actionType>[]> {
+        const conditions = {
+            $or: [
+                { 'object.orderNumber': params.orderNumber },
+                { 'purpose.orderNumber': params.orderNumber }
+            ]
+        };
+        const query = this.actionModel.find(conditions)
+            .select({ __v: 0, createdAt: 0, updatedAt: 0 });
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (params.sort !== undefined) {
+            query.sort(params.sort);
+        }
+
+        return query.exec()
+            .then((docs) => docs.map((doc) => doc.toObject()));
     }
 }

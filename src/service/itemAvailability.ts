@@ -4,11 +4,12 @@
  */
 
 import * as COA from '@motionpicture/coa-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as moment from 'moment-timezone';
 
-import { MongoRepository as ItemAvailabilityRepository } from '../repo/itemAvailability/individualScreeningEvent';
+import { MongoRepository as ItemAvailabilityRepository } from '../repo/itemAvailability/screeningEvent';
+
+import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:service:itemAvailability');
 
@@ -16,10 +17,6 @@ export type IItemAvailabilityOperation<T> = (repos: { itemAvailability: ItemAvai
 
 /**
  * 劇場IDと上映日範囲から上映イベント在庫状況を更新する
- * @export
- * @param locationBranchCode 上映場所枝番号(劇場コード)
- * @param startFrom 上映開始日時from
- * @param startThrough 上映開始日時through
  */
 export function updateIndividualScreeningEvents(locationBranchCode: string, startFrom: Date, startThrough: Date):
     IItemAvailabilityOperation<void> {
@@ -33,11 +30,11 @@ export function updateIndividualScreeningEvents(locationBranchCode: string, star
 
         // 上映日ごとに
         await Promise.all(countFreeSeatResult.listDate.map(async (countFreeSeatDate) => {
-            debug('saving individualScreeningEvent item availability... day:', countFreeSeatDate.dateJouei);
+            debug('saving screeningEvent item availability... day:', countFreeSeatDate.dateJouei);
             // 上映イベントごとに空席状況を生成して保管
             await Promise.all(
                 countFreeSeatDate.listPerformance.map(async (countFreeSeatPerformance) => {
-                    const eventIdentifier = factory.event.individualScreeningEvent.createIdentifierFromCOA({
+                    const eventIdentifier = factory.event.screeningEvent.createIdentifierFromCOA({
                         theaterCode: countFreeSeatResult.theaterCode,
                         titleCode: countFreeSeatPerformance.titleCode,
                         titleBranchNum: countFreeSeatPerformance.titleBranchNum,
@@ -46,7 +43,7 @@ export function updateIndividualScreeningEvents(locationBranchCode: string, star
                         timeBegin: countFreeSeatPerformance.timeBegin
                     });
 
-                    const itemAvailability = factory.event.individualScreeningEvent.createItemAvailability(
+                    const itemAvailability = createItemAvailability(
                         // COAからのレスポンスが負の値の場合があるので調整
                         Math.max(0, countFreeSeatPerformance.cntReserveFree),
                         Math.max(0, countFreeSeatPerformance.cntReserveMax)
@@ -64,4 +61,23 @@ export function updateIndividualScreeningEvents(locationBranchCode: string, star
             );
         }));
     };
+}
+
+/**
+ * 座席数から在庫状況表現を生成する
+ * @param numberOfAvailableSeats 空席数
+ * @param numberOfAllSeats 全座席数
+ */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+export function createItemAvailability(
+    numberOfAvailableSeats: number, numberOfAllSeats: number
+): factory.event.screeningEvent.IItemAvailability {
+    if (numberOfAllSeats === 0) {
+        return 0;
+    }
+
+    // 残席数より空席率を算出
+    // tslint:disable-next-line:no-magic-numbers
+    return Math.floor(numberOfAvailableSeats / numberOfAllSeats * 100);
 }

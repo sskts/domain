@@ -1,29 +1,16 @@
-import * as factory from '@motionpicture/sskts-factory';
 import * as moment from 'moment';
 import { Connection } from 'mongoose';
+
 import eventModel from './mongoose/model/event';
 
-/**
- * イベント抽象リポジトリー
- */
-export abstract class Repository {
-    public abstract async saveScreeningEvent(screeningEvent: factory.event.screeningEvent.IEvent): Promise<void>;
-    public abstract async saveIndividualScreeningEvent(
-        individualScreeningEvent: factory.event.individualScreeningEvent.IEvent
-    ): Promise<void>;
-    public abstract async cancelIndividualScreeningEvent(identifier: string): Promise<void>;
-    public abstract async searchIndividualScreeningEvents(
-        searchConditions: factory.event.individualScreeningEvent.ISearchConditions
-    ): Promise<factory.event.individualScreeningEvent.IEvent[]>;
-    public abstract async findIndividualScreeningEventByIdentifier(
-        identifier: string
-    ): Promise<factory.event.individualScreeningEvent.IEvent>;
-}
+import * as factory from '../factory';
+
+export type IEvent = factory.event.screeningEvent.IEvent | factory.event.screeningEventSeries.IEvent;
 
 /**
  * イベントリポジトリー
  */
-export class MongoRepository implements Repository {
+export class MongoRepository {
     public readonly eventModel: typeof eventModel;
 
     constructor(connection: Connection) {
@@ -31,7 +18,7 @@ export class MongoRepository implements Repository {
     }
 
     public static CREATE_INDIVIDUAL_SCREENING_EVENT_MONGO_CONDITIONS(
-        searchConditions: factory.event.individualScreeningEvent.ISearchConditions
+        searchConditions: factory.event.screeningEvent.ISearchConditions
     ) {
         // dayプロパティがあればstartFrom & startThroughに変換(互換性維持のため)
         // tslint:disable-next-line:no-single-line-block-comment
@@ -44,7 +31,9 @@ export class MongoRepository implements Repository {
         // MongoDB検索条件
         const andConditions: any[] = [
             {
-                typeOf: factory.eventType.IndividualScreeningEvent
+                typeOf: {
+                    $in: [factory.eventType.IndividualScreeningEvent, factory.eventType.ScreeningEvent]
+                }
             }
         ];
 
@@ -129,38 +118,14 @@ export class MongoRepository implements Repository {
     }
 
     /**
-     * save a screening event
-     * 上映イベントを保管する
-     * @param screeningEvent screeningEvent object
+     * イベントを保管する
      */
-    public async saveScreeningEvent(screeningEvent: factory.event.screeningEvent.IEvent) {
+    public async save(event: IEvent) {
         await this.eventModel.findOneAndUpdate(
+            { _id: event.id },
             {
-                identifier: screeningEvent.identifier,
-                typeOf: factory.eventType.ScreeningEvent
-            },
-            {
-                $set: { ...screeningEvent },
-                $setOnInsert: { _id: screeningEvent.id }
-            },
-            { new: true, upsert: true }
-        ).exec();
-    }
-
-    /**
-     * save a individual screening event
-     * 個々の上映イベントを保管する
-     * @param individualScreeningEvent individualScreeningEvent object
-     */
-    public async saveIndividualScreeningEvent(individualScreeningEvent: factory.event.individualScreeningEvent.IEvent) {
-        await this.eventModel.findOneAndUpdate(
-            {
-                identifier: individualScreeningEvent.identifier,
-                typeOf: factory.eventType.IndividualScreeningEvent
-            },
-            {
-                $set: { ...individualScreeningEvent },
-                $setOnInsert: { _id: individualScreeningEvent.id }
+                $set: event,
+                $setOnInsert: { _id: event.id }
             },
             { new: true, upsert: true }
         ).exec();
@@ -168,20 +133,21 @@ export class MongoRepository implements Repository {
 
     /**
      * 上映イベントをキャンセルする
-     * @param identifier イベント識別子
      */
-    public async cancelIndividualScreeningEvent(identifier: string) {
+    public async cancelIndividualScreeningEvent(id: string) {
         await this.eventModel.findOneAndUpdate(
             {
-                identifier: identifier,
-                typeOf: factory.eventType.IndividualScreeningEvent
+                _id: id,
+                typeOf: {
+                    $in: [factory.eventType.IndividualScreeningEvent, factory.eventType.ScreeningEvent]
+                }
             },
             { eventStatus: factory.eventStatusType.EventCancelled },
             { new: true }
         ).exec();
     }
 
-    public async countIndividualScreeningEvents(params: factory.event.individualScreeningEvent.ISearchConditions): Promise<number> {
+    public async countIndividualScreeningEvents(params: factory.event.screeningEvent.ISearchConditions): Promise<number> {
         const conditions = MongoRepository.CREATE_INDIVIDUAL_SCREENING_EVENT_MONGO_CONDITIONS(params);
 
         return this.eventModel.countDocuments(
@@ -194,8 +160,8 @@ export class MongoRepository implements Repository {
      * 個々の上映イベントを検索する
      */
     public async searchIndividualScreeningEvents(
-        params: factory.event.individualScreeningEvent.ISearchConditions
-    ): Promise<factory.event.individualScreeningEvent.IEvent[]> {
+        params: factory.event.screeningEvent.ISearchConditions
+    ): Promise<factory.event.screeningEvent.IEvent[]> {
         const conditions = MongoRepository.CREATE_INDIVIDUAL_SCREENING_EVENT_MONGO_CONDITIONS(params);
         const query = this.eventModel.find(
             { $and: conditions },
@@ -220,13 +186,15 @@ export class MongoRepository implements Repository {
     }
 
     /**
-     * identifierで上映イベントを取得する
+     * 上映イベントを取得する
      */
-    public async findIndividualScreeningEventByIdentifier(identifier: string): Promise<factory.event.individualScreeningEvent.IEvent> {
+    public async findIndividualScreeningEventByIdentifier(id: string): Promise<factory.event.screeningEvent.IEvent> {
         const doc = await this.eventModel.findOne(
             {
-                typeOf: factory.eventType.IndividualScreeningEvent,
-                identifier: identifier
+                typeOf: {
+                    $in: [factory.eventType.IndividualScreeningEvent, factory.eventType.ScreeningEvent]
+                },
+                _id: id
             },
             {
                 __v: 0,
@@ -236,7 +204,7 @@ export class MongoRepository implements Repository {
         ).exec();
 
         if (doc === null) {
-            throw new factory.errors.NotFound('individualScreeningEvent');
+            throw new factory.errors.NotFound('ScreeningEvent');
         }
 
         return doc.toObject();

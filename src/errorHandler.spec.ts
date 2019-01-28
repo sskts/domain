@@ -28,14 +28,14 @@ describe('Pecorinoリクエストエラーをハンドリングする', () => {
         TOO_MANY_REQUESTS,
         INTERNAL_SERVER_ERROR
     ].map((code) => {
-        it(`Pecorinoサービスが${code}であればSSKTSErrorに変換されるはず`, () => {
+        it(`Pecorinoサービスが${code}であればCinerinoErrorに変換されるはず`, () => {
             const error = {
                 name: 'PecorinoRequestError',
                 code: code
             };
 
             const result = errorHandler.handlePecorinoError(error);
-            assert(result instanceof sskts.factory.errors.SSKTS);
+            assert(result instanceof sskts.factory.errors.Cinerino);
             sandbox.verify();
         });
     });

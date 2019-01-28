@@ -2,7 +2,6 @@
  * 注文サービス
  */
 import * as COA from '@motionpicture/coa-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as createDebug from 'debug';
 import * as googleLibphonenumber from 'google-libphonenumber';
 
@@ -11,6 +10,8 @@ import { MongoRepository as OrderRepo } from '../repo/order';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
+
+import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:service:order');
 
@@ -27,7 +28,10 @@ export function createFromTransaction(transactionId: string) {
         transaction: TransactionRepo;
         task: TaskRepo;
     }) => {
-        const transaction = await repos.transaction.findById(factory.transactionType.PlaceOrder, transactionId);
+        const transaction = await repos.transaction.findById({
+            typeOf: factory.transactionType.PlaceOrder,
+            id: transactionId
+        });
         const transactionResult = transaction.result;
         if (transactionResult === undefined) {
             throw new factory.errors.NotFound('transaction.result');
@@ -121,10 +125,10 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
             // Pecorino決済
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (Array.isArray(orderPotentialActions.payPecorino)) {
-                taskAttributes.push(...orderPotentialActions.payPecorino.map((a): factory.task.payPecorino.IAttributes => {
+            if (Array.isArray(orderPotentialActions.payAccount)) {
+                taskAttributes.push(...orderPotentialActions.payAccount.map((a): factory.task.IAttributes<factory.taskName.PayAccount> => {
                     return {
-                        name: factory.taskName.PayPecorino,
+                        name: factory.taskName.PayAccount,
                         status: factory.taskStatus.Ready,
                         runsAt: now, // なるはやで実行
                         remainingNumberOfTries: 10,
@@ -193,7 +197,10 @@ export function cancelReservations(returnOrderTransactionId: string) {
         transactionRepo: TransactionRepo,
         taskRepo: TaskRepo
     ) => {
-        const transaction = await transactionRepo.findById(factory.transactionType.ReturnOrder, returnOrderTransactionId);
+        const transaction = await transactionRepo.findById({
+            typeOf: factory.transactionType.ReturnOrder,
+            id: returnOrderTransactionId
+        });
         const potentialActions = transaction.potentialActions;
         const placeOrderTransaction = transaction.object.transaction;
         const placeOrderTransactionResult = placeOrderTransaction.result;
@@ -315,11 +322,11 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
             // Pecorino返金タスク
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (Array.isArray(returnActionAttributes.potentialActions.refundPecorino)) {
-                taskAttributes.push(...returnActionAttributes.potentialActions.refundPecorino.map(
-                    (a): factory.task.refundPecorino.IAttributes => {
+            if (Array.isArray(returnActionAttributes.potentialActions.refundAccount)) {
+                taskAttributes.push(...returnActionAttributes.potentialActions.refundAccount.map(
+                    (a): factory.task.IAttributes<factory.taskName.RefundAccount> => {
                         return {
-                            name: factory.taskName.RefundPecorino,
+                            name: factory.taskName.RefundAccount,
                             status: factory.taskStatus.Ready,
                             runsAt: now, // なるはやで実行
                             remainingNumberOfTries: 10,

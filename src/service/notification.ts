@@ -1,7 +1,6 @@
 /**
  * 通知サービス
  */
-import * as factory from '@motionpicture/sskts-factory';
 // tslint:disable-next-line:no-require-imports
 import sgMail = require('@sendgrid/mail');
 import * as createDebug from 'debug';
@@ -11,6 +10,8 @@ import * as util from 'util';
 import * as validator from 'validator';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
+
+import * as factory from '../factory';
 
 export type Operation<T> = () => Promise<T>;
 
@@ -86,7 +87,6 @@ export function sendEmailMessage(actionAttributes: factory.action.transfer.send.
 /**
  * report to developers
  * 開発者に報告する
- * @export
  * @see https://notify-bot.line.me/doc/ja/
  */
 export function report2developers(subject: string, content: string, imageThumbnail?: string, imageFullsize?: string): Operation<void> {

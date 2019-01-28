@@ -2,7 +2,6 @@
  * 会員プログラムサービス
  */
 import * as GMO from '@motionpicture/gmo-service';
-import * as factory from '@motionpicture/sskts-factory';
 import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as createDebug from 'debug';
 import * as moment from 'moment-timezone';
@@ -22,6 +21,7 @@ import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 import { handlePecorinoError } from '../errorHandler';
+import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:service:programMembership');
 
@@ -572,14 +572,17 @@ function processPlaceOrder(params: {
             moment().tz('Asia/Tokyo').format('YYMMDDhhmmss') // 秒
         );
         await PlaceOrderService.action.authorize.paymentMethod.creditCard.create({
-            agentId: params.registerActionAttributes.agent.id,
-            transactionId: transaction.id,
-            orderId: orderId,
-            amount: acceptedOffer.price,
-            method: GMO.utils.util.Method.Lump,
-            creditCard: {
-                memberId: customer.memberOf.membershipNumber,
-                cardSeq: parseInt(creditCard.cardSeq, 10)
+            agent: params.registerActionAttributes.agent,
+            transaction: transaction,
+            object: {
+                typeOf: factory.paymentMethodType.CreditCard,
+                orderId: orderId,
+                amount: acceptedOffer.price,
+                method: GMO.utils.util.Method.Lump,
+                creditCard: {
+                    memberId: customer.memberOf.membershipNumber,
+                    cardSeq: parseInt(creditCard.cardSeq, 10)
+                }
             }
         })(repos);
         debug('creditCard authorization created.');
