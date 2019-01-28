@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v27.0.0 - 2019-01-28
+
+### Added
+
 - orderInquiryKeyを使用せずに予約番号で注文を紹介できるようにメソッドを追加
 - 販売者リポジトリを追加
 
@@ -26,18 +40,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - ムビチケを決済方法として解釈し、注文における顧客の発生金額が0となるように変更
 - 注文番号で返品取引を開始できるように変更
 
-### Deprecated
-
 ### Removed
 
 - クライアントイベントリポジトリを削除
 - GMO通知リポジトリを削除
 - SendGridイベントリポジトリを削除
 - 健康診断サービスを削除
-
-### Fixed
-
-### Security
 
 ## v26.4.1 - 2019-01-16
 
