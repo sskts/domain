@@ -16,6 +16,7 @@ import { MongoRepository as OwnershipInfoRepo } from './repo/ownershipInfo';
 import { CognitoRepository as PersonRepo } from './repo/person';
 import { MongoRepository as PlaceRepo } from './repo/place';
 import { MongoRepository as ProgramMembershipRepo } from './repo/programMembership';
+import { MongoRepository as SellerRepo } from './repo/seller';
 import { MongoRepository as TaskRepo } from './repo/task';
 import { MongoRepository as TelemetryRepo } from './repo/telemetry';
 import { MongoRepository as TransactionRepo } from './repo/transaction';
@@ -35,6 +36,7 @@ export class OwnershipInfo extends OwnershipInfoRepo { }
 export class Person extends PersonRepo { }
 export class Place extends PlaceRepo { }
 export class ProgramMembership extends ProgramMembershipRepo { }
+export class Seller extends SellerRepo { }
 export class Task extends TaskRepo { }
 export class Telemetry extends TelemetryRepo { }
 export class Transaction extends TransactionRepo { }

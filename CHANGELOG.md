@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - orderInquiryKeyを使用せずに予約番号で注文を紹介できるようにメソッドを追加
+- 販売者リポジトリを追加
 
 ### Changed
 
