@@ -120,21 +120,23 @@ describe('findByOrderNumber()', () => {
         sandbox.mock(repository.orderModel).expects('findOne').once()
             .chain('exec').resolves(new repository.orderModel(order));
 
-        const result = await repository.findByOrderNumber(order.orderNumber);
+        const result = await repository.findByOrderNumber(order);
 
         assert.equal(result.orderNumber, order.orderNumber);
         sandbox.verify();
     });
 
     it('注文が存在しなければNotFoundエラーとなるはず', async () => {
-        const orderNumber = 'orderNumber';
+        const order = {
+            orderNumber: 'orderNumber'
+        };
 
         const repository = new sskts.repository.Order(sskts.mongoose.connection);
 
         sandbox.mock(repository.orderModel).expects('findOne').once()
             .chain('exec').resolves(null);
 
-        const result = await repository.findByOrderNumber(orderNumber)
+        const result = await repository.findByOrderNumber(order)
             .catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
