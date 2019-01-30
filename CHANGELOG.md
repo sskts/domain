@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 取引レポート中の日時項目のデータ型が万が一Date型でない場合に対処
+
 ### Deprecated
 
 ### Removed
