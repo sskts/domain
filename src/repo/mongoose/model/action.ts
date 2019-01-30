@@ -1,7 +1,5 @@
 import * as mongoose from 'mongoose';
 
-import * as factory from '../../../factory';
-
 const safe = { j: true, w: 'majority', wtimeout: 10000 };
 
 const agentSchema = new mongoose.Schema(
@@ -123,8 +121,21 @@ schema.index(
     { name: 'searchByTypeOf' }
 );
 schema.index(
+    { actionStatus: 1 },
+    { name: 'searchByActionStatus' }
+);
+schema.index(
     { startDate: 1 },
     { name: 'searchByStartDate' }
+);
+schema.index(
+    { endDate: 1 },
+    {
+        name: 'searchByEndDate',
+        partialFilterExpression: {
+            endDate: { $exists: true }
+        }
+    }
 );
 schema.index(
     { 'purpose.typeOf': 1 },
@@ -181,88 +192,15 @@ schema.index(
     }
 );
 
-schema.index(
-    { typeOf: 1, _id: 1 }
-);
-
-// 取引の承認アクション検索に使用
-schema.index(
-    { typeOf: 1, 'purpose.id': 1 },
-    {
-        partialFilterExpression: {
-            'purpose.id': { $exists: true }
+export default mongoose.model('Action', schema)
+    .on(
+        'index',
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore next */
+        (error) => {
+            if (error !== undefined) {
+                // tslint:disable-next-line:no-console
+                console.error(error);
+            }
         }
-    }
-);
-
-// 取引の承認アクション状態変更に使用
-schema.index(
-    { 'object.typeOf': 1, 'purpose.id': 1, typeOf: 1, _id: 1 },
-    {
-        partialFilterExpression: {
-            'object.typeOf': { $exists: true },
-            'purpose.id': { $exists: true }
-        }
-    }
-);
-
-// 取引調査や、アクション集計などで、アクションを検索することはとても多いので、そのためのインデックス
-schema.index(
-    { typeOf: 1, 'object.typeOf': 1, startDate: 1 }
-);
-
-// イベントに対する座席仮予約アクション検索時に使用
-schema.index(
-    { typeOf: 1, 'object.typeOf': 1, 'object.individualScreeningEvent.identifier': 1 },
-    {
-        name: 'searchSeatReservationAuthorizeActionByEvent',
-        partialFilterExpression: {
-            'object.typeOf': factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation
-        }
-    }
-);
-
-// イベントと座席指定で座席仮予約アクション検索時に使用
-schema.index(
-    { typeOf: 1, 'object.typeOf': 1, 'object.individualScreeningEvent.identifier': 1, 'object.offers.seatNumber': 1 },
-    {
-        name: 'searchSeatReservationAuthorizeActionByEventAndSeat',
-        partialFilterExpression: {
-            'object.typeOf': factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation
-        }
-    }
-);
-
-// GMOオーダーIDから承認アクション検索時に使用
-schema.index(
-    { typeOf: 1, 'object.typeOf': 1, 'object.orderId': 1 },
-    {
-        name: 'searchCreditCardAuthorizeActionByOrderId',
-        partialFilterExpression: {
-            'object.typeOf': factory.paymentMethodType.CreditCard
-        }
-    }
-);
-
-// ムビチケ購入管理番号から承認アクション検索時に使用
-schema.index(
-    { typeOf: 1, 'object.typeOf': 1, 'object.seatInfoSyncIn.knyknrNoInfo.knyknrNo': 1 },
-    {
-        name: 'searchMvtkAuthorizeActionByKnyknrNo',
-        partialFilterExpression: {
-            'object.typeOf': factory.action.authorize.discount.mvtk.ObjectType.Mvtk
-        }
-    }
-);
-
-export default mongoose.model('Action', schema).on(
-    'index',
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore next */
-    (error) => {
-        if (error !== undefined) {
-            // tslint:disable-next-line:no-console
-            console.error(error);
-        }
-    }
-);
+    );
