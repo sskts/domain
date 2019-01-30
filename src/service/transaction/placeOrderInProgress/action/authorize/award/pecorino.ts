@@ -130,7 +130,7 @@ export function create(params: {
             try {
                 // tslint:disable-next-line:max-line-length no-single-line-block-comment
                 const actionError = { ...error, ...{ name: error.name, message: error.message } };
-                await repos.action.giveUp(action.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -148,7 +148,7 @@ export function create(params: {
             pecorinoEndpoint: pecorinoEndpoint
         };
 
-        return repos.action.complete(action.typeOf, action.id, actionResult);
+        return repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
     };
 }
 
@@ -187,7 +187,7 @@ export function cancel(params: {
         }
 
         // まずアクションをキャンセル
-        const action = await repos.action.cancel(factory.actionType.AuthorizeAction, params.actionId);
+        const action = await repos.action.cancel({ typeOf: factory.actionType.AuthorizeAction, id: params.actionId });
         const actionResult = <factory.action.authorize.award.pecorino.IResult>action.result;
 
         // Pecorinoで取消中止実行

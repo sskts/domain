@@ -219,7 +219,7 @@ export function register(
             try {
                 // tslint:disable-next-line:max-line-length no-single-line-block-comment
                 const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await repos.action.giveUp(action.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -247,7 +247,7 @@ export function register(
             order: order
         };
 
-        await repos.action.complete(action.typeOf, action.id, actionResult);
+        await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
     };
 }
 
@@ -388,7 +388,7 @@ export function unRegister(params: factory.action.interact.unRegister.programMem
             try {
                 // tslint:disable-next-line:max-line-length no-single-line-block-comment
                 const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await repos.action.giveUp(action.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -400,7 +400,7 @@ export function unRegister(params: factory.action.interact.unRegister.programMem
         debug('ending action...');
         const actionResult: factory.action.interact.unRegister.programMembership.IResult = {};
 
-        await repos.action.complete(action.typeOf, action.id, actionResult);
+        await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
     };
 }
 
@@ -523,7 +523,7 @@ function processPlaceOrder(params: {
                 try {
                     // tslint:disable-next-line:max-line-length no-single-line-block-comment
                     const actionError = { ...error, ...{ name: error.name, message: error.message } };
-                    await repos.action.giveUp(action.typeOf, action.id, actionError);
+                    await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
@@ -541,7 +541,7 @@ function processPlaceOrder(params: {
                 pecorinoEndpoint: pecorinoEndpoint
             };
 
-            await repos.action.complete(action.typeOf, action.id, actionResult);
+            await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
         }
 
         // 会員プログラムオファー承認

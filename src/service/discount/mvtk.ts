@@ -69,7 +69,7 @@ export function useMvtk(transactionId: string) {
                 // actionにエラー結果を追加
                 try {
                     const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                    await repos.action.giveUp(useActionAttributes.typeOf, action.id, actionError);
+                    await repos.action.giveUp({ typeOf: useActionAttributes.typeOf, id: action.id, error: actionError });
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
@@ -82,7 +82,7 @@ export function useMvtk(transactionId: string) {
             // アクション完了
             debug('ending action...');
             const actionResult: factory.action.consume.use.mvtk.IResult = {};
-            await repos.action.complete(useActionAttributes.typeOf, action.id, actionResult);
+            await repos.action.complete({ typeOf: useActionAttributes.typeOf, id: action.id, result: actionResult });
         }
     };
 }

@@ -1,26 +1,21 @@
 import { Connection } from 'mongoose';
 
+import * as factory from '../factory';
 import ActionModel from './mongoose/model/action';
 
-import * as factory from '../factory';
-
 export type IAuthorizeAction = factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>>;
-
 export type IAction<T extends factory.actionType> =
     T extends factory.actionType.OrderAction ? factory.action.trade.order.IAction :
     T extends factory.actionType.AuthorizeAction ? factory.action.authorize.IAction<factory.action.authorize.IAttributes<any, any>> :
     factory.action.IAction<factory.action.IAttributes<T, any, any>>;
-
 /**
  * アクションリポジトリー
  */
 export class MongoRepository {
     public readonly actionModel: typeof ActionModel;
-
     constructor(connection: Connection) {
         this.actionModel = connection.model(ActionModel.modelName);
     }
-
     /**
      * アクション開始
      */
@@ -29,124 +24,124 @@ export class MongoRepository {
             ...attributes,
             actionStatus: factory.actionStatusType.ActiveActionStatus,
             startDate: new Date()
-        }).then((doc) => doc.toObject());
+        })
+            .then((doc) => doc.toObject());
     }
-
     /**
      * アクション完了
      */
-    public async complete<T extends factory.actionType>(
-        typeOf: T,
-        actionId: string,
-        result: any
-    ): Promise<IAction<T>> {
-        return this.actionModel.findOneAndUpdate(
+    public async complete<T extends factory.actionType>(params: {
+        typeOf: T;
+        id: string;
+        result: any;
+    }): Promise<IAction<T>> {
+        const doc = await this.actionModel.findOneAndUpdate(
             {
-                typeOf: typeOf,
-                _id: actionId
+                typeOf: params.typeOf,
+                _id: params.id
             },
             {
                 actionStatus: factory.actionStatusType.CompletedActionStatus,
-                result: result,
+                result: params.result,
                 endDate: new Date()
             },
             { new: true }
-        ).exec().then((doc) => {
-            if (doc === null) {
-                throw new factory.errors.NotFound('action');
-            }
+        )
+            .select({ __v: 0, createdAt: 0, updatedAt: 0 })
+            .exec();
+        if (doc === null) {
+            throw new factory.errors.NotFound(this.actionModel.modelName);
+        }
 
-            return doc.toObject();
-        });
+        return doc.toObject();
     }
-
     /**
-     * アクション中止
+     * アクション取消
      */
-    public async cancel<T extends factory.actionType>(
-        typeOf: T,
-        actionId: string
-    ): Promise<IAction<T>> {
-        return this.actionModel.findOneAndUpdate(
+    public async cancel<T extends factory.actionType>(params: {
+        typeOf: T;
+        id: string;
+    }): Promise<IAction<T>> {
+        const doc = await this.actionModel.findOneAndUpdate(
             {
-                typeOf: typeOf,
-                _id: actionId
+                typeOf: params.typeOf,
+                _id: params.id
             },
             { actionStatus: factory.actionStatusType.CanceledActionStatus },
             { new: true }
-        ).exec().then((doc) => {
-            if (doc === null) {
-                throw new factory.errors.NotFound('action');
+        )
+            .select({ __v: 0, createdAt: 0, updatedAt: 0 })
+            .exec();
+        if (doc === null) {
+            throw new factory.errors.NotFound(this.actionModel.modelName);
+        }
 
-            }
-
-            return doc.toObject();
-        });
+        return doc.toObject();
     }
-
     /**
      * アクション失敗
      */
-    public async giveUp<T extends factory.actionType>(
-        typeOf: T,
-        actionId: string,
-        error: any
-    ): Promise<IAction<T>> {
-        return this.actionModel.findOneAndUpdate(
+    public async giveUp<T extends factory.actionType>(params: {
+        typeOf: T;
+        id: string;
+        error: any;
+    }): Promise<IAction<T>> {
+        const doc = await this.actionModel.findOneAndUpdate(
             {
-                typeOf: typeOf,
-                _id: actionId
+                typeOf: params.typeOf,
+                _id: params.id
             },
             {
                 actionStatus: factory.actionStatusType.FailedActionStatus,
-                error: error,
+                error: params.error,
                 endDate: new Date()
             },
             { new: true }
-        ).exec().then((doc) => {
-            if (doc === null) {
-                throw new factory.errors.NotFound('action');
-            }
+        )
+            .select({ __v: 0, createdAt: 0, updatedAt: 0 })
+            .exec();
+        if (doc === null) {
+            throw new factory.errors.NotFound(this.actionModel.modelName);
+        }
 
-            return doc.toObject();
-        });
+        return doc.toObject();
     }
-
     /**
-     * IDで取得する
+     * 特定アクション検索
      */
-    public async findById<T extends factory.actionType>(
-        typeOf: T,
-        actionId: string
-    ): Promise<IAction<T>> {
-        return this.actionModel.findOne(
+    public async findById<T extends factory.actionType>(params: {
+        typeOf: T;
+        id: string;
+    }): Promise<IAction<T>> {
+        const doc = await this.actionModel.findOne(
             {
-                typeOf: typeOf,
-                _id: actionId
+                typeOf: params.typeOf,
+                _id: params.id
             }
-        ).exec().then((doc) => {
-            if (doc === null) {
-                throw new factory.errors.NotFound('action');
-            }
+        )
+            .select({ __v: 0, createdAt: 0, updatedAt: 0 })
+            .exec();
+        if (doc === null) {
+            throw new factory.errors.NotFound(this.actionModel.modelName);
+        }
 
-            return doc.toObject();
-        });
+        return doc.toObject();
     }
-
     /**
      * 取引内の承認アクションを取得する
-     * @param transactionId 取引ID
      */
-    public async findAuthorizeByTransactionId(transactionId: string): Promise<IAuthorizeAction[]> {
+    public async findAuthorizeByTransactionId(params: { transactionId: string }): Promise<IAuthorizeAction[]> {
         return this.actionModel.find({
             typeOf: factory.actionType.AuthorizeAction,
             'purpose.id': {
                 $exists: true,
-                $eq: transactionId
+                $eq: params.transactionId
             }
-        }).exec().then((docs) => docs.map((doc) => doc.toObject()));
+        })
+            .select({ __v: 0, createdAt: 0, updatedAt: 0 })
+            .exec()
+            .then((docs) => docs.map((doc) => doc.toObject()));
     }
-
     /**
      * 取引に対するアクションを検索する
      */
@@ -156,7 +151,6 @@ export class MongoRepository {
         sort?: factory.action.ISortOrder;
     }): Promise<IAction<factory.actionType>[]> {
         const conditions = {
-            typeOf: { $exists: true },
             'purpose.typeOf': {
                 $exists: true,
                 $eq: params.transactionType
@@ -166,38 +160,20 @@ export class MongoRepository {
                 $eq: params.transactionId
             }
         };
-        const query = this.actionModel.find(conditions).select({ __v: 0, createdAt: 0, updatedAt: 0 });
+        const query = this.actionModel.find(conditions)
+            .select({ __v: 0, createdAt: 0, updatedAt: 0 });
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (params.sort !== undefined) {
             query.sort(params.sort);
         }
 
-        return query.exec().then((docs) => docs.map((doc) => doc.toObject()));
-    }
-
-    /**
-     * 注文番号から、注文に対するアクションを検索する
-     * @deprecated Use searchByOrderNumber
-     */
-    public async findByOrderNumber(orderNumber: string): Promise<IAction<factory.actionType>[]> {
-        return this.actionModel.find({
-            $or: [
-                { 'object.orderNumber': orderNumber },
-                { 'purpose.orderNumber': orderNumber }
-            ]
-        })
-            .sort({ endDate: -1 })
-            .exec()
+        return query.exec()
             .then((docs) => docs.map((doc) => doc.toObject()));
-
     }
-
     /**
      * 注文番号から、注文に対するアクションを検索する
      */
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore next */
     public async searchByOrderNumber(params: {
         orderNumber: string;
         sort?: factory.action.ISortOrder;

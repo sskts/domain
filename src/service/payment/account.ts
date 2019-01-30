@@ -56,7 +56,7 @@ export function payAccount(params: factory.task.IData<factory.taskName.PayAccoun
             try {
                 // tslint:disable-next-line:max-line-length no-single-line-block-comment
                 const actionError = { ...error, message: error.message, name: error.name };
-                await repos.action.giveUp(action.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -67,7 +67,7 @@ export function payAccount(params: factory.task.IData<factory.taskName.PayAccoun
         // アクション完了
         debug('ending action...');
         const actionResult: factory.action.trade.pay.IResult<factory.paymentMethodType.Account> = {};
-        await repos.action.complete(action.typeOf, action.id, actionResult);
+        await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
     };
 }
 
@@ -84,7 +84,7 @@ export function cancelAccountAuth(params: { transactionId: string }) {
     }) => {
         // 口座承認アクションを取得
         const authorizeActions = <factory.action.authorize.paymentMethod.account.IAction<factory.accountType>[]>
-            await repos.action.findAuthorizeByTransactionId(params.transactionId)
+            await repos.action.findAuthorizeByTransactionId({ transactionId: params.transactionId })
                 .then((actions) => actions
                     .filter((a) => a.object.typeOf === factory.paymentMethodType.Account)
                 );
@@ -114,7 +114,7 @@ export function cancelAccountAuth(params: { transactionId: string }) {
                         );
                 }
 
-                await repos.action.cancel(action.typeOf, action.id);
+                await repos.action.cancel({ typeOf: action.typeOf, id: action.id });
             }
         }));
     };
@@ -190,7 +190,7 @@ export function refundAccount(params: factory.task.IData<factory.taskName.Refund
             // actionにエラー結果を追加
             try {
                 const actionError = { ...error, message: error.message, name: error.name };
-                await repos.action.giveUp(action.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -200,7 +200,7 @@ export function refundAccount(params: factory.task.IData<factory.taskName.Refund
 
         // アクション完了
         debug('ending action...');
-        await repos.action.complete(action.typeOf, action.id, {});
+        await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: {} });
 
         // 潜在アクション
         await onRefund(params)({ task: repos.task });

@@ -150,7 +150,7 @@ export function sendOrder(transactionId: string) {
             // actionにエラー結果を追加
             try {
                 const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await repos.action.giveUp(sendOrderActionAttributes.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: sendOrderActionAttributes.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -160,7 +160,7 @@ export function sendOrder(transactionId: string) {
 
         // アクション完了
         debug('ending action...');
-        await repos.action.complete(sendOrderActionAttributes.typeOf, action.id, {});
+        await repos.action.complete({ typeOf: sendOrderActionAttributes.typeOf, id: action.id, result: {} });
 
         // 潜在アクション
         await onSend(sendOrderActionAttributes)({ task: repos.task });
@@ -248,7 +248,7 @@ export function givePecorinoAward(params: factory.task.givePecorinoAward.IData) 
             try {
                 // tslint:disable-next-line:max-line-length no-single-line-block-comment
                 const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await repos.action.giveUp(params.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: params.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -259,7 +259,7 @@ export function givePecorinoAward(params: factory.task.givePecorinoAward.IData) 
         // アクション完了
         debug('ending action...');
         const actionResult: factory.action.transfer.give.pecorinoAward.IResult = {};
-        await repos.action.complete(params.typeOf, action.id, actionResult);
+        await repos.action.complete({ typeOf: params.typeOf, id: action.id, result: actionResult });
     };
 }
 
@@ -314,7 +314,7 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
             // actionにエラー結果を追加
             try {
                 const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await repos.action.giveUp(action.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -327,7 +327,7 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
         const actionResult: factory.action.transfer.returnAction.pecorinoAward.IResult = {
             pecorinoTransaction: withdrawTransaction
         };
-        await repos.action.complete(action.typeOf, action.id, actionResult);
+        await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
     };
 }
 
@@ -344,7 +344,7 @@ export function cancelPecorinoAward(params: {
     }) => {
         // Pecorinoインセンティブ承認アクションを取得
         const authorizeActions = <factory.action.authorize.award.pecorino.IAction[]>
-            await repos.action.findAuthorizeByTransactionId(params.transactionId)
+            await repos.action.findAuthorizeByTransactionId({ transactionId: params.transactionId })
                 .then((actions) => actions
                     .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward)
                     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)

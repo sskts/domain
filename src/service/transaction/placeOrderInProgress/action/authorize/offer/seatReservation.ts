@@ -431,7 +431,7 @@ export function create(params: {
             // actionにエラー結果を追加
             try {
                 const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await repos.action.giveUp(action.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -467,7 +467,7 @@ export function create(params: {
             updTmpReserveSeatResult: updTmpReserveSeatResult
         };
 
-        return repos.action.complete(action.typeOf, action.id, result);
+        return repos.action.complete({ typeOf: action.typeOf, id: action.id, result: result });
     };
 }
 
@@ -497,7 +497,7 @@ export function cancel(params: {
 
         // MongoDBでcompleteステータスであるにも関わらず、COAでは削除されている、というのが最悪の状況
         // それだけは回避するためにMongoDBを先に変更
-        const action = await repos.action.cancel(factory.actionType.AuthorizeAction, params.actionId);
+        const action = await repos.action.cancel({ typeOf: factory.actionType.AuthorizeAction, id: params.actionId });
         const actionResult = <factory.action.authorize.offer.seatReservation.IResult>action.result;
 
         // 座席仮予約削除
@@ -545,7 +545,7 @@ export function changeOffers(params: {
 
         // アクション中のイベント識別子と座席リストが合っているかどうか確認
         const authorizeAction = <factory.action.authorize.offer.seatReservation.IAction>
-            await repos.action.findById(factory.actionType.AuthorizeAction, params.actionId);
+            await repos.action.findById({ typeOf: factory.actionType.AuthorizeAction, id: params.actionId });
         // 完了ステータスのアクションのみ更新可能
         if (authorizeAction.actionStatus !== factory.actionStatusType.CompletedActionStatus) {
             throw new factory.errors.NotFound('authorizeAction');

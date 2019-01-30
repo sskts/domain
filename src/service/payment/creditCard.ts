@@ -90,7 +90,7 @@ export function payCreditCard(transactionId: string) {
                 // actionにエラー結果を追加
                 try {
                     const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                    await repos.action.giveUp(payActionAttributes.typeOf, action.id, actionError);
+                    await repos.action.giveUp({ typeOf: payActionAttributes.typeOf, id: action.id, error: actionError });
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
@@ -103,7 +103,7 @@ export function payCreditCard(transactionId: string) {
             const actionResult: factory.action.trade.pay.IResult<factory.paymentMethodType.CreditCard> = {
                 creditCardSales: [alterTranResult]
             };
-            await repos.action.complete(payActionAttributes.typeOf, action.id, actionResult);
+            await repos.action.complete({ typeOf: payActionAttributes.typeOf, id: action.id, result: actionResult });
         }
     };
 }
@@ -116,7 +116,7 @@ export function cancelCreditCardAuth(transactionId: string) {
     return async (repos: { action: ActionRepo }) => {
         // クレジットカード仮売上アクションを取得
         const authorizeActions = <factory.action.authorize.paymentMethod.creditCard.IAction[]>
-            await repos.action.findAuthorizeByTransactionId(transactionId)
+            await repos.action.findAuthorizeByTransactionId({ transactionId: transactionId })
                 .then((actions) => actions
                     .filter((a) => a.object.typeOf === factory.paymentMethodType.CreditCard)
                     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
@@ -222,7 +222,7 @@ export function refundCreditCard(transactionId: string) {
                 // actionにエラー結果を追加
                 try {
                     const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                    await repos.action.giveUp(action.typeOf, action.id, actionError);
+                    await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
@@ -232,7 +232,7 @@ export function refundCreditCard(transactionId: string) {
 
             // アクション完了
             debug('ending action...');
-            await repos.action.complete(action.typeOf, action.id, { alterTranResult });
+            await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: { alterTranResult } });
 
             // 潜在アクション
             await onRefund(refundActionAttributes)({ task: repos.task });

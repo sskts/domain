@@ -49,7 +49,7 @@ describe('complete()', () => {
         sandbox.mock(repository.actionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(new repository.actionModel());
 
-        const result = await repository.complete(action.typeOf, action.id, actionResult);
+        const result = await repository.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
 
         assert(typeof result, 'object');
         sandbox.verify();
@@ -64,7 +64,7 @@ describe('complete()', () => {
         sandbox.mock(repository.actionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(null);
 
-        const result = await repository.complete(action.typeOf, action.id, actionResult).catch((err) => err);
+        const result = await repository.complete({ typeOf: action.typeOf, id: action.id, result: actionResult }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -84,7 +84,7 @@ describe('cancel()', () => {
         sandbox.mock(repository.actionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(new repository.actionModel());
 
-        const result = await repository.cancel(action.typeOf, action.id);
+        const result = await repository.cancel({ typeOf: action.typeOf, id: action.id });
 
         assert(typeof result, 'object');
         sandbox.verify();
@@ -98,7 +98,7 @@ describe('cancel()', () => {
         sandbox.mock(repository.actionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(null);
 
-        const result = await repository.cancel(action.typeOf, action.id).catch((err) => err);
+        const result = await repository.cancel({ typeOf: action.typeOf, id: action.id }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -119,7 +119,7 @@ describe('giveUp()', () => {
         sandbox.mock(repository.actionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(new repository.actionModel());
 
-        const result = await repository.giveUp(action.typeOf, action.id, error);
+        const result = await repository.giveUp({ typeOf: action.typeOf, id: action.id, error: error });
 
         assert(typeof result, 'object');
         sandbox.verify();
@@ -134,7 +134,7 @@ describe('giveUp()', () => {
         sandbox.mock(repository.actionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(null);
 
-        const result = await repository.giveUp(action.typeOf, action.id, error).catch((err) => err);
+        const result = await repository.giveUp({ typeOf: action.typeOf, id: action.id, error: error }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -154,7 +154,7 @@ describe('findById()', () => {
         sandbox.mock(repository.actionModel).expects('findOne').once()
             .chain('exec').resolves(new repository.actionModel());
 
-        const result = await repository.findById(action.typeOf, action.id);
+        const result = await repository.findById({ typeOf: action.typeOf, id: action.id });
 
         assert(typeof result, 'object');
         sandbox.verify();
@@ -168,7 +168,7 @@ describe('findById()', () => {
         sandbox.mock(repository.actionModel).expects('findOne').once()
             .chain('exec').resolves(null);
 
-        const result = await repository.findById(action.typeOf, action.id).catch((err) => err);
+        const result = await repository.findById({ typeOf: action.typeOf, id: action.id }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
@@ -192,7 +192,7 @@ describe('findAuthorizeByTransactionId()', () => {
         sandbox.mock(repository.actionModel).expects('find').once()
             .chain('exec').resolves(actions.map((a) => new repository.actionModel(a)));
 
-        const result = await repository.findAuthorizeByTransactionId(transactionId);
+        const result = await repository.findAuthorizeByTransactionId({ transactionId });
 
         assert(Array.isArray(result));
         assert.equal(result.length, actions.length);
@@ -200,7 +200,7 @@ describe('findAuthorizeByTransactionId()', () => {
     });
 });
 
-describe('findByOrderNumber()', () => {
+describe('searchByOrderNumber()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -214,10 +214,13 @@ describe('findByOrderNumber()', () => {
 
         const repository = new sskts.repository.Action(sskts.mongoose.connection);
 
-        sandbox.mock(repository.actionModel).expects('find').once()
-            .chain('sort').chain('exec').resolves(actions.map((a) => new repository.actionModel(a)));
+        sandbox.mock(repository.actionModel)
+            .expects('find')
+            .once()
+            .chain('exec')
+            .resolves(actions.map((a) => new repository.actionModel(a)));
 
-        const result = await repository.findByOrderNumber(orderNumber);
+        const result = await repository.searchByOrderNumber({ orderNumber });
 
         assert(Array.isArray(result));
         assert.equal(result.length, actions.length);

@@ -311,8 +311,8 @@ describe('service.transaction.returnOrder.confirm()', () => {
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(returnOrderTransaction);
         sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
-        sandbox.mock(actionRepo).expects('findByOrderNumber').once()
-            .withArgs(order.orderNumber).resolves(actionsOnOrder);
+        sandbox.mock(actionRepo).expects('searchByOrderNumber').once()
+            .resolves(actionsOnOrder);
         sandbox.mock(transactionRepo).expects('confirmReturnOrder').once().resolves(returnOrderTransaction);
 
         const result = await sskts.service.transaction.returnOrder.confirm({
@@ -369,7 +369,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(returnOrderTransaction);
         sandbox.mock(organizationRepo).expects('findById').never();
-        sandbox.mock(actionRepo).expects('findByOrderNumber').never();
+        sandbox.mock(actionRepo).expects('searchByOrderNumber').never();
         sandbox.mock(transactionRepo).expects('confirmReturnOrder').never();
 
         const result = await sskts.service.transaction.returnOrder.confirm({
@@ -415,7 +415,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(returnOrderTransaction);
         sandbox.mock(organizationRepo).expects('findById').never();
-        sandbox.mock(actionRepo).expects('findByOrderNumber').never();
+        sandbox.mock(actionRepo).expects('searchByOrderNumber').never();
         sandbox.mock(transactionRepo).expects('confirmReturnOrder').never();
 
         const result = await sskts.service.transaction.returnOrder.confirm({
@@ -473,7 +473,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(returnOrderTransaction);
         sandbox.mock(organizationRepo).expects('findById').never();
         sandbox.mock(transactionRepo).expects('confirmReturnOrder').never();
-        sandbox.mock(actionRepo).expects('findByOrderNumber').never();
+        sandbox.mock(actionRepo).expects('searchByOrderNumber').never();
 
         const result = await sskts.service.transaction.returnOrder.confirm({
             id: returnOrderTransaction.id,

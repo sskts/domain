@@ -154,7 +154,7 @@ describe('setTasksExportedById()', () => {
         const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(repository.transactionModel)
-            .expects('findByIdAndUpdate').once().withArgs(transactionId)
+            .expects('findByIdAndUpdate').once()
             .chain('exec')
             .resolves(new repository.transactionModel());
 

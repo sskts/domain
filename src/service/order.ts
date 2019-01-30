@@ -53,7 +53,7 @@ export function createFromTransaction(transactionId: string) {
             // actionにエラー結果を追加
             try {
                 const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await repos.action.giveUp(orderActionAttributes.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: orderActionAttributes.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -63,7 +63,7 @@ export function createFromTransaction(transactionId: string) {
 
         // アクション完了
         debug('ending action...');
-        await repos.action.complete(orderActionAttributes.typeOf, action.id, {});
+        await repos.action.complete({ typeOf: orderActionAttributes.typeOf, id: action.id, result: {} });
 
         // 潜在アクション
         await onCreate(transactionId, orderActionAttributes)({ task: repos.task });
@@ -271,7 +271,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
             // actionにエラー結果を追加
             try {
                 const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await actionRepo.giveUp(returnOrderActionAttributes.typeOf, action.id, actionError);
+                await actionRepo.giveUp({ typeOf: returnOrderActionAttributes.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -281,7 +281,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
 
         // アクション完了
         debug('ending action...');
-        await actionRepo.complete(returnOrderActionAttributes.typeOf, action.id, {});
+        await actionRepo.complete({ typeOf: returnOrderActionAttributes.typeOf, id: action.id, result: {} });
 
         // 潜在アクション
         await onReturn(returnOrderTransactionId, returnOrderActionAttributes)(taskRepo);

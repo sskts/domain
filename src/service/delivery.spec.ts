@@ -77,7 +77,7 @@ describe('注文アイテムを配送する', () => {
         sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo.taskModel).expects('findOne').once().chain('exec').resolves(null);
         sandbox.mock(actionRepo).expects('start').once().withExactArgs(sendOrderActionAttributes).resolves(action);
-        sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
+        sandbox.mock(actionRepo).expects('complete').once().resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').never();
         sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').once().resolves(stateReserveResult);
         sandbox.mock(sskts.COA.services.reserve).expects('updReserve').once().resolves(stateReserveResult);
@@ -167,7 +167,7 @@ describe('注文アイテムを配送する', () => {
         sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo.taskModel).expects('findOne').once().chain('exec').resolves(null);
         sandbox.mock(actionRepo).expects('start').once().withExactArgs(sendOrderActionAttributes).resolves(action);
-        sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
+        sandbox.mock(actionRepo).expects('complete').once().resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').never();
         sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').once().resolves(stateReserveResult);
         sandbox.mock(sskts.COA.services.reserve).expects('updReserve').never();
@@ -574,7 +574,7 @@ describe('注文アイテムを配送する', () => {
         sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('start').once().withExactArgs(sendOrderActionAttributes).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
-        sandbox.mock(actionRepo).expects('giveUp').once().withArgs(action.typeOf, action.id).resolves(action);
+        sandbox.mock(actionRepo).expects('giveUp').once().resolves(action);
         sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').once().rejects(stateReserveResult);
         sandbox.mock(sskts.COA.services.reserve).expects('updReserve').never();
         // tslint:disable-next-line:no-magic-numbers

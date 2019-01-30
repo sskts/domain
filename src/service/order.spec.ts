@@ -48,7 +48,7 @@ describe('createFromTransaction()', () => {
         sandbox.mock(actionRepo).expects('start').once()
             .withExactArgs(transaction.potentialActions.order).resolves(action);
         sandbox.mock(actionRepo).expects('complete').once()
-            .withArgs(transaction.potentialActions.order.typeOf, action.id).resolves(action);
+            .resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').never();
         sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(orderRepo).expects('createIfNotExist').once()
@@ -151,7 +151,7 @@ describe('createFromTransaction()', () => {
 
         sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
-        sandbox.mock(actionRepo).expects('giveUp').once().withArgs(action.typeOf, action.id).resolves(action);
+        sandbox.mock(actionRepo).expects('giveUp').once().resolves(action);
         sandbox.mock(orderRepo).expects('createIfNotExist').once().rejects(createOrderError);
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(taskRepo).expects('save').never();
@@ -226,7 +226,7 @@ describe('cancelReservations()', () => {
         sandbox.mock(actionRepo).expects('start').once()
             .withExactArgs(returnOrderTransaction.potentialActions.returnOrder).resolves(action);
         sandbox.mock(actionRepo).expects('complete').once()
-            .withArgs(action.typeOf, action.id).resolves(action);
+            .resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').never();
         sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').once().resolves(stateReserveResult);
         sandbox.mock(sskts.COA.services.reserve).expects('delReserve').once().resolves();
@@ -360,7 +360,7 @@ describe('cancelReservations()', () => {
         sandbox.mock(actionRepo).expects('start').once()
             .withExactArgs(returnOrderTransaction.potentialActions.returnOrder).resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
-        sandbox.mock(actionRepo).expects('giveUp').once().withArgs(action.typeOf, action.id).resolves(action);
+        sandbox.mock(actionRepo).expects('giveUp').once().resolves(action);
         sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').once().rejects(stateReserveResult);
         sandbox.mock(sskts.COA.services.reserve).expects('delReserve').never();
         sandbox.mock(ownershipInfoRepo.ownershipInfoModel).expects('findOneAndUpdate').never();

@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - ActionスキーマをCinerino化
 - OrganizationスキーマをCinerino化
+- アクションリポジトリのインターフェースをCinerinoに統一
 
 ### Deprecated
 

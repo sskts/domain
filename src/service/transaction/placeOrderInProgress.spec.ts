@@ -660,7 +660,7 @@ describe('confirm()', () => {
         sandbox.mock(orderNumberRepo).expects('publish').once().resolves('orderNumber');
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
-            .withExactArgs(transaction.id).resolves([
+            .resolves([
                 ...creditCardAuthorizeActions,
                 ...seatReservationAuthorizeActions
                 // ...pecorinoAuthorizeActions
@@ -965,7 +965,7 @@ describe('confirm()', () => {
         sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
-            .withExactArgs(transaction.id).resolves(authorizeActions);
+            .resolves(authorizeActions);
         sandbox.mock(orderNumberRepo).expects('publish').never();
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 

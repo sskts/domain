@@ -82,7 +82,7 @@ describe('action.authorize.mvtk.create()', () => {
             .chain('exec')
             .resolves(seatReservationAuthorizeActions.map((a) => new actionRepo.actionModel(a)));
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
-        sandbox.mock(actionRepo).expects('complete').once().withArgs(action.typeOf, action.id).resolves(action);
+        sandbox.mock(actionRepo).expects('complete').once().resolves(action);
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create({
             agentId: agent.id,
@@ -632,7 +632,8 @@ describe('action.authorize.mvtk.cancel()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(authorizeActionRepo).expects('cancel').once().withExactArgs(action.typeOf, action.id).resolves();
+        sandbox.mock(authorizeActionRepo).expects('cancel').once()
+            .resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel({
             agentId: agent.id,

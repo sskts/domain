@@ -78,7 +78,7 @@ describe('useMvtk()', () => {
         sandbox.mock(actionRepo).expects('start').once()
             .withExactArgs(existingTransaction.potentialActions.order.potentialActions.useMvtk).resolves(action);
         sandbox.mock(actionRepo).expects('complete').once()
-            .withArgs(existingTransaction.potentialActions.order.potentialActions.useMvtk.typeOf, action.id).resolves(action);
+            .resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').never();
         sandbox.mock(transactionRepo).expects('findById').once().resolves(existingTransaction);
 
