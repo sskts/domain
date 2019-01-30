@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v27.0.1 - 2019-01-30
+
+### Changed
+
+- 取引レポート中の日時項目のデータ型が万が一Date型でない場合に対処
+
 ## v27.0.0 - 2019-01-28
 
 ### Added

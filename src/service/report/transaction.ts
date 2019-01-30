@@ -4,6 +4,7 @@
  */
 import * as createDebug from 'debug';
 import * as json2csv from 'json2csv';
+import * as moment from 'moment';
 import * as util from 'util';
 
 import { MongoRepository as TaskRepo } from '../../repo/task';
@@ -279,8 +280,8 @@ export function transaction2report(params: {
         return {
             id: params.transaction.id,
             status: params.transaction.status,
-            startDate: (params.transaction.startDate !== undefined) ? params.transaction.startDate.toISOString() : '',
-            endDate: (params.transaction.endDate !== undefined) ? params.transaction.endDate.toISOString() : '',
+            startDate: (params.transaction.startDate !== undefined) ? moment(params.transaction.startDate).toISOString() : '',
+            endDate: (params.transaction.endDate !== undefined) ? moment(params.transaction.endDate).toISOString() : '',
             seller: {
                 typeOf: params.transaction.seller.typeOf,
                 id: params.transaction.seller.id,
@@ -289,8 +290,8 @@ export function transaction2report(params: {
             },
             customer: order.customer,
             eventName: (event !== undefined) ? event.name.ja : '',
-            eventStartDate: (event !== undefined) ? event.startDate.toISOString() : '',
-            eventEndDate: (event !== undefined) ? event.endDate.toISOString() : '',
+            eventStartDate: (event !== undefined) ? moment(event.startDate).toISOString() : '',
+            eventEndDate: (event !== undefined) ? moment(event.endDate).toISOString() : '',
             eventLocation: (event !== undefined) ? event.location.name.ja : '',
             superEventLocationBranchCode: (event !== undefined) ? event.superEvent.location.branchCode : '',
             superEventLocation: (event !== undefined) ? event.superEvent.location.name.ja : '',
@@ -311,8 +312,8 @@ export function transaction2report(params: {
         return {
             id: params.transaction.id,
             status: params.transaction.status,
-            startDate: (params.transaction.startDate !== undefined) ? params.transaction.startDate.toISOString() : '',
-            endDate: (params.transaction.endDate !== undefined) ? params.transaction.endDate.toISOString() : '',
+            startDate: (params.transaction.startDate !== undefined) ? moment(params.transaction.startDate).toISOString() : '',
+            endDate: (params.transaction.endDate !== undefined) ? moment(params.transaction.endDate).toISOString() : '',
             seller: {
                 typeOf: params.transaction.seller.typeOf,
                 id: params.transaction.seller.id,
