@@ -345,26 +345,6 @@ export class MongoRepository {
     }
 
     /**
-     * find an order by an inquiry key
-     * @deprecated Use findByLocationBranchCodeAndReservationNumber
-     */
-    public async findByOrderInquiryKey(orderInquiryKey: factory.order.IOrderInquiryKey) {
-        const doc = await this.orderModel.findOne(
-            {
-                'orderInquiryKey.theaterCode': orderInquiryKey.theaterCode,
-                'orderInquiryKey.confirmationNumber': orderInquiryKey.confirmationNumber,
-                'orderInquiryKey.telephone': orderInquiryKey.telephone
-            }
-        ).exec();
-
-        if (doc === null) {
-            throw new factory.errors.NotFound('order');
-        }
-
-        return <factory.order.IOrder>doc.toObject();
-    }
-
-    /**
      * イベント場所と予約番号から検索する
      */
     public async findByLocationBranchCodeAndReservationNumber(

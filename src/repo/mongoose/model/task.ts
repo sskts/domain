@@ -90,6 +90,15 @@ schema.index(
         }
     }
 );
+schema.index(
+    { remainingNumberOfTries: 1 },
+    { name: 'searchByRemainingNumberOfTries' }
+);
+schema.index(
+    { numberOfTried: 1 },
+    { name: 'searchByNumberOfTried' }
+);
+
 // 基本的にグループごとに、ステータスと実行日時を見て、タスクは実行される
 schema.index(
     { name: 1, status: 1, numberOfTried: 1, runsAt: 1 }
@@ -114,7 +123,6 @@ schema.index(
         }
     }
 );
-
 // 取引のタスク検索に使用
 schema.index(
     { 'data.transactionId': 1 },
@@ -124,7 +132,6 @@ schema.index(
         }
     }
 );
-
 // 会員プログラム登録解除に使用
 schema.index(
     {
@@ -142,14 +149,15 @@ schema.index(
     }
 );
 
-export default mongoose.model('Task', schema).on(
-    'index',
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore next */
-    (error) => {
-        if (error !== undefined) {
-            // tslint:disable-next-line:no-console
-            console.error(error);
+export default mongoose.model('Task', schema)
+    .on(
+        'index',
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore next */
+        (error) => {
+            if (error !== undefined) {
+                // tslint:disable-next-line:no-console
+                console.error(error);
+            }
         }
-    }
-);
+    );

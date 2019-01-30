@@ -16,6 +16,7 @@ import * as factory from '../factory';
 const debug = createDebug('sskts-domain:service:order');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
+export type IReservation = factory.reservation.event.IEventReservation<factory.event.screeningEvent.IEvent>;
 
 /**
  * 注文取引結果から注文を作成する
@@ -218,18 +219,19 @@ export function cancelReservations(returnOrderTransactionId: string) {
 
         try {
             const order = placeOrderTransactionResult.order;
+            const reservation = <IReservation>order.acceptedOffers[0].itemOffered;
 
             // 非同期でCOA本予約取消
             // COAから内容抽出
             // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
             const phoneUtil = googleLibphonenumber.PhoneNumberUtil.getInstance();
-            const phoneNumber = phoneUtil.parse(order.orderInquiryKey.telephone, 'JP');
+            const phoneNumber = phoneUtil.parse(order.customer.telephone, 'JP');
             let telNum = phoneUtil.format(phoneNumber, googleLibphonenumber.PhoneNumberFormat.NATIONAL);
             // COAでは数字のみ受け付けるので数字以外を除去
             telNum = telNum.replace(/[^\d]/g, '');
             const stateReserveResult = await COA.services.reserve.stateReserve({
-                theaterCode: order.orderInquiryKey.theaterCode,
-                reserveNum: order.orderInquiryKey.confirmationNumber,
+                theaterCode: reservation.reservationFor.superEvent.location.branchCode,
+                reserveNum: Number(reservation.reservationNumber),
                 telNum: telNum
             });
             debug('COA stateReserveResult is', stateReserveResult);
@@ -240,8 +242,8 @@ export function cancelReservations(returnOrderTransactionId: string) {
             if (stateReserveResult !== null) {
                 debug('deleting COA reservation...');
                 await COA.services.reserve.delReserve({
-                    theaterCode: order.orderInquiryKey.theaterCode,
-                    reserveNum: order.orderInquiryKey.confirmationNumber,
+                    theaterCode: reservation.reservationFor.superEvent.location.branchCode,
+                    reserveNum: Number(reservation.reservationNumber),
                     telNum: telNum,
                     dateJouei: stateReserveResult.dateJouei,
                     titleCode: stateReserveResult.titleCode,

@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- 注文照会キー属性を注文から削除
+
 ### Fixed
 
 ### Security

@@ -175,10 +175,16 @@ describe('cancelReservations()', () => {
 
     it('アクションを完了できるはず', async () => {
         const order = {
-            orderNumber: 'orderNumber',
-            orderInquiryKey: {
-                telephone: '+819012345678'
-            }
+            customer: { telephone: '+819096793896' },
+            acceptedOffers: [
+                {
+                    itemOffered: {
+                        reservationNumber: '123',
+                        reservationFor: { superEvent: { location: { branchCode: '123' } } }
+                    }
+                }
+            ],
+            orderNumber: 'orderNumber'
         };
         const ownershipInfos = [
             { identifier: 'identifier' }
@@ -305,10 +311,16 @@ describe('cancelReservations()', () => {
 
     it('COA予約内容抽出に失敗すればアクションにエラー結果が追加されるはず', async () => {
         const order = {
-            orderNumber: 'orderNumber',
-            orderInquiryKey: {
-                telephone: '+819012345678'
-            }
+            customer: { telephone: '+819096793896' },
+            acceptedOffers: [
+                {
+                    itemOffered: {
+                        reservationNumber: '123',
+                        reservationFor: { superEvent: { location: { branchCode: '123' } } }
+                    }
+                }
+            ],
+            orderNumber: 'orderNumber'
         };
         const ownershipInfos = [
             { identifier: 'identifier' }

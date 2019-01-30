@@ -34,11 +34,12 @@ const typeOfGoodSchema = new mongoose.Schema(
  */
 const schema = new mongoose.Schema(
     {
+        _id: String,
         typeOf: {
             type: String,
             required: true
         },
-        identifier: String,
+        identifier: mongoose.SchemaTypes.Mixed,
         ownedBy: ownedBySchema,
         acquiredFrom: acquiredFromSchema,
         ownedFrom: Date,
@@ -56,8 +57,18 @@ const schema = new mongoose.Schema(
             createdAt: 'createdAt',
             updatedAt: 'updatedAt'
         },
-        toJSON: { getters: true },
-        toObject: { getters: true }
+        toJSON: {
+            getters: true,
+            virtuals: true,
+            minimize: false,
+            versionKey: false
+        },
+        toObject: {
+            getters: true,
+            virtuals: true,
+            minimize: false,
+            versionKey: false
+        }
     }
 );
 
@@ -91,28 +102,6 @@ schema.index(
         }
     }
 );
-
-// identifierはユニーク
-schema.index(
-    { identifier: 1 },
-    { unique: true }
-);
-
-// 所有権検索時に使用
-schema.index(
-    {
-        'typeOfGood.typeOf': 1,
-        'ownedBy.memberOf.membershipNumber': 1,
-        ownedFrom: 1,
-        ownedThrough: 1
-    },
-    {
-        name: 'searchByOwner',
-        partialFilterExpression: {
-            'ownedBy.memberOf.membershipNumber': { $exists: true }
-        }
-    }
-);
 schema.index(
     {
         'ownedBy.id': 1
@@ -124,8 +113,35 @@ schema.index(
         }
     }
 );
-
-// トークンで所有権検索時に使用
+schema.index(
+    {
+        'ownedBy.memberOf.membershipNumber': 1
+    },
+    {
+        name: 'searchByOwnerMemberOfMembershipNumber',
+        partialFilterExpression: {
+            'ownedBy.memberOf.membershipNumber': { $exists: true }
+        }
+    }
+);
+schema.index(
+    { ownedFrom: 1 },
+    {
+        name: 'searchByOwnedFrom',
+        partialFilterExpression: {
+            ownedFrom: { $exists: true }
+        }
+    }
+);
+schema.index(
+    { ownedThrough: 1 },
+    {
+        name: 'searchByownedThrough',
+        partialFilterExpression: {
+            ownedThrough: { $exists: true }
+        }
+    }
+);
 schema.index(
     {
         'typeOfGood.reservedTicket.ticketToken': 1
@@ -138,14 +154,15 @@ schema.index(
     }
 );
 
-export default mongoose.model('OwnershipInfo', schema).on(
-    'index',
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore next */
-    (error) => {
-        if (error !== undefined) {
-            // tslint:disable-next-line:no-console
-            console.error(error);
+export default mongoose.model('OwnershipInfo', schema)
+    .on(
+        'index',
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore next */
+        (error) => {
+            if (error !== undefined) {
+                // tslint:disable-next-line:no-console
+                console.error(error);
+            }
         }
-    }
-);
+    );
