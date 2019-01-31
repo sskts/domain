@@ -1,16 +1,16 @@
+import { mongoose } from '@cinerino/domain';
 import * as moment from 'moment';
-import { Connection, Document, QueryCursor } from 'mongoose';
 
 import * as factory from '../factory';
 import TransactionModel from './mongoose/model/transaction';
 
 /**
- * 取引リポジトリー
+ * 取引リポジトリ
  */
 export class MongoRepository {
     public readonly transactionModel: typeof TransactionModel;
 
-    constructor(connection: Connection) {
+    constructor(connection: mongoose.Connection) {
         this.transactionModel = connection.model(TransactionModel.modelName);
     }
     // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
@@ -567,7 +567,7 @@ export class MongoRepository {
     /* istanbul ignore next */
     public stream<T extends factory.transactionType>(
         params: factory.transaction.ISearchConditions<T>
-    ): QueryCursor<Document> {
+    ): mongoose.QueryCursor<mongoose.Document> {
         const conditions = MongoRepository.CREATE_MONGO_CONDITIONS(params);
         const query = this.transactionModel.find({ $and: conditions })
             .select({ __v: 0, createdAt: 0, updatedAt: 0 });

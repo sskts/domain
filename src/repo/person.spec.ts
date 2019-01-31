@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 /**
- * ユーザーリポジトリーテスト
+ * ユーザーリポジトリテスト
  */
 import * as AWS from 'aws-sdk';
 import { } from 'mocha';

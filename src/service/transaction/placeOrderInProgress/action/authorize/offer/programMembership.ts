@@ -4,7 +4,6 @@
 import * as createDebug from 'debug';
 
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
-import { MongoRepository as OrganizationRepo } from '../../../../../../repo/organization';
 import { MongoRepository as ProgramMembershipRepo } from '../../../../../../repo/programMembership';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
 
@@ -14,7 +13,6 @@ const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress
 
 export type ICreateOperation<T> = (repos: {
     action: ActionRepo;
-    organization: OrganizationRepo;
     programMembership: ProgramMembershipRepo;
     transaction: TransactionRepo;
 }) => Promise<T>;
@@ -29,7 +27,6 @@ export function create(params: {
 }): ICreateOperation<factory.action.authorize.offer.programMembership.IAction> {
     return async (repos: {
         action: ActionRepo;
-        organization: OrganizationRepo;
         programMembership: ProgramMembershipRepo;
         transaction: TransactionRepo;
     }) => {
@@ -62,6 +59,11 @@ export function create(params: {
         /* istanbul ignore if */
         if (acceptedOffer === undefined) {
             throw new factory.errors.NotFound('Offer');
+        }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (acceptedOffer.price === undefined) {
+            throw new factory.errors.NotFound('Offer Price undefined');
         }
 
         // 在庫確認は現時点で不要

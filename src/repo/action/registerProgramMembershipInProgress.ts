@@ -12,7 +12,7 @@ export interface IProgressKey {
 }
 
 /**
- * 進行中の会員プログラム登録アクションリポジトリー
+ * 進行中の会員プログラム登録アクションリポジトリ
  */
 export class RedisRepository {
     public static KEY_PREFIX: string = 'sskts-domain:registerProgramMembershipActionInProgress';

@@ -6,7 +6,7 @@ import * as pug from 'pug';
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
 import { MongoRepository as OrderRepo } from '../../repo/order';
-import { MongoRepository as OrganizationRepo } from '../../repo/organization';
+import { MongoRepository as SellerRepo } from '../../repo/seller';
 import { MongoRepository as TaskRepo } from '../../repo/task';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
@@ -26,8 +26,9 @@ export type ITaskAndTransactionOperation<T> = (repos: {
 export type IConfirmOperation<T> = (repos: {
     action: ActionRepo;
     transaction: TransactionRepo;
-    organization: OrganizationRepo;
+    seller: SellerRepo;
 }) => Promise<T>;
+export type ISeller = factory.seller.IOrganization<factory.seller.IAttributes<factory.organizationType>>;
 
 /**
  * 注文返品取引開始
@@ -128,8 +129,8 @@ export function confirm(params: {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
+        seller: SellerRepo;
         transaction: TransactionRepo;
-        organization: OrganizationRepo;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.ReturnOrder,
@@ -150,10 +151,9 @@ export function confirm(params: {
             throw new factory.errors.NotFound('customerContact');
         }
 
-        const seller = await repos.organization.findById(
-            <factory.organizationType.MovieTheater>placeOrderTransaction.seller.typeOf,
-            placeOrderTransaction.seller.id
-        );
+        const seller = await repos.seller.findById({
+            id: placeOrderTransaction.seller.id
+        });
 
         const actionsOnOrder = await repos.action.searchByOrderNumber({ orderNumber: placeOrderTransactionResult.order.orderNumber });
         const payActions = <factory.action.trade.pay.IAction<factory.paymentMethodType>[]>actionsOnOrder
@@ -261,7 +261,7 @@ export async function createRefundEmail(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     customerContact: factory.transaction.placeOrder.ICustomerContact;
     order: factory.order.IOrder;
-    seller: factory.organization.movieTheater.IOrganization;
+    seller: ISeller;
 }): Promise<factory.creativeWork.message.email.ICreativeWork> {
     return new Promise<factory.creativeWork.message.email.ICreativeWork>((resolve, reject) => {
         const seller = params.transaction.seller;

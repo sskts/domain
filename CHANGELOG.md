@@ -13,12 +13,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - ActionスキーマをCinerino化
 - OrganizationスキーマをCinerino化
 - アクションリポジトリのインターフェースをCinerinoに統一
+- 印刷アクションリポジトリをアクションリポジトリへ移行
 
 ### Deprecated
 
 ### Removed
 
 - 注文照会キー属性を注文から削除
+- 組織リポジトリを削除
 
 ### Fixed
 

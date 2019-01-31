@@ -25,16 +25,16 @@ describe('会員プログラム登録タスクを作成する', () => {
         sandbox.restore();
     });
 
-    it('リポジトリーが正常であればタスクを作成できるはず', async () => {
+    it('リポジトリが正常であればタスクを作成できるはず', async () => {
         const programMembership = {
-            offers: [{}]
+            offers: [{ price: 123 }]
         };
         const seller = { name: {} };
         const task = {};
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(programMembershipRepo).expects('search').once().resolves([programMembership]);
         sandbox.mock(taskRepo).expects('save').once().resolves(task);
 
@@ -42,7 +42,7 @@ describe('会員プログラム登録タスクを作成する', () => {
             agent: {},
             seller: {}
         })({
-            organization: organizationRepo,
+            seller: sellerRepo,
             programMembership: programMembershipRepo,
             task: taskRepo
         });
@@ -56,11 +56,11 @@ describe('会員プログラムに登録する', () => {
         sandbox.restore();
     });
 
-    it('リポジトリーが正常であれば登録できるはず', async () => {
+    it('リポジトリが正常であれば登録できるはず', async () => {
         const creditCard = { cardSeq: 'cardSeq' };
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
@@ -91,14 +91,14 @@ describe('会員プログラムに登録する', () => {
             object: {
                 itemOffered: {
                     id: 'programMembershipId',
-                    offers: [],
+                    offers: [{ price: 123 }],
                     hostingOrganization: {}
                 }
             }
         })({
             action: actionRepo,
             orderNumber: orderNumberRepo,
-            organization: organizationRepo,
+            seller: sellerRepo,
             ownershipInfo: ownershipInfoRepo,
             person: personRepo,
             programMembership: programMembershipRepo,
@@ -109,11 +109,11 @@ describe('会員プログラムに登録する', () => {
         sandbox.verify();
     });
 
-    it('リポジトリーが正常であれば登録できて、ポイントを追加できるはず', async () => {
+    it('リポジトリが正常であれば登録できて、ポイントを追加できるはず', async () => {
         const creditCard = { cardSeq: 'cardSeq' };
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
@@ -161,7 +161,7 @@ describe('会員プログラムに登録する', () => {
         })({
             action: actionRepo,
             orderNumber: orderNumberRepo,
-            organization: organizationRepo,
+            seller: sellerRepo,
             ownershipInfo: ownershipInfoRepo,
             person: personRepo,
             programMembership: programMembershipRepo,
@@ -177,7 +177,7 @@ describe('会員プログラムに登録する', () => {
         // const creditCard = { cardSeq: 'cardSeq' };
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
@@ -220,7 +220,7 @@ describe('会員プログラムに登録する', () => {
         })({
             action: actionRepo,
             orderNumber: orderNumberRepo,
-            organization: organizationRepo,
+            seller: sellerRepo,
             ownershipInfo: ownershipInfoRepo,
             person: personRepo,
             programMembership: programMembershipRepo,
@@ -236,7 +236,7 @@ describe('会員プログラムに登録する', () => {
         // const creditCard = { cardSeq: 'cardSeq' };
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
@@ -282,7 +282,7 @@ describe('会員プログラムに登録する', () => {
         })({
             action: actionRepo,
             orderNumber: orderNumberRepo,
-            organization: organizationRepo,
+            seller: sellerRepo,
             ownershipInfo: ownershipInfoRepo,
             person: personRepo,
             programMembership: programMembershipRepo,
@@ -300,7 +300,7 @@ describe('会員プログラムに登録する', () => {
         };
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
@@ -323,7 +323,7 @@ describe('会員プログラムに登録する', () => {
         })({
             action: actionRepo,
             orderNumber: orderNumberRepo,
-            organization: organizationRepo,
+            seller: sellerRepo,
             ownershipInfo: ownershipInfoRepo,
             person: personRepo,
             programMembership: programMembershipRepo,
@@ -338,7 +338,7 @@ describe('会員プログラムに登録する', () => {
         const startPlaceOrderError = new Error('startPlaceOrderError');
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
@@ -367,7 +367,7 @@ describe('会員プログラムに登録する', () => {
         })({
             action: actionRepo,
             orderNumber: orderNumberRepo,
-            organization: organizationRepo,
+            seller: sellerRepo,
             ownershipInfo: ownershipInfoRepo,
             person: personRepo,
             programMembership: programMembershipRepo,
@@ -381,7 +381,7 @@ describe('会員プログラムに登録する', () => {
     it('クレジットカードが見つからなければアクションを断念するはず', async () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
@@ -412,7 +412,7 @@ describe('会員プログラムに登録する', () => {
         })({
             action: actionRepo,
             orderNumber: orderNumberRepo,
-            organization: organizationRepo,
+            seller: sellerRepo,
             ownershipInfo: ownershipInfoRepo,
             person: personRepo,
             programMembership: programMembershipRepo,
@@ -429,7 +429,7 @@ describe('会員プログラム登録解除タスクを作成する', () => {
         sandbox.restore();
     });
 
-    it('リポジトリーが正常であればタスクを作成できるはず', async () => {
+    it('リポジトリが正常であればタスクを作成できるはず', async () => {
         const ownershipInfo = {};
         const task = {};
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
@@ -454,7 +454,7 @@ describe('会員プログラム登録解除', () => {
         sandbox.restore();
     });
 
-    it('リポジトリーが正常であればアクションを完了できるはず', async () => {
+    it('リポジトリが正常であればアクションを完了できるはず', async () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
@@ -479,7 +479,7 @@ describe('会員プログラム登録解除', () => {
         sandbox.verify();
     });
 
-    it('リポジトリーでエラーが発生すればアクションを断念するはず', async () => {
+    it('リポジトリでエラーが発生すればアクションを断念するはず', async () => {
         const findTaskError = new Error('findTaskError');
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
@@ -561,7 +561,7 @@ describe('会員プログラム登録解除', () => {
         sandbox.verify();
     });
 
-    it('リポジトリーとAWS正常であればアクションを完了できるはず', async () => {
+    it('リポジトリとAWS正常であればアクションを完了できるはず', async () => {
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);

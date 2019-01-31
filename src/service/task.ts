@@ -1,11 +1,11 @@
 /**
  * タスクサービス
  */
+import { mongoose } from '@cinerino/domain';
 import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as AWS from 'aws-sdk';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
-import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
 import { MongoRepository as TaskRepo } from '../repo/task';
@@ -18,7 +18,7 @@ import * as factory from '../factory';
 export type TaskOperation<T> = (repos: { task: TaskRepo }) => Promise<T>;
 export type IExecuteOperation<T> = (settings: {
     /**
-     * タスクリポジトリー
+     * タスクリポジトリ
      */
     taskRepo: TaskRepo;
     /**
@@ -59,7 +59,7 @@ export const ABORT_REPORT_SUBJECT = 'Task aborted !!!';
 export function executeByName(taskName: factory.taskName): IExecuteOperation<void> {
     return async (settings: {
         /**
-         * タスクリポジトリー
+         * タスクリポジトリ
          */
         taskRepo: TaskRepo;
         /**

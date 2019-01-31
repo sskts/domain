@@ -10,7 +10,7 @@ import * as util from 'util';
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
 import { RedisRepository as OrderNumberRepo } from '../../repo/orderNumber';
-import { MongoRepository as OrganizationRepo } from '../../repo/organization';
+import { MongoRepository as SellerRepo } from '../../repo/seller';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 import * as PecorinoAwardAuthorizeActionService from './placeOrderInProgress/action/authorize/award/pecorino';
@@ -26,10 +26,11 @@ const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress
 
 export type ITransactionOperation<T> = (repos: { transaction: TransactionRepo }) => Promise<T>;
 export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (repos: {
-    organization: OrganizationRepo;
+    seller: SellerRepo;
     transaction: TransactionRepo;
 }) => Promise<T>;
 export type IAuthorizeAnyPaymentResult = factory.action.authorize.paymentMethod.any.IResult<factory.paymentMethodType>;
+export type ISeller = factory.seller.IOrganization<factory.seller.IAttributes<factory.organizationType>>;
 
 /**
  * 取引開始パラメーターインターフェース
@@ -66,11 +67,13 @@ export interface IStartParams {
 export function start(params: IStartParams):
     IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction> {
     return async (repos: {
-        organization: OrganizationRepo;
+        seller: SellerRepo;
         transaction: TransactionRepo;
     }) => {
         // 売り手を取得
-        const seller = await repos.organization.findById(params.seller.typeOf, params.seller.id);
+        const seller = await repos.seller.findById({
+            id: params.seller.id
+        });
 
         let passport: waiter.factory.passport.IPassport | undefined;
 
@@ -282,8 +285,8 @@ export function confirm(params: {
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
-        organization: OrganizationRepo;
         orderNumber: OrderNumberRepo;
+        seller: SellerRepo;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,
@@ -293,10 +296,9 @@ export function confirm(params: {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const seller = await repos.organization.findById(
-            <factory.organizationType.MovieTheater>transaction.seller.typeOf,
-            transaction.seller.id
-        );
+        const seller = await repos.seller.findById({
+            id: transaction.seller.id
+        });
         debug('seller found.', seller.identifier);
 
         const customerContact = transaction.object.customerContact;
@@ -466,7 +468,7 @@ export function createOrderFromTransaction(params: {
     orderDate: Date;
     orderStatus: factory.orderStatus;
     isGift: boolean;
-    seller: factory.organization.movieTheater.IOrganization;
+    seller: ISeller;
 }): factory.order.IOrder {
     // 座席予約に対する承認アクション取り出す
     const seatReservationAuthorizeActions = <factory.action.authorize.offer.seatReservation.IAction[]>
@@ -650,6 +652,12 @@ export function createOrderFromTransaction(params: {
         acceptedOffers.push(programMembershipAuthorizeAction.object);
     }
 
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore else */
+    if (params.seller.location === undefined || params.seller.location.branchCode === undefined) {
+        throw new factory.errors.ServiceUnavailable('Seller location branchCode undefined');
+    }
+
     // 注文照会キーを作成
     const orderInquiryKey: factory.order.IOrderInquiryKey = {
         theaterCode: params.seller.location.branchCode,
@@ -756,7 +764,7 @@ export async function createEmailMessageFromTransaction(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     customerContact: factory.transaction.placeOrder.ICustomerContact;
     order: factory.order.IOrder;
-    seller: factory.organization.movieTheater.IOrganization;
+    seller: ISeller;
 }): Promise<factory.creativeWork.message.email.ICreativeWork> {
     return new Promise<factory.creativeWork.message.email.ICreativeWork>((resolve, reject) => {
         const seller = params.transaction.seller;
@@ -920,7 +928,7 @@ export async function createPotentialActionsFromTransaction(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     customerContact: factory.transaction.placeOrder.ICustomerContact;
     order: factory.order.IOrder;
-    seller: factory.organization.movieTheater.IOrganization;
+    seller: ISeller;
     sendEmailMessage?: boolean;
 }): Promise<factory.transaction.placeOrder.IPotentialActions> {
     // クレジットカード支払いアクション

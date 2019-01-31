@@ -17,7 +17,7 @@ export type IEventOperation<T> = (repos: {
 
 /**
  * 個々の上映イベントを検索する
- * 在庫状況リポジトリーをパラメーターとして渡せば、在庫状況も取得してくれる
+ * 在庫状況リポジトリをパラメーターとして渡せば、在庫状況も取得してくれる
  */
 export function searchIndividualScreeningEvents(
     searchConditions: factory.event.screeningEvent.ISearchConditions

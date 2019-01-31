@@ -2,8 +2,8 @@
  * タスクファンクションサービス
  * タスク名ごとに、実行するファンクションをひとつずつ定義しています
  */
+import { mongoose } from '@cinerino/domain';
 import * as pecorinoapi from '@pecorino/api-nodejs-client';
-import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
@@ -11,11 +11,11 @@ import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from
 import { MongoRepository as EventRepo } from '../repo/event';
 import { MongoRepository as OrderRepo } from '../repo/order';
 import { RedisRepository as OrderNumberRepo } from '../repo/orderNumber';
-import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { CognitoRepository as PersonRepo } from '../repo/person';
 import { MongoRepository as PlaceRepo } from '../repo/place';
 import { MongoRepository as ProgramMembershipRepo } from '../repo/programMembership';
+import { MongoRepository as SellerRepo } from '../repo/seller';
 import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
@@ -377,7 +377,7 @@ export function registerProgramMembership(data: factory.task.registerProgramMemb
         await ProgramMembershipService.register(data)({
             action: new ActionRepo(settings.connection),
             orderNumber: new OrderNumberRepo(settings.redisClient),
-            organization: new OrganizationRepo(settings.connection),
+            seller: new SellerRepo(settings.connection),
             ownershipInfo: new OwnershipInfoRepo(settings.connection),
             person: new PersonRepo(settings.cognitoIdentityServiceProvider),
             programMembership: new ProgramMembershipRepo(settings.connection),

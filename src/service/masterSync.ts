@@ -9,8 +9,8 @@ import * as moment from 'moment-timezone';
 
 import { Repository as CreativeWorkRepo } from '../repo/creativeWork';
 import { MongoRepository as EventRepo } from '../repo/event';
-import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { Repository as PlaceRepo } from '../repo/place';
+import { MongoRepository as SellerRepo } from '../repo/seller';
 
 import * as factory from '../factory';
 
@@ -276,7 +276,7 @@ export function importScreeningEvents(
 export function importMovieTheater(theaterCode: string) {
     return async (repos: {
         place: PlaceRepo;
-        organization: OrganizationRepo;
+        seller: SellerRepo;
     }): Promise<void> => {
         const movieTheater = factory.place.movieTheater.createFromCOA(
             await COA.services.master.theater({ theaterCode: theaterCode }),
@@ -289,7 +289,7 @@ export function importMovieTheater(theaterCode: string) {
         debug('movieTheater stored.');
 
         // 組織の属性を更新
-        await repos.organization.organizationModel.findOneAndUpdate(
+        await repos.seller.organizationModel.findOneAndUpdate(
             {
                 typeOf: factory.organizationType.MovieTheater,
                 'location.branchCode': movieTheater.branchCode

@@ -13,10 +13,10 @@ import * as PlaceOrderService from './transaction/placeOrderInProgress';
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../repo/action/registerProgramMembershipInProgress';
 import { RedisRepository as OrderNumberRepo } from '../repo/orderNumber';
-import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { CognitoRepository as PersonRepo } from '../repo/person';
 import { MongoRepository as ProgramMembershipRepo } from '../repo/programMembership';
+import { MongoRepository as SellerRepo } from '../repo/seller';
 import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
@@ -26,8 +26,8 @@ import * as factory from '../factory';
 const debug = createDebug('sskts-domain:service:programMembership');
 
 export type ICreateRegisterTaskOperation<T> = (repos: {
-    organization: OrganizationRepo;
     programMembership: ProgramMembershipRepo;
+    seller: SellerRepo;
     task: TaskRepo;
 }) => Promise<T>;
 export type ICreateUnRegisterTaskOperation<T> = (repos: {
@@ -38,11 +38,11 @@ export type ICreateUnRegisterTaskOperation<T> = (repos: {
 export type IRegisterOperation<T> = (repos: {
     action: ActionRepo;
     orderNumber: OrderNumberRepo;
-    organization: OrganizationRepo;
     ownershipInfo: OwnershipInfoRepo;
     person: PersonRepo;
     programMembership: ProgramMembershipRepo;
     registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
+    seller: SellerRepo;
     transaction: TransactionRepo;
     depositService?: pecorinoapi.service.transaction.Deposit;
 }) => Promise<T>;
@@ -74,8 +74,8 @@ export function createRegisterTask(params: {
     offerIdentifier: string;
 }): ICreateRegisterTaskOperation<factory.task.ITask<factory.taskName.RegisterProgramMembership>> {
     return async (repos: {
-        organization: OrganizationRepo;
         programMembership: ProgramMembershipRepo;
+        seller: SellerRepo;
         task: TaskRepo;
     }) => {
         const now = new Date();
@@ -97,7 +97,15 @@ export function createRegisterTask(params: {
         if (offer === undefined) {
             throw new factory.errors.NotFound('Offer');
         }
-        const seller = await repos.organization.findById(params.seller.typeOf, params.seller.id);
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (offer.price === undefined) {
+            throw new factory.errors.NotFound('Offer Price undefined');
+        }
+
+        const seller = await repos.seller.findById({
+            id: params.seller.id
+        });
         // 会員プログラムのホスト組織確定(この組織が決済対象となる)
         programMembership.hostingOrganization = {
             id: seller.id,
@@ -110,6 +118,22 @@ export function createRegisterTask(params: {
             url: seller.url
         };
 
+        const itemOffered = {
+            ...programMembership,
+            offers: programMembership.offers.map((o) => {
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore if */
+                if (o.price === undefined) {
+                    throw new factory.errors.NotFound('Offer Price undefined');
+                }
+
+                return {
+                    ...o,
+                    price: o.price
+                };
+            })
+        };
+
         // 受け入れれたオファーオブジェクトを作成
         const acceptedOffer: factory.order.IAcceptedOffer<factory.programMembership.IProgramMembership> = {
             typeOf: 'Offer',
@@ -117,7 +141,7 @@ export function createRegisterTask(params: {
             price: offer.price,
             priceCurrency: offer.priceCurrency,
             eligibleDuration: offer.eligibleDuration,
-            itemOffered: programMembership,
+            itemOffered: itemOffered,
             seller: {
                 typeOf: seller.typeOf,
                 name: seller.name.ja
@@ -155,11 +179,11 @@ export function register(
     return async (repos: {
         action: ActionRepo;
         orderNumber: OrderNumberRepo;
-        organization: OrganizationRepo;
         ownershipInfo: OwnershipInfoRepo;
         person: PersonRepo;
         programMembership: ProgramMembershipRepo;
         registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
+        seller: SellerRepo;
         transaction: TransactionRepo;
         depositService: pecorinoapi.service.transaction.Deposit;
     }) => {
@@ -414,9 +438,9 @@ function processPlaceOrder(params: {
     return async (repos: {
         action: ActionRepo;
         orderNumber: OrderNumberRepo;
-        organization: OrganizationRepo;
         person: PersonRepo;
         programMembership: ProgramMembershipRepo;
+        seller: SellerRepo;
         transaction: TransactionRepo;
         depositService: pecorinoapi.service.transaction.Deposit;
         ownershipInfo: OwnershipInfoRepo;

@@ -26,10 +26,9 @@ describe('会員プログラムオファーを承認する', () => {
         };
         const transaction = { id: 'transactionId', agent: { id: 'agentId' } };
         const programMembership = {
-            offers: [{ identifier: 'identifier' }]
+            offers: [{ identifier: 'identifier', price: 123 }]
         };
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
         const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
@@ -43,7 +42,6 @@ describe('会員プログラムオファーを承認する', () => {
             acceptedOffer: acceptedOffer
         })({
             action: actionRepo,
-            organization: organizationRepo,
             programMembership: programMembershipRepo,
             transaction: transactionRepo
         });

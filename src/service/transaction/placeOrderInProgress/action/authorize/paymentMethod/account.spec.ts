@@ -49,14 +49,14 @@ describe('Pecorino決済を承認する', () => {
             }
         }];
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(ownershipInfoRepo).expects('search').once().resolves(programMemberships);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(actionRepo).expects('complete').once().resolves(action);
         sandbox.mock(transferService).expects('start').once().resolves(pendingTransaction);
 
@@ -74,7 +74,7 @@ describe('Pecorino決済を承認する', () => {
             }
         })({
             action: actionRepo,
-            organization: organizationRepo,
+            seller: sellerRepo,
             ownershipInfo: ownershipInfoRepo,
             transaction: transactionRepo,
             transferTransactionService: transferService
@@ -104,7 +104,7 @@ describe('Pecorino決済を承認する', () => {
         };
         const amount = 1234;
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
@@ -127,7 +127,7 @@ describe('Pecorino決済を承認する', () => {
             }
         })({
             action: actionRepo,
-            organization: organizationRepo,
+            seller: sellerRepo,
             ownershipInfo: ownershipInfoRepo,
             transaction: transactionRepo,
             transferTransactionService: transferService
@@ -161,7 +161,7 @@ describe('Pecorino決済を承認する', () => {
             }
         }];
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
@@ -183,7 +183,7 @@ describe('Pecorino決済を承認する', () => {
             }
         })({
             action: actionRepo,
-            organization: organizationRepo,
+            seller: sellerRepo,
             ownershipInfo: ownershipInfoRepo,
             transaction: transactionRepo,
             transferTransactionService: transferService
@@ -220,7 +220,7 @@ describe('Pecorino決済を承認する', () => {
         };
         const startPayTransactionResult = new Error('startPayTransactionError');
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
@@ -232,7 +232,7 @@ describe('Pecorino決済を承認する', () => {
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(ownershipInfoRepo).expects('search').once().resolves(programMemberships);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transferService).expects('start').once().rejects(startPayTransactionResult);
         sandbox.mock(actionRepo).expects('giveUp').once().resolves(action);
         sandbox.mock(actionRepo).expects('complete').never();
@@ -251,7 +251,7 @@ describe('Pecorino決済を承認する', () => {
             }
         })({
             action: actionRepo,
-            organization: organizationRepo,
+            seller: sellerRepo,
             ownershipInfo: ownershipInfoRepo,
             transaction: transactionRepo,
             transferTransactionService: transferService

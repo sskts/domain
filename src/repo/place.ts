@@ -1,5 +1,5 @@
+import { mongoose } from '@cinerino/domain';
 import * as createDebug from 'debug';
-import { Connection } from 'mongoose';
 
 import placeModel from './mongoose/model/place';
 
@@ -8,7 +8,7 @@ import * as factory from '../factory';
 const debug = createDebug('sskts-domain:repository:place');
 
 /**
- * 場所抽象リポジトリー
+ * 場所抽象リポジトリ
  */
 export abstract class Repository {
     public abstract async saveMovieTheater(movieTheater: factory.place.movieTheater.IPlace): Promise<void>;
@@ -17,12 +17,12 @@ export abstract class Repository {
 }
 
 /**
- * 場所リポジトリー
+ * 場所リポジトリ
  */
 export class MongoRepository {
     public readonly placeModel: typeof placeModel;
 
-    constructor(connection: Connection) {
+    constructor(connection: mongoose.Connection) {
         this.placeModel = connection.model(placeModel.modelName);
     }
 

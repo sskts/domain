@@ -1,4 +1,4 @@
-import { Connection } from 'mongoose';
+import { mongoose } from '@cinerino/domain';
 
 import ownershipInfoModel from './mongoose/model/ownershipInfo';
 
@@ -7,12 +7,12 @@ import * as factory from '../factory';
 export type IOwnershipInfo<T extends factory.ownershipInfo.IGoodType> = factory.ownershipInfo.IOwnershipInfo<T>;
 
 /**
- * 所有権リポジトリー
+ * 所有権リポジトリ
  */
 export class MongoRepository {
     public readonly ownershipInfoModel: typeof ownershipInfoModel;
 
-    constructor(connection: Connection) {
+    constructor(connection: mongoose.Connection) {
         this.ownershipInfoModel = connection.model(ownershipInfoModel.modelName);
     }
 

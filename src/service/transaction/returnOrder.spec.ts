@@ -307,10 +307,10 @@ describe('service.transaction.returnOrder.confirm()', () => {
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(returnOrderTransaction);
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(actionRepo).expects('searchByOrderNumber').once()
             .resolves(actionsOnOrder);
         sandbox.mock(transactionRepo).expects('confirmReturnOrder').once().resolves(returnOrderTransaction);
@@ -321,7 +321,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
         })({
             action: actionRepo,
             transaction: transactionRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         });
 
         assert.equal(typeof result, 'object');
@@ -365,10 +365,10 @@ describe('service.transaction.returnOrder.confirm()', () => {
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(returnOrderTransaction);
-        sandbox.mock(organizationRepo).expects('findById').never();
+        sandbox.mock(sellerRepo).expects('findById').never();
         sandbox.mock(actionRepo).expects('searchByOrderNumber').never();
         sandbox.mock(transactionRepo).expects('confirmReturnOrder').never();
 
@@ -378,7 +378,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
         })({
             action: actionRepo,
             transaction: transactionRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
@@ -411,10 +411,10 @@ describe('service.transaction.returnOrder.confirm()', () => {
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(returnOrderTransaction);
-        sandbox.mock(organizationRepo).expects('findById').never();
+        sandbox.mock(sellerRepo).expects('findById').never();
         sandbox.mock(actionRepo).expects('searchByOrderNumber').never();
         sandbox.mock(transactionRepo).expects('confirmReturnOrder').never();
 
@@ -424,7 +424,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
         })({
             action: actionRepo,
             transaction: transactionRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);
@@ -468,10 +468,10 @@ describe('service.transaction.returnOrder.confirm()', () => {
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(returnOrderTransaction);
-        sandbox.mock(organizationRepo).expects('findById').never();
+        sandbox.mock(sellerRepo).expects('findById').never();
         sandbox.mock(transactionRepo).expects('confirmReturnOrder').never();
         sandbox.mock(actionRepo).expects('searchByOrderNumber').never();
 
@@ -481,7 +481,7 @@ describe('service.transaction.returnOrder.confirm()', () => {
         })({
             action: actionRepo,
             transaction: transactionRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.NotFound);

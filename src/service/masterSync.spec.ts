@@ -10,8 +10,8 @@ import * as sinon from 'sinon';
 
 import { MongoRepository as CreativeWorkRepo } from '../repo/creativeWork';
 import { MongoRepository as EventRepo } from '../repo/event';
-import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { MongoRepository as PlaceRepo } from '../repo/place';
+import { MongoRepository as SellerRepo } from '../repo/seller';
 import * as MasterSyncService from './masterSync';
 
 import * as factory from '../factory';
@@ -147,7 +147,6 @@ describe('matchWitchXML', () => {
         coaData.forEach((data: any) => {
             const test = MasterSyncService.matchWithXML(<any>[xmlData], <any>data);
             if (!test) {
-                console.error(data);
                 allMatch = false;
             }
         });
@@ -456,18 +455,18 @@ describe('importMovieTheater()', () => {
 
     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
         const movieTheater = { branchCode: '', name: {} };
-        const organizationRepo = new OrganizationRepo(mongoose.connection);
+        const sellerRepo = new SellerRepo(mongoose.connection);
         const placeRepo = new PlaceRepo(mongoose.connection);
 
         sandbox.stub(COA.services.master, 'theater').returns({});
         sandbox.stub(COA.services.master, 'screen').returns({});
         sandbox.stub(factory.place.movieTheater, 'createFromCOA').returns(movieTheater);
         sandbox.mock(placeRepo).expects('saveMovieTheater').once();
-        sandbox.mock(organizationRepo.organizationModel).expects('findOneAndUpdate').once()
+        sandbox.mock(sellerRepo.organizationModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves();
 
         const result = await MasterSyncService.importMovieTheater('123')({
-            organization: organizationRepo,
+            seller: sellerRepo,
             place: placeRepo
         });
 

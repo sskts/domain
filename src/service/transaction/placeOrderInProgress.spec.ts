@@ -49,10 +49,10 @@ describe('start()', () => {
             issueUnit: {}
         };
 
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('start').once().resolves(transaction);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
 
@@ -64,7 +64,7 @@ describe('start()', () => {
             passportToken: passportToken
         })({
             transaction: transactionRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         });
 
         assert.deepEqual(result, transaction);
@@ -99,10 +99,10 @@ describe('start()', () => {
             issueUnit: {}
         };
 
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('start').once().resolves(transaction);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
 
@@ -114,7 +114,7 @@ describe('start()', () => {
             passportToken: passportToken
         })({
             transaction: transactionRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         });
 
         assert.deepEqual(result, transaction);
@@ -145,10 +145,10 @@ describe('start()', () => {
             issueUnit: {}
         };
 
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
         sandbox.mock(transactionRepo).expects('start').once().resolves(transaction);
 
@@ -160,7 +160,7 @@ describe('start()', () => {
             seller: seller
         })({
             transaction: transactionRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         });
         assert.deepEqual(result, transaction);
         sandbox.verify();
@@ -184,10 +184,10 @@ describe('start()', () => {
         const passportToken = 'passportToken';
         const verifyResult = new Error('verifyError');
 
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().rejects(verifyResult);
         sandbox.mock(transactionRepo).expects('start').never();
 
@@ -199,7 +199,7 @@ describe('start()', () => {
             seller: seller
         })({
             transaction: transactionRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -229,10 +229,10 @@ describe('start()', () => {
             issueUnit: {}
         };
 
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
         sandbox.mock(transactionRepo).expects('start').once().never();
 
@@ -244,7 +244,7 @@ describe('start()', () => {
             seller: seller
         })({
             transaction: transactionRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -265,10 +265,10 @@ describe('start()', () => {
     //         expires: new Date()
     //     };
 
-    //     const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+    //     const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
     //     const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-    //     sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+    //     sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
     //     sandbox.mock(transactionRepo).expects('start').never();
 
     //     const result = await sskts.service.transaction.placeOrderInProgress.start({
@@ -279,7 +279,7 @@ describe('start()', () => {
     //         passportToken: <any>undefined
     //     })({
     //         transaction: transactionRepo,
-    //         organization: organizationRepo
+    //         seller: sellerRepo
     //     }).catch((err) => err);
     //     assert(result instanceof sskts.factory.errors.ArgumentNull);
     //     sandbox.verify();
@@ -308,10 +308,10 @@ describe('start()', () => {
             issueUnit: {}
         };
 
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
         sandbox.mock(transactionRepo).expects('start').once().rejects(startResult);
 
@@ -323,7 +323,7 @@ describe('start()', () => {
             seller: seller
         })({
             transaction: transactionRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         }).catch((err) => err);
         assert.deepEqual(result, startResult);
         sandbox.verify();
@@ -352,10 +352,10 @@ describe('start()', () => {
             issueUnit: {}
         };
 
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
 
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
         sandbox.mock(transactionRepo).expects('start').once().rejects(startResult);
 
@@ -367,7 +367,7 @@ describe('start()', () => {
             seller: seller
         })({
             transaction: transactionRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.AlreadyInUse);
         sandbox.verify();
@@ -509,7 +509,7 @@ describe('confirm()', () => {
             name: 'sellerName',
             url: '',
             telephone: '0312345678',
-            location: {}
+            location: { branchCode: '123' }
         };
         const customerContact = {
             familyName: 'familyName',
@@ -654,9 +654,9 @@ describe('confirm()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
 
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(orderNumberRepo).expects('publish').once().resolves('orderNumber');
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
@@ -675,7 +675,7 @@ describe('confirm()', () => {
             action: actionRepo,
             transaction: transactionRepo,
             orderNumber: orderNumberRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         });
         assert.deepEqual(typeof result.orderNumber, 'string');
         sandbox.verify();
@@ -694,7 +694,7 @@ describe('confirm()', () => {
             name: 'sellerName',
             url: '',
             telephone: '0312345678',
-            location: {}
+            location: { branchCode: '123' }
         };
         const customerContact = {
             familyName: 'familyName',
@@ -841,9 +841,9 @@ describe('confirm()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
 
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(orderNumberRepo).expects('publish').once().resolves('orderNumber');
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
@@ -858,7 +858,7 @@ describe('confirm()', () => {
             action: actionRepo,
             transaction: transactionRepo,
             orderNumber: orderNumberRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         });
         assert.deepEqual(typeof result.orderNumber, 'string');
         sandbox.verify();
@@ -884,9 +884,9 @@ describe('confirm()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
 
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(orderNumberRepo).expects('publish').never();
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').never();
@@ -899,7 +899,7 @@ describe('confirm()', () => {
             action: actionRepo,
             transaction: transactionRepo,
             orderNumber: orderNumberRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         })
             .catch((err) => err);
 
@@ -960,9 +960,9 @@ describe('confirm()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
 
-        sandbox.mock(organizationRepo).expects('findById').once().resolves(seller);
+        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
             .resolves(authorizeActions);
@@ -977,7 +977,7 @@ describe('confirm()', () => {
             action: actionRepo,
             transaction: transactionRepo,
             orderNumber: orderNumberRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -1003,9 +1003,9 @@ describe('confirm()', () => {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
 
-        sandbox.mock(organizationRepo).expects('findById').never();
+        sandbox.mock(sellerRepo).expects('findById').never();
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').never();
         sandbox.mock(orderNumberRepo).expects('publish').never();
@@ -1019,7 +1019,7 @@ describe('confirm()', () => {
             action: actionRepo,
             transaction: transactionRepo,
             orderNumber: orderNumberRepo,
-            organization: organizationRepo
+            seller: sellerRepo
         })
             .catch((err) => err);
 

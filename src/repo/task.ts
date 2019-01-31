@@ -1,5 +1,5 @@
+import { mongoose } from '@cinerino/domain';
 import * as moment from 'moment';
-import { Connection } from 'mongoose';
 
 import taskModel from './mongoose/model/task';
 
@@ -13,11 +13,11 @@ const sortOrder4executionOfTasks = {
     runsAt: 1 // 実行予定日時の早さ優先
 };
 /**
- * タスクリポジトリー
+ * タスクリポジトリ
  */
 export class MongoRepository {
     public readonly taskModel: typeof taskModel;
-    constructor(connection: Connection) {
+    constructor(connection: mongoose.Connection) {
         this.taskModel = connection.model(taskModel.modelName);
     }
     public static CREATE_MONGO_CONDITIONS<T extends factory.taskName>(params: factory.task.ISearchConditions<T>) {

@@ -20,7 +20,7 @@ describe('ポイント口座を開設する', () => {
         sandbox.restore();
     });
 
-    it('口座リポジトリーが正常であれば開設できるはず', async () => {
+    it('口座リポジトリが正常であれば開設できるはず', async () => {
         const account = {};
         const accountNumberRepo = new sskts.repository.AccountNumber(redisClient);
         const accountService = new sskts.pecorinoapi.service.Account(<any>{});

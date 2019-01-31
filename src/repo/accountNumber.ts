@@ -8,7 +8,7 @@ import * as factory from '../factory';
 const debug = createDebug('sskts-domain:repository:accountNumber');
 
 /**
- * 口座番号リポジトリー
+ * 口座番号リポジトリ
  */
 export class RedisRepository {
     /**

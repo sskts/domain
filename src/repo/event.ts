@@ -1,5 +1,5 @@
+import { mongoose } from '@cinerino/domain';
 import * as moment from 'moment';
-import { Connection } from 'mongoose';
 
 import eventModel from './mongoose/model/event';
 
@@ -8,12 +8,12 @@ import * as factory from '../factory';
 export type IEvent = factory.event.screeningEvent.IEvent | factory.event.screeningEventSeries.IEvent;
 
 /**
- * イベントリポジトリー
+ * イベントリポジトリ
  */
 export class MongoRepository {
     public readonly eventModel: typeof eventModel;
 
-    constructor(connection: Connection) {
+    constructor(connection: mongoose.Connection) {
         this.eventModel = connection.model(eventModel.modelName);
     }
 

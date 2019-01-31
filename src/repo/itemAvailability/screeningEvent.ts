@@ -11,7 +11,7 @@ const REDIS_KEY_PREFIX = 'sskts-domain:itemAvailability:individualScreeningEvent
 const TIMEOUT_IN_SECONDS = 864000;
 
 /**
- * 上映イベント在庫状況リポジトリー
+ * 上映イベント在庫状況リポジトリ
  */
 export class MongoRepository {
     public readonly redisClient: redis.RedisClient;

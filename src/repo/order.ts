@@ -1,16 +1,16 @@
-import { Connection } from 'mongoose';
+import { mongoose } from '@cinerino/domain';
 
 import OrderModel from './mongoose/model/order';
 
 import * as factory from '../factory';
 
 /**
- * 注文リポジトリー
+ * 注文リポジトリ
  */
 export class MongoRepository {
     public readonly orderModel: typeof OrderModel;
 
-    constructor(connection: Connection) {
+    constructor(connection: mongoose.Connection) {
         this.orderModel = connection.model(OrderModel.modelName);
     }
 

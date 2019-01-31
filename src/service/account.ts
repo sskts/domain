@@ -20,7 +20,7 @@ export function open(params: {
 }) {
     return async (repos: {
         /**
-         * 口座番号リポジトリー
+         * 口座番号リポジトリ
          */
         accountNumber: AccountNumberRepo;
         /**
