@@ -319,7 +319,7 @@ export function confirm(params: {
         const orderNumber = await repos.orderNumber.publish({
             orderDate: params.orderDate,
             sellerType: seller.typeOf,
-            sellerBranchCode: seller.location.branchCode
+            sellerBranchCode: (seller.location !== undefined && seller.location.branchCode !== undefined) ? seller.location.branchCode : ''
         });
         // 結果作成
         const order = createOrderFromTransaction({
@@ -755,8 +755,7 @@ export function createOrderFromTransaction(params: {
         url: url,
         orderStatus: params.orderStatus,
         orderDate: params.orderDate,
-        isGift: params.isGift,
-        orderInquiryKey: orderInquiryKey
+        isGift: params.isGift
     };
 }
 

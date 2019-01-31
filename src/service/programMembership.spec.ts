@@ -2,7 +2,7 @@
 /**
  * 会員プログラムサービステスト
  */
-import * as AWS from 'aws-sdk';
+import { AWS } from '@cinerino/domain';
 import * as assert from 'power-assert';
 import * as redis from 'redis-mock';
 import * as sinon from 'sinon';
