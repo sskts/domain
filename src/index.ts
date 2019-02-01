@@ -2,11 +2,10 @@
 /**
  * sskts-domain index module
  */
-import { mongoose } from '@cinerino/domain';
+import { AWS, mongoose } from '@cinerino/domain';
 import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
 import * as pecorinoapi from '@pecorino/api-nodejs-client';
-import * as AWS from 'aws-sdk';
 import * as redis from 'redis';
 
 import * as errorHandler from './errorHandler';

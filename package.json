@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/domain": "^1.0.0-alpha.132",
+    "@cinerino/domain": "^1.0.0-alpha.134",
     "@motionpicture/coa-service": "^6.0.1",
     "@motionpicture/gmo-service": "^4.3.0",
     "@motionpicture/sskts-factory": "^7.0.0-alpha.2",
@@ -18,7 +18,6 @@
     "@types/google-libphonenumber": "^7.4.17",
     "@types/redis": "^2.8.10",
     "@waiter/domain": "^3.0.0",
-    "aws-sdk": "2.389.0",
     "azure-storage": "^2.10.2",
     "debug": "^3.2.6",
     "google-libphonenumber": "^3.2.2",

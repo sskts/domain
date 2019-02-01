@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - OrganizationスキーマをCinerino化
 - アクションリポジトリのインターフェースをCinerinoに統一
 - 印刷アクションリポジトリをアクションリポジトリへ移行
+- 会員リポジトリをCinerinoを継承するように変更
 
 ### Deprecated
 
