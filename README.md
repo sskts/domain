@@ -7,7 +7,7 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/cinemasunshine/domain/badge.svg)](https://snyk.io/test/github/cinemasunshine/domain)
 [![npm](https://img.shields.io/npm/dm/@motionpicture/sskts-domain.svg)](https://nodei.co/npm/@motionpicture/sskts-domain/)
 
-SSKTSのバックエンドサービスをNode.jsで簡単に使用するためのパッケージを提供します。
+CinemaSunshineのバックエンドサービスをNode.jsで簡単に使用するためのパッケージを提供します。
 
 ## Table of contents
 
@@ -23,21 +23,22 @@ npm install @motionpicture/sskts-domain
 
 ### Environment variables
 
-| Name                                       | Required | Value          | Purpose                          |
-| ------------------------------------------ | -------- | -------------- | -------------------------------- |
-| `DEBUG`                                    | false    | sskts-domain:* | Debug                            |
-| `NODE_ENV`                                 | true     |                | environment name                 |
-| `MONGOLAB_URI`                             | true     |                | MongoDB connection URI           |
-| `SENDGRID_API_KEY`                         | true     |                | SendGrid API Key                 |
-| `GMO_ENDPOINT`                             | true     |                | GMO API endpoint                 |
-| `GMO_SITE_ID`                              | true     |                | GMO SiteID                       |
-| `GMO_SITE_PASS`                            | true     |                | GMO SitePass                     |
-| `COA_ENDPOINT`                             | true     |                | COA API endpoint                 |
-| `COA_REFRESH_TOKEN`                        | true     |                | COA API refresh token            |
-| `SSKTS_DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN` | true     |                | 開発者通知用LINEアクセストークン |
-| `WAITER_SECRET`                            | true     |                | WAITER許可証トークン秘密鍵       |
-| `WAITER_PASSPORT_ISSUER`                   | true     |                | WAITER許可証発行者               |
-| `ORDER_INQUIRY_ENDPOINT`                   | true     |                | 注文照会エンドポイント           |
+| Name                                 | Required | Value          | Purpose                      |
+| ------------------------------------ | -------- | -------------- | ---------------------------- |
+| `DEBUG`                              | false    | sskts-domain:* | Debug                        |
+| `NODE_ENV`                           | true     |                | environment name             |
+| `MONGOLAB_URI`                       | true     |                | MongoDB connection URI       |
+| `SENDGRID_API_KEY`                   | true     |                | SendGrid API Key             |
+| `GMO_ENDPOINT`                       | true     |                | GMO API endpoint             |
+| `GMO_SITE_ID`                        | true     |                | GMO SiteID                   |
+| `GMO_SITE_PASS`                      | true     |                | GMO SitePass                 |
+| `COA_ENDPOINT`                       | true     |                | COA API endpoint             |
+| `COA_REFRESH_TOKEN`                  | true     |                | COA API refresh token        |
+| `LINE_NOTIFY_URL`                    | true     |                | LINE Notify URL              |
+| `DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN` | true     |                | LINE Notify アクセストークン |
+| `WAITER_SECRET`                      | true     |                | WAITER許可証トークン秘密鍵   |
+| `WAITER_PASSPORT_ISSUER`             | true     |                | WAITER許可証発行者           |
+| `ORDER_INQUIRY_ENDPOINT`             | true     |                | 注文照会エンドポイント       |
 
 ### Search individual screening events sample
 

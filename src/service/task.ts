@@ -1,7 +1,7 @@
 /**
  * タスクサービス
  */
-import { AWS, mongoose } from '@cinerino/domain';
+import { AWS, mongoose, service } from '@cinerino/domain';
 import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
@@ -9,7 +9,6 @@ import * as redis from 'redis';
 
 import { MongoRepository as TaskRepo } from '../repo/task';
 
-import * as NotificationService from './notification';
 import * as TaskFunctionsService from './taskFunctions';
 
 import * as factory from '../factory';
@@ -163,7 +162,7 @@ export function abort(intervalInMinutes: number): TaskOperation<void> {
             /* istanbul ignore next */
             '';
 
-        await NotificationService.report2developers(
+        await service.notification.report2developers(
             ABORT_REPORT_SUBJECT,
             `id:${abortedTask.id}
 name:${abortedTask.name}

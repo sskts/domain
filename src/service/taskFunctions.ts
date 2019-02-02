@@ -2,7 +2,7 @@
  * タスクファンクションサービス
  * タスク名ごとに、実行するファンクションをひとつずつ定義しています
  */
-import { mongoose } from '@cinerino/domain';
+import { mongoose, service } from '@cinerino/domain';
 import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as redis from 'redis';
 
@@ -21,7 +21,6 @@ import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 import * as DeliveryService from '../service/delivery';
 import * as MasterSyncService from '../service/masterSync';
-import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
 import * as PaymentService from '../service/payment';
 import * as ProgramMembershipService from '../service/programMembership';
@@ -58,7 +57,7 @@ export function sendEmailMessage(data: factory.task.IData<factory.taskName.SendE
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
         const actionRepo = new ActionRepo(settings.connection);
-        await NotificationService.sendEmailMessage(data.actionAttributes)({ action: actionRepo });
+        await service.notification.sendEmailMessage(data.actionAttributes)({ action: actionRepo });
     };
 }
 
@@ -397,7 +396,7 @@ export function triggerWebhook(data: factory.task.IData<factory.taskName.Trigger
         connection: mongoose.Connection;
         cognitoIdentityServiceProvider: AWS.CognitoIdentityServiceProvider;
     }) => {
-        await NotificationService.triggerWebhook(data)();
+        await service.notification.triggerWebhook(data)();
     };
 }
 

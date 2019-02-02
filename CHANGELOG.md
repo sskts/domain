@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 印刷アクションリポジトリをアクションリポジトリへ移行
 - 会員リポジトリをCinerinoを継承するように変更
 - タスク名をCinerinoに統一
+- 通知サービスをCinerinoに統一
+- ユーティリティサービスをCinerinoに統一
 
 ### Deprecated
 
