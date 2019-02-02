@@ -30,9 +30,8 @@ describe('createFromTransaction()', () => {
                     typeOf: 'actionType',
                     potentialActions: {
                         sendOrder: { typeOf: sskts.factory.actionType.SendAction },
-                        payCreditCard: { typeOf: sskts.factory.actionType.PayAction },
+                        payCreditCard: [{ typeOf: sskts.factory.actionType.PayAction }],
                         payAccount: [{ typeOf: sskts.factory.actionType.PayAction }],
-                        useMvtk: { typeOf: sskts.factory.actionType.UseAction },
                         givePointAward: [{ typeOf: sskts.factory.actionType.GiveAction }]
                     }
                 }
@@ -206,7 +205,7 @@ describe('cancelReservations()', () => {
                     typeOf: sskts.factory.actionType.ReturnAction,
                     object: order,
                     potentialActions: {
-                        refundCreditCard: {},
+                        refundCreditCard: [{}],
                         refundAccount: [{}],
                         returnPointAward: [{}]
                     }

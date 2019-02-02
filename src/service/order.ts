@@ -107,18 +107,18 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
             if (orderPotentialActions.payCreditCard !== undefined) {
-                const payCreditCardTask: factory.task.IAttributes<factory.taskName.PayCreditCard> = {
-                    name: factory.taskName.PayCreditCard,
-                    status: factory.taskStatus.Ready,
-                    runsAt: now, // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transactionId
-                    }
-                };
-                taskAttributes.push(payCreditCardTask);
+                taskAttributes.push(...orderPotentialActions.payCreditCard.map(
+                    (a): factory.task.IAttributes<factory.taskName.PayCreditCard> => {
+                        return {
+                            name: factory.taskName.PayCreditCard,
+                            status: factory.taskStatus.Ready,
+                            runsAt: now, // なるはやで実行
+                            remainingNumberOfTries: 10,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: a
+                        };
+                    }));
             }
 
             // ポイント決済
@@ -281,17 +281,15 @@ export function cancelReservations(returnOrderTransactionId: string) {
         await actionRepo.complete({ typeOf: returnOrderActionAttributes.typeOf, id: action.id, result: {} });
 
         // 潜在アクション
-        await onReturn(returnOrderTransactionId, returnOrderActionAttributes)(taskRepo);
+        await onReturn(returnOrderActionAttributes)(taskRepo);
     };
 }
 
 /**
  * 返品アクション後の処理
  * 注文返品後に何をすべきかは返品アクションのpotentialActionsとして定義されているはずなので、それらをタスクとして登録します。
- * @param transactionId 注文返品取引ID
- * @param returnActionAttributes 返品アクション属性
  */
-function onReturn(transactionId: string, returnActionAttributes: factory.action.transfer.returnAction.order.IAttributes) {
+function onReturn(returnActionAttributes: factory.action.transfer.returnAction.order.IAttributes) {
     return async (taskRepo: TaskRepo) => {
         const now = new Date();
         const taskAttributes: factory.task.IAttributes<factory.taskName>[] = [];
@@ -301,20 +299,20 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
         if (returnActionAttributes.potentialActions !== undefined) {
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (returnActionAttributes.potentialActions.refundCreditCard !== undefined) {
-                // 返金タスク作成
-                const task: factory.task.IAttributes<factory.taskName.RefundCreditCard> = {
-                    name: factory.taskName.RefundCreditCard,
-                    status: factory.taskStatus.Ready,
-                    runsAt: now, // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transactionId
+            if (Array.isArray(returnActionAttributes.potentialActions.refundCreditCard)) {
+                taskAttributes.push(...returnActionAttributes.potentialActions.refundCreditCard.map(
+                    (a): factory.task.IAttributes<factory.taskName.RefundCreditCard> => {
+                        return {
+                            name: factory.taskName.RefundCreditCard,
+                            status: factory.taskStatus.Ready,
+                            runsAt: now, // なるはやで実行
+                            remainingNumberOfTries: 10,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: a
+                        };
                     }
-                };
-                taskAttributes.push(task);
+                ));
             }
 
             // ポイント返金タスク

@@ -79,7 +79,7 @@ export function start(params: IStartParams):
 
         // WAITER許可証トークンがあれば検証する
         // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignroe else */
+        /* istanbul ignore else */
         if (params.passportToken !== undefined) {
             try {
                 passport = await waiter.service.passport.verify({
@@ -154,7 +154,7 @@ export function start(params: IStartParams):
  */
 function validatePassport(passport: waiter.factory.passport.IPassport, sellerIdentifier: string) {
     // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignroe next */
+    /* istanbul ignore next */
     if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
         throw new Error('WAITER_PASSPORT_ISSUER unset');
     }
@@ -401,6 +401,8 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((a) => a.object.typeOf === factory.action.authorize.award.point.ObjectType.PointAward);
     const givenAmount = pointAwardAuthorizeActions.reduce((a, b) => a + b.object.amount, 0);
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore if */
     if (givenAmount > 1) {
         throw new factory.errors.Argument('transactionId', 'Incentive amount must be 1');
     }
@@ -434,6 +436,8 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
         throw new factory.errors.Argument('transactionId', 'The number of seat reservation authorize actions must be one');
     }
     const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore else */
     if (seatReservationAuthorizeAction !== undefined) {
         requiredPoint = (<factory.action.authorize.offer.seatReservation.IResult>seatReservationAuthorizeAction.result).pecorinoAmount;
         // 必要ポイントがある場合、Pecorinoのオーソリ金額と比較
@@ -494,6 +498,8 @@ export function createOrderFromTransaction(params: {
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((a) => a.object.typeOf === 'Offer')
         .filter((a) => a.object.itemOffered.typeOf === 'ProgramMembership');
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore if */
     if (programMembershipAuthorizeActions.length > 1) {
         throw new factory.errors.NotImplemented('Number of programMembership authorizeAction must be 1.');
     }
@@ -659,17 +665,10 @@ export function createOrderFromTransaction(params: {
     }
 
     // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore else */
+    /* istanbul ignore if */
     if (params.seller.location === undefined || params.seller.location.branchCode === undefined) {
         throw new factory.errors.ServiceUnavailable('Seller location branchCode undefined');
     }
-
-    // 注文照会キーを作成
-    const orderInquiryKey: factory.order.IOrderInquiryKey = {
-        theaterCode: params.seller.location.branchCode,
-        confirmationNumber: confirmationNumber,
-        telephone: cutomerContact.telephone
-    };
 
     // 結果作成
     const discounts: factory.order.IDiscount[] = [];
@@ -743,8 +742,8 @@ export function createOrderFromTransaction(params: {
     const url = util.format(
         '%s/inquiry/login?theater=%s&reserve=%s',
         process.env.ORDER_INQUIRY_ENDPOINT,
-        orderInquiryKey.theaterCode,
-        orderInquiryKey.confirmationNumber
+        params.seller.location.branchCode,
+        confirmationNumber
     );
 
     return {
@@ -773,6 +772,8 @@ export async function createEmailMessageFromTransaction(params: {
 }): Promise<factory.creativeWork.message.email.ICreativeWork> {
     return new Promise<factory.creativeWork.message.email.ICreativeWork>((resolve, reject) => {
         const seller = params.transaction.seller;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (params.order.acceptedOffers[0].itemOffered.typeOf === factory.reservationType.EventReservation) {
             const event = params.order.acceptedOffers[0].itemOffered.reservationFor;
 
@@ -936,22 +937,39 @@ export async function createPotentialActionsFromTransaction(params: {
     seller: ISeller;
     sendEmailMessage?: boolean;
 }): Promise<factory.transaction.placeOrder.IPotentialActions> {
+    const confirmReservationActions: factory.action.interact.confirm.reservation.IAttributes<factory.service.webAPI.Identifier>[] = [];
+
     // クレジットカード支払いアクション
-    let payCreditCardAction: factory.action.trade.pay.IAttributes<factory.paymentMethodType.CreditCard> | null = null;
-    const creditCardPayment = params.order.paymentMethods.find((m) => m.typeOf === factory.paymentMethodType.CreditCard);
-    if (creditCardPayment !== undefined) {
-        payCreditCardAction = {
-            typeOf: factory.actionType.PayAction,
-            object: [{
-                typeOf: <'PaymentMethod'>'PaymentMethod',
-                paymentMethod: <factory.order.IPaymentMethod<factory.paymentMethodType.CreditCard>>creditCardPayment,
-                price: params.order.price,
-                priceCurrency: params.order.priceCurrency
-            }],
-            agent: params.transaction.agent,
-            purpose: params.order
-        };
-    }
+    const authorizeCreditCardActions = <factory.action.authorize.paymentMethod.creditCard.IAction[]>
+        params.transaction.object.authorizeActions
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((a) => a.result !== undefined)
+            .filter((a) => a.result.paymentMethod === factory.paymentMethodType.CreditCard);
+    const payCreditCardActions: factory.action.trade.pay.IAttributes<factory.paymentMethodType.CreditCard>[] = [];
+    authorizeCreditCardActions.forEach((a) => {
+        const result = <factory.action.authorize.paymentMethod.creditCard.IResult>a.result;
+        if (result.paymentStatus === factory.paymentStatusType.PaymentDue) {
+            payCreditCardActions.push({
+                typeOf: <factory.actionType.PayAction>factory.actionType.PayAction,
+                object: [{
+                    typeOf: <factory.action.trade.pay.TypeOfObject>'PaymentMethod',
+                    paymentMethod: {
+                        name: result.name,
+                        typeOf: <factory.paymentMethodType.CreditCard>result.paymentMethod,
+                        paymentMethodId: result.paymentMethodId,
+                        totalPaymentDue: result.totalPaymentDue,
+                        additionalProperty: (Array.isArray(result.additionalProperty)) ? result.additionalProperty : []
+                    },
+                    price: result.amount,
+                    priceCurrency: factory.priceCurrency.JPY,
+                    entryTranArgs: result.entryTranArgs,
+                    execTranArgs: result.execTranArgs
+                }],
+                agent: params.transaction.agent,
+                purpose: params.order
+            });
+        }
+    });
 
     // 口座支払いアクション
     const authorizeAccountActions = <factory.action.authorize.paymentMethod.account.IAction<factory.accountType>[]>
@@ -981,6 +999,8 @@ export async function createPotentialActionsFromTransaction(params: {
                 purpose: params.order
             };
         });
+
+    const payMovieTicketActions: factory.action.trade.pay.IAttributes<factory.paymentMethodType.MovieTicket>[] = [];
 
     // ポイントインセンティブに対する承認アクションの分だけ、ポイントインセンティブ付与アクションを作成する
     let givePointAwardActions: factory.action.transfer.give.pointAward.IAttributes[] = [];
@@ -1081,9 +1101,11 @@ export async function createPotentialActionsFromTransaction(params: {
             object: params.order,
             agent: params.transaction.agent,
             potentialActions: {
-                payCreditCard: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
+                payCreditCard: payCreditCardActions,
                 payAccount: payAccountActions,
+                payMovieTicket: payMovieTicketActions,
                 sendOrder: sendOrderActionAttributes,
+                confirmReservation: confirmReservationActions,
                 givePointAward: givePointAwardActions
             }
         }

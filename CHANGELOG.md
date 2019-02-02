@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - タスク名をCinerinoに統一
 - 通知サービスをCinerinoに統一
 - ユーティリティサービスをCinerinoに統一
+- クレジットカード決済サービスをCinerinoに統一
 
 ### Deprecated
 

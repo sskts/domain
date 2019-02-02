@@ -24,6 +24,7 @@ import * as factory from '../factory';
 const debug = createDebug('sskts-domain:service:delivery');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
+export type IEventReservation = factory.reservation.event.IEventReservation<any>;
 
 /**
  * 注文を配送する
@@ -72,98 +73,100 @@ export function sendOrder(transactionId: string) {
 
         // アクション開始
         const sendOrderActionAttributes = orderPotentialActions.sendOrder;
-        const action = await repos.action.start(sendOrderActionAttributes);
+        if (sendOrderActionAttributes !== undefined) {
+            const action = await repos.action.start(sendOrderActionAttributes);
 
-        try {
-            // 座席予約があればCOA本予約
-            const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
-            // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore else */
-            if (seatReservationAuthorizeAction !== undefined) {
-                const seatReservationAuthorizeActionResult = seatReservationAuthorizeAction.result;
-                if (seatReservationAuthorizeActionResult === undefined) {
-                    throw new factory.errors.NotFound('authorizeAction.result');
-                }
-
-                const updTmpReserveSeatArgs = seatReservationAuthorizeActionResult.updTmpReserveSeatArgs;
-                const updTmpReserveSeatResult = seatReservationAuthorizeActionResult.updTmpReserveSeatResult;
-                const order = transactionResult.order;
-
-                // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
-                const phoneUtil = PhoneNumberUtil.getInstance();
-                const phoneNumber = phoneUtil.parse(customerContact.telephone, 'JP');
-                let telNum = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
-
-                // COAでは数字のみ受け付けるので数字以外を除去
-                telNum = telNum.replace(/[^\d]/g, '');
-
-                // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
-                // すでに本予約済みかどうか確認
-                const stateReserveResult = await COA.services.reserve.stateReserve({
-                    theaterCode: updTmpReserveSeatArgs.theaterCode,
-                    reserveNum: updTmpReserveSeatResult.tmpReserveNum,
-                    telNum: telNum
-                });
-
-                // COA本予約
-                // 未本予約であれば実行(COA本予約は一度成功すると成功できない)
-                if (stateReserveResult === null) {
-                    await COA.services.reserve.updReserve({
-                        theaterCode: updTmpReserveSeatArgs.theaterCode,
-                        dateJouei: updTmpReserveSeatArgs.dateJouei,
-                        titleCode: updTmpReserveSeatArgs.titleCode,
-                        titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
-                        timeBegin: updTmpReserveSeatArgs.timeBegin,
-                        tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum,
-                        // tslint:disable-next-line:no-irregular-whitespace
-                        reserveName: `${customerContact.familyName}　${customerContact.givenName}`,
-                        // tslint:disable-next-line:no-irregular-whitespace
-                        reserveNameJkana: `${customerContact.familyName}　${customerContact.givenName}`,
-                        telNum: telNum,
-                        mailAddr: customerContact.email,
-                        reserveAmount: order.price, // デフォルトのpriceCurrencyがJPYなのでこれでよし
-                        listTicket: order.acceptedOffers.map(
-                            (offer) => (<factory.reservation.event.IEventReservation<any>>offer.itemOffered).reservedTicket.coaTicketInfo
-                        )
-                    });
-                }
-            }
-
-            await Promise.all(transactionResult.ownershipInfos.map(async (ownershipInfo) => {
-                await repos.ownershipInfo.save(ownershipInfo);
-            }));
-
-            // 注文ステータス変更
-            await repos.order.changeStatus(transactionResult.order.orderNumber, factory.orderStatus.OrderDelivered);
-
-            // 会員プログラムがアイテムにある場合は、所有権が作成されたこのタイミングで登録プロセスロック解除
-            const programMembershipOwnershipInfos = <factory.ownershipInfo.IOwnershipInfo<'ProgramMembership'>[]>
-                transactionResult.ownershipInfos.filter((o) => o.typeOfGood.typeOf === 'ProgramMembership');
-            await Promise.all(programMembershipOwnershipInfos.map(async (o) => {
-                const memberOf = <factory.programMembership.IProgramMembership>(<factory.person.IPerson>o.ownedBy).memberOf;
-                await repos.registerActionInProgressRepo.unlock({
-                    membershipNumber: <string>memberOf.membershipNumber,
-                    programMembershipId: <string>o.typeOfGood.id
-                });
-            }));
-        } catch (error) {
-            // actionにエラー結果を追加
             try {
-                const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await repos.action.giveUp({ typeOf: sendOrderActionAttributes.typeOf, id: action.id, error: actionError });
-            } catch (__) {
-                // 失敗したら仕方ない
+                // 座席予約があればCOA本予約
+                const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore else */
+                if (seatReservationAuthorizeAction !== undefined) {
+                    const seatReservationAuthorizeActionResult = seatReservationAuthorizeAction.result;
+                    if (seatReservationAuthorizeActionResult === undefined) {
+                        throw new factory.errors.NotFound('authorizeAction.result');
+                    }
+
+                    const updTmpReserveSeatArgs = seatReservationAuthorizeActionResult.updTmpReserveSeatArgs;
+                    const updTmpReserveSeatResult = seatReservationAuthorizeActionResult.updTmpReserveSeatResult;
+                    const order = transactionResult.order;
+
+                    // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
+                    const phoneUtil = PhoneNumberUtil.getInstance();
+                    const phoneNumber = phoneUtil.parse(customerContact.telephone, 'JP');
+                    let telNum = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
+
+                    // COAでは数字のみ受け付けるので数字以外を除去
+                    telNum = telNum.replace(/[^\d]/g, '');
+
+                    // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
+                    // すでに本予約済みかどうか確認
+                    const stateReserveResult = await COA.services.reserve.stateReserve({
+                        theaterCode: updTmpReserveSeatArgs.theaterCode,
+                        reserveNum: updTmpReserveSeatResult.tmpReserveNum,
+                        telNum: telNum
+                    });
+
+                    // COA本予約
+                    // 未本予約であれば実行(COA本予約は一度成功すると成功できない)
+                    if (stateReserveResult === null) {
+                        await COA.services.reserve.updReserve({
+                            theaterCode: updTmpReserveSeatArgs.theaterCode,
+                            dateJouei: updTmpReserveSeatArgs.dateJouei,
+                            titleCode: updTmpReserveSeatArgs.titleCode,
+                            titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
+                            timeBegin: updTmpReserveSeatArgs.timeBegin,
+                            tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum,
+                            // tslint:disable-next-line:no-irregular-whitespace
+                            reserveName: `${customerContact.familyName}　${customerContact.givenName}`,
+                            // tslint:disable-next-line:no-irregular-whitespace
+                            reserveNameJkana: `${customerContact.familyName}　${customerContact.givenName}`,
+                            telNum: telNum,
+                            mailAddr: customerContact.email,
+                            reserveAmount: order.price, // デフォルトのpriceCurrencyがJPYなのでこれでよし
+                            listTicket: order.acceptedOffers.map(
+                                (offer) => (<IEventReservation>offer.itemOffered).reservedTicket.coaTicketInfo
+                            )
+                        });
+                    }
+                }
+
+                await Promise.all(transactionResult.ownershipInfos.map(async (ownershipInfo) => {
+                    await repos.ownershipInfo.save(ownershipInfo);
+                }));
+
+                // 注文ステータス変更
+                await repos.order.changeStatus(transactionResult.order.orderNumber, factory.orderStatus.OrderDelivered);
+
+                // 会員プログラムがアイテムにある場合は、所有権が作成されたこのタイミングで登録プロセスロック解除
+                const programMembershipOwnershipInfos = <factory.ownershipInfo.IOwnershipInfo<'ProgramMembership'>[]>
+                    transactionResult.ownershipInfos.filter((o) => o.typeOfGood.typeOf === 'ProgramMembership');
+                await Promise.all(programMembershipOwnershipInfos.map(async (o) => {
+                    const memberOf = <factory.programMembership.IProgramMembership>(<factory.person.IPerson>o.ownedBy).memberOf;
+                    await repos.registerActionInProgressRepo.unlock({
+                        membershipNumber: <string>memberOf.membershipNumber,
+                        programMembershipId: <string>o.typeOfGood.id
+                    });
+                }));
+            } catch (error) {
+                // actionにエラー結果を追加
+                try {
+                    const actionError = { ...error, ...{ message: error.message, name: error.name } };
+                    await repos.action.giveUp({ typeOf: sendOrderActionAttributes.typeOf, id: action.id, error: actionError });
+                } catch (__) {
+                    // 失敗したら仕方ない
+                }
+
+                throw error;
             }
 
-            throw error;
+            // アクション完了
+            debug('ending action...');
+            await repos.action.complete({ typeOf: sendOrderActionAttributes.typeOf, id: action.id, result: {} });
+
+            // 潜在アクション
+            await onSend(sendOrderActionAttributes)({ task: repos.task });
         }
-
-        // アクション完了
-        debug('ending action...');
-        await repos.action.complete({ typeOf: sendOrderActionAttributes.typeOf, id: action.id, result: {} });
-
-        // 潜在アクション
-        await onSend(sendOrderActionAttributes)({ task: repos.task });
     };
 }
 

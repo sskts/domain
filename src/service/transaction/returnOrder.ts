@@ -151,6 +151,7 @@ export function confirm(params: {
             throw new factory.errors.NotFound('customerContact');
         }
 
+        const order = transaction.object.order;
         const seller = await repos.seller.findById({
             id: placeOrderTransaction.seller.id
         });
@@ -174,6 +175,7 @@ export function confirm(params: {
             potentialActions: {},
             purpose: placeOrderTransactionResult.order
         };
+
         // クレジットカード返金アクション
         const refundCreditCardActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.CreditCard>[]>payActions)
             .filter((a) => a.object[0].paymentMethod.typeOf === factory.paymentMethodType.CreditCard)
@@ -181,14 +183,20 @@ export function confirm(params: {
                 return {
                     typeOf: <factory.actionType.RefundAction>factory.actionType.RefundAction,
                     object: a,
-                    agent: placeOrderTransaction.seller,
-                    recipient: placeOrderTransaction.agent,
-                    purpose: placeOrderTransactionResult.order,
+                    agent: {
+                        typeOf: seller.typeOf,
+                        id: seller.id,
+                        name: seller.name,
+                        url: seller.url
+                    },
+                    recipient: order.customer,
+                    purpose: order,
                     potentialActions: {
                         sendEmailMessage: sendEmailMessageActionAttributes
                     }
                 };
             });
+
         // ポイント返金アクション
         const refundAccountActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.Account>[]>payActions)
             .filter((a) => a.object[0].paymentMethod.typeOf === factory.paymentMethodType.Account)
@@ -204,6 +212,10 @@ export function confirm(params: {
                     }
                 };
             });
+
+        // ムビチケ着券返金アクション
+        const refundMovieTicketActions: factory.action.trade.refund.IAction<factory.paymentMethodType.MovieTicket>[] = [];
+
         // ポイント賞金の承認アクションの数だけ、返却アクションを作成
         const authorizeActions = placeOrderTransaction.object.authorizeActions;
         const returnPointAwardActions = authorizeActions
@@ -224,8 +236,9 @@ export function confirm(params: {
             agent: placeOrderTransaction.agent,
             recipient: placeOrderTransaction.seller,
             potentialActions: {
-                refundCreditCard: refundCreditCardActions[0],
+                refundCreditCard: refundCreditCardActions,
                 refundAccount: refundAccountActions,
+                refundMovieTicket: refundMovieTicketActions,
                 returnPointAward: returnPointAwardActions
             }
         };

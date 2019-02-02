@@ -9,6 +9,7 @@ import * as redis from 'redis';
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../repo/action/registerProgramMembershipInProgress';
 import { MongoRepository as EventRepo } from '../repo/event';
+import { MongoRepository as InvoiceRepo } from '../repo/invoice';
 import { MongoRepository as OrderRepo } from '../repo/order';
 import { RedisRepository as OrderNumberRepo } from '../repo/orderNumber';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
@@ -77,7 +78,7 @@ export function cancelCreditCard(data: factory.task.IData<factory.taskName.Cance
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
         const actionRepo = new ActionRepo(settings.connection);
-        await PaymentService.creditCard.cancelCreditCardAuth(data.transactionId)({ action: actionRepo });
+        await PaymentService.creditCard.cancelCreditCardAuth(data)({ action: actionRepo });
     };
 }
 
@@ -139,10 +140,10 @@ export function payCreditCard(data: factory.task.IData<factory.taskName.PayCredi
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
         const actionRepo = new ActionRepo(settings.connection);
-        const transactionRepo = new TransactionRepo(settings.connection);
-        await PaymentService.creditCard.payCreditCard(data.transactionId)({
+        const invoiceRepo = new InvoiceRepo(settings.connection);
+        await PaymentService.creditCard.payCreditCard(data)({
             action: actionRepo,
-            transaction: transactionRepo
+            invoice: invoiceRepo
         });
     };
 }
@@ -219,11 +220,9 @@ export function refundCreditCard(data: factory.task.IData<factory.taskName.Refun
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
         const actionRepo = new ActionRepo(settings.connection);
-        const transactionRepo = new TransactionRepo(settings.connection);
         const taskRepo = new TaskRepo(settings.connection);
-        await PaymentService.creditCard.refundCreditCard(data.transactionId)({
+        await PaymentService.creditCard.refundCreditCard(data)({
             action: actionRepo,
-            transaction: transactionRepo,
             task: taskRepo
         });
     };
