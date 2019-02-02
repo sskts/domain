@@ -13,7 +13,7 @@ import { RedisRepository as OrderNumberRepo } from '../../repo/orderNumber';
 import { MongoRepository as SellerRepo } from '../../repo/seller';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
-import * as PecorinoAwardAuthorizeActionService from './placeOrderInProgress/action/authorize/award/pecorino';
+import * as AuthorizePointAwardActionService from './placeOrderInProgress/action/authorize/award/point';
 import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/authorize/discount/mvtk';
 import * as ProgramMembershipAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/programMembership';
 import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/seatReservation';
@@ -182,7 +182,7 @@ export namespace action {
      */
     export namespace authorize {
         export namespace award {
-            export import pecorino = PecorinoAwardAuthorizeActionService;
+            export import point = AuthorizePointAwardActionService;
         }
         export namespace discount {
             /**
@@ -375,7 +375,7 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
     type IAuthorizeActionResultBySeller =
         factory.action.authorize.offer.programMembership.IResult |
         factory.action.authorize.offer.seatReservation.IResult |
-        factory.action.authorize.award.pecorino.IResult;
+        factory.action.authorize.award.point.IResult;
     const authorizeActions = transaction.object.authorizeActions;
 
     // クレジットカードオーソリをひとつに限定
@@ -394,13 +394,13 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
         throw new factory.errors.Argument('transactionId', 'The number of mvtk authorize actions must be one');
     }
 
-    // Pecorinoオーソリは複数可
+    // ポイントオーソリは複数可
 
-    // Pecorinoインセンティブは複数可だが、現時点で1注文につき1ポイントに限定
-    const pecorinoAwardAuthorizeActions = <factory.action.authorize.award.pecorino.IAction[]>authorizeActions
+    // ポイントインセンティブは複数可だが、現時点で1注文につき1ポイントに限定
+    const pointAwardAuthorizeActions = <factory.action.authorize.award.point.IAction[]>authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward);
-    const givenAmount = pecorinoAwardAuthorizeActions.reduce((a, b) => a + b.object.amount, 0);
+        .filter((a) => a.object.typeOf === factory.action.authorize.award.point.ObjectType.PointAward);
+    const givenAmount = pointAwardAuthorizeActions.reduce((a, b) => a + b.object.amount, 0);
     if (givenAmount > 1) {
         throw new factory.errors.Argument('transactionId', 'Incentive amount must be 1');
     }
@@ -453,7 +453,7 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
         }
     }
 
-    // JPYオーソリ金額もPecorinoオーソリポイントも0より大きくなければ取引成立不可
+    // JPYオーソリ金額もオーソリポイントも0より大きくなければ取引成立不可
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore next */
     // if (priceByAgent <= 0 && requiredPoint <= 0) {
@@ -982,38 +982,21 @@ export async function createPotentialActionsFromTransaction(params: {
             };
         });
 
-    // ムビチケ使用アクション
-    let useMvtkAction: factory.action.consume.use.mvtk.IAttributes | null = null;
-    const mvtkAuthorizeAction = <factory.action.authorize.discount.mvtk.IAction>params.transaction.object.authorizeActions
-        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .find((a) => a.object.typeOf === factory.action.authorize.discount.mvtk.ObjectType.Mvtk);
-    if (mvtkAuthorizeAction !== undefined) {
-        useMvtkAction = {
-            typeOf: factory.actionType.UseAction,
-            object: {
-                typeOf: factory.action.consume.use.mvtk.ObjectType.Mvtk,
-                seatInfoSyncIn: mvtkAuthorizeAction.object.seatInfoSyncIn
-            },
-            agent: params.transaction.agent,
-            purpose: params.order
-        };
-    }
-
-    // Pecorinoインセンティブに対する承認アクションの分だけ、Pecorinoインセンティブ付与アクションを作成する
-    let givePecorinoAwardActions: factory.action.transfer.give.pecorinoAward.IAttributes[] = [];
-    const pecorinoAwardAuthorizeActions =
-        (<factory.action.authorize.award.pecorino.IAction[]>params.transaction.object.authorizeActions)
+    // ポイントインセンティブに対する承認アクションの分だけ、ポイントインセンティブ付与アクションを作成する
+    let givePointAwardActions: factory.action.transfer.give.pointAward.IAttributes[] = [];
+    const pointAwardAuthorizeActions =
+        (<factory.action.authorize.award.point.IAction[]>params.transaction.object.authorizeActions)
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward);
-    givePecorinoAwardActions = pecorinoAwardAuthorizeActions.map((a) => {
-        const actionResult = <factory.action.authorize.award.pecorino.IResult>a.result;
+            .filter((a) => a.object.typeOf === factory.action.authorize.award.point.ObjectType.PointAward);
+    givePointAwardActions = pointAwardAuthorizeActions.map((a) => {
+        const actionResult = <factory.action.authorize.award.point.IResult>a.result;
 
         return {
             typeOf: <factory.actionType.GiveAction>factory.actionType.GiveAction,
             agent: params.transaction.seller,
             recipient: params.transaction.agent,
             object: {
-                typeOf: factory.action.transfer.give.pecorinoAward.ObjectType.PecorinoAward,
+                typeOf: factory.action.transfer.give.pointAward.ObjectType.PointAward,
                 pecorinoTransaction: actionResult.pecorinoTransaction,
                 pecorinoEndpoint: actionResult.pecorinoEndpoint
             },
@@ -1044,7 +1027,7 @@ export async function createPotentialActionsFromTransaction(params: {
     }
 
     // 会員プログラムが注文アイテムにあれば、プログラム更新タスクを追加
-    const registerProgramMembershipTaskAttributes: factory.task.registerProgramMembership.IAttributes[] = [];
+    const registerProgramMembershipTaskAttributes: factory.task.IAttributes<factory.taskName.RegisterProgramMembership>[] = [];
     const programMembershipOffers = <factory.order.IAcceptedOffer<factory.programMembership.IProgramMembership>[]>
         params.order.acceptedOffers.filter(
             (o) => o.itemOffered.typeOf === <factory.programMembership.ProgramMembershipType>'ProgramMembership'
@@ -1100,9 +1083,8 @@ export async function createPotentialActionsFromTransaction(params: {
             potentialActions: {
                 payCreditCard: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
                 payAccount: payAccountActions,
-                useMvtk: (useMvtkAction !== null) ? useMvtkAction : undefined,
                 sendOrder: sendOrderActionAttributes,
-                givePecorinoAward: givePecorinoAwardActions
+                givePointAward: givePointAwardActions
             }
         }
     };

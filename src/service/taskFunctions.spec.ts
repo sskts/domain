@@ -62,32 +62,12 @@ describe('TaskFunctionsService.cancelCreditCard()', () => {
     });
 });
 
-describe('TaskFunctionsService.cancelMvtk()', () => {
-    beforeEach(() => {
-        sandbox.restore();
-    });
-
-    it('ムビチケキャンセルサービスが正常であれば、エラーにならないはず', async () => {
-        const data = {
-            transactionId: 'transactionId'
-        };
-
-        sandbox.mock(sskts.service.discount.mvtk).expects('cancelMvtk').once()
-            .withArgs(data.transactionId).returns(async () => Promise.resolve());
-
-        const result = await TaskFunctionsService.cancelMvtk(<any>data)({ connection: sskts.mongoose.connection });
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
 describe('TaskFunctionsService.cancelAccount()', () => {
     beforeEach(() => {
         sandbox.restore();
     });
 
-    it('Pecorino決済サービスが正常であればエラーにならないはず', async () => {
+    it('ポイント決済サービスが正常であればエラーにならないはず', async () => {
         const data = {};
         sandbox.mock(sskts.service.payment.account).expects('cancelAccountAuth').once().returns(async () => Promise.resolve());
 
@@ -101,16 +81,16 @@ describe('TaskFunctionsService.cancelAccount()', () => {
     });
 });
 
-describe('TaskFunctionsService.cancelPecorinoAward()', () => {
+describe('TaskFunctionsService.cancelPointAward()', () => {
     beforeEach(() => {
         sandbox.restore();
     });
 
     it('配送サービスが正常であればエラーにならないはず', async () => {
         const data = {};
-        sandbox.mock(sskts.service.delivery).expects('cancelPecorinoAward').once().returns(async () => Promise.resolve());
+        sandbox.mock(sskts.service.delivery).expects('cancelPointAward').once().returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.cancelPecorinoAward(<any>data)({
+        const result = await TaskFunctionsService.cancelPointAward(<any>data)({
             connection: sskts.mongoose.connection,
             pecorinoAuthClient: pecorinoAuthClient
         });
@@ -133,26 +113,6 @@ describe('TaskFunctionsService.settleCreditCard()', () => {
             .withArgs(data.transactionId).returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.payCreditCard(<any>data)({ connection: sskts.mongoose.connection });
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
-describe('TaskFunctionsService.settleMvtk()', () => {
-    beforeEach(() => {
-        sandbox.restore();
-    });
-
-    it('ムビチケ確定サービスが正常であれば、エラーにならないはず', async () => {
-        const data = {
-            transactionId: 'transactionId'
-        };
-
-        sandbox.mock(sskts.service.discount.mvtk).expects('useMvtk').once()
-            .withArgs(data.transactionId).returns(async () => Promise.resolve());
-
-        const result = await TaskFunctionsService.useMvtk(<any>data)({ connection: sskts.mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -225,7 +185,7 @@ describe('TaskFunctionsService.refundAccount()', () => {
         sandbox.restore();
     });
 
-    it('Pecorino決済サービスが正常であればエラーにならないはず', async () => {
+    it('ポイント決済サービスが正常であればエラーにならないはず', async () => {
         const data = {};
         sandbox.mock(sskts.service.payment.account).expects('refundAccount').once().returns(async () => Promise.resolve());
 
@@ -317,16 +277,16 @@ describe('TaskFunctionsService.payAccount()', () => {
     });
 });
 
-describe('TaskFunctionsService.givePecorinoAward()', () => {
+describe('TaskFunctionsService.givePointAward()', () => {
     beforeEach(() => {
         sandbox.restore();
     });
 
     it('配送サービスが正常であればエラーにならないはず', async () => {
         const data = {};
-        sandbox.mock(sskts.service.delivery).expects('givePecorinoAward').once().returns(async () => Promise.resolve());
+        sandbox.mock(sskts.service.delivery).expects('givePointAward').once().returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.givePecorinoAward(<any>data)({
+        const result = await TaskFunctionsService.givePointAward(<any>data)({
             connection: sskts.mongoose.connection,
             pecorinoAuthClient: pecorinoAuthClient
         });
@@ -335,16 +295,16 @@ describe('TaskFunctionsService.givePecorinoAward()', () => {
     });
 });
 
-describe('TaskFunctionsService.returnPecorinoAward()', () => {
+describe('TaskFunctionsService.returnPointAward()', () => {
     beforeEach(() => {
         sandbox.restore();
     });
 
     it('配送サービスが正常であればエラーにならないはず', async () => {
         const data = {};
-        sandbox.mock(sskts.service.delivery).expects('returnPecorinoAward').once().returns(async () => Promise.resolve());
+        sandbox.mock(sskts.service.delivery).expects('returnPointAward').once().returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.returnPecorinoAward(<any>data)({
+        const result = await TaskFunctionsService.returnPointAward(<any>data)({
             connection: sskts.mongoose.connection,
             pecorinoAuthClient: pecorinoAuthClient
         });

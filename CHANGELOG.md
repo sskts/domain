@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - アクションリポジトリのインターフェースをCinerinoに統一
 - 印刷アクションリポジトリをアクションリポジトリへ移行
 - 会員リポジトリをCinerinoを継承するように変更
+- タスク名をCinerinoに統一
 
 ### Deprecated
 
@@ -22,6 +23,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 注文照会キー属性を注文から削除
 - 組織リポジトリを削除
+- 割引サービスを削除
 
 ### Fixed
 
@@ -240,10 +242,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - update packages.
-- Pecorino決済を、口座支払取引と口座転送取引の2つに対応。
+- ポイント決済を、口座支払取引と口座転送取引の2つに対応。
 - 脆弱性のあるパッケージをアップデート。
 - 注文取引の潜在アクションにPecorino付与アクションを追加。
-- 注文取引を、ポイント鑑賞券とPecorino決済で成立させることができるように調整。
+- 注文取引を、ポイント鑑賞券とポイント決済で成立させることができるように調整。
 - 取引に対する承認アクションを構造化。承認対象として、award,discount,offer,paymentMethodのカテゴリーを追加。
 - アクションインターフェースの汎用性を向上。
 - 決済サービスを決済方法ごとにソースコードとして分離。
@@ -283,7 +285,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ## v24.0.0 - 2018-02-28
 ### Added
 - 決済方法にPecorino口座決済を追加。
-- Pecorino決済時のキャッシュバックを実装。
+- ポイント決済時のキャッシュバックを実装。
 
 ### Changed
 - 注文返品取引サービスを追加。

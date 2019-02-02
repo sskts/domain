@@ -75,7 +75,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
 
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
-                const placeOrderTaskAttributes: factory.task.placeOrder.IAttributes = {
+                const placeOrderTaskAttributes: factory.task.IAttributes<factory.taskName.PlaceOrder> = {
                     name: factory.taskName.PlaceOrder,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
@@ -93,7 +93,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
             // 期限切れor中止の場合は、タスクリストを作成する
             case factory.transactionStatusType.Canceled:
             case factory.transactionStatusType.Expired:
-                const cancelSeatReservationTaskAttributes: factory.task.cancelSeatReservation.IAttributes = {
+                const cancelSeatReservationTaskAttributes: factory.task.IAttributes<factory.taskName.CancelSeatReservation> = {
                     name: factory.taskName.CancelSeatReservation,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
@@ -104,19 +104,8 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 };
-                const cancelCreditCardTaskAttributes: factory.task.cancelCreditCard.IAttributes = {
+                const cancelCreditCardTaskAttributes: factory.task.IAttributes<factory.taskName.CancelCreditCard> = {
                     name: factory.taskName.CancelCreditCard,
-                    status: factory.taskStatus.Ready,
-                    runsAt: new Date(), // なるはやで実行
-                    remainingNumberOfTries: 10,
-                    numberOfTried: 0,
-                    executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
-                };
-                const cancelMvtkTaskAttributes: factory.task.cancelMvtk.IAttributes = {
-                    name: factory.taskName.CancelMvtk,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -137,8 +126,8 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                         transactionId: transaction.id
                     }
                 };
-                const cancelPecorinoAwardTaskAttributes: factory.task.cancelPecorinoAward.IAttributes = {
-                    name: factory.taskName.CancelPecorinoAward,
+                const cancelPointAwardTaskAttributes: factory.task.IAttributes<factory.taskName.CancelPointAward> = {
+                    name: factory.taskName.CancelPointAward,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
@@ -151,9 +140,8 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                 taskAttributes.push(
                     cancelSeatReservationTaskAttributes,
                     cancelCreditCardTaskAttributes,
-                    cancelMvtkTaskAttributes,
                     cancelAccountTaskAttributes,
-                    cancelPecorinoAwardTaskAttributes
+                    cancelPointAwardTaskAttributes
                 );
 
                 break;
@@ -178,7 +166,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
 export function sendEmail(
     transactionId: string,
     emailMessageAttributes: factory.creativeWork.message.email.IAttributes
-): ITaskAndTransactionOperation<factory.task.sendEmailMessage.ITask> {
+): ITaskAndTransactionOperation<factory.task.ITask<factory.taskName.SendEmailMessage>> {
     return async (repos: {
         task: TaskRepo;
         transaction: TransactionRepo;
@@ -224,7 +212,7 @@ export function sendEmail(
         };
 
         // その場で送信ではなく、DBにタスクを登録
-        const sendEmailMessageTask: factory.task.sendEmailMessage.IAttributes = {
+        const sendEmailMessageTask: factory.task.IAttributes<factory.taskName.SendEmailMessage> = {
             name: factory.taskName.SendEmailMessage,
             status: factory.taskStatus.Ready,
             runsAt: new Date(), // なるはやで実行
@@ -236,6 +224,6 @@ export function sendEmail(
             }
         };
 
-        return <factory.task.sendEmailMessage.ITask>await repos.task.save(sendEmailMessageTask);
+        return <factory.task.ITask<factory.taskName.SendEmailMessage>>await repos.task.save(sendEmailMessageTask);
     };
 }

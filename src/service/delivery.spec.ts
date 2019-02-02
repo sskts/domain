@@ -668,7 +668,7 @@ describe('ポイントインセンティブを適用する', () => {
         sandbox.mock(sskts.pecorinoapi.service.transaction.Deposit.prototype).expects('confirm').once().resolves();
         sandbox.mock(actionRepo).expects('complete').once().resolves({});
 
-        const result = await sskts.service.delivery.givePecorinoAward(<any>{
+        const result = await sskts.service.delivery.givePointAward(<any>{
             object: {
                 pecorinoEndpoint: 'https://example.com',
                 pecorinoTransaction: {}
@@ -690,7 +690,7 @@ describe('ポイントインセンティブを適用する', () => {
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
 
-        const result = await sskts.service.delivery.givePecorinoAward(<any>{
+        const result = await sskts.service.delivery.givePointAward(<any>{
             object: {
                 pecorinoEndpoint: 'https://example.com',
                 pecorinoTransaction: {}
@@ -717,7 +717,7 @@ describe('ポイントインセンティブを返却する', () => {
         sandbox.mock(sskts.pecorinoapi.service.transaction.Withdraw.prototype).expects('confirm').once().resolves();
         sandbox.mock(actionRepo).expects('complete').once().resolves({});
 
-        const result = await sskts.service.delivery.returnPecorinoAward(<any>{
+        const result = await sskts.service.delivery.returnPointAward(<any>{
             object: {
                 purpose: {
                     agent: {},
@@ -746,7 +746,7 @@ describe('ポイントインセンティブを返却する', () => {
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
 
-        const result = await sskts.service.delivery.returnPecorinoAward(<any>{
+        const result = await sskts.service.delivery.returnPointAward(<any>{
             object: {
                 purpose: {
                     agent: {},
@@ -773,7 +773,7 @@ describe('ポイントインセンティブ承認取消', () => {
 
     it('Pecorinoサービスが正常であればインセンティブをキャンセルできるはず', async () => {
         const authorizeActions = [{
-            object: { typeOf: sskts.factory.action.authorize.award.pecorino.ObjectType.PecorinoAward },
+            object: { typeOf: sskts.factory.action.authorize.award.point.ObjectType.PointAward },
             actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
             result: {
                 pecorinoEndpoint: 'pecorinoEndpoint',
@@ -785,7 +785,7 @@ describe('ポイントインセンティブ承認取消', () => {
         sandbox.mock(actionRepo).expects('searchByPurpose').once().resolves(authorizeActions);
         sandbox.mock(sskts.pecorinoapi.service.transaction.Deposit.prototype).expects('cancel').once().resolves({});
 
-        const result = await sskts.service.delivery.cancelPecorinoAward(<any>{})({
+        const result = await sskts.service.delivery.cancelPointAward(<any>{})({
             action: actionRepo,
             pecorinoAuthClient: pecorinoAuthClient
         });

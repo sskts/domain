@@ -195,7 +195,7 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
                 // tslint:disable-next-line:no-single-line-block-comment
                 /* istanbul ignore else */
                 if (sendEmailMessageTaskDoc === null) {
-                    const sendEmailMessageTask: factory.task.sendEmailMessage.IAttributes = {
+                    const sendEmailMessageTask: factory.task.IAttributes<factory.taskName.SendEmailMessage> = {
                         name: factory.taskName.SendEmailMessage,
                         status: factory.taskStatus.Ready,
                         runsAt: now, // なるはやで実行
@@ -227,7 +227,7 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
  * ポイントインセンティブ入金実行
  * 取引中に入金取引の承認アクションを完了しているはずなので、その取引を確定するだけの処理です。
  */
-export function givePecorinoAward(params: factory.task.givePecorinoAward.IData) {
+export function givePointAward(params: factory.task.IData<factory.taskName.GivePointAward>) {
     return async (repos: {
         action: ActionRepo;
         pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
@@ -257,7 +257,7 @@ export function givePecorinoAward(params: factory.task.givePecorinoAward.IData) 
 
         // アクション完了
         debug('ending action...');
-        const actionResult: factory.action.transfer.give.pecorinoAward.IResult = {};
+        const actionResult: factory.action.transfer.give.pointAward.IResult = {};
         await repos.action.complete({ typeOf: params.typeOf, id: action.id, result: actionResult });
     };
 }
@@ -265,17 +265,17 @@ export function givePecorinoAward(params: factory.task.givePecorinoAward.IData) 
 /**
  * ポイントインセンティブ返却実行
  */
-export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IData) {
+export function returnPointAward(params: factory.task.IData<factory.taskName.ReturnPointAward>) {
     return async (repos: {
         action: ActionRepo;
         pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
     }) => {
         // アクション開始
         const placeOrderTransaction = params.object.purpose;
-        const pecorinoAwardAuthorizeActionResult = params.object.result;
+        const pointAwardAuthorizeActionResult = params.object.result;
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore if */
-        if (pecorinoAwardAuthorizeActionResult === undefined) {
+        if (pointAwardAuthorizeActionResult === undefined) {
             throw new factory.errors.NotFound('params.object.result');
         }
 
@@ -285,7 +285,7 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
         try {
             // 入金した分を引き出し取引実行
             const withdrawService = new pecorinoapi.service.transaction.Withdraw({
-                endpoint: pecorinoAwardAuthorizeActionResult.pecorinoEndpoint,
+                endpoint: pointAwardAuthorizeActionResult.pecorinoEndpoint,
                 auth: repos.pecorinoAuthClient
             });
             withdrawTransaction = await withdrawService.start({
@@ -303,10 +303,10 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
                     name: placeOrderTransaction.seller.name.ja,
                     url: placeOrderTransaction.seller.url
                 },
-                amount: pecorinoAwardAuthorizeActionResult.pecorinoTransaction.object.amount,
+                amount: pointAwardAuthorizeActionResult.pecorinoTransaction.object.amount,
                 notes: 'シネマサンシャイン 返品によるポイントインセンティブ取消',
                 accountType: factory.accountType.Point,
-                fromAccountNumber: pecorinoAwardAuthorizeActionResult.pecorinoTransaction.object.toAccountNumber
+                fromAccountNumber: pointAwardAuthorizeActionResult.pecorinoTransaction.object.toAccountNumber
             });
             await withdrawService.confirm({ transactionId: withdrawTransaction.id });
         } catch (error) {
@@ -323,7 +323,7 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
 
         // アクション完了
         debug('ending action...');
-        const actionResult: factory.action.transfer.returnAction.pecorinoAward.IResult = {
+        const actionResult: factory.action.transfer.returnAction.pointAward.IResult = {
             pecorinoTransaction: withdrawTransaction
         };
         await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
@@ -334,15 +334,15 @@ export function returnPecorinoAward(params: factory.task.returnPecorinoAward.IDa
  * ポイントインセンティブ承認取消
  * @param params.transactionId 取引ID
  */
-export function cancelPecorinoAward(params: {
+export function cancelPointAward(params: {
     transactionId: string;
 }) {
     return async (repos: {
         action: ActionRepo;
         pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
     }) => {
-        // Pecorinoインセンティブ承認アクションを取得
-        const authorizeActions = <factory.action.authorize.award.pecorino.IAction[]>
+        // ポイントインセンティブ承認アクションを取得
+        const authorizeActions = <factory.action.authorize.award.point.IAction[]>
             await repos.action.searchByPurpose({
                 typeOf: factory.actionType.AuthorizeAction,
                 purpose: {
@@ -351,7 +351,7 @@ export function cancelPecorinoAward(params: {
                 }
             })
                 .then((actions) => actions
-                    .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward)
+                    .filter((a) => a.object.typeOf === factory.action.authorize.award.point.ObjectType.PointAward)
                     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
                 );
 

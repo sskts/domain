@@ -96,8 +96,8 @@ describe('exportTasksById()', () => {
         sandbox.verify();
     });
 
-    it('期限切れ取引であれば6つのタスクがエクスポートされるはず', async () => {
-        const numberOfTasks = 6;
+    it('期限切れ取引であれば5つのタスクがエクスポートされるはず', async () => {
+        const numberOfTasks = 5;
         const transaction = {
             id: 'transactionId',
             status: sskts.factory.transactionStatusType.Expired

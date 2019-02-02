@@ -155,7 +155,7 @@ export function createRegisterTask(params: {
             // potentialActions?: any;
         };
         // 会員プログラム登録タスクを作成する
-        const taskAttributes: factory.task.registerProgramMembership.IAttributes = {
+        const taskAttributes: factory.task.IAttributes<factory.taskName.RegisterProgramMembership> = {
             name: factory.taskName.RegisterProgramMembership,
             status: factory.taskStatus.Ready,
             runsAt: now,
@@ -319,7 +319,7 @@ export function createUnRegisterTask(params: {
             agent: params.agent,
             object: ownershipInfo
         };
-        const taskAttributes: factory.task.unRegisterProgramMembership.IAttributes = {
+        const taskAttributes: factory.task.IAttributes<factory.taskName.UnRegisterProgramMembership> = {
             name: factory.taskName.UnRegisterProgramMembership,
             status: factory.taskStatus.Ready,
             runsAt: now,
@@ -497,10 +497,10 @@ function processPlaceOrder(params: {
             }
 
             // 承認アクションを開始する
-            const actionAttributes: factory.action.authorize.award.pecorino.IAttributes = {
+            const actionAttributes: factory.action.authorize.award.point.IAttributes = {
                 typeOf: factory.actionType.AuthorizeAction,
                 object: {
-                    typeOf: factory.action.authorize.award.pecorino.ObjectType.PecorinoAward,
+                    typeOf: factory.action.authorize.award.point.ObjectType.PointAward,
                     transactionId: transaction.id,
                     amount: 1
                 },
@@ -513,7 +513,7 @@ function processPlaceOrder(params: {
             let pecorinoEndpoint: string;
 
             // Pecorinoオーソリ取得
-            let pecorinoTransaction: factory.action.authorize.award.pecorino.IPecorinoTransaction;
+            let pecorinoTransaction: factory.action.authorize.award.point.IPecorinoTransaction;
 
             try {
                 pecorinoEndpoint = repos.depositService.options.endpoint;
@@ -556,7 +556,7 @@ function processPlaceOrder(params: {
 
             // アクションを完了
             debug('ending authorize action...');
-            const actionResult: factory.action.authorize.award.pecorino.IResult = {
+            const actionResult: factory.action.authorize.award.point.IResult = {
                 price: 0, // JPYとして0円
                 amount: 1,
                 pecorinoTransaction: pecorinoTransaction,

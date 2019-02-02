@@ -37,7 +37,7 @@ describe('ポイントインセンティブ承認を作成する', () => {
         sandbox.mock(depositService).expects('start').once().resolves({});
         sandbox.mock(actionRepo).expects('complete').once().resolves({});
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.pecorino.create(<any>{})({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.create(<any>{})({
             action: actionRepo,
             transaction: transactionRepo,
             ownershipInfo: ownershipInfoRepo,
@@ -60,7 +60,7 @@ describe('ポイントインセンティブ承認を作成する', () => {
         sandbox.mock(ownershipInfoRepo).expects('search').never();
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.pecorino.create(<any>{})({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.create(<any>{})({
             action: actionRepo,
             transaction: transactionRepo,
             ownershipInfo: ownershipInfoRepo,
@@ -88,7 +88,7 @@ describe('ポイントインセンティブ承認を作成する', () => {
         sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([ownershipInfo]);
         sandbox.mock(actionRepo).expects('start').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.pecorino.create(<any>{})({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.create(<any>{})({
             action: actionRepo,
             transaction: transactionRepo,
             ownershipInfo: ownershipInfoRepo,
@@ -120,7 +120,7 @@ describe('ポイントインセンティブ承認を作成する', () => {
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.pecorino.create(<any>{})({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.create(<any>{})({
             action: actionRepo,
             transaction: transactionRepo,
             ownershipInfo: ownershipInfoRepo,
@@ -149,7 +149,7 @@ describe('ポイントインセンティブ承認を取り消す', () => {
         sandbox.mock(actionRepo).expects('cancel').once().resolves(action);
         sandbox.mock(depositService).expects('cancel').once().resolves();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.pecorino.cancel(<any>{})({
+        const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel(<any>{})({
             action: actionRepo,
             transaction: transactionRepo,
             depositTransactionService: depositService

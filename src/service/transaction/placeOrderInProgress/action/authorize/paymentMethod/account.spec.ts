@@ -1,6 +1,6 @@
 // tslint:disable:no-implicit-dependencies
 /**
- * Pecorino決済承認アクションテスト
+ * ポイント決済承認アクションテスト
  */
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
@@ -12,7 +12,7 @@ before(() => {
     sandbox = sinon.createSandbox();
 });
 
-describe('Pecorino決済を承認する', () => {
+describe('ポイント決済を承認する', () => {
     beforeEach(() => {
         sandbox.restore();
     });
@@ -262,7 +262,7 @@ describe('Pecorino決済を承認する', () => {
     });
 });
 
-describe('Pecorino決済承認を取り消す', () => {
+describe('ポイント決済承認を取り消す', () => {
     beforeEach(() => {
         sandbox.restore();
     });

@@ -43,7 +43,7 @@ export function create(params: {
      * 取引メモ
      */
     notes?: string;
-}): ICreateOperation<factory.action.authorize.award.pecorino.IAction> {
+}): ICreateOperation<factory.action.authorize.award.point.IAction> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
@@ -81,10 +81,10 @@ export function create(params: {
         }
 
         // 承認アクションを開始する
-        const actionAttributes: factory.action.authorize.award.pecorino.IAttributes = {
+        const actionAttributes: factory.action.authorize.award.point.IAttributes = {
             typeOf: factory.actionType.AuthorizeAction,
             object: {
-                typeOf: factory.action.authorize.award.pecorino.ObjectType.PecorinoAward,
+                typeOf: factory.action.authorize.award.point.ObjectType.PointAward,
                 transactionId: params.transactionId,
                 amount: params.amount
             },
@@ -97,7 +97,7 @@ export function create(params: {
         let pecorinoEndpoint: string;
 
         // Pecorinoオーソリ取得
-        let pecorinoTransaction: factory.action.authorize.award.pecorino.IPecorinoTransaction;
+        let pecorinoTransaction: factory.action.authorize.award.point.IPecorinoTransaction;
 
         try {
             pecorinoEndpoint = repos.depositTransactionService.options.endpoint;
@@ -141,7 +141,7 @@ export function create(params: {
 
         // アクションを完了
         debug('ending authorize action...');
-        const actionResult: factory.action.authorize.award.pecorino.IResult = {
+        const actionResult: factory.action.authorize.award.point.IResult = {
             price: 0, // JPYとして0円
             amount: params.amount,
             pecorinoTransaction: pecorinoTransaction,
@@ -188,7 +188,7 @@ export function cancel(params: {
 
         // まずアクションをキャンセル
         const action = await repos.action.cancel({ typeOf: factory.actionType.AuthorizeAction, id: params.actionId });
-        const actionResult = <factory.action.authorize.award.pecorino.IResult>action.result;
+        const actionResult = <factory.action.authorize.award.point.IResult>action.result;
 
         // Pecorinoで取消中止実行
         await repos.depositTransactionService.cancel({

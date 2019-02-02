@@ -33,7 +33,7 @@ describe('createFromTransaction()', () => {
                         payCreditCard: { typeOf: sskts.factory.actionType.PayAction },
                         payAccount: [{ typeOf: sskts.factory.actionType.PayAction }],
                         useMvtk: { typeOf: sskts.factory.actionType.UseAction },
-                        givePecorinoAward: [{ typeOf: sskts.factory.actionType.GiveAction }]
+                        givePointAward: [{ typeOf: sskts.factory.actionType.GiveAction }]
                     }
                 }
             }
@@ -54,7 +54,7 @@ describe('createFromTransaction()', () => {
         sandbox.mock(orderRepo).expects('createIfNotExist').once()
             .withExactArgs(transaction.result.order).resolves();
         // tslint:disable-next-line:no-magic-numbers
-        sandbox.mock(taskRepo).expects('save').exactly(5);
+        sandbox.mock(taskRepo).expects('save').exactly(4);
 
         const result = await sskts.service.order.createFromTransaction(transaction.id)({
             action: actionRepo,
@@ -208,7 +208,7 @@ describe('cancelReservations()', () => {
                     potentialActions: {
                         refundCreditCard: {},
                         refundAccount: [{}],
-                        returnPecorinoAward: [{}]
+                        returnPointAward: [{}]
                     }
                 }
             }

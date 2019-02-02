@@ -189,7 +189,7 @@ export function confirm(params: {
                     }
                 };
             });
-        // Pecorino返金アクション
+        // ポイント返金アクション
         const refundAccountActions = (<factory.action.trade.pay.IAction<factory.paymentMethodType.Account>[]>payActions)
             .filter((a) => a.object[0].paymentMethod.typeOf === factory.paymentMethodType.Account)
             .map((a): factory.action.trade.refund.IAttributes<factory.paymentMethodType.Account> => {
@@ -204,12 +204,12 @@ export function confirm(params: {
                     }
                 };
             });
-        // Pecorino賞金の承認アクションの数だけ、返却アクションを作成
+        // ポイント賞金の承認アクションの数だけ、返却アクションを作成
         const authorizeActions = placeOrderTransaction.object.authorizeActions;
-        const returnPecorinoAwardActions = authorizeActions
+        const returnPointAwardActions = authorizeActions
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward)
-            .map((a: factory.action.authorize.award.pecorino.IAction): factory.action.transfer.returnAction.pecorinoAward.IAttributes => {
+            .filter((a) => a.object.typeOf === factory.action.authorize.award.point.ObjectType.PointAward)
+            .map((a: factory.action.authorize.award.point.IAction): factory.action.transfer.returnAction.pointAward.IAttributes => {
                 return {
                     typeOf: factory.actionType.ReturnAction,
                     object: a,
@@ -226,7 +226,7 @@ export function confirm(params: {
             potentialActions: {
                 refundCreditCard: refundCreditCardActions[0],
                 refundAccount: refundAccountActions,
-                returnPecorinoAward: returnPecorinoAwardActions
+                returnPointAward: returnPointAwardActions
             }
         };
         const result: factory.transaction.returnOrder.IResult = {
@@ -364,7 +364,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
                 // 注文返品タスク
-                const returnOrderTask: factory.task.returnOrder.IAttributes = {
+                const returnOrderTask: factory.task.IAttributes<factory.taskName.ReturnOrder> = {
                     name: factory.taskName.ReturnOrder,
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行

@@ -20,7 +20,6 @@ import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 import * as DeliveryService from '../service/delivery';
-import * as DiscountService from '../service/discount';
 import * as MasterSyncService from '../service/masterSync';
 import * as NotificationService from '../service/notification';
 import * as OrderService from '../service/order';
@@ -53,7 +52,7 @@ export type IOperation<T> = (settings: {
     cognitoIdentityServiceProvider?: AWS.CognitoIdentityServiceProvider;
 }) => Promise<T>;
 
-export function sendEmailMessage(data: factory.task.sendEmailMessage.IData): IOperation<void> {
+export function sendEmailMessage(data: factory.task.IData<factory.taskName.SendEmailMessage>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -63,7 +62,7 @@ export function sendEmailMessage(data: factory.task.sendEmailMessage.IData): IOp
     };
 }
 
-export function cancelSeatReservation(data: factory.task.cancelSeatReservation.IData): IOperation<void> {
+export function cancelSeatReservation(data: factory.task.IData<factory.taskName.CancelSeatReservation>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -73,22 +72,13 @@ export function cancelSeatReservation(data: factory.task.cancelSeatReservation.I
     };
 }
 
-export function cancelCreditCard(data: factory.task.cancelCreditCard.IData): IOperation<void> {
+export function cancelCreditCard(data: factory.task.IData<factory.taskName.CancelCreditCard>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
         const actionRepo = new ActionRepo(settings.connection);
         await PaymentService.creditCard.cancelCreditCardAuth(data.transactionId)({ action: actionRepo });
-    };
-}
-
-export function cancelMvtk(data: factory.task.cancelMvtk.IData): IOperation<void> {
-    return async (__: {
-        connection: mongoose.Connection;
-        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
-    }) => {
-        await DiscountService.mvtk.cancelMvtk(data.transactionId)();
     };
 }
 
@@ -126,7 +116,7 @@ export function cancelAccount(data: factory.task.IData<factory.taskName.CancelAc
     };
 }
 
-export function cancelPecorinoAward(data: factory.task.cancelPecorinoAward.IData): IOperation<void> {
+export function cancelPointAward(data: factory.task.IData<factory.taskName.CancelPointAward>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -137,14 +127,14 @@ export function cancelPecorinoAward(data: factory.task.cancelPecorinoAward.IData
             throw new Error('settings.pecorinoAuthClient undefined.');
         }
 
-        await DeliveryService.cancelPecorinoAward(data)({
+        await DeliveryService.cancelPointAward(data)({
             action: new ActionRepo(settings.connection),
             pecorinoAuthClient: settings.pecorinoAuthClient
         });
     };
 }
 
-export function payCreditCard(data: factory.task.payCreditCard.IData): IOperation<void> {
+export function payCreditCard(data: factory.task.IData<factory.taskName.PayCreditCard>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -158,19 +148,19 @@ export function payCreditCard(data: factory.task.payCreditCard.IData): IOperatio
     };
 }
 
-export function useMvtk(data: factory.task.useMvtk.IData): IOperation<void> {
-    return async (settings: {
-        connection: mongoose.Connection;
-        pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
-    }) => {
-        const actionRepo = new ActionRepo(settings.connection);
-        const transactionRepo = new TransactionRepo(settings.connection);
-        await DiscountService.mvtk.useMvtk(data.transactionId)({
-            action: actionRepo,
-            transaction: transactionRepo
-        });
-    };
-}
+// export function useMvtk(data: factory.task.IData<factory.taskName.PayMovieTicket>): IOperation<void> {
+//     return async (settings: {
+//         connection: mongoose.Connection;
+//         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
+//     }) => {
+//         const actionRepo = new ActionRepo(settings.connection);
+//         const transactionRepo = new TransactionRepo(settings.connection);
+//         await DiscountService.mvtk.useMvtk(data.transactionId)({
+//             action: actionRepo,
+//             transaction: transactionRepo
+//         });
+//     };
+// }
 
 export function payAccount(data: factory.task.IData<factory.taskName.PayAccount>): IOperation<void> {
     return async (settings: {
@@ -206,7 +196,7 @@ export function payAccount(data: factory.task.IData<factory.taskName.PayAccount>
     };
 }
 
-export function placeOrder(data: factory.task.placeOrder.IData): IOperation<void> {
+export function placeOrder(data: factory.task.IData<factory.taskName.PlaceOrder>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -224,7 +214,7 @@ export function placeOrder(data: factory.task.placeOrder.IData): IOperation<void
     };
 }
 
-export function refundCreditCard(data: factory.task.refundCreditCard.IData): IOperation<void> {
+export function refundCreditCard(data: factory.task.IData<factory.taskName.RefundCreditCard>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -276,7 +266,7 @@ export function refundAccount(data: factory.task.IData<factory.taskName.RefundAc
     };
 }
 
-export function returnOrder(data: factory.task.returnOrder.IData): IOperation<void> {
+export function returnOrder(data: factory.task.IData<factory.taskName.ReturnOrder>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -290,7 +280,7 @@ export function returnOrder(data: factory.task.returnOrder.IData): IOperation<vo
     };
 }
 
-export function sendOrder(data: factory.task.returnOrder.IData): IOperation<void> {
+export function sendOrder(data: factory.task.IData<factory.taskName.SendOrder>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         redisClient?: redis.RedisClient;
@@ -318,7 +308,7 @@ export function sendOrder(data: factory.task.returnOrder.IData): IOperation<void
     };
 }
 
-export function givePecorinoAward(data: factory.task.givePecorinoAward.IData): IOperation<void> {
+export function givePointAward(data: factory.task.IData<factory.taskName.GivePointAward>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -330,14 +320,14 @@ export function givePecorinoAward(data: factory.task.givePecorinoAward.IData): I
         }
 
         const actionRepo = new ActionRepo(settings.connection);
-        await DeliveryService.givePecorinoAward(data)({
+        await DeliveryService.givePointAward(data)({
             action: actionRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient
         });
     };
 }
 
-export function returnPecorinoAward(data: factory.task.returnPecorinoAward.IData): IOperation<void> {
+export function returnPointAward(data: factory.task.IData<factory.taskName.ReturnPointAward>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
@@ -349,14 +339,14 @@ export function returnPecorinoAward(data: factory.task.returnPecorinoAward.IData
         }
 
         const actionRepo = new ActionRepo(settings.connection);
-        await DeliveryService.returnPecorinoAward(data)({
+        await DeliveryService.returnPointAward(data)({
             action: actionRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient
         });
     };
 }
 
-export function registerProgramMembership(data: factory.task.registerProgramMembership.IData): IOperation<void> {
+export function registerProgramMembership(data: factory.task.IData<factory.taskName.RegisterProgramMembership>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         redisClient?: redis.RedisClient;
@@ -388,7 +378,7 @@ export function registerProgramMembership(data: factory.task.registerProgramMemb
     };
 }
 
-export function unRegisterProgramMembership(data: factory.task.unRegisterProgramMembership.IData): IOperation<void> {
+export function unRegisterProgramMembership(data: factory.task.IData<factory.taskName.UnRegisterProgramMembership>): IOperation<void> {
     return async (settings: {
         connection: mongoose.Connection;
         cognitoIdentityServiceProvider: AWS.CognitoIdentityServiceProvider;
@@ -402,7 +392,7 @@ export function unRegisterProgramMembership(data: factory.task.unRegisterProgram
     };
 }
 
-export function triggerWebhook(data: factory.task.triggerWebhook.IData): IOperation<void> {
+export function triggerWebhook(data: factory.task.IData<factory.taskName.TriggerWebhook>): IOperation<void> {
     return async (_: {
         connection: mongoose.Connection;
         cognitoIdentityServiceProvider: AWS.CognitoIdentityServiceProvider;
