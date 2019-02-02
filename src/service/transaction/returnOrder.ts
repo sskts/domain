@@ -369,7 +369,6 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     status: factory.taskStatus.Ready,
                     runsAt: new Date(), // なるはやで実行
                     remainingNumberOfTries: 10,
-                    lastTriedAt: null,
                     numberOfTried: 0,
                     executionResults: [],
                     data: {

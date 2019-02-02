@@ -94,7 +94,6 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,
-                    lastTriedAt: null,
                     numberOfTried: 0,
                     executionResults: [],
                     data: {
@@ -113,7 +112,6 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,
-                    lastTriedAt: null,
                     numberOfTried: 0,
                     executionResults: [],
                     data: {
@@ -133,7 +131,6 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                         status: factory.taskStatus.Ready,
                         runsAt: now, // なるはやで実行
                         remainingNumberOfTries: 10,
-                        lastTriedAt: null,
                         numberOfTried: 0,
                         executionResults: [],
                         data: a
@@ -150,7 +147,6 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,
-                    lastTriedAt: null,
                     numberOfTried: 0,
                     executionResults: [],
                     data: {
@@ -170,7 +166,6 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                         status: factory.taskStatus.Ready,
                         runsAt: now, // なるはやで実行
                         remainingNumberOfTries: 10,
-                        lastTriedAt: null,
                         numberOfTried: 0,
                         executionResults: [],
                         data: a
@@ -311,7 +306,6 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 10,
-                    lastTriedAt: null,
                     numberOfTried: 0,
                     executionResults: [],
                     data: {
@@ -332,7 +326,6 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
                             status: factory.taskStatus.Ready,
                             runsAt: now, // なるはやで実行
                             remainingNumberOfTries: 10,
-                            lastTriedAt: null,
                             numberOfTried: 0,
                             executionResults: [],
                             data: a
@@ -352,7 +345,6 @@ function onReturn(transactionId: string, returnActionAttributes: factory.action.
                             status: factory.taskStatus.Ready,
                             runsAt: now, // なるはやで実行
                             remainingNumberOfTries: 10,
-                            lastTriedAt: null,
                             numberOfTried: 0,
                             executionResults: [],
                             data: a

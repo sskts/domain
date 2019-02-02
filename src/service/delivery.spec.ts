@@ -782,7 +782,7 @@ describe('ポイントインセンティブ承認取消', () => {
         }];
         const actionRepo = new sskts.repository.Action(mongoose.connection);
         const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
-        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once().resolves(authorizeActions);
+        sandbox.mock(actionRepo).expects('searchByPurpose').once().resolves(authorizeActions);
         sandbox.mock(sskts.pecorinoapi.service.transaction.Deposit.prototype).expects('cancel').once().resolves({});
 
         const result = await sskts.service.delivery.cancelPecorinoAward(<any>{})({

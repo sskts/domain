@@ -116,7 +116,13 @@ export function cancelCreditCardAuth(transactionId: string) {
     return async (repos: { action: ActionRepo }) => {
         // クレジットカード仮売上アクションを取得
         const authorizeActions = <factory.action.authorize.paymentMethod.creditCard.IAction[]>
-            await repos.action.findAuthorizeByTransactionId({ transactionId: transactionId })
+            await repos.action.searchByPurpose({
+                typeOf: factory.actionType.AuthorizeAction,
+                purpose: {
+                    typeOf: factory.transactionType.PlaceOrder,
+                    id: transactionId
+                }
+            })
                 .then((actions) => actions
                     .filter((a) => a.object.typeOf === factory.paymentMethodType.CreditCard)
                     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
@@ -260,7 +266,6 @@ function onRefund(refundActionAttributes: factory.action.trade.refund.IAttribute
                     status: factory.taskStatus.Ready,
                     runsAt: now, // なるはやで実行
                     remainingNumberOfTries: 3,
-                    lastTriedAt: null,
                     numberOfTried: 0,
                     executionResults: [],
                     data: {

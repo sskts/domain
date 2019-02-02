@@ -200,7 +200,6 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
                         status: factory.taskStatus.Ready,
                         runsAt: now, // なるはやで実行
                         remainingNumberOfTries: 3,
-                        lastTriedAt: null,
                         numberOfTried: 0,
                         executionResults: [],
                         data: {
@@ -344,7 +343,13 @@ export function cancelPecorinoAward(params: {
     }) => {
         // Pecorinoインセンティブ承認アクションを取得
         const authorizeActions = <factory.action.authorize.award.pecorino.IAction[]>
-            await repos.action.findAuthorizeByTransactionId({ transactionId: params.transactionId })
+            await repos.action.searchByPurpose({
+                typeOf: factory.actionType.AuthorizeAction,
+                purpose: {
+                    typeOf: factory.transactionType.PlaceOrder,
+                    id: params.transactionId
+                }
+            })
                 .then((actions) => actions
                     .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward)
                     .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)

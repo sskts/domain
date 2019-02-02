@@ -160,7 +160,6 @@ export function createRegisterTask(params: {
             status: factory.taskStatus.Ready,
             runsAt: now,
             remainingNumberOfTries: 10,
-            lastTriedAt: null,
             numberOfTried: 0,
             executionResults: [],
             data: registerActionAttributes
@@ -325,7 +324,6 @@ export function createUnRegisterTask(params: {
             status: factory.taskStatus.Ready,
             runsAt: now,
             remainingNumberOfTries: 10,
-            lastTriedAt: null,
             numberOfTried: 0,
             executionResults: [],
             data: unRegisterActionAttributes

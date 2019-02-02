@@ -659,7 +659,7 @@ describe('confirm()', () => {
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(orderNumberRepo).expects('publish').once().resolves('orderNumber');
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
+        sandbox.mock(actionRepo).expects('searchByPurpose').once()
             .resolves([
                 ...creditCardAuthorizeActions,
                 ...seatReservationAuthorizeActions
@@ -846,7 +846,7 @@ describe('confirm()', () => {
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(orderNumberRepo).expects('publish').once().resolves('orderNumber');
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
+        sandbox.mock(actionRepo).expects('searchByPurpose').once()
             .resolves([...mvtkAuthorizeActions, ...seatReservationAuthorizeActions]);
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().resolves();
 
@@ -889,7 +889,7 @@ describe('confirm()', () => {
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(orderNumberRepo).expects('publish').never();
-        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').never();
+        sandbox.mock(actionRepo).expects('searchByPurpose').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
             agentId: agent.id,
@@ -964,7 +964,7 @@ describe('confirm()', () => {
 
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
+        sandbox.mock(actionRepo).expects('searchByPurpose').once()
             .resolves(authorizeActions);
         sandbox.mock(orderNumberRepo).expects('publish').never();
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
@@ -1007,7 +1007,7 @@ describe('confirm()', () => {
 
         sandbox.mock(sellerRepo).expects('findById').never();
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').never();
+        sandbox.mock(actionRepo).expects('searchByPurpose').never();
         sandbox.mock(orderNumberRepo).expects('publish').never();
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 

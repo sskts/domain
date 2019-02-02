@@ -92,7 +92,7 @@ describe('cancelSeatReservationAuth()', () => {
         ];
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
 
-        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
+        sandbox.mock(actionRepo).expects('searchByPurpose').once()
             .resolves(authorizeActions);
         sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').once().resolves();
 

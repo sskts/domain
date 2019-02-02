@@ -307,7 +307,13 @@ export function confirm(params: {
         }
 
         // 取引に対する全ての承認アクションをマージ
-        let authorizeActions = await repos.action.findAuthorizeByTransactionId({ transactionId: params.transactionId });
+        let authorizeActions = await repos.action.searchByPurpose({
+            typeOf: factory.actionType.AuthorizeAction,
+            purpose: {
+                typeOf: factory.transactionType.PlaceOrder,
+                id: params.transactionId
+            }
+        });
         // 万が一このプロセス中に他処理が発生してもそれらを無視するように、endDateでフィルタリング
         authorizeActions = authorizeActions.filter((a) => (a.endDate !== undefined && a.endDate < params.orderDate));
         transaction.object.authorizeActions = authorizeActions;
@@ -1068,7 +1074,6 @@ export async function createPotentialActionsFromTransaction(params: {
                 status: factory.taskStatus.Ready,
                 runsAt: runsAt,
                 remainingNumberOfTries: 10,
-                lastTriedAt: null,
                 numberOfTried: 0,
                 executionResults: [],
                 data: actionAttributes
