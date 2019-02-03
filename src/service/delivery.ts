@@ -241,10 +241,10 @@ export function givePointAward(params: factory.task.IData<factory.taskName.GiveP
         try {
             // 入金取引確定
             const depositService = new pecorinoapi.service.transaction.Deposit({
-                endpoint: params.object.pecorinoEndpoint,
+                endpoint: params.object.pointAPIEndpoint,
                 auth: repos.pecorinoAuthClient
             });
-            await depositService.confirm({ transactionId: params.object.pecorinoTransaction.id });
+            await depositService.confirm({ transactionId: params.object.pointTransaction.id });
         } catch (error) {
             // actionにエラー結果を追加
             try {

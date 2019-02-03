@@ -1,10 +1,8 @@
 /**
  * 決済サービス
  */
-import * as AccountPaymentService from './payment/account';
-import * as CreditCardPaymentService from './payment/creditCard';
-// import * as MovieTicketPaymentService from './payment/movieTicket';
+import { service } from '@cinerino/domain';
 
-export import account = AccountPaymentService;
-export import creditCard = CreditCardPaymentService;
-// export import movietTicket = MovieTicketPaymentService;
+export import account = service.payment.account;
+export import creditCard = service.payment.creditCard;
+export import movietTicket = service.payment.movietTicket;

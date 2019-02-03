@@ -180,6 +180,7 @@ export function payAccount(data: factory.task.IData<factory.taskName.PayAccount>
         }
 
         const actionRepo = new ActionRepo(settings.connection);
+        const invoiceRepo = new InvoiceRepo(settings.connection);
         const withdrawService = new pecorinoapi.service.transaction.Withdraw({
             endpoint: settings.pecorinoEndpoint,
             auth: settings.pecorinoAuthClient
@@ -190,6 +191,7 @@ export function payAccount(data: factory.task.IData<factory.taskName.PayAccount>
         });
         await PaymentService.account.payAccount(data)({
             action: actionRepo,
+            invoice: invoiceRepo,
             withdrawService: withdrawService,
             transferService: transferService
         });
@@ -202,11 +204,13 @@ export function placeOrder(data: factory.task.IData<factory.taskName.PlaceOrder>
         pecorinoAuthClient?: pecorinoapi.auth.ClientCredentials;
     }) => {
         const actionRepo = new ActionRepo(settings.connection);
+        const invoiceRepo = new InvoiceRepo(settings.connection);
         const orderRepo = new OrderRepo(settings.connection);
         const transactionRepo = new TransactionRepo(settings.connection);
         const taskRepo = new TaskRepo(settings.connection);
         await OrderService.createFromTransaction(data.transactionId)({
             action: actionRepo,
+            invoice: invoiceRepo,
             order: orderRepo,
             transaction: transactionRepo,
             task: taskRepo
@@ -223,7 +227,7 @@ export function refundCreditCard(data: factory.task.IData<factory.taskName.Refun
         const taskRepo = new TaskRepo(settings.connection);
         await PaymentService.creditCard.refundCreditCard(data)({
             action: actionRepo,
-            task: taskRepo
+            task: <any>taskRepo
         });
     };
 }
@@ -257,7 +261,7 @@ export function refundAccount(data: factory.task.IData<factory.taskName.RefundAc
         });
         await PaymentService.account.refundAccount(data)({
             action: actionRepo,
-            task: taskRepo,
+            task: <any>taskRepo,
             depositService: depositService,
             transferService: transferService
         });

@@ -22,6 +22,9 @@ describe('createFromTransaction()', () => {
     it('注文取引から注文を作成できるはず', async () => {
         const transaction = {
             id: 'id',
+            object: {
+                authorizeActions: []
+            },
             result: {
                 order: {}
             },
@@ -40,6 +43,7 @@ describe('createFromTransaction()', () => {
         const action = { id: 'actionId' };
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const invoiceRepo = new sskts.repository.Invoice(sskts.mongoose.connection);
         const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
@@ -57,6 +61,7 @@ describe('createFromTransaction()', () => {
 
         const result = await sskts.service.order.createFromTransaction(transaction.id)({
             action: actionRepo,
+            invoice: invoiceRepo,
             order: orderRepo,
             transaction: transactionRepo,
             task: taskRepo
@@ -72,6 +77,7 @@ describe('createFromTransaction()', () => {
         };
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const invoiceRepo = new sskts.repository.Invoice(sskts.mongoose.connection);
         const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
@@ -81,10 +87,14 @@ describe('createFromTransaction()', () => {
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(actionRepo).expects('giveUp').never();
         sandbox.mock(orderRepo).expects('createIfNotExist').never();
+        sandbox.mock(invoiceRepo)
+            .expects('createIfNotExist')
+            .never();
         sandbox.mock(taskRepo).expects('save').never();
 
         const result = await sskts.service.order.createFromTransaction(transaction.id)({
             action: actionRepo,
+            invoice: invoiceRepo,
             order: orderRepo,
             transaction: transactionRepo,
             task: taskRepo
@@ -102,6 +112,7 @@ describe('createFromTransaction()', () => {
         };
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const invoiceRepo = new sskts.repository.Invoice(sskts.mongoose.connection);
         const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
@@ -111,10 +122,14 @@ describe('createFromTransaction()', () => {
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(actionRepo).expects('giveUp').never();
         sandbox.mock(orderRepo).expects('createIfNotExist').never();
+        sandbox.mock(invoiceRepo)
+            .expects('createIfNotExist')
+            .never();
         sandbox.mock(taskRepo).expects('save').never();
 
         const result = await sskts.service.order.createFromTransaction(transaction.id)({
             action: actionRepo,
+            invoice: invoiceRepo,
             order: orderRepo,
             transaction: transactionRepo,
             task: taskRepo
@@ -144,6 +159,7 @@ describe('createFromTransaction()', () => {
         const createOrderError = new Error('createOrderError');
 
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const invoiceRepo = new sskts.repository.Invoice(sskts.mongoose.connection);
         const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
@@ -152,11 +168,15 @@ describe('createFromTransaction()', () => {
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
         sandbox.mock(actionRepo).expects('giveUp').once().resolves(action);
         sandbox.mock(orderRepo).expects('createIfNotExist').once().rejects(createOrderError);
+        sandbox.mock(invoiceRepo)
+            .expects('createIfNotExist')
+            .never();
         sandbox.mock(actionRepo).expects('complete').never();
         sandbox.mock(taskRepo).expects('save').never();
 
         const result = await sskts.service.order.createFromTransaction(transaction.id)({
             action: actionRepo,
+            invoice: invoiceRepo,
             order: orderRepo,
             transaction: transactionRepo,
             task: taskRepo

@@ -670,8 +670,8 @@ describe('ポイントインセンティブを適用する', () => {
 
         const result = await sskts.service.delivery.givePointAward(<any>{
             object: {
-                pecorinoEndpoint: 'https://example.com',
-                pecorinoTransaction: {}
+                pointAPIEndpoint: 'https://example.com',
+                pointTransaction: {}
             }
         })({
             action: actionRepo,
@@ -692,8 +692,8 @@ describe('ポイントインセンティブを適用する', () => {
 
         const result = await sskts.service.delivery.givePointAward(<any>{
             object: {
-                pecorinoEndpoint: 'https://example.com',
-                pecorinoTransaction: {}
+                pointAPIEndpoint: 'https://example.com',
+                pointTransaction: {}
             }
         })({
             action: actionRepo,
@@ -776,8 +776,8 @@ describe('ポイントインセンティブ承認取消', () => {
             object: { typeOf: sskts.factory.action.authorize.award.point.ObjectType.PointAward },
             actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
             result: {
-                pecorinoEndpoint: 'pecorinoEndpoint',
-                pecorinoTransaction: {}
+                pecorinoEndpoint: 'https://example.com',
+                pecorinoTransaction: { object: {} }
             }
         }];
         const actionRepo = new sskts.repository.Action(mongoose.connection);

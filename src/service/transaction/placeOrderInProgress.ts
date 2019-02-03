@@ -441,6 +441,8 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
     if (seatReservationAuthorizeAction !== undefined) {
         requiredPoint = (<factory.action.authorize.offer.seatReservation.IResult>seatReservationAuthorizeAction.result).pecorinoAmount;
         // 必要ポイントがある場合、Pecorinoのオーソリ金額と比較
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (requiredPoint > 0) {
             const authorizedPecorinoAmount =
                 (<factory.action.authorize.paymentMethod.account.IAction<factory.accountType.Point>[]>transaction.object.authorizeActions)
@@ -857,6 +859,8 @@ export async function createEmailMessageFromTransaction(params: {
 /**
  * 取引から所有権を作成する
  */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 export function createOwnershipInfosFromTransaction(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     order: factory.order.IOrder;
@@ -1017,8 +1021,8 @@ export async function createPotentialActionsFromTransaction(params: {
             recipient: params.transaction.agent,
             object: {
                 typeOf: factory.action.transfer.give.pointAward.ObjectType.PointAward,
-                pecorinoTransaction: actionResult.pecorinoTransaction,
-                pecorinoEndpoint: actionResult.pecorinoEndpoint
+                pointTransaction: actionResult.pecorinoTransaction,
+                pointAPIEndpoint: actionResult.pecorinoEndpoint
             },
             purpose: params.order
         };
