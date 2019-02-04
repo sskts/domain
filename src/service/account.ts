@@ -2,7 +2,7 @@
  * ポイント口座サービス
  * 口座の保管先はPecorinoサービスです。
  */
-import * as pecorinoapi from '@pecorino/api-nodejs-client';
+import { pecorinoapi } from '@cinerino/domain';
 // import * as createDebug from 'debug';
 import * as moment from 'moment';
 

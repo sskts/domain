@@ -1,7 +1,7 @@
 /**
- * Pecorino賞金承認アクションサービス
+ * ポイントインセンティブ承認アクションサービス
  */
-import * as pecorinoapi from '@pecorino/api-nodejs-client';
+import { pecorinoapi } from '@cinerino/domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
@@ -94,16 +94,16 @@ export function create(params: {
         };
         const action = await repos.action.start(actionAttributes);
 
-        let pecorinoEndpoint: string;
+        let pointAPIEndpoint: string;
 
         // Pecorinoオーソリ取得
-        let pecorinoTransaction: factory.action.authorize.award.point.IPecorinoTransaction;
+        let pointTransaction: factory.action.authorize.award.point.IPointTransaction;
 
         try {
-            pecorinoEndpoint = repos.depositTransactionService.options.endpoint;
+            pointAPIEndpoint = repos.depositTransactionService.options.endpoint;
 
             debug('starting pecorino pay transaction...', params.amount);
-            pecorinoTransaction = await repos.depositTransactionService.start({
+            pointTransaction = await repos.depositTransactionService.start({
                 // 最大1ヵ月のオーソリ
                 expires: moment().add(1, 'month').toDate(),
                 agent: {
@@ -124,7 +124,7 @@ export function create(params: {
                 accountType: factory.accountType.Point,
                 toAccountNumber: params.toAccountNumber
             });
-            debug('pecorinoTransaction started.', pecorinoTransaction.id);
+            debug('pointTransaction started.', pointTransaction.id);
         } catch (error) {
             // actionにエラー結果を追加
             try {
@@ -144,8 +144,8 @@ export function create(params: {
         const actionResult: factory.action.authorize.award.point.IResult = {
             price: 0, // JPYとして0円
             amount: params.amount,
-            pecorinoTransaction: pecorinoTransaction,
-            pecorinoEndpoint: pecorinoEndpoint
+            pointTransaction: pointTransaction,
+            pointAPIEndpoint: pointAPIEndpoint
         };
 
         return repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
@@ -192,7 +192,7 @@ export function cancel(params: {
 
         // Pecorinoで取消中止実行
         await repos.depositTransactionService.cancel({
-            transactionId: actionResult.pecorinoTransaction.id
+            transactionId: actionResult.pointTransaction.id
         });
     };
 }

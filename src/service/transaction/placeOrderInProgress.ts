@@ -1079,8 +1079,8 @@ export async function createPotentialActionsFromTransaction(params: {
             recipient: params.transaction.agent,
             object: {
                 typeOf: factory.action.transfer.give.pointAward.ObjectType.PointAward,
-                pointTransaction: actionResult.pecorinoTransaction,
-                pointAPIEndpoint: actionResult.pecorinoEndpoint
+                pointTransaction: actionResult.pointTransaction,
+                pointAPIEndpoint: actionResult.pointAPIEndpoint
             },
             purpose: params.order
         };

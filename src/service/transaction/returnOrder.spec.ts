@@ -272,26 +272,11 @@ describe('service.transaction.returnOrder.confirm()', () => {
             customer: {},
             paymentMethods: []
         };
-        const placeOrderTransaction = {
-            agent: agent,
-            id: 'transactionId',
-            expires: new Date(),
-            status: sskts.factory.transactionStatusType.Confirmed,
-            object: {
-                customerContact: { email: 'test@example.com' },
-                authorizeActions: []
-            },
-            result: {
-                order: order,
-                ownershipInfos: []
-            },
-            seller: seller
-        };
         const returnOrderTransaction = {
             agent: agent,
             id: 'transactionId',
             expires: new Date(),
-            object: { transaction: placeOrderTransaction }
+            object: { order }
         };
         const actionsOnOrder = [
             {
@@ -384,109 +369,6 @@ describe('service.transaction.returnOrder.confirm()', () => {
         assert(result instanceof sskts.factory.errors.Forbidden);
         sandbox.verify();
     });
-
-    it('注文取引結果がなければNotFoundエラーとなるはず', async () => {
-        const agent = { id: 'agentId' };
-        const seller = { id: 'sellerId' };
-        const placeOrderTransaction = {
-            agent: agent,
-            id: 'transactionId',
-            expires: new Date(),
-            status: sskts.factory.transactionStatusType.Confirmed,
-            object: {
-                customerContact: { email: 'test@example.com' }
-            },
-            // result: {
-            //     order: order,
-            //     ownershipInfos: []
-            // },
-            seller: seller
-        };
-        const returnOrderTransaction = {
-            agent: agent,
-            id: 'transactionId',
-            expires: new Date(),
-            object: { transaction: placeOrderTransaction }
-        };
-
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-
-        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(returnOrderTransaction);
-        sandbox.mock(sellerRepo).expects('findById').never();
-        sandbox.mock(actionRepo).expects('searchByOrderNumber').never();
-        sandbox.mock(transactionRepo).expects('confirmReturnOrder').never();
-
-        const result = await sskts.service.transaction.returnOrder.confirm({
-            id: returnOrderTransaction.id,
-            agent: agent
-        })({
-            action: actionRepo,
-            transaction: transactionRepo,
-            seller: sellerRepo
-        }).catch((err) => err);
-
-        assert(result instanceof sskts.factory.errors.NotFound);
-        sandbox.verify();
-    });
-
-    it('注文取引の購入者連絡先がなければNotFoundエラーとなるはず', async () => {
-        const agent = { id: 'agentId' };
-        const seller = { id: 'sellerId' };
-        const event = { startDate: new Date() };
-        const order = {
-            orderNumber: 'orderNumber',
-            orderStatus: sskts.factory.orderStatus.OrderDelivered,
-            acceptedOffers: [
-                { itemOffered: { reservationFor: event } }
-            ],
-            seller: seller,
-            customer: {},
-            paymentMethods: []
-        };
-        const placeOrderTransaction = {
-            agent: agent,
-            id: 'transactionId',
-            expires: new Date(),
-            status: sskts.factory.transactionStatusType.Confirmed,
-            object: {
-                // customerContact: { email: 'test@example.com' }
-            },
-            result: {
-                order: order,
-                ownershipInfos: []
-            },
-            seller: seller
-        };
-        const returnOrderTransaction = {
-            agent: agent,
-            id: 'transactionId',
-            expires: new Date(),
-            object: { transaction: placeOrderTransaction }
-        };
-
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-
-        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(returnOrderTransaction);
-        sandbox.mock(sellerRepo).expects('findById').never();
-        sandbox.mock(transactionRepo).expects('confirmReturnOrder').never();
-        sandbox.mock(actionRepo).expects('searchByOrderNumber').never();
-
-        const result = await sskts.service.transaction.returnOrder.confirm({
-            id: returnOrderTransaction.id,
-            agent: agent
-        })({
-            action: actionRepo,
-            transaction: transactionRepo,
-            seller: sellerRepo
-        }).catch((err) => err);
-
-        assert(result instanceof sskts.factory.errors.NotFound);
-        sandbox.verify();
-    });
 });
 
 describe('service.transaction.returnOrder.exportTasks()', () => {
@@ -501,12 +383,12 @@ describe('service.transaction.returnOrder.exportTasks()', () => {
     it('成立取引のタスクを出力できるはず', async () => {
         const status = sskts.factory.transactionStatusType.Confirmed;
         const agent = { id: 'agentId' };
-        const placeOrderTransaction = {};
+        const order = { orderNumber: 'orderNumber' };
         const returnOrderTransaction = {
             agent: agent,
             id: 'transactionId',
             expires: new Date(),
-            object: { transaction: placeOrderTransaction },
+            object: { order },
             status: status
         };
         const task = {};
@@ -624,12 +506,6 @@ describe('service.transaction.returnOrder.createRefundEmail()', () => {
             customer: {},
             paymentMethods: []
         };
-        const placeOrderTransaction = {
-            id: 'transactionId',
-            result: {
-                order: order
-            }
-        };
         const customerContact = {};
         const sellerOrganization = {};
         const renderError = new Error('renderError');
@@ -638,7 +514,6 @@ describe('service.transaction.returnOrder.createRefundEmail()', () => {
         sandbox.mock(pug).expects('renderFile').once().callsArgWith(2, renderError);
 
         const result = await sskts.service.transaction.returnOrder.createRefundEmail({
-            transaction: <any>placeOrderTransaction,
             customerContact: <any>customerContact,
             order: <any>order,
             seller: <any>sellerOrganization
@@ -656,12 +531,6 @@ describe('service.transaction.returnOrder.createRefundEmail()', () => {
             customer: {},
             paymentMethods: []
         };
-        const placeOrderTransaction = {
-            id: 'transactionId',
-            result: {
-                order: order
-            }
-        };
         const customerContact = {};
         const sellerOrganization = {};
         const message = 'body';
@@ -674,7 +543,6 @@ describe('service.transaction.returnOrder.createRefundEmail()', () => {
             .onSecondCall().callsArgWith(2, renderError);
 
         const result = await sskts.service.transaction.returnOrder.createRefundEmail({
-            transaction: <any>placeOrderTransaction,
             customerContact: <any>customerContact,
             order: <any>order,
             seller: <any>sellerOrganization

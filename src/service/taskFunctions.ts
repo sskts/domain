@@ -2,8 +2,7 @@
  * タスクファンクションサービス
  * タスク名ごとに、実行するファンクションをひとつずつ定義しています
  */
-import { mongoose, service } from '@cinerino/domain';
-import * as pecorinoapi from '@pecorino/api-nodejs-client';
+import { mongoose, pecorinoapi, service } from '@cinerino/domain';
 import * as redis from 'redis';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
@@ -279,7 +278,13 @@ export function returnOrder(data: factory.task.IData<factory.taskName.ReturnOrde
         const ownershipInfoRepo = new OwnershipInfoRepo(settings.connection);
         const transactionRepo = new TransactionRepo(settings.connection);
         const taskRepo = new TaskRepo(settings.connection);
-        await OrderService.cancelReservations(data.transactionId)(actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo);
+        await OrderService.cancelReservations(data)({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        });
     };
 }
 

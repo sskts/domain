@@ -1,8 +1,8 @@
 /**
  * 会員プログラムサービス
  */
+import { pecorinoapi } from '@cinerino/domain';
 import * as GMO from '@motionpicture/gmo-service';
-import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as createDebug from 'debug';
 import * as moment from 'moment-timezone';
 import * as util from 'util';
@@ -510,16 +510,16 @@ function processPlaceOrder(params: {
             };
             const action = await repos.action.start(actionAttributes);
 
-            let pecorinoEndpoint: string;
+            let pointAPIEndpoint: string;
 
             // Pecorinoオーソリ取得
-            let pecorinoTransaction: factory.action.authorize.award.point.IPecorinoTransaction;
+            let pointTransaction: factory.action.authorize.award.point.IPointTransaction;
 
             try {
-                pecorinoEndpoint = repos.depositService.options.endpoint;
+                pointAPIEndpoint = repos.depositService.options.endpoint;
 
                 debug('starting pecorino pay transaction...', 1);
-                pecorinoTransaction = await repos.depositService.start({
+                pointTransaction = await repos.depositService.start({
                     // 最大1ヵ月のオーソリ
                     expires: moment().add(1, 'month').toDate(),
                     agent: {
@@ -539,7 +539,7 @@ function processPlaceOrder(params: {
                     accountType: factory.accountType.Point,
                     toAccountNumber: accountOwnershipInfos[0].typeOfGood.accountNumber
                 });
-                debug('pecorinoTransaction started.', pecorinoTransaction.id);
+                debug('pointTransaction started.', pointTransaction.id);
             } catch (error) {
                 // actionにエラー結果を追加
                 try {
@@ -559,8 +559,8 @@ function processPlaceOrder(params: {
             const actionResult: factory.action.authorize.award.point.IResult = {
                 price: 0, // JPYとして0円
                 amount: 1,
-                pecorinoTransaction: pecorinoTransaction,
-                pecorinoEndpoint: pecorinoEndpoint
+                pointTransaction: pointTransaction,
+                pointAPIEndpoint: pointAPIEndpoint
             };
 
             await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });

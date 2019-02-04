@@ -1,8 +1,7 @@
 /**
  * タスクサービス
  */
-import { AWS, mongoose, service } from '@cinerino/domain';
-import * as pecorinoapi from '@pecorino/api-nodejs-client';
+import { AWS, mongoose, pecorinoapi, service } from '@cinerino/domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as redis from 'redis';

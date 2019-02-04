@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - クレジットカード決済サービスをCinerinoに統一
 - 注文タスクインターフェースをCinerinoに統一
 - 注文配送タスクインターフェースをCinerinoに統一
+- 返品タスクインターフェースをCinerinoに統一
 
 ### Deprecated
 

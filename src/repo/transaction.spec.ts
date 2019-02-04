@@ -8,7 +8,6 @@ import * as sinon from 'sinon';
 // tslint:disable-next-line:no-require-imports no-var-requires
 require('sinon-mongoose');
 import * as sskts from '../index';
-import { factory } from '@pecorino/api-nodejs-client';
 
 let sandbox: sinon.SinonSandbox;
 
@@ -422,9 +421,9 @@ describe('取引を検索する', () => {
                     orderNumbers: []
                 }
             },
-            tasksExportationStatuses: [factory.transactionTasksExportationStatus.Exported],
+            tasksExportationStatuses: [sskts.factory.transactionTasksExportationStatus.Exported],
             limit: 10,
-            sort: { startDate: factory.sortType.Ascending }
+            sort: { startDate: sskts.factory.sortType.Ascending }
         };
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('find').once()

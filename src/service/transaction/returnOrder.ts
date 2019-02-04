@@ -86,7 +86,6 @@ export function start(
             object: {
                 clientUser: <any>params.object.clientUser,
                 order: order,
-                transaction: placeOrderTransaction,
                 cancellationFee: params.object.cancellationFee,
                 reason: params.object.reason
             },
@@ -140,40 +139,28 @@ export function confirm(params: {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        // 結果作成
-        const placeOrderTransaction = transaction.object.transaction;
-        const placeOrderTransactionResult = placeOrderTransaction.result;
-        if (placeOrderTransactionResult === undefined) {
-            throw new factory.errors.NotFound('placeOrderTransaction.result');
-        }
-        const customerContact = placeOrderTransaction.object.customerContact;
-        if (customerContact === undefined) {
-            throw new factory.errors.NotFound('customerContact');
-        }
-
         const order = transaction.object.order;
         const seller = await repos.seller.findById({
-            id: placeOrderTransaction.seller.id
+            id: order.seller.id
         });
 
-        const actionsOnOrder = await repos.action.searchByOrderNumber({ orderNumber: placeOrderTransactionResult.order.orderNumber });
+        const actionsOnOrder = await repos.action.searchByOrderNumber(order);
         const payActions = <factory.action.trade.pay.IAction<factory.paymentMethodType>[]>actionsOnOrder
             .filter((a) => a.typeOf === factory.actionType.PayAction)
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus);
 
         const emailMessage = await createRefundEmail({
-            transaction: placeOrderTransaction,
-            customerContact: customerContact,
-            order: placeOrderTransactionResult.order,
+            customerContact: order.customer,
+            order: order,
             seller: seller
         });
         const sendEmailMessageActionAttributes: factory.action.transfer.send.message.email.IAttributes = {
             typeOf: factory.actionType.SendAction,
             object: emailMessage,
-            agent: placeOrderTransaction.seller,
-            recipient: placeOrderTransaction.agent,
+            agent: seller,
+            recipient: order.customer,
             potentialActions: {},
-            purpose: placeOrderTransactionResult.order
+            purpose: order
         };
 
         // クレジットカード返金アクション
@@ -204,9 +191,9 @@ export function confirm(params: {
                 return {
                     typeOf: <factory.actionType.RefundAction>factory.actionType.RefundAction,
                     object: a,
-                    agent: placeOrderTransaction.seller,
-                    recipient: placeOrderTransaction.agent,
-                    purpose: placeOrderTransactionResult.order,
+                    agent: seller,
+                    recipient: order.customer,
+                    purpose: order,
                     potentialActions: {
                         sendEmailMessage: sendEmailMessageActionAttributes
                     }
@@ -216,25 +203,29 @@ export function confirm(params: {
         // ムビチケ着券返金アクション
         const refundMovieTicketActions: factory.action.trade.refund.IAction<factory.paymentMethodType.MovieTicket>[] = [];
 
-        // ポイント賞金の承認アクションの数だけ、返却アクションを作成
-        const authorizeActions = placeOrderTransaction.object.authorizeActions;
-        const returnPointAwardActions = authorizeActions
+        // ポイントインセンティブの数だけ、返却アクションを作成
+        const givePointActions = <factory.action.transfer.give.pointAward.IAction[]>actionsOnOrder
+            .filter((a) => a.typeOf === factory.actionType.GiveAction)
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((a) => a.object.typeOf === factory.action.authorize.award.point.ObjectType.PointAward)
-            .map((a: factory.action.authorize.award.point.IAction): factory.action.transfer.returnAction.pointAward.IAttributes => {
+            .filter((a) => a.object.typeOf === factory.action.transfer.give.pointAward.ObjectType.PointAward);
+        const returnPointAwardActions = givePointActions.map(
+            (a): factory.action.transfer.returnAction.pointAward.IAttributes => {
                 return {
                     typeOf: factory.actionType.ReturnAction,
                     object: a,
-                    agent: placeOrderTransaction.seller,
-                    recipient: placeOrderTransaction.agent,
+                    agent: order.customer,
+                    recipient: seller,
                     potentialActions: {}
                 };
-            });
+            }
+        );
+
         const returnOrderActionAttributes: factory.action.transfer.returnAction.order.IAttributes = {
             typeOf: <factory.actionType.ReturnAction>factory.actionType.ReturnAction,
-            object: placeOrderTransactionResult.order,
-            agent: placeOrderTransaction.agent,
-            recipient: placeOrderTransaction.seller,
+            object: order,
+            agent: order.customer,
+            recipient: seller,
+            purpose: order,
             potentialActions: {
                 refundCreditCard: refundCreditCardActions,
                 refundAccount: refundAccountActions,
@@ -271,13 +262,14 @@ export function validateRequest() {
  * 返金メールを作成する
  */
 export async function createRefundEmail(params: {
-    transaction: factory.transaction.placeOrder.ITransaction;
+    // transaction: factory.transaction.placeOrder.ITransaction;
     customerContact: factory.transaction.placeOrder.ICustomerContact;
     order: factory.order.IOrder;
     seller: ISeller;
 }): Promise<factory.creativeWork.message.email.ICreativeWork> {
     return new Promise<factory.creativeWork.message.email.ICreativeWork>((resolve, reject) => {
-        const seller = params.transaction.seller;
+        // const seller = params.transaction.seller;
+        const seller = params.order.seller;
 
         pug.renderFile(
             `${__dirname}/../../../emails/refundOrder/text.pug`,
@@ -317,11 +309,11 @@ export async function createRefundEmail(params: {
                             name: `refundOrder-${params.order.orderNumber}`,
                             sender: {
                                 typeOf: seller.typeOf,
-                                name: seller.name.ja,
+                                name: seller.name,
                                 email: 'noreply@ticket-cinemasunshine.com'
                             },
                             toRecipient: {
-                                typeOf: params.transaction.agent.typeOf,
+                                typeOf: params.order.customer.typeOf,
                                 name: `${params.customerContact.familyName} ${params.customerContact.givenName}`,
                                 email: params.customerContact.email
                             },
@@ -385,7 +377,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     numberOfTried: 0,
                     executionResults: [],
                     data: {
-                        transactionId: transaction.id
+                        orderNumber: transaction.object.order.orderNumber
                     }
                 };
                 taskAttributes.push(returnOrderTask);

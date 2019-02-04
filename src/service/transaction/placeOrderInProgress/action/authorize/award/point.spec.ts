@@ -141,7 +141,7 @@ describe('ポイントインセンティブ承認を取り消す', () => {
             agent: { memberOf: {} },
             seller: { name: {} }
         };
-        const action = { result: { pecorinoTransaction: {} } };
+        const action = { result: { pointTransaction: {} } };
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const depositService = new sskts.pecorinoapi.service.transaction.Deposit(<any>{});

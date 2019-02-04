@@ -6,11 +6,8 @@
  * ポイントインセンティブで言えば、口座に振り込まれること
  * などが配送処理として考えられます。
  */
-// import * as COA from '@motionpicture/coa-service';
-import * as pecorinoapi from '@pecorino/api-nodejs-client';
+import { service } from '@cinerino/domain';
 import * as createDebug from 'debug';
-// import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
-import * as moment from 'moment';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../repo/action/registerProgramMembershipInProgress';
@@ -55,11 +52,6 @@ export function sendOrder(params: factory.action.transfer.send.order.IAttributes
             throw new factory.errors.NotFound('transaction.result');
         }
 
-        // const seatReservationAuthorizeActions = <factory.action.authorize.offer.seatReservation.IAction[]>
-        //     placeOrderTransaction.object.authorizeActions
-        //         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        //         .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
-
         const customerContact = placeOrderTransaction.object.customerContact;
         if (customerContact === undefined) {
             throw new factory.errors.NotFound('transaction.object.customerContact');
@@ -69,60 +61,6 @@ export function sendOrder(params: factory.action.transfer.send.order.IAttributes
         const action = await repos.action.start(params);
 
         try {
-            // 座席予約があればCOA本予約
-            // const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
-            // // tslint:disable-next-line:no-single-line-block-comment
-            // /* istanbul ignore else */
-            // if (seatReservationAuthorizeAction !== undefined) {
-            //     const seatReservationAuthorizeActionResult = seatReservationAuthorizeAction.result;
-            //     if (seatReservationAuthorizeActionResult === undefined) {
-            //         throw new factory.errors.NotFound('authorizeAction.result');
-            //     }
-
-            //     const updTmpReserveSeatArgs = seatReservationAuthorizeActionResult.updTmpReserveSeatArgs;
-            //     const updTmpReserveSeatResult = seatReservationAuthorizeActionResult.updTmpReserveSeatResult;
-
-            //     // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
-            //     const phoneUtil = PhoneNumberUtil.getInstance();
-            //     const phoneNumber = phoneUtil.parse(customerContact.telephone, 'JP');
-            //     let telNum = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
-
-            //     // COAでは数字のみ受け付けるので数字以外を除去
-            //     telNum = telNum.replace(/[^\d]/g, '');
-
-            //     // この資産移動ファンクション自体はリトライ可能な前提でつくる必要があるので、要注意
-            //     // すでに本予約済みかどうか確認
-            //     const stateReserveResult = await COA.services.reserve.stateReserve({
-            //         theaterCode: updTmpReserveSeatArgs.theaterCode,
-            //         reserveNum: updTmpReserveSeatResult.tmpReserveNum,
-            //         telNum: telNum
-            //     });
-
-            //     // COA本予約
-            //     // 未本予約であれば実行(COA本予約は一度成功すると成功できない)
-            //     if (stateReserveResult === null) {
-            //         await COA.services.reserve.updReserve({
-            //             theaterCode: updTmpReserveSeatArgs.theaterCode,
-            //             dateJouei: updTmpReserveSeatArgs.dateJouei,
-            //             titleCode: updTmpReserveSeatArgs.titleCode,
-            //             titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
-            //             timeBegin: updTmpReserveSeatArgs.timeBegin,
-            //             tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum,
-            //             // tslint:disable-next-line:no-irregular-whitespace
-            // tslint:disable-next-line:no-irregular-whitespace
-            //             reserveName: `${customerContact.familyName}　${customerContact.givenName}`,
-            //             // tslint:disable-next-line:no-irregular-whitespace
-            //             reserveNameJkana: `${customerContact.familyName} ${customerContact.givenName}`,
-            //             telNum: telNum,
-            //             mailAddr: customerContact.email,
-            //             reserveAmount: order.price, // デフォルトのpriceCurrencyがJPYなのでこれでよし
-            //             listTicket: order.acceptedOffers.map(
-            //                 (offer) => (<IEventReservation>offer.itemOffered).reservedTicket.coaTicketInfo
-            //             )
-            //         });
-            //     }
-            // }
-
             await Promise.all(transactionResult.ownershipInfos.map(async (ownershipInfo) => {
                 await repos.ownershipInfo.save(ownershipInfo);
             }));
@@ -163,8 +101,9 @@ export function sendOrder(params: factory.action.transfer.send.order.IAttributes
 
 /**
  * 注文配送後のアクション
- * @param sendOrderActionAttributes 注文配送悪損属性
  */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IAttributes) {
     return async (repos: { task: TaskRepo }) => {
         const potentialActions = sendOrderActionAttributes.potentialActions;
@@ -216,154 +155,6 @@ function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IA
     };
 }
 
-/**
- * ポイントインセンティブ入金実行
- * 取引中に入金取引の承認アクションを完了しているはずなので、その取引を確定するだけの処理です。
- */
-export function givePointAward(params: factory.task.IData<factory.taskName.GivePointAward>) {
-    return async (repos: {
-        action: ActionRepo;
-        pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
-    }) => {
-        // アクション開始
-        const action = await repos.action.start(params);
-
-        try {
-            // 入金取引確定
-            const depositService = new pecorinoapi.service.transaction.Deposit({
-                endpoint: params.object.pointAPIEndpoint,
-                auth: repos.pecorinoAuthClient
-            });
-            await depositService.confirm({ transactionId: params.object.pointTransaction.id });
-        } catch (error) {
-            // actionにエラー結果を追加
-            try {
-                // tslint:disable-next-line:max-line-length no-single-line-block-comment
-                const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await repos.action.giveUp({ typeOf: params.typeOf, id: action.id, error: actionError });
-            } catch (__) {
-                // 失敗したら仕方ない
-            }
-
-            throw error;
-        }
-
-        // アクション完了
-        debug('ending action...');
-        const actionResult: factory.action.transfer.give.pointAward.IResult = {};
-        await repos.action.complete({ typeOf: params.typeOf, id: action.id, result: actionResult });
-    };
-}
-
-/**
- * ポイントインセンティブ返却実行
- */
-export function returnPointAward(params: factory.task.IData<factory.taskName.ReturnPointAward>) {
-    return async (repos: {
-        action: ActionRepo;
-        pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
-    }) => {
-        // アクション開始
-        const placeOrderTransaction = params.object.purpose;
-        const pointAwardAuthorizeActionResult = params.object.result;
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore if */
-        if (pointAwardAuthorizeActionResult === undefined) {
-            throw new factory.errors.NotFound('params.object.result');
-        }
-
-        let withdrawTransaction: pecorinoapi.factory.transaction.withdraw.ITransaction<factory.accountType.Point>;
-        const action = await repos.action.start(params);
-
-        try {
-            // 入金した分を引き出し取引実行
-            const withdrawService = new pecorinoapi.service.transaction.Withdraw({
-                endpoint: pointAwardAuthorizeActionResult.pecorinoEndpoint,
-                auth: repos.pecorinoAuthClient
-            });
-            withdrawTransaction = await withdrawService.start({
-                // tslint:disable-next-line:no-magic-numbers
-                expires: moment().add(5, 'minutes').toDate(),
-                agent: {
-                    typeOf: placeOrderTransaction.agent.typeOf,
-                    id: placeOrderTransaction.agent.id,
-                    name: `sskts-placeOrder-transaction-${placeOrderTransaction.id}`,
-                    url: placeOrderTransaction.agent.url
-                },
-                recipient: {
-                    typeOf: placeOrderTransaction.seller.typeOf,
-                    id: placeOrderTransaction.seller.id,
-                    name: placeOrderTransaction.seller.name.ja,
-                    url: placeOrderTransaction.seller.url
-                },
-                amount: pointAwardAuthorizeActionResult.pecorinoTransaction.object.amount,
-                notes: 'シネマサンシャイン 返品によるポイントインセンティブ取消',
-                accountType: factory.accountType.Point,
-                fromAccountNumber: pointAwardAuthorizeActionResult.pecorinoTransaction.object.toAccountNumber
-            });
-            await withdrawService.confirm({ transactionId: withdrawTransaction.id });
-        } catch (error) {
-            // actionにエラー結果を追加
-            try {
-                const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
-            } catch (__) {
-                // 失敗したら仕方ない
-            }
-
-            throw error;
-        }
-
-        // アクション完了
-        debug('ending action...');
-        const actionResult: factory.action.transfer.returnAction.pointAward.IResult = {
-            pecorinoTransaction: withdrawTransaction
-        };
-        await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
-    };
-}
-
-/**
- * ポイントインセンティブ承認取消
- * @param params.transactionId 取引ID
- */
-export function cancelPointAward(params: {
-    transactionId: string;
-}) {
-    return async (repos: {
-        action: ActionRepo;
-        pecorinoAuthClient: pecorinoapi.auth.ClientCredentials;
-    }) => {
-        // ポイントインセンティブ承認アクションを取得
-        const authorizeActions = <factory.action.authorize.award.point.IAction[]>
-            await repos.action.searchByPurpose({
-                typeOf: factory.actionType.AuthorizeAction,
-                purpose: {
-                    typeOf: factory.transactionType.PlaceOrder,
-                    id: params.transactionId
-                }
-            })
-                .then((actions) => actions
-                    .filter((a) => a.object.typeOf === factory.action.authorize.award.point.ObjectType.PointAward)
-                    .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                );
-
-        await Promise.all(authorizeActions.map(async (action) => {
-            // 承認アクション結果は基本的に必ずあるはず
-            // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore if */
-            if (action.result === undefined) {
-                throw new factory.errors.NotFound('action.result');
-            }
-
-            // 進行中の入金取引を中止する
-            const depositService = new pecorinoapi.service.transaction.Deposit({
-                endpoint: action.result.pecorinoEndpoint,
-                auth: repos.pecorinoAuthClient
-            });
-            await depositService.cancel({
-                transactionId: action.result.pecorinoTransaction.id
-            });
-        }));
-    };
-}
+export const givePointAward = service.delivery.givePointAward;
+export const returnPointAward = service.delivery.returnPointAward;
+export const cancelPointAward = service.delivery.cancelPointAward;

@@ -248,37 +248,60 @@ function onPlaceOrder(orderActionAttributes: factory.action.trade.order.IAttribu
 
 /**
  * 注文返品アクション
- * @param returnOrderTransactionId 注文返品取引ID
  */
-export function cancelReservations(returnOrderTransactionId: string) {
-    return async (
-        actionRepo: ActionRepo,
-        orderRepo: OrderRepo,
-        ownershipInfoRepo: OwnershipInfoRepo,
-        transactionRepo: TransactionRepo,
-        taskRepo: TaskRepo
-    ) => {
-        const transaction = await transactionRepo.findById({
+export function cancelReservations(params: { orderNumber: string }) {
+    // tslint:disable-next-line:max-func-body-length
+    return async (repos: {
+        action: ActionRepo;
+        order: OrderRepo;
+        ownershipInfo: OwnershipInfoRepo;
+        transaction: TransactionRepo;
+        task: TaskRepo;
+    }) => {
+        const returnOrderTransactions = await repos.transaction.search<factory.transactionType.ReturnOrder>({
             typeOf: factory.transactionType.ReturnOrder,
-            id: returnOrderTransactionId
+            object: {
+                order: { orderNumbers: [params.orderNumber] }
+            }
         });
-        const potentialActions = transaction.potentialActions;
-        const placeOrderTransaction = transaction.object.transaction;
-        const placeOrderTransactionResult = placeOrderTransaction.result;
-
-        if (potentialActions === undefined) {
-            throw new factory.errors.NotFound('transaction.potentialActions');
+        const returnOrderTransaction = returnOrderTransactions.shift();
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (returnOrderTransaction === undefined) {
+            throw new factory.errors.NotFound('Return order transaction');
         }
+        const potentialActions = returnOrderTransaction.potentialActions;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (potentialActions === undefined) {
+            throw new factory.errors.NotFound('PotentialActions of return order transaction');
+        }
+
+        const placeOrderTransactions = await repos.transaction.search<factory.transactionType.PlaceOrder>({
+            typeOf: factory.transactionType.PlaceOrder,
+            result: {
+                order: { orderNumbers: [params.orderNumber] }
+            }
+        });
+        const placeOrderTransaction = placeOrderTransactions.shift();
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (placeOrderTransaction === undefined) {
+            throw new factory.errors.NotFound('Place order transaction');
+        }
+        const placeOrderTransactionResult = placeOrderTransaction.result;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (placeOrderTransactionResult === undefined) {
-            throw new factory.errors.NotFound('placeOrderTransaction.result');
+            throw new factory.errors.NotFound('Result of place order transaction');
         }
 
         // アクション開始
         const returnOrderActionAttributes = potentialActions.returnOrder;
-        const action = await actionRepo.start(returnOrderActionAttributes);
+        const action = await repos.action.start(returnOrderActionAttributes);
 
         try {
-            const order = placeOrderTransactionResult.order;
+            const order = returnOrderTransaction.object.order;
             const reservation = <IReservation>order.acceptedOffers[0].itemOffered;
 
             // 非同期でCOA本予約取消
@@ -318,7 +341,7 @@ export function cancelReservations(returnOrderTransactionId: string) {
             const ownershipInfos = placeOrderTransactionResult.ownershipInfos;
             debug('invalidating ownershipInfos...', ownershipInfos);
             await Promise.all(ownershipInfos.map(async (ownershipInfo) => {
-                await ownershipInfoRepo.ownershipInfoModel.findOneAndUpdate(
+                await repos.ownershipInfo.ownershipInfoModel.findOneAndUpdate(
                     { identifier: ownershipInfo.identifier },
                     { 'typeOfGood.reservationStatus': factory.reservationStatusType.ReservationCancelled }
                 ).exec();
@@ -326,12 +349,12 @@ export function cancelReservations(returnOrderTransactionId: string) {
 
             // 注文ステータス変更
             debug('changing orderStatus...');
-            await orderRepo.changeStatus(order.orderNumber, factory.orderStatus.OrderReturned);
+            await repos.order.changeStatus(order.orderNumber, factory.orderStatus.OrderReturned);
         } catch (error) {
             // actionにエラー結果を追加
             try {
                 const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await actionRepo.giveUp({ typeOf: returnOrderActionAttributes.typeOf, id: action.id, error: actionError });
+                await repos.action.giveUp({ typeOf: returnOrderActionAttributes.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -341,10 +364,10 @@ export function cancelReservations(returnOrderTransactionId: string) {
 
         // アクション完了
         debug('ending action...');
-        await actionRepo.complete({ typeOf: returnOrderActionAttributes.typeOf, id: action.id, result: {} });
+        await repos.action.complete({ typeOf: returnOrderActionAttributes.typeOf, id: action.id, result: {} });
 
         // 潜在アクション
-        await onReturn(returnOrderActionAttributes)(taskRepo);
+        await onReturn(returnOrderActionAttributes)({ task: repos.task });
     };
 }
 
@@ -353,7 +376,9 @@ export function cancelReservations(returnOrderTransactionId: string) {
  * 注文返品後に何をすべきかは返品アクションのpotentialActionsとして定義されているはずなので、それらをタスクとして登録します。
  */
 function onReturn(returnActionAttributes: factory.action.transfer.returnAction.order.IAttributes) {
-    return async (taskRepo: TaskRepo) => {
+    return async (repos: {
+        task: TaskRepo;
+    }) => {
         const now = new Date();
         const taskAttributes: factory.task.IAttributes<factory.taskName>[] = [];
 
@@ -419,7 +444,7 @@ function onReturn(returnActionAttributes: factory.action.transfer.returnAction.o
 
         // タスク保管
         await Promise.all(taskAttributes.map(async (taskAttribute) => {
-            return taskRepo.save(taskAttribute);
+            return repos.task.save(taskAttribute);
         }));
     };
 }

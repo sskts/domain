@@ -36,16 +36,11 @@ describe('cancelReservations()', () => {
             { identifier: 'identifier' }
         ];
         const placeOrderTransaction = {
-            result: {
-                order: order,
-                ownershipInfos: ownershipInfos
-            }
+            result: { ownershipInfos }
         };
         const returnOrderTransaction = {
             id: 'id',
-            object: {
-                transaction: placeOrderTransaction
-            },
+            object: { order },
             result: {},
             potentialActions: {
                 returnOrder: {
@@ -68,90 +63,54 @@ describe('cancelReservations()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
-        sandbox.mock(actionRepo).expects('start').once()
-            .withExactArgs(returnOrderTransaction.potentialActions.returnOrder).resolves(action);
-        sandbox.mock(actionRepo).expects('complete').once()
+        sandbox.mock(transactionRepo)
+            .expects('search')
+            .twice()
+            .onFirstCall()
+            .resolves([returnOrderTransaction])
+            .onSecondCall()
+            .resolves([placeOrderTransaction]);
+        sandbox.mock(actionRepo)
+            .expects('start')
+            .once()
             .resolves(action);
-        sandbox.mock(actionRepo).expects('giveUp').never();
-        sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').once().resolves(stateReserveResult);
-        sandbox.mock(sskts.COA.services.reserve).expects('delReserve').once().resolves();
-        sandbox.mock(ownershipInfoRepo.ownershipInfoModel).expects('findOneAndUpdate')
-            .exactly(ownershipInfos.length).chain('exec');
-        sandbox.mock(orderRepo).expects('changeStatus').once().withArgs(order.orderNumber);
-        // tslint:disable-next-line:no-magic-numbers
-        sandbox.mock(taskRepo).expects('save').exactly(3);
+        sandbox.mock(actionRepo)
+            .expects('complete')
+            .once()
+            .resolves(action);
+        sandbox.mock(actionRepo)
+            .expects('giveUp')
+            .never();
+        sandbox.mock(sskts.COA.services.reserve)
+            .expects('stateReserve')
+            .once()
+            .resolves(stateReserveResult);
+        sandbox.mock(sskts.COA.services.reserve)
+            .expects('delReserve')
+            .once()
+            .resolves();
+        sandbox.mock(ownershipInfoRepo.ownershipInfoModel)
+            .expects('findOneAndUpdate')
+            .exactly(ownershipInfos.length)
+            .chain('exec');
+        sandbox.mock(orderRepo)
+            .expects('changeStatus')
+            .once()
+            .resolves();
+        sandbox.mock(taskRepo)
+            .expects('save')
+            // tslint:disable-next-line:no-magic-numbers
+            .exactly(3);
 
-        const result = await sskts.service.order.cancelReservations(returnOrderTransaction.id)(
-            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
-        );
+        const result = await sskts.service.order.cancelReservations(order)({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        });
 
         assert.equal(result, undefined);
-        sandbox.verify();
-    });
-
-    it('潜在アクションが定義されていなければNotFoundエラー', async () => {
-        const placeOrderTransaction = {};
-        const returnOrderTransaction = {
-            id: 'id',
-            object: { transaction: placeOrderTransaction },
-            result: {}
-        };
-
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
-
-        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
-        sandbox.mock(actionRepo).expects('start').never();
-        sandbox.mock(actionRepo).expects('complete').never();
-        sandbox.mock(actionRepo).expects('giveUp').never();
-        sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').never();
-        sandbox.mock(sskts.COA.services.reserve).expects('delReserve').never();
-        sandbox.mock(ownershipInfoRepo.ownershipInfoModel).expects('findOneAndUpdate').never();
-        sandbox.mock(orderRepo).expects('changeStatus').never();
-        sandbox.mock(taskRepo).expects('save').never();
-
-        const result = await sskts.service.order.cancelReservations(returnOrderTransaction.id)(
-            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
-        ).catch((err) => err);
-
-        assert(result instanceof sskts.factory.errors.NotFound);
-        sandbox.verify();
-    });
-
-    it('注文取引結果が定義されていなければNotFoundエラー', async () => {
-        const placeOrderTransaction = {};
-        const returnOrderTransaction = {
-            id: 'id',
-            object: { transaction: placeOrderTransaction },
-            potentialActions: {},
-            result: {}
-        };
-
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
-
-        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
-        sandbox.mock(actionRepo).expects('start').never();
-        sandbox.mock(actionRepo).expects('complete').never();
-        sandbox.mock(actionRepo).expects('giveUp').never();
-        sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').never();
-        sandbox.mock(sskts.COA.services.reserve).expects('delReserve').never();
-        sandbox.mock(ownershipInfoRepo.ownershipInfoModel).expects('findOneAndUpdate').never();
-        sandbox.mock(orderRepo).expects('changeStatus').never();
-        sandbox.mock(taskRepo).expects('save').never();
-
-        const result = await sskts.service.order.cancelReservations(returnOrderTransaction.id)(
-            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
-        ).catch((err) => err);
-
-        assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
 
@@ -172,23 +131,20 @@ describe('cancelReservations()', () => {
             { identifier: 'identifier' }
         ];
         const placeOrderTransaction = {
-            result: {
-                order: order,
-                ownershipInfos: ownershipInfos
-            }
+            result: { ownershipInfos }
         };
         const returnOrderTransaction = {
             id: 'id',
-            object: {
-                transaction: placeOrderTransaction
-            },
+            object: { order },
             result: {},
             potentialActions: {
                 returnOrder: {
                     typeOf: sskts.factory.actionType.ReturnAction,
                     object: order,
                     potentialActions: {
-                        refund: {}
+                        refundCreditCard: [{}],
+                        refundAccount: [{}],
+                        returnPointAward: [{}]
                     }
                 }
             }
@@ -202,20 +158,34 @@ describe('cancelReservations()', () => {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
 
-        sandbox.mock(transactionRepo).expects('findById').once().resolves(returnOrderTransaction);
-        sandbox.mock(actionRepo).expects('start').once()
-            .withExactArgs(returnOrderTransaction.potentialActions.returnOrder).resolves(action);
-        sandbox.mock(actionRepo).expects('complete').never();
-        sandbox.mock(actionRepo).expects('giveUp').once().resolves(action);
-        sandbox.mock(sskts.COA.services.reserve).expects('stateReserve').once().rejects(stateReserveResult);
-        sandbox.mock(sskts.COA.services.reserve).expects('delReserve').never();
-        sandbox.mock(ownershipInfoRepo.ownershipInfoModel).expects('findOneAndUpdate').never();
-        sandbox.mock(orderRepo).expects('changeStatus').once().never();
-        sandbox.mock(taskRepo).expects('save').never();
+        sandbox.mock(transactionRepo)
+            .expects('search')
+            .twice()
+            .onFirstCall()
+            .resolves([returnOrderTransaction])
+            .onSecondCall()
+            .resolves([placeOrderTransaction]);
+        sandbox.mock(actionRepo)
+            .expects('start')
+            .once()
+            .resolves(action);
+        sandbox.mock(actionRepo)
+            .expects('giveUp')
+            .once()
+            .resolves(action);
+        sandbox.mock(sskts.COA.services.reserve)
+            .expects('stateReserve')
+            .once()
+            .rejects(stateReserveResult);
 
-        const result = await sskts.service.order.cancelReservations(returnOrderTransaction.id)(
-            actionRepo, orderRepo, ownershipInfoRepo, transactionRepo, taskRepo
-        ).catch((err) => err);
+        const result = await sskts.service.order.cancelReservations(order)({
+            action: actionRepo,
+            order: orderRepo,
+            ownershipInfo: ownershipInfoRepo,
+            transaction: transactionRepo,
+            task: taskRepo
+        })
+            .catch((err) => err);
 
         assert.deepEqual(result, stateReserveResult);
         sandbox.verify();

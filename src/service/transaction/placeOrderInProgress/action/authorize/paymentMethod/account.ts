@@ -1,7 +1,7 @@
 /**
  * 口座決済承認アクションサービス
  */
-import * as pecorinoapi from '@pecorino/api-nodejs-client';
+import { pecorinoapi } from '@cinerino/domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
@@ -116,7 +116,7 @@ export function create<T extends factory.accountType>(params: {
                     accountType: params.object.fromAccount.accountType,
                     fromAccountNumber: params.object.fromAccount.accountNumber
                 });
-                debug('pecorinoTransaction started.', pendingTransaction.id);
+                debug('Acount transaction started.', pendingTransaction.id);
             } else if (repos.transferTransactionService !== undefined) {
                 // 組織から転送先口座IDを取得する
                 const seller = await repos.seller.findById({
@@ -161,7 +161,7 @@ export function create<T extends factory.accountType>(params: {
                     fromAccountNumber: params.object.fromAccount.accountNumber,
                     toAccountNumber: paymentAccepted.accountNumber
                 });
-                debug('pecorinoTransaction started.', pendingTransaction.id);
+                debug('Acount transaction started.', pendingTransaction.id);
             } else {
                 // tslint:disable-next-line:no-single-line-block-comment
                 /* istanbul ignore next */
