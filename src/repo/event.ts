@@ -17,6 +17,7 @@ export class MongoRepository {
         this.eventModel = connection.model(eventModel.modelName);
     }
 
+    // tslint:disable-next-line:max-func-body-length
     public static CREATE_INDIVIDUAL_SCREENING_EVENT_MONGO_CONDITIONS(
         searchConditions: factory.event.screeningEvent.ISearchConditions
     ) {
@@ -53,10 +54,13 @@ export class MongoRepository {
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (Array.isArray(searchConditions.superEventLocationIdentifiers)) {
+            // identifierはv28.0.0で廃止したが、互換性維持のため、branchCodeでの検索に変換
             andConditions.push({
-                'superEvent.location.identifier': {
+                'superEvent.location.branchCode': {
                     $exists: true,
-                    $in: searchConditions.superEventLocationIdentifiers
+                    $eq: searchConditions.superEventLocationIdentifiers.map((identifire) => {
+                        return identifire.toString().replace('MovieTheater-', '');
+                    })
                 }
             });
         }
