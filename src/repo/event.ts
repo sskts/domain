@@ -58,7 +58,7 @@ export class MongoRepository {
             andConditions.push({
                 'superEvent.location.branchCode': {
                     $exists: true,
-                    $eq: searchConditions.superEventLocationIdentifiers.map((identifire) => {
+                    $in: searchConditions.superEventLocationIdentifiers.map((identifire) => {
                         return identifire.toString().replace('MovieTheater-', '');
                     })
                 }
