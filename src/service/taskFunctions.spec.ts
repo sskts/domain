@@ -129,7 +129,7 @@ describe('TaskFunctionsService.createOrder()', () => {
             transactionId: 'transactionId'
         };
 
-        sandbox.mock(sskts.service.order).expects('createFromTransaction').once()
+        sandbox.mock(sskts.service.order).expects('placeOrder').once()
             .returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.placeOrder(<any>data)({ connection: sskts.mongoose.connection });

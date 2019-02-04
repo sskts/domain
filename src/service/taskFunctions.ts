@@ -25,6 +25,7 @@ import * as MasterSyncService from '../service/masterSync';
 import * as OrderService from '../service/order';
 import * as PaymentService from '../service/payment';
 import * as ProgramMembershipService from '../service/programMembership';
+import * as ReservationService from '../service/reservation';
 import * as StockService from '../service/stock';
 
 import * as factory from '../factory';
@@ -208,7 +209,7 @@ export function placeOrder(data: factory.task.IData<factory.taskName.PlaceOrder>
         const orderRepo = new OrderRepo(settings.connection);
         const transactionRepo = new TransactionRepo(settings.connection);
         const taskRepo = new TaskRepo(settings.connection);
-        await OrderService.createFromTransaction(data.transactionId)({
+        await OrderService.placeOrder(data)({
             action: actionRepo,
             invoice: invoiceRepo,
             order: orderRepo,
@@ -299,7 +300,7 @@ export function sendOrder(data: factory.task.IData<factory.taskName.SendOrder>):
         const ownershipInfoRepo = new OwnershipInfoRepo(settings.connection);
         const transactionRepo = new TransactionRepo(settings.connection);
         const taskRepo = new TaskRepo(settings.connection);
-        await DeliveryService.sendOrder(data.transactionId)({
+        await DeliveryService.sendOrder(data)({
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,
@@ -418,6 +419,19 @@ export function importScreeningEvents(data: factory.task.IData<factory.taskName.
         )({
             event: eventRepo,
             place: placeRepo
+        });
+    };
+}
+
+export function confirmReservation(data: factory.task.IData<factory.taskName.ConfirmReservation>): IOperation<void> {
+    return async (settings: {
+        connection: mongoose.Connection;
+    }) => {
+        const actionRepo = new ActionRepo(settings.connection);
+
+        await ReservationService.confirmReservation(<any>data)({
+            action: actionRepo,
+            reserveService: <any>null //  シネマサンシャインではchevreを使用しないので、いったん問題ない
         });
     };
 }

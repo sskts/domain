@@ -32,6 +32,7 @@ export namespace person {
 }
 export import programMembership = ProgramMembershipService;
 export import report = ReportService;
+export import reservation = service.reservation;
 export import payment = PaymentService;
 export import stock = StockService;
 export import task = TaskService;

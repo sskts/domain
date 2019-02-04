@@ -27,7 +27,8 @@ describe('exportTasks()', () => {
         const task = {};
         const transaction = {
             id: 'transactionId',
-            status: status
+            status: status,
+            potentialActions: {}
         };
 
         sandbox.mock(transactionRepo).expects('startExportTasks').once().resolves(transaction);
@@ -76,7 +77,9 @@ describe('exportTasksById()', () => {
         const numberOfTasks = 2;
         const transaction = {
             id: 'transactionId',
-            status: sskts.factory.transactionStatusType.Confirmed
+            status: sskts.factory.transactionStatusType.Confirmed,
+            result: { potentialActions: { order: {} } },
+            potentialActions: { order: {} }
         };
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);

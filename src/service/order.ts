@@ -20,10 +20,11 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 export type IReservation = factory.reservation.event.IEventReservation<factory.event.screeningEvent.IEvent>;
 
 /**
- * 注文取引結果から注文を作成する
- * @param transactionId 注文取引ID
+ * 注文取引から注文を作成する
  */
-export function createFromTransaction(transactionId: string) {
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+export function placeOrder(params: factory.action.trade.order.IAttributes) {
     return async (repos: {
         action: ActionRepo;
         invoice: InvoiceRepo;
@@ -31,22 +32,18 @@ export function createFromTransaction(transactionId: string) {
         transaction: TransactionRepo;
         task: TaskRepo;
     }) => {
-        const transaction = await repos.transaction.findById({
+        const order = params.object;
+        const placeOrderTransactions = await repos.transaction.search<factory.transactionType.PlaceOrder>({
             typeOf: factory.transactionType.PlaceOrder,
-            id: transactionId
+            result: { order: { orderNumbers: [order.orderNumber] } }
         });
-        const transactionResult = transaction.result;
-        if (transactionResult === undefined) {
-            throw new factory.errors.NotFound('transaction.result');
+        const placeOrderTransaction = placeOrderTransactions.shift();
+        if (placeOrderTransaction === undefined) {
+            throw new factory.errors.NotFound('Transaction');
         }
-        const potentialActions = transaction.potentialActions;
-        if (potentialActions === undefined) {
-            throw new factory.errors.NotFound('transaction.potentialActions');
-        }
-        const order = transactionResult.order;
 
         // アクション開始
-        const orderActionAttributes = potentialActions.order;
+        const orderActionAttributes = params;
         const action = await repos.action.start(orderActionAttributes);
 
         try {
@@ -58,7 +55,7 @@ export function createFromTransaction(transactionId: string) {
             Object.keys(factory.paymentMethodType)
                 .forEach((key) => {
                     const paymentMethodType = <factory.paymentMethodType>(<any>factory.paymentMethodType)[key];
-                    transaction.object.authorizeActions
+                    placeOrderTransaction.object.authorizeActions
                         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
                         .filter((a) => a.result !== undefined)
                         .filter((a) => a.result.paymentMethod === paymentMethodType)
@@ -116,16 +113,16 @@ export function createFromTransaction(transactionId: string) {
         await repos.action.complete({ typeOf: orderActionAttributes.typeOf, id: action.id, result: {} });
 
         // 潜在アクション
-        await onCreate(transactionId, orderActionAttributes)({ task: repos.task });
+        await onPlaceOrder(orderActionAttributes)({ task: repos.task });
     };
 }
 
 /**
  * 注文作成後のアクション
- * @param transactionId 注文取引ID
- * @param orderActionAttributes 注文アクション属性
  */
-function onCreate(transactionId: string, orderActionAttributes: factory.action.trade.order.IAttributes) {
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+function onPlaceOrder(orderActionAttributes: factory.action.trade.order.IAttributes) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: { task: TaskRepo }) => {
         // potentialActionsのためのタスクを生成
@@ -146,11 +143,27 @@ function onCreate(transactionId: string, orderActionAttributes: factory.action.t
                     remainingNumberOfTries: 10,
                     numberOfTried: 0,
                     executionResults: [],
-                    data: {
-                        transactionId: transactionId
-                    }
+                    data: orderPotentialActions.sendOrder
                 };
                 taskAttributes.push(sendOrderTask);
+            }
+
+            // 予約確定
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(orderPotentialActions.confirmReservation)) {
+                taskAttributes.push(...orderPotentialActions.confirmReservation.map(
+                    (a): factory.task.IAttributes<factory.taskName.ConfirmReservation> => {
+                        return {
+                            name: factory.taskName.ConfirmReservation,
+                            status: factory.taskStatus.Ready,
+                            runsAt: now, // なるはやで実行
+                            remainingNumberOfTries: 10,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: a
+                        };
+                    }));
             }
 
             // クレジットカード決済

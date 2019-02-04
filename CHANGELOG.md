@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 予約確定タスクを追加
+
 ### Changed
 
 - ActionスキーマをCinerino化
@@ -19,6 +21,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 通知サービスをCinerinoに統一
 - ユーティリティサービスをCinerinoに統一
 - クレジットカード決済サービスをCinerinoに統一
+- 注文タスクインターフェースをCinerinoに統一
+- 注文配送タスクインターフェースをCinerinoに統一
 
 ### Deprecated
 

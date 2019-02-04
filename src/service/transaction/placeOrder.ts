@@ -75,6 +75,11 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
 
         switch (transaction.status) {
             case factory.transactionStatusType.Confirmed:
+                const potentialActions = transaction.potentialActions;
+                if (potentialActions === undefined) {
+                    throw new factory.errors.NotFound('Transaction PotentialActions');
+                }
+                const orderActionAttributes = potentialActions.order;
                 const placeOrderTaskAttributes: factory.task.IAttributes<factory.taskName.PlaceOrder> = {
                     name: factory.taskName.PlaceOrder,
                     status: factory.taskStatus.Ready,
@@ -82,9 +87,7 @@ export function exportTasksById(transactionId: string): ITaskAndTransactionOpera
                     remainingNumberOfTries: 10,
                     numberOfTried: 0,
                     executionResults: [],
-                    data: {
-                        transactionId: transaction.id
-                    }
+                    data: orderActionAttributes
                 };
                 taskAttributes.push(placeOrderTaskAttributes);
 

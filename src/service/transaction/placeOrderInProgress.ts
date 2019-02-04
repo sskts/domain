@@ -612,8 +612,8 @@ export function createOrderFromTransaction(params: {
                     coaTicketInfo: requestedOffer.ticketInfo,
                     dateIssued: params.orderDate,
                     issuedBy: {
-                        typeOf: screeningEvent.superEvent.organizer.typeOf,
-                        name: screeningEvent.superEvent.organizer.name.ja
+                        typeOf: screeningEvent.superEvent.location.typeOf,
+                        name: screeningEvent.superEvent.location.name.ja
                     },
                     totalPrice: requestedOffer.price,
                     priceCurrency: requestedOffer.priceCurrency,
@@ -941,7 +941,65 @@ export async function createPotentialActionsFromTransaction(params: {
     seller: ISeller;
     sendEmailMessage?: boolean;
 }): Promise<factory.transaction.placeOrder.IPotentialActions> {
+    // 予約確定アクション
+    const seatReservationAuthorizeActions = <factory.action.authorize.offer.seatReservation.IAction[]>
+        params.transaction.object.authorizeActions
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
     const confirmReservationActions: factory.action.interact.confirm.reservation.IAttributes<factory.service.webAPI.Identifier>[] = [];
+    // tslint:disable-next-line:max-func-body-length
+    seatReservationAuthorizeActions.forEach((a) => {
+        const actionResult = a.result;
+
+        a.instrument = {
+            typeOf: 'WebAPI',
+            identifier: factory.service.webAPI.Identifier.COA
+        };
+
+        if (actionResult !== undefined) {
+            const updTmpReserveSeatArgs = actionResult.updTmpReserveSeatArgs;
+            const updTmpReserveSeatResult = actionResult.updTmpReserveSeatResult;
+
+            // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
+            const phoneUtil = PhoneNumberUtil.getInstance();
+            const phoneNumber = phoneUtil.parse(params.order.customer.telephone, 'JP');
+            let telNum = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
+
+            // COAでは数字のみ受け付けるので数字以外を除去
+            telNum = telNum.replace(/[^\d]/g, '');
+
+            const updReserveArgs: factory.action.interact.confirm.reservation.IObject4COA = {
+                theaterCode: updTmpReserveSeatArgs.theaterCode,
+                dateJouei: updTmpReserveSeatArgs.dateJouei,
+                titleCode: updTmpReserveSeatArgs.titleCode,
+                titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
+                timeBegin: updTmpReserveSeatArgs.timeBegin,
+                tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum,
+                // tslint:disable-next-line:no-irregular-whitespace
+                reserveName: `${params.order.customer.familyName}　${params.order.customer.givenName}`,
+                // tslint:disable-next-line:no-irregular-whitespace
+                reserveNameJkana: `${params.order.customer.familyName}　${params.order.customer.givenName}`,
+                telNum: telNum,
+                mailAddr: params.order.customer.email,
+                reserveAmount: params.order.price, // デフォルトのpriceCurrencyがJPYなのでこれでよし
+                listTicket: params.order.acceptedOffers
+                    .filter((offer) => offer.itemOffered.typeOf === factory.reservationType.EventReservation)
+                    .map((offer) => {
+                        const reservation = <factory.reservation.event.IEventReservation<any>>offer.itemOffered;
+
+                        return reservation.reservedTicket.coaTicketInfo;
+                    })
+            };
+
+            confirmReservationActions.push({
+                typeOf: <factory.actionType.ConfirmAction>factory.actionType.ConfirmAction,
+                object: updReserveArgs,
+                agent: params.transaction.agent,
+                purpose: params.order,
+                instrument: a.instrument
+            });
+        }
+    });
 
     // クレジットカード支払いアクション
     const authorizeCreditCardActions = <factory.action.authorize.paymentMethod.creditCard.IAction[]>
