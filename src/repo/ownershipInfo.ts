@@ -74,7 +74,10 @@ export class MongoRepository extends repository.OwnershipInfo {
 
     /**
      * 会員プログラムをカウントする
+     * @experimental
      */
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
     public async countProgramMembership(
         searchConditions: factory.ownershipInfo.ISearchProgramMembershipConditions
     ): Promise<number> {
@@ -115,6 +118,8 @@ export class MongoRepository extends repository.OwnershipInfo {
             }
         });
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (Array.isArray(searchConditions.theaterIds)) {
             andConditions.push({
                 'acquiredFrom.id': { $in: searchConditions.theaterIds }

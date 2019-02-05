@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベントインターフェースをCinerinoに統一
 - 予約インターフェースをCinerinoに統一
 - 注文インターフェースをCinerinoに統一
+- クレジットカードサービスをCinerinoに統一
 
 ### Deprecated
 

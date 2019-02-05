@@ -1,13 +1,12 @@
 /**
  * 会員プログラムサービス
  */
-import { pecorinoapi } from '@cinerino/domain';
+import { pecorinoapi, service } from '@cinerino/domain';
 import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
 import * as moment from 'moment-timezone';
 import * as util from 'util';
 
-import * as CreditCardService from './person/creditCard';
 import * as PlaceOrderService from './transaction/placeOrderInProgress';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
@@ -575,7 +574,7 @@ function processPlaceOrder(params: {
 
         // 会員クレジットカード検索
         // 事前にクレジットカードを登録しているはず
-        const creditCards = await CreditCardService.find(customer.memberOf.membershipNumber)();
+        const creditCards = await service.person.creditCard.find(customer.memberOf.membershipNumber)();
         // tslint:disable-next-line:no-suspicious-comment
         // TODO 絞る
         // creditCards = creditCards.filter((c) => c.defaultFlag === '1');
