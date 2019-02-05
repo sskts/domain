@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- install @motionpicture/sskts-factory@7.0.0
 - ActionスキーマをCinerino化
 - OrganizationスキーマをCinerino化
 - アクションリポジトリのインターフェースをCinerinoに統一
