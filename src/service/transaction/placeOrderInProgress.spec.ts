@@ -4,6 +4,7 @@
  */
 import * as waiter from '@waiter/domain';
 import * as moment from 'moment-timezone';
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 // import * as pug from 'pug';
 import * as redis from 'redis-mock';
@@ -49,8 +50,8 @@ describe('start()', () => {
             issueUnit: {}
         };
 
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('start').once().resolves(transaction);
@@ -99,8 +100,8 @@ describe('start()', () => {
             issueUnit: {}
         };
 
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('start').once().resolves(transaction);
@@ -145,8 +146,8 @@ describe('start()', () => {
             issueUnit: {}
         };
 
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
@@ -184,8 +185,8 @@ describe('start()', () => {
         const passportToken = 'passportToken';
         const verifyResult = new Error('verifyError');
 
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().rejects(verifyResult);
@@ -229,8 +230,8 @@ describe('start()', () => {
             issueUnit: {}
         };
 
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
@@ -265,8 +266,8 @@ describe('start()', () => {
     //         expires: new Date()
     //     };
 
-    //     const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-    //     const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+    //     const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+    //     const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
     //     sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
     //     sandbox.mock(transactionRepo).expects('start').never();
@@ -308,8 +309,8 @@ describe('start()', () => {
             issueUnit: {}
         };
 
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
@@ -342,7 +343,7 @@ describe('start()', () => {
             identifier: 'sellerIdentifier'
         };
         const expires = new Date();
-        const startResult = sskts.mongoose.mongo.MongoError.create({ code: 11000 });
+        const startResult = mongoose.mongo.MongoError.create({ code: 11000 });
         const passportToken = 'passportToken';
         const passport = {
             scope: `placeOrderTransaction.${seller.identifier}`,
@@ -352,8 +353,8 @@ describe('start()', () => {
             issueUnit: {}
         };
 
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
@@ -401,7 +402,7 @@ describe('setCustomerContact()', () => {
             email: 'john@example.com'
         };
 
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').once().resolves();
@@ -438,7 +439,7 @@ describe('setCustomerContact()', () => {
             email: 'john@example.com'
         };
 
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').never();
@@ -475,7 +476,7 @@ describe('setCustomerContact()', () => {
             email: 'john@example.com'
         };
 
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').never().resolves(transaction);
         sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').never();
@@ -589,7 +590,7 @@ describe('confirm()', () => {
         //     workPerformed: { name: 'workPerformedName' },
         //     location: { name: { ja: 'eventLocationName' } }
         // };
-        // const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
+        // const eventReservations: sskts.factory.reservation.event.IReservation<any>[] = [
         //     {
         //         typeOf: sskts.factory.reservationType.EventReservation,
         //         reservationFor: event,
@@ -651,10 +652,10 @@ describe('confirm()', () => {
         //     }
         // ];
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
 
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(orderNumberRepo).expects('publish').once().resolves('orderNumber');
@@ -776,7 +777,7 @@ describe('confirm()', () => {
         //     workPerformed: { name: 'workPerformedName' },
         //     location: { name: { ja: 'eventLocationName' } }
         // };
-        // const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
+        // const eventReservations: sskts.factory.reservation.event.IReservation<any>[] = [
         //     {
         //         typeOf: sskts.factory.reservationType.EventReservation,
         //         reservationFor: event,
@@ -838,10 +839,10 @@ describe('confirm()', () => {
         //     }
         // ];
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
 
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(orderNumberRepo).expects('publish').once().resolves('orderNumber');
@@ -881,10 +882,10 @@ describe('confirm()', () => {
             }
         };
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
 
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
@@ -957,10 +958,10 @@ describe('confirm()', () => {
             }
         ];
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
 
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
@@ -1000,10 +1001,10 @@ describe('confirm()', () => {
             }
         };
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
 
         sandbox.mock(sellerRepo).expects('findById').never();
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
@@ -1126,7 +1127,7 @@ describe('createEmailMessageFromTransaction()', () => {
             workPerformed: { name: 'workPerformedName' },
             location: { name: { ja: 'eventLocationName' } }
         };
-        const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
+        const eventReservations: sskts.factory.reservation.event.IReservation<any>[] = [
             {
                 id: '',
                 checkedIn: false,
@@ -1250,7 +1251,7 @@ describe('createEmailMessageFromTransaction()', () => {
         const result = await sskts.service.transaction.placeOrderInProgress.createEmailMessageFromTransaction({
             transaction: transaction,
             customerContact: customerContact,
-            order: order,
+            order: <any>order,
             seller: <any>seller
         });
 
@@ -1392,7 +1393,7 @@ describe('createOrderFromTransaction()', () => {
         //     workPerformed: { name: 'workPerformedName' },
         //     location: { name: { ja: 'eventLocationName' } }
         // };
-        // const eventReservations: sskts.factory.reservation.event.IEventReservation<any>[] = [
+        // const eventReservations: sskts.factory.reservation.event.IReservation<any>[] = [
         //     {
         //         typeOf: sskts.factory.reservationType.EventReservation,
         //         reservationFor: event,

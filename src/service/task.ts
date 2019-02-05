@@ -1,9 +1,10 @@
 /**
  * タスクサービス
  */
-import { AWS, mongoose, pecorinoapi, service } from '@cinerino/domain';
+import { AWS, pecorinoapi, service } from '@cinerino/domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
+import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
 import { MongoRepository as TaskRepo } from '../repo/task';
@@ -81,7 +82,7 @@ export function executeByName(taskName: factory.taskName): IExecuteOperation<voi
         depositService?: pecorinoapi.service.transaction.Deposit;
     }) => {
         // 未実行のタスクを取得
-        let task: factory.task.ITask<factory.taskName> | null = null;
+        let task: factory.task.ITask<any> | null = null;
         try {
             task = await settings.taskRepo.executeOneByName(taskName);
             debug('task found', task);
@@ -100,7 +101,7 @@ export function executeByName(taskName: factory.taskName): IExecuteOperation<voi
  * execute a task
  * タスクを実行する
  */
-export function execute(task: factory.task.ITask<factory.taskName>): IExecuteOperation<void> {
+export function execute(task: factory.task.ITask<any>): IExecuteOperation<void> {
     debug('executing a task...', task);
     const now = new Date();
 

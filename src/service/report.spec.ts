@@ -2,6 +2,7 @@
 /**
  * レポートサービステスト
  */
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 // tslint:disable-next-line:no-require-imports no-var-requires
@@ -23,7 +24,7 @@ describe('service.report.telemetry.search()', () => {
     it('DBが正常であれば、配列を取得できるはず', async () => {
         const conditions = {};
         const telemetries: any[] = [];
-        const telemetryRepo = new sskts.repository.Telemetry(sskts.mongoose.connection);
+        const telemetryRepo = new sskts.repository.Telemetry(mongoose.connection);
 
         sandbox.mock(telemetryRepo.telemetryModel).expects('find').once()
             .chain('sort').chain('lean').chain('exec').resolves(telemetries);
@@ -41,9 +42,9 @@ describe('service.report.telemetry.search()', () => {
 //     });
 
 //     it('DBが正常であれば、エラーにならないはず', async () => {
-//         const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
-//         const telemetryRepo = new sskts.repository.Telemetry(sskts.mongoose.connection);
-//         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+//         const taskRepo = new sskts.repository.Task(mongoose.connection);
+//         const telemetryRepo = new sskts.repository.Telemetry(mongoose.connection);
+//         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
 //         sandbox.mock(taskRepo.taskModel).expects('count').atLeast(1)
 //             .chain('exec').resolves(1);

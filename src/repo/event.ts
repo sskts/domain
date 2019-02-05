@@ -1,7 +1,6 @@
-import { mongoose } from '@cinerino/domain';
-import * as moment from 'moment';
+import { repository } from '@cinerino/domain';
 
-import eventModel from './mongoose/model/event';
+import * as moment from 'moment';
 
 import * as factory from '../factory';
 
@@ -10,13 +9,7 @@ export type IEvent = factory.event.screeningEvent.IEvent | factory.event.screeni
 /**
  * イベントリポジトリ
  */
-export class MongoRepository {
-    public readonly eventModel: typeof eventModel;
-
-    constructor(connection: mongoose.Connection) {
-        this.eventModel = connection.model(eventModel.modelName);
-    }
-
+export class MongoRepository extends repository.Event {
     // tslint:disable-next-line:max-func-body-length
     public static CREATE_INDIVIDUAL_SCREENING_EVENT_MONGO_CONDITIONS(
         searchConditions: factory.event.screeningEvent.ISearchConditions
@@ -53,16 +46,51 @@ export class MongoRepository {
         // 場所の識別子条件
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (Array.isArray(searchConditions.superEventLocationIdentifiers)) {
+        if (Array.isArray((<any>searchConditions).superEventLocationIdentifiers)) {
             // identifierはv28.0.0で廃止したが、互換性維持のため、branchCodeでの検索に変換
             andConditions.push({
                 'superEvent.location.branchCode': {
                     $exists: true,
-                    $in: searchConditions.superEventLocationIdentifiers.map((identifire) => {
+                    $in: (<any>searchConditions).superEventLocationIdentifiers.map((identifire: string) => {
                         return identifire.toString().replace('MovieTheater-', '');
                     })
                 }
             });
+        }
+
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (searchConditions.superEvent !== undefined) {
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(searchConditions.superEvent.ids)) {
+                andConditions.push({
+                    'superEvent.id': {
+                        $exists: true,
+                        $in: searchConditions.superEvent.ids
+                    }
+                });
+            }
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(searchConditions.superEvent.locationBranchCodes)) {
+                andConditions.push({
+                    'superEvent.location.branchCode': {
+                        $exists: true,
+                        $in: searchConditions.superEvent.locationBranchCodes
+                    }
+                });
+            }
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
+            if (Array.isArray(searchConditions.superEvent.workPerformedIdentifiers)) {
+                andConditions.push({
+                    'superEvent.workPerformed.identifier': {
+                        $exists: true,
+                        $in: searchConditions.superEvent.workPerformedIdentifiers
+                    }
+                });
+            }
         }
 
         // イベントステータス条件
@@ -77,11 +105,11 @@ export class MongoRepository {
         // 作品識別子条件
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (Array.isArray(searchConditions.workPerformedIdentifiers)) {
+        if (Array.isArray((<any>searchConditions).workPerformedIdentifiers)) {
             andConditions.push({
                 'workPerformed.identifier': {
                     $exists: true,
-                    $in: searchConditions.workPerformedIdentifiers
+                    $in: (<any>searchConditions).workPerformedIdentifiers
                 }
             });
         }
@@ -122,20 +150,6 @@ export class MongoRepository {
     }
 
     /**
-     * イベントを保管する
-     */
-    public async save(event: IEvent) {
-        await this.eventModel.findOneAndUpdate(
-            { _id: event.id },
-            {
-                $set: event,
-                $setOnInsert: { _id: event.id }
-            },
-            { new: true, upsert: true }
-        ).exec();
-    }
-
-    /**
      * 上映イベントをキャンセルする
      */
     public async cancelIndividualScreeningEvent(id: string) {
@@ -151,6 +165,8 @@ export class MongoRepository {
         ).exec();
     }
 
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
     public async countIndividualScreeningEvents(params: factory.event.screeningEvent.ISearchConditions): Promise<number> {
         const conditions = MongoRepository.CREATE_INDIVIDUAL_SCREENING_EVENT_MONGO_CONDITIONS(params);
 

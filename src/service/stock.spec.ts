@@ -2,6 +2,7 @@
 /**
  * stock service test
  */
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../index';
@@ -90,7 +91,7 @@ describe('cancelSeatReservationAuth()', () => {
                 }
             }
         ];
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
 
         sandbox.mock(actionRepo).expects('searchByPurpose').once()
             .resolves(authorizeActions);

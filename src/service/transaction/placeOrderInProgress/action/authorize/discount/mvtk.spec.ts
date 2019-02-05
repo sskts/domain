@@ -2,6 +2,7 @@
 /**
  * ムビチケ承認サービステスト
  */
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../../../../../../index';
@@ -73,8 +74,8 @@ describe('action.authorize.mvtk.create()', () => {
             id: 'actionId'
         };
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo.actionModel)
@@ -139,8 +140,8 @@ describe('action.authorize.mvtk.create()', () => {
             }
         ];
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo.actionModel).expects('find').once().chain('exec')
@@ -175,8 +176,8 @@ describe('action.authorize.mvtk.create()', () => {
         };
         const authorizeObject = {};
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('start').never();
@@ -228,8 +229,8 @@ describe('action.authorize.mvtk.create()', () => {
         };
         const seatReservationAuthorizeActions: any[] = [];
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo.actionModel).expects('find').once()
@@ -299,8 +300,8 @@ describe('action.authorize.mvtk.create()', () => {
             }
         }];
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo.actionModel).expects('find').once()
@@ -370,8 +371,8 @@ describe('action.authorize.mvtk.create()', () => {
             }
         }];
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo.actionModel).expects('find').once()
@@ -441,8 +442,8 @@ describe('action.authorize.mvtk.create()', () => {
             }
         }];
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo.actionModel).expects('find').once()
@@ -512,8 +513,8 @@ describe('action.authorize.mvtk.create()', () => {
             }
         }];
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo.actionModel).expects('find').once()
@@ -583,8 +584,8 @@ describe('action.authorize.mvtk.create()', () => {
             }
         }];
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo.actionModel).expects('find').once()
@@ -628,8 +629,8 @@ describe('action.authorize.mvtk.cancel()', () => {
             seller: seller
         };
 
-        const authorizeActionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(authorizeActionRepo).expects('cancel').once()
@@ -665,8 +666,8 @@ describe('action.authorize.mvtk.cancel()', () => {
             seller: seller
         };
 
-        const authorizeActionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const authorizeActionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(authorizeActionRepo).expects('cancel').never();

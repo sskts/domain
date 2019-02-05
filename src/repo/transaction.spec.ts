@@ -3,6 +3,7 @@
  * 取引リポジトリテスト
  */
 import { } from 'mocha';
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 // tslint:disable-next-line:no-require-imports no-var-requires
@@ -23,7 +24,7 @@ describe('start()', () => {
     it('repositoryの状態が正常であれば、開始できるはず', async () => {
         const transaction = { typeOf: sskts.factory.transactionType.PlaceOrder, id: 'id' };
 
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const repository = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(repository.transactionModel)
             .expects('create').once()
@@ -32,44 +33,6 @@ describe('start()', () => {
         const result = await repository.start(<any>transaction);
 
         assert.equal(typeof result, 'object');
-        sandbox.verify();
-    });
-});
-
-describe('setCustomerContactOnPlaceOrderInProgress()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('取引が存在すれば、エラーにならないはず', async () => {
-        const transactionId = 'transactionId';
-        const contact = {};
-
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
-
-        sandbox.mock(repository.transactionModel)
-            .expects('findOneAndUpdate').once()
-            .chain('exec')
-            .resolves(new repository.transactionModel());
-
-        const result = await repository.setCustomerContactOnPlaceOrderInProgress({ id: transactionId, contact: <any>contact });
-
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-
-    it('取引が存在しなければ、NotFoundエラーになるはず', async () => {
-        const transactionId = 'transactionId';
-        const contact = {};
-
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
-
-        sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
-            .chain('exec').resolves(null);
-
-        const result = await repository.setCustomerContactOnPlaceOrderInProgress({ id: transactionId, contact: <any>contact })
-            .catch((err) => err);
-        assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });
 });
@@ -85,7 +48,7 @@ describe('confirmPlaceOrder()', () => {
         const transactionResult = {};
         const potentialActions = {};
 
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const repository = new sskts.repository.Transaction(mongoose.connection);
         const doc = new repository.transactionModel();
 
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
@@ -104,7 +67,7 @@ describe('confirmPlaceOrder()', () => {
         const transactionResult = {};
         const potentialActions = {};
 
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const repository = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(null);
@@ -128,7 +91,7 @@ describe('reexportTasks()', () => {
     it('MongoDBの状態が正常であれば、エラーにならないはず', async () => {
         const intervalInMinutes = 10;
 
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const repository = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(repository.transactionModel)
             .expects('findOneAndUpdate').once()
@@ -150,7 +113,7 @@ describe('setTasksExportedById()', () => {
     it('MongoDBの状態が正常であれば、エラーにならないはず', async () => {
         const transactionId = 'transactionId';
 
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const repository = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(repository.transactionModel)
             .expects('findByIdAndUpdate').once()
@@ -170,7 +133,7 @@ describe('makeExpired()', () => {
     });
 
     it('MongoDBの状態が正常であれば、エラーにならないはず', async () => {
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const repository = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(repository.transactionModel)
             .expects('update').once()
@@ -194,7 +157,7 @@ describe('confirmReturnOrder()', () => {
         const transactionResult = {};
         const potentialActions = {};
 
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const repository = new sskts.repository.Transaction(mongoose.connection);
         const doc = new repository.transactionModel();
 
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
@@ -212,7 +175,7 @@ describe('confirmReturnOrder()', () => {
         const transactionResult = {};
         const potentialActions = {};
 
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const repository = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(null);
@@ -239,7 +202,7 @@ describe('startExportTasks()', () => {
             status: sskts.factory.transactionStatusType.Confirmed
         };
 
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const repository = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(new repository.transactionModel());
@@ -257,7 +220,7 @@ describe('startExportTasks()', () => {
             status: sskts.factory.transactionStatusType.Confirmed
         };
 
-        const repository = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const repository = new sskts.repository.Transaction(mongoose.connection);
 
         sandbox.mock(repository.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(null);
@@ -275,7 +238,7 @@ describe('IDで取引を取得する', () => {
     });
 
     it('取引が存在すればオブジェクトを取得できるはず', async () => {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('findOne').once()
             .chain('exec').resolves(new transactionRepo.transactionModel());
 
@@ -288,7 +251,7 @@ describe('IDで取引を取得する', () => {
     });
 
     it('取引が存在しなければNotFoundエラー', async () => {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('findOne').once().chain('exec').resolves(null);
 
         const result = await transactionRepo.findById({
@@ -306,7 +269,7 @@ describe('IDで進行中取引を取得する', () => {
     });
 
     it('取引が存在すればオブジェクトを取得できるはず', async () => {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('findOne').once()
             .chain('exec').resolves(new transactionRepo.transactionModel());
 
@@ -319,7 +282,7 @@ describe('IDで進行中取引を取得する', () => {
     });
 
     it('取引が存在しなければNotFoundエラー', async () => {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('findOne').once().chain('exec').resolves(null);
 
         const result = await transactionRepo.findInProgressById({
@@ -338,7 +301,7 @@ describe('取引を中止する', () => {
     });
 
     it('進行中取引が存在すれば中止できるはず', async () => {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(new transactionRepo.transactionModel());
 
@@ -351,7 +314,7 @@ describe('取引を中止する', () => {
     });
 
     it('進行中取引が存在しなければNotFoundエラー', async () => {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('findOneAndUpdate').once().chain('exec').resolves(null);
         sandbox.mock(transactionRepo.transactionModel).expects('findOne').once().chain('exec').resolves(null);
 
@@ -371,7 +334,7 @@ describe('取引をカウントする', () => {
     });
 
     it('MongoDBが正常であれば数字を取得できるはず', async () => {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('countDocuments').once()
             .chain('exec').resolves(1);
 
@@ -425,7 +388,7 @@ describe('取引を検索する', () => {
             limit: 10,
             sort: { startDate: sskts.factory.sortType.Ascending }
         };
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('find').once()
             .chain('exec').resolves([new transactionRepo.transactionModel()]);
 
@@ -443,7 +406,7 @@ describe('取引を検索する', () => {
                 }
             }
         };
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         sandbox.mock(transactionRepo.transactionModel).expects('find').once()
             .chain('exec').resolves([new transactionRepo.transactionModel()]);
 

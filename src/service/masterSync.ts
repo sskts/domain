@@ -236,7 +236,7 @@ export function importScreeningEvents(
             debug(`storing ${screeningEvents.length} screeningEvents...`);
             await Promise.all(screeningEvents.map(async (screeningEvent) => {
                 try {
-                    await repos.event.save(screeningEvent);
+                    await repos.event.save<factory.eventType.ScreeningEvent>(screeningEvent);
                 } catch (error) {
                     // tslint:disable-next-line:no-single-line-block-comment
                     /* istanbul ignore next */
@@ -248,7 +248,10 @@ export function importScreeningEvents(
 
             // COAから削除されたイベントをキャンセル済ステータスへ変更
             const identifiers = await repos.event.searchIndividualScreeningEvents({
-                superEventLocationIdentifiers: [`MovieTheater-${theaterCode}`],
+                typeOf: factory.eventType.ScreeningEvent,
+                superEvent: {
+                    locationBranchCodes: [theaterCode]
+                },
                 startFrom: targetImportFrom.toDate(),
                 startThrough: targetImportThrough.toDate()
             }).then((events) => events.map((e) => e.identifier));

@@ -21,7 +21,7 @@ import * as factory from '../factory';
 const debug = createDebug('sskts-domain:service:delivery');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
-export type IEventReservation = factory.reservation.event.IEventReservation<any>;
+export type IEventReservation = factory.reservation.event.IReservation<any>;
 
 /**
  * 注文を配送する
@@ -62,11 +62,14 @@ export function sendOrder(params: factory.action.transfer.send.order.IAttributes
 
         try {
             await Promise.all(transactionResult.ownershipInfos.map(async (ownershipInfo) => {
-                await repos.ownershipInfo.save(ownershipInfo);
+                await repos.ownershipInfo.saveByIdentifier(ownershipInfo);
             }));
 
             // 注文ステータス変更
-            await repos.order.changeStatus(transactionResult.order.orderNumber, factory.orderStatus.OrderDelivered);
+            await repos.order.changeStatus({
+                orderNumber: transactionResult.order.orderNumber,
+                orderStatus: factory.orderStatus.OrderDelivered
+            });
 
             // 会員プログラムがアイテムにある場合は、所有権が作成されたこのタイミングで登録プロセスロック解除
             const programMembershipOwnershipInfos = <factory.ownershipInfo.IOwnershipInfo<'ProgramMembership'>[]>

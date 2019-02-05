@@ -1,235 +1,13 @@
-import { mongoose } from '@cinerino/domain';
+import { repository } from '@cinerino/domain';
 import * as moment from 'moment';
+import { Document, QueryCursor } from 'mongoose';
 
 import * as factory from '../factory';
-import TransactionModel from './mongoose/model/transaction';
 
 /**
  * 取引リポジトリ
  */
-export class MongoRepository {
-    public readonly transactionModel: typeof TransactionModel;
-
-    constructor(connection: mongoose.Connection) {
-        this.transactionModel = connection.model(TransactionModel.modelName);
-    }
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-    public static CREATE_MONGO_CONDITIONS(params: factory.transaction.ISearchConditions<factory.transactionType>) {
-        const andConditions: any[] = [
-            {
-                typeOf: params.typeOf
-            }
-        ];
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (params.startFrom !== undefined) {
-            andConditions.push({
-                startDate: { $gt: params.startFrom }
-            });
-        }
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (params.startThrough !== undefined) {
-            andConditions.push({
-                startDate: { $lt: params.startThrough }
-            });
-        }
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (params.endFrom !== undefined) {
-            andConditions.push({
-                endDate: {
-                    $exists: true,
-                    $gte: params.endFrom
-                }
-            });
-        }
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (params.endThrough !== undefined) {
-            andConditions.push({
-                endDate: {
-                    $exists: true,
-                    $lt: params.endThrough
-                }
-            });
-        }
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (Array.isArray(params.ids)) {
-            andConditions.push({
-                _id: { $in: params.ids }
-            });
-        }
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (Array.isArray(params.statuses)) {
-            andConditions.push({
-                status: { $in: params.statuses }
-            });
-        }
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (params.agent !== undefined) {
-            // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore else */
-            if (params.agent.typeOf !== undefined) {
-                andConditions.push({
-                    'agent.typeOf': {
-                        $exists: true,
-                        $eq: params.agent.typeOf
-                    }
-                });
-            }
-            // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore else */
-            if (Array.isArray(params.agent.ids)) {
-                andConditions.push({
-                    'agent.id': {
-                        $exists: true,
-                        $in: params.agent.ids
-                    }
-                });
-            }
-            // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore else */
-            if (Array.isArray(params.agent.identifiers)) {
-                andConditions.push({
-                    'agent.identifier': {
-                        $exists: true,
-                        $in: params.agent.identifiers
-                    }
-                });
-            }
-        }
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (Array.isArray(params.tasksExportationStatuses)) {
-            andConditions.push({
-                tasksExportationStatus: { $in: params.tasksExportationStatuses }
-            });
-        }
-
-        switch (params.typeOf) {
-            case factory.transactionType.PlaceOrder:
-                // tslint:disable-next-line:no-single-line-block-comment
-                /* istanbul ignore else */
-                if (params.seller !== undefined) {
-                    // tslint:disable-next-line:no-single-line-block-comment
-                    /* istanbul ignore else */
-                    if (params.seller.typeOf !== undefined) {
-                        andConditions.push({
-                            'seller.typeOf': {
-                                $exists: true,
-                                $eq: params.seller.typeOf
-                            }
-                        });
-                    }
-                    // tslint:disable-next-line:no-single-line-block-comment
-                    /* istanbul ignore else */
-                    if (Array.isArray(params.seller.ids)) {
-                        andConditions.push({
-                            'seller.id': {
-                                $exists: true,
-                                $in: params.seller.ids
-                            }
-                        });
-                    }
-                }
-                // tslint:disable-next-line:no-single-line-block-comment
-                /* istanbul ignore else */
-                if (params.object !== undefined) {
-                    // tslint:disable-next-line:no-single-line-block-comment
-                    /* istanbul ignore else */
-                    if (params.object.customerContact !== undefined) {
-                        // tslint:disable-next-line:no-single-line-block-comment
-                        /* istanbul ignore else */
-                        if (params.object.customerContact.familyName !== undefined) {
-                            andConditions.push({
-                                'object.customerContact.familyName': {
-                                    $exists: true,
-                                    $regex: new RegExp(params.object.customerContact.familyName, 'i')
-                                }
-                            });
-                        }
-                        // tslint:disable-next-line:no-single-line-block-comment
-                        /* istanbul ignore else */
-                        if (params.object.customerContact.givenName !== undefined) {
-                            andConditions.push({
-                                'object.customerContact.givenName': {
-                                    $exists: true,
-                                    $regex: new RegExp(params.object.customerContact.givenName, 'i')
-                                }
-                            });
-                        }
-                        // tslint:disable-next-line:no-single-line-block-comment
-                        /* istanbul ignore else */
-                        if (params.object.customerContact.email !== undefined) {
-                            andConditions.push({
-                                'object.customerContact.email': {
-                                    $exists: true,
-                                    $regex: new RegExp(params.object.customerContact.email, 'i')
-                                }
-                            });
-                        }
-                        // tslint:disable-next-line:no-single-line-block-comment
-                        /* istanbul ignore else */
-                        if (params.object.customerContact.telephone !== undefined) {
-                            andConditions.push({
-                                'object.customerContact.telephone': {
-                                    $exists: true,
-                                    $regex: new RegExp(params.object.customerContact.telephone, 'i')
-                                }
-                            });
-                        }
-                    }
-                }
-                // tslint:disable-next-line:no-single-line-block-comment
-                /* istanbul ignore else */
-                if (params.result !== undefined) {
-                    // tslint:disable-next-line:no-single-line-block-comment
-                    /* istanbul ignore else */
-                    if (params.result.order !== undefined) {
-                        // tslint:disable-next-line:no-single-line-block-comment
-                        /* istanbul ignore else */
-                        if (Array.isArray(params.result.order.orderNumbers)) {
-                            andConditions.push({
-                                'result.order.orderNumber': {
-                                    $exists: true,
-                                    $in: params.result.order.orderNumbers
-                                }
-                            });
-                        }
-                    }
-                }
-                break;
-            case factory.transactionType.ReturnOrder:
-                // tslint:disable-next-line:no-single-line-block-comment
-                /* istanbul ignore else */
-                if (params.object !== undefined) {
-                    // tslint:disable-next-line:no-single-line-block-comment
-                    /* istanbul ignore else */
-                    if (params.object.order !== undefined) {
-                        // tslint:disable-next-line:no-single-line-block-comment
-                        /* istanbul ignore else */
-                        if (Array.isArray(params.object.order.orderNumbers)) {
-                            andConditions.push({
-                                'object.order.orderNumber': {
-                                    $exists: true,
-                                    $in: params.object.order.orderNumbers
-                                }
-                            });
-                        }
-                    }
-                }
-                break;
-            default:
-
-        }
-
-        return andConditions;
-    }
-
+export class MongoRepository extends repository.Transaction {
     /**
      * 取引を開始する
      */
@@ -284,30 +62,6 @@ export class MongoRepository {
         }
 
         return doc.toObject();
-    }
-
-    /**
-     * 取引中の所有者プロフィールを変更する
-     * 匿名所有者として開始した場合のみ想定(匿名か会員に変更可能)
-     */
-    public async setCustomerContactOnPlaceOrderInProgress(params: {
-        id: string;
-        contact: factory.transaction.placeOrder.ICustomerContact;
-    }): Promise<void> {
-        const doc = await this.transactionModel.findOneAndUpdate(
-            {
-                _id: params.id,
-                typeOf: factory.transactionType.PlaceOrder,
-                status: factory.transactionStatusType.InProgress
-            },
-            {
-                'object.customerContact': params.contact
-            }
-        )
-            .exec();
-        if (doc === null) {
-            throw new factory.errors.NotFound('Transaction');
-        }
     }
 
     /**
@@ -424,66 +178,6 @@ export class MongoRepository {
             .then((doc) => (doc === null) ? null : doc.toObject());
     }
 
-    // tslint:disable-next-line:no-suspicious-comment
-    /**
-     * タスクエクスポートリトライ
-     * TODO updatedAtを基準にしているが、タスクエクスポートトライ日時を持たせた方が安全か？
-     */
-    public async reexportTasks(params: { intervalInMinutes: number }): Promise<void> {
-        await this.transactionModel.findOneAndUpdate(
-            {
-                tasksExportationStatus: factory.transactionTasksExportationStatus.Exporting,
-                updatedAt: {
-                    $lt: moment()
-                        .add(-params.intervalInMinutes, 'minutes')
-                        .toISOString()
-                }
-            },
-            {
-                tasksExportationStatus: factory.transactionTasksExportationStatus.Unexported
-            }
-        )
-            .exec();
-    }
-
-    /**
-     * set task status exported by transaction id
-     * IDでタスクをエクスポート済に変更する
-     */
-    public async setTasksExportedById(params: { id: string }) {
-        await this.transactionModel.findByIdAndUpdate(
-            params.id,
-            {
-                tasksExportationStatus: factory.transactionTasksExportationStatus.Exported,
-                tasksExportedAt: moment()
-                    .toDate()
-            }
-        )
-            .exec();
-    }
-
-    /**
-     * 取引を期限切れにする
-     */
-    public async makeExpired(): Promise<void> {
-        const endDate = moment()
-            .toDate();
-
-        // ステータスと期限を見て更新
-        await this.transactionModel.update(
-            {
-                status: factory.transactionStatusType.InProgress,
-                expires: { $lt: endDate }
-            },
-            {
-                status: factory.transactionStatusType.Expired,
-                endDate: endDate
-            },
-            { multi: true }
-        )
-            .exec();
-    }
-
     /**
      * 取引を中止する
      */
@@ -527,15 +221,6 @@ export class MongoRepository {
 
         return doc.toObject();
     }
-    public async count<T extends factory.transactionType>(params: factory.transaction.ISearchConditions<T>): Promise<number> {
-        const conditions = MongoRepository.CREATE_MONGO_CONDITIONS(params);
-
-        return this.transactionModel.countDocuments(
-            { $and: conditions }
-        )
-            .setOptions({ maxTimeMS: 10000 })
-            .exec();
-    }
 
     /**
      * 取引を検索する
@@ -567,7 +252,7 @@ export class MongoRepository {
     /* istanbul ignore next */
     public stream<T extends factory.transactionType>(
         params: factory.transaction.ISearchConditions<T>
-    ): mongoose.QueryCursor<mongoose.Document> {
+    ): QueryCursor<Document> {
         const conditions = MongoRepository.CREATE_MONGO_CONDITIONS(params);
         const query = this.transactionModel.find({ $and: conditions })
             .select({ __v: 0, createdAt: 0, updatedAt: 0 });

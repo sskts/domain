@@ -1,4 +1,4 @@
-import { mongoose } from '@cinerino/domain';
+import * as mongoose from 'mongoose';
 import telemetryModel from './mongoose/model/telemetry';
 
 /**

@@ -2,6 +2,7 @@
 /**
  * ポイント決済承認アクションテスト
  */
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../../../../../../index';
@@ -48,13 +49,13 @@ describe('ポイント決済を承認する', () => {
                 award: [sskts.factory.programMembership.Award.PecorinoPayment]
             }
         }];
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves(programMemberships);
+        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves(programMemberships);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(actionRepo).expects('complete').once().resolves(action);
@@ -103,14 +104,14 @@ describe('ポイント決済を承認する', () => {
             seller: seller
         };
         const amount = 1234;
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(ownershipInfoRepo).expects('search').never();
+        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').never();
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
@@ -160,13 +161,13 @@ describe('ポイント決済を承認する', () => {
                 award: []
             }
         }];
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves(programMemberships);
+        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves(programMemberships);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
@@ -219,10 +220,10 @@ describe('ポイント決済を承認する', () => {
             recipient: seller
         };
         const startPayTransactionResult = new Error('startPayTransactionError');
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
         const programMemberships = [{
             typeOfGood: {
@@ -230,7 +231,7 @@ describe('ポイント決済を承認する', () => {
             }
         }];
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves(programMemberships);
+        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves(programMemberships);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transferService).expects('start').once().rejects(startPayTransactionResult);
@@ -278,8 +279,8 @@ describe('ポイント決済承認を取り消す', () => {
                 pendingTransaction: {}
             }
         };
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('cancel').once().resolves(action);
@@ -310,8 +311,8 @@ describe('ポイント決済承認を取り消す', () => {
                 pendingTransaction: {}
             }
         };
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('cancel').once().resolves(action);

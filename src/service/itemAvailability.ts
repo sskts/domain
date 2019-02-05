@@ -72,7 +72,7 @@ export function updateIndividualScreeningEvents(locationBranchCode: string, star
 /* istanbul ignore next */
 export function createItemAvailability(
     numberOfAvailableSeats: number, numberOfAllSeats: number
-): factory.event.screeningEvent.IItemAvailability {
+): number {
     if (numberOfAllSeats === 0) {
         return 0;
     }

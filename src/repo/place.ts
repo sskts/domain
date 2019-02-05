@@ -1,5 +1,5 @@
-import { mongoose } from '@cinerino/domain';
 import * as createDebug from 'debug';
+import * as mongoose from 'mongoose';
 
 import placeModel from './mongoose/model/place';
 

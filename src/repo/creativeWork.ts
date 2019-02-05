@@ -1,4 +1,4 @@
-import { mongoose } from '@cinerino/domain';
+import * as mongoose from 'mongoose';
 
 import creativeWorkModel from './mongoose/model/creativeWork';
 

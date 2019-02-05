@@ -17,7 +17,7 @@ import * as factory from '../factory';
 const debug = createDebug('sskts-domain:service:order');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
-export type IReservation = factory.reservation.event.IEventReservation<factory.event.screeningEvent.IEvent>;
+export type IReservation = factory.reservation.event.IReservation<factory.event.screeningEvent.IEvent>;
 
 /**
  * 注文取引から注文を作成する
@@ -349,7 +349,10 @@ export function cancelReservations(params: { orderNumber: string }) {
 
             // 注文ステータス変更
             debug('changing orderStatus...');
-            await repos.order.changeStatus(order.orderNumber, factory.orderStatus.OrderReturned);
+            await repos.order.changeStatus({
+                orderNumber: order.orderNumber,
+                orderStatus: factory.orderStatus.OrderReturned
+            });
         } catch (error) {
             // actionにエラー結果を追加
             try {

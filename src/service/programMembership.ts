@@ -206,7 +206,7 @@ export function register(
             throw new factory.errors.NotFound('params.object.itemOffered.id');
         }
 
-        const programMemberships = await repos.ownershipInfo.search({
+        const programMemberships = await repos.ownershipInfo.search4cinemasunshine({
             goodType: 'ProgramMembership',
             ownedBy: customer.memberOf.membershipNumber,
             ownedAt: now
@@ -300,7 +300,7 @@ export function createUnRegisterTask(params: {
             throw new factory.errors.NotFound('params.agent.memberOf.membershipNumber');
         }
         const now = new Date();
-        const ownershipInfos = await repos.ownershipInfo.search({
+        const ownershipInfos = await repos.ownershipInfo.search4cinemasunshine({
             identifier: params.ownershipInfoIdentifier,
             goodType: 'ProgramMembership',
             ownedBy: params.agent.memberOf.membershipNumber,
@@ -486,7 +486,7 @@ function processPlaceOrder(params: {
         // シネサンのスマフォアプリ登録時、元から1ポイント追加される
         if (repos.depositService !== undefined) {
             const now = new Date();
-            const accountOwnershipInfos = await repos.ownershipInfo.search({
+            const accountOwnershipInfos = await repos.ownershipInfo.search4cinemasunshine({
                 goodType: factory.pecorino.account.TypeOf.Account,
                 ownedBy: customer.memberOf.membershipNumber,
                 ownedAt: now
@@ -599,7 +599,7 @@ function processPlaceOrder(params: {
             object: {
                 typeOf: factory.paymentMethodType.CreditCard,
                 orderId: orderId,
-                amount: acceptedOffer.price,
+                amount: <number>acceptedOffer.price,
                 method: GMO.utils.util.Method.Lump,
                 creditCard: {
                     memberId: customer.memberOf.membershipNumber,

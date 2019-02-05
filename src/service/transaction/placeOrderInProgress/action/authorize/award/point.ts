@@ -69,7 +69,7 @@ export function create(params: {
         if (transaction.agent.memberOf === undefined) {
             throw new factory.errors.Forbidden('Membership required');
         }
-        const programMemberships = await repos.ownershipInfo.search({
+        const programMemberships = await repos.ownershipInfo.search4cinemasunshine({
             goodType: 'ProgramMembership',
             ownedBy: transaction.agent.memberOf.membershipNumber,
             ownedAt: new Date()

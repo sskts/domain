@@ -2,6 +2,7 @@
 /**
  * task service test
  */
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../index';
@@ -26,7 +27,7 @@ describe('executeByName()', () => {
             data: { datakey: 'dataValue' },
             status: sskts.factory.taskStatus.Running
         };
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
         const authClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
         sandbox.mock(taskRepo).expects('executeOneByName').once().withArgs(task.name).resolves(task);
         sandbox.mock(TaskFunctionsService).expects(task.name).once().withArgs(task.data).returns(async () => Promise.resolve());
@@ -34,7 +35,7 @@ describe('executeByName()', () => {
 
         const result = await sskts.service.task.executeByName(task.name)({
             taskRepo: taskRepo,
-            connection: sskts.mongoose.connection,
+            connection: mongoose.connection,
             pecorinoAuthClient: authClient
         });
 
@@ -44,7 +45,7 @@ describe('executeByName()', () => {
 
     it('未実行タスクが存在しなければ、実行されないはず', async () => {
         const taskName = sskts.factory.taskName.PlaceOrder;
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
         const authClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
 
         sandbox.mock(taskRepo).expects('executeOneByName').once()
@@ -53,7 +54,7 @@ describe('executeByName()', () => {
 
         const result = await sskts.service.task.executeByName(taskName)({
             taskRepo: taskRepo,
-            connection: sskts.mongoose.connection,
+            connection: mongoose.connection,
             pecorinoAuthClient: authClient
         });
 
@@ -69,7 +70,7 @@ describe('retry()', () => {
 
     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
         const INTERVAL = 10;
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
 
         sandbox.mock(taskRepo).expects('retry').once()
             .withArgs(INTERVAL).resolves();
@@ -92,7 +93,7 @@ describe('abort()', () => {
             id: 'id',
             executionResults: [{ error: 'error' }]
         };
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
 
         sandbox.mock(taskRepo).expects('abortOne').once().withArgs(INTERVAL).resolves(task);
         sandbox.mock(sskts.service.notification).expects('report2developers').once()
@@ -117,7 +118,7 @@ describe('execute()', () => {
             data: { datakey: 'dataValue' },
             status: sskts.factory.taskStatus.Running
         };
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
         const authClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
 
         sandbox.mock(TaskFunctionsService).expects(task.name).once().withArgs(task.data).returns(async () => Promise.resolve());
@@ -125,7 +126,7 @@ describe('execute()', () => {
 
         const result = await sskts.service.task.execute(<any>task)({
             taskRepo: taskRepo,
-            connection: sskts.mongoose.connection,
+            connection: mongoose.connection,
             pecorinoAuthClient: authClient
         });
 
@@ -140,14 +141,14 @@ describe('execute()', () => {
             data: { datakey: 'dataValue' },
             status: sskts.factory.taskStatus.Running
         };
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
         const authClient = new sskts.pecorinoapi.auth.ClientCredentials(<any>{});
 
         sandbox.mock(taskRepo).expects('pushExecutionResultById').once().withArgs(task.id, task.status).resolves();
 
         const result = await sskts.service.task.execute(<any>task)({
             taskRepo: taskRepo,
-            connection: sskts.mongoose.connection,
+            connection: mongoose.connection,
             pecorinoAuthClient: authClient
         });
 

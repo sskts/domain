@@ -3,6 +3,7 @@
  * 会員プログラムサービステスト
  */
 import { AWS } from '@cinerino/domain';
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as redis from 'redis-mock';
 import * as sinon from 'sinon';
@@ -31,9 +32,9 @@ describe('会員プログラム登録タスクを作成する', () => {
         };
         const seller = { name: {} };
         const task = {};
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const programMembershipRepo = new sskts.repository.ProgramMembership(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(programMembershipRepo).expects('search').once().resolves([programMembership]);
         sandbox.mock(taskRepo).expects('save').once().resolves(task);
@@ -58,15 +59,15 @@ describe('会員プログラムに登録する', () => {
 
     it('リポジトリが正常であれば登録できるはず', async () => {
         const creditCard = { cardSeq: 'cardSeq' };
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-        const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
+        const programMembershipRepo = new sskts.repository.ProgramMembership(mongoose.connection);
         const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([]);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves([]);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
         sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
         sandbox.mock(actionRepo).expects('complete').once().resolves({});
@@ -111,14 +112,14 @@ describe('会員プログラムに登録する', () => {
 
     it('リポジトリが正常であれば登録できて、ポイントを追加できるはず', async () => {
         const creditCard = { cardSeq: 'cardSeq' };
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-        const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
+        const programMembershipRepo = new sskts.repository.ProgramMembership(mongoose.connection);
         const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const depositService = new sskts.pecorinoapi.service.transaction.Deposit(<any>{});
         const fakeOwnershipInfo = [{
             typeOfGood: { accountNumber: '123' }
@@ -128,7 +129,7 @@ describe('会員プログラムに登録する', () => {
             agent: {}
         };
 
-        sandbox.mock(ownershipInfoRepo).expects('search').twice().resolves(fakeOwnershipInfo).onFirstCall().resolves([]);
+        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').twice().resolves(fakeOwnershipInfo).onFirstCall().resolves([]);
         sandbox.mock(actionRepo).expects('start').twice().resolves({});
         sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
         sandbox.mock(actionRepo).expects('complete').twice().resolves({});
@@ -175,21 +176,21 @@ describe('会員プログラムに登録する', () => {
 
     it('ポイントを追加する時、所有権が見つけなかったら、エラーとなるはず', async () => {
         // const creditCard = { cardSeq: 'cardSeq' };
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-        const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
+        const programMembershipRepo = new sskts.repository.ProgramMembership(mongoose.connection);
         const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const depositService = new sskts.pecorinoapi.service.transaction.Deposit(<any>{});
         const fakeTransaction = {
             seller: { name: {} },
             agent: {}
         };
 
-        sandbox.mock(ownershipInfoRepo).expects('search').twice().resolves([]);
+        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').twice().resolves([]);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
         sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
         sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
@@ -234,14 +235,14 @@ describe('会員プログラムに登録する', () => {
 
     it('ポイントを追加する時、エラーが発生すればエラーとなるはず', async () => {
         // const creditCard = { cardSeq: 'cardSeq' };
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-        const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
+        const programMembershipRepo = new sskts.repository.ProgramMembership(mongoose.connection);
         const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const depositService = new sskts.pecorinoapi.service.transaction.Deposit(<any>{});
         const fakeOwnershipInfo = [{
             typeOfGood: { accountNumber: '123' }
@@ -251,7 +252,7 @@ describe('会員プログラムに登録する', () => {
             agent: {}
         };
 
-        sandbox.mock(ownershipInfoRepo).expects('search').twice().resolves(fakeOwnershipInfo).onFirstCall().resolves([]);
+        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').twice().resolves(fakeOwnershipInfo).onFirstCall().resolves([]);
         sandbox.mock(actionRepo).expects('start').twice().resolves({});
         sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
         sandbox.mock(actionRepo).expects('giveUp').twice().resolves({});
@@ -298,15 +299,15 @@ describe('会員プログラムに登録する', () => {
         const ownershipInfo = {
             typeOfGood: { id: 'programMembershipId' }
         };
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-        const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
+        const programMembershipRepo = new sskts.repository.ProgramMembership(mongoose.connection);
         const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([ownershipInfo]);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves([ownershipInfo]);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.programMembership.register(<any>{
@@ -336,15 +337,15 @@ describe('会員プログラムに登録する', () => {
 
     it('注文プロセスでエラーが発生すればアクションを断念するはず', async () => {
         const startPlaceOrderError = new Error('startPlaceOrderError');
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-        const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
+        const programMembershipRepo = new sskts.repository.ProgramMembership(mongoose.connection);
         const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([]);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves([]);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
         sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
         sandbox.mock(sskts.service.transaction.placeOrderInProgress).expects('start').once()
@@ -379,15 +380,15 @@ describe('会員プログラムに登録する', () => {
     });
 
     it('クレジットカードが見つからなければアクションを断念するはず', async () => {
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
         const orderNumberRepo = new sskts.repository.OrderNumber(redisClient);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-        const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
+        const programMembershipRepo = new sskts.repository.ProgramMembership(mongoose.connection);
         const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([]);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves([]);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
         sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
         sandbox.mock(sskts.service.transaction.placeOrderInProgress).expects('start').once().returns(async () => Promise.resolve({}));
@@ -432,9 +433,9 @@ describe('会員プログラム登録解除タスクを作成する', () => {
     it('リポジトリが正常であればタスクを作成できるはず', async () => {
         const ownershipInfo = {};
         const task = {};
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
-        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([ownershipInfo]);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
+        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves([ownershipInfo]);
         sandbox.mock(taskRepo).expects('save').once().resolves(task);
 
         const result = await sskts.service.programMembership.createUnRegisterTask(<any>{
@@ -455,9 +456,9 @@ describe('会員プログラム登録解除', () => {
     });
 
     it('リポジトリが正常であればアクションを完了できるはず', async () => {
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
         sandbox.mock(taskRepo.taskModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves({});
@@ -481,9 +482,9 @@ describe('会員プログラム登録解除', () => {
 
     it('リポジトリでエラーが発生すればアクションを断念するはず', async () => {
         const findTaskError = new Error('findTaskError');
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
         sandbox.mock(taskRepo.taskModel).expects('findOneAndUpdate').once().chain('exec').rejects(findTaskError);
         sandbox.mock(actionRepo).expects('complete').never();
@@ -505,9 +506,9 @@ describe('会員プログラム登録解除', () => {
 
     it('パラメーターに所属会員プログラムがない場合、エラーとなるはず', async () => {
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
         sandbox.mock(taskRepo.taskModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves({});
@@ -534,9 +535,9 @@ describe('会員プログラム登録解除', () => {
 
     it('パラメーターにcognitoのusernameがない場合、エラーとなるはず', async () => {
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
         sandbox.mock(taskRepo.taskModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves({});
@@ -563,9 +564,9 @@ describe('会員プログラム登録解除', () => {
 
     it('リポジトリとAWS正常であればアクションを完了できるはず', async () => {
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
         sandbox.mock(taskRepo.taskModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves({});

@@ -216,12 +216,13 @@ export function transaction2report(params: {
                         let name = '';
                         let numItems = 1;
                         if (ticketedSeat !== undefined) {
+                            const coaTicketInfo = offer.reservedTicket.coaTicketInfo;
                             name = util.format(
                                 '%s %s',
                                 (offer.reservedTicket.ticketedSeat !== undefined)
                                     ? offer.reservedTicket.ticketedSeat.seatNumber
                                     : '',
-                                offer.reservedTicket.coaTicketInfo.ticketName
+                                (coaTicketInfo !== undefined) ? coaTicketInfo.ticketName : ''
                             );
                         }
                         if (offer.numSeats !== undefined) {
@@ -247,7 +248,7 @@ export function transaction2report(params: {
                         item = {
                             typeOf: offer.typeOf,
                             ticketToken: (ticket.ticketToken !== undefined) ? ticket.ticketToken : '',
-                            totalPrice: ticket.totalPrice,
+                            totalPrice: <number>ticket.totalPrice,
                             name: name,
                             numItems: numItems,
                             reservationStatus: reservationStatus,
@@ -261,7 +262,7 @@ export function transaction2report(params: {
                         item = {
                             typeOf: offer.typeOf,
                             ticketToken: '',
-                            totalPrice: orderItem.price,
+                            totalPrice: <number>orderItem.price,
                             name: offer.programName,
                             numItems: 1,
                             reservationStatus: '',

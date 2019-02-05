@@ -1,6 +1,7 @@
-import { mongoose } from '@cinerino/domain';
+import { repository } from '@cinerino/domain';
+// import * as mongoose from 'mongoose';
 
-import ownershipInfoModel from './mongoose/model/ownershipInfo';
+// import ownershipInfoModel from './mongoose/model/ownershipInfo';
 
 import * as factory from '../factory';
 
@@ -9,18 +10,12 @@ export type IOwnershipInfo<T extends factory.ownershipInfo.IGoodType> = factory.
 /**
  * 所有権リポジトリ
  */
-export class MongoRepository {
-    public readonly ownershipInfoModel: typeof ownershipInfoModel;
-
-    constructor(connection: mongoose.Connection) {
-        this.ownershipInfoModel = connection.model(ownershipInfoModel.modelName);
-    }
-
+export class MongoRepository extends repository.OwnershipInfo {
     /**
      * 所有権情報を保管する
      * @param ownershipInfo ownershipInfo object
      */
-    public async save(ownershipInfo: factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>) {
+    public async saveByIdentifier(ownershipInfo: factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>) {
         await this.ownershipInfoModel.findOneAndUpdate(
             {
                 identifier: ownershipInfo.identifier
@@ -32,8 +27,11 @@ export class MongoRepository {
 
     /**
      * 所有権を検索する
+     * @deprecated Use search
      */
-    public async search<T extends factory.ownershipInfo.IGoodType>(
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    public async search4cinemasunshine<T extends factory.ownershipInfo.IGoodType>(
         searchConditions: factory.ownershipInfo.ISearchConditions<T>
     ): Promise<IOwnershipInfo<T>[]> {
         const andConditions: any[] = [

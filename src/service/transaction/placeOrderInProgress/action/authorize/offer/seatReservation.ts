@@ -35,10 +35,9 @@ export type IActionAndTransactionOperation<T> = (repos: {
 // tslint:disable-next-line:max-func-body-length
 async function validateOffers(
     isMember: boolean,
-    individualScreeningEvent: factory.event.screeningEvent.IEvent,
+    screeningEvent: factory.event.screeningEvent.IEvent,
     offers: factory.offer.seatReservation.IOffer[]
 ): Promise<factory.offer.seatReservation.IOfferWithDetails[]> {
-    debug('individualScreeningEvent:', individualScreeningEvent);
     // 詳細情報ありの供給情報リストを初期化
     // 要求された各供給情報について、バリデーションをかけながら、このリストに追加していく
     const offersWithDetails: factory.offer.seatReservation.IOfferWithDetails[] = [];
@@ -46,13 +45,16 @@ async function validateOffers(
     // 供給情報が適切かどうか確認
     const availableSalesTickets: COA.services.reserve.ISalesTicketResult[] = [];
 
+    // 必ず定義されている前提
+    const coaInfo = <factory.event.screeningEvent.ICOAInfo>screeningEvent.coaInfo;
+
     // COA券種取得(非会員)
     const salesTickets4nonMember = await COA.services.reserve.salesTicket({
-        theaterCode: individualScreeningEvent.coaInfo.theaterCode,
-        dateJouei: individualScreeningEvent.coaInfo.dateJouei,
-        titleCode: individualScreeningEvent.coaInfo.titleCode,
-        titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum,
-        timeBegin: individualScreeningEvent.coaInfo.timeBegin,
+        theaterCode: coaInfo.theaterCode,
+        dateJouei: coaInfo.dateJouei,
+        titleCode: coaInfo.titleCode,
+        titleBranchNum: coaInfo.titleBranchNum,
+        timeBegin: coaInfo.timeBegin,
         flgMember: COA.services.reserve.FlgMember.NonMember
     });
     availableSalesTickets.push(...salesTickets4nonMember);
@@ -60,11 +62,11 @@ async function validateOffers(
     // COA券種取得(会員)
     if (isMember) {
         const salesTickets4member = await COA.services.reserve.salesTicket({
-            theaterCode: individualScreeningEvent.coaInfo.theaterCode,
-            dateJouei: individualScreeningEvent.coaInfo.dateJouei,
-            titleCode: individualScreeningEvent.coaInfo.titleCode,
-            titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum,
-            timeBegin: individualScreeningEvent.coaInfo.timeBegin,
+            theaterCode: coaInfo.theaterCode,
+            dateJouei: coaInfo.dateJouei,
+            titleCode: coaInfo.titleCode,
+            titleBranchNum: coaInfo.titleBranchNum,
+            timeBegin: coaInfo.timeBegin,
             flgMember: COA.services.reserve.FlgMember.Member
         });
         availableSalesTickets.push(...salesTickets4member);
@@ -88,18 +90,18 @@ async function validateOffers(
 
             try {
                 debug('finding mvtkTicket...', offer.ticketInfo.ticketCode, {
-                    theaterCode: individualScreeningEvent.coaInfo.theaterCode,
+                    theaterCode: coaInfo.theaterCode,
                     kbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
                     kbnMaeuriken: offer.ticketInfo.mvtkKbnMaeuriken,
                     kbnKensyu: offer.ticketInfo.mvtkKbnKensyu,
                     salesPrice: offer.ticketInfo.mvtkSalesPrice,
                     appPrice: offer.ticketInfo.mvtkAppPrice,
                     kbnEisyahousiki: offer.ticketInfo.kbnEisyahousiki,
-                    titleCode: individualScreeningEvent.coaInfo.titleCode,
-                    titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum
+                    titleCode: coaInfo.titleCode,
+                    titleBranchNum: coaInfo.titleBranchNum
                 });
                 const coaTickets = await COA.services.master.ticket({
-                    theaterCode: individualScreeningEvent.coaInfo.theaterCode
+                    theaterCode: coaInfo.theaterCode
                 });
                 coaTicket = coaTickets.find((t) => t.ticketCode === offer.ticketInfo.ticketCode);
                 // tslint:disable-next-line:no-single-line-block-comment
@@ -174,7 +176,7 @@ async function validateOffers(
             const includeGlasses = (offer.ticketInfo.addGlasses > 0);
             if (includeGlasses) {
                 offerWithDetails.ticketInfo.ticketName = `${availableSalesTicket.ticketName}メガネ込み`;
-                offerWithDetails.price += availableSalesTicket.addGlasses;
+                (<number>offerWithDetails.price) += availableSalesTicket.addGlasses;
                 offerWithDetails.ticketInfo.salePrice += availableSalesTicket.addGlasses;
                 offerWithDetails.ticketInfo.addGlasses = availableSalesTicket.addGlasses;
             }
@@ -186,27 +188,27 @@ async function validateOffers(
             let availableSalesTicket: COA.services.master.IMvtkTicketcodeResult;
             try {
                 debug('finding mvtkTicket...', offer.ticketInfo.ticketCode, {
-                    theaterCode: individualScreeningEvent.coaInfo.theaterCode,
+                    theaterCode: coaInfo.theaterCode,
                     kbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
                     kbnMaeuriken: offer.ticketInfo.mvtkKbnMaeuriken,
                     kbnKensyu: offer.ticketInfo.mvtkKbnKensyu,
                     salesPrice: offer.ticketInfo.mvtkSalesPrice,
                     appPrice: offer.ticketInfo.mvtkAppPrice,
                     kbnEisyahousiki: offer.ticketInfo.kbnEisyahousiki,
-                    titleCode: individualScreeningEvent.coaInfo.titleCode,
-                    titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum
+                    titleCode: coaInfo.titleCode,
+                    titleBranchNum: coaInfo.titleBranchNum
                 });
                 availableSalesTicket = await COA.services.master.mvtkTicketcode({
-                    theaterCode: individualScreeningEvent.coaInfo.theaterCode,
+                    theaterCode: coaInfo.theaterCode,
                     kbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
                     kbnMaeuriken: offer.ticketInfo.mvtkKbnMaeuriken,
                     kbnKensyu: offer.ticketInfo.mvtkKbnKensyu,
                     salesPrice: offer.ticketInfo.mvtkSalesPrice,
                     appPrice: offer.ticketInfo.mvtkAppPrice,
                     kbnEisyahousiki: offer.ticketInfo.kbnEisyahousiki,
-                    titleCode: individualScreeningEvent.coaInfo.titleCode,
-                    titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum,
-                    dateJouei: individualScreeningEvent.coaInfo.dateJouei
+                    titleCode: coaInfo.titleCode,
+                    titleBranchNum: coaInfo.titleBranchNum,
+                    dateJouei: coaInfo.dateJouei
                 });
             } catch (error) {
                 // COAサービスエラーの場合ハンドリング
@@ -268,7 +270,7 @@ async function validateOffers(
             const includeGlasses = (offer.ticketInfo.addGlasses > 0);
             if (includeGlasses) {
                 offerWithDetails.ticketInfo.ticketName = `${availableSalesTicket.ticketName}メガネ込み`;
-                offerWithDetails.price += availableSalesTicket.addPriceGlasses;
+                (<number>offerWithDetails.price) += availableSalesTicket.addPriceGlasses;
                 offerWithDetails.ticketInfo.salePrice += availableSalesTicket.addPriceGlasses;
                 offerWithDetails.ticketInfo.addGlasses = availableSalesTicket.addPriceGlasses;
             }
@@ -336,7 +338,7 @@ async function validateOffers(
             const includeGlasses = (offer.ticketInfo.addGlasses > 0);
             if (includeGlasses) {
                 offerWithDetails.ticketInfo.ticketName = `${availableSalesTicket.ticketName}メガネ込み`;
-                offerWithDetails.price += availableSalesTicket.addGlasses;
+                (<number>offerWithDetails.price) += availableSalesTicket.addGlasses;
                 offerWithDetails.ticketInfo.salePrice += availableSalesTicket.addGlasses;
                 offerWithDetails.ticketInfo.addGlasses = availableSalesTicket.addGlasses;
             }
@@ -350,10 +352,9 @@ async function validateOffers(
 
 /**
  * 供給情報から承認アクションの価格を導き出す
- * @param offers 供給情報
  */
 function offers2resultPrice(offers: factory.offer.seatReservation.IOfferWithDetails[]) {
-    const price = offers.reduce((a, b) => a + b.price, 0);
+    const price = offers.reduce((a, b) => a + (<number>b.price), 0);
     const pecorinoAmount = offers.reduce((a, b) => a + b.ticketInfo.usePoint, 0);
 
     return { price, pecorinoAmount };
@@ -362,11 +363,8 @@ function offers2resultPrice(offers: factory.offer.seatReservation.IOfferWithDeta
 /**
  * 座席を仮予約する
  * 承認アクションオブジェクトが返却されます。
- * @param agentId 取引主体ID
- * @param transactionId 取引ID
- * @param eventIdentifier イベント識別子
- * @param offers 供給情報
  */
+// tslint:disable-next-line:max-func-body-length
 export function create(params: {
     agentId: string;
     transactionId: string;
@@ -388,10 +386,10 @@ export function create(params: {
         }
 
         // 上映イベントを取得
-        const individualScreeningEvent = await repos.event.findIndividualScreeningEventByIdentifier(params.eventIdentifier);
+        const screeningEvent = await repos.event.findIndividualScreeningEventByIdentifier(params.eventIdentifier);
 
         // 供給情報の有効性を確認
-        const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, params.offers);
+        const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), screeningEvent, params.offers);
 
         // 承認アクションを開始
         const actionAttributes: factory.action.authorize.offer.seatReservation.IAttributes = {
@@ -399,7 +397,7 @@ export function create(params: {
             object: {
                 typeOf: factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
                 offers: offersWithDetails,
-                individualScreeningEvent: individualScreeningEvent
+                individualScreeningEvent: screeningEvent
             },
             agent: transaction.seller,
             recipient: transaction.agent,
@@ -407,14 +405,17 @@ export function create(params: {
         };
         const action = await repos.action.start(actionAttributes);
 
+        // 必ず定義されている前提
+        const coaInfo = <factory.event.screeningEvent.ICOAInfo>screeningEvent.coaInfo;
+
         // COA仮予約
         const updTmpReserveSeatArgs = {
-            theaterCode: individualScreeningEvent.coaInfo.theaterCode,
-            dateJouei: individualScreeningEvent.coaInfo.dateJouei,
-            titleCode: individualScreeningEvent.coaInfo.titleCode,
-            titleBranchNum: individualScreeningEvent.coaInfo.titleBranchNum,
-            timeBegin: individualScreeningEvent.coaInfo.timeBegin,
-            screenCode: individualScreeningEvent.coaInfo.screenCode,
+            theaterCode: coaInfo.theaterCode,
+            dateJouei: coaInfo.dateJouei,
+            titleCode: coaInfo.titleCode,
+            titleBranchNum: coaInfo.titleBranchNum,
+            timeBegin: coaInfo.timeBegin,
+            screenCode: coaInfo.screenCode,
             listSeat: params.offers.map((offer) => {
                 return {
                     seatSection: offer.seatSection,

@@ -1,4 +1,4 @@
-import { mongoose } from '@cinerino/domain';
+import * as mongoose from 'mongoose';
 
 import MultilingualStringSchemaType from '../schemaTypes/multilingualString';
 

@@ -40,7 +40,7 @@ export function exportTasks(status: factory.transactionStatusType) {
 /**
  * ID指定で取引のタスク出力
  */
-export function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask<factory.taskName>[]> {
+export function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask<any>[]> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         task: TaskRepo;

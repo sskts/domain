@@ -3,6 +3,7 @@
  * place repository test
  */
 import { } from 'mocha';
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 // tslint:disable-next-line:no-require-imports no-var-requires
@@ -23,7 +24,7 @@ describe('saveMovieTheater()', () => {
     it('MongoDBの状態が正常であれば、保管できるはず', async () => {
         const movieTheater = {};
 
-        const repository = new sskts.repository.Place(sskts.mongoose.connection);
+        const repository = new sskts.repository.Place(mongoose.connection);
 
         sandbox.mock(repository.placeModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves(new repository.placeModel());
@@ -44,7 +45,7 @@ describe('searchMovieTheaters()', () => {
         const conditions = {};
         const numberOfResults = 99;
 
-        const repository = new sskts.repository.Place(sskts.mongoose.connection);
+        const repository = new sskts.repository.Place(mongoose.connection);
         const docs = Array.from(Array(numberOfResults)).map(() => new repository.placeModel());
 
         sandbox.mock(repository.placeModel).expects('find').once()
@@ -66,7 +67,7 @@ describe('findMovieTheaterByBranchCode()', () => {
     it('MongoDBの状態が正常であれば、オブジェクトが返却されるはず', async () => {
         const branchCode = 'branchCode';
 
-        const repository = new sskts.repository.Place(sskts.mongoose.connection);
+        const repository = new sskts.repository.Place(mongoose.connection);
 
         sandbox.mock(repository.placeModel).expects('findOne').once()
             .chain('exec').resolves(new repository.placeModel());
@@ -80,7 +81,7 @@ describe('findMovieTheaterByBranchCode()', () => {
     it('存在しなければ、NotFoundエラーとなるはず', async () => {
         const branchCode = 'branchCode';
 
-        const repository = new sskts.repository.Place(sskts.mongoose.connection);
+        const repository = new sskts.repository.Place(mongoose.connection);
 
         sandbox.mock(repository.placeModel).expects('findOne').once()
             .chain('exec').resolves(null);

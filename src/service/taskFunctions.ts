@@ -2,7 +2,8 @@
  * タスクファンクションサービス
  * タスク名ごとに、実行するファンクションをひとつずつ定義しています
  */
-import { mongoose, pecorinoapi, service } from '@cinerino/domain';
+import {  pecorinoapi, service } from '@cinerino/domain';
+import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
 import { MongoRepository as ActionRepo } from '../repo/action';

@@ -3,6 +3,7 @@
  * taskFunctions test
  */
 import { AWS } from '@cinerino/domain';
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as redis from 'redis-mock';
 import * as sinon from 'sinon';
@@ -35,7 +36,7 @@ describe('TaskFunctionsService.cancelSeatReservation()', () => {
         sandbox.mock(sskts.service.stock).expects('cancelSeatReservationAuth').once()
             .returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.cancelSeatReservation(<any>data)({ connection: sskts.mongoose.connection });
+        const result = await TaskFunctionsService.cancelSeatReservation(<any>data)({ connection: mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -55,7 +56,7 @@ describe('TaskFunctionsService.cancelCreditCard()', () => {
         sandbox.mock(sskts.service.payment.creditCard).expects('cancelCreditCardAuth').once()
             .returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.cancelCreditCard(<any>data)({ connection: sskts.mongoose.connection });
+        const result = await TaskFunctionsService.cancelCreditCard(<any>data)({ connection: mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -72,7 +73,7 @@ describe('TaskFunctionsService.cancelAccount()', () => {
         sandbox.mock(sskts.service.payment.account).expects('cancelAccountAuth').once().returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.cancelAccount(<any>data)({
-            connection: sskts.mongoose.connection,
+            connection: mongoose.connection,
             pecorinoAuthClient: pecorinoAuthClient,
             pecorinoEndpoint: 'xxxxx'
         });
@@ -91,7 +92,7 @@ describe('TaskFunctionsService.cancelPointAward()', () => {
         sandbox.mock(sskts.service.delivery).expects('cancelPointAward').once().returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.cancelPointAward(<any>data)({
-            connection: sskts.mongoose.connection,
+            connection: mongoose.connection,
             pecorinoAuthClient: pecorinoAuthClient
         });
         assert.equal(result, undefined);
@@ -112,7 +113,7 @@ describe('TaskFunctionsService.settleCreditCard()', () => {
             .once()
             .returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.payCreditCard(<any>data)({ connection: sskts.mongoose.connection });
+        const result = await TaskFunctionsService.payCreditCard(<any>data)({ connection: mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -132,7 +133,7 @@ describe('TaskFunctionsService.createOrder()', () => {
         sandbox.mock(sskts.service.order).expects('placeOrder').once()
             .returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.placeOrder(<any>data)({ connection: sskts.mongoose.connection });
+        const result = await TaskFunctionsService.placeOrder(<any>data)({ connection: mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -153,7 +154,7 @@ describe('TaskFunctionsService.sendEmailMessage()', () => {
         sandbox.mock(sskts.service.notification).expects('sendEmailMessage').once()
             .returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.sendEmailMessage(<any>data)({ connection: sskts.mongoose.connection });
+        const result = await TaskFunctionsService.sendEmailMessage(<any>data)({ connection: mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -173,7 +174,7 @@ describe('TaskFunctionsService.refundCreditCard()', () => {
         sandbox.mock(sskts.service.payment.creditCard).expects('refundCreditCard').once()
             .returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.refundCreditCard(<any>data)({ connection: sskts.mongoose.connection });
+        const result = await TaskFunctionsService.refundCreditCard(<any>data)({ connection: mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -190,7 +191,7 @@ describe('TaskFunctionsService.refundAccount()', () => {
         sandbox.mock(sskts.service.payment.account).expects('refundAccount').once().returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.refundAccount(<any>data)({
-            connection: sskts.mongoose.connection,
+            connection: mongoose.connection,
             pecorinoAuthClient: pecorinoAuthClient,
             pecorinoEndpoint: 'xxxxx'
         });
@@ -212,7 +213,7 @@ describe('TaskFunctionsService.returnOrder()', () => {
         sandbox.mock(sskts.service.order).expects('cancelReservations').once()
             .returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.returnOrder(<any>data)({ connection: sskts.mongoose.connection });
+        const result = await TaskFunctionsService.returnOrder(<any>data)({ connection: mongoose.connection });
 
         assert.equal(result, undefined);
         sandbox.verify();
@@ -233,7 +234,7 @@ describe('TaskFunctionsService.sendOrder()', () => {
             .returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.sendOrder(<any>data)({
-            connection: sskts.mongoose.connection,
+            connection: mongoose.connection,
             redisClient: redis.createClient()
         });
 
@@ -252,7 +253,7 @@ describe('TaskFunctionsService.payAccount()', () => {
         sandbox.mock(sskts.service.payment.account).expects('payAccount').once().returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.payAccount(<any>data)({
-            connection: sskts.mongoose.connection,
+            connection: mongoose.connection,
             pecorinoAuthClient: pecorinoAuthClient,
             pecorinoEndpoint: 'xxxxx'
         });
@@ -269,7 +270,7 @@ describe('TaskFunctionsService.payAccount()', () => {
         sandbox.mock(sskts.service.payment.account).expects('payAccount').never();
 
         const result = await TaskFunctionsService.payAccount(<any>data)({
-            connection: sskts.mongoose.connection
+            connection: mongoose.connection
         }).catch((err) => err);
 
         assert(result instanceof Error);
@@ -287,7 +288,7 @@ describe('TaskFunctionsService.givePointAward()', () => {
         sandbox.mock(sskts.service.delivery).expects('givePointAward').once().returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.givePointAward(<any>data)({
-            connection: sskts.mongoose.connection,
+            connection: mongoose.connection,
             pecorinoAuthClient: pecorinoAuthClient
         });
         assert.equal(result, undefined);
@@ -305,7 +306,7 @@ describe('TaskFunctionsService.returnPointAward()', () => {
         sandbox.mock(sskts.service.delivery).expects('returnPointAward').once().returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.returnPointAward(<any>data)({
-            connection: sskts.mongoose.connection,
+            connection: mongoose.connection,
             pecorinoAuthClient: pecorinoAuthClient
         });
         assert.equal(result, undefined);
@@ -323,7 +324,7 @@ describe('TaskFunctionsService.registerProgramMembership()', () => {
         sandbox.mock(sskts.service.programMembership).expects('register').once().returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.registerProgramMembership(<any>data)({
-            connection: sskts.mongoose.connection,
+            connection: mongoose.connection,
             redisClient: redisClient,
             cognitoIdentityServiceProvider: cognitoIdentityServiceProvider
         });
@@ -342,7 +343,7 @@ describe('TaskFunctionsService.unRegisterProgramMembership()', () => {
         sandbox.mock(sskts.service.programMembership).expects('unRegister').once().returns(async () => Promise.resolve());
 
         const result = await TaskFunctionsService.unRegisterProgramMembership(<any>data)({
-            connection: sskts.mongoose.connection
+            connection: mongoose.connection
         });
         assert.equal(result, undefined);
         sandbox.verify();
@@ -359,7 +360,7 @@ describe('TaskFunctionsService.triggerWebhook()', () => {
         sandbox.mock(sskts.service.notification).expects('triggerWebhook').once()
             .returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.triggerWebhook(<any>data)({ connection: sskts.mongoose.connection });
+        const result = await TaskFunctionsService.triggerWebhook(<any>data)({ connection: mongoose.connection });
         assert.equal(result, undefined);
         sandbox.verify();
     });
@@ -375,7 +376,7 @@ describe('TaskFunctionsService.importScreeningEvents()', () => {
         sandbox.mock(sskts.service.masterSync).expects('importScreeningEvents').once()
             .returns(async () => Promise.resolve());
 
-        const result = await TaskFunctionsService.importScreeningEvents(<any>data)({ connection: sskts.mongoose.connection });
+        const result = await TaskFunctionsService.importScreeningEvents(<any>data)({ connection: mongoose.connection });
         assert.equal(result, undefined);
         sandbox.verify();
     });

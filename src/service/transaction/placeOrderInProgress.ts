@@ -29,6 +29,12 @@ export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (repos:
     seller: SellerRepo;
     transaction: TransactionRepo;
 }) => Promise<T>;
+export type IConfirmOperation<T> = (repos: {
+    action: ActionRepo;
+    transaction: TransactionRepo;
+    orderNumber: OrderNumberRepo;
+    seller: SellerRepo;
+}) => Promise<T>;
 export type IAuthorizeAnyPaymentResult = factory.action.authorize.paymentMethod.any.IResult<factory.paymentMethodType>;
 export type ISeller = factory.seller.IOrganization<factory.seller.IAttributes<factory.organizationType>>;
 
@@ -281,7 +287,7 @@ export function confirm(params: {
      * 注文日時
      */
     orderDate: Date;
-}) {
+}): IConfirmOperation<factory.order.IOrder> {
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
@@ -584,17 +590,20 @@ export function createOrderFromTransaction(params: {
                 throw new factory.errors.Argument('offers', '要求された供給情報と仮予約結果が一致しません。');
             }
 
+            // 必ず定義されている前提
+            const coaInfo = <factory.event.screeningEvent.ICOAInfo>screeningEvent.coaInfo;
+
             // チケットトークン(QRコード文字列)を作成
             const ticketToken = [
-                screeningEvent.coaInfo.theaterCode,
-                screeningEvent.coaInfo.dateJouei,
+                coaInfo.theaterCode,
+                coaInfo.dateJouei,
                 // tslint:disable-next-line:no-magic-numbers
                 (`00000000${updTmpReserveSeatResult.tmpReserveNum}`).slice(-8),
                 // tslint:disable-next-line:no-magic-numbers
                 (`000${index + 1}`).slice(-3)
             ].join('');
 
-            const eventReservation: factory.reservation.event.IEventReservation<factory.event.screeningEvent.IEvent> = {
+            const eventReservation: factory.reservation.event.IReservation<factory.event.screeningEvent.IEvent> = {
                 typeOf: factory.reservationType.EventReservation,
                 id: `${updTmpReserveSeatResult.tmpReserveNum}-${index.toString()}`,
                 checkedIn: false,
@@ -602,7 +611,7 @@ export function createOrderFromTransaction(params: {
                 additionalTicketText: '',
                 modifiedTime: params.orderDate,
                 numSeats: 1,
-                price: requestedOffer.price,
+                price: <number>requestedOffer.price,
                 priceCurrency: requestedOffer.priceCurrency,
                 reservationFor: screeningEvent,
                 reservationNumber: `${updTmpReserveSeatResult.tmpReserveNum}`,
@@ -615,7 +624,7 @@ export function createOrderFromTransaction(params: {
                         typeOf: screeningEvent.superEvent.location.typeOf,
                         name: screeningEvent.superEvent.location.name.ja
                     },
-                    totalPrice: requestedOffer.price,
+                    totalPrice: <number>requestedOffer.price,
                     priceCurrency: requestedOffer.priceCurrency,
                     ticketedSeat: {
                         typeOf: factory.placeType.Seat,
@@ -649,7 +658,7 @@ export function createOrderFromTransaction(params: {
             return {
                 typeOf: <factory.offer.OfferType>'Offer',
                 itemOffered: eventReservation,
-                price: eventReservation.price,
+                price: <number>eventReservation.price,
                 priceCurrency: factory.priceCurrency.JPY,
                 seller: {
                     typeOf: params.seller.typeOf,
@@ -752,7 +761,7 @@ export function createOrderFromTransaction(params: {
         typeOf: 'Order',
         seller: seller,
         customer: customer,
-        price: acceptedOffers.reduce((a, b) => a + b.price, 0) - discounts.reduce((a, b) => a + b.discount, 0),
+        price: acceptedOffers.reduce((a, b) => a + (<number>b.price), 0) - discounts.reduce((a, b) => a + b.discount, 0),
         priceCurrency: factory.priceCurrency.JPY,
         paymentMethods: paymentMethods,
         discounts: discounts,
@@ -793,14 +802,15 @@ export async function createEmailMessageFromTransaction(params: {
                     workPerformedName: event.workPerformed.name,
                     screenName: event.location.name.ja,
                     reservedSeats: params.order.acceptedOffers.map((o) => {
-                        const reservation = (<factory.reservation.event.IEventReservation<any>>o.itemOffered);
+                        const reservation = (<factory.reservation.event.IReservation<any>>o.itemOffered);
                         const ticketedSeat = reservation.reservedTicket.ticketedSeat;
+                        const coaTicketInfo = reservation.reservedTicket.coaTicketInfo;
 
                         return util.format(
                             '%s %s ￥%s',
                             (ticketedSeat !== undefined) ? ticketedSeat.seatNumber : '',
-                            reservation.reservedTicket.coaTicketInfo.ticketName,
-                            reservation.reservedTicket.coaTicketInfo.salePrice
+                            (coaTicketInfo !== undefined) ? coaTicketInfo.ticketName : '',
+                            (coaTicketInfo !== undefined) ? coaTicketInfo.salePrice : ''
                         );
                     }).join('\n'),
                     price: params.order.price,
@@ -985,9 +995,13 @@ export async function createPotentialActionsFromTransaction(params: {
                 listTicket: params.order.acceptedOffers
                     .filter((offer) => offer.itemOffered.typeOf === factory.reservationType.EventReservation)
                     .map((offer) => {
-                        const reservation = <factory.reservation.event.IEventReservation<any>>offer.itemOffered;
+                        const reservation = <factory.reservation.event.IReservation<any>>offer.itemOffered;
+                        const coaTicketInfo = reservation.reservedTicket.coaTicketInfo;
+                        if (coaTicketInfo === undefined) {
+                            throw new factory.errors.Argument('Transaction', 'coaTicketInfo undefined in accepted offers');
+                        }
 
-                        return reservation.reservedTicket.coaTicketInfo;
+                        return coaTicketInfo;
                     })
             };
 

@@ -19,7 +19,7 @@ before(() => {
     sandbox = sinon.createSandbox();
 });
 
-describe('OwnershipInfoRepo.save()', () => {
+describe('OwnershipInfoRepo.saveByIdentifier()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -34,31 +34,9 @@ describe('OwnershipInfoRepo.save()', () => {
             .chain('exec')
             .resolves(new repository.ownershipInfoModel());
 
-        const result = await repository.save(<any>ownershipInfo);
+        const result = await repository.saveByIdentifier(<any>ownershipInfo);
 
         assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
-
-describe('所有権検索', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('MongoDBの状態が正常であれば、配列を返すはず', async () => {
-        const searchConditions = {
-            identifier: 'identifier',
-            goodType: factory.reservationType.EventReservation,
-            ownedBy: '',
-            ownedAt: new Date()
-        };
-        const repository = new OwnershipInfoRepo(mongoose.connection);
-        sandbox.mock(repository.ownershipInfoModel).expects('find').once()
-            .chain('exec').resolves([new repository.ownershipInfoModel()]);
-
-        const result = await repository.search(searchConditions);
-        assert(Array.isArray(result));
         sandbox.verify();
     });
 });

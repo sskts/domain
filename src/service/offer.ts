@@ -21,7 +21,7 @@ export type IEventOperation<T> = (repos: {
  */
 export function searchIndividualScreeningEvents(
     searchConditions: factory.event.screeningEvent.ISearchConditions
-): IEventOperation<factory.event.screeningEvent.IEventWithOffer[]> {
+): IEventOperation<factory.event.screeningEvent.IEvent[]> {
     return async (repos: {
         event: EventRepository;
         itemAvailability?: ScreeningEventItemAvailabilityRepo;
@@ -30,8 +30,11 @@ export function searchIndividualScreeningEvents(
         const events = await repos.event.searchIndividualScreeningEvents(searchConditions);
 
         return Promise.all(events.map(async (event) => {
+            // 必ず定義されている前提
+            const coaInfo = <factory.event.screeningEvent.ICOAInfo>event.coaInfo;
+
             // 空席状況情報を追加
-            const offer: factory.event.screeningEvent.IOffer = {
+            const offer: factory.event.screeningEvent.IOffer4cinemasunshine = {
                 typeOf: 'Offer',
                 availability: null,
                 url: ''
@@ -39,7 +42,7 @@ export function searchIndividualScreeningEvents(
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
             if (repos.itemAvailability !== undefined) {
-                offer.availability = await repos.itemAvailability.findOne(event.coaInfo.dateJouei, event.identifier);
+                offer.availability = await repos.itemAvailability.findOne(coaInfo.dateJouei, event.identifier);
             }
 
             return { ...event, ...{ offer: offer } };
@@ -52,15 +55,18 @@ export function searchIndividualScreeningEvents(
  */
 export function findIndividualScreeningEventByIdentifier(
     identifier: string
-): IEventOperation<factory.event.screeningEvent.IEventWithOffer> {
+): IEventOperation<factory.event.screeningEvent.IEvent> {
     return async (repos: {
         event: EventRepository;
         itemAvailability?: ScreeningEventItemAvailabilityRepo;
     }) => {
         const event = await repos.event.findIndividualScreeningEventByIdentifier(identifier);
 
+        // 必ず定義されている前提
+        const coaInfo = <factory.event.screeningEvent.ICOAInfo>event.coaInfo;
+
         // add item availability info
-        const offer: factory.event.screeningEvent.IOffer = {
+        const offer: factory.event.screeningEvent.IOffer4cinemasunshine = {
             typeOf: 'Offer',
             availability: null,
             url: ''
@@ -68,7 +74,7 @@ export function findIndividualScreeningEventByIdentifier(
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
         if (repos.itemAvailability !== undefined) {
-            offer.availability = await repos.itemAvailability.findOne(event.coaInfo.dateJouei, event.identifier);
+            offer.availability = await repos.itemAvailability.findOne(coaInfo.dateJouei, event.identifier);
         }
 
         return { ...event, ...{ offer: offer } };

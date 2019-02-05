@@ -2,6 +2,7 @@
 /**
  * 注文サービステスト
  */
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../index';
@@ -57,11 +58,11 @@ describe('cancelReservations()', () => {
         const action = { id: 'actionId', typeOf: returnOrderTransaction.potentialActions.returnOrder.typeOf };
         const stateReserveResult = {};
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const orderRepo = new sskts.repository.Order(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
 
         sandbox.mock(transactionRepo)
             .expects('search')
@@ -152,11 +153,11 @@ describe('cancelReservations()', () => {
         const action = { id: 'actionId', typeOf: returnOrderTransaction.potentialActions.returnOrder.typeOf };
         const stateReserveResult = new Error('stateReserveError');
 
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const orderRepo = new sskts.repository.Order(mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
 
         sandbox.mock(transactionRepo)
             .expects('search')
