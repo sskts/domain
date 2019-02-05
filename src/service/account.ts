@@ -2,7 +2,7 @@
  * ポイント口座サービス
  * 口座の保管先はPecorinoサービスです。
  */
-import * as pecorinoapi from '@pecorino/api-nodejs-client';
+import { pecorinoapi } from '@cinerino/domain';
 // import * as createDebug from 'debug';
 import * as moment from 'moment';
 
@@ -20,7 +20,7 @@ export function open(params: {
 }) {
     return async (repos: {
         /**
-         * 口座番号リポジトリー
+         * 口座番号リポジトリ
          */
         accountNumber: AccountNumberRepo;
         /**

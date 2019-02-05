@@ -1,22 +1,21 @@
 /**
  * 会員プログラムサービス
  */
+import { pecorinoapi, service } from '@cinerino/domain';
 import * as GMO from '@motionpicture/gmo-service';
-import * as pecorinoapi from '@pecorino/api-nodejs-client';
 import * as createDebug from 'debug';
 import * as moment from 'moment-timezone';
 import * as util from 'util';
 
-import * as CreditCardService from './person/creditCard';
 import * as PlaceOrderService from './transaction/placeOrderInProgress';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../repo/action/registerProgramMembershipInProgress';
 import { RedisRepository as OrderNumberRepo } from '../repo/orderNumber';
-import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
 import { CognitoRepository as PersonRepo } from '../repo/person';
 import { MongoRepository as ProgramMembershipRepo } from '../repo/programMembership';
+import { MongoRepository as SellerRepo } from '../repo/seller';
 import { MongoRepository as TaskRepo } from '../repo/task';
 import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
@@ -26,8 +25,8 @@ import * as factory from '../factory';
 const debug = createDebug('sskts-domain:service:programMembership');
 
 export type ICreateRegisterTaskOperation<T> = (repos: {
-    organization: OrganizationRepo;
     programMembership: ProgramMembershipRepo;
+    seller: SellerRepo;
     task: TaskRepo;
 }) => Promise<T>;
 export type ICreateUnRegisterTaskOperation<T> = (repos: {
@@ -38,11 +37,11 @@ export type ICreateUnRegisterTaskOperation<T> = (repos: {
 export type IRegisterOperation<T> = (repos: {
     action: ActionRepo;
     orderNumber: OrderNumberRepo;
-    organization: OrganizationRepo;
     ownershipInfo: OwnershipInfoRepo;
     person: PersonRepo;
     programMembership: ProgramMembershipRepo;
     registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
+    seller: SellerRepo;
     transaction: TransactionRepo;
     depositService?: pecorinoapi.service.transaction.Deposit;
 }) => Promise<T>;
@@ -74,8 +73,8 @@ export function createRegisterTask(params: {
     offerIdentifier: string;
 }): ICreateRegisterTaskOperation<factory.task.ITask<factory.taskName.RegisterProgramMembership>> {
     return async (repos: {
-        organization: OrganizationRepo;
         programMembership: ProgramMembershipRepo;
+        seller: SellerRepo;
         task: TaskRepo;
     }) => {
         const now = new Date();
@@ -97,7 +96,15 @@ export function createRegisterTask(params: {
         if (offer === undefined) {
             throw new factory.errors.NotFound('Offer');
         }
-        const seller = await repos.organization.findById(params.seller.typeOf, params.seller.id);
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (offer.price === undefined) {
+            throw new factory.errors.NotFound('Offer Price undefined');
+        }
+
+        const seller = await repos.seller.findById({
+            id: params.seller.id
+        });
         // 会員プログラムのホスト組織確定(この組織が決済対象となる)
         programMembership.hostingOrganization = {
             id: seller.id,
@@ -110,6 +117,22 @@ export function createRegisterTask(params: {
             url: seller.url
         };
 
+        const itemOffered = {
+            ...programMembership,
+            offers: programMembership.offers.map((o) => {
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore if */
+                if (o.price === undefined) {
+                    throw new factory.errors.NotFound('Offer Price undefined');
+                }
+
+                return {
+                    ...o,
+                    price: o.price
+                };
+            })
+        };
+
         // 受け入れれたオファーオブジェクトを作成
         const acceptedOffer: factory.order.IAcceptedOffer<factory.programMembership.IProgramMembership> = {
             typeOf: 'Offer',
@@ -117,7 +140,7 @@ export function createRegisterTask(params: {
             price: offer.price,
             priceCurrency: offer.priceCurrency,
             eligibleDuration: offer.eligibleDuration,
-            itemOffered: programMembership,
+            itemOffered: itemOffered,
             seller: {
                 typeOf: seller.typeOf,
                 name: seller.name.ja
@@ -131,12 +154,11 @@ export function createRegisterTask(params: {
             // potentialActions?: any;
         };
         // 会員プログラム登録タスクを作成する
-        const taskAttributes: factory.task.registerProgramMembership.IAttributes = {
+        const taskAttributes: factory.task.IAttributes<factory.taskName.RegisterProgramMembership> = {
             name: factory.taskName.RegisterProgramMembership,
             status: factory.taskStatus.Ready,
             runsAt: now,
             remainingNumberOfTries: 10,
-            lastTriedAt: null,
             numberOfTried: 0,
             executionResults: [],
             data: registerActionAttributes
@@ -155,11 +177,11 @@ export function register(
     return async (repos: {
         action: ActionRepo;
         orderNumber: OrderNumberRepo;
-        organization: OrganizationRepo;
         ownershipInfo: OwnershipInfoRepo;
         person: PersonRepo;
         programMembership: ProgramMembershipRepo;
         registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
+        seller: SellerRepo;
         transaction: TransactionRepo;
         depositService: pecorinoapi.service.transaction.Deposit;
     }) => {
@@ -183,7 +205,7 @@ export function register(
             throw new factory.errors.NotFound('params.object.itemOffered.id');
         }
 
-        const programMemberships = await repos.ownershipInfo.search({
+        const programMemberships = await repos.ownershipInfo.search4cinemasunshine({
             goodType: 'ProgramMembership',
             ownedBy: customer.memberOf.membershipNumber,
             ownedAt: now
@@ -219,7 +241,7 @@ export function register(
             try {
                 // tslint:disable-next-line:max-line-length no-single-line-block-comment
                 const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await repos.action.giveUp(action.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -247,7 +269,7 @@ export function register(
             order: order
         };
 
-        await repos.action.complete(action.typeOf, action.id, actionResult);
+        await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
     };
 }
 
@@ -277,7 +299,7 @@ export function createUnRegisterTask(params: {
             throw new factory.errors.NotFound('params.agent.memberOf.membershipNumber');
         }
         const now = new Date();
-        const ownershipInfos = await repos.ownershipInfo.search({
+        const ownershipInfos = await repos.ownershipInfo.search4cinemasunshine({
             identifier: params.ownershipInfoIdentifier,
             goodType: 'ProgramMembership',
             ownedBy: params.agent.memberOf.membershipNumber,
@@ -296,12 +318,11 @@ export function createUnRegisterTask(params: {
             agent: params.agent,
             object: ownershipInfo
         };
-        const taskAttributes: factory.task.unRegisterProgramMembership.IAttributes = {
+        const taskAttributes: factory.task.IAttributes<factory.taskName.UnRegisterProgramMembership> = {
             name: factory.taskName.UnRegisterProgramMembership,
             status: factory.taskStatus.Ready,
             runsAt: now,
             remainingNumberOfTries: 10,
-            lastTriedAt: null,
             numberOfTried: 0,
             executionResults: [],
             data: unRegisterActionAttributes
@@ -388,7 +409,7 @@ export function unRegister(params: factory.action.interact.unRegister.programMem
             try {
                 // tslint:disable-next-line:max-line-length no-single-line-block-comment
                 const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await repos.action.giveUp(action.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -400,7 +421,7 @@ export function unRegister(params: factory.action.interact.unRegister.programMem
         debug('ending action...');
         const actionResult: factory.action.interact.unRegister.programMembership.IResult = {};
 
-        await repos.action.complete(action.typeOf, action.id, actionResult);
+        await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
     };
 }
 
@@ -414,9 +435,9 @@ function processPlaceOrder(params: {
     return async (repos: {
         action: ActionRepo;
         orderNumber: OrderNumberRepo;
-        organization: OrganizationRepo;
         person: PersonRepo;
         programMembership: ProgramMembershipRepo;
+        seller: SellerRepo;
         transaction: TransactionRepo;
         depositService: pecorinoapi.service.transaction.Deposit;
         ownershipInfo: OwnershipInfoRepo;
@@ -464,7 +485,7 @@ function processPlaceOrder(params: {
         // シネサンのスマフォアプリ登録時、元から1ポイント追加される
         if (repos.depositService !== undefined) {
             const now = new Date();
-            const accountOwnershipInfos = await repos.ownershipInfo.search({
+            const accountOwnershipInfos = await repos.ownershipInfo.search4cinemasunshine({
                 goodType: factory.pecorino.account.TypeOf.Account,
                 ownedBy: customer.memberOf.membershipNumber,
                 ownedAt: now
@@ -475,10 +496,10 @@ function processPlaceOrder(params: {
             }
 
             // 承認アクションを開始する
-            const actionAttributes: factory.action.authorize.award.pecorino.IAttributes = {
+            const actionAttributes: factory.action.authorize.award.point.IAttributes = {
                 typeOf: factory.actionType.AuthorizeAction,
                 object: {
-                    typeOf: factory.action.authorize.award.pecorino.ObjectType.PecorinoAward,
+                    typeOf: factory.action.authorize.award.point.ObjectType.PointAward,
                     transactionId: transaction.id,
                     amount: 1
                 },
@@ -488,16 +509,16 @@ function processPlaceOrder(params: {
             };
             const action = await repos.action.start(actionAttributes);
 
-            let pecorinoEndpoint: string;
+            let pointAPIEndpoint: string;
 
             // Pecorinoオーソリ取得
-            let pecorinoTransaction: factory.action.authorize.award.pecorino.IPecorinoTransaction;
+            let pointTransaction: factory.action.authorize.award.point.IPointTransaction;
 
             try {
-                pecorinoEndpoint = repos.depositService.options.endpoint;
+                pointAPIEndpoint = repos.depositService.options.endpoint;
 
                 debug('starting pecorino pay transaction...', 1);
-                pecorinoTransaction = await repos.depositService.start({
+                pointTransaction = await repos.depositService.start({
                     // 最大1ヵ月のオーソリ
                     expires: moment().add(1, 'month').toDate(),
                     agent: {
@@ -517,13 +538,13 @@ function processPlaceOrder(params: {
                     accountType: factory.accountType.Point,
                     toAccountNumber: accountOwnershipInfos[0].typeOfGood.accountNumber
                 });
-                debug('pecorinoTransaction started.', pecorinoTransaction.id);
+                debug('pointTransaction started.', pointTransaction.id);
             } catch (error) {
                 // actionにエラー結果を追加
                 try {
                     // tslint:disable-next-line:max-line-length no-single-line-block-comment
                     const actionError = { ...error, ...{ name: error.name, message: error.message } };
-                    await repos.action.giveUp(action.typeOf, action.id, actionError);
+                    await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
                 } catch (__) {
                     // 失敗したら仕方ない
                 }
@@ -534,14 +555,14 @@ function processPlaceOrder(params: {
 
             // アクションを完了
             debug('ending authorize action...');
-            const actionResult: factory.action.authorize.award.pecorino.IResult = {
+            const actionResult: factory.action.authorize.award.point.IResult = {
                 price: 0, // JPYとして0円
                 amount: 1,
-                pecorinoTransaction: pecorinoTransaction,
-                pecorinoEndpoint: pecorinoEndpoint
+                pointTransaction: pointTransaction,
+                pointAPIEndpoint: pointAPIEndpoint
             };
 
-            await repos.action.complete(action.typeOf, action.id, actionResult);
+            await repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
         }
 
         // 会員プログラムオファー承認
@@ -553,7 +574,7 @@ function processPlaceOrder(params: {
 
         // 会員クレジットカード検索
         // 事前にクレジットカードを登録しているはず
-        const creditCards = await CreditCardService.find(customer.memberOf.membershipNumber)();
+        const creditCards = await service.person.creditCard.find(customer.memberOf.membershipNumber)();
         // tslint:disable-next-line:no-suspicious-comment
         // TODO 絞る
         // creditCards = creditCards.filter((c) => c.defaultFlag === '1');
@@ -577,7 +598,7 @@ function processPlaceOrder(params: {
             object: {
                 typeOf: factory.paymentMethodType.CreditCard,
                 orderId: orderId,
-                amount: acceptedOffer.price,
+                amount: <number>acceptedOffer.price,
                 method: GMO.utils.util.Method.Lump,
                 creditCard: {
                     memberId: customer.memberOf.membershipNumber,

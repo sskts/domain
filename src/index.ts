@@ -2,11 +2,9 @@
 /**
  * sskts-domain index module
  */
+import { AWS, pecorinoapi } from '@cinerino/domain';
 import * as COA from '@motionpicture/coa-service';
 import * as GMO from '@motionpicture/gmo-service';
-import * as pecorinoapi from '@pecorino/api-nodejs-client';
-import * as AWS from 'aws-sdk';
-import * as mongoose from 'mongoose';
 import * as redis from 'redis';
 
 import * as errorHandler from './errorHandler';
@@ -17,11 +15,11 @@ import * as service from './service';
 /**
  * MongoDBクライアント`mongoose`
  * @example
- * var promise = sskts.mongoose.connect('mongodb://localhost/myapp', {
+ * var promise = mongoose.connect('mongodb://localhost/myapp', {
  *     useMongoClient: true
  * });
  */
-export import mongoose = mongoose;
+// export import mongoose = mongoose;
 
 /**
  * Redis Cacheクライアント

@@ -1,10 +1,9 @@
 /**
  * 会員プログラム登録サンプル
- * @ignore
  */
-const moment = require('moment');
 const sskts = require('../');
-const AWS = require('aws-sdk');
+
+const AWS = sskts.AWS;
 
 async function main() {
     let redisClient;

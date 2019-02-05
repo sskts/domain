@@ -9,8 +9,8 @@ import * as moment from 'moment-timezone';
 
 import { Repository as CreativeWorkRepo } from '../repo/creativeWork';
 import { MongoRepository as EventRepo } from '../repo/event';
-import { MongoRepository as OrganizationRepo } from '../repo/organization';
 import { Repository as PlaceRepo } from '../repo/place';
+import { MongoRepository as SellerRepo } from '../repo/seller';
 
 import * as factory from '../factory';
 
@@ -236,7 +236,7 @@ export function importScreeningEvents(
             debug(`storing ${screeningEvents.length} screeningEvents...`);
             await Promise.all(screeningEvents.map(async (screeningEvent) => {
                 try {
-                    await repos.event.save(screeningEvent);
+                    await repos.event.save<factory.eventType.ScreeningEvent>(screeningEvent);
                 } catch (error) {
                     // tslint:disable-next-line:no-single-line-block-comment
                     /* istanbul ignore next */
@@ -248,7 +248,10 @@ export function importScreeningEvents(
 
             // COAから削除されたイベントをキャンセル済ステータスへ変更
             const identifiers = await repos.event.searchIndividualScreeningEvents({
-                superEventLocationIdentifiers: [`MovieTheater-${theaterCode}`],
+                typeOf: factory.eventType.ScreeningEvent,
+                superEvent: {
+                    locationBranchCodes: [theaterCode]
+                },
                 startFrom: targetImportFrom.toDate(),
                 startThrough: targetImportThrough.toDate()
             }).then((events) => events.map((e) => e.identifier));
@@ -276,7 +279,7 @@ export function importScreeningEvents(
 export function importMovieTheater(theaterCode: string) {
     return async (repos: {
         place: PlaceRepo;
-        organization: OrganizationRepo;
+        seller: SellerRepo;
     }): Promise<void> => {
         const movieTheater = factory.place.movieTheater.createFromCOA(
             await COA.services.master.theater({ theaterCode: theaterCode }),
@@ -289,7 +292,7 @@ export function importMovieTheater(theaterCode: string) {
         debug('movieTheater stored.');
 
         // 組織の属性を更新
-        await repos.organization.organizationModel.findOneAndUpdate(
+        await repos.seller.organizationModel.findOneAndUpdate(
             {
                 typeOf: factory.organizationType.MovieTheater,
                 'location.branchCode': movieTheater.branchCode

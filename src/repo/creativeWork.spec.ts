@@ -3,6 +3,7 @@
  * creativeWork repository test
  */
 import { } from 'mocha';
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 // tslint:disable-next-line:no-require-imports no-var-requires
@@ -23,7 +24,7 @@ describe('saveMovie()', () => {
     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
         const movie = { identifier: 'identifier' };
 
-        const creativeWorkRepo = new sskts.repository.CreativeWork(sskts.mongoose.connection);
+        const creativeWorkRepo = new sskts.repository.CreativeWork(mongoose.connection);
 
         sandbox.mock(creativeWorkRepo.creativeWorkModel)
             .expects('findOneAndUpdate').once()

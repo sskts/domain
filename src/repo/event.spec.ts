@@ -3,6 +3,7 @@
  * event repository test
  */
 import { } from 'mocha';
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import { } from 'sinon-mongoose';
@@ -24,7 +25,7 @@ describe('save()', () => {
     it('repositoryの状態が正常であれば、保管できるはず', async () => {
         const event = { identifier: 'identifier' };
 
-        const repository = new sskts.repository.Event(sskts.mongoose.connection);
+        const repository = new sskts.repository.Event(mongoose.connection);
 
         sandbox.mock(repository.eventModel).expects('findOneAndUpdate').once()
             .chain('exec').resolves();
@@ -43,8 +44,17 @@ describe('searchIndividualScreeningEvents()', () => {
 
     it('repositoryの状態が正常であれば、配列が返却されるはず', async () => {
         const conditions = {
+            limit: 10,
+            sort: {
+                startFrom: sskts.factory.sortType.Ascending
+            },
             theater: 'theater',
             day: '20171114',
+            superEvent: {
+                ids: [''],
+                locationBranchCodes: [''],
+                workPerformedIdentifiers: ['']
+            },
             superEventLocationIdentifiers: ['superEventLocationIdentifier'],
             eventStatuses: ['eventStatus'],
             workPerformedIdentifiers: ['workPerformedIdentifier'],
@@ -54,7 +64,7 @@ describe('searchIndividualScreeningEvents()', () => {
             endThrough: new Date()
         };
 
-        const repository = new sskts.repository.Event(sskts.mongoose.connection);
+        const repository = new sskts.repository.Event(mongoose.connection);
         const docs = [new repository.eventModel()];
 
         sandbox.mock(repository.eventModel).expects('find').once()
@@ -74,7 +84,7 @@ describe('findIndividualScreeningEventByIdentifier()', () => {
     it('repositoryの状態が正常であれば、オブジェクトが返却されるはず', async () => {
         const identifier = 'identifier';
 
-        const repository = new sskts.repository.Event(sskts.mongoose.connection);
+        const repository = new sskts.repository.Event(mongoose.connection);
         const doc = new repository.eventModel();
 
         sandbox.mock(repository.eventModel).expects('findOne').once()
@@ -89,7 +99,7 @@ describe('findIndividualScreeningEventByIdentifier()', () => {
     it('上映イベントが存在しなければ、NotFoundエラーとなるはず', async () => {
         const identifier = 'identifier';
 
-        const repository = new sskts.repository.Event(sskts.mongoose.connection);
+        const repository = new sskts.repository.Event(mongoose.connection);
 
         sandbox.mock(repository.eventModel).expects('findOne').once()
             .chain('exec').resolves(null);
@@ -108,7 +118,7 @@ describe('cancelIndividualScreeningEvent()', () => {
     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
         const identifier = 'identifier';
 
-        const repository = new sskts.repository.Event(sskts.mongoose.connection);
+        const repository = new sskts.repository.Event(mongoose.connection);
         const doc = new repository.eventModel();
 
         sandbox.mock(repository.eventModel).expects('findOneAndUpdate').once()

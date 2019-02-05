@@ -154,7 +154,7 @@ export function create(params: {
             price: 0
         };
 
-        return repos.action.complete(factory.actionType.AuthorizeAction, action.id, result);
+        return repos.action.complete({ typeOf: factory.actionType.AuthorizeAction, id: action.id, result: result });
     };
 }
 
@@ -176,7 +176,7 @@ export function cancel(params: {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        await repos.action.cancel(factory.actionType.AuthorizeAction, params.actionId);
+        await repos.action.cancel({ typeOf: factory.actionType.AuthorizeAction, id: params.actionId });
 
         // 特に何もしない
     };

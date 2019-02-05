@@ -1,14 +1,14 @@
 /**
  * 口座決済承認アクションサービス
  */
-import * as pecorinoapi from '@pecorino/api-nodejs-client';
+import { pecorinoapi } from '@cinerino/domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 
 import * as factory from '../../../../../../factory';
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
-import { MongoRepository as OrganizationRepo } from '../../../../../../repo/organization';
 import { MongoRepository as OwnershipInfoRepo } from '../../../../../../repo/ownershipInfo';
+import { MongoRepository as SellerRepo } from '../../../../../../repo/seller';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
 
 import { handlePecorinoError } from '../../../../../../errorHandler';
@@ -17,8 +17,8 @@ const debug = createDebug('cinerino-domain:service');
 
 export type ICreateOperation<T> = (repos: {
     action: ActionRepo;
-    organization: OrganizationRepo;
     ownershipInfo: OwnershipInfoRepo;
+    seller: SellerRepo;
     transaction: TransactionRepo;
     withdrawTransactionService?: pecorinoapi.service.transaction.Withdraw;
     transferTransactionService?: pecorinoapi.service.transaction.Transfer;
@@ -38,8 +38,8 @@ export function create<T extends factory.accountType>(params: {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
-        organization: OrganizationRepo;
         ownershipInfo: OwnershipInfoRepo;
+        seller: SellerRepo;
         transaction: TransactionRepo;
         /**
          * 出金取引サービス
@@ -66,7 +66,7 @@ export function create<T extends factory.accountType>(params: {
         if (transaction.agent.memberOf === undefined) {
             throw new factory.errors.Forbidden('Membership required');
         }
-        const programMemberships = await repos.ownershipInfo.search({
+        const programMemberships = await repos.ownershipInfo.search4cinemasunshine({
             goodType: 'ProgramMembership',
             ownedBy: transaction.agent.memberOf.membershipNumber,
             ownedAt: new Date()
@@ -116,16 +116,18 @@ export function create<T extends factory.accountType>(params: {
                     accountType: params.object.fromAccount.accountType,
                     fromAccountNumber: params.object.fromAccount.accountNumber
                 });
-                debug('pecorinoTransaction started.', pendingTransaction.id);
+                debug('Acount transaction started.', pendingTransaction.id);
             } else if (repos.transferTransactionService !== undefined) {
                 // 組織から転送先口座IDを取得する
-                const seller = await repos.organization.findById(transaction.seller.typeOf, transaction.seller.id);
+                const seller = await repos.seller.findById({
+                    id: transaction.seller.id
+                });
                 // tslint:disable-next-line:no-single-line-block-comment
                 /* istanbul ignore if */
                 if (seller.paymentAccepted === undefined) {
                     throw new factory.errors.Argument('transaction', 'Pecorino payment not accepted.');
                 }
-                const accountPaymentsAccepted = <factory.organization.IPaymentAccepted<factory.paymentMethodType.Account>[]>
+                const accountPaymentsAccepted = <factory.seller.IPaymentAccepted<factory.paymentMethodType.Account>[]>
                     seller.paymentAccepted.filter((a) => a.paymentMethodType === factory.paymentMethodType.Account);
                 const paymentAccepted = accountPaymentsAccepted.find((a) => a.accountType === params.object.fromAccount.accountType);
                 // tslint:disable-next-line:no-single-line-block-comment
@@ -159,7 +161,7 @@ export function create<T extends factory.accountType>(params: {
                     fromAccountNumber: params.object.fromAccount.accountNumber,
                     toAccountNumber: paymentAccepted.accountNumber
                 });
-                debug('pecorinoTransaction started.', pendingTransaction.id);
+                debug('Acount transaction started.', pendingTransaction.id);
             } else {
                 // tslint:disable-next-line:no-single-line-block-comment
                 /* istanbul ignore next */
@@ -170,7 +172,7 @@ export function create<T extends factory.accountType>(params: {
             try {
                 // tslint:disable-next-line:max-line-length no-single-line-block-comment
                 const actionError = { ...error, name: error.name, message: error.message };
-                await repos.action.giveUp(action.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -199,7 +201,7 @@ export function create<T extends factory.accountType>(params: {
             }
         };
 
-        return repos.action.complete(action.typeOf, action.id, actionResult);
+        return repos.action.complete({ typeOf: action.typeOf, id: action.id, result: actionResult });
     };
 }
 
@@ -239,7 +241,7 @@ export function cancel(params: {
         }
 
         // まずアクションをキャンセル
-        const action = await repos.action.cancel(factory.actionType.AuthorizeAction, params.id);
+        const action = await repos.action.cancel({ typeOf: factory.actionType.AuthorizeAction, id: params.id });
         const actionResult = <factory.action.authorize.paymentMethod.account.IResult<factory.accountType>>action.result;
 
         // Pecorinoで取消中止実行

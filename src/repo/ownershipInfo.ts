@@ -1,26 +1,21 @@
-import { Connection } from 'mongoose';
+import { repository } from '@cinerino/domain';
+// import * as mongoose from 'mongoose';
 
-import ownershipInfoModel from './mongoose/model/ownershipInfo';
+// import ownershipInfoModel from './mongoose/model/ownershipInfo';
 
 import * as factory from '../factory';
 
 export type IOwnershipInfo<T extends factory.ownershipInfo.IGoodType> = factory.ownershipInfo.IOwnershipInfo<T>;
 
 /**
- * 所有権リポジトリー
+ * 所有権リポジトリ
  */
-export class MongoRepository {
-    public readonly ownershipInfoModel: typeof ownershipInfoModel;
-
-    constructor(connection: Connection) {
-        this.ownershipInfoModel = connection.model(ownershipInfoModel.modelName);
-    }
-
+export class MongoRepository extends repository.OwnershipInfo {
     /**
      * 所有権情報を保管する
      * @param ownershipInfo ownershipInfo object
      */
-    public async save(ownershipInfo: factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>) {
+    public async saveByIdentifier(ownershipInfo: factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>) {
         await this.ownershipInfoModel.findOneAndUpdate(
             {
                 identifier: ownershipInfo.identifier
@@ -32,8 +27,11 @@ export class MongoRepository {
 
     /**
      * 所有権を検索する
+     * @deprecated Use search
      */
-    public async search<T extends factory.ownershipInfo.IGoodType>(
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
+    public async search4cinemasunshine<T extends factory.ownershipInfo.IGoodType>(
         searchConditions: factory.ownershipInfo.ISearchConditions<T>
     ): Promise<IOwnershipInfo<T>[]> {
         const andConditions: any[] = [
@@ -76,7 +74,10 @@ export class MongoRepository {
 
     /**
      * 会員プログラムをカウントする
+     * @experimental
      */
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore next */
     public async countProgramMembership(
         searchConditions: factory.ownershipInfo.ISearchProgramMembershipConditions
     ): Promise<number> {
@@ -117,6 +118,8 @@ export class MongoRepository {
             }
         });
 
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (Array.isArray(searchConditions.theaterIds)) {
             andConditions.push({
                 'acquiredFrom.id': { $in: searchConditions.theaterIds }

@@ -2,6 +2,7 @@
 /**
  * 会員プログラムオファー承認サービステスト
  */
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../../../../../../index';
@@ -26,12 +27,11 @@ describe('会員プログラムオファーを承認する', () => {
         };
         const transaction = { id: 'transactionId', agent: { id: 'agentId' } };
         const programMembership = {
-            offers: [{ identifier: 'identifier' }]
+            offers: [{ identifier: 'identifier', price: 123 }]
         };
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
-        const programMembershipRepo = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const programMembershipRepo = new sskts.repository.ProgramMembership(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(programMembershipRepo).expects('search').once().resolves([programMembership]);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
@@ -43,7 +43,6 @@ describe('会員プログラムオファーを承認する', () => {
             acceptedOffer: acceptedOffer
         })({
             action: actionRepo,
-            organization: organizationRepo,
             programMembership: programMembershipRepo,
             transaction: transactionRepo
         });
@@ -59,8 +58,8 @@ describe('会員プログラムオファー承認を取り消す', () => {
 
     it('MongoDBが正常であればアクションを取り消せるはず', async () => {
         const transaction = { id: 'transactionId', agent: { id: 'agentId' } };
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
         sandbox.mock(actionRepo).expects('cancel').once().resolves({});
 

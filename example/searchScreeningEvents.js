@@ -1,21 +1,23 @@
 /**
- * 上映会イベント検索サンプル
- * @ignore
+ * 上映イベント検索サンプル
  */
-
 const moment = require('moment');
+const mongoose = require('mongoose');
 const sskts = require('../');
 
 async function main() {
     let redisClient;
     try {
-        await sskts.mongoose.connect(process.env.MONGOLAB_URI);
+        await mongoose.connect(process.env.MONGOLAB_URI);
         redisClient = sskts.redis.createClient({
             host: process.env.REDIS_HOST,
             port: parseInt(process.env.REDIS_PORT, 10),
             password: process.env.REDIS_KEY,
             tls: { servername: process.env.REDIS_HOST }
         });
+
+        const eventRepo = new sskts.repository.Event(mongoose.connection);
+        const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redisClient);
 
         const events = await sskts.service.offer.searchIndividualScreeningEvents({
             limit: 10,
@@ -37,8 +39,8 @@ async function main() {
             startFrom: moment().toDate(),
             startThrough: moment().add(7, 'days').toDate()
         })({
-            event: new sskts.repository.Event(sskts.mongoose.connection),
-            itemAvailability: new sskts.repository.itemAvailability.IndividualScreeningEvent(redisClient)
+            event: eventRepo,
+            itemAvailability: itemAvailabilityRepo
         });
         console.log(events.length, 'events found');
         // console.log(events[0]);
@@ -50,7 +52,7 @@ async function main() {
         setTimeout(
             async () => {
                 redisClient.quit();
-                await sskts.mongoose.disconnect();
+                await mongoose.disconnect();
                 resolve();
             },
             5000

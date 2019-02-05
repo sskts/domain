@@ -2,6 +2,7 @@
 /**
  * placeOrder transaction service test
  */
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 // tslint:disable-next-line:no-require-imports no-var-requires
@@ -20,14 +21,15 @@ describe('exportTasks()', () => {
     });
 
     it('タスクエクスポート待ちの取引があれば、エクスポートされるはず', async () => {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
 
         const status = sskts.factory.transactionStatusType.Confirmed;
         const task = {};
         const transaction = {
             id: 'transactionId',
-            status: status
+            status: status,
+            potentialActions: {}
         };
 
         sandbox.mock(transactionRepo).expects('startExportTasks').once().resolves(transaction);
@@ -48,8 +50,8 @@ describe('exportTasks()', () => {
 
     it('タスクエクスポート待ちの取引がなければ、何もしないはず', async () => {
         const status = sskts.factory.transactionStatusType.Confirmed;
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('startExportTasks').once().resolves(null);
         sandbox.mock(sskts.service.transaction.placeOrder).expects('exportTasksById').never();
@@ -76,10 +78,12 @@ describe('exportTasksById()', () => {
         const numberOfTasks = 2;
         const transaction = {
             id: 'transactionId',
-            status: sskts.factory.transactionStatusType.Confirmed
+            status: sskts.factory.transactionStatusType.Confirmed,
+            result: { potentialActions: { order: {} } },
+            potentialActions: { order: {} }
         };
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo).expects('save').exactly(numberOfTasks).resolves();
@@ -96,14 +100,14 @@ describe('exportTasksById()', () => {
         sandbox.verify();
     });
 
-    it('期限切れ取引であれば6つのタスクがエクスポートされるはず', async () => {
-        const numberOfTasks = 6;
+    it('期限切れ取引であれば5つのタスクがエクスポートされるはず', async () => {
+        const numberOfTasks = 5;
         const transaction = {
             id: 'transactionId',
             status: sskts.factory.transactionStatusType.Expired
         };
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo).expects('save').exactly(numberOfTasks).resolves();
@@ -125,8 +129,8 @@ describe('exportTasksById()', () => {
             id: 'transactionId',
             status: sskts.factory.transactionStatusType.InProgress
         };
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo).expects('save').never();
@@ -163,8 +167,8 @@ describe('sendEmail', () => {
         };
         const task = {};
 
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo).expects('save').once().resolves(task);
@@ -195,8 +199,8 @@ describe('sendEmail', () => {
             text: 'text'
         };
 
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        const taskRepo = new sskts.repository.Task(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        const taskRepo = new sskts.repository.Task(mongoose.connection);
 
         sandbox.mock(transactionRepo).expects('findById').once().resolves(transaction);
         sandbox.mock(taskRepo).expects('save').never();

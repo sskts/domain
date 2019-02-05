@@ -8,7 +8,7 @@ import * as factory from '../factory';
 const debug = createDebug('sskts-domain:repository:orderNumber');
 
 /**
- * 注文番号Redisリポジトリー
+ * 注文番号Redisリポジトリ
  */
 export class RedisRepository {
     public static REDIS_KEY_PREFIX: string = 'sskts-domain:orderNumber';

@@ -1,43 +1,7 @@
-import * as createDebug from 'debug';
-import { Connection } from 'mongoose';
-
-import programMembershipModel from './mongoose/model/programMembership';
-
-import * as factory from '../factory';
-
-const debug = createDebug('sskts-domain:repository:programMembership');
+import { repository } from '@cinerino/domain';
 
 /**
- * 会員プログラムリポジトリー
+ * 会員プログラムリポジトリ
  */
-export class MongoRepository {
-    public readonly programMembershipModel: typeof programMembershipModel;
-
-    constructor(connection: Connection) {
-        this.programMembershipModel = connection.model(programMembershipModel.modelName);
-    }
-
-    /**
-     * 検索する
-     */
-    public async search(params: {
-        id?: string;
-    }): Promise<factory.programMembership.IProgramMembership[]> {
-        const andConditions: any[] = [
-            { typeOf: <factory.programMembership.ProgramMembershipType>'ProgramMembership' }
-        ];
-
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (params.id !== undefined) {
-            andConditions.push({ _id: params.id });
-        }
-
-        debug('searching programMemberships...', andConditions);
-
-        return this.programMembershipModel.find({ $and: andConditions })
-            .sort({ programName: 1 })
-            .exec()
-            .then((docs) => docs.map((doc) => doc.toObject()));
-    }
+export class MongoRepository extends repository.ProgramMembership {
 }

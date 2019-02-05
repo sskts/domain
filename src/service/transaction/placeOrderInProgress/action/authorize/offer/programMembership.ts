@@ -4,7 +4,6 @@
 import * as createDebug from 'debug';
 
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
-import { MongoRepository as OrganizationRepo } from '../../../../../../repo/organization';
 import { MongoRepository as ProgramMembershipRepo } from '../../../../../../repo/programMembership';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
 
@@ -14,7 +13,6 @@ const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress
 
 export type ICreateOperation<T> = (repos: {
     action: ActionRepo;
-    organization: OrganizationRepo;
     programMembership: ProgramMembershipRepo;
     transaction: TransactionRepo;
 }) => Promise<T>;
@@ -29,7 +27,6 @@ export function create(params: {
 }): ICreateOperation<factory.action.authorize.offer.programMembership.IAction> {
     return async (repos: {
         action: ActionRepo;
-        organization: OrganizationRepo;
         programMembership: ProgramMembershipRepo;
         transaction: TransactionRepo;
     }) => {
@@ -63,6 +60,11 @@ export function create(params: {
         if (acceptedOffer === undefined) {
             throw new factory.errors.NotFound('Offer');
         }
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (acceptedOffer.price === undefined) {
+            throw new factory.errors.NotFound('Offer Price undefined');
+        }
 
         // 在庫確認は現時点で不要
         // 何かしら会員プログラムへの登録に制約を設けたい場合は、ここに処理を追加するとよいかと思われます。
@@ -86,7 +88,7 @@ export function create(params: {
             // actionにエラー結果を追加
             try {
                 const actionError = { ...error, ...{ message: error.message, name: error.name } };
-                await repos.action.giveUp(action.typeOf, action.id, actionError);
+                await repos.action.giveUp({ typeOf: action.typeOf, id: action.id, error: actionError });
             } catch (__) {
                 // 失敗したら仕方ない
             }
@@ -103,7 +105,7 @@ export function create(params: {
             priceCurrency: acceptedOffer.priceCurrency
         };
 
-        return repos.action.complete(action.typeOf, action.id, result);
+        return repos.action.complete({ typeOf: action.typeOf, id: action.id, result: result });
     };
 }
 
@@ -133,7 +135,7 @@ export function cancel(params: {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const action = await repos.action.cancel(factory.actionType.AuthorizeAction, params.actionId);
+        const action = await repos.action.cancel({ typeOf: factory.actionType.AuthorizeAction, id: params.actionId });
         debug('action canceld.', action.id);
     };
 }

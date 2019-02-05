@@ -10,10 +10,10 @@ import * as util from 'util';
 
 import { MongoRepository as ActionRepo } from '../../repo/action';
 import { RedisRepository as OrderNumberRepo } from '../../repo/orderNumber';
-import { MongoRepository as OrganizationRepo } from '../../repo/organization';
+import { MongoRepository as SellerRepo } from '../../repo/seller';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
-import * as PecorinoAwardAuthorizeActionService from './placeOrderInProgress/action/authorize/award/pecorino';
+import * as AuthorizePointAwardActionService from './placeOrderInProgress/action/authorize/award/point';
 import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/authorize/discount/mvtk';
 import * as ProgramMembershipAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/programMembership';
 import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/seatReservation';
@@ -26,10 +26,17 @@ const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress
 
 export type ITransactionOperation<T> = (repos: { transaction: TransactionRepo }) => Promise<T>;
 export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (repos: {
-    organization: OrganizationRepo;
+    seller: SellerRepo;
     transaction: TransactionRepo;
 }) => Promise<T>;
+export type IConfirmOperation<T> = (repos: {
+    action: ActionRepo;
+    transaction: TransactionRepo;
+    orderNumber: OrderNumberRepo;
+    seller: SellerRepo;
+}) => Promise<T>;
 export type IAuthorizeAnyPaymentResult = factory.action.authorize.paymentMethod.any.IResult<factory.paymentMethodType>;
+export type ISeller = factory.seller.IOrganization<factory.seller.IAttributes<factory.organizationType>>;
 
 /**
  * 取引開始パラメーターインターフェース
@@ -66,17 +73,19 @@ export interface IStartParams {
 export function start(params: IStartParams):
     IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction> {
     return async (repos: {
-        organization: OrganizationRepo;
+        seller: SellerRepo;
         transaction: TransactionRepo;
     }) => {
         // 売り手を取得
-        const seller = await repos.organization.findById(params.seller.typeOf, params.seller.id);
+        const seller = await repos.seller.findById({
+            id: params.seller.id
+        });
 
         let passport: waiter.factory.passport.IPassport | undefined;
 
         // WAITER許可証トークンがあれば検証する
         // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignroe else */
+        /* istanbul ignore else */
         if (params.passportToken !== undefined) {
             try {
                 passport = await waiter.service.passport.verify({
@@ -151,7 +160,7 @@ export function start(params: IStartParams):
  */
 function validatePassport(passport: waiter.factory.passport.IPassport, sellerIdentifier: string) {
     // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignroe next */
+    /* istanbul ignore next */
     if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
         throw new Error('WAITER_PASSPORT_ISSUER unset');
     }
@@ -179,7 +188,7 @@ export namespace action {
      */
     export namespace authorize {
         export namespace award {
-            export import pecorino = PecorinoAwardAuthorizeActionService;
+            export import point = AuthorizePointAwardActionService;
         }
         export namespace discount {
             /**
@@ -278,12 +287,12 @@ export function confirm(params: {
      * 注文日時
      */
     orderDate: Date;
-}) {
+}): IConfirmOperation<factory.order.IOrder> {
     return async (repos: {
         action: ActionRepo;
         transaction: TransactionRepo;
-        organization: OrganizationRepo;
         orderNumber: OrderNumberRepo;
+        seller: SellerRepo;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,
@@ -293,10 +302,9 @@ export function confirm(params: {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
-        const seller = await repos.organization.findById(
-            <factory.organizationType.MovieTheater>transaction.seller.typeOf,
-            transaction.seller.id
-        );
+        const seller = await repos.seller.findById({
+            id: transaction.seller.id
+        });
         debug('seller found.', seller.identifier);
 
         const customerContact = transaction.object.customerContact;
@@ -305,7 +313,13 @@ export function confirm(params: {
         }
 
         // 取引に対する全ての承認アクションをマージ
-        let authorizeActions = await repos.action.findAuthorizeByTransactionId(params.transactionId);
+        let authorizeActions = await repos.action.searchByPurpose({
+            typeOf: factory.actionType.AuthorizeAction,
+            purpose: {
+                typeOf: factory.transactionType.PlaceOrder,
+                id: params.transactionId
+            }
+        });
         // 万が一このプロセス中に他処理が発生してもそれらを無視するように、endDateでフィルタリング
         authorizeActions = authorizeActions.filter((a) => (a.endDate !== undefined && a.endDate < params.orderDate));
         transaction.object.authorizeActions = authorizeActions;
@@ -317,7 +331,7 @@ export function confirm(params: {
         const orderNumber = await repos.orderNumber.publish({
             orderDate: params.orderDate,
             sellerType: seller.typeOf,
-            sellerBranchCode: seller.location.branchCode
+            sellerBranchCode: (seller.location !== undefined && seller.location.branchCode !== undefined) ? seller.location.branchCode : ''
         });
         // 結果作成
         const order = createOrderFromTransaction({
@@ -367,7 +381,7 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
     type IAuthorizeActionResultBySeller =
         factory.action.authorize.offer.programMembership.IResult |
         factory.action.authorize.offer.seatReservation.IResult |
-        factory.action.authorize.award.pecorino.IResult;
+        factory.action.authorize.award.point.IResult;
     const authorizeActions = transaction.object.authorizeActions;
 
     // クレジットカードオーソリをひとつに限定
@@ -386,13 +400,15 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
         throw new factory.errors.Argument('transactionId', 'The number of mvtk authorize actions must be one');
     }
 
-    // Pecorinoオーソリは複数可
+    // ポイントオーソリは複数可
 
-    // Pecorinoインセンティブは複数可だが、現時点で1注文につき1ポイントに限定
-    const pecorinoAwardAuthorizeActions = <factory.action.authorize.award.pecorino.IAction[]>authorizeActions
+    // ポイントインセンティブは複数可だが、現時点で1注文につき1ポイントに限定
+    const pointAwardAuthorizeActions = <factory.action.authorize.award.point.IAction[]>authorizeActions
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward);
-    const givenAmount = pecorinoAwardAuthorizeActions.reduce((a, b) => a + b.object.amount, 0);
+        .filter((a) => a.object.typeOf === factory.action.authorize.award.point.ObjectType.PointAward);
+    const givenAmount = pointAwardAuthorizeActions.reduce((a, b) => a + b.object.amount, 0);
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore if */
     if (givenAmount > 1) {
         throw new factory.errors.Argument('transactionId', 'Incentive amount must be 1');
     }
@@ -426,9 +442,13 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
         throw new factory.errors.Argument('transactionId', 'The number of seat reservation authorize actions must be one');
     }
     const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore else */
     if (seatReservationAuthorizeAction !== undefined) {
         requiredPoint = (<factory.action.authorize.offer.seatReservation.IResult>seatReservationAuthorizeAction.result).pecorinoAmount;
         // 必要ポイントがある場合、Pecorinoのオーソリ金額と比較
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
         if (requiredPoint > 0) {
             const authorizedPecorinoAmount =
                 (<factory.action.authorize.paymentMethod.account.IAction<factory.accountType.Point>[]>transaction.object.authorizeActions)
@@ -445,7 +465,7 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
         }
     }
 
-    // JPYオーソリ金額もPecorinoオーソリポイントも0より大きくなければ取引成立不可
+    // JPYオーソリ金額もオーソリポイントも0より大きくなければ取引成立不可
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore next */
     // if (priceByAgent <= 0 && requiredPoint <= 0) {
@@ -466,7 +486,7 @@ export function createOrderFromTransaction(params: {
     orderDate: Date;
     orderStatus: factory.orderStatus;
     isGift: boolean;
-    seller: factory.organization.movieTheater.IOrganization;
+    seller: ISeller;
 }): factory.order.IOrder {
     // 座席予約に対する承認アクション取り出す
     const seatReservationAuthorizeActions = <factory.action.authorize.offer.seatReservation.IAction[]>
@@ -486,6 +506,8 @@ export function createOrderFromTransaction(params: {
         .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
         .filter((a) => a.object.typeOf === 'Offer')
         .filter((a) => a.object.itemOffered.typeOf === 'ProgramMembership');
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore if */
     if (programMembershipAuthorizeActions.length > 1) {
         throw new factory.errors.NotImplemented('Number of programMembership authorizeAction must be 1.');
     }
@@ -568,17 +590,20 @@ export function createOrderFromTransaction(params: {
                 throw new factory.errors.Argument('offers', '要求された供給情報と仮予約結果が一致しません。');
             }
 
+            // 必ず定義されている前提
+            const coaInfo = <factory.event.screeningEvent.ICOAInfo>screeningEvent.coaInfo;
+
             // チケットトークン(QRコード文字列)を作成
             const ticketToken = [
-                screeningEvent.coaInfo.theaterCode,
-                screeningEvent.coaInfo.dateJouei,
+                coaInfo.theaterCode,
+                coaInfo.dateJouei,
                 // tslint:disable-next-line:no-magic-numbers
                 (`00000000${updTmpReserveSeatResult.tmpReserveNum}`).slice(-8),
                 // tslint:disable-next-line:no-magic-numbers
                 (`000${index + 1}`).slice(-3)
             ].join('');
 
-            const eventReservation: factory.reservation.event.IEventReservation<factory.event.screeningEvent.IEvent> = {
+            const eventReservation: factory.reservation.event.IReservation<factory.event.screeningEvent.IEvent> = {
                 typeOf: factory.reservationType.EventReservation,
                 id: `${updTmpReserveSeatResult.tmpReserveNum}-${index.toString()}`,
                 checkedIn: false,
@@ -586,7 +611,7 @@ export function createOrderFromTransaction(params: {
                 additionalTicketText: '',
                 modifiedTime: params.orderDate,
                 numSeats: 1,
-                price: requestedOffer.price,
+                price: <number>requestedOffer.price,
                 priceCurrency: requestedOffer.priceCurrency,
                 reservationFor: screeningEvent,
                 reservationNumber: `${updTmpReserveSeatResult.tmpReserveNum}`,
@@ -596,10 +621,10 @@ export function createOrderFromTransaction(params: {
                     coaTicketInfo: requestedOffer.ticketInfo,
                     dateIssued: params.orderDate,
                     issuedBy: {
-                        typeOf: screeningEvent.superEvent.organizer.typeOf,
-                        name: screeningEvent.superEvent.organizer.name.ja
+                        typeOf: screeningEvent.superEvent.location.typeOf,
+                        name: screeningEvent.superEvent.location.name.ja
                     },
-                    totalPrice: requestedOffer.price,
+                    totalPrice: <number>requestedOffer.price,
                     priceCurrency: requestedOffer.priceCurrency,
                     ticketedSeat: {
                         typeOf: factory.placeType.Seat,
@@ -633,7 +658,7 @@ export function createOrderFromTransaction(params: {
             return {
                 typeOf: <factory.offer.OfferType>'Offer',
                 itemOffered: eventReservation,
-                price: eventReservation.price,
+                price: <number>eventReservation.price,
                 priceCurrency: factory.priceCurrency.JPY,
                 seller: {
                     typeOf: params.seller.typeOf,
@@ -650,12 +675,11 @@ export function createOrderFromTransaction(params: {
         acceptedOffers.push(programMembershipAuthorizeAction.object);
     }
 
-    // 注文照会キーを作成
-    const orderInquiryKey: factory.order.IOrderInquiryKey = {
-        theaterCode: params.seller.location.branchCode,
-        confirmationNumber: confirmationNumber,
-        telephone: cutomerContact.telephone
-    };
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore if */
+    if (params.seller.location === undefined || params.seller.location.branchCode === undefined) {
+        throw new factory.errors.ServiceUnavailable('Seller location branchCode undefined');
+    }
 
     // 結果作成
     const discounts: factory.order.IDiscount[] = [];
@@ -729,15 +753,15 @@ export function createOrderFromTransaction(params: {
     const url = util.format(
         '%s/inquiry/login?theater=%s&reserve=%s',
         process.env.ORDER_INQUIRY_ENDPOINT,
-        orderInquiryKey.theaterCode,
-        orderInquiryKey.confirmationNumber
+        params.seller.location.branchCode,
+        confirmationNumber
     );
 
     return {
         typeOf: 'Order',
         seller: seller,
         customer: customer,
-        price: acceptedOffers.reduce((a, b) => a + b.price, 0) - discounts.reduce((a, b) => a + b.discount, 0),
+        price: acceptedOffers.reduce((a, b) => a + (<number>b.price), 0) - discounts.reduce((a, b) => a + b.discount, 0),
         priceCurrency: factory.priceCurrency.JPY,
         paymentMethods: paymentMethods,
         discounts: discounts,
@@ -747,8 +771,7 @@ export function createOrderFromTransaction(params: {
         url: url,
         orderStatus: params.orderStatus,
         orderDate: params.orderDate,
-        isGift: params.isGift,
-        orderInquiryKey: orderInquiryKey
+        isGift: params.isGift
     };
 }
 
@@ -756,10 +779,12 @@ export async function createEmailMessageFromTransaction(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     customerContact: factory.transaction.placeOrder.ICustomerContact;
     order: factory.order.IOrder;
-    seller: factory.organization.movieTheater.IOrganization;
+    seller: ISeller;
 }): Promise<factory.creativeWork.message.email.ICreativeWork> {
     return new Promise<factory.creativeWork.message.email.ICreativeWork>((resolve, reject) => {
         const seller = params.transaction.seller;
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
         if (params.order.acceptedOffers[0].itemOffered.typeOf === factory.reservationType.EventReservation) {
             const event = params.order.acceptedOffers[0].itemOffered.reservationFor;
 
@@ -777,14 +802,15 @@ export async function createEmailMessageFromTransaction(params: {
                     workPerformedName: event.workPerformed.name,
                     screenName: event.location.name.ja,
                     reservedSeats: params.order.acceptedOffers.map((o) => {
-                        const reservation = (<factory.reservation.event.IEventReservation<any>>o.itemOffered);
+                        const reservation = (<factory.reservation.event.IReservation<any>>o.itemOffered);
                         const ticketedSeat = reservation.reservedTicket.ticketedSeat;
+                        const coaTicketInfo = reservation.reservedTicket.coaTicketInfo;
 
                         return util.format(
                             '%s %s ￥%s',
                             (ticketedSeat !== undefined) ? ticketedSeat.seatNumber : '',
-                            reservation.reservedTicket.coaTicketInfo.ticketName,
-                            reservation.reservedTicket.coaTicketInfo.salePrice
+                            (coaTicketInfo !== undefined) ? coaTicketInfo.ticketName : '',
+                            (coaTicketInfo !== undefined) ? coaTicketInfo.salePrice : ''
                         );
                     }).join('\n'),
                     price: params.order.price,
@@ -843,6 +869,8 @@ export async function createEmailMessageFromTransaction(params: {
 /**
  * 取引から所有権を作成する
  */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
 export function createOwnershipInfosFromTransaction(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     order: factory.order.IOrder;
@@ -920,25 +948,104 @@ export async function createPotentialActionsFromTransaction(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     customerContact: factory.transaction.placeOrder.ICustomerContact;
     order: factory.order.IOrder;
-    seller: factory.organization.movieTheater.IOrganization;
+    seller: ISeller;
     sendEmailMessage?: boolean;
 }): Promise<factory.transaction.placeOrder.IPotentialActions> {
-    // クレジットカード支払いアクション
-    let payCreditCardAction: factory.action.trade.pay.IAttributes<factory.paymentMethodType.CreditCard> | null = null;
-    const creditCardPayment = params.order.paymentMethods.find((m) => m.typeOf === factory.paymentMethodType.CreditCard);
-    if (creditCardPayment !== undefined) {
-        payCreditCardAction = {
-            typeOf: factory.actionType.PayAction,
-            object: [{
-                typeOf: <'PaymentMethod'>'PaymentMethod',
-                paymentMethod: <factory.order.IPaymentMethod<factory.paymentMethodType.CreditCard>>creditCardPayment,
-                price: params.order.price,
-                priceCurrency: params.order.priceCurrency
-            }],
-            agent: params.transaction.agent,
-            purpose: params.order
+    // 予約確定アクション
+    const seatReservationAuthorizeActions = <factory.action.authorize.offer.seatReservation.IAction[]>
+        params.transaction.object.authorizeActions
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
+    const confirmReservationActions: factory.action.interact.confirm.reservation.IAttributes<factory.service.webAPI.Identifier>[] = [];
+    // tslint:disable-next-line:max-func-body-length
+    seatReservationAuthorizeActions.forEach((a) => {
+        const actionResult = a.result;
+
+        a.instrument = {
+            typeOf: 'WebAPI',
+            identifier: factory.service.webAPI.Identifier.COA
         };
-    }
+
+        if (actionResult !== undefined) {
+            const updTmpReserveSeatArgs = actionResult.updTmpReserveSeatArgs;
+            const updTmpReserveSeatResult = actionResult.updTmpReserveSeatResult;
+
+            // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
+            const phoneUtil = PhoneNumberUtil.getInstance();
+            const phoneNumber = phoneUtil.parse(params.order.customer.telephone, 'JP');
+            let telNum = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
+
+            // COAでは数字のみ受け付けるので数字以外を除去
+            telNum = telNum.replace(/[^\d]/g, '');
+
+            const updReserveArgs: factory.action.interact.confirm.reservation.IObject4COA = {
+                theaterCode: updTmpReserveSeatArgs.theaterCode,
+                dateJouei: updTmpReserveSeatArgs.dateJouei,
+                titleCode: updTmpReserveSeatArgs.titleCode,
+                titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
+                timeBegin: updTmpReserveSeatArgs.timeBegin,
+                tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum,
+                // tslint:disable-next-line:no-irregular-whitespace
+                reserveName: `${params.order.customer.familyName}　${params.order.customer.givenName}`,
+                // tslint:disable-next-line:no-irregular-whitespace
+                reserveNameJkana: `${params.order.customer.familyName}　${params.order.customer.givenName}`,
+                telNum: telNum,
+                mailAddr: params.order.customer.email,
+                reserveAmount: params.order.price, // デフォルトのpriceCurrencyがJPYなのでこれでよし
+                listTicket: params.order.acceptedOffers
+                    .filter((offer) => offer.itemOffered.typeOf === factory.reservationType.EventReservation)
+                    .map((offer) => {
+                        const reservation = <factory.reservation.event.IReservation<any>>offer.itemOffered;
+                        const coaTicketInfo = reservation.reservedTicket.coaTicketInfo;
+                        if (coaTicketInfo === undefined) {
+                            throw new factory.errors.Argument('Transaction', 'coaTicketInfo undefined in accepted offers');
+                        }
+
+                        return coaTicketInfo;
+                    })
+            };
+
+            confirmReservationActions.push({
+                typeOf: <factory.actionType.ConfirmAction>factory.actionType.ConfirmAction,
+                object: updReserveArgs,
+                agent: params.transaction.agent,
+                purpose: params.order,
+                instrument: a.instrument
+            });
+        }
+    });
+
+    // クレジットカード支払いアクション
+    const authorizeCreditCardActions = <factory.action.authorize.paymentMethod.creditCard.IAction[]>
+        params.transaction.object.authorizeActions
+            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+            .filter((a) => a.result !== undefined)
+            .filter((a) => a.result.paymentMethod === factory.paymentMethodType.CreditCard);
+    const payCreditCardActions: factory.action.trade.pay.IAttributes<factory.paymentMethodType.CreditCard>[] = [];
+    authorizeCreditCardActions.forEach((a) => {
+        const result = <factory.action.authorize.paymentMethod.creditCard.IResult>a.result;
+        if (result.paymentStatus === factory.paymentStatusType.PaymentDue) {
+            payCreditCardActions.push({
+                typeOf: <factory.actionType.PayAction>factory.actionType.PayAction,
+                object: [{
+                    typeOf: <factory.action.trade.pay.TypeOfObject>'PaymentMethod',
+                    paymentMethod: {
+                        name: result.name,
+                        typeOf: <factory.paymentMethodType.CreditCard>result.paymentMethod,
+                        paymentMethodId: result.paymentMethodId,
+                        totalPaymentDue: result.totalPaymentDue,
+                        additionalProperty: (Array.isArray(result.additionalProperty)) ? result.additionalProperty : []
+                    },
+                    price: result.amount,
+                    priceCurrency: factory.priceCurrency.JPY,
+                    entryTranArgs: result.entryTranArgs,
+                    execTranArgs: result.execTranArgs
+                }],
+                agent: params.transaction.agent,
+                purpose: params.order
+            });
+        }
+    });
 
     // 口座支払いアクション
     const authorizeAccountActions = <factory.action.authorize.paymentMethod.account.IAction<factory.accountType>[]>
@@ -969,40 +1076,25 @@ export async function createPotentialActionsFromTransaction(params: {
             };
         });
 
-    // ムビチケ使用アクション
-    let useMvtkAction: factory.action.consume.use.mvtk.IAttributes | null = null;
-    const mvtkAuthorizeAction = <factory.action.authorize.discount.mvtk.IAction>params.transaction.object.authorizeActions
-        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .find((a) => a.object.typeOf === factory.action.authorize.discount.mvtk.ObjectType.Mvtk);
-    if (mvtkAuthorizeAction !== undefined) {
-        useMvtkAction = {
-            typeOf: factory.actionType.UseAction,
-            object: {
-                typeOf: factory.action.consume.use.mvtk.ObjectType.Mvtk,
-                seatInfoSyncIn: mvtkAuthorizeAction.object.seatInfoSyncIn
-            },
-            agent: params.transaction.agent,
-            purpose: params.order
-        };
-    }
+    const payMovieTicketActions: factory.action.trade.pay.IAttributes<factory.paymentMethodType.MovieTicket>[] = [];
 
-    // Pecorinoインセンティブに対する承認アクションの分だけ、Pecorinoインセンティブ付与アクションを作成する
-    let givePecorinoAwardActions: factory.action.transfer.give.pecorinoAward.IAttributes[] = [];
-    const pecorinoAwardAuthorizeActions =
-        (<factory.action.authorize.award.pecorino.IAction[]>params.transaction.object.authorizeActions)
+    // ポイントインセンティブに対する承認アクションの分だけ、ポイントインセンティブ付与アクションを作成する
+    let givePointAwardActions: factory.action.transfer.give.pointAward.IAttributes[] = [];
+    const pointAwardAuthorizeActions =
+        (<factory.action.authorize.award.point.IAction[]>params.transaction.object.authorizeActions)
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((a) => a.object.typeOf === factory.action.authorize.award.pecorino.ObjectType.PecorinoAward);
-    givePecorinoAwardActions = pecorinoAwardAuthorizeActions.map((a) => {
-        const actionResult = <factory.action.authorize.award.pecorino.IResult>a.result;
+            .filter((a) => a.object.typeOf === factory.action.authorize.award.point.ObjectType.PointAward);
+    givePointAwardActions = pointAwardAuthorizeActions.map((a) => {
+        const actionResult = <factory.action.authorize.award.point.IResult>a.result;
 
         return {
             typeOf: <factory.actionType.GiveAction>factory.actionType.GiveAction,
             agent: params.transaction.seller,
             recipient: params.transaction.agent,
             object: {
-                typeOf: factory.action.transfer.give.pecorinoAward.ObjectType.PecorinoAward,
-                pecorinoTransaction: actionResult.pecorinoTransaction,
-                pecorinoEndpoint: actionResult.pecorinoEndpoint
+                typeOf: factory.action.transfer.give.pointAward.ObjectType.PointAward,
+                pointTransaction: actionResult.pointTransaction,
+                pointAPIEndpoint: actionResult.pointAPIEndpoint
             },
             purpose: params.order
         };
@@ -1031,7 +1123,7 @@ export async function createPotentialActionsFromTransaction(params: {
     }
 
     // 会員プログラムが注文アイテムにあれば、プログラム更新タスクを追加
-    const registerProgramMembershipTaskAttributes: factory.task.registerProgramMembership.IAttributes[] = [];
+    const registerProgramMembershipTaskAttributes: factory.task.IAttributes<factory.taskName.RegisterProgramMembership>[] = [];
     const programMembershipOffers = <factory.order.IAcceptedOffer<factory.programMembership.IProgramMembership>[]>
         params.order.acceptedOffers.filter(
             (o) => o.itemOffered.typeOf === <factory.programMembership.ProgramMembershipType>'ProgramMembership'
@@ -1061,7 +1153,6 @@ export async function createPotentialActionsFromTransaction(params: {
                 status: factory.taskStatus.Ready,
                 runsAt: runsAt,
                 remainingNumberOfTries: 10,
-                lastTriedAt: null,
                 numberOfTried: 0,
                 executionResults: [],
                 data: actionAttributes
@@ -1086,11 +1177,12 @@ export async function createPotentialActionsFromTransaction(params: {
             object: params.order,
             agent: params.transaction.agent,
             potentialActions: {
-                payCreditCard: (payCreditCardAction !== null) ? payCreditCardAction : undefined,
+                payCreditCard: payCreditCardActions,
                 payAccount: payAccountActions,
-                useMvtk: (useMvtkAction !== null) ? useMvtkAction : undefined,
+                payMovieTicket: payMovieTicketActions,
                 sendOrder: sendOrderActionAttributes,
-                givePecorinoAward: givePecorinoAwardActions
+                confirmReservation: confirmReservationActions,
+                givePointAward: givePointAwardActions
             }
         }
     };

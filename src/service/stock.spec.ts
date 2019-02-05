@@ -2,6 +2,7 @@
 /**
  * stock service test
  */
+import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 import * as sskts from '../index';
@@ -90,10 +91,10 @@ describe('cancelSeatReservationAuth()', () => {
                 }
             }
         ];
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
 
-        sandbox.mock(actionRepo).expects('findAuthorizeByTransactionId').once()
-            .withExactArgs(existingTransaction.id).resolves(authorizeActions);
+        sandbox.mock(actionRepo).expects('searchByPurpose').once()
+            .resolves(authorizeActions);
         sandbox.mock(sskts.COA.services.reserve).expects('delTmpReserve').once().resolves();
 
         const result = await sskts.service.stock.cancelSeatReservationAuth(existingTransaction.id)({ action: actionRepo });
