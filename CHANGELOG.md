@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v28.0.0 - 2019-02-05
+
+### Added
+
 - 予約確定タスクを追加
 
 ### Changed
@@ -30,17 +44,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文インターフェースをCinerinoに統一
 - クレジットカードサービスをCinerinoに統一
 
-### Deprecated
-
 ### Removed
 
 - 注文照会キー属性を注文から削除
 - 組織リポジトリを削除
 - 割引サービスを削除
-
-### Fixed
-
-### Security
 
 ## v27.0.1 - 2019-01-30
 
