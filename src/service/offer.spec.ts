@@ -39,7 +39,7 @@ describe('searchIndividualScreeningEvents()', () => {
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(itemAvailabilityRepo).expects('findOne').exactly(events.length).resolves(100);
 
-        const result = await OfferService.searchIndividualScreeningEvents(searchConditions)({
+        const result = await OfferService.searchIndividualScreeningEvents(<any>searchConditions)({
             event: eventRepo,
             itemAvailability: itemAvailabilityRepo
         });
