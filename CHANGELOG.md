@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 上映イベントに、スクリーン座席数を最大収容人数としてセット
+
 ### Deprecated
 
 ### Removed
