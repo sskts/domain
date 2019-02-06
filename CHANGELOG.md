@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v28.0.2 - 2019-02-06
+
+### Changed
+
+- 上映イベントインポートタスク処理時に劇場のxmlエンドポイントをDBから読み込むように変更
+
 ## v28.0.1 - 2019-02-06
 
 ### Fixed
