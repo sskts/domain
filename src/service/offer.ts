@@ -45,7 +45,11 @@ export function searchIndividualScreeningEvents(
                 offer.availability = await repos.itemAvailability.findOne(coaInfo.dateJouei, event.identifier);
             }
 
-            return { ...event, ...{ offer: offer } };
+            return {
+                ...event,
+                offer: offer, //  本来不要だが、互換性維持のため
+                offers: offer
+            };
         }));
     };
 }
@@ -77,6 +81,10 @@ export function findIndividualScreeningEventByIdentifier(
             offer.availability = await repos.itemAvailability.findOne(coaInfo.dateJouei, event.identifier);
         }
 
-        return { ...event, ...{ offer: offer } };
+        return {
+            ...event,
+            offer: offer, //  本来不要だが、互換性維持のため
+            offers: offer
+        };
     };
 }
