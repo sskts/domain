@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 上映イベントインポートタスク処理時に劇場のxmlエンドポイントをDBから読み込むように変更
+
 ### Deprecated
 
 ### Removed

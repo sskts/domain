@@ -93,32 +93,43 @@ export function matchWithXML(
 
 /**
  * COAから上映イベントをインポートする
- * @param theaterCode 劇場コード
- * @param importFrom いつから
- * @param importThrough いつまで
- * @param xmlEndPoint XMLスケジュールのエンドポイント
  */
-export function importScreeningEvents(
-    theaterCode: string,
-    importFrom: Date,
-    importThrough: Date,
-    xmlEndPoint?: { baseUrl: string; theaterCodeName: string }
-) {
+export function importScreeningEvents(params: factory.task.IData<factory.taskName.ImportScreeningEvents>) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         event: EventRepo;
         place: PlaceRepo;
+        seller: SellerRepo;
     }) => {
         // 劇場取得
-        const movieTheater = await repos.place.findMovieTheaterByBranchCode(theaterCode);
+        const movieTheater = await repos.place.findMovieTheaterByBranchCode(params.locationBranchCode);
+        const sellers = await repos.seller.search({
+            location: { branchCodes: [params.locationBranchCode] }
+        });
+        const seller = sellers.shift();
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (seller === undefined) {
+            throw new factory.errors.NotFound('Seller');
+        }
+
+        let xmlEndPoint: any;
+        if (Array.isArray((<any>seller).additionalProperty)) {
+            const xmlEndPointProperty = (<any>seller).additionalProperty.find(((p: any) => {
+                return p.name === 'xmlEndPoint';
+            }));
+            xmlEndPoint = (xmlEndPointProperty !== undefined) ? JSON.parse(xmlEndPointProperty.value) : undefined;
+        }
 
         // COAから作品取得
         const filmsFromCOA = await COA.services.master.title({
-            theaterCode: theaterCode
+            theaterCode: params.locationBranchCode
         });
 
-        const targetImportFrom = moment(`${moment(importFrom).tz('Asia/Tokyo').format('YYYY-MM-DD')}T00:00:00+09:00`);
-        const targetImportThrough = moment(`${moment(importThrough).tz('Asia/Tokyo').format('YYYY-MM-DD')}T00:00:00+09:00`).add(1, 'day');
+        const targetImportFrom = moment(`${moment(params.importFrom)
+            .tz('Asia/Tokyo').format('YYYY-MM-DD')}T00:00:00+09:00`);
+        const targetImportThrough = moment(`${moment(params.importThrough)
+            .tz('Asia/Tokyo').format('YYYY-MM-DD')}T00:00:00+09:00`).add(1, 'day');
         debug('importing screening events...', targetImportFrom, targetImportThrough);
 
         // COAから上映イベント取得
@@ -128,7 +139,7 @@ export function importScreeningEvents(
             moment(targetImportThrough).add(-1, 'day').tz('Asia/Tokyo').format('YYYYMMDD')
         );
         const schedulesFromCOA = await COA.services.master.schedule({
-            theaterCode: theaterCode,
+            theaterCode: params.locationBranchCode,
             begin: moment(targetImportFrom).tz('Asia/Tokyo').format('YYYYMMDD'), // COAは日本時間で判断
             end: moment(targetImportThrough).add(-1, 'day').tz('Asia/Tokyo').format('YYYYMMDD') // COAは日本時間で判断
         });
@@ -150,27 +161,27 @@ export function importScreeningEvents(
         if (xmlEndPoint === undefined || schedulesFromXML.length > 0) {
             // COAから区分マスター抽出
             const serviceKubuns = await COA.services.master.kubunName({
-                theaterCode: theaterCode,
+                theaterCode: params.locationBranchCode,
                 kubunClass: '009'
             });
             const acousticKubuns = await COA.services.master.kubunName({
-                theaterCode: theaterCode,
+                theaterCode: params.locationBranchCode,
                 kubunClass: '046'
             });
             const eirinKubuns = await COA.services.master.kubunName({
-                theaterCode: theaterCode,
+                theaterCode: params.locationBranchCode,
                 kubunClass: '044'
             });
             const eizouKubuns = await COA.services.master.kubunName({
-                theaterCode: theaterCode,
+                theaterCode: params.locationBranchCode,
                 kubunClass: '042'
             });
             const joueihousikiKubuns = await COA.services.master.kubunName({
-                theaterCode: theaterCode,
+                theaterCode: params.locationBranchCode,
                 kubunClass: '045'
             });
             const jimakufukikaeKubuns = await COA.services.master.kubunName({
-                theaterCode: theaterCode,
+                theaterCode: params.locationBranchCode,
                 kubunClass: '043'
             });
             debug('kubunNames found.');
@@ -196,7 +207,7 @@ export function importScreeningEvents(
             schedulesFromCOA.forEach((scheduleFromCOA) => {
                 if (xmlEndPoint === undefined || matchWithXML(schedulesFromXML, scheduleFromCOA)) {
                     const screeningEventSeriesIdentifier = factory.event.screeningEventSeries.createIdentifier({
-                        theaterCode: theaterCode,
+                        theaterCode: params.locationBranchCode,
                         titleCode: scheduleFromCOA.titleCode,
                         titleBranchNum: scheduleFromCOA.titleBranchNum
                     });
@@ -250,7 +261,7 @@ export function importScreeningEvents(
             const identifiers = await repos.event.searchIndividualScreeningEvents({
                 typeOf: factory.eventType.ScreeningEvent,
                 superEvent: {
-                    locationBranchCodes: [theaterCode]
+                    locationBranchCodes: [params.locationBranchCode]
                 },
                 startFrom: targetImportFrom.toDate(),
                 startThrough: targetImportThrough.toDate()
