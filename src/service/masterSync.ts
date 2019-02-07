@@ -292,7 +292,7 @@ export function importMovieTheater(theaterCode: string) {
         place: PlaceRepo;
         seller: SellerRepo;
     }): Promise<void> => {
-        const movieTheater = factory.place.movieTheater.createFromCOA(
+        const movieTheater = createMovieTheaterFromCOA(
             await COA.services.master.theater({ theaterCode: theaterCode }),
             await COA.services.master.screen({ theaterCode: theaterCode })
         );
@@ -514,4 +514,77 @@ export function createScreeningEventSeriesId(params: {
         params.titleCode,
         params.titleBranchNum
     ].join('');
+}
+
+/**
+ * COAのマスター抽出結果から作成する
+ * @param theaterFromCOA COA劇場抽出結果
+ * @param screensFromCOA COAスクリーン抽出結果
+ */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+export function createMovieTheaterFromCOA(
+    theaterFromCOA: COA.services.master.ITheaterResult,
+    screensFromCOA: COA.services.master.IScreenResult[]
+): factory.place.movieTheater.IPlace {
+    const identifier = `MovieTheater-${theaterFromCOA.theaterCode}`;
+
+    return {
+        identifier: identifier,
+        screenCount: screensFromCOA.length,
+        branchCode: theaterFromCOA.theaterCode,
+        name: {
+            ja: theaterFromCOA.theaterName,
+            en: theaterFromCOA.theaterNameEng
+        },
+        kanaName: theaterFromCOA.theaterNameKana,
+        containsPlace: screensFromCOA.map((screenFromCOA) => {
+            return createScreeningRoomFromCOA(screenFromCOA);
+        }),
+        typeOf: factory.placeType.MovieTheater,
+        telephone: theaterFromCOA.theaterTelNum
+    };
+}
+
+/**
+ * COAのスクリーン抽出結果から上映室を作成する
+ * @param screenFromCOA COAスクリーン抽出結果
+ */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+export function createScreeningRoomFromCOA(
+    screenFromCOA: COA.services.master.IScreenResult
+): factory.place.movieTheater.IScreeningRoom {
+    const sections: factory.place.movieTheater.IScreeningRoomSection[] = [];
+    const sectionCodes: string[] = [];
+    screenFromCOA.listSeat.forEach((seat) => {
+        if (sectionCodes.indexOf(seat.seatSection) < 0) {
+            sectionCodes.push(seat.seatSection);
+            sections.push({
+                branchCode: seat.seatSection,
+                name: {
+                    ja: `セクション${seat.seatSection}`,
+                    en: `section${seat.seatSection}`
+                },
+                containsPlace: [],
+                typeOf: factory.placeType.ScreeningRoomSection
+            });
+        }
+
+        sections[sectionCodes.indexOf(seat.seatSection)].containsPlace.push({
+            branchCode: seat.seatNum,
+            typeOf: factory.placeType.Seat
+        });
+    });
+
+    return {
+        containsPlace: sections,
+        branchCode: screenFromCOA.screenCode,
+        name: {
+            ja: screenFromCOA.screenName,
+            en: screenFromCOA.screenNameEng
+        },
+        typeOf: factory.placeType.ScreeningRoom,
+        maximumAttendeeCapacity: sections[0].containsPlace.length
+    };
 }
