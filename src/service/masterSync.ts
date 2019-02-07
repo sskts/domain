@@ -188,7 +188,7 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
 
             // 永続化
             const screeningEventSerieses = await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
-                const screeningEventSeries = factory.event.screeningEventSeries.createFromCOA({
+                const screeningEventSeries = createScreeningEventSeriesFromCOA({
                     filmFromCOA: filmFromCOA,
                     movieTheater: movieTheater,
                     eirinKubuns: eirinKubuns,
@@ -206,7 +206,7 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
             const screeningEvents: factory.event.screeningEvent.IEvent[] = [];
             schedulesFromCOA.forEach((scheduleFromCOA) => {
                 if (xmlEndPoint === undefined || matchWithXML(schedulesFromXML, scheduleFromCOA)) {
-                    const screeningEventSeriesIdentifier = factory.event.screeningEventSeries.createIdentifier({
+                    const screeningEventSeriesId = createScreeningEventSeriesId({
                         theaterCode: params.locationBranchCode,
                         titleCode: scheduleFromCOA.titleCode,
                         titleBranchNum: scheduleFromCOA.titleBranchNum
@@ -224,16 +224,16 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
                     }
 
                     // 上映イベントシリーズ取得
-                    const screeningEventSeries = screeningEventSerieses.find((e) => e.identifier === screeningEventSeriesIdentifier);
+                    const screeningEventSeries = screeningEventSerieses.find((e) => e.id === screeningEventSeriesId);
                     if (screeningEventSeries === undefined) {
                         // tslint:disable-next-line:no-console
-                        console.error('screeningEventSeries not found.', screeningEventSeriesIdentifier);
+                        console.error('screeningEventSeries not found.', screeningEventSeriesId);
 
                         return;
                     }
 
                     // 永続化
-                    const screeningEvent = factory.event.screeningEvent.createFromCOA({
+                    const screeningEvent = createScreeningEventFromCOA({
                         performanceFromCOA: scheduleFromCOA,
                         screenRoom: screenRoom,
                         superEvent: screeningEventSeries,
@@ -258,20 +258,20 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
             debug(`${screeningEvents.length} screeningEvents stored.`);
 
             // COAから削除されたイベントをキャンセル済ステータスへ変更
-            const identifiers = await repos.event.searchIndividualScreeningEvents({
+            const ids = await repos.event.searchIndividualScreeningEvents({
                 typeOf: factory.eventType.ScreeningEvent,
                 superEvent: {
                     locationBranchCodes: [params.locationBranchCode]
                 },
                 startFrom: targetImportFrom.toDate(),
                 startThrough: targetImportThrough.toDate()
-            }).then((events) => events.map((e) => e.identifier));
-            const identifiersShouldBe = screeningEvents.map((e) => e.identifier);
-            const cancelledIdentifiers = difference(identifiers, identifiersShouldBe);
-            debug(`cancelling ${cancelledIdentifiers.length} events...`);
-            await Promise.all(cancelledIdentifiers.map(async (identifier) => {
+            }).then((events) => events.map((e) => e.id));
+            const idsShouldBe = screeningEvents.map((e) => e.id);
+            const cancelledIds = difference(ids, idsShouldBe);
+            debug(`cancelling ${cancelledIds.length} events...`);
+            await Promise.all(cancelledIds.map(async (id) => {
                 try {
-                    await repos.event.cancelIndividualScreeningEvent(identifier);
+                    await repos.event.cancelIndividualScreeningEvent(id);
                 } catch (error) {
                     // tslint:disable-next-line:no-single-line-block-comment
                     /* istanbul ignore next */
@@ -279,7 +279,7 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
                     console.error(error);
                 }
             }));
-            debug(`${cancelledIdentifiers.length} events cancelled.`);
+            debug(`${cancelledIds.length} events cancelled.`);
         }
     };
 }
@@ -292,7 +292,7 @@ export function importMovieTheater(theaterCode: string) {
         place: PlaceRepo;
         seller: SellerRepo;
     }): Promise<void> => {
-        const movieTheater = factory.place.movieTheater.createFromCOA(
+        const movieTheater = createMovieTheaterFromCOA(
             await COA.services.master.theater({ theaterCode: theaterCode }),
             await COA.services.master.screen({ theaterCode: theaterCode })
         );
@@ -316,5 +316,272 @@ export function importMovieTheater(theaterCode: string) {
                 telephone: movieTheater.telephone
             }
         ).exec();
+    };
+}
+
+/**
+ * COAデータから上映イベントを作成する
+ */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+export function createScreeningEventFromCOA(params: {
+    performanceFromCOA: COA.services.master.IScheduleResult;
+    screenRoom: factory.place.movieTheater.IScreeningRoom;
+    superEvent: factory.event.screeningEventSeries.IEvent;
+    serviceKubuns: COA.services.master.IKubunNameResult[];
+    acousticKubuns: COA.services.master.IKubunNameResult[];
+}): factory.event.screeningEvent.IEvent {
+    const id = createScreeningEventIdFromCOA({
+        theaterCode: params.superEvent.location.branchCode,
+        titleCode: params.superEvent.workPerformed.identifier,
+        titleBranchNum: params.performanceFromCOA.titleBranchNum,
+        dateJouei: params.performanceFromCOA.dateJouei,
+        screenCode: params.performanceFromCOA.screenCode,
+        timeBegin: params.performanceFromCOA.timeBegin
+    });
+
+    // COA情報を整形して開始日時と終了日時を作成('2500'のような日またぎの時刻入力に対応)
+    let timeEnd = params.performanceFromCOA.timeEnd;
+    let addDay = 0;
+    try {
+        const DAY = 2400;
+        addDay += Math.floor(Number(timeEnd) / DAY);
+        // tslint:disable-next-line:no-magic-numbers
+        timeEnd = `0000${Number(timeEnd) % DAY}`.slice(-4);
+    } catch (error) {
+        // no op
+    }
+
+    const endDate = moment(`${params.performanceFromCOA.dateJouei} ${timeEnd} +09:00`, 'YYYYMMDD HHmm Z').add(addDay, 'days')
+        .toDate();
+    const startDate = moment(`${params.performanceFromCOA.dateJouei} ${params.performanceFromCOA.timeBegin} +09:00`, 'YYYYMMDD HHmm Z')
+        .toDate();
+
+    const coaInfo: factory.event.screeningEvent.ICOAInfo = {
+        theaterCode: params.superEvent.location.branchCode,
+        dateJouei: params.performanceFromCOA.dateJouei,
+        titleCode: params.performanceFromCOA.titleCode,
+        titleBranchNum: params.performanceFromCOA.titleBranchNum,
+        timeBegin: params.performanceFromCOA.timeBegin,
+        timeEnd: params.performanceFromCOA.timeEnd,
+        screenCode: params.performanceFromCOA.screenCode,
+        trailerTime: params.performanceFromCOA.trailerTime,
+        kbnService: params.serviceKubuns.filter((kubun) => kubun.kubunCode === params.performanceFromCOA.kbnService)[0],
+        kbnAcoustic: params.acousticKubuns.filter((kubun) => kubun.kubunCode === params.performanceFromCOA.kbnAcoustic)[0],
+        nameServiceDay: params.performanceFromCOA.nameServiceDay,
+        availableNum: params.performanceFromCOA.availableNum,
+        rsvStartDate: params.performanceFromCOA.rsvStartDate,
+        rsvEndDate: params.performanceFromCOA.rsvEndDate,
+        flgEarlyBooking: params.performanceFromCOA.flgEarlyBooking
+    };
+
+    return {
+        typeOf: factory.eventType.ScreeningEvent,
+        id: id,
+        identifier: id,
+        name: params.superEvent.name,
+        eventStatus: factory.eventStatusType.EventScheduled,
+        workPerformed: params.superEvent.workPerformed,
+        location: {
+            typeOf: <factory.placeType.ScreeningRoom>params.screenRoom.typeOf,
+            branchCode: params.screenRoom.branchCode,
+            name: params.screenRoom.name
+        },
+        endDate: endDate,
+        startDate: startDate,
+        superEvent: params.superEvent,
+        coaInfo: coaInfo,
+        offers: <any>{},
+        checkInCount: 0,
+        attendeeCount: 0,
+        maximumAttendeeCapacity: params.screenRoom.maximumAttendeeCapacity,
+        remainingAttendeeCapacity: params.screenRoom.maximumAttendeeCapacity,
+        additionalProperty: [
+            {
+                name: 'COA_ENDPOINT',
+                value: process.env.COA_ENDPOINT
+            },
+            {
+                name: 'coaInfo',
+                value: coaInfo
+            }
+        ]
+    };
+}
+
+/**
+ * COAの作品抽出結果からFilmオブジェクトを作成する
+ */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+export function createScreeningEventSeriesFromCOA(params: {
+    filmFromCOA: COA.services.master.ITitleResult;
+    movieTheater: factory.place.movieTheater.IPlace;
+    eirinKubuns: COA.services.master.IKubunNameResult[];
+    eizouKubuns: COA.services.master.IKubunNameResult[];
+    joueihousikiKubuns: COA.services.master.IKubunNameResult[];
+    jimakufukikaeKubuns: COA.services.master.IKubunNameResult[];
+}): factory.event.screeningEventSeries.IEvent {
+    const endDate = (moment(`${params.filmFromCOA.dateEnd} +09:00`, 'YYYYMMDD Z').isValid())
+        ? moment(`${params.filmFromCOA.dateEnd} +09:00`, 'YYYYMMDD Z').toDate()
+        : undefined;
+    const startDate = (moment(`${params.filmFromCOA.dateBegin} +09:00`, 'YYYYMMDD Z').isValid())
+        ? moment(`${params.filmFromCOA.dateBegin} +09:00`, 'YYYYMMDD Z').toDate()
+        : undefined;
+    // title_codeは劇場をまたいで共有、title_branch_numは劇場毎に管理
+    const id = createScreeningEventSeriesId({
+        theaterCode: params.movieTheater.branchCode,
+        titleCode: params.filmFromCOA.titleCode,
+        titleBranchNum: params.filmFromCOA.titleBranchNum
+    });
+
+    return {
+        id: id,
+        identifier: id,
+        name: {
+            ja: params.filmFromCOA.titleName,
+            en: params.filmFromCOA.titleNameEng
+        },
+        kanaName: params.filmFromCOA.titleNameKana,
+        alternativeHeadline: params.filmFromCOA.titleNameShort,
+        location: {
+            id: (params.movieTheater.id !== undefined) ? params.movieTheater.id : '',
+            branchCode: params.movieTheater.branchCode,
+            name: params.movieTheater.name,
+            kanaName: params.movieTheater.kanaName,
+            typeOf: <factory.placeType.MovieTheater>params.movieTheater.typeOf
+        },
+        organizer: {
+            typeOf: factory.organizationType.MovieTheater,
+            identifier: params.movieTheater.id,
+            name: params.movieTheater.name
+        },
+        videoFormat: params.eizouKubuns.filter((kubun) => kubun.kubunCode === params.filmFromCOA.kbnEizou)[0],
+        soundFormat: [],
+        workPerformed: {
+            identifier: params.filmFromCOA.titleCode,
+            name: params.filmFromCOA.titleNameOrig,
+            duration: moment.duration(params.filmFromCOA.showTime, 'm').toISOString(),
+            contentRating: params.eirinKubuns.filter((kubun) => kubun.kubunCode === params.filmFromCOA.kbnEirin)[0],
+            typeOf: factory.creativeWorkType.Movie
+        },
+        duration: moment.duration(params.filmFromCOA.showTime, 'm').toISOString(),
+        endDate: endDate,
+        startDate: startDate,
+        coaInfo: {
+            titleBranchNum: params.filmFromCOA.titleBranchNum,
+            kbnJoueihousiki: params.joueihousikiKubuns.filter((kubun) => kubun.kubunCode === params.filmFromCOA.kbnJoueihousiki)[0],
+            kbnJimakufukikae: params.jimakufukikaeKubuns.filter((kubun) => kubun.kubunCode === params.filmFromCOA.kbnJimakufukikae)[0],
+            flgMvtkUse: params.filmFromCOA.flgMvtkUse,
+            dateMvtkBegin: params.filmFromCOA.dateMvtkBegin
+        },
+        eventStatus: factory.eventStatusType.EventScheduled,
+        typeOf: factory.eventType.ScreeningEventSeries
+    };
+}
+
+/**
+ * COA情報から上映イベントIDを作成する
+ */
+export function createScreeningEventIdFromCOA(params: {
+    theaterCode: string;
+    titleCode: string;
+    titleBranchNum: string;
+    dateJouei: string;
+    screenCode: string;
+    timeBegin: string;
+}): string {
+    return [
+        createScreeningEventSeriesId(params),
+        params.dateJouei,
+        params.screenCode,
+        params.timeBegin
+    ].join('');
+}
+
+/**
+ * COA情報から上映イベント識別子を作成する
+ */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+export function createScreeningEventSeriesId(params: {
+    theaterCode: string;
+    titleCode: string;
+    titleBranchNum: string;
+}) {
+    return [
+        params.theaterCode,
+        params.titleCode,
+        params.titleBranchNum
+    ].join('');
+}
+
+/**
+ * COAのマスター抽出結果から作成する
+ */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+export function createMovieTheaterFromCOA(
+    theaterFromCOA: COA.services.master.ITheaterResult,
+    screensFromCOA: COA.services.master.IScreenResult[]
+): factory.place.movieTheater.IPlace {
+    const id = `MovieTheater-${theaterFromCOA.theaterCode}`;
+
+    return {
+        id: id,
+        screenCount: screensFromCOA.length,
+        branchCode: theaterFromCOA.theaterCode,
+        name: {
+            ja: theaterFromCOA.theaterName,
+            en: theaterFromCOA.theaterNameEng
+        },
+        kanaName: theaterFromCOA.theaterNameKana,
+        containsPlace: screensFromCOA.map((screenFromCOA) => {
+            return createScreeningRoomFromCOA(screenFromCOA);
+        }),
+        typeOf: factory.placeType.MovieTheater,
+        telephone: theaterFromCOA.theaterTelNum
+    };
+}
+
+/**
+ * COAのスクリーン抽出結果から上映室を作成する
+ */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+export function createScreeningRoomFromCOA(
+    screenFromCOA: COA.services.master.IScreenResult
+): factory.place.movieTheater.IScreeningRoom {
+    const sections: factory.place.movieTheater.IScreeningRoomSection[] = [];
+    const sectionCodes: string[] = [];
+    screenFromCOA.listSeat.forEach((seat) => {
+        if (sectionCodes.indexOf(seat.seatSection) < 0) {
+            sectionCodes.push(seat.seatSection);
+            sections.push({
+                branchCode: seat.seatSection,
+                name: {
+                    ja: `セクション${seat.seatSection}`,
+                    en: `section${seat.seatSection}`
+                },
+                containsPlace: [],
+                typeOf: factory.placeType.ScreeningRoomSection
+            });
+        }
+
+        sections[sectionCodes.indexOf(seat.seatSection)].containsPlace.push({
+            branchCode: seat.seatNum,
+            typeOf: factory.placeType.Seat
+        });
+    });
+
+    return {
+        containsPlace: sections,
+        branchCode: screenFromCOA.screenCode,
+        name: {
+            ja: screenFromCOA.screenName,
+            en: screenFromCOA.screenNameEng
+        },
+        typeOf: factory.placeType.ScreeningRoom,
+        maximumAttendeeCapacity: sections[0].containsPlace.length
     };
 }

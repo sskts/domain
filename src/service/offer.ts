@@ -58,13 +58,13 @@ export function searchIndividualScreeningEvents(
  * 個々の上映イベントを識別子で取得する
  */
 export function findIndividualScreeningEventByIdentifier(
-    identifier: string
+    id: string
 ): IEventOperation<factory.event.screeningEvent.IEvent> {
     return async (repos: {
         event: EventRepository;
         itemAvailability?: ScreeningEventItemAvailabilityRepo;
     }) => {
-        const event = await repos.event.findIndividualScreeningEventByIdentifier(identifier);
+        const event = await repos.event.findIndividualScreeningEventByIdentifier(id);
 
         // 必ず定義されている前提
         const coaInfo = <factory.event.screeningEvent.ICOAInfo>event.coaInfo;
