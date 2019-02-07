@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v28.0.4 - 2019-02-07
+
+### Changed
+
+- install @cinerino/domain@1.0.0-alpha.139
+- install @motionpicture/sskts-factory@8.0.1
+
 ## v28.0.3 - 2019-02-07
 
 ### Changed
