@@ -28,16 +28,14 @@ export class MongoRepository {
 
     /**
      * 在庫状況をひとつ取得する
-     * @param screeningDay 上映日
-     * @param eventIdentifier 上映イベント識別子
      */
-    public async findOne(screeningDay: string, eventIdentifier: string):
+    public async findOne(screeningDay: string, eventId: string):
         Promise<number | null> {
         const key = MongoRepository.CREATE_REDIS_KEY(screeningDay);
 
         return new Promise<number | null>((resolve, reject) => {
             // 上映イベント在庫状況を取得
-            this.redisClient.hget(key, eventIdentifier, (err, res) => {
+            this.redisClient.hget(key, eventId, (err, res) => {
                 debug('hget processed.', err, res);
                 if (err instanceof Error) {
                     reject(err);
@@ -61,19 +59,16 @@ export class MongoRepository {
 
     /**
      * 在庫状況をひとつ更新する
-     * @param screeningDay 上映日
-     * @param eventIdentifier 上映イベント識別子
-     * @param itemAvailability 在庫状況表現
      */
     public async updateOne(
         screeningDay: string,
-        eventIdentifier: string,
+        eventId: string,
         itemAvailability: number
     ): Promise<void> {
         const key = MongoRepository.CREATE_REDIS_KEY(screeningDay);
 
         return new Promise<void>(async (resolve, reject) => {
-            this.redisClient.hset(key, eventIdentifier, itemAvailability.toString(), (err) => {
+            this.redisClient.hset(key, eventId, itemAvailability.toString(), (err) => {
                 debug('hset processed.', err);
                 if (err instanceof Error) {
                     reject(err);

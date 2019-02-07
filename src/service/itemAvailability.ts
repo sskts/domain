@@ -1,15 +1,13 @@
 /**
  * 注文アイテムの在庫状況を表現するサービス
- * @namespace service.itemAvailability
  */
-
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import * as moment from 'moment-timezone';
 
 import { MongoRepository as ItemAvailabilityRepository } from '../repo/itemAvailability/screeningEvent';
 
-import * as factory from '../factory';
+import * as MasterSyncService from './masterSync';
 
 const debug = createDebug('sskts-domain:service:itemAvailability');
 
@@ -34,7 +32,7 @@ export function updateIndividualScreeningEvents(locationBranchCode: string, star
             // 上映イベントごとに空席状況を生成して保管
             await Promise.all(
                 countFreeSeatDate.listPerformance.map(async (countFreeSeatPerformance) => {
-                    const eventIdentifier = factory.event.screeningEvent.createIdentifierFromCOA({
+                    const eventId = MasterSyncService.createScreeningEventIdFromCOA({
                         theaterCode: countFreeSeatResult.theaterCode,
                         titleCode: countFreeSeatPerformance.titleCode,
                         titleBranchNum: countFreeSeatPerformance.titleBranchNum,
@@ -50,10 +48,10 @@ export function updateIndividualScreeningEvents(locationBranchCode: string, star
                     );
 
                     // 永続化
-                    debug('saving item availability... identifier:', eventIdentifier);
+                    debug('saving item availability... identifier:', eventId);
                     await repos.itemAvailability.updateOne(
                         countFreeSeatDate.dateJouei,
-                        eventIdentifier,
+                        eventId,
                         itemAvailability
                     );
                     debug('item availability saved');
@@ -65,8 +63,6 @@ export function updateIndividualScreeningEvents(locationBranchCode: string, star
 
 /**
  * 座席数から在庫状況表現を生成する
- * @param numberOfAvailableSeats 空席数
- * @param numberOfAllSeats 全座席数
  */
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */

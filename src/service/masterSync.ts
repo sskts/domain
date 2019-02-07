@@ -206,7 +206,7 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
             const screeningEvents: factory.event.screeningEvent.IEvent[] = [];
             schedulesFromCOA.forEach((scheduleFromCOA) => {
                 if (xmlEndPoint === undefined || matchWithXML(schedulesFromXML, scheduleFromCOA)) {
-                    const screeningEventSeriesIdentifier = createScreeningEventSeriesId({
+                    const screeningEventSeriesId = createScreeningEventSeriesId({
                         theaterCode: params.locationBranchCode,
                         titleCode: scheduleFromCOA.titleCode,
                         titleBranchNum: scheduleFromCOA.titleBranchNum
@@ -224,10 +224,10 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
                     }
 
                     // 上映イベントシリーズ取得
-                    const screeningEventSeries = screeningEventSerieses.find((e) => e.identifier === screeningEventSeriesIdentifier);
+                    const screeningEventSeries = screeningEventSerieses.find((e) => e.id === screeningEventSeriesId);
                     if (screeningEventSeries === undefined) {
                         // tslint:disable-next-line:no-console
-                        console.error('screeningEventSeries not found.', screeningEventSeriesIdentifier);
+                        console.error('screeningEventSeries not found.', screeningEventSeriesId);
 
                         return;
                     }
@@ -258,20 +258,20 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
             debug(`${screeningEvents.length} screeningEvents stored.`);
 
             // COAから削除されたイベントをキャンセル済ステータスへ変更
-            const identifiers = await repos.event.searchIndividualScreeningEvents({
+            const ids = await repos.event.searchIndividualScreeningEvents({
                 typeOf: factory.eventType.ScreeningEvent,
                 superEvent: {
                     locationBranchCodes: [params.locationBranchCode]
                 },
                 startFrom: targetImportFrom.toDate(),
                 startThrough: targetImportThrough.toDate()
-            }).then((events) => events.map((e) => e.identifier));
-            const identifiersShouldBe = screeningEvents.map((e) => e.identifier);
-            const cancelledIdentifiers = difference(identifiers, identifiersShouldBe);
-            debug(`cancelling ${cancelledIdentifiers.length} events...`);
-            await Promise.all(cancelledIdentifiers.map(async (identifier) => {
+            }).then((events) => events.map((e) => e.id));
+            const idsShouldBe = screeningEvents.map((e) => e.id);
+            const cancelledIds = difference(ids, idsShouldBe);
+            debug(`cancelling ${cancelledIds.length} events...`);
+            await Promise.all(cancelledIds.map(async (id) => {
                 try {
-                    await repos.event.cancelIndividualScreeningEvent(identifier);
+                    await repos.event.cancelIndividualScreeningEvent(id);
                 } catch (error) {
                     // tslint:disable-next-line:no-single-line-block-comment
                     /* istanbul ignore next */
@@ -279,7 +279,7 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
                     console.error(error);
                 }
             }));
-            debug(`${cancelledIdentifiers.length} events cancelled.`);
+            debug(`${cancelledIds.length} events cancelled.`);
         }
     };
 }
@@ -383,7 +383,7 @@ export function createScreeningEventFromCOA(params: {
         eventStatus: factory.eventStatusType.EventScheduled,
         workPerformed: params.superEvent.workPerformed,
         location: {
-            typeOf: params.screenRoom.typeOf,
+            typeOf: <factory.placeType.ScreeningRoom>params.screenRoom.typeOf,
             branchCode: params.screenRoom.branchCode,
             name: params.screenRoom.name
         },
@@ -449,11 +449,11 @@ export function createScreeningEventSeriesFromCOA(params: {
             branchCode: params.movieTheater.branchCode,
             name: params.movieTheater.name,
             kanaName: params.movieTheater.kanaName,
-            typeOf: params.movieTheater.typeOf
+            typeOf: <factory.placeType.MovieTheater>params.movieTheater.typeOf
         },
         organizer: {
             typeOf: factory.organizationType.MovieTheater,
-            identifier: params.movieTheater.identifier,
+            identifier: params.movieTheater.id,
             name: params.movieTheater.name
         },
         videoFormat: params.eizouKubuns.filter((kubun) => kubun.kubunCode === params.filmFromCOA.kbnEizou)[0],
@@ -518,8 +518,6 @@ export function createScreeningEventSeriesId(params: {
 
 /**
  * COAのマスター抽出結果から作成する
- * @param theaterFromCOA COA劇場抽出結果
- * @param screensFromCOA COAスクリーン抽出結果
  */
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
@@ -527,10 +525,10 @@ export function createMovieTheaterFromCOA(
     theaterFromCOA: COA.services.master.ITheaterResult,
     screensFromCOA: COA.services.master.IScreenResult[]
 ): factory.place.movieTheater.IPlace {
-    const identifier = `MovieTheater-${theaterFromCOA.theaterCode}`;
+    const id = `MovieTheater-${theaterFromCOA.theaterCode}`;
 
     return {
-        identifier: identifier,
+        id: id,
         screenCount: screensFromCOA.length,
         branchCode: theaterFromCOA.theaterCode,
         name: {
@@ -548,7 +546,6 @@ export function createMovieTheaterFromCOA(
 
 /**
  * COAのスクリーン抽出結果から上映室を作成する
- * @param screenFromCOA COAスクリーン抽出結果
  */
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
