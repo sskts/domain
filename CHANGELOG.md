@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 上映イベントに、スクリーン座席数を最大収容人数としてセット
-- install @motionpicture/sskts-factory@8.0.0
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v28.0.3 - 2019-02-07
+
+### Changed
+
+- 上映イベントに、スクリーン座席数を最大収容人数としてセット
+- install @motionpicture/sskts-factory@8.0.0
 
 ## v28.0.2 - 2019-02-06
 
