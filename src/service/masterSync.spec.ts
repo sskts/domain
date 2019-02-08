@@ -497,7 +497,7 @@ describe('importMovieTheater()', () => {
         const placeRepo = new PlaceRepo(mongoose.connection);
 
         sandbox.stub(COA.services.master, 'theater')
-            .returns({});
+            .returns({ theaterTelNum: '0312345678' });
         sandbox.stub(COA.services.master, 'screen')
             .returns([{ listSeat: [{ seatSection: 'seatSection', seatNum: 'seatNum' }] }]);
         sandbox.mock(placeRepo)

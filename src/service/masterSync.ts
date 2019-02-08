@@ -3,6 +3,7 @@
  */
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 // @ts-ignore
 import * as difference from 'lodash.difference';
 import * as moment from 'moment-timezone';
@@ -302,6 +303,20 @@ export function importMovieTheater(theaterCode: string) {
         await repos.place.saveMovieTheater(movieTheater);
         debug('movieTheater stored.');
 
+        // 日本語フォーマットで電話番号が提供される想定なので変換
+        let formatedPhoneNumber: string;
+        try {
+            const phoneUtil = PhoneNumberUtil.getInstance();
+            const phoneNumber = phoneUtil.parse(movieTheater.telephone, 'JP');
+            if (!phoneUtil.isValidNumber(phoneNumber)) {
+                throw new Error('Invalid phone number format.');
+            }
+
+            formatedPhoneNumber = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
+        } catch (error) {
+            throw new Error(`電話番号フォーマット時に問題が発生しました:${error.message}`);
+        }
+
         // 組織の属性を更新
         await repos.seller.organizationModel.findOneAndUpdate(
             {
@@ -313,7 +328,7 @@ export function importMovieTheater(theaterCode: string) {
                 'name.en': movieTheater.name.en,
                 'location.name.ja': movieTheater.name.ja,
                 'location.name.en': movieTheater.name.en,
-                telephone: movieTheater.telephone
+                telephone: formatedPhoneNumber
             }
         ).exec();
     };
