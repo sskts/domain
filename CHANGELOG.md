@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - 販売者の電話番号をE.164フォーマット化
+- 所有権インターフェースをCinerinoに統一
 
 ### Deprecated
 

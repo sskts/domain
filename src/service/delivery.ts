@@ -72,7 +72,8 @@ export function sendOrder(params: factory.action.transfer.send.order.IAttributes
             });
 
             // 会員プログラムがアイテムにある場合は、所有権が作成されたこのタイミングで登録プロセスロック解除
-            const programMembershipOwnershipInfos = <factory.ownershipInfo.IOwnershipInfo<'ProgramMembership'>[]>
+            const programMembershipOwnershipInfos =
+                <factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<'ProgramMembership'>>[]>
                 transactionResult.ownershipInfos.filter((o) => o.typeOfGood.typeOf === 'ProgramMembership');
             await Promise.all(programMembershipOwnershipInfos.map(async (o) => {
                 const memberOf = <factory.programMembership.IProgramMembership>(<factory.person.IPerson>o.ownedBy).memberOf;

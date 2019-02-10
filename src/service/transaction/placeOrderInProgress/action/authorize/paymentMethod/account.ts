@@ -50,6 +50,8 @@ export function create<T extends factory.accountType>(params: {
          */
         transferTransactionService?: pecorinoapi.service.transaction.Transfer;
     }) => {
+        const now = new Date();
+
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,
             id: params.transaction.id
@@ -66,10 +68,13 @@ export function create<T extends factory.accountType>(params: {
         if (transaction.agent.memberOf === undefined) {
             throw new factory.errors.Forbidden('Membership required');
         }
-        const programMemberships = await repos.ownershipInfo.search4cinemasunshine({
-            goodType: 'ProgramMembership',
-            ownedBy: transaction.agent.memberOf.membershipNumber,
-            ownedAt: new Date()
+        const programMemberships = await repos.ownershipInfo.search<factory.programMembership.ProgramMembershipType>({
+            typeOfGood: {
+                typeOf: 'ProgramMembership'
+            },
+            ownedBy: { id: transaction.agent.id },
+            ownedFrom: now,
+            ownedThrough: now
         });
         const pecorinoPaymentAward = programMemberships.reduce((a, b) => [...a, ...b.typeOfGood.award], [])
             .find((a) => a === factory.programMembership.Award.PecorinoPayment);

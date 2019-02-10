@@ -55,7 +55,7 @@ describe('ポイント決済を承認する', () => {
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves(programMemberships);
+        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves(programMemberships);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(actionRepo).expects('complete').once().resolves(action);
@@ -111,7 +111,7 @@ describe('ポイント決済を承認する', () => {
         const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
 
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').never();
+        sandbox.mock(ownershipInfoRepo).expects('search').never();
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
@@ -167,7 +167,7 @@ describe('ポイント決済を承認する', () => {
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const transferService = new sskts.pecorinoapi.service.transaction.Transfer(<any>{});
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves(programMemberships);
+        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves(programMemberships);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
@@ -231,7 +231,7 @@ describe('ポイント決済を承認する', () => {
             }
         }];
         sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves(programMemberships);
+        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves(programMemberships);
         sandbox.mock(actionRepo).expects('start').once().resolves(action);
         sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
         sandbox.mock(transferService).expects('start').once().rejects(startPayTransactionResult);

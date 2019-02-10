@@ -1,11 +1,9 @@
 import { repository } from '@cinerino/domain';
-// import * as mongoose from 'mongoose';
-
-// import ownershipInfoModel from './mongoose/model/ownershipInfo';
 
 import * as factory from '../factory';
 
-export type IOwnershipInfo<T extends factory.ownershipInfo.IGoodType> = factory.ownershipInfo.IOwnershipInfo<T>;
+export type IOwnershipInfo<T extends factory.ownershipInfo.IGoodType> =
+    factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<T>>;
 
 /**
  * 所有権リポジトリ
@@ -15,7 +13,7 @@ export class MongoRepository extends repository.OwnershipInfo {
      * 所有権情報を保管する
      * @param ownershipInfo ownershipInfo object
      */
-    public async saveByIdentifier(ownershipInfo: factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>) {
+    public async saveByIdentifier(ownershipInfo: IOwnershipInfo<factory.ownershipInfo.IGoodType>) {
         await this.ownershipInfoModel.findOneAndUpdate(
             {
                 identifier: ownershipInfo.identifier
@@ -32,7 +30,7 @@ export class MongoRepository extends repository.OwnershipInfo {
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore next */
     public async search4cinemasunshine<T extends factory.ownershipInfo.IGoodType>(
-        searchConditions: factory.ownershipInfo.ISearchConditions<T>
+        searchConditions: factory.ownershipInfo.ISearchConditions4cinemasunshine<T>
     ): Promise<IOwnershipInfo<T>[]> {
         const andConditions: any[] = [
             { 'typeOfGood.typeOf': searchConditions.goodType }

@@ -874,10 +874,10 @@ export async function createEmailMessageFromTransaction(params: {
 export function createOwnershipInfosFromTransaction(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     order: factory.order.IOrder;
-}): factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>[] {
+}): factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<factory.ownershipInfo.IGoodType>>[] {
     return params.order.acceptedOffers.map((acceptedOffer, offerIndex) => {
         const itemOffered = acceptedOffer.itemOffered;
-        let ownershipInfo: factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGoodType>;
+        let ownershipInfo: factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<factory.ownershipInfo.IGoodType>>;
         const identifier = util.format(
             '%s-%s-%s',
             itemOffered.typeOf,
@@ -900,6 +900,7 @@ export function createOwnershipInfosFromTransaction(params: {
                 }
                 ownedThrough = moment(params.order.orderDate).add(eligibleDuration.value, 'seconds').toDate();
                 ownershipInfo = {
+                    id: '',
                     typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
                     identifier: identifier,
                     ownedBy: params.transaction.agent,
@@ -921,6 +922,7 @@ export function createOwnershipInfosFromTransaction(params: {
                 ownedThrough = itemOffered.reservationFor.endDate;
 
                 ownershipInfo = {
+                    id: '',
                     typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
                     identifier: identifier,
                     ownedBy: params.transaction.agent,
