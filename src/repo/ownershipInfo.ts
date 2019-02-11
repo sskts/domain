@@ -24,53 +24,6 @@ export class MongoRepository extends repository.OwnershipInfo {
     }
 
     /**
-     * 所有権を検索する
-     * @deprecated Use search
-     */
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore next */
-    public async search4cinemasunshine<T extends factory.ownershipInfo.IGoodType>(
-        searchConditions: factory.ownershipInfo.ISearchConditions4cinemasunshine<T>
-    ): Promise<IOwnershipInfo<T>[]> {
-        const andConditions: any[] = [
-            { 'typeOfGood.typeOf': searchConditions.goodType }
-        ];
-
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (searchConditions.identifier !== undefined) {
-            andConditions.push({ identifier: searchConditions.identifier });
-        }
-
-        // 誰の所有か
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (searchConditions.ownedBy !== undefined) {
-            andConditions.push({
-                'ownedBy.memberOf.membershipNumber': {
-                    $exists: true,
-                    $eq: searchConditions.ownedBy
-                }
-            });
-        }
-
-        // いつの時点での所有か
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (searchConditions.ownedAt instanceof Date) {
-            andConditions.push({
-                ownedFrom: { $lte: searchConditions.ownedAt },
-                ownedThrough: { $gte: searchConditions.ownedAt }
-            });
-        }
-
-        return this.ownershipInfoModel.find({ $and: andConditions })
-            .sort({ ownedFrom: 1 })
-            .exec()
-            .then((docs) => docs.map((doc) => doc.toObject()));
-    }
-
-    /**
      * 会員プログラムをカウントする
      * @experimental
      */
@@ -96,7 +49,8 @@ export class MongoRepository extends repository.OwnershipInfo {
             });
         }
 
-        return this.ownershipInfoModel.countDocuments({ $and: andConditions }).exec();
+        return this.ownershipInfoModel.countDocuments({ $and: andConditions })
+            .exec();
     }
 
     /**
