@@ -45,7 +45,10 @@ export class MongoRepository extends repository.OwnershipInfo {
 
         if (Array.isArray(searchConditions.theaterIds)) {
             andConditions.push({
-                'acquiredFrom.id': { $in: searchConditions.theaterIds }
+                'acquiredFrom.id': {
+                    $exists: true,
+                    $in: searchConditions.theaterIds
+                }
             });
         }
 
@@ -74,7 +77,10 @@ export class MongoRepository extends repository.OwnershipInfo {
         /* istanbul ignore else */
         if (Array.isArray(searchConditions.theaterIds)) {
             andConditions.push({
-                'acquiredFrom.id': { $in: searchConditions.theaterIds }
+                'acquiredFrom.id': {
+                    $exists: true,
+                    $in: searchConditions.theaterIds
+                }
             });
         }
 

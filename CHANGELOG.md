@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 販売者の電話番号をE.164フォーマット化
 - 所有権インターフェースをCinerinoに統一
+- MongoDBインデックス調整
 
 ### Deprecated
 
