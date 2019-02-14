@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 販売者の電話番号をE.164フォーマット化
-- 所有権インターフェースをCinerinoに統一
-- MongoDBインデックス調整
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v29.0.0 - 2019-02-14
+
+### Changed
+
+- 販売者の電話番号をE.164フォーマット化
+- 所有権インターフェースをCinerinoに統一
+- MongoDBインデックス調整
 
 ## v28.0.4 - 2019-02-07
 
