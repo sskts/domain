@@ -22,15 +22,16 @@ export class MongoRepository implements Repository {
     }
 
     /**
-     * save a movie
      * 映画作品を保管する
-     * @param movie movie object
      */
     public async saveMovie(movie: factory.creativeWork.movie.ICreativeWork) {
         await this.creativeWorkModel.findOneAndUpdate(
             {
-                identifier: movie.identifier,
-                typeOf: factory.creativeWorkType.Movie
+                typeOf: factory.creativeWorkType.Movie,
+                identifier: {
+                    $exists: true,
+                    $eq: movie.identifier
+                }
             },
             movie,
             { upsert: true }

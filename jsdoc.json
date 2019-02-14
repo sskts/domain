@@ -24,7 +24,7 @@
     "dateFormat": "ddd MMM Do YYYY",
     "outputSourceFiles": true,
     "outputSourcePath": true,
-    "systemName": "SSKTS Domain Library for Node.js",
+    "systemName": "Cinemasunshine Domain Library for Node.js",
     "footer": "",
     "navType": "vertical",
     "theme": "cosmo",

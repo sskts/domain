@@ -9,22 +9,24 @@ export class MongoRepository extends repository.Order {
     /**
      * イベント場所と予約番号から検索する
      */
-    public async findByLocationBranchCodeAndReservationNumber(
-        orderInquiryKey: factory.order.IOrderInquiryKey
-    ): Promise<factory.order.IOrder> {
+    public async findByLocationBranchCodeAndReservationNumber(params: {
+        theaterCode: string;
+        reservationNumber: number;
+        telephone: string;
+    }): Promise<factory.order.IOrder> {
         const doc = await this.orderModel.findOne(
             {
                 'acceptedOffers.itemOffered.reservationFor.superEvent.location.branchCode': {
                     $exists: true,
-                    $eq: orderInquiryKey.theaterCode
+                    $eq: params.theaterCode
                 },
                 'acceptedOffers.itemOffered.reservationNumber': {
                     $exists: true,
-                    $eq: orderInquiryKey.confirmationNumber.toString()
+                    $eq: params.reservationNumber.toString()
                 },
                 'customer.telephone': {
                     $exists: true,
-                    $eq: orderInquiryKey.telephone
+                    $eq: params.telephone
                 }
             }
         ).exec();

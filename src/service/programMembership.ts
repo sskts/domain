@@ -171,6 +171,7 @@ export function createRegisterTask(params: {
 /**
  * 会員プログラム登録
  */
+// tslint:disable-next-line:max-func-body-length
 export function register(
     params: factory.action.interact.register.programMembership.IAttributes
 ): IRegisterOperation<void> {
@@ -205,10 +206,15 @@ export function register(
             throw new factory.errors.NotFound('params.object.itemOffered.id');
         }
 
-        const programMemberships = await repos.ownershipInfo.search4cinemasunshine({
-            goodType: 'ProgramMembership',
-            ownedBy: customer.memberOf.membershipNumber,
-            ownedAt: now
+        const programMemberships = await repos.ownershipInfo.search<factory.programMembership.ProgramMembershipType>({
+            typeOfGood: {
+                typeOf: 'ProgramMembership'
+            },
+            ownedBy: {
+                id: customer.id
+            },
+            ownedFrom: now,
+            ownedThrough: now
         });
         // すでに会員プログラムに加入済であれば何もしない
         const selectedProgramMembership = programMemberships.find((p) => p.typeOfGood.id === params.object.itemOffered.id);
@@ -299,11 +305,14 @@ export function createUnRegisterTask(params: {
             throw new factory.errors.NotFound('params.agent.memberOf.membershipNumber');
         }
         const now = new Date();
-        const ownershipInfos = await repos.ownershipInfo.search4cinemasunshine({
-            identifier: params.ownershipInfoIdentifier,
-            goodType: 'ProgramMembership',
-            ownedBy: params.agent.memberOf.membershipNumber,
-            ownedAt: now
+        const ownershipInfos = await repos.ownershipInfo.search<factory.programMembership.ProgramMembershipType>({
+            typeOfGood: { typeOf: 'ProgramMembership' },
+            ownedBy: { id: params.agent.id },
+            ownedFrom: now,
+            ownedThrough: now,
+            ...{
+                identifiers: [params.ownershipInfoIdentifier]
+            }
         });
         const ownershipInfo = ownershipInfos.shift();
         // tslint:disable-next-line:no-single-line-block-comment
@@ -485,10 +494,16 @@ function processPlaceOrder(params: {
         // シネサンのスマフォアプリ登録時、元から1ポイント追加される
         if (repos.depositService !== undefined) {
             const now = new Date();
-            const accountOwnershipInfos = await repos.ownershipInfo.search4cinemasunshine({
-                goodType: factory.pecorino.account.TypeOf.Account,
-                ownedBy: customer.memberOf.membershipNumber,
-                ownedAt: now
+            const accountOwnershipInfos = await repos.ownershipInfo.search<factory.ownershipInfo.AccountGoodType.Account>({
+                typeOfGood: {
+                    typeOf: factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: factory.accountType.Point
+                },
+                ownedBy: {
+                    id: customer.id
+                },
+                ownedFrom: now,
+                ownedThrough: now
             });
 
             if (accountOwnershipInfos.length === 0) {

@@ -24,14 +24,17 @@ describe('findByLocationBranchCodeAndReservationNumber()', () => {
     it('注文が存在すれば、取得できるはず', async () => {
         const orderInquiryKey = {
             theaterCode: '111',
-            confirmationNumber: 123,
+            reservationNumber: 123,
             telephone: '+819012345678'
         };
 
         const repository = new sskts.repository.Order(mongoose.connection);
 
-        sandbox.mock(repository.orderModel).expects('findOne').once()
-            .chain('exec').resolves(new repository.orderModel());
+        sandbox.mock(repository.orderModel)
+            .expects('findOne')
+            .once()
+            .chain('exec')
+            .resolves(new repository.orderModel());
 
         const result = await repository.findByLocationBranchCodeAndReservationNumber(orderInquiryKey);
 
@@ -42,16 +45,20 @@ describe('findByLocationBranchCodeAndReservationNumber()', () => {
     it('存在しなければ、NotFoundエラーとなるはず', async () => {
         const orderInquiryKey = {
             theaterCode: '111',
-            confirmationNumber: 123,
+            reservationNumber: 123,
             telephone: '+819012345678'
         };
 
         const repository = new sskts.repository.Order(mongoose.connection);
 
-        sandbox.mock(repository.orderModel).expects('findOne').once()
-            .chain('exec').resolves(null);
+        sandbox.mock(repository.orderModel)
+            .expects('findOne')
+            .once()
+            .chain('exec')
+            .resolves(null);
 
-        const result = await repository.findByLocationBranchCodeAndReservationNumber(orderInquiryKey).catch((err) => err);
+        const result = await repository.findByLocationBranchCodeAndReservationNumber(orderInquiryKey)
+            .catch((err) => err);
         assert(result instanceof sskts.factory.errors.NotFound);
         sandbox.verify();
     });

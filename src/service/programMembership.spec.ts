@@ -67,7 +67,7 @@ describe('会員プログラムに登録する', () => {
         const programMembershipRepo = new sskts.repository.ProgramMembership(mongoose.connection);
         const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves([]);
+        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([]);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
         sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
         sandbox.mock(actionRepo).expects('complete').once().resolves({});
@@ -129,7 +129,7 @@ describe('会員プログラムに登録する', () => {
             agent: {}
         };
 
-        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').twice().resolves(fakeOwnershipInfo).onFirstCall().resolves([]);
+        sandbox.mock(ownershipInfoRepo).expects('search').twice().resolves(fakeOwnershipInfo).onFirstCall().resolves([]);
         sandbox.mock(actionRepo).expects('start').twice().resolves({});
         sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
         sandbox.mock(actionRepo).expects('complete').twice().resolves({});
@@ -190,7 +190,7 @@ describe('会員プログラムに登録する', () => {
             agent: {}
         };
 
-        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').twice().resolves([]);
+        sandbox.mock(ownershipInfoRepo).expects('search').twice().resolves([]);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
         sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
         sandbox.mock(actionRepo).expects('giveUp').once().resolves({});
@@ -252,7 +252,7 @@ describe('会員プログラムに登録する', () => {
             agent: {}
         };
 
-        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').twice().resolves(fakeOwnershipInfo).onFirstCall().resolves([]);
+        sandbox.mock(ownershipInfoRepo).expects('search').twice().resolves(fakeOwnershipInfo).onFirstCall().resolves([]);
         sandbox.mock(actionRepo).expects('start').twice().resolves({});
         sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
         sandbox.mock(actionRepo).expects('giveUp').twice().resolves({});
@@ -307,7 +307,7 @@ describe('会員プログラムに登録する', () => {
         const programMembershipRepo = new sskts.repository.ProgramMembership(mongoose.connection);
         const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves([ownershipInfo]);
+        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([ownershipInfo]);
         sandbox.mock(actionRepo).expects('start').never();
 
         const result = await sskts.service.programMembership.register(<any>{
@@ -345,7 +345,7 @@ describe('会員プログラムに登録する', () => {
         const programMembershipRepo = new sskts.repository.ProgramMembership(mongoose.connection);
         const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves([]);
+        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([]);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
         sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
         sandbox.mock(sskts.service.transaction.placeOrderInProgress).expects('start').once()
@@ -388,7 +388,7 @@ describe('会員プログラムに登録する', () => {
         const programMembershipRepo = new sskts.repository.ProgramMembership(mongoose.connection);
         const registerActionInProgressRepoRepo = new sskts.repository.action.RegisterProgramMembershipInProgress(redisClient);
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves([]);
+        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([]);
         sandbox.mock(actionRepo).expects('start').once().resolves({});
         sandbox.mock(registerActionInProgressRepoRepo).expects('lock').once().resolves(1);
         sandbox.mock(sskts.service.transaction.placeOrderInProgress).expects('start').once().returns(async () => Promise.resolve({}));
@@ -435,7 +435,7 @@ describe('会員プログラム登録解除タスクを作成する', () => {
         const task = {};
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
         const taskRepo = new sskts.repository.Task(mongoose.connection);
-        sandbox.mock(ownershipInfoRepo).expects('search4cinemasunshine').once().resolves([ownershipInfo]);
+        sandbox.mock(ownershipInfoRepo).expects('search').once().resolves([ownershipInfo]);
         sandbox.mock(taskRepo).expects('save').once().resolves(task);
 
         const result = await sskts.service.programMembership.createUnRegisterTask(<any>{
