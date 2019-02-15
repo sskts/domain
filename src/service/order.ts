@@ -302,48 +302,58 @@ export function cancelReservations(params: { orderNumber: string }) {
 
         try {
             const order = returnOrderTransaction.object.order;
-            const reservation = <IReservation>order.acceptedOffers[0].itemOffered;
+            const itemOffered = order.acceptedOffers[0].itemOffered;
 
-            // 非同期でCOA本予約取消
-            // COAから内容抽出
-            // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
-            const phoneUtil = googleLibphonenumber.PhoneNumberUtil.getInstance();
-            const phoneNumber = phoneUtil.parse(order.customer.telephone, 'JP');
-            let telNum = phoneUtil.format(phoneNumber, googleLibphonenumber.PhoneNumberFormat.NATIONAL);
-            // COAでは数字のみ受け付けるので数字以外を除去
-            telNum = telNum.replace(/[^\d]/g, '');
-            const stateReserveResult = await COA.services.reserve.stateReserve({
-                theaterCode: reservation.reservationFor.superEvent.location.branchCode,
-                reserveNum: Number(reservation.reservationNumber),
-                telNum: telNum
-            });
-            debug('COA stateReserveResult is', stateReserveResult);
-
-            // 予約が存在すればCOA購入チケット取消
+            // 座席予約の場合キャンセル
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (stateReserveResult !== null) {
-                debug('deleting COA reservation...');
-                await COA.services.reserve.delReserve({
-                    theaterCode: reservation.reservationFor.superEvent.location.branchCode,
-                    reserveNum: Number(reservation.reservationNumber),
-                    telNum: telNum,
-                    dateJouei: stateReserveResult.dateJouei,
-                    titleCode: stateReserveResult.titleCode,
-                    titleBranchNum: stateReserveResult.titleBranchNum,
-                    timeBegin: stateReserveResult.timeBegin,
-                    listSeat: stateReserveResult.listTicket
+            if (itemOffered.typeOf === factory.reservationType.EventReservation) {
+                // 非同期でCOA本予約取消
+                // COAから内容抽出
+                // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)
+                const phoneUtil = googleLibphonenumber.PhoneNumberUtil.getInstance();
+                const phoneNumber = phoneUtil.parse(order.customer.telephone, 'JP');
+                let telNum = phoneUtil.format(phoneNumber, googleLibphonenumber.PhoneNumberFormat.NATIONAL);
+                // COAでは数字のみ受け付けるので数字以外を除去
+                telNum = telNum.replace(/[^\d]/g, '');
+                const stateReserveResult = await COA.services.reserve.stateReserve({
+                    theaterCode: itemOffered.reservationFor.superEvent.location.branchCode,
+                    reserveNum: Number(itemOffered.reservationNumber),
+                    telNum: telNum
                 });
-                debug('COA delReserve processed.');
+                debug('COA stateReserveResult is', stateReserveResult);
+
+                // 予約が存在すればCOA購入チケット取消
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore else */
+                if (stateReserveResult !== null) {
+                    debug('deleting COA reservation...');
+                    await COA.services.reserve.delReserve({
+                        theaterCode: itemOffered.reservationFor.superEvent.location.branchCode,
+                        reserveNum: Number(itemOffered.reservationNumber),
+                        telNum: telNum,
+                        dateJouei: stateReserveResult.dateJouei,
+                        titleCode: stateReserveResult.titleCode,
+                        titleBranchNum: stateReserveResult.titleBranchNum,
+                        timeBegin: stateReserveResult.timeBegin,
+                        listSeat: stateReserveResult.listTicket
+                    });
+                    debug('COA delReserve processed.');
+                }
             }
 
-            // 所有権の予約ステータスを変更
+            // 所有権の期限変更
             const ownershipInfos = placeOrderTransactionResult.ownershipInfos;
             debug('invalidating ownershipInfos...', ownershipInfos);
             await Promise.all(ownershipInfos.map(async (ownershipInfo) => {
+                // await repos.ownershipInfo.ownershipInfoModel.findOneAndUpdate(
+                //     { identifier: ownershipInfo.identifier },
+                //     { 'typeOfGood.reservationStatus': factory.reservationStatusType.ReservationCancelled }
+                // ).exec();
+
                 await repos.ownershipInfo.ownershipInfoModel.findOneAndUpdate(
                     { identifier: ownershipInfo.identifier },
-                    { 'typeOfGood.reservationStatus': factory.reservationStatusType.ReservationCancelled }
+                    { ownedThrough: new Date() }
                 ).exec();
             }));
 
