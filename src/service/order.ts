@@ -305,6 +305,8 @@ export function cancelReservations(params: { orderNumber: string }) {
             const itemOffered = order.acceptedOffers[0].itemOffered;
 
             // 座席予約の場合キャンセル
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
             if (itemOffered.typeOf === factory.reservationType.EventReservation) {
                 // 非同期でCOA本予約取消
                 // COAから内容抽出
