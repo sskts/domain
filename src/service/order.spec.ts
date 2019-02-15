@@ -26,6 +26,7 @@ describe('cancelReservations()', () => {
             acceptedOffers: [
                 {
                     itemOffered: {
+                        typeOf: sskts.factory.reservationType.EventReservation,
                         reservationNumber: '123',
                         reservationFor: { superEvent: { location: { branchCode: '123' } } }
                     }
@@ -121,6 +122,7 @@ describe('cancelReservations()', () => {
             acceptedOffers: [
                 {
                     itemOffered: {
+                        typeOf: sskts.factory.reservationType.EventReservation,
                         reservationNumber: '123',
                         reservationFor: { superEvent: { location: { branchCode: '123' } } }
                     }

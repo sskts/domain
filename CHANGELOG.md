@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- 会員プログラムの返品処理が動作しないバグを解消
+
 ### Security
 
 ## v29.0.0 - 2019-02-14
