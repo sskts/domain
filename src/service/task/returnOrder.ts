@@ -19,7 +19,7 @@ export function call(data: factory.task.IData<factory.taskName.ReturnOrder>): IO
         const ownershipInfoRepo = new OwnershipInfoRepo(settings.connection);
         const transactionRepo = new TransactionRepo(settings.connection);
         const taskRepo = new TaskRepo(settings.connection);
-        await OrderService.cancelReservations(data)({
+        await OrderService.returnOrder(data)({
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,

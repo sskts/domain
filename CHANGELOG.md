@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 会員プログラムの注文返品時に会員プログラム更新タスクを中止するように変更
+- 会員プログラム登録解除アクションから、会員退会処理を分離
+
 ### Deprecated
 
 ### Removed

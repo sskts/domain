@@ -64,6 +64,8 @@ export function executeByName(taskName: factory.taskName): IExecuteOperation<voi
             task = await settings.taskRepo.executeOneByName(taskName);
             debug('task found', task);
         } catch (error) {
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore next */
             debug('executeByName error:', error);
         }
 
@@ -121,6 +123,8 @@ export function retry(intervalInMinutes: number): TaskOperation<void> {
 export function abort(intervalInMinutes: number): TaskOperation<void> {
     return async (repos: { task: TaskRepo }) => {
         const abortedTask = await repos.task.abortOne(intervalInMinutes);
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore next */
         if (abortedTask === null) {
             return;
         }

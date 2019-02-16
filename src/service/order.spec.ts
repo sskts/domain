@@ -15,7 +15,7 @@ before(() => {
     sandbox = sinon.createSandbox();
 });
 
-describe('cancelReservations()', () => {
+describe('returnOrder()', () => {
     afterEach(() => {
         sandbox.restore();
     });
@@ -35,7 +35,7 @@ describe('cancelReservations()', () => {
             orderNumber: 'orderNumber'
         };
         const ownershipInfos = [
-            { identifier: 'identifier' }
+            { identifier: 'identifier', typeOfGood: { typeOf: sskts.factory.reservationType.EventReservation } }
         ];
         const placeOrderTransaction = {
             result: { ownershipInfos }
@@ -104,7 +104,7 @@ describe('cancelReservations()', () => {
             // tslint:disable-next-line:no-magic-numbers
             .exactly(3);
 
-        const result = await sskts.service.order.cancelReservations(order)({
+        const result = await sskts.service.order.returnOrder(order)({
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,
@@ -181,7 +181,7 @@ describe('cancelReservations()', () => {
             .once()
             .rejects(stateReserveResult);
 
-        const result = await sskts.service.order.cancelReservations(order)({
+        const result = await sskts.service.order.returnOrder(order)({
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,

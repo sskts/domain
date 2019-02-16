@@ -14,6 +14,8 @@ import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 import * as factory from '../factory';
 
+import * as ProgramMembershipService from './programMembership';
+
 const debug = createDebug('sskts-domain:service:order');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
@@ -249,7 +251,7 @@ function onPlaceOrder(orderActionAttributes: factory.action.trade.order.IAttribu
 /**
  * 注文返品アクション
  */
-export function cancelReservations(params: { orderNumber: string }) {
+export function returnOrder(params: { orderNumber: string }) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
@@ -342,19 +344,28 @@ export function cancelReservations(params: { orderNumber: string }) {
                 }
             }
 
-            // 所有権の期限変更
             const ownershipInfos = placeOrderTransactionResult.ownershipInfos;
             debug('invalidating ownershipInfos...', ownershipInfos);
             await Promise.all(ownershipInfos.map(async (ownershipInfo) => {
-                // await repos.ownershipInfo.ownershipInfoModel.findOneAndUpdate(
-                //     { identifier: ownershipInfo.identifier },
-                //     { 'typeOfGood.reservationStatus': factory.reservationStatusType.ReservationCancelled }
-                // ).exec();
-
-                await repos.ownershipInfo.ownershipInfoModel.findOneAndUpdate(
-                    { identifier: ownershipInfo.identifier },
-                    { ownedThrough: new Date() }
-                ).exec();
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore if */
+                if (ownershipInfo.typeOfGood.typeOf === 'ProgramMembership') {
+                    // 会員プログラムの場合、登録解除
+                    type IProgramMembershipOwnershipInfo =
+                        factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<'ProgramMembership'>>;
+                    const actionAttributes: factory.action.interact.unRegister.programMembership.IAttributes = {
+                        typeOf: factory.actionType.UnRegisterAction,
+                        agent: returnOrderTransaction.agent,
+                        object: <IProgramMembershipOwnershipInfo>ownershipInfo
+                    };
+                    await ProgramMembershipService.unRegister(actionAttributes)(repos);
+                } else {
+                    // 所有権の期限変更
+                    await repos.ownershipInfo.ownershipInfoModel.findOneAndUpdate(
+                        { identifier: ownershipInfo.identifier },
+                        { ownedThrough: new Date() }
+                    ).exec();
+                }
             }));
 
             // 注文ステータス変更
