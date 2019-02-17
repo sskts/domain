@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- 管理者としてのユーザー情報編集メソッドを追加
-
 ### Changed
 
 ### Deprecated
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v29.1.0 - 2019-02-17
+
+### Added
+
+- 管理者としてのユーザー情報編集メソッドを追加
 
 ## v29.0.2 - 2019-02-16
 
