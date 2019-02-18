@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- install @motionpicture/sskts-factory@9.0.0
+- 不要なパッケージ依存関係を削除
+
 ### Deprecated
 
 ### Removed
