@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- install @motionpicture/sskts-factory@9.0.1
-- install @cinerino/domain@1.0.0-alpha.143
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v29.1.2 - 2019-02-19
+
+### Changed
+
+- install @motionpicture/sskts-factory@9.0.1
+- install @cinerino/domain@1.0.0-alpha.143
 
 ## v29.1.1 - 2019-02-18
 
