@@ -726,7 +726,7 @@ export function createOrderFromTransaction(params: {
             paymentMethods.push({
                 name: 'ポイント口座',
                 typeOf: factory.paymentMethodType.Account,
-                paymentMethodId: actionResult.pendingTransaction.object.fromAccountNumber,
+                paymentMethodId: actionResult.pendingTransaction.object.fromLocation.accountNumber,
                 additionalProperty: []
             });
         });
