@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- install @motionpicture/sskts-factory@9.0.1
+- install @cinerino/domain@1.0.0-alpha.143
+
 ### Deprecated
 
 ### Removed
