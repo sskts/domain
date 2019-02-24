@@ -10,11 +10,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- COAイベントインポート時のXMLスケジュールとの比較ロジックを簡素化
+
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- 日またぎのイベントをCOAから正しくインポートできるように調整
 
 ### Security
 

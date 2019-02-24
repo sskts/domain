@@ -47,49 +47,27 @@ function createMovieFromCOA(filmFromCOA: COA.services.master.ITitleResult): fact
     };
 }
 
+/**
+ * XMLに存在するスケジュールかどうかを判定する
+ */
 export function matchWithXML(
     xmlSchedules: COA.services.master.IXMLScheduleResult[][],
     coaSchedule: COA.services.master.IScheduleResult
 ): boolean {
-    let result = false;
-    xmlSchedules.forEach((xmlSchedule) => {
-        const matchSchedule = xmlSchedule.find((schedule) => {
-            if (schedule.date !== coaSchedule.dateJouei) { return false; }
-            const matchMovie = schedule.movie.find((movie) => {
-                if (movie.movieShortCode !== coaSchedule.titleCode) { return false; }
-                const matchScreen = movie.screen.find((screen) => {
-                    if (screen.screenCode !== coaSchedule.screenCode) { return false; }
-                    const matchTime = screen.time.find((time) => {
-                        if (time.startTime !== coaSchedule.timeBegin || time.endTime !== coaSchedule.timeEnd) {
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    });
-                    if (matchTime !== undefined) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+    return xmlSchedules.some((xmlSchedule) => {
+        return xmlSchedule.some((schedule) => {
+            return schedule.date === coaSchedule.dateJouei
+                && schedule.movie.some((movie) => {
+                    return movie.movieShortCode === coaSchedule.titleCode
+                        && movie.screen.some((screen) => {
+                            return screen.screenCode === coaSchedule.screenCode
+                                && screen.time.some(
+                                    (time) => time.startTime === coaSchedule.timeBegin && time.endTime === coaSchedule.timeEnd
+                                );
+                        });
                 });
-                if (matchScreen !== undefined) {
-                    return true;
-                } else {
-                    return false;
-                }
-            });
-            if (matchMovie !== undefined) {
-                return true;
-            } else {
-                return false;
-            }
         });
-        if (matchSchedule !== undefined) {
-            result = true;
-        }
     });
-
-    return result;
 }
 
 /**
@@ -115,7 +93,9 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
         }
 
         let xmlEndPoint: any;
-        if (Array.isArray((<any>seller).additionalProperty)) {
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (Array.isArray(seller.additionalProperty)) {
             const xmlEndPointProperty = (<any>seller).additionalProperty.find(((p: any) => {
                 return p.name === 'xmlEndPoint';
             }));
@@ -148,6 +128,7 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
         let schedulesFromXML: COA.services.master.IXMLScheduleResult[][] = [];
         if (xmlEndPoint !== undefined) {
             try {
+                debug('finding xmlSchedule...', xmlEndPoint.theaterCodeName);
                 schedulesFromXML = await COA.services.master.xmlSchedule({
                     baseUrl: xmlEndPoint.baseUrl,
                     theaterCodeName: xmlEndPoint.theaterCodeName
@@ -308,12 +289,16 @@ export function importMovieTheater(theaterCode: string) {
         try {
             const phoneUtil = PhoneNumberUtil.getInstance();
             const phoneNumber = phoneUtil.parse(movieTheater.telephone, 'JP');
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
             if (!phoneUtil.isValidNumber(phoneNumber)) {
                 throw new Error('Invalid phone number format.');
             }
 
             formatedPhoneNumber = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
         } catch (error) {
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore next */
             throw new Error(`電話番号フォーマット時に問題が発生しました:${error.message}`);
         }
 
@@ -367,10 +352,18 @@ export function createScreeningEventFromCOA(params: {
         // no op
     }
 
-    const endDate = moment(`${params.performanceFromCOA.dateJouei} ${timeEnd} +09:00`, 'YYYYMMDD HHmm Z').add(addDay, 'days')
+    let endDate = moment(`${params.performanceFromCOA.dateJouei} ${timeEnd} +09:00`, 'YYYYMMDD HHmm Z').add(addDay, 'days')
         .toDate();
     const startDate = moment(`${params.performanceFromCOA.dateJouei} ${params.performanceFromCOA.timeBegin} +09:00`, 'YYYYMMDD HHmm Z')
         .toDate();
+
+    // startDateの方が大きければ日またぎイベントなので調整
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore if */
+    if (moment(startDate).isAfter(moment(endDate))) {
+        endDate = moment(endDate).add(1, 'day')
+            .toDate();
+    }
 
     const coaInfo: factory.event.screeningEvent.ICOAInfo = {
         theaterCode: params.superEvent.location.branchCode,
