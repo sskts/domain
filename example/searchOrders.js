@@ -2,12 +2,14 @@
  * 注文検索サンプル
  */
 const moment = require('moment');
+const mongoose = require('mongoose');
+
 const sskts = require('../');
 
 async function main() {
-    await sskts.mongoose.connect(process.env.MONGOLAB_URI);
+    await mongoose.connect(process.env.MONGOLAB_URI);
 
-    const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
+    const orderRepo = new sskts.repository.Order(mongoose.connection);
     const orders = await orderRepo.search({
         orderDateFrom: moment().add(-3, 'days').toDate(),
         orderDateThrough: moment().toDate(),
@@ -21,7 +23,7 @@ async function main() {
     });
     console.log(orders.length, 'orders found.');
 
-    await sskts.mongoose.disconnect();
+    // await mongoose.disconnect();
 }
 
 main().then(() => {
