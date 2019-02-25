@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 注文コレクションのインデックス調整
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v29.1.4 - 2019-02-25
+
+### Changed
+
+- 注文コレクションのインデックス調整
 
 ## v29.1.3 - 2019-02-24
 
