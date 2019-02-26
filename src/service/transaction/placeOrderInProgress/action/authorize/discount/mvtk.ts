@@ -13,7 +13,7 @@ const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress
 
 export type ICreateOperation<T> = (repos: {
     action: ActionRepo;
-    paymentMethod: PaymentMethodRepo;
+    paymentMethod?: PaymentMethodRepo;
     transaction: TransactionRepo;
 }) => Promise<T>;
 
@@ -29,7 +29,7 @@ export function create(params: {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
-        paymentMethod: PaymentMethodRepo;
+        paymentMethod?: PaymentMethodRepo;
         transaction: TransactionRepo;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
@@ -172,15 +172,17 @@ export function create(params: {
                     }
                 };
 
-                await repos.paymentMethod.paymentMethodModel.findOneAndUpdate(
-                    {
-                        typeOf: factory.paymentMethodType.MovieTicket,
-                        identifier: movieTicket.identifier
-                    },
-                    movieTicket,
-                    { upsert: true }
-                )
-                    .exec();
+                if (repos.paymentMethod !== undefined) {
+                    await repos.paymentMethod.paymentMethodModel.findOneAndUpdate(
+                        {
+                            typeOf: factory.paymentMethodType.MovieTicket,
+                            identifier: movieTicket.identifier
+                        },
+                        movieTicket,
+                        { upsert: true }
+                    )
+                        .exec();
+                }
             }));
         } catch (error) {
             // no op
