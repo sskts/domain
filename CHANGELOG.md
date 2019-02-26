@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 着券連携しようとしたムビチケ情報をDBに保管するように変更
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v29.1.6 - 2019-02-26
+
+### Changed
+
+- 着券連携しようとしたムビチケ情報をDBに保管するように変更
 
 ## v29.1.5 - 2019-02-25
 
