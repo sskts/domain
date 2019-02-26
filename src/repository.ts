@@ -12,6 +12,7 @@ import { MongoRepository as ScreeningEventItemAvailabilityRepo } from './repo/it
 import { MongoRepository as OrderRepo } from './repo/order';
 import { RedisRepository as OrderNumberRepo } from './repo/orderNumber';
 import { MongoRepository as OwnershipInfoRepo } from './repo/ownershipInfo';
+import { MongoRepository as PaymentMethodRepo } from './repo/paymentMethod';
 import { CognitoRepository as PersonRepo } from './repo/person';
 import { MongoRepository as PlaceRepo } from './repo/place';
 import { MongoRepository as ProgramMembershipRepo } from './repo/programMembership';
@@ -34,6 +35,7 @@ export class Invoice extends InvoiceRepo { }
 export class Order extends OrderRepo { }
 export class OrderNumber extends OrderNumberRepo { }
 export class OwnershipInfo extends OwnershipInfoRepo { }
+export class PaymentMethod extends PaymentMethodRepo { }
 export class Person extends PersonRepo { }
 export class Place extends PlaceRepo { }
 export class ProgramMembership extends ProgramMembershipRepo { }
