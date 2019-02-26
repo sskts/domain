@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 着券連携しようとしたムビチケ情報をDBに保管するように変更
+
 ### Deprecated
 
 ### Removed

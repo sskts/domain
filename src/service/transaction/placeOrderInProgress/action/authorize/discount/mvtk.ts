@@ -4,6 +4,7 @@
 import * as createDebug from 'debug';
 
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
+import { MongoRepository as PaymentMethodRepo } from '../../../../../../repo/paymentMethod';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
 
 import * as factory from '../../../../../../factory';
@@ -12,6 +13,7 @@ const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress
 
 export type ICreateOperation<T> = (repos: {
     action: ActionRepo;
+    paymentMethod: PaymentMethodRepo;
     transaction: TransactionRepo;
 }) => Promise<T>;
 
@@ -27,6 +29,7 @@ export function create(params: {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         action: ActionRepo;
+        paymentMethod: PaymentMethodRepo;
         transaction: TransactionRepo;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
@@ -145,7 +148,44 @@ export function create(params: {
         };
         const action = await repos.action.start(actionAttributes);
 
-        // 特に何もしない
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore next */
+        try {
+            // 一度認証されたムビチケをDBに記録する(後で検索しやすいように)
+            await Promise.all(params.authorizeObject.seatInfoSyncIn.knyknrNoInfo.map(async (knyknrNoInfo) => {
+                const movieTicket: factory.paymentMethod.paymentCard.movieTicket.IMovieTicket = {
+                    typeOf: factory.paymentMethodType.MovieTicket,
+                    identifier: knyknrNoInfo.knyknrNo,
+                    accessCode: knyknrNoInfo.pinCd,
+                    serviceType: (knyknrNoInfo.knshInfo[0] !== undefined) ? knyknrNoInfo.knshInfo[0].knshTyp : '',
+                    serviceOutput: {
+                        reservationFor: { typeOf: factory.eventType.ScreeningEvent, id: '' },
+                        reservedTicket: {
+                            ticketedSeat: {
+                                typeOf: factory.chevre.placeType.ScreeningRoom,
+                                seatingType: { typeOf: '' },
+                                seatNumber: '',
+                                seatRow: '',
+                                seatSection: ''
+                            }
+                        }
+                    }
+                };
+
+                await repos.paymentMethod.paymentMethodModel.findOneAndUpdate(
+                    {
+                        typeOf: factory.paymentMethodType.MovieTicket,
+                        identifier: movieTicket.identifier
+                    },
+                    movieTicket,
+                    { upsert: true }
+                )
+                    .exec();
+            }));
+        } catch (error) {
+            // no op
+            // 情報保管に失敗してもスルー
+        }
 
         // アクションを完了
         const result: factory.action.authorize.discount.mvtk.IResult = {
