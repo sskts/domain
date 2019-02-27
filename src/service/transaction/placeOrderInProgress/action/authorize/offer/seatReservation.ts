@@ -403,14 +403,16 @@ export function create(params: {
             await validateOffers((transaction.agent.memberOf !== undefined), screeningEvent, params.object.acceptedOffer);
 
         // 承認アクションを開始
+        const acceptedOffer: factory.action.authorize.offer.seatReservation.IAcceptedOffer[] = offersWithDetails.map((o) => {
+            return { ...o, additionalProperty: [] };
+        });
         const actionAttributes: factory.action.authorize.offer.seatReservation.IAttributes<factory.service.webAPI.Identifier.COA> = {
             typeOf: factory.actionType.AuthorizeAction,
             object: {
                 typeOf: factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
-                acceptedOffer: offersWithDetails.map((o) => {
-                    return { ...o, additionalProperty: [] };
-                }),
-                event: screeningEvent
+                acceptedOffer: acceptedOffer,
+                event: screeningEvent,
+                ...{ offers: acceptedOffer } // 互換性維持のため
             },
             agent: transaction.seller,
             recipient: transaction.agent,
@@ -481,7 +483,8 @@ export function create(params: {
             priceCurrency: factory.priceCurrency.JPY,
             point: requiredPoint,
             requestBody: updTmpReserveSeatArgs,
-            responseBody: updTmpReserveSeatResult
+            responseBody: updTmpReserveSeatResult,
+            ...{ updTmpReserveSeatArgs, updTmpReserveSeatResult } // 互換性維持のため
         };
 
         return repos.action.complete({ typeOf: action.typeOf, id: action.id, result: result });
