@@ -1,6 +1,3 @@
-/**
- * 座席予約承認アクションサービス
- */
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import { INTERNAL_SERVER_ERROR } from 'http-status';
@@ -33,11 +30,11 @@ export type IActionAndTransactionOperation<T> = (repos: {
 async function validateOffers(
     isMember: boolean,
     screeningEvent: factory.event.screeningEvent.IEvent,
-    offers: factory.offer.seatReservation.IOffer[]
-): Promise<factory.offer.seatReservation.IOfferWithDetails[]> {
+    offers: factory.action.authorize.offer.seatReservation.IAcceptedOfferWithoutDetail[]
+): Promise<factory.action.authorize.offer.seatReservation.IAcceptedOffer[]> {
     // 詳細情報ありの供給情報リストを初期化
     // 要求された各供給情報について、バリデーションをかけながら、このリストに追加していく
-    const offersWithDetails: factory.offer.seatReservation.IOfferWithDetails[] = [];
+    const offersWithDetails: factory.action.authorize.offer.seatReservation.IAcceptedOffer[] = [];
 
     // 供給情報が適切かどうか確認
     const availableSalesTickets: COA.services.reserve.ISalesTicketResult[] = [];
@@ -182,7 +179,7 @@ async function validateOffers(
                 offerWithDetails.ticketInfo.addGlasses = availableSalesTicket.addGlasses;
             }
 
-            offersWithDetails.push(offerWithDetails);
+            offersWithDetails.push({ ...offerWithDetails, additionalProperty: offer.additionalProperty });
         } else if (offer.ticketInfo.mvtkAppPrice > 0) {
             // ムビチケの場合
             // ムビチケ情報をCOA券種に変換
@@ -278,7 +275,7 @@ async function validateOffers(
                 offerWithDetails.ticketInfo.addGlasses = availableSalesTicket.addPriceGlasses;
             }
 
-            offersWithDetails.push(offerWithDetails);
+            offersWithDetails.push({ ...offerWithDetails, additionalProperty: offer.additionalProperty });
         } else {
             const availableSalesTicket = availableSalesTickets.find(
                 (salesTicket) => salesTicket.ticketCode === offer.ticketInfo.ticketCode
@@ -350,7 +347,7 @@ async function validateOffers(
                 offerWithDetails.ticketInfo.addGlasses = availableSalesTicket.addGlasses;
             }
 
-            offersWithDetails.push(offerWithDetails);
+            offersWithDetails.push({ ...offerWithDetails, additionalProperty: offer.additionalProperty });
         }
     }));
 
@@ -360,7 +357,7 @@ async function validateOffers(
 /**
  * 供給情報から承認アクションの価格を導き出す
  */
-function offers2resultPrice(offers: factory.offer.seatReservation.IOfferWithDetails[]) {
+function offers2resultPrice(offers: factory.action.authorize.offer.seatReservation.IAcceptedOffer[]) {
     const price = offers.reduce((a, b) => a + (<number>b.price), 0);
     const requiredPoint = offers.reduce((a, b) => a + b.ticketInfo.usePoint, 0);
 
@@ -399,13 +396,10 @@ export function create(params: {
         });
 
         // 供給情報の有効性を確認
-        const offersWithDetails =
+        const acceptedOffer =
             await validateOffers((transaction.agent.memberOf !== undefined), screeningEvent, params.object.acceptedOffer);
 
         // 承認アクションを開始
-        const acceptedOffer: factory.action.authorize.offer.seatReservation.IAcceptedOffer[] = offersWithDetails.map((o) => {
-            return { ...o, additionalProperty: [] };
-        });
         const actionAttributes: factory.action.authorize.offer.seatReservation.IAttributes<factory.service.webAPI.Identifier.COA> = {
             typeOf: factory.actionType.AuthorizeAction,
             object: {
@@ -477,7 +471,7 @@ export function create(params: {
 
         // アクションを完了
         debug('ending authorize action...');
-        const { price, requiredPoint } = offers2resultPrice(offersWithDetails);
+        const { price, requiredPoint } = offers2resultPrice(acceptedOffer);
         const result: factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA> = {
             price: price,
             priceCurrency: factory.priceCurrency.JPY,
@@ -601,14 +595,14 @@ export function changeOffers(params: {
         });
 
         // 供給情報の有効性を確認
-        const offersWithDetails =
+        const acceptedOffer =
             await validateOffers((transaction.agent.memberOf !== undefined), screeningEvent, params.object.acceptedOffer);
 
         // 供給情報と価格を変更してからDB更新
-        authorizeAction.object.acceptedOffer = offersWithDetails.map((o) => {
-            return { ...o, additionalProperty: [] };
-        });
-        const { price, requiredPoint } = offers2resultPrice(offersWithDetails);
+        authorizeAction.object.acceptedOffer = acceptedOffer;
+        (<any>authorizeAction.object).offers = acceptedOffer; // 互換性維持のため
+
+        const { price, requiredPoint } = offers2resultPrice(acceptedOffer);
         (<factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA>>authorizeAction.result).price
             = price;
         (<factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA>>authorizeAction.result).point
