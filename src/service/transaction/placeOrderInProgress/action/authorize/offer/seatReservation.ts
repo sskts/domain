@@ -414,7 +414,10 @@ export function create(params: {
             },
             agent: transaction.seller,
             recipient: transaction.agent,
-            purpose: transaction // purposeは取引
+            purpose: { // purposeは取引
+                typeOf: transaction.typeOf,
+                id: transaction.id
+            }
         };
         const action = await repos.action.start(actionAttributes);
 

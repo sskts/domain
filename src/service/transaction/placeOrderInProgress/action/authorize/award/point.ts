@@ -97,7 +97,10 @@ export function create(params: {
             },
             agent: transaction.seller,
             recipient: transaction.agent,
-            purpose: transaction
+            purpose: {
+                typeOf: transaction.typeOf,
+                id: transaction.id
+            }
         };
         const action = await repos.action.start(actionAttributes);
 
