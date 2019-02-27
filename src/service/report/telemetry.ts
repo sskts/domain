@@ -577,11 +577,13 @@ function createSellerFlow(
         // イベントまでの残り時間算出(イベント開始日時と成立日時の差)
         const timesLeftUntilEvent = confirmedTransactions.map((transaction) => {
             // 座席予約は必ず存在する
-            const seatReservation = <factory.action.authorize.offer.seatReservation.IAction>transaction.object.authorizeActions.find(
-                (action) => action.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation
-            );
+            const seatReservation = <factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>>
+                transaction.object.authorizeActions.find(
+                    (action) => action.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation
+                );
 
-            return moment(seatReservation.object.individualScreeningEvent.startDate).diff(moment(transaction.endDate), 'milliseconds');
+            return moment((<factory.event.screeningEvent.IEvent>seatReservation.object.event).startDate)
+                .diff(moment(transaction.endDate), 'milliseconds');
         });
         const totalTimeLeftUntilEventInMilliseconds = timesLeftUntilEvent.reduce((a, b) => a + b, 0);
         const maxTimeLeftUntilEventInMilliseconds = timesLeftUntilEvent.reduce((a, b) => Math.max(a, b), 0);

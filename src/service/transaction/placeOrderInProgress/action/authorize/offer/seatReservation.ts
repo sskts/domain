@@ -28,9 +28,6 @@ export type IActionAndTransactionOperation<T> = (repos: {
  * 供給情報の有効性の確認などを行う。
  * この処理次第で、どのような供給情報を受け入れられるかが決定するので、とても大事な処理です。
  * バグ、不足等あれば、随時更新することが望ましい。
- * @param isMember 会員かどうか
- * @param individualScreeningEvent 上映イベント
- * @param offers 供給情報
  */
 // tslint:disable-next-line:max-func-body-length
 async function validateOffers(
@@ -138,6 +135,8 @@ async function validateOffers(
                 (salesTicket) => salesTicket.ticketCode === offer.ticketInfo.ticketCode
             );
             // 利用可能な券種が見つからなければエラー
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
             if (availableSalesTicket === undefined) {
                 throw new factory.errors.NotFound(`offers.${offerIndex}`, `ticketCode ${offer.ticketInfo.ticketCode} not found.`);
             }
@@ -174,6 +173,8 @@ async function validateOffers(
             // メガネ代込みの要求の場合は、販売単価調整&メガネ代をセット
             // 販売可能チケットからセットする。
             const includeGlasses = (offer.ticketInfo.addGlasses > 0);
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
             if (includeGlasses) {
                 offerWithDetails.ticketInfo.ticketName = `${availableSalesTicket.ticketName}メガネ込み`;
                 (<number>offerWithDetails.price) += availableSalesTicket.addGlasses;
@@ -268,6 +269,8 @@ async function validateOffers(
 
             // メガネ代込みの要求の場合は、販売単価調整&メガネ代をセット
             const includeGlasses = (offer.ticketInfo.addGlasses > 0);
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
             if (includeGlasses) {
                 offerWithDetails.ticketInfo.ticketName = `${availableSalesTicket.ticketName}メガネ込み`;
                 (<number>offerWithDetails.price) += availableSalesTicket.addPriceGlasses;
@@ -282,6 +285,8 @@ async function validateOffers(
             );
 
             // 利用可能な券種が見つからなければエラー
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore if */
             if (availableSalesTicket === undefined) {
                 throw new factory.errors.NotFound(`offers.${offerIndex}`, `ticketCode ${offer.ticketInfo.ticketCode} not found.`);
             }
@@ -336,6 +341,8 @@ async function validateOffers(
 
             // メガネ代込みの要求の場合は、販売単価調整&メガネ代をセット
             const includeGlasses = (offer.ticketInfo.addGlasses > 0);
+            // tslint:disable-next-line:no-single-line-block-comment
+            /* istanbul ignore else */
             if (includeGlasses) {
                 offerWithDetails.ticketInfo.ticketName = `${availableSalesTicket.ticketName}メガネ込み`;
                 (<number>offerWithDetails.price) += availableSalesTicket.addGlasses;
@@ -355,9 +362,9 @@ async function validateOffers(
  */
 function offers2resultPrice(offers: factory.offer.seatReservation.IOfferWithDetails[]) {
     const price = offers.reduce((a, b) => a + (<number>b.price), 0);
-    const pecorinoAmount = offers.reduce((a, b) => a + b.ticketInfo.usePoint, 0);
+    const requiredPoint = offers.reduce((a, b) => a + b.ticketInfo.usePoint, 0);
 
-    return { price, pecorinoAmount };
+    return { price, requiredPoint };
 }
 
 /**
@@ -366,11 +373,11 @@ function offers2resultPrice(offers: factory.offer.seatReservation.IOfferWithDeta
  */
 // tslint:disable-next-line:max-func-body-length
 export function create(params: {
-    agentId: string;
-    transactionId: string;
-    eventIdentifier: string;
-    offers: factory.offer.seatReservation.IOffer[];
-}): ICreateOperation<factory.action.authorize.offer.seatReservation.IAction> {
+    object: factory.action.authorize.offer.seatReservation.IObjectWithoutDetail;
+    agent: { id: string };
+    transaction: { id: string };
+}): ICreateOperation<factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>> {
+    // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         event: EventRepo;
         action: ActionRepo;
@@ -378,26 +385,32 @@ export function create(params: {
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,
-            id: params.transactionId
+            id: params.transaction.id
         });
 
-        if (transaction.agent.id !== params.agentId) {
+        if (transaction.agent.id !== params.agent.id) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
         // 上映イベントを取得
-        const screeningEvent = await repos.event.findIndividualScreeningEventByIdentifier(params.eventIdentifier);
+        const screeningEvent = await repos.event.findById({
+            typeOf: factory.chevre.eventType.ScreeningEvent,
+            id: params.object.event.id
+        });
 
         // 供給情報の有効性を確認
-        const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), screeningEvent, params.offers);
+        const offersWithDetails =
+            await validateOffers((transaction.agent.memberOf !== undefined), screeningEvent, params.object.acceptedOffer);
 
         // 承認アクションを開始
-        const actionAttributes: factory.action.authorize.offer.seatReservation.IAttributes = {
+        const actionAttributes: factory.action.authorize.offer.seatReservation.IAttributes<factory.service.webAPI.Identifier.COA> = {
             typeOf: factory.actionType.AuthorizeAction,
             object: {
                 typeOf: factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
-                offers: offersWithDetails,
-                individualScreeningEvent: screeningEvent
+                acceptedOffer: offersWithDetails.map((o) => {
+                    return { ...o, additionalProperty: [] };
+                }),
+                event: screeningEvent
             },
             agent: transaction.seller,
             recipient: transaction.agent,
@@ -416,7 +429,7 @@ export function create(params: {
             titleBranchNum: coaInfo.titleBranchNum,
             timeBegin: coaInfo.timeBegin,
             screenCode: coaInfo.screenCode,
-            listSeat: params.offers.map((offer) => {
+            listSeat: params.object.acceptedOffer.map((offer) => {
                 return {
                     seatSection: offer.seatSection,
                     seatNum: offer.seatNumber
@@ -448,7 +461,7 @@ export function create(params: {
             // 500未満であればクライアントエラーとみなす
             if (Number.isInteger(coaServiceHttpStatusCode)) {
                 if (coaServiceHttpStatusCode < INTERNAL_SERVER_ERROR) {
-                    throw new factory.errors.Argument('individualScreeningEvent', error.message);
+                    throw new factory.errors.Argument('Event', error.message);
                 } else {
                     throw new factory.errors.ServiceUnavailable('Reservation service temporarily unavailable.');
                 }
@@ -459,13 +472,13 @@ export function create(params: {
 
         // アクションを完了
         debug('ending authorize action...');
-        const { price, pecorinoAmount } = offers2resultPrice(offersWithDetails);
-        const result: factory.action.authorize.offer.seatReservation.IResult = {
+        const { price, requiredPoint } = offers2resultPrice(offersWithDetails);
+        const result: factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA> = {
             price: price,
             priceCurrency: factory.priceCurrency.JPY,
-            pecorinoAmount: pecorinoAmount,
-            updTmpReserveSeatArgs: updTmpReserveSeatArgs,
-            updTmpReserveSeatResult: updTmpReserveSeatResult
+            point: requiredPoint,
+            requestBody: updTmpReserveSeatArgs,
+            responseBody: updTmpReserveSeatResult
         };
 
         return repos.action.complete({ typeOf: action.typeOf, id: action.id, result: result });
@@ -474,14 +487,20 @@ export function create(params: {
 
 /**
  * 座席予約承認アクションをキャンセルする
- * @param agentId アクション主体ID
- * @param transactionId 取引ID
- * @param actionId アクションID
  */
 export function cancel(params: {
-    agentId: string;
-    transactionId: string;
-    actionId: string;
+    /**
+     * 承認アクションID
+     */
+    id: string;
+    /**
+     * 取引進行者
+     */
+    agent: { id: string };
+    /**
+     * 取引
+     */
+    transaction: { id: string };
 }) {
     return async (repos: {
         action: ActionRepo;
@@ -489,47 +508,45 @@ export function cancel(params: {
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,
-            id: params.transactionId
+            id: params.transaction.id
         });
 
-        if (transaction.agent.id !== params.agentId) {
+        if (transaction.agent.id !== params.agent.id) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
         // MongoDBでcompleteステータスであるにも関わらず、COAでは削除されている、というのが最悪の状況
         // それだけは回避するためにMongoDBを先に変更
-        const action = await repos.action.cancel({ typeOf: factory.actionType.AuthorizeAction, id: params.actionId });
-        const actionResult = <factory.action.authorize.offer.seatReservation.IResult>action.result;
+        const action = await repos.action.cancel({ typeOf: factory.actionType.AuthorizeAction, id: params.id });
+        const actionResult = <factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA>>action.result;
 
-        // 座席仮予約削除
-        debug('delTmpReserve processing...', action);
-        await COA.services.reserve.delTmpReserve({
-            theaterCode: actionResult.updTmpReserveSeatArgs.theaterCode,
-            dateJouei: actionResult.updTmpReserveSeatArgs.dateJouei,
-            titleCode: actionResult.updTmpReserveSeatArgs.titleCode,
-            titleBranchNum: actionResult.updTmpReserveSeatArgs.titleBranchNum,
-            timeBegin: actionResult.updTmpReserveSeatArgs.timeBegin,
-            tmpReserveNum: actionResult.updTmpReserveSeatResult.tmpReserveNum
-        });
-        debug('delTmpReserve processed');
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore else */
+        if (actionResult.requestBody !== undefined && actionResult.responseBody !== undefined) {
+            // 座席仮予約削除
+            debug('delTmpReserve processing...', action);
+            await COA.services.reserve.delTmpReserve({
+                theaterCode: actionResult.requestBody.theaterCode,
+                dateJouei: actionResult.requestBody.dateJouei,
+                titleCode: actionResult.requestBody.titleCode,
+                titleBranchNum: actionResult.requestBody.titleBranchNum,
+                timeBegin: actionResult.requestBody.timeBegin,
+                tmpReserveNum: actionResult.responseBody.tmpReserveNum
+            });
+            debug('delTmpReserve processed');
+        }
     };
 }
 
 /**
  * 座席予約承認アクションの供給情報を変更する
- * @param agentId アクション主体ID
- * @param transactionId 取引ID
- * @param actionId アクションID
- * @param eventIdentifier イベント識別子
- * @param offers 供給情報
  */
 export function changeOffers(params: {
-    agentId: string;
-    transactionId: string;
-    actionId: string;
-    eventIdentifier: string;
-    offers: factory.offer.seatReservation.IOffer[];
-}): ICreateOperation<factory.action.authorize.offer.seatReservation.IAction> {
+    id: string;
+    agent: { id: string };
+    transaction: { id: string };
+    object: factory.action.authorize.offer.seatReservation.IObjectWithoutDetail;
+}): ICreateOperation<factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>> {
     return async (repos: {
         event: EventRepo;
         action: ActionRepo;
@@ -537,54 +554,73 @@ export function changeOffers(params: {
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,
-            id: params.transactionId
+            id: params.transaction.id
         });
 
-        if (transaction.agent.id !== params.agentId) {
+        if (transaction.agent.id !== params.agent.id) {
             throw new factory.errors.Forbidden('A specified transaction is not yours.');
         }
 
         // アクション中のイベント識別子と座席リストが合っているかどうか確認
-        const authorizeAction = <factory.action.authorize.offer.seatReservation.IAction>
-            await repos.action.findById({ typeOf: factory.actionType.AuthorizeAction, id: params.actionId });
+        const authorizeAction = <factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>>
+            await repos.action.findById({ typeOf: factory.actionType.AuthorizeAction, id: params.id });
         // 完了ステータスのアクションのみ更新可能
         if (authorizeAction.actionStatus !== factory.actionStatusType.CompletedActionStatus) {
             throw new factory.errors.NotFound('authorizeAction');
         }
+
+        // tslint:disable-next-line:no-single-line-block-comment
+        /* istanbul ignore if */
+        if (authorizeAction.object.event === undefined) {
+            throw new factory.errors.NotFound('authorizeAction.object.event');
+        }
+
         // 上映イベントが一致しているかどうか
-        if (authorizeAction.object.individualScreeningEvent.identifier !== params.eventIdentifier) {
-            throw new factory.errors.Argument('eventIdentifier', 'eventIdentifier not matched.');
+        if (authorizeAction.object.event.id !== params.object.event.id) {
+            throw new factory.errors.Argument('Event', 'Event ID not matched.');
         }
         // 座席セクションと座席番号が一致しているかどうか
-        const allSeatsMatched = authorizeAction.object.offers.every((offer, index) => {
-            return (offer.seatSection === params.offers[index].seatSection && offer.seatNumber === params.offers[index].seatNumber);
+        const allSeatsMatched = authorizeAction.object.acceptedOffer.every((offer, index) => {
+            return (offer.seatSection === params.object.acceptedOffer[index].seatSection
+                && offer.seatNumber === params.object.acceptedOffer[index].seatNumber);
         });
         if (!allSeatsMatched) {
             throw new factory.errors.Argument('offers', 'seatSection or seatNumber not matched.');
         }
 
         // 上映イベントを取得
-        const individualScreeningEvent = await repos.event.findIndividualScreeningEventByIdentifier(params.eventIdentifier);
+        const screeningEvent = await repos.event.findById({
+            typeOf: factory.chevre.eventType.ScreeningEvent,
+            id: params.object.event.id
+        });
 
         // 供給情報の有効性を確認
-        const offersWithDetails = await validateOffers((transaction.agent.memberOf !== undefined), individualScreeningEvent, params.offers);
+        const offersWithDetails =
+            await validateOffers((transaction.agent.memberOf !== undefined), screeningEvent, params.object.acceptedOffer);
 
         // 供給情報と価格を変更してからDB更新
-        authorizeAction.object.offers = offersWithDetails;
-        const { price, pecorinoAmount } = offers2resultPrice(offersWithDetails);
-        (<factory.action.authorize.offer.seatReservation.IResult>authorizeAction.result).price = price;
-        (<factory.action.authorize.offer.seatReservation.IResult>authorizeAction.result).pecorinoAmount = pecorinoAmount;
+        authorizeAction.object.acceptedOffer = offersWithDetails.map((o) => {
+            return { ...o, additionalProperty: [] };
+        });
+        const { price, requiredPoint } = offers2resultPrice(offersWithDetails);
+        (<factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA>>authorizeAction.result).price
+            = price;
+        (<factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA>>authorizeAction.result).point
+            = requiredPoint;
+
+        const actionResult =
+            (<factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA>>authorizeAction.result);
 
         // 座席予約承認アクションの供給情報を変更する
         return repos.action.actionModel.findOneAndUpdate(
             {
                 typeOf: factory.actionType.AuthorizeAction,
-                _id: params.actionId,
+                _id: params.id,
                 actionStatus: factory.actionStatusType.CompletedActionStatus // 完了ステータスのアクションのみ
             },
             {
                 object: authorizeAction.object,
-                result: (<factory.action.authorize.offer.seatReservation.IResult>authorizeAction.result)
+                result: actionResult
             },
             { new: true }
         ).exec()
@@ -593,7 +629,7 @@ export function changeOffers(params: {
                     throw new factory.errors.NotFound('authorizeAction');
                 }
 
-                return <factory.action.authorize.offer.seatReservation.IAction>doc.toObject();
+                return <factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>>doc.toObject();
             });
     };
 }

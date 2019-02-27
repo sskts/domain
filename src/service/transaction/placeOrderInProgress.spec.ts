@@ -59,10 +59,16 @@ describe('start()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
-            clientUser: <any>{},
-            customer: agent,
-            seller: seller,
-            passportToken: passportToken
+            object: {
+                passport: {
+                    issuer: '',
+                    token: passportToken,
+                    secret: ''
+                },
+                clientUser: <any>{}
+            },
+            agent: agent,
+            seller: seller
         })({
             transaction: transactionRepo,
             seller: sellerRepo
@@ -109,10 +115,16 @@ describe('start()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
-            clientUser: <any>clientUser,
-            customer: agent,
-            seller: seller,
-            passportToken: passportToken
+            object: {
+                passport: {
+                    issuer: '',
+                    token: passportToken,
+                    secret: ''
+                },
+                clientUser: <any>clientUser
+            },
+            agent: agent,
+            seller: seller
         })({
             transaction: transactionRepo,
             seller: sellerRepo
@@ -155,9 +167,15 @@ describe('start()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
-            passportToken: passportToken,
-            clientUser: <any>{},
-            customer: agent,
+            object: {
+                passport: {
+                    issuer: '',
+                    token: passportToken,
+                    secret: ''
+                },
+                clientUser: <any>{}
+            },
+            agent: agent,
             seller: seller
         })({
             transaction: transactionRepo,
@@ -194,9 +212,15 @@ describe('start()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
-            passportToken: passportToken,
-            clientUser: <any>{},
-            customer: agent,
+            object: {
+                passport: {
+                    issuer: '',
+                    token: passportToken,
+                    secret: ''
+                },
+                clientUser: <any>{}
+            },
+            agent: agent,
             seller: seller
         })({
             transaction: transactionRepo,
@@ -239,9 +263,15 @@ describe('start()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: transaction.expires,
-            passportToken: passportToken,
-            clientUser: <any>{},
-            customer: agent,
+            object: {
+                passport: {
+                    issuer: '',
+                    token: passportToken,
+                    secret: ''
+                },
+                clientUser: <any>{}
+            },
+            agent: agent,
             seller: seller
         })({
             transaction: transactionRepo,
@@ -318,9 +348,15 @@ describe('start()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: expires,
-            passportToken: passportToken,
-            clientUser: <any>{},
-            customer: agent,
+            object: {
+                passport: {
+                    issuer: '',
+                    token: passportToken,
+                    secret: ''
+                },
+                clientUser: <any>{}
+            },
+            agent: agent,
             seller: seller
         })({
             transaction: transactionRepo,
@@ -362,9 +398,15 @@ describe('start()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.start({
             expires: expires,
-            passportToken: passportToken,
-            clientUser: <any>{},
-            customer: agent,
+            object: {
+                passport: {
+                    issuer: '',
+                    token: passportToken,
+                    secret: ''
+                },
+                clientUser: <any>{}
+            },
+            agent: agent,
             seller: seller
         })({
             transaction: transactionRepo,
@@ -408,9 +450,11 @@ describe('setCustomerContact()', () => {
         sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').once().resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            contact: <any>contact
+            agent: agent,
+            id: transaction.id,
+            object: {
+                customerContact: <any>contact
+            }
         })({ transaction: transactionRepo });
 
         assert.equal(typeof result, 'object');
@@ -445,9 +489,11 @@ describe('setCustomerContact()', () => {
         sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            contact: <any>contact
+            agent: agent,
+            id: transaction.id,
+            object: {
+                customerContact: <any>contact
+            }
         })({ transaction: transactionRepo }).catch((err) => err);
 
         assert(result instanceof sskts.factory.errors.Forbidden);
@@ -482,9 +528,11 @@ describe('setCustomerContact()', () => {
         sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            contact: <any>contact
+            agent: agent,
+            id: transaction.id,
+            object: {
+                customerContact: <any>contact
+            }
         })({ transaction: transactionRepo }).catch((err) => err);
         assert(result instanceof sskts.factory.errors.Argument);
         sandbox.verify();
@@ -559,7 +607,7 @@ describe('confirm()', () => {
                 object: {
                     typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
                     offers: [],
-                    individualScreeningEvent: {
+                    event: {
                         superEvent: {
                             location: {
                                 typeOf: 'MovieTheater',
@@ -569,10 +617,10 @@ describe('confirm()', () => {
                     }
                 },
                 result: {
-                    updTmpReserveSeatArgs: {
+                    requestBody: {
                         theaterCode: '118'
                     },
-                    updTmpReserveSeatResult: {
+                    responseBody: {
                         tmpReserveNum: 12345,
                         listTmpReserve: []
                     },
@@ -669,9 +717,10 @@ describe('confirm()', () => {
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderDate: new Date()
+            agent: agent,
+            id: transaction.id,
+            result: { order: { orderDate: new Date() } },
+            options: {}
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -746,7 +795,7 @@ describe('confirm()', () => {
                 object: {
                     typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
                     offers: [],
-                    individualScreeningEvent: {
+                    event: {
                         superEvent: {
                             location: {
                                 typeOf: 'MovieTheater',
@@ -756,10 +805,10 @@ describe('confirm()', () => {
                     }
                 },
                 result: {
-                    updTmpReserveSeatArgs: {
+                    requestBody: {
                         theaterCode: '118'
                     },
-                    updTmpReserveSeatResult: {
+                    responseBody: {
                         tmpReserveNum: 12345,
                         listTmpReserve: []
                     },
@@ -852,9 +901,10 @@ describe('confirm()', () => {
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderDate: new Date()
+            agent: agent,
+            id: transaction.id,
+            result: { order: { orderDate: new Date() } },
+            options: {}
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -893,9 +943,10 @@ describe('confirm()', () => {
         sandbox.mock(actionRepo).expects('searchByPurpose').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderDate: new Date()
+            agent: agent,
+            id: transaction.id,
+            result: { order: { orderDate: new Date() } },
+            options: {}
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -936,7 +987,7 @@ describe('confirm()', () => {
                     offers: []
                 },
                 result: {
-                    updTmpReserveSeatArgs: {},
+                    requestBody: {},
                     price: 1234
                 },
                 endDate: moment(orderDate).add(-1, 'minute').toDate(),
@@ -971,9 +1022,10 @@ describe('confirm()', () => {
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderDate: orderDate
+            agent: agent,
+            id: transaction.id,
+            result: { order: { orderDate: orderDate } },
+            options: {}
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -1013,9 +1065,10 @@ describe('confirm()', () => {
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderDate: new Date()
+            agent: agent,
+            id: transaction.id,
+            result: { order: { orderDate: new Date() } },
+            options: {}
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -1097,7 +1150,7 @@ describe('createEmailMessageFromTransaction()', () => {
                 agent: transaction.seller,
                 object: {
                     typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
-                    individualScreeningEvent: {
+                    event: {
                         superEvent: {
                             location: {
                                 typeOf: 'MovieTheater',
@@ -1107,10 +1160,10 @@ describe('createEmailMessageFromTransaction()', () => {
                     }
                 },
                 result: {
-                    updTmpReserveSeatArgs: {
+                    requestBody: {
                         theaterCode: '118'
                     },
-                    updTmpReserveSeatResult: {
+                    responseBody: {
                         tmpReserveNum: 12345
                     },
                     price: 1234
@@ -1217,7 +1270,7 @@ describe('createEmailMessageFromTransaction()', () => {
                     priceCurrency: sskts.factory.priceCurrency.JPY,
                     seller: {
                         typeOf: sskts.factory.organizationType.MovieTheater,
-                        name: seatReservationAuthorizeActions[0].object.individualScreeningEvent.superEvent.location.name.ja
+                        name: seatReservationAuthorizeActions[0].object.event.superEvent.location.name.ja
                     }
                 };
             }),
@@ -1245,7 +1298,7 @@ describe('createEmailMessageFromTransaction()', () => {
             },
             typeOf: <sskts.factory.order.TypeOf>'Order',
             // tslint:disable-next-line:max-line-length
-            url: `${process.env.ORDER_INQUIRY_ENDPOINT}/inquiry/login?theater=${seatReservationAuthorizeActions[0].result.updTmpReserveSeatArgs.theaterCode}&reserve=${seatReservationAuthorizeActions[0].result.updTmpReserveSeatResult.tmpReserveNum}`
+            url: `${process.env.ORDER_INQUIRY_ENDPOINT}/inquiry/login?theater=${seatReservationAuthorizeActions[0].result.requestBody.theaterCode}&reserve=${seatReservationAuthorizeActions[0].result.responseBody.tmpReserveNum}`
         };
 
         const result = await sskts.service.transaction.placeOrderInProgress.createEmailMessageFromTransaction({
@@ -1355,7 +1408,7 @@ describe('createOrderFromTransaction()', () => {
                         recipient: agent,
                         object: {
                             typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
-                            individualScreeningEvent: {
+                            event: {
                                 superEvent: {
                                     location: {
                                         typeOf: 'MovieTheater',
@@ -1365,10 +1418,10 @@ describe('createOrderFromTransaction()', () => {
                             }
                         },
                         result: {
-                            updTmpReserveSeatArgs: {
+                            requestBody: {
                                 theaterCode: '118'
                             },
-                            updTmpReserveSeatResult: {
+                            responseBody: {
                                 tmpReserveNum: 12345,
                                 listTmpReserve: []
                             },

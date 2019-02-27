@@ -18,7 +18,7 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
 export function cancelSeatReservationAuth(transactionId: string) {
     return async (repos: { action: ActionRepo }) => {
         // 座席仮予約アクションを取得
-        const authorizeActions = <factory.action.authorize.offer.seatReservation.IAction[]>
+        const authorizeActions = <factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>[]>
             await repos.action.searchByPurpose({
                 typeOf: factory.actionType.AuthorizeAction,
                 purpose: {
@@ -33,17 +33,20 @@ export function cancelSeatReservationAuth(transactionId: string) {
 
         await Promise.all(authorizeActions.map(async (action) => {
             debug('calling deleteTmpReserve...');
-            const updTmpReserveSeatArgs = (<factory.action.authorize.offer.seatReservation.IResult>action.result).updTmpReserveSeatArgs;
-            const updTmpReserveSeatResult = (<factory.action.authorize.offer.seatReservation.IResult>action.result).updTmpReserveSeatResult;
+            const result = <factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA>>action.result;
+            const updTmpReserveSeatArgs = result.requestBody;
+            const updTmpReserveSeatResult = result.responseBody;
 
-            await COA.services.reserve.delTmpReserve({
-                theaterCode: updTmpReserveSeatArgs.theaterCode,
-                dateJouei: updTmpReserveSeatArgs.dateJouei,
-                titleCode: updTmpReserveSeatArgs.titleCode,
-                titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
-                timeBegin: updTmpReserveSeatArgs.timeBegin,
-                tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum
-            });
+            if (updTmpReserveSeatArgs !== undefined && updTmpReserveSeatResult !== undefined) {
+                await COA.services.reserve.delTmpReserve({
+                    theaterCode: updTmpReserveSeatArgs.theaterCode,
+                    dateJouei: updTmpReserveSeatArgs.dateJouei,
+                    titleCode: updTmpReserveSeatArgs.titleCode,
+                    titleBranchNum: updTmpReserveSeatArgs.titleBranchNum,
+                    timeBegin: updTmpReserveSeatArgs.timeBegin,
+                    tmpReserveNum: updTmpReserveSeatResult.tmpReserveNum
+                });
+            }
         }));
     };
 }

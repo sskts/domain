@@ -51,20 +51,19 @@ describe('action.authorize.mvtk.create()', () => {
             id: 'actionId',
             actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
             object: {
-                offers: [
+                acceptedOffer: [
                     { ticketInfo: { mvtkNum: '12345' } },
                     { ticketInfo: { mvtkNum: '' } }
                 ]
             },
             result: {
-                acceptedOffers: [],
-                updTmpReserveSeatArgs: {
+                requestBody: {
                     theaterCode: '001',
                     titleCode: '12345',
                     titleBranchNum: '0',
                     screenCode: '01'
                 },
-                updTmpReserveSeatResult: {
+                responseBody: {
                     listTmpReserve: [{ seatNum: 'seatNum' }]
                 }
             }
@@ -281,20 +280,19 @@ describe('action.authorize.mvtk.create()', () => {
             id: 'actionId',
             actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
             object: {
-                offers: [
+                acceptedOffer: [
                     { ticketInfo: { mvtkNum: '123456' } },
                     { ticketInfo: { mvtkNum: '' } }
                 ]
             },
             result: {
-                acceptedOffers: [],
-                updTmpReserveSeatArgs: {
+                requestBody: {
                     theaterCode: '001',
                     titleCode: '12345',
                     titleBranchNum: '0',
                     screenCode: '01'
                 },
-                updTmpReserveSeatResult: {
+                responseBody: {
                     listTmpReserve: []
                 }
             }
@@ -352,20 +350,19 @@ describe('action.authorize.mvtk.create()', () => {
             id: 'actionId',
             actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
             object: {
-                offers: [
+                acceptedOffer: [
                     { ticketInfo: { mvtkNum: '12345' } },
                     { ticketInfo: { mvtkNum: '' } }
                 ]
             },
             result: {
-                acceptedOffers: [],
-                updTmpReserveSeatArgs: {
+                requestBody: {
                     theaterCode: '001',
                     titleCode: '12345',
                     titleBranchNum: '0',
                     screenCode: '01'
                 },
-                updTmpReserveSeatResult: {
+                responseBody: {
                     listTmpReserve: []
                 }
             }
@@ -423,20 +420,19 @@ describe('action.authorize.mvtk.create()', () => {
             id: 'actionId',
             actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
             object: {
-                offers: [
+                acceptedOffer: [
                     { ticketInfo: { mvtkNum: '12345' } },
                     { ticketInfo: { mvtkNum: '' } }
                 ]
             },
             result: {
-                acceptedOffers: [],
-                updTmpReserveSeatArgs: {
+                requestBody: {
                     theaterCode: '001',
                     titleCode: '12345',
                     titleBranchNum: '1', // invalid
                     screenCode: '01'
                 },
-                updTmpReserveSeatResult: {
+                responseBody: {
                     listTmpReserve: []
                 }
             }
@@ -494,20 +490,19 @@ describe('action.authorize.mvtk.create()', () => {
             id: 'actionId',
             actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
             object: {
-                offers: [
+                acceptedOffer: [
                     { ticketInfo: { mvtkNum: '12345' } },
                     { ticketInfo: { mvtkNum: '' } }
                 ]
             },
             result: {
-                acceptedOffers: [],
-                updTmpReserveSeatArgs: {
+                requestBody: {
                     theaterCode: '001',
                     titleCode: '12345',
                     titleBranchNum: '0',
                     screenCode: '02' // invalid
                 },
-                updTmpReserveSeatResult: {
+                responseBody: {
                     listTmpReserve: []
                 }
             }
@@ -565,20 +560,19 @@ describe('action.authorize.mvtk.create()', () => {
             id: 'actionId',
             actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
             object: {
-                offers: [
+                acceptedOffer: [
                     { ticketInfo: { mvtkNum: '12345' } },
                     { ticketInfo: { mvtkNum: '' } }
                 ]
             },
             result: {
-                acceptedOffers: [],
-                updTmpReserveSeatArgs: {
+                requestBody: {
                     theaterCode: '001',
                     titleCode: '12345',
                     titleBranchNum: '0',
                     screenCode: '01'
                 },
-                updTmpReserveSeatResult: {
+                responseBody: {
                     listTmpReserve: [{ seatNum: 'invalid' }] // invalid
                 }
             }

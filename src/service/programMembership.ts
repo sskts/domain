@@ -464,13 +464,14 @@ function processPlaceOrder(params: {
         const transaction = await PlaceOrderService.start({
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(5, 'minutes').toDate(),
-            customer: customer,
+            agent: customer,
             seller: {
                 typeOf: seller.typeOf,
                 id: seller.id
             },
-            clientUser: <any>{}
-            // passportToken:
+            object: {
+                clientUser: <any>{}
+            }
         })(repos);
         debug('transaction started', transaction.id);
 
@@ -616,9 +617,11 @@ function processPlaceOrder(params: {
             username: customer.memberOf.membershipNumber
         });
         await PlaceOrderService.setCustomerContact({
-            agentId: params.registerActionAttributes.agent.id,
-            transactionId: transaction.id,
-            contact: contact
+            id: transaction.id,
+            agent: { id: params.registerActionAttributes.agent.id },
+            object: {
+                customerContact: contact
+            }
         })(repos);
         debug('customer contact set.');
 
@@ -626,9 +629,12 @@ function processPlaceOrder(params: {
         debug('confirming transaction...', transaction.id);
 
         return PlaceOrderService.confirm({
-            agentId: params.registerActionAttributes.agent.id,
-            transactionId: transaction.id,
-            orderDate: new Date()
+            id: transaction.id,
+            agent: { id: params.registerActionAttributes.agent.id },
+            result: {
+                order: { orderDate: new Date() }
+            },
+            options: { sendEmailMessage: false }
         })(repos);
     };
 }
