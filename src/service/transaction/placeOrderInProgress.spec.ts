@@ -70,7 +70,11 @@ describe('confirm()', () => {
                     execTranResult: {
                         orderId: 'orderId'
                     },
-                    amount: 1234
+                    amount: 1234,
+                    totalPaymentDue: {
+                        currency: sskts.factory.priceCurrency.JPY,
+                        value: 1234
+                    }
                 },
                 endDate: moment().add(-1, 'minute').toDate(),
                 purpose: {}
@@ -282,6 +286,7 @@ describe('confirm()', () => {
                     }
                 },
                 result: {
+                    point: 0,
                     requestBody: {
                         theaterCode: '118'
                     },
@@ -1320,164 +1325,6 @@ describe('createOrderFromTransaction()', () => {
 describe('validateTransaction()', () => {
     afterEach(() => {
         sandbox.restore();
-    });
-
-    it('クレジットカードオーソリが2つ以上であればArgumentとなるはず', async () => {
-        const agent = {
-            typeOf: sskts.factory.personType.Person,
-            id: 'agentId',
-            url: '',
-            memberOf: {
-                programName: 'programName',
-                membershipNumber: 'membershipNumber'
-            }
-        };
-        const seller = {
-            typeOf: sskts.factory.organizationType.MovieTheater,
-            id: 'sellerId',
-            name: 'sellerName',
-            url: '',
-            telephone: '0312345678'
-        };
-        const customerContact = {
-            familyName: 'familyName',
-            givenName: 'givenName',
-            telephone: '+819012345678',
-            email: 'test@example.com'
-        };
-        const transaction = {
-            typeOf: sskts.factory.transactionType.PlaceOrder,
-            id: 'transactionId',
-            status: sskts.factory.transactionStatusType.InProgress,
-            // tslint:disable-next-line:no-magic-numbers
-            expires: moment().add(10, 'minutes').toDate(),
-            tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
-            agent: agent,
-            seller: seller,
-            object: {
-                passportToken: 'passportToken',
-                passport: <any>{},
-                customerContact: customerContact,
-                clientUser: <any>{ client_id: 'client_id' },
-                authorizeActions: [
-                    {
-                        typeOf: sskts.factory.actionType.AuthorizeAction,
-                        id: 'actionId',
-                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        agent: agent,
-                        recipient: seller,
-                        object: {
-                            typeOf: sskts.factory.paymentMethodType.CreditCard
-                        },
-                        startDate: new Date(),
-                        endDate: new Date()
-                    },
-                    {
-                        typeOf: sskts.factory.actionType.AuthorizeAction,
-                        id: 'actionId',
-                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        agent: agent,
-                        recipient: seller,
-                        object: {
-                            typeOf: sskts.factory.paymentMethodType.CreditCard
-                        },
-                        startDate: new Date(),
-                        endDate: new Date()
-                    }
-                ]
-            }
-        };
-
-        assert.throws(
-            () => {
-                sskts.service.transaction.placeOrderInProgress.validateTransaction(<any>transaction);
-            },
-            (err: any) => {
-                assert(err instanceof sskts.factory.errors.Argument);
-                sandbox.verify();
-
-                return true;
-            }
-        );
-    });
-
-    it('ムビチケ承認アクションが2つ以上であればArgumentとなるはず', async () => {
-        const agent = {
-            typeOf: sskts.factory.personType.Person,
-            id: 'agentId',
-            url: '',
-            memberOf: {
-                programName: 'programName',
-                membershipNumber: 'membershipNumber'
-            }
-        };
-        const seller = {
-            typeOf: sskts.factory.organizationType.MovieTheater,
-            id: 'sellerId',
-            name: 'sellerName',
-            url: '',
-            telephone: '0312345678'
-        };
-        const customerContact = {
-            familyName: 'familyName',
-            givenName: 'givenName',
-            telephone: '+819012345678',
-            email: 'test@example.com'
-        };
-        const transaction = {
-            typeOf: sskts.factory.transactionType.PlaceOrder,
-            id: 'transactionId',
-            status: sskts.factory.transactionStatusType.InProgress,
-            // tslint:disable-next-line:no-magic-numbers
-            expires: moment().add(10, 'minutes').toDate(),
-            tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
-            agent: agent,
-            seller: seller,
-            object: {
-                passportToken: 'passportToken',
-                passport: <any>{},
-                customerContact: customerContact,
-                clientUser: <any>{ client_id: 'client_id' },
-                authorizeActions: [
-                    {
-                        typeOf: sskts.factory.actionType.AuthorizeAction,
-                        id: 'actionId',
-                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        agent: agent,
-                        recipient: seller,
-                        object: {
-                            typeOf: sskts.factory.action.authorize.discount.mvtk.ObjectType.Mvtk
-                        },
-                        startDate: new Date(),
-                        endDate: new Date()
-                    },
-                    {
-                        typeOf: sskts.factory.actionType.AuthorizeAction,
-                        id: 'actionId',
-                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        agent: agent,
-                        recipient: seller,
-                        object: {
-                            typeOf: sskts.factory.action.authorize.discount.mvtk.ObjectType.Mvtk
-                        },
-                        startDate: new Date(),
-                        endDate: new Date()
-                    }
-                ]
-            }
-        };
-
-        assert.throws(
-            () => {
-                sskts.service.transaction.placeOrderInProgress.validateTransaction(<any>transaction);
-            },
-            (err: any) => {
-                assert(err instanceof sskts.factory.errors.Argument);
-                sandbox.verify();
-
-                return true;
-            }
-        );
     });
 });
 

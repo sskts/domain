@@ -190,34 +190,38 @@ export function confirm(params: {
     };
 }
 
+export type IAuthorizeSeatReservationOfferResult =
+    factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA>;
+export type IAuthorizePointAccountPayment =
+    factory.action.authorize.paymentMethod.account.IAccount<factory.accountType.Point>;
+export type IAuthorizeActionResultBySeller =
+    factory.action.authorize.offer.programMembership.IResult |
+    IAuthorizeSeatReservationOfferResult |
+    factory.action.authorize.award.point.IResult;
+
 /**
  * 取引が確定可能な状態かどうかをチェックする
  */
 // tslint:disable-next-line:max-func-body-length
 export function validateTransaction(transaction: factory.transaction.placeOrder.ITransaction) {
-    type IAuthorizeActionResultBySeller =
-        factory.action.authorize.offer.programMembership.IResult |
-        factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA> |
-        factory.action.authorize.award.point.IResult;
     const authorizeActions = transaction.object.authorizeActions;
+    let priceByAgent = 0;
+    let priceBySeller = 0;
 
-    // クレジットカードオーソリをひとつに限定
-    const creditCardAuthorizeActions = authorizeActions
-        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.paymentMethodType.CreditCard);
-    if (creditCardAuthorizeActions.length > 1) {
-        throw new factory.errors.Argument('transactionId', 'The number of credit card authorize actions must be one');
-    }
+    // 決済承認を確認
+    Object.keys(factory.paymentMethodType)
+        .forEach((key) => {
+            const paymentMethodType = <factory.paymentMethodType>(<any>factory.paymentMethodType)[key];
+            priceByAgent += authorizeActions
+                .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                .filter((a) => a.object.typeOf === paymentMethodType)
+                .filter((a) => {
+                    const totalPaymentDue = (<IAuthorizeAnyPaymentResult>a.result).totalPaymentDue;
 
-    // ムビチケ着券情報をひとつに限定
-    const mvtkAuthorizeActions = authorizeActions
-        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.discount.mvtk.ObjectType.Mvtk);
-    if (mvtkAuthorizeActions.length > 1) {
-        throw new factory.errors.Argument('transactionId', 'The number of mvtk authorize actions must be one');
-    }
-
-    // ポイントオーソリは複数可
+                    return totalPaymentDue !== undefined && totalPaymentDue.currency === factory.priceCurrency.JPY;
+                })
+                .reduce((a, b) => a + (<IAuthorizeAnyPaymentResult>b.result).amount, 0);
+        });
 
     // ポイントインセンティブは複数可だが、現時点で1注文につき1ポイントに限定
     const pointAwardAuthorizeActions = <factory.action.authorize.award.point.IAction[]>authorizeActions
@@ -230,17 +234,6 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
         throw new factory.errors.Argument('transactionId', 'Incentive amount must be 1');
     }
 
-    // agentとsellerで、承認アクションの金額が合うかどうか
-    let priceByAgent = 0;
-    let priceBySeller = 0;
-
-    // 現時点で購入者に金額が発生するのはクレジットカード決済のみ
-    priceByAgent += creditCardAuthorizeActions.reduce((a, b) => a + Number((<IAuthorizeAnyPaymentResult>b.result).amount), 0);
-    // priceByAgent = transaction.object.authorizeActions
-    //     .filter((authorizeAction) => authorizeAction.actionStatus === factory.actionStatusType.CompletedActionStatus)
-    //     .filter((authorizeAction) => authorizeAction.agent.id === transaction.agent.id)
-    //     .reduce((a, b) => a + (<IAuthorizeActionResult>b.result).price, 0);
-
     // 販売者が提供するアイテムの発生金額
     priceBySeller += transaction.object.authorizeActions
         .filter((authorizeAction) => authorizeAction.actionStatus === factory.actionStatusType.CompletedActionStatus)
@@ -249,49 +242,31 @@ export function validateTransaction(transaction: factory.transaction.placeOrder.
     debug('priceByAgent priceBySeller:', priceByAgent, priceBySeller);
 
     // ポイント鑑賞券によって必要なポイントがどのくらいあるか算出
-    let requiredPoint = 0;
-    const seatReservationAuthorizeActions =
-        <factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>[]>
-        transaction.object.authorizeActions
+    const requiredPoint = (<factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>[]>
+        transaction.object.authorizeActions)
+        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+        .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation)
+        .reduce(
+            (a, b) => {
+                const point = (<IAuthorizeSeatReservationOfferResult>b.result).point;
+
+                return a + ((typeof point === 'number') ? point : 0);
+            },
+            0
+        );
+
+    // 必要ポイントがある場合、ポイントのオーソリ金額と比較
+    const authorizedPointAmount =
+        (<factory.action.authorize.paymentMethod.account.IAction<factory.accountType.Point>[]>transaction.object.authorizeActions)
             .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation);
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore next */
-    if (seatReservationAuthorizeActions.length > 1) {
-        throw new factory.errors.Argument('transactionId', 'The number of seat reservation authorize actions must be one');
-    }
-    const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore else */
-    if (seatReservationAuthorizeAction !== undefined) {
-        requiredPoint =
-            (<factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA>>
-                seatReservationAuthorizeAction.result).point;
-        // 必要ポイントがある場合、Pecorinoのオーソリ金額と比較
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore if */
-        if (requiredPoint > 0) {
-            const authorizedPecorinoAmount =
-                (<factory.action.authorize.paymentMethod.account.IAction<factory.accountType.Point>[]>transaction.object.authorizeActions)
-                    .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                    .filter((a) => a.object.typeOf === factory.paymentMethodType.Account)
-                    .filter(
-                        (a) => (<factory.action.authorize.paymentMethod.account.IAccount<factory.accountType.Point>>
-                            a.object.fromAccount).accountType === factory.accountType.Point
-                    )
-                    .reduce((a, b) => a + b.object.amount, 0);
-            if (requiredPoint !== authorizedPecorinoAmount) {
-                throw new factory.errors.Argument('transactionId', 'Required pecorino amount not satisfied');
-            }
-        }
+            .filter((a) => a.object.typeOf === factory.paymentMethodType.Account)
+            .filter((a) => (<IAuthorizePointAccountPayment>a.object.fromAccount).accountType === factory.accountType.Point)
+            .reduce((a, b) => a + b.object.amount, 0);
+
+    if (requiredPoint !== authorizedPointAmount) {
+        throw new factory.errors.Argument('transactionId', 'Required point amount not satisfied');
     }
 
-    // JPYオーソリ金額もオーソリポイントも0より大きくなければ取引成立不可
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore next */
-    // if (priceByAgent <= 0 && requiredPoint <= 0) {
-    //     throw new factory.errors.Argument('transactionId', 'Price or point must be over 0');
-    // }
     if (priceByAgent !== priceBySeller) {
         throw new factory.errors.Argument('transactionId', 'Transaction cannot be confirmed because prices are not matched');
     }
