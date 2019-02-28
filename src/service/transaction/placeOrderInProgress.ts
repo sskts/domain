@@ -1,6 +1,8 @@
 /**
  * 進行中注文取引サービス
  */
+import * as cinerino from '@cinerino/domain';
+
 import * as waiter from '@waiter/domain';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
@@ -13,12 +15,9 @@ import { RedisRepository as OrderNumberRepo } from '../../repo/orderNumber';
 import { MongoRepository as SellerRepo } from '../../repo/seller';
 import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
-import * as AuthorizePointAwardActionService from './placeOrderInProgress/action/authorize/award/point';
 import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/authorize/discount/mvtk';
 import * as ProgramMembershipAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/programMembership';
 import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/seatReservation';
-import * as AccountAuthorizeActionService from './placeOrderInProgress/action/authorize/paymentMethod/account';
-import * as CreditCardAuthorizeActionService from './placeOrderInProgress/action/authorize/paymentMethod/creditCard';
 
 import * as factory from '../../factory';
 
@@ -194,9 +193,8 @@ export namespace action {
      * 取引に対する承認アクション
      */
     export namespace authorize {
-        export namespace award {
-            export import point = AuthorizePointAwardActionService;
-        }
+        export import award = cinerino.service.transaction.placeOrderInProgress.action.authorize.award;
+        export import paymentMethod = cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod;
         export namespace discount {
             /**
              * ムビチケ承認アクションサービス
@@ -212,16 +210,6 @@ export namespace action {
              * 座席予約承認アクションサービス
              */
             export import seatReservation = SeatReservationAuthorizeActionService;
-        }
-        export namespace paymentMethod {
-            /**
-             * 口座承認アクションサービス
-             */
-            export import account = AccountAuthorizeActionService;
-            /**
-             * クレジットカード承認アクションサービス
-             */
-            export import creditCard = CreditCardAuthorizeActionService;
         }
     }
 }
