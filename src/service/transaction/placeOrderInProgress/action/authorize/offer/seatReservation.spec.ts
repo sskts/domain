@@ -231,7 +231,13 @@ describe('action.authorize.seatReservation.create()', () => {
             seatNumber: 'seatNumber',
             ticketInfo: {
                 ticketCode: 'ticketCode',
-                mvtkAppPrice: 123
+                mvtkAppPrice: 1234,
+                kbnEisyahousiki: '',
+                mvtkNum: '',
+                mvtkKbnDenshiken: '',
+                mvtkKbnMaeuriken: '',
+                mvtkKbnKensyu: '',
+                mvtkSalesPrice: 1234
             }
         }];
         const salesTickets = [{ ticketCode: offers[0].ticketInfo.ticketCode }];
