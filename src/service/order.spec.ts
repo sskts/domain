@@ -91,10 +91,10 @@ describe('returnOrder()', () => {
             .expects('delReserve')
             .once()
             .resolves();
-        sandbox.mock(ownershipInfoRepo.ownershipInfoModel)
-            .expects('findOneAndUpdate')
-            .exactly(ownershipInfos.length)
-            .chain('exec');
+        // sandbox.mock(ownershipInfoRepo.ownershipInfoModel)
+        //     .expects('findOneAndUpdate')
+        //     .exactly(ownershipInfos.length)
+        //     .chain('exec');
         sandbox.mock(orderRepo)
             .expects('changeStatus')
             .once()

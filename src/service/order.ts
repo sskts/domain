@@ -14,12 +14,13 @@ import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 import * as factory from '../factory';
 
-import * as ProgramMembershipService from './programMembership';
+// import * as ProgramMembershipService from './programMembership';
 
 const debug = createDebug('sskts-domain:service:order');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 export type IReservation = factory.reservation.event.IReservation<factory.event.screeningEvent.IEvent>;
+export type WebAPIIdentifier = factory.service.webAPI.Identifier;
 
 /**
  * 注文取引から注文を作成する
@@ -344,29 +345,29 @@ export function returnOrder(params: { orderNumber: string }) {
                 }
             }
 
-            const ownershipInfos = placeOrderTransactionResult.ownershipInfos;
-            debug('invalidating ownershipInfos...', ownershipInfos);
-            await Promise.all(ownershipInfos.map(async (ownershipInfo) => {
-                // tslint:disable-next-line:no-single-line-block-comment
-                /* istanbul ignore if */
-                if (ownershipInfo.typeOfGood.typeOf === 'ProgramMembership') {
-                    // 会員プログラムの場合、登録解除
-                    type IProgramMembershipOwnershipInfo =
-                        factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<'ProgramMembership'>>;
-                    const actionAttributes: factory.action.interact.unRegister.programMembership.IAttributes = {
-                        typeOf: factory.actionType.UnRegisterAction,
-                        agent: returnOrderTransaction.agent,
-                        object: <IProgramMembershipOwnershipInfo>ownershipInfo
-                    };
-                    await ProgramMembershipService.unRegister(actionAttributes)(repos);
-                } else {
-                    // 所有権の期限変更
-                    await repos.ownershipInfo.ownershipInfoModel.findOneAndUpdate(
-                        { identifier: ownershipInfo.identifier },
-                        { ownedThrough: new Date() }
-                    ).exec();
-                }
-            }));
+            // const ownershipInfos = placeOrderTransactionResult.ownershipInfos;
+            // debug('invalidating ownershipInfos...', ownershipInfos);
+            // await Promise.all(ownershipInfos.map(async (ownershipInfo) => {
+            //     // tslint:disable-next-line:no-single-line-block-comment
+            //     /* istanbul ignore if */
+            //     if (ownershipInfo.typeOfGood.typeOf === 'ProgramMembership') {
+            //         // 会員プログラムの場合、登録解除
+            //         type IProgramMembershipOwnershipInfo =
+            //             factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<'ProgramMembership'>>;
+            //         const actionAttributes: factory.action.interact.unRegister.programMembership.IAttributes = {
+            //             typeOf: factory.actionType.UnRegisterAction,
+            //             agent: returnOrderTransaction.agent,
+            //             object: <IProgramMembershipOwnershipInfo>ownershipInfo
+            //         };
+            //         await ProgramMembershipService.unRegister(actionAttributes)(repos);
+            //     } else {
+            //         // 所有権の期限変更
+            //         await repos.ownershipInfo.ownershipInfoModel.findOneAndUpdate(
+            //             { identifier: ownershipInfo.identifier },
+            //             { ownedThrough: new Date() }
+            //         ).exec();
+            //     }
+            // }));
 
             // 注文ステータス変更
             debug('changing orderStatus...');

@@ -62,15 +62,9 @@ export namespace action {
     }
 }
 
-/**
- * 取引開始
- */
 export import start = cinerino.service.transaction.placeOrderInProgress.start;
-
-/**
- * 取引中の購入者情報を変更する
- */
 export import setCustomerContact = cinerino.service.transaction.placeOrderInProgress.setCustomerContact;
+export import validateTransaction = cinerino.service.transaction.placeOrderInProgress.validateTransaction;
 
 /**
  * 注文取引を確定する
@@ -154,18 +148,15 @@ export function confirm(params: {
         const order = createOrderFromTransaction({
             transaction: transaction,
             orderNumber: orderNumber,
+            confirmationNumber: 0,
             orderDate: params.result.order.orderDate,
             orderStatus: factory.orderStatus.OrderProcessing,
             isGift: false,
             seller: seller
         });
-        const ownershipInfos = createOwnershipInfosFromTransaction({
-            transaction: transaction,
-            order: order
-        });
+
         const result: factory.transaction.placeOrder.IResult = {
-            order: order,
-            ownershipInfos: ownershipInfos
+            order: order
         };
 
         // ポストアクションを作成
@@ -200,85 +191,13 @@ export type IAuthorizeActionResultBySeller =
     factory.action.authorize.award.point.IResult;
 
 /**
- * 取引が確定可能な状態かどうかをチェックする
- */
-// tslint:disable-next-line:max-func-body-length
-export function validateTransaction(transaction: factory.transaction.placeOrder.ITransaction) {
-    const authorizeActions = transaction.object.authorizeActions;
-    let priceByAgent = 0;
-    let priceBySeller = 0;
-
-    // 決済承認を確認
-    Object.keys(factory.paymentMethodType)
-        .forEach((key) => {
-            const paymentMethodType = <factory.paymentMethodType>(<any>factory.paymentMethodType)[key];
-            priceByAgent += authorizeActions
-                .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-                .filter((a) => a.object.typeOf === paymentMethodType)
-                .filter((a) => {
-                    const totalPaymentDue = (<IAuthorizeAnyPaymentResult>a.result).totalPaymentDue;
-
-                    return totalPaymentDue !== undefined && totalPaymentDue.currency === factory.priceCurrency.JPY;
-                })
-                .reduce((a, b) => a + (<IAuthorizeAnyPaymentResult>b.result).amount, 0);
-        });
-
-    // ポイントインセンティブは複数可だが、現時点で1注文につき1ポイントに限定
-    const pointAwardAuthorizeActions = <factory.action.authorize.award.point.IAction[]>authorizeActions
-        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.award.point.ObjectType.PointAward);
-    const givenAmount = pointAwardAuthorizeActions.reduce((a, b) => a + b.object.amount, 0);
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore if */
-    if (givenAmount > 1) {
-        throw new factory.errors.Argument('transactionId', 'Incentive amount must be 1');
-    }
-
-    // 販売者が提供するアイテムの発生金額
-    priceBySeller += transaction.object.authorizeActions
-        .filter((authorizeAction) => authorizeAction.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((authorizeAction) => authorizeAction.agent.id === transaction.seller.id)
-        .reduce((a, b) => a + (<IAuthorizeActionResultBySeller>b.result).price, 0);
-    debug('priceByAgent priceBySeller:', priceByAgent, priceBySeller);
-
-    // ポイント鑑賞券によって必要なポイントがどのくらいあるか算出
-    const requiredPoint = (<factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>[]>
-        transaction.object.authorizeActions)
-        .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-        .filter((a) => a.object.typeOf === factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation)
-        .reduce(
-            (a, b) => {
-                const point = (<IAuthorizeSeatReservationOfferResult>b.result).point;
-
-                return a + ((typeof point === 'number') ? point : 0);
-            },
-            0
-        );
-
-    // 必要ポイントがある場合、ポイントのオーソリ金額と比較
-    const authorizedPointAmount =
-        (<factory.action.authorize.paymentMethod.account.IAction<factory.accountType.Point>[]>transaction.object.authorizeActions)
-            .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
-            .filter((a) => a.object.typeOf === factory.paymentMethodType.Account)
-            .filter((a) => (<IAuthorizePointAccountPayment>a.object.fromAccount).accountType === factory.accountType.Point)
-            .reduce((a, b) => a + b.object.amount, 0);
-
-    if (requiredPoint !== authorizedPointAmount) {
-        throw new factory.errors.Argument('transactionId', 'Required point amount not satisfied');
-    }
-
-    if (priceByAgent !== priceBySeller) {
-        throw new factory.errors.Argument('transactionId', 'Transaction cannot be confirmed because prices are not matched');
-    }
-}
-
-/**
  * 取引オブジェクトから注文オブジェクトを生成する
  */
 // tslint:disable-next-line:max-func-body-length
 export function createOrderFromTransaction(params: {
     transaction: factory.transaction.placeOrder.ITransaction;
     orderNumber: string;
+    confirmationNumber: number;
     orderDate: Date;
     orderStatus: factory.orderStatus;
     isGift: boolean;
@@ -294,9 +213,6 @@ export function createOrderFromTransaction(params: {
         throw new factory.errors.NotImplemented('Number of seat reservation authorizeAction must be 1.');
     }
     const seatReservationAuthorizeAction = seatReservationAuthorizeActions.shift();
-    // if (seatReservationAuthorizeAction === undefined) {
-    //     throw new factory.errors.Argument('transaction', 'Seat reservation does not exist.');
-    // }
 
     // 会員プログラムに対する承認アクションを取り出す
     const programMembershipAuthorizeActions = params.transaction.object.authorizeActions
@@ -309,9 +225,6 @@ export function createOrderFromTransaction(params: {
         throw new factory.errors.NotImplemented('Number of programMembership authorizeAction must be 1.');
     }
     const programMembershipAuthorizeAction = programMembershipAuthorizeActions.shift();
-    // if (seatReservationAuthorizeAction === undefined) {
-    //     throw new factory.errors.Argument('transaction', 'Seat reservation does not exist.');
-    // }
 
     if (params.transaction.object.customerContact === undefined) {
         throw new factory.errors.Argument('transaction', 'Customer contact does not exist');
@@ -330,20 +243,6 @@ export function createOrderFromTransaction(params: {
 
     // 購入者を識別する情報をまとめる
     const customerIdentifier = (Array.isArray(params.transaction.agent.identifier)) ? params.transaction.agent.identifier : [];
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore else */
-    if (params.transaction.object.clientUser !== undefined) {
-        customerIdentifier.push(
-            {
-                name: 'tokenIssuer',
-                value: params.transaction.object.clientUser.iss
-            },
-            {
-                name: 'clientId',
-                value: params.transaction.object.clientUser.client_id
-            }
-        );
-    }
     const customer: factory.order.ICustomer = {
         id: params.transaction.agent.id,
         typeOf: params.transaction.agent.typeOf,
@@ -356,8 +255,7 @@ export function createOrderFromTransaction(params: {
         customer.memberOf = params.transaction.agent.memberOf;
     }
 
-    // とりいそぎ確認番号のデフォルトを0に設定しているが、座席予約以外の注文も含めて、本来はもっと丁寧に設計すべき。
-    let confirmationNumber = 0;
+    let reservationNumber: number | undefined;
     const acceptedOffers: factory.order.IAcceptedOffer<factory.order.IItemOffered>[] = [];
 
     // 座席予約がある場合
@@ -378,8 +276,8 @@ export function createOrderFromTransaction(params: {
             throw new factory.errors.NotFound('seatReservationAuthorizeAction.object.event');
         }
 
-        // 確認番号はCOAの仮予約番号と同じ
-        confirmationNumber = seatReservationAuthorizeAction.result.responseBody.tmpReserveNum;
+        // 予約番号はCOAの仮予約番号と同じ
+        reservationNumber = seatReservationAuthorizeAction.result.responseBody.tmpReserveNum;
 
         // 座席仮予約からオファー情報を生成する
         acceptedOffers.push(...updTmpReserveSeatResult.listTmpReserve.map((tmpReserve, index) => {
@@ -407,7 +305,7 @@ export function createOrderFromTransaction(params: {
 
             const eventReservation: factory.reservation.event.IReservation<factory.event.screeningEvent.IEvent> = {
                 typeOf: factory.reservationType.EventReservation,
-                id: `${updTmpReserveSeatResult.tmpReserveNum}-${index.toString()}`,
+                id: `${reservationNumber}-${index.toString()}`,
                 checkedIn: false,
                 attended: false,
                 additionalTicketText: '',
@@ -416,7 +314,7 @@ export function createOrderFromTransaction(params: {
                 price: <number>requestedOffer.price,
                 priceCurrency: requestedOffer.priceCurrency,
                 reservationFor: screeningEvent,
-                reservationNumber: `${updTmpReserveSeatResult.tmpReserveNum}`,
+                reservationNumber: `${reservationNumber}`,
                 reservationStatus: factory.reservationStatusType.ReservationConfirmed,
                 reservedTicket: {
                     typeOf: 'Ticket',
@@ -475,12 +373,6 @@ export function createOrderFromTransaction(params: {
     /* istanbul ignore if */
     if (programMembershipAuthorizeAction !== undefined) {
         acceptedOffers.push(programMembershipAuthorizeAction.object);
-    }
-
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore if */
-    if (params.seller.location === undefined || params.seller.location.branchCode === undefined) {
-        throw new factory.errors.ServiceUnavailable('Seller location branchCode undefined');
     }
 
     // 結果作成
@@ -552,22 +444,44 @@ export function createOrderFromTransaction(params: {
             ));
         });
 
-    const url = util.format(
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore if */
+    if (params.seller.location === undefined || params.seller.location.branchCode === undefined) {
+        throw new factory.errors.ServiceUnavailable('Seller location branchCode undefined');
+    }
+
+    const url = (reservationNumber !== undefined) ? util.format(
         '%s/inquiry/login?theater=%s&reserve=%s',
         process.env.ORDER_INQUIRY_ENDPOINT,
         params.seller.location.branchCode,
-        confirmationNumber
-    );
+        reservationNumber
+    ) : '';
+
+    // 決済方法から注文金額の計算
+    let price = 0;
+    Object.keys(factory.paymentMethodType)
+        .forEach((key) => {
+            const paymentMethodType = <factory.paymentMethodType>(<any>factory.paymentMethodType)[key];
+            price += params.transaction.object.authorizeActions
+                .filter((a) => a.actionStatus === factory.actionStatusType.CompletedActionStatus)
+                .filter((a) => a.object.typeOf === paymentMethodType)
+                .filter((a) => {
+                    const totalPaymentDue = (<IAuthorizeAnyPaymentResult>a.result).totalPaymentDue;
+
+                    return totalPaymentDue !== undefined && totalPaymentDue.currency === factory.priceCurrency.JPY;
+                })
+                .reduce((a, b) => a + (<IAuthorizeAnyPaymentResult>b.result).amount, 0);
+        });
 
     return {
         typeOf: 'Order',
         seller: seller,
         customer: customer,
-        price: acceptedOffers.reduce((a, b) => a + (<number>b.price), 0) - discounts.reduce((a, b) => a + b.discount, 0),
+        price: price,
         priceCurrency: factory.priceCurrency.JPY,
         paymentMethods: paymentMethods,
         discounts: discounts,
-        confirmationNumber: confirmationNumber,
+        confirmationNumber: params.confirmationNumber,
         orderNumber: params.orderNumber,
         acceptedOffers: acceptedOffers,
         url: url,
@@ -671,82 +585,6 @@ export async function createEmailMessageFromTransaction(params: {
 }
 
 /**
- * 取引から所有権を作成する
- */
-// tslint:disable-next-line:no-single-line-block-comment
-/* istanbul ignore next */
-export function createOwnershipInfosFromTransaction(params: {
-    transaction: factory.transaction.placeOrder.ITransaction;
-    order: factory.order.IOrder;
-}): factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<factory.ownershipInfo.IGoodType>>[] {
-    return params.order.acceptedOffers.map((acceptedOffer, offerIndex) => {
-        const itemOffered = acceptedOffer.itemOffered;
-        let ownershipInfo: factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<factory.ownershipInfo.IGoodType>>;
-        const identifier = util.format(
-            '%s-%s-%s',
-            itemOffered.typeOf,
-            params.order.orderNumber,
-            offerIndex
-        );
-        const ownedFrom = params.order.orderDate;
-        let ownedThrough: Date;
-
-        switch (itemOffered.typeOf) {
-            case 'ProgramMembership':
-                // どういう期間でいくらのオファーなのか
-                const eligibleDuration = acceptedOffer.eligibleDuration;
-                if (eligibleDuration === undefined) {
-                    throw new factory.errors.NotFound('Order.acceptedOffers.eligibleDuration');
-                }
-                // 期間単位としては秒のみ実装
-                if (eligibleDuration.unitCode !== factory.unitCode.Sec) {
-                    throw new factory.errors.NotImplemented('Only \'SEC\' is implemented for eligibleDuration.unitCode ');
-                }
-                ownedThrough = moment(params.order.orderDate).add(eligibleDuration.value, 'seconds').toDate();
-                ownershipInfo = {
-                    id: '',
-                    typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
-                    identifier: identifier,
-                    ownedBy: params.transaction.agent,
-                    acquiredFrom: params.transaction.seller,
-                    ownedFrom: ownedFrom,
-                    ownedThrough: ownedThrough,
-                    typeOfGood: itemOffered
-                };
-
-                break;
-
-            case factory.reservationType.EventReservation:
-                // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
-                // saveする際に、identifierでfindOneAndUpdateしている
-                // const identifier = `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservedTicket.ticketToken}`;
-                // イベント予約に対する所有権の有効期限はイベント終了日時までで十分だろう
-                // 現時点では所有権対象がイベント予約のみなので、これで問題ないが、
-                // 対象が他に広がれば、有効期間のコントロールは別でしっかり行う必要があるだろう
-                ownedThrough = itemOffered.reservationFor.endDate;
-
-                ownershipInfo = {
-                    id: '',
-                    typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
-                    identifier: identifier,
-                    ownedBy: params.transaction.agent,
-                    acquiredFrom: params.transaction.seller,
-                    ownedFrom: ownedFrom,
-                    ownedThrough: ownedThrough,
-                    typeOfGood: itemOffered
-                };
-
-                break;
-
-            default:
-                throw new factory.errors.NotImplemented(`Offered item type ${(<any>itemOffered).typeOf} not implemented`);
-        }
-
-        return ownershipInfo;
-    });
-}
-
-/**
  * 取引のポストアクションを作成する
  */
 // tslint:disable-next-line:max-func-body-length
@@ -756,6 +594,7 @@ export async function createPotentialActionsFromTransaction(params: {
     order: factory.order.IOrder;
     seller: ISeller;
     sendEmailMessage?: boolean;
+    emailTemplate?: string;
 }): Promise<factory.transaction.placeOrder.IPotentialActions> {
     // 予約確定アクション
     const seatReservationAuthorizeActions =

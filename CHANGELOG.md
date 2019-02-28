@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 決済方法承認サービスをCinerino化
 - インセンティブ承認サービスをCinerino化
 - 注文取引サービスを部分的にCinerino化
+- 取引インターフェースをCinerino化
 
 ### Deprecated
 

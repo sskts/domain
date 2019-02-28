@@ -993,6 +993,7 @@ describe('createOrderFromTransaction()', () => {
         const result = sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
             transaction: transaction,
             orderNumber: 'orderNumber',
+            confirmationNumber: 111,
             orderDate: orderDate,
             orderStatus: orderStatus,
             isGift: false,
@@ -1083,6 +1084,7 @@ describe('createOrderFromTransaction()', () => {
                 sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
                     transaction: transaction,
                     orderNumber: 'orderNumber',
+                    confirmationNumber: 111,
                     orderDate: orderDate,
                     orderStatus: orderStatus,
                     isGift: false,
@@ -1230,6 +1232,7 @@ describe('createOrderFromTransaction()', () => {
             () => {
                 sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
                     transaction: transaction,
+                    confirmationNumber: 111,
                     orderNumber: 'orderNumber',
                     orderDate: orderDate,
                     orderStatus: orderStatus,
@@ -1305,6 +1308,7 @@ describe('createOrderFromTransaction()', () => {
             () => {
                 sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
                     transaction: transaction,
+                    confirmationNumber: 111,
                     orderNumber: 'orderNumber',
                     orderDate: orderDate,
                     orderStatus: orderStatus,
@@ -1319,12 +1323,6 @@ describe('createOrderFromTransaction()', () => {
                 return true;
             }
         );
-    });
-});
-
-describe('validateTransaction()', () => {
-    afterEach(() => {
-        sandbox.restore();
     });
 });
 
