@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 承認アクションの目的インターフェースを最小化
 - 決済方法承認サービスをCinerino化
 - インセンティブ承認サービスをCinerino化
+- 注文取引サービスを部分的にCinerino化
 
 ### Deprecated
 

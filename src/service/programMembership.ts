@@ -465,13 +465,8 @@ function processPlaceOrder(params: {
             // tslint:disable-next-line:no-magic-numbers
             expires: moment().add(5, 'minutes').toDate(),
             agent: customer,
-            seller: {
-                typeOf: seller.typeOf,
-                id: seller.id
-            },
-            object: {
-                clientUser: <any>{}
-            }
+            seller: { typeOf: seller.typeOf, id: seller.id },
+            object: {}
         })(repos);
         debug('transaction started', transaction.id);
 

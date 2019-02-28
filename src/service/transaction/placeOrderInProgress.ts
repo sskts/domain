@@ -3,7 +3,6 @@
  */
 import * as cinerino from '@cinerino/domain';
 
-import * as waiter from '@waiter/domain';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as moment from 'moment-timezone';
@@ -23,167 +22,16 @@ import * as factory from '../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress');
 
-export type ITransactionOperation<T> = (repos: { transaction: TransactionRepo }) => Promise<T>;
-export type IOrganizationAndTransactionAndTransactionCountOperation<T> = (repos: {
-    seller: SellerRepo;
-    transaction: TransactionRepo;
-}) => Promise<T>;
 export type IConfirmOperation<T> = (repos: {
     action: ActionRepo;
     transaction: TransactionRepo;
     orderNumber: OrderNumberRepo;
     seller: SellerRepo;
 }) => Promise<T>;
+
 export type IAuthorizeAnyPaymentResult = factory.action.authorize.paymentMethod.any.IResult<factory.paymentMethodType>;
+
 export type ISeller = factory.seller.IOrganization<factory.seller.IAttributes<factory.organizationType>>;
-
-export interface IPassportBeforeStart {
-    /**
-     * WAITER許可証発行者
-     */
-    issuer: string;
-    /**
-     * WAITER許可証トークン
-     */
-    token: factory.waiter.passport.IEncodedPassport;
-    /**
-     * WAITER許可証トークンシークレット
-     */
-    secret: string;
-}
-
-export interface IStartParamsWithoutDetail {
-    expires: Date;
-    agent: factory.transaction.placeOrder.IAgent;
-    seller: {
-        typeOf: factory.organizationType;
-        id: string;
-    };
-    object: {
-        clientUser?: factory.clientUser.IClientUser;
-        passport?: IPassportBeforeStart;
-    };
-}
-
-/**
- * 取引開始
- */
-export function start(params: IStartParamsWithoutDetail):
-    IOrganizationAndTransactionAndTransactionCountOperation<factory.transaction.placeOrder.ITransaction> {
-    return async (repos: {
-        seller: SellerRepo;
-        transaction: TransactionRepo;
-    }) => {
-        // 売り手を取得
-        const seller = await repos.seller.findById({ id: params.seller.id });
-
-        let passport: waiter.factory.passport.IPassport | undefined;
-        // WAITER許可証トークンがあれば検証する
-        // tslint:disable-next-line:no-single-line-block-comment
-        /* istanbul ignore else */
-        if (params.object.passport !== undefined) {
-            try {
-                passport = await waiter.service.passport.verify({
-                    token: params.object.passport.token,
-                    secret: params.object.passport.secret
-                });
-            } catch (error) {
-                throw new factory.errors.Argument('passportToken', `Invalid token. ${error.message}`);
-            }
-
-            // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore next */
-            if (seller.identifier === undefined) {
-                throw new factory.errors.ServiceUnavailable('Seller identifier undefined');
-            }
-
-            // スコープを判別
-            if (!validatePassport(passport, seller.identifier)) {
-                throw new factory.errors.Argument('passportToken', 'Invalid passport.');
-            }
-        } else {
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO いったん許可証トークンなしでも通過するようにしているが、これでいいのかどうか。保留事項。
-            params.object.passport = {
-                issuer: '',
-                token: moment().valueOf().toString(),
-                secret: ''
-            }; // ユニークインデックスがDBにはられているため
-            passport = <any>{};
-        }
-
-        // 取引ファクトリーで新しい進行中取引オブジェクトを作成
-        const transactionAttributes: factory.transaction.placeOrder.IStartParams = {
-            typeOf: factory.transactionType.PlaceOrder,
-            agent: params.agent,
-            seller: {
-                id: seller.id,
-                typeOf: seller.typeOf,
-                name: seller.name,
-                location: seller.location,
-                telephone: seller.telephone,
-                url: seller.url,
-                image: seller.image
-            },
-            object: {
-                passportToken: (params.object.passport !== undefined) ? params.object.passport.token : /* istanbul ignore next */ undefined,
-                passport: passport,
-                clientUser: params.object.clientUser,
-                authorizeActions: []
-            },
-            expires: params.expires
-        };
-
-        let transaction: factory.transaction.placeOrder.ITransaction;
-        try {
-            transaction = await repos.transaction.start<factory.transactionType.PlaceOrder>(transactionAttributes);
-        } catch (error) {
-            if (error.name === 'MongoError') {
-                // 許可証を重複使用しようとすると、MongoDBでE11000 duplicate key errorが発生する
-                // name: 'MongoError',
-                // message: 'E11000 duplicate key error collection: sskts-development-v2.transactions...',
-                // code: 11000,
-
-                // tslint:disable-next-line:no-single-line-block-comment
-                /* istanbul ignore else */
-                // tslint:disable-next-line:no-magic-numbers
-                if (error.code === 11000) {
-                    throw new factory.errors.AlreadyInUse('transaction', ['passportToken'], 'Passport already used.');
-                }
-            }
-
-            throw error;
-        }
-
-        return transaction;
-    };
-}
-
-/**
- * WAITER許可証の有効性チェック
- * @param passport WAITER許可証
- * @param sellerIdentifier 販売者識別子
- */
-function validatePassport(passport: waiter.factory.passport.IPassport, sellerIdentifier: string) {
-    // tslint:disable-next-line:no-single-line-block-comment
-    /* istanbul ignore next */
-    if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
-        throw new Error('WAITER_PASSPORT_ISSUER unset');
-    }
-    const issuers = process.env.WAITER_PASSPORT_ISSUER.split(',');
-    const validIssuer = issuers.indexOf(passport.iss) >= 0;
-
-    // スコープのフォーマットは、placeOrderTransaction.{sellerId}
-    const explodedScopeStrings = passport.scope.split('.');
-    const validScope = (
-        // tslint:disable-next-line:no-magic-numbers
-        explodedScopeStrings.length === 2 &&
-        explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
-        explodedScopeStrings[1] === sellerIdentifier // 販売者識別子確認
-    );
-
-    return validIssuer && validScope;
-}
 
 /**
  * 取引に対するアクション
@@ -215,54 +63,14 @@ export namespace action {
 }
 
 /**
+ * 取引開始
+ */
+export import start = cinerino.service.transaction.placeOrderInProgress.start;
+
+/**
  * 取引中の購入者情報を変更する
  */
-export function setCustomerContact(params: {
-    id: string;
-    agent: { id: string };
-    object: {
-        customerContact: factory.transaction.placeOrder.ICustomerContact;
-    };
-}): ITransactionOperation<factory.transaction.placeOrder.ICustomerContact> {
-    return async (repos: { transaction: TransactionRepo }) => {
-        let formattedTelephone: string;
-        try {
-            const phoneUtil = PhoneNumberUtil.getInstance();
-            const phoneNumber = phoneUtil.parse(params.object.customerContact.telephone, 'JP'); // 日本の電話番号前提仕様
-            if (!phoneUtil.isValidNumber(phoneNumber)) {
-                throw new Error('invalid phone number format.');
-            }
-
-            formattedTelephone = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
-        } catch (error) {
-            throw new factory.errors.Argument('contact.telephone', error.message);
-        }
-
-        // 連絡先を再生成(validationの意味も含めて)
-        const customerContact: factory.transaction.placeOrder.ICustomerContact = {
-            familyName: params.object.customerContact.familyName,
-            givenName: params.object.customerContact.givenName,
-            email: params.object.customerContact.email,
-            telephone: formattedTelephone
-        };
-
-        const transaction = await repos.transaction.findInProgressById({
-            typeOf: factory.transactionType.PlaceOrder,
-            id: params.id
-        });
-
-        if (transaction.agent.id !== params.agent.id) {
-            throw new factory.errors.Forbidden('A specified transaction is not yours');
-        }
-
-        await repos.transaction.setCustomerContactOnPlaceOrderInProgress({
-            id: params.id,
-            contact: customerContact
-        });
-
-        return customerContact;
-    };
-}
+export import setCustomerContact = cinerino.service.transaction.placeOrderInProgress.setCustomerContact;
 
 /**
  * 注文取引を確定する
