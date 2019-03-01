@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - インセンティブ承認サービスをCinerino化
 - 注文取引サービスを部分的にCinerino化
 - 取引インターフェースをCinerino化
+- install @motionpicture/sskts-factory@10.0.0
 
 ### Deprecated
 
