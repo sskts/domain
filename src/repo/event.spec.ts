@@ -76,40 +76,6 @@ describe('searchIndividualScreeningEvents()', () => {
     });
 });
 
-describe('findIndividualScreeningEventByIdentifier()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('repositoryの状態が正常であれば、オブジェクトが返却されるはず', async () => {
-        const identifier = 'identifier';
-
-        const repository = new sskts.repository.Event(mongoose.connection);
-        const doc = new repository.eventModel();
-
-        sandbox.mock(repository.eventModel).expects('findOne').once()
-            .chain('exec').resolves(doc);
-
-        const result = await repository.findIndividualScreeningEventByIdentifier(identifier);
-
-        assert.equal(typeof result, 'object');
-        sandbox.verify();
-    });
-
-    it('上映イベントが存在しなければ、NotFoundエラーとなるはず', async () => {
-        const identifier = 'identifier';
-
-        const repository = new sskts.repository.Event(mongoose.connection);
-
-        sandbox.mock(repository.eventModel).expects('findOne').once()
-            .chain('exec').resolves(null);
-
-        const result = await repository.findIndividualScreeningEventByIdentifier(identifier).catch((err) => err);
-        assert(result instanceof sskts.factory.errors.NotFound);
-        sandbox.verify();
-    });
-});
-
 describe('cancelIndividualScreeningEvent()', () => {
     afterEach(() => {
         sandbox.restore();

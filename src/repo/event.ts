@@ -204,29 +204,4 @@ export class MongoRepository extends repository.Event {
 
         return query.setOptions({ maxTimeMS: 10000 }).exec().then((docs) => docs.map((doc) => doc.toObject()));
     }
-
-    /**
-     * 上映イベントを取得する
-     */
-    public async findIndividualScreeningEventByIdentifier(id: string): Promise<factory.event.screeningEvent.IEvent> {
-        const doc = await this.eventModel.findOne(
-            {
-                typeOf: {
-                    $in: [factory.eventType.IndividualScreeningEvent, factory.eventType.ScreeningEvent]
-                },
-                _id: id
-            },
-            {
-                __v: 0,
-                createdAt: 0,
-                updatedAt: 0
-            }
-        ).exec();
-
-        if (doc === null) {
-            throw new factory.errors.NotFound('ScreeningEvent');
-        }
-
-        return doc.toObject();
-    }
 }

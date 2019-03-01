@@ -40,10 +40,10 @@ before(() => {
                                 }
                             }
                         ],
-                        updTmpReserveSeatArgs: {
+                        requestBody: {
                             theaterCode: '123'
                         },
-                        updTmpReserveSeatResult: {
+                        responseBody: {
                             tmpReserveNum: 123
                         }
                     }
@@ -86,8 +86,8 @@ describe('cancelSeatReservationAuth()', () => {
                 object: { typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation },
                 purpose: {},
                 result: {
-                    updTmpReserveSeatArgs: {},
-                    updTmpReserveSeatResult: {}
+                    requestBody: {},
+                    responseBody: {}
                 }
             }
         ];

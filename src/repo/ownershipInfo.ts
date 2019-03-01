@@ -5,6 +5,21 @@ import * as factory from '../factory';
 export type IOwnershipInfo<T extends factory.ownershipInfo.IGoodType> =
     factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<T>>;
 
+export interface ISearchProgramMembershipConditions {
+    /**
+     * 劇場ID
+     */
+    theaterIds: string[];
+    /**
+     * 登録日MIN
+     */
+    createdAtFrom: Date;
+    /**
+     * 登録日MAX
+     */
+    createdAtTo: Date;
+}
+
 /**
  * 所有権リポジトリ
  */
@@ -30,7 +45,7 @@ export class MongoRepository extends repository.OwnershipInfo {
     // tslint:disable-next-line:no-single-line-block-comment
     /* istanbul ignore next */
     public async countProgramMembership(
-        searchConditions: factory.ownershipInfo.ISearchProgramMembershipConditions
+        searchConditions: ISearchProgramMembershipConditions
     ): Promise<number> {
         const andConditions: any[] = [
             { 'typeOfGood.typeOf': 'ProgramMembership' }
@@ -60,7 +75,7 @@ export class MongoRepository extends repository.OwnershipInfo {
      * 会員プログラムを検索する
      */
     public async searchProgramMembership(
-        searchConditions: factory.ownershipInfo.ISearchProgramMembershipConditions
+        searchConditions: ISearchProgramMembershipConditions
     ): Promise<number> {
         const andConditions: any[] = [
             { 'typeOfGood.typeOf': 'ProgramMembership' }

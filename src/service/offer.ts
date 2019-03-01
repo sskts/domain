@@ -64,7 +64,10 @@ export function findIndividualScreeningEventByIdentifier(
         event: EventRepository;
         itemAvailability?: ScreeningEventItemAvailabilityRepo;
     }) => {
-        const event = await repos.event.findIndividualScreeningEventByIdentifier(id);
+        const event = await repos.event.findById({
+            typeOf: factory.chevre.eventType.ScreeningEvent,
+            id: id
+        });
 
         // 必ず定義されている前提
         const coaInfo = <factory.event.screeningEvent.ICOAInfo>event.coaInfo;

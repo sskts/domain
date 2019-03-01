@@ -64,7 +64,7 @@ describe('findIndividualScreeningEventByIdentifier()', () => {
         const eventRepo = new EventRepo(mongoose.connection);
         const itemAvailabilityRepo = new ScreeningEventItemAvailabilityRepo(<any>{});
 
-        sandbox.mock(eventRepo).expects('findIndividualScreeningEventByIdentifier').once().resolves(event);
+        sandbox.mock(eventRepo).expects('findById').once().resolves(event);
         // tslint:disable-next-line:no-magic-numbers
         sandbox.mock(itemAvailabilityRepo).expects('findOne').once().resolves(100);
 

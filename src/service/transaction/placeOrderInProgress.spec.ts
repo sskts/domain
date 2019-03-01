@@ -2,7 +2,6 @@
 /**
  * 進行中の注文取引サービステスト
  */
-import * as waiter from '@waiter/domain';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
@@ -15,480 +14,6 @@ let sandbox: sinon.SinonSandbox;
 
 before(() => {
     sandbox = sinon.createSandbox();
-});
-
-describe('start()', () => {
-    beforeEach(() => {
-        delete process.env.WAITER_PASSPORT_ISSUER;
-    });
-
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('販売者が存在すれば、開始できるはず', async () => {
-        process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
-        const agent = {
-            typeOf: sskts.factory.personType.Person,
-            id: 'agentId'
-        };
-        const seller = {
-            typeOf: sskts.factory.organizationType.MovieTheater,
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            identifier: 'sellerIdentifier'
-        };
-        const transaction = {
-            expires: new Date()
-        };
-        const passportToken = 'passportToken';
-        const passport = {
-            scope: `placeOrderTransaction.${seller.identifier}`,
-            iat: 123,
-            exp: 123,
-            iss: process.env.WAITER_PASSPORT_ISSUER,
-            issueUnit: {}
-        };
-
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-
-        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
-        sandbox.mock(transactionRepo).expects('start').once().resolves(transaction);
-        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
-
-        const result = await sskts.service.transaction.placeOrderInProgress.start({
-            expires: transaction.expires,
-            clientUser: <any>{},
-            customer: agent,
-            seller: seller,
-            passportToken: passportToken
-        })({
-            transaction: transactionRepo,
-            seller: sellerRepo
-        });
-
-        assert.deepEqual(result, transaction);
-        // assert.equal(result.expires, transaction.expires);
-        sandbox.verify();
-    });
-
-    it('クライアントユーザーにusernameが存在すれば、会員として開始できるはず', async () => {
-        process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
-        const agent = {
-            typeOf: sskts.factory.personType.Person,
-            id: 'agentId'
-        };
-        const seller = {
-            typeOf: sskts.factory.organizationType.MovieTheater,
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            identifier: 'sellerIdentifier'
-        };
-        const transaction = {
-            expires: new Date()
-        };
-        const clientUser = {
-            username: 'username'
-        };
-        const passportToken = 'passportToken';
-        const passport = {
-            scope: `placeOrderTransaction.${seller.identifier}`,
-            iat: 123,
-            exp: 123,
-            iss: process.env.WAITER_PASSPORT_ISSUER,
-            issueUnit: {}
-        };
-
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-
-        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
-        sandbox.mock(transactionRepo).expects('start').once().resolves(transaction);
-        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
-
-        const result = await sskts.service.transaction.placeOrderInProgress.start({
-            expires: transaction.expires,
-            clientUser: <any>clientUser,
-            customer: agent,
-            seller: seller,
-            passportToken: passportToken
-        })({
-            transaction: transactionRepo,
-            seller: sellerRepo
-        });
-
-        assert.deepEqual(result, transaction);
-        sandbox.verify();
-    });
-
-    it('許可証トークンの検証に成功すれば、開始できるはず', async () => {
-        process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
-        const agent = {
-            typeOf: sskts.factory.personType.Person,
-            id: 'agentId'
-        };
-        const seller = {
-            typeOf: sskts.factory.organizationType.MovieTheater,
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            identifier: 'sellerIdentifier'
-        };
-        const transaction = {
-            expires: new Date()
-        };
-        const passportToken = 'passportToken';
-        const passport = {
-            scope: `placeOrderTransaction.${seller.identifier}`,
-            iat: 123,
-            exp: 123,
-            iss: process.env.WAITER_PASSPORT_ISSUER,
-            issueUnit: {}
-        };
-
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-
-        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
-        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
-        sandbox.mock(transactionRepo).expects('start').once().resolves(transaction);
-
-        const result = await sskts.service.transaction.placeOrderInProgress.start({
-            expires: transaction.expires,
-            passportToken: passportToken,
-            clientUser: <any>{},
-            customer: agent,
-            seller: seller
-        })({
-            transaction: transactionRepo,
-            seller: sellerRepo
-        });
-        assert.deepEqual(result, transaction);
-        sandbox.verify();
-    });
-
-    it('許可証トークンの検証に失敗すれば、Argumentエラーとなるはず', async () => {
-        process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
-        const agent = {
-            typeOf: sskts.factory.personType.Person,
-            id: 'agentId'
-        };
-        const seller = {
-            typeOf: sskts.factory.organizationType.MovieTheater,
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            identifier: 'sellerIdentifier'
-        };
-        const transaction = {
-            expires: new Date()
-        };
-        const passportToken = 'passportToken';
-        const verifyResult = new Error('verifyError');
-
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-
-        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
-        sandbox.mock(waiter.service.passport).expects('verify').once().rejects(verifyResult);
-        sandbox.mock(transactionRepo).expects('start').never();
-
-        const result = await sskts.service.transaction.placeOrderInProgress.start({
-            expires: transaction.expires,
-            passportToken: passportToken,
-            clientUser: <any>{},
-            customer: agent,
-            seller: seller
-        })({
-            transaction: transactionRepo,
-            seller: sellerRepo
-        }).catch((err) => err);
-        assert(result instanceof sskts.factory.errors.Argument);
-        sandbox.verify();
-    });
-
-    it('許可証の発行者が期待通りでなければ、Argumentエラーとなるはず', async () => {
-        process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
-        const agent = {
-            typeOf: sskts.factory.personType.Person,
-            id: 'agentId'
-        };
-        const seller = {
-            typeOf: sskts.factory.organizationType.MovieTheater,
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            identifier: 'sellerIdentifier'
-        };
-        const transaction = {
-            expires: new Date()
-        };
-        const passportToken = 'passportToken';
-        const passport = {
-            scope: `placeOrderTransaction.${seller.id}`,
-            iat: 123,
-            exp: 123,
-            iss: 'invalidIssuer',
-            issueUnit: {}
-        };
-
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-
-        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
-        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
-        sandbox.mock(transactionRepo).expects('start').once().never();
-
-        const result = await sskts.service.transaction.placeOrderInProgress.start({
-            expires: transaction.expires,
-            passportToken: passportToken,
-            clientUser: <any>{},
-            customer: agent,
-            seller: seller
-        })({
-            transaction: transactionRepo,
-            seller: sellerRepo
-        }).catch((err) => err);
-        assert(result instanceof sskts.factory.errors.Argument);
-        sandbox.verify();
-    });
-
-    // it('許可証がない場合、ArgumentNullエラーとなるはず', async () => {
-    //     const agent = {
-    //         typeOf: sskts.factory.personType.Person,
-    //         id: 'agentId'
-    //     };
-    //     const seller = {
-    //         typeOf: sskts.factory.organizationType.MovieTheater,
-    //         id: 'sellerId',
-    //         name: { ja: 'ja', en: 'ne' },
-    //         identifier: 'sellerIdentifier'
-    //     };
-    //     const transaction = {
-    //         expires: new Date()
-    //     };
-
-    //     const sellerRepo = new sskts.repository.Seller(mongoose.connection);
-    //     const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-
-    //     sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
-    //     sandbox.mock(transactionRepo).expects('start').never();
-
-    //     const result = await sskts.service.transaction.placeOrderInProgress.start({
-    //         expires: transaction.expires,
-    //         clientUser: <any>{},
-    //         customer: agent,
-    //         seller: seller,
-    //         passportToken: <any>undefined
-    //     })({
-    //         transaction: transactionRepo,
-    //         seller: sellerRepo
-    //     }).catch((err) => err);
-    //     assert(result instanceof sskts.factory.errors.ArgumentNull);
-    //     sandbox.verify();
-    // });
-
-    it('取引作成時に何かしらエラーが発生すれば、そのままのエラーになるはず', async () => {
-        process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
-        const agent = {
-            typeOf: sskts.factory.personType.Person,
-            id: 'agentId'
-        };
-        const seller = {
-            typeOf: sskts.factory.organizationType.MovieTheater,
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            identifier: 'sellerIdentifier'
-        };
-        const expires = new Date();
-        const startResult = new Error('startError');
-        const passportToken = 'passportToken';
-        const passport = {
-            scope: `placeOrderTransaction.${seller.identifier}`,
-            iat: 123,
-            exp: 123,
-            iss: process.env.WAITER_PASSPORT_ISSUER,
-            issueUnit: {}
-        };
-
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-
-        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
-        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
-        sandbox.mock(transactionRepo).expects('start').once().rejects(startResult);
-
-        const result = await sskts.service.transaction.placeOrderInProgress.start({
-            expires: expires,
-            passportToken: passportToken,
-            clientUser: <any>{},
-            customer: agent,
-            seller: seller
-        })({
-            transaction: transactionRepo,
-            seller: sellerRepo
-        }).catch((err) => err);
-        assert.deepEqual(result, startResult);
-        sandbox.verify();
-    });
-
-    it('許可証を重複使用しようとすれば、AlreadyInUseエラーとなるはず', async () => {
-        process.env.WAITER_PASSPORT_ISSUER = 'https://example.com';
-        const agent = {
-            typeOf: sskts.factory.personType.Person,
-            id: 'agentId'
-        };
-        const seller = {
-            typeOf: sskts.factory.organizationType.MovieTheater,
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            identifier: 'sellerIdentifier'
-        };
-        const expires = new Date();
-        const startResult = mongoose.mongo.MongoError.create({ code: 11000 });
-        const passportToken = 'passportToken';
-        const passport = {
-            scope: `placeOrderTransaction.${seller.identifier}`,
-            iat: 123,
-            exp: 123,
-            iss: process.env.WAITER_PASSPORT_ISSUER,
-            issueUnit: {}
-        };
-
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-
-        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
-        sandbox.mock(waiter.service.passport).expects('verify').once().resolves(passport);
-        sandbox.mock(transactionRepo).expects('start').once().rejects(startResult);
-
-        const result = await sskts.service.transaction.placeOrderInProgress.start({
-            expires: expires,
-            passportToken: passportToken,
-            clientUser: <any>{},
-            customer: agent,
-            seller: seller
-        })({
-            transaction: transactionRepo,
-            seller: sellerRepo
-        }).catch((err) => err);
-        assert(result instanceof sskts.factory.errors.AlreadyInUse);
-        sandbox.verify();
-    });
-});
-
-describe('setCustomerContact()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('取引が進行中であれば、エラーにならないはず', async () => {
-        const agent = {
-            id: 'agentId'
-        };
-        const seller = {
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
-        };
-        const transaction = {
-            id: 'transactionId',
-            agent: agent,
-            seller: seller,
-            object: {
-            }
-        };
-        const contact = {
-            givenName: 'givenName',
-            familyName: 'familyName',
-            telephone: '09012345678',
-            email: 'john@example.com'
-        };
-
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-
-        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').once().resolves();
-
-        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            contact: <any>contact
-        })({ transaction: transactionRepo });
-
-        assert.equal(typeof result, 'object');
-        sandbox.verify();
-    });
-
-    it('所有者の取引でなければ、Forbiddenエラーが投げられるはず', async () => {
-        const agent = {
-            id: 'agentId'
-        };
-        const seller = {
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
-        };
-        const transaction = {
-            id: 'transactionId',
-            agent: { id: 'anotherAgentId' },
-            seller: seller,
-            object: {
-            }
-        };
-        const contact = {
-            givenName: 'givenName',
-            familyName: 'familyName',
-            telephone: '09012345678',
-            email: 'john@example.com'
-        };
-
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-
-        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').never();
-
-        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            contact: <any>contact
-        })({ transaction: transactionRepo }).catch((err) => err);
-
-        assert(result instanceof sskts.factory.errors.Forbidden);
-        sandbox.verify();
-    });
-
-    it('電話番号フォーマットが不適切であれば、Argumentエラーが投げられるはず', async () => {
-        const agent = {
-            id: 'agentId'
-        };
-        const seller = {
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' }
-        };
-        const transaction = {
-            id: 'transactionId',
-            agent: agent,
-            seller: seller,
-            object: {
-            }
-        };
-        const contact = {
-            givenName: 'givenName',
-            familyName: 'familyName',
-            telephone: '090123456789',
-            email: 'john@example.com'
-        };
-
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-
-        sandbox.mock(transactionRepo).expects('findInProgressById').never().resolves(transaction);
-        sandbox.mock(transactionRepo).expects('setCustomerContactOnPlaceOrderInProgress').never();
-
-        const result = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            contact: <any>contact
-        })({ transaction: transactionRepo }).catch((err) => err);
-        assert(result instanceof sskts.factory.errors.Argument);
-        sandbox.verify();
-    });
 });
 
 describe('confirm()', () => {
@@ -545,7 +70,11 @@ describe('confirm()', () => {
                     execTranResult: {
                         orderId: 'orderId'
                     },
-                    amount: 1234
+                    amount: 1234,
+                    totalPaymentDue: {
+                        currency: sskts.factory.priceCurrency.JPY,
+                        value: 1234
+                    }
                 },
                 endDate: moment().add(-1, 'minute').toDate(),
                 purpose: {}
@@ -559,7 +88,7 @@ describe('confirm()', () => {
                 object: {
                     typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
                     offers: [],
-                    individualScreeningEvent: {
+                    event: {
                         superEvent: {
                             location: {
                                 typeOf: 'MovieTheater',
@@ -569,10 +98,10 @@ describe('confirm()', () => {
                     }
                 },
                 result: {
-                    updTmpReserveSeatArgs: {
+                    requestBody: {
                         theaterCode: '118'
                     },
-                    updTmpReserveSeatResult: {
+                    responseBody: {
                         tmpReserveNum: 12345,
                         listTmpReserve: []
                     },
@@ -669,9 +198,10 @@ describe('confirm()', () => {
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderDate: new Date()
+            agent: agent,
+            id: transaction.id,
+            result: { order: { orderDate: new Date() } },
+            options: {}
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -746,7 +276,7 @@ describe('confirm()', () => {
                 object: {
                     typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
                     offers: [],
-                    individualScreeningEvent: {
+                    event: {
                         superEvent: {
                             location: {
                                 typeOf: 'MovieTheater',
@@ -756,10 +286,11 @@ describe('confirm()', () => {
                     }
                 },
                 result: {
-                    updTmpReserveSeatArgs: {
+                    point: 0,
+                    requestBody: {
                         theaterCode: '118'
                     },
-                    updTmpReserveSeatResult: {
+                    responseBody: {
                         tmpReserveNum: 12345,
                         listTmpReserve: []
                     },
@@ -852,9 +383,10 @@ describe('confirm()', () => {
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').once().resolves();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderDate: new Date()
+            agent: agent,
+            id: transaction.id,
+            result: { order: { orderDate: new Date() } },
+            options: {}
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -865,48 +397,49 @@ describe('confirm()', () => {
         sandbox.verify();
     });
 
-    it('購入者連絡先がなければArgumentFoundエラーとなるはず', async () => {
-        const agent = {
-            id: 'agentId'
-        };
-        const seller = {
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            telephone: '0312345678'
-        };
-        const transaction = {
-            id: 'transactionId',
-            agent: agent,
-            seller: seller,
-            object: {
-            }
-        };
+    // it('購入者連絡先がなければArgumentFoundエラーとなるはず', async () => {
+    //     const agent = {
+    //         id: 'agentId'
+    //     };
+    //     const seller = {
+    //         id: 'sellerId',
+    //         name: { ja: 'ja', en: 'ne' },
+    //         telephone: '0312345678'
+    //     };
+    //     const transaction = {
+    //         id: 'transactionId',
+    //         agent: agent,
+    //         seller: seller,
+    //         object: {
+    //         }
+    //     };
 
-        const actionRepo = new sskts.repository.Action(mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-        const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+    //     const actionRepo = new sskts.repository.Action(mongoose.connection);
+    //     const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+    //     const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
+    //     const sellerRepo = new sskts.repository.Seller(mongoose.connection);
 
-        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
-        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(orderNumberRepo).expects('publish').never();
-        sandbox.mock(actionRepo).expects('searchByPurpose').never();
+    //     sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
+    //     sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
+    //     sandbox.mock(orderNumberRepo).expects('publish').never();
+    //     sandbox.mock(actionRepo).expects('searchByPurpose').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.confirm({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderDate: new Date()
-        })({
-            action: actionRepo,
-            transaction: transactionRepo,
-            orderNumber: orderNumberRepo,
-            seller: sellerRepo
-        })
-            .catch((err) => err);
+    //     const result = await sskts.service.transaction.placeOrderInProgress.confirm({
+    //         agent: agent,
+    //         id: transaction.id,
+    //         result: { order: { orderDate: new Date() } },
+    //         options: {}
+    //     })({
+    //         action: actionRepo,
+    //         transaction: transactionRepo,
+    //         orderNumber: orderNumberRepo,
+    //         seller: sellerRepo
+    //     })
+    //         .catch((err) => err);
 
-        assert(result instanceof sskts.factory.errors.Argument);
-        sandbox.verify();
-    });
+    //     assert(result instanceof sskts.factory.errors.Argument);
+    //     sandbox.verify();
+    // });
 
     it('確定条件が整っていなければ、Argumentエラーになるはず', async () => {
         const agent = {
@@ -936,7 +469,7 @@ describe('confirm()', () => {
                     offers: []
                 },
                 result: {
-                    updTmpReserveSeatArgs: {},
+                    requestBody: {},
                     price: 1234
                 },
                 endDate: moment(orderDate).add(-1, 'minute').toDate(),
@@ -971,9 +504,10 @@ describe('confirm()', () => {
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderDate: orderDate
+            agent: agent,
+            id: transaction.id,
+            result: { order: { orderDate: orderDate } },
+            options: {}
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -1013,9 +547,10 @@ describe('confirm()', () => {
         sandbox.mock(transactionRepo).expects('confirmPlaceOrder').never();
 
         const result = await sskts.service.transaction.placeOrderInProgress.confirm({
-            agentId: agent.id,
-            transactionId: transaction.id,
-            orderDate: new Date()
+            agent: agent,
+            id: transaction.id,
+            result: { order: { orderDate: new Date() } },
+            options: {}
         })({
             action: actionRepo,
             transaction: transactionRepo,
@@ -1097,7 +632,7 @@ describe('createEmailMessageFromTransaction()', () => {
                 agent: transaction.seller,
                 object: {
                     typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
-                    individualScreeningEvent: {
+                    event: {
                         superEvent: {
                             location: {
                                 typeOf: 'MovieTheater',
@@ -1107,10 +642,10 @@ describe('createEmailMessageFromTransaction()', () => {
                     }
                 },
                 result: {
-                    updTmpReserveSeatArgs: {
+                    requestBody: {
                         theaterCode: '118'
                     },
-                    updTmpReserveSeatResult: {
+                    responseBody: {
                         tmpReserveNum: 12345
                     },
                     price: 1234
@@ -1217,7 +752,7 @@ describe('createEmailMessageFromTransaction()', () => {
                     priceCurrency: sskts.factory.priceCurrency.JPY,
                     seller: {
                         typeOf: sskts.factory.organizationType.MovieTheater,
-                        name: seatReservationAuthorizeActions[0].object.individualScreeningEvent.superEvent.location.name.ja
+                        name: seatReservationAuthorizeActions[0].object.event.superEvent.location.name.ja
                     }
                 };
             }),
@@ -1245,12 +780,11 @@ describe('createEmailMessageFromTransaction()', () => {
             },
             typeOf: <sskts.factory.order.TypeOf>'Order',
             // tslint:disable-next-line:max-line-length
-            url: `${process.env.ORDER_INQUIRY_ENDPOINT}/inquiry/login?theater=${seatReservationAuthorizeActions[0].result.updTmpReserveSeatArgs.theaterCode}&reserve=${seatReservationAuthorizeActions[0].result.updTmpReserveSeatResult.tmpReserveNum}`
+            url: `${process.env.ORDER_INQUIRY_ENDPOINT}/inquiry/login?theater=${seatReservationAuthorizeActions[0].result.requestBody.theaterCode}&reserve=${seatReservationAuthorizeActions[0].result.responseBody.tmpReserveNum}`
         };
 
         const result = await sskts.service.transaction.placeOrderInProgress.createEmailMessageFromTransaction({
             transaction: transaction,
-            customerContact: customerContact,
             order: <any>order,
             seller: <any>seller
         });
@@ -1355,7 +889,7 @@ describe('createOrderFromTransaction()', () => {
                         recipient: agent,
                         object: {
                             typeOf: sskts.factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
-                            individualScreeningEvent: {
+                            event: {
                                 superEvent: {
                                     location: {
                                         typeOf: 'MovieTheater',
@@ -1365,10 +899,10 @@ describe('createOrderFromTransaction()', () => {
                             }
                         },
                         result: {
-                            updTmpReserveSeatArgs: {
+                            requestBody: {
                                 theaterCode: '118'
                             },
-                            updTmpReserveSeatResult: {
+                            responseBody: {
                                 tmpReserveNum: 12345,
                                 listTmpReserve: []
                             },
@@ -1458,6 +992,7 @@ describe('createOrderFromTransaction()', () => {
         const result = sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
             transaction: transaction,
             orderNumber: 'orderNumber',
+            confirmationNumber: 111,
             orderDate: orderDate,
             orderStatus: orderStatus,
             isGift: false,
@@ -1548,6 +1083,7 @@ describe('createOrderFromTransaction()', () => {
                 sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
                     transaction: transaction,
                     orderNumber: 'orderNumber',
+                    confirmationNumber: 111,
                     orderDate: orderDate,
                     orderStatus: orderStatus,
                     isGift: false,
@@ -1695,6 +1231,7 @@ describe('createOrderFromTransaction()', () => {
             () => {
                 sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
                     transaction: transaction,
+                    confirmationNumber: 111,
                     orderNumber: 'orderNumber',
                     orderDate: orderDate,
                     orderStatus: orderStatus,
@@ -1770,176 +1307,13 @@ describe('createOrderFromTransaction()', () => {
             () => {
                 sskts.service.transaction.placeOrderInProgress.createOrderFromTransaction({
                     transaction: transaction,
+                    confirmationNumber: 111,
                     orderNumber: 'orderNumber',
                     orderDate: orderDate,
                     orderStatus: orderStatus,
                     isGift: false,
                     seller: <any>{ location: { branchCode: '000' } }
                 });
-            },
-            (err: any) => {
-                assert(err instanceof sskts.factory.errors.Argument);
-                sandbox.verify();
-
-                return true;
-            }
-        );
-    });
-});
-
-describe('validateTransaction()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('クレジットカードオーソリが2つ以上であればArgumentとなるはず', async () => {
-        const agent = {
-            typeOf: sskts.factory.personType.Person,
-            id: 'agentId',
-            url: '',
-            memberOf: {
-                programName: 'programName',
-                membershipNumber: 'membershipNumber'
-            }
-        };
-        const seller = {
-            typeOf: sskts.factory.organizationType.MovieTheater,
-            id: 'sellerId',
-            name: 'sellerName',
-            url: '',
-            telephone: '0312345678'
-        };
-        const customerContact = {
-            familyName: 'familyName',
-            givenName: 'givenName',
-            telephone: '+819012345678',
-            email: 'test@example.com'
-        };
-        const transaction = {
-            typeOf: sskts.factory.transactionType.PlaceOrder,
-            id: 'transactionId',
-            status: sskts.factory.transactionStatusType.InProgress,
-            // tslint:disable-next-line:no-magic-numbers
-            expires: moment().add(10, 'minutes').toDate(),
-            tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
-            agent: agent,
-            seller: seller,
-            object: {
-                passportToken: 'passportToken',
-                passport: <any>{},
-                customerContact: customerContact,
-                clientUser: <any>{ client_id: 'client_id' },
-                authorizeActions: [
-                    {
-                        typeOf: sskts.factory.actionType.AuthorizeAction,
-                        id: 'actionId',
-                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        agent: agent,
-                        recipient: seller,
-                        object: {
-                            typeOf: sskts.factory.paymentMethodType.CreditCard
-                        },
-                        startDate: new Date(),
-                        endDate: new Date()
-                    },
-                    {
-                        typeOf: sskts.factory.actionType.AuthorizeAction,
-                        id: 'actionId',
-                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        agent: agent,
-                        recipient: seller,
-                        object: {
-                            typeOf: sskts.factory.paymentMethodType.CreditCard
-                        },
-                        startDate: new Date(),
-                        endDate: new Date()
-                    }
-                ]
-            }
-        };
-
-        assert.throws(
-            () => {
-                sskts.service.transaction.placeOrderInProgress.validateTransaction(<any>transaction);
-            },
-            (err: any) => {
-                assert(err instanceof sskts.factory.errors.Argument);
-                sandbox.verify();
-
-                return true;
-            }
-        );
-    });
-
-    it('ムビチケ承認アクションが2つ以上であればArgumentとなるはず', async () => {
-        const agent = {
-            typeOf: sskts.factory.personType.Person,
-            id: 'agentId',
-            url: '',
-            memberOf: {
-                programName: 'programName',
-                membershipNumber: 'membershipNumber'
-            }
-        };
-        const seller = {
-            typeOf: sskts.factory.organizationType.MovieTheater,
-            id: 'sellerId',
-            name: 'sellerName',
-            url: '',
-            telephone: '0312345678'
-        };
-        const customerContact = {
-            familyName: 'familyName',
-            givenName: 'givenName',
-            telephone: '+819012345678',
-            email: 'test@example.com'
-        };
-        const transaction = {
-            typeOf: sskts.factory.transactionType.PlaceOrder,
-            id: 'transactionId',
-            status: sskts.factory.transactionStatusType.InProgress,
-            // tslint:disable-next-line:no-magic-numbers
-            expires: moment().add(10, 'minutes').toDate(),
-            tasksExportationStatus: sskts.factory.transactionTasksExportationStatus.Unexported,
-            agent: agent,
-            seller: seller,
-            object: {
-                passportToken: 'passportToken',
-                passport: <any>{},
-                customerContact: customerContact,
-                clientUser: <any>{ client_id: 'client_id' },
-                authorizeActions: [
-                    {
-                        typeOf: sskts.factory.actionType.AuthorizeAction,
-                        id: 'actionId',
-                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        agent: agent,
-                        recipient: seller,
-                        object: {
-                            typeOf: sskts.factory.action.authorize.discount.mvtk.ObjectType.Mvtk
-                        },
-                        startDate: new Date(),
-                        endDate: new Date()
-                    },
-                    {
-                        typeOf: sskts.factory.actionType.AuthorizeAction,
-                        id: 'actionId',
-                        actionStatus: sskts.factory.actionStatusType.CompletedActionStatus,
-                        agent: agent,
-                        recipient: seller,
-                        object: {
-                            typeOf: sskts.factory.action.authorize.discount.mvtk.ObjectType.Mvtk
-                        },
-                        startDate: new Date(),
-                        endDate: new Date()
-                    }
-                ]
-            }
-        };
-
-        assert.throws(
-            () => {
-                sskts.service.transaction.placeOrderInProgress.validateTransaction(<any>transaction);
             },
             (err: any) => {
                 assert(err instanceof sskts.factory.errors.Argument);

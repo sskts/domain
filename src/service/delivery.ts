@@ -8,6 +8,8 @@
  */
 import { service } from '@cinerino/domain';
 import * as createDebug from 'debug';
+import * as moment from 'moment-timezone';
+import * as util from 'util';
 
 import { MongoRepository as ActionRepo } from '../repo/action';
 import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../repo/action/registerProgramMembershipInProgress';
@@ -22,6 +24,7 @@ const debug = createDebug('sskts-domain:service:delivery');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
 export type IEventReservation = factory.reservation.event.IReservation<any>;
+export type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<factory.ownershipInfo.IGoodType>>;
 
 /**
  * 注文を配送する
@@ -35,46 +38,32 @@ export function sendOrder(params: factory.action.transfer.send.order.IAttributes
         order: OrderRepo;
         ownershipInfo: OwnershipInfoRepo;
         registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
-        transaction: TransactionRepo;
+        transaction?: TransactionRepo;
         task: TaskRepo;
     }) => {
         const order = params.object;
-        const placeOrderTransactions = await repos.transaction.search<factory.transactionType.PlaceOrder>({
-            typeOf: factory.transactionType.PlaceOrder,
-            result: { order: { orderNumbers: [order.orderNumber] } }
-        });
-        const placeOrderTransaction = placeOrderTransactions.shift();
-        if (placeOrderTransaction === undefined) {
-            throw new factory.errors.NotFound('Transaction');
-        }
-        const transactionResult = placeOrderTransaction.result;
-        if (transactionResult === undefined) {
-            throw new factory.errors.NotFound('transaction.result');
-        }
-
-        const customerContact = placeOrderTransaction.object.customerContact;
-        if (customerContact === undefined) {
-            throw new factory.errors.NotFound('transaction.object.customerContact');
-        }
 
         // アクション開始
         const action = await repos.action.start(params);
+        let ownershipInfos: IOwnershipInfo[];
 
         try {
-            await Promise.all(transactionResult.ownershipInfos.map(async (ownershipInfo) => {
+            // 所有権作成
+            ownershipInfos = createOwnershipInfosFromOrder({ order });
+            await Promise.all(ownershipInfos.map(async (ownershipInfo) => {
                 await repos.ownershipInfo.saveByIdentifier(ownershipInfo);
             }));
 
             // 注文ステータス変更
             await repos.order.changeStatus({
-                orderNumber: transactionResult.order.orderNumber,
+                orderNumber: order.orderNumber,
                 orderStatus: factory.orderStatus.OrderDelivered
             });
 
             // 会員プログラムがアイテムにある場合は、所有権が作成されたこのタイミングで登録プロセスロック解除
-            const programMembershipOwnershipInfos =
-                <factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<'ProgramMembership'>>[]>
-                transactionResult.ownershipInfos.filter((o) => o.typeOfGood.typeOf === 'ProgramMembership');
+            const programMembershipOwnershipInfos
+                = <factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<'ProgramMembership'>>[]>
+                ownershipInfos.filter((o) => o.typeOfGood.typeOf === 'ProgramMembership');
             await Promise.all(programMembershipOwnershipInfos.map(async (o) => {
                 const memberOf = <factory.programMembership.IProgramMembership>(<factory.person.IPerson>o.ownedBy).memberOf;
                 await repos.registerActionInProgressRepo.unlock({
@@ -96,11 +85,108 @@ export function sendOrder(params: factory.action.transfer.send.order.IAttributes
 
         // アクション完了
         debug('ending action...');
-        await repos.action.complete({ typeOf: params.typeOf, id: action.id, result: {} });
+        const result: factory.action.transfer.send.order.IResult = {
+            ownershipInfos: ownershipInfos
+        };
+        await repos.action.complete({ typeOf: params.typeOf, id: action.id, result: result });
 
         // 潜在アクション
         await onSend(params)({ task: repos.task });
     };
+}
+
+/**
+ * 注文から所有権を作成する
+ */
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore next */
+export function createOwnershipInfosFromOrder(params: {
+    order: factory.order.IOrder;
+}): IOwnershipInfo[] {
+    return params.order.acceptedOffers.map((acceptedOffer, offerIndex) => {
+        const itemOffered = acceptedOffer.itemOffered;
+        let ownershipInfo: IOwnershipInfo;
+        const identifier = util.format(
+            '%s-%s-%s',
+            itemOffered.typeOf,
+            params.order.orderNumber,
+            offerIndex
+        );
+        const ownedFrom = params.order.orderDate;
+        const seller = params.order.seller;
+        let ownedThrough: Date;
+
+        switch (itemOffered.typeOf) {
+            case 'ProgramMembership':
+                // どういう期間でいくらのオファーなのか
+                const eligibleDuration = acceptedOffer.eligibleDuration;
+                if (eligibleDuration === undefined) {
+                    throw new factory.errors.NotFound('Order.acceptedOffers.eligibleDuration');
+                }
+                // 期間単位としては秒のみ実装
+                if (eligibleDuration.unitCode !== factory.unitCode.Sec) {
+                    throw new factory.errors.NotImplemented('Only \'SEC\' is implemented for eligibleDuration.unitCode ');
+                }
+                ownedThrough = moment(params.order.orderDate).add(eligibleDuration.value, 'seconds').toDate();
+                ownershipInfo = {
+                    id: '',
+                    typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
+                    identifier: identifier,
+                    ownedBy: params.order.customer,
+                    acquiredFrom: {
+                        id: seller.id,
+                        typeOf: seller.typeOf,
+                        name: {
+                            ja: seller.name,
+                            en: ''
+                        },
+                        telephone: seller.telephone,
+                        url: seller.url
+                    },
+                    ownedFrom: ownedFrom,
+                    ownedThrough: ownedThrough,
+                    typeOfGood: itemOffered
+                };
+
+                break;
+
+            case factory.reservationType.EventReservation:
+                // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
+                // saveする際に、identifierでfindOneAndUpdateしている
+                // const identifier = `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservedTicket.ticketToken}`;
+                // イベント予約に対する所有権の有効期限はイベント終了日時までで十分だろう
+                // 現時点では所有権対象がイベント予約のみなので、これで問題ないが、
+                // 対象が他に広がれば、有効期間のコントロールは別でしっかり行う必要があるだろう
+                ownedThrough = itemOffered.reservationFor.endDate;
+
+                ownershipInfo = {
+                    id: '',
+                    typeOf: <factory.ownershipInfo.OwnershipInfoType>'OwnershipInfo',
+                    identifier: identifier,
+                    ownedBy: params.order.customer,
+                    acquiredFrom: {
+                        id: seller.id,
+                        typeOf: seller.typeOf,
+                        name: {
+                            ja: seller.name,
+                            en: ''
+                        },
+                        telephone: seller.telephone,
+                        url: seller.url
+                    },
+                    ownedFrom: ownedFrom,
+                    ownedThrough: ownedThrough,
+                    typeOfGood: itemOffered
+                };
+
+                break;
+
+            default:
+                throw new factory.errors.NotImplemented(`Offered item type ${(<any>itemOffered).typeOf} not implemented`);
+        }
+
+        return ownershipInfo;
+    });
 }
 
 /**
