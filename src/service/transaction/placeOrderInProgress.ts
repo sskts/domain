@@ -278,6 +278,8 @@ export function createOrderFromTransaction(params: {
 
         // 予約番号はCOAの仮予約番号と同じ
         reservationNumber = seatReservationAuthorizeAction.result.responseBody.tmpReserveNum;
+        // シネマサンシャインでは特別に予約番号に書き換え
+        params.confirmationNumber = reservationNumber;
 
         // 座席仮予約からオファー情報を生成する
         acceptedOffers.push(...updTmpReserveSeatResult.listTmpReserve.map((tmpReserve, index) => {

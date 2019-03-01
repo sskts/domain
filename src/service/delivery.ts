@@ -38,27 +38,10 @@ export function sendOrder(params: factory.action.transfer.send.order.IAttributes
         order: OrderRepo;
         ownershipInfo: OwnershipInfoRepo;
         registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
-        transaction: TransactionRepo;
+        transaction?: TransactionRepo;
         task: TaskRepo;
     }) => {
         const order = params.object;
-        const placeOrderTransactions = await repos.transaction.search<factory.transactionType.PlaceOrder>({
-            typeOf: factory.transactionType.PlaceOrder,
-            result: { order: { orderNumbers: [order.orderNumber] } }
-        });
-        const placeOrderTransaction = placeOrderTransactions.shift();
-        if (placeOrderTransaction === undefined) {
-            throw new factory.errors.NotFound('Transaction');
-        }
-        const transactionResult = placeOrderTransaction.result;
-        if (transactionResult === undefined) {
-            throw new factory.errors.NotFound('transaction.result');
-        }
-
-        const customerContact = placeOrderTransaction.object.customerContact;
-        if (customerContact === undefined) {
-            throw new factory.errors.NotFound('transaction.object.customerContact');
-        }
 
         // アクション開始
         const action = await repos.action.start(params);
@@ -66,20 +49,20 @@ export function sendOrder(params: factory.action.transfer.send.order.IAttributes
 
         try {
             // 所有権作成
-            ownershipInfos = createOwnershipInfosFromTransaction({ order });
+            ownershipInfos = createOwnershipInfosFromOrder({ order });
             await Promise.all(ownershipInfos.map(async (ownershipInfo) => {
                 await repos.ownershipInfo.saveByIdentifier(ownershipInfo);
             }));
 
             // 注文ステータス変更
             await repos.order.changeStatus({
-                orderNumber: transactionResult.order.orderNumber,
+                orderNumber: order.orderNumber,
                 orderStatus: factory.orderStatus.OrderDelivered
             });
 
             // 会員プログラムがアイテムにある場合は、所有権が作成されたこのタイミングで登録プロセスロック解除
-            const programMembershipOwnershipInfos =
-                <factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<'ProgramMembership'>>[]>
+            const programMembershipOwnershipInfos
+                = <factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<'ProgramMembership'>>[]>
                 ownershipInfos.filter((o) => o.typeOfGood.typeOf === 'ProgramMembership');
             await Promise.all(programMembershipOwnershipInfos.map(async (o) => {
                 const memberOf = <factory.programMembership.IProgramMembership>(<factory.person.IPerson>o.ownedBy).memberOf;
@@ -113,11 +96,11 @@ export function sendOrder(params: factory.action.transfer.send.order.IAttributes
 }
 
 /**
- * 取引から所有権を作成する
+ * 注文から所有権を作成する
  */
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
-export function createOwnershipInfosFromTransaction(params: {
+export function createOwnershipInfosFromOrder(params: {
     order: factory.order.IOrder;
 }): IOwnershipInfo[] {
     return params.order.acceptedOffers.map((acceptedOffer, offerIndex) => {
