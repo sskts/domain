@@ -397,49 +397,49 @@ describe('confirm()', () => {
         sandbox.verify();
     });
 
-    it('購入者連絡先がなければArgumentFoundエラーとなるはず', async () => {
-        const agent = {
-            id: 'agentId'
-        };
-        const seller = {
-            id: 'sellerId',
-            name: { ja: 'ja', en: 'ne' },
-            telephone: '0312345678'
-        };
-        const transaction = {
-            id: 'transactionId',
-            agent: agent,
-            seller: seller,
-            object: {
-            }
-        };
+    // it('購入者連絡先がなければArgumentFoundエラーとなるはず', async () => {
+    //     const agent = {
+    //         id: 'agentId'
+    //     };
+    //     const seller = {
+    //         id: 'sellerId',
+    //         name: { ja: 'ja', en: 'ne' },
+    //         telephone: '0312345678'
+    //     };
+    //     const transaction = {
+    //         id: 'transactionId',
+    //         agent: agent,
+    //         seller: seller,
+    //         object: {
+    //         }
+    //     };
 
-        const actionRepo = new sskts.repository.Action(mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-        const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+    //     const actionRepo = new sskts.repository.Action(mongoose.connection);
+    //     const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+    //     const orderNumberRepo = new sskts.repository.OrderNumber(redis.createClient());
+    //     const sellerRepo = new sskts.repository.Seller(mongoose.connection);
 
-        sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
-        sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
-        sandbox.mock(orderNumberRepo).expects('publish').never();
-        sandbox.mock(actionRepo).expects('searchByPurpose').never();
+    //     sandbox.mock(sellerRepo).expects('findById').once().resolves(seller);
+    //     sandbox.mock(transactionRepo).expects('findInProgressById').once().resolves(transaction);
+    //     sandbox.mock(orderNumberRepo).expects('publish').never();
+    //     sandbox.mock(actionRepo).expects('searchByPurpose').never();
 
-        const result = await sskts.service.transaction.placeOrderInProgress.confirm({
-            agent: agent,
-            id: transaction.id,
-            result: { order: { orderDate: new Date() } },
-            options: {}
-        })({
-            action: actionRepo,
-            transaction: transactionRepo,
-            orderNumber: orderNumberRepo,
-            seller: sellerRepo
-        })
-            .catch((err) => err);
+    //     const result = await sskts.service.transaction.placeOrderInProgress.confirm({
+    //         agent: agent,
+    //         id: transaction.id,
+    //         result: { order: { orderDate: new Date() } },
+    //         options: {}
+    //     })({
+    //         action: actionRepo,
+    //         transaction: transactionRepo,
+    //         orderNumber: orderNumberRepo,
+    //         seller: sellerRepo
+    //     })
+    //         .catch((err) => err);
 
-        assert(result instanceof sskts.factory.errors.Argument);
-        sandbox.verify();
-    });
+    //     assert(result instanceof sskts.factory.errors.Argument);
+    //     sandbox.verify();
+    // });
 
     it('確定条件が整っていなければ、Argumentエラーになるはず', async () => {
         const agent = {
@@ -785,7 +785,6 @@ describe('createEmailMessageFromTransaction()', () => {
 
         const result = await sskts.service.transaction.placeOrderInProgress.createEmailMessageFromTransaction({
             transaction: transaction,
-            customerContact: customerContact,
             order: <any>order,
             seller: <any>seller
         });
