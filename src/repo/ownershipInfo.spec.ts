@@ -11,8 +11,6 @@ require('sinon-mongoose');
 
 import { MongoRepository as OwnershipInfoRepo } from './ownershipInfo';
 
-import * as factory from '../factory';
-
 let sandbox: sinon.SinonSandbox;
 
 before(() => {
@@ -47,7 +45,7 @@ describe('OwnershipInfo.searchProgramMembership', () => {
     });
 
     it('theaterIdsがない場合、全ての劇場で検索するはず', async () => {
-        const searchConditions: factory.ownershipInfo.ISearchProgramMembershipConditions = {
+        const searchConditions = {
             createdAtFrom: new Date(),
             createdAtTo: new Date(),
             theaterIds: []
@@ -63,7 +61,7 @@ describe('OwnershipInfo.searchProgramMembership', () => {
     });
 
     it('theaterIdsが正しい場合、エラーがないはず', async () => {
-        const searchConditions: factory.ownershipInfo.ISearchProgramMembershipConditions = {
+        const searchConditions = {
             createdAtFrom: new Date(),
             createdAtTo: new Date(),
             theaterIds: ['59d20797e53ebc2b4e774465']
