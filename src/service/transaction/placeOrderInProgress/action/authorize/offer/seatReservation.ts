@@ -4,6 +4,7 @@ import { INTERNAL_SERVER_ERROR } from 'http-status';
 
 import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
 import { MongoRepository as EventRepo } from '../../../../../../repo/event';
+import { InMemoryRepository as OfferRepo } from '../../../../../../repo/offer';
 import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
 
 import * as factory from '../../../../../../factory';
@@ -13,6 +14,7 @@ const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress
 export type ICreateOperation<T> = (repos: {
     event: EventRepo;
     action: ActionRepo;
+    offer?: OfferRepo;
     transaction: TransactionRepo;
 }) => Promise<T>;
 export type IActionAndTransactionOperation<T> = (repos: {
@@ -39,7 +41,8 @@ export type ICOAMvtkTicket = COA.services.master.IMvtkTicketcodeResult & {
 async function validateOffers(
     isMember: boolean,
     screeningEvent: factory.event.screeningEvent.IEvent,
-    offers: factory.action.authorize.offer.seatReservation.IAcceptedOfferWithoutDetail[]
+    offers: factory.action.authorize.offer.seatReservation.IAcceptedOfferWithoutDetail[],
+    coaTickets?: COA.services.master.ITicketResult[]
 ): Promise<factory.action.authorize.offer.seatReservation.IAcceptedOffer[]> {
     // 詳細情報ありの供給情報リストを初期化
     // 要求された各供給情報について、バリデーションをかけながら、このリストに追加していく
@@ -91,21 +94,26 @@ async function validateOffers(
             // 販売可能チケット情報に販売金額
             // を持っているので、処理が少し冗長になってしまうが、しょうがない
             try {
-                debug('finding mvtkTicket...', offer.ticketInfo.ticketCode, {
-                    theaterCode: coaInfo.theaterCode,
-                    kbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
-                    kbnMaeuriken: offer.ticketInfo.mvtkKbnMaeuriken,
-                    kbnKensyu: offer.ticketInfo.mvtkKbnKensyu,
-                    salesPrice: offer.ticketInfo.mvtkSalesPrice,
-                    appPrice: offer.ticketInfo.mvtkAppPrice,
-                    kbnEisyahousiki: offer.ticketInfo.kbnEisyahousiki,
-                    titleCode: coaInfo.titleCode,
-                    titleBranchNum: coaInfo.titleBranchNum
-                });
-                const coaTickets = await COA.services.master.ticket({
-                    theaterCode: coaInfo.theaterCode
-                });
-                coaPointTicket = coaTickets.find((t) => t.ticketCode === offer.ticketInfo.ticketCode);
+                let availableTickets: COA.services.master.ITicketResult[] | undefined = coaTickets;
+                // tslint:disable-next-line:no-single-line-block-comment
+                /* istanbul ignore else */
+                if (availableTickets === undefined) {
+                    debug('finding mvtkTicket...', offer.ticketInfo.ticketCode, {
+                        theaterCode: coaInfo.theaterCode,
+                        kbnDenshiken: offer.ticketInfo.mvtkKbnDenshiken,
+                        kbnMaeuriken: offer.ticketInfo.mvtkKbnMaeuriken,
+                        kbnKensyu: offer.ticketInfo.mvtkKbnKensyu,
+                        salesPrice: offer.ticketInfo.mvtkSalesPrice,
+                        appPrice: offer.ticketInfo.mvtkAppPrice,
+                        kbnEisyahousiki: offer.ticketInfo.kbnEisyahousiki,
+                        titleCode: coaInfo.titleCode,
+                        titleBranchNum: coaInfo.titleBranchNum
+                    });
+                    availableTickets = await COA.services.master.ticket({
+                        theaterCode: coaInfo.theaterCode
+                    });
+                }
+                coaPointTicket = availableTickets.find((t) => t.ticketCode === offer.ticketInfo.ticketCode);
                 // tslint:disable-next-line:no-single-line-block-comment
                 /* istanbul ignore if: please write tests */
                 if (coaPointTicket === undefined) {
@@ -307,6 +315,7 @@ export function create(params: {
     return async (repos: {
         event: EventRepo;
         action: ActionRepo;
+        offer?: OfferRepo;
         transaction: TransactionRepo;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
@@ -325,8 +334,14 @@ export function create(params: {
         });
 
         // 供給情報の有効性を確認
-        const acceptedOffer =
-            await validateOffers((transaction.agent.memberOf !== undefined), screeningEvent, params.object.acceptedOffer);
+        const acceptedOffer = await validateOffers(
+            (transaction.agent.memberOf !== undefined),
+            screeningEvent,
+            params.object.acceptedOffer,
+            (repos.offer !== undefined)
+                ? /* istanbul ignore next */ repos.offer.searchCOATickets({ theaterCode: screeningEvent.superEvent.location.branchCode })
+                : undefined
+        );
 
         // 承認アクションを開始
         const actionAttributes: factory.action.authorize.offer.seatReservation.IAttributes<factory.service.webAPI.Identifier.COA> = {
@@ -479,6 +494,7 @@ export function changeOffers(params: {
     return async (repos: {
         event: EventRepo;
         action: ActionRepo;
+        offer?: OfferRepo;
         transaction: TransactionRepo;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
@@ -524,8 +540,14 @@ export function changeOffers(params: {
         });
 
         // 供給情報の有効性を確認
-        const acceptedOffer =
-            await validateOffers((transaction.agent.memberOf !== undefined), screeningEvent, params.object.acceptedOffer);
+        const acceptedOffer = await validateOffers(
+            (transaction.agent.memberOf !== undefined),
+            screeningEvent,
+            params.object.acceptedOffer,
+            (repos.offer !== undefined)
+                ? /* istanbul ignore next */ repos.offer.searchCOATickets({ theaterCode: screeningEvent.superEvent.location.branchCode })
+                : undefined
+        );
 
         // 供給情報と価格を変更してからDB更新
         authorizeAction.object.acceptedOffer = acceptedOffer;

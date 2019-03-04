@@ -9,6 +9,7 @@ import { MongoRepository as CreativeWorkRepo } from './repo/creativeWork';
 import { MongoRepository as EventRepo } from './repo/event';
 import { MongoRepository as InvoiceRepo } from './repo/invoice';
 import { MongoRepository as ScreeningEventItemAvailabilityRepo } from './repo/itemAvailability/screeningEvent';
+import { InMemoryRepository as OfferRepo } from './repo/offer';
 import { MongoRepository as OrderRepo } from './repo/order';
 import { RedisRepository as OrderNumberRepo } from './repo/orderNumber';
 import { MongoRepository as OwnershipInfoRepo } from './repo/ownershipInfo';
@@ -32,6 +33,7 @@ export class Event extends EventRepo { }
  * 請求書リポジトリ
  */
 export class Invoice extends InvoiceRepo { }
+export class Offer extends OfferRepo { }
 export class Order extends OrderRepo { }
 export class OrderNumber extends OrderNumberRepo { }
 export class OwnershipInfo extends OwnershipInfoRepo { }
