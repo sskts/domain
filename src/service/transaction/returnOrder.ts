@@ -1,32 +1,28 @@
 /**
  * 注文返品取引サービス
  */
+import { repository } from '@cinerino/domain';
+
 import * as createDebug from 'debug';
 import * as pug from 'pug';
-
-import { MongoRepository as ActionRepo } from '../../repo/action';
-import { MongoRepository as OrderRepo } from '../../repo/order';
-import { MongoRepository as SellerRepo } from '../../repo/seller';
-import { MongoRepository as TaskRepo } from '../../repo/task';
-import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 import * as factory from '../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:returnOrder');
 
 export type IStartOperation<T> = (repos: {
-    action: ActionRepo;
-    order: OrderRepo;
-    transaction: TransactionRepo;
+    action: repository.Action;
+    order: repository.Order;
+    transaction: repository.Transaction;
 }) => Promise<T>;
 export type ITaskAndTransactionOperation<T> = (repos: {
-    task: TaskRepo;
-    transaction: TransactionRepo;
+    task: repository.Task;
+    transaction: repository.Transaction;
 }) => Promise<T>;
 export type IConfirmOperation<T> = (repos: {
-    action: ActionRepo;
-    transaction: TransactionRepo;
-    seller: SellerRepo;
+    action: repository.Action;
+    transaction: repository.Transaction;
+    seller: repository.Seller;
 }) => Promise<T>;
 export type ISeller = factory.seller.IOrganization<factory.seller.IAttributes<factory.organizationType>>;
 
@@ -37,9 +33,9 @@ export function start(
     params: factory.transaction.returnOrder.IStartParamsWithoutDetail
 ): IStartOperation<factory.transaction.returnOrder.ITransaction> {
     return async (repos: {
-        action: ActionRepo;
-        order: OrderRepo;
-        transaction: TransactionRepo;
+        action: repository.Action;
+        order: repository.Order;
+        transaction: repository.Transaction;
     }) => {
         // 返品対象の取引取得
         const order = await repos.order.findByOrderNumber({ orderNumber: params.object.order.orderNumber });
@@ -127,9 +123,9 @@ export function confirm(params: {
 }): IConfirmOperation<factory.transaction.returnOrder.IResult> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        action: ActionRepo;
-        seller: SellerRepo;
-        transaction: TransactionRepo;
+        action: repository.Action;
+        seller: repository.Seller;
+        transaction: repository.Transaction;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.ReturnOrder,
@@ -333,8 +329,8 @@ export async function createRefundEmail(params: {
  */
 export function exportTasks(status: factory.transactionStatusType) {
     return async (repos: {
-        task: TaskRepo;
-        transaction: TransactionRepo;
+        task: repository.Task;
+        transaction: repository.Transaction;
     }) => {
         const transaction = await repos.transaction.startExportTasks({
             typeOf: factory.transactionType.ReturnOrder,
@@ -357,8 +353,8 @@ export function exportTasks(status: factory.transactionStatusType) {
 export function exportTasksById(transactionId: string): ITaskAndTransactionOperation<factory.task.ITask<any>[]> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        task: TaskRepo;
-        transaction: TransactionRepo;
+        task: repository.Task;
+        transaction: repository.Transaction;
     }) => {
         const transaction = await repos.transaction.findById({
             typeOf: factory.transactionType.ReturnOrder,

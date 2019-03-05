@@ -1,20 +1,17 @@
 /**
  * ムビチケ承認アクションサービス
  */
+import { repository } from '@cinerino/domain';
 import * as createDebug from 'debug';
-
-import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
-import { MongoRepository as PaymentMethodRepo } from '../../../../../../repo/paymentMethod';
-import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
 
 import * as factory from '../../../../../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:mvtk');
 
 export type ICreateOperation<T> = (repos: {
-    action: ActionRepo;
-    paymentMethod?: PaymentMethodRepo;
-    transaction: TransactionRepo;
+    action: repository.Action;
+    paymentMethod?: repository.PaymentMethod;
+    transaction: repository.Transaction;
 }) => Promise<T>;
 
 /**
@@ -28,9 +25,9 @@ export function create(params: {
 }): ICreateOperation<factory.action.authorize.discount.mvtk.IAction> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        action: ActionRepo;
-        paymentMethod?: PaymentMethodRepo;
-        transaction: TransactionRepo;
+        action: repository.Action;
+        paymentMethod?: repository.PaymentMethod;
+        transaction: repository.Transaction;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,
@@ -215,8 +212,8 @@ export function cancel(params: {
     actionId: string;
 }) {
     return async (repos: {
-        action: ActionRepo;
-        transaction: TransactionRepo;
+        action: repository.Action;
+        transaction: repository.Transaction;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,

@@ -2,6 +2,8 @@
 /**
  * masterSync service test
  */
+import * as cinerino from '@cinerino/domain';
+
 import * as COA from '@motionpicture/coa-service';
 import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
@@ -9,10 +11,6 @@ import * as sinon from 'sinon';
 // tslint:disable-next-line:no-require-imports no-var-requires
 require('sinon-mongoose');
 
-import { MongoRepository as CreativeWorkRepo } from '../repo/creativeWork';
-import { MongoRepository as EventRepo } from '../repo/event';
-import { MongoRepository as PlaceRepo } from '../repo/place';
-import { MongoRepository as SellerRepo } from '../repo/seller';
 import * as MasterSyncService from './masterSync';
 
 let sandbox: sinon.SinonSandbox;
@@ -21,33 +19,33 @@ before(() => {
     sandbox = sinon.createSandbox();
 });
 
-describe('importMovies()', () => {
-    afterEach(() => {
-        sandbox.restore();
-    });
+// describe('importMovies()', () => {
+//     afterEach(() => {
+//         sandbox.restore();
+//     });
 
-    it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
-        const filmsFromCOA = [
-            {
-                titleCode: 'titleCode',
-                titleBranchNum: 'titleBranchNum'
-            },
-            {
-                titleCode: 'titleCode',
-                titleBranchNum: 'titleBranchNum'
-            }
-        ];
-        // const movie = {};
-        const creativeWorkRepo = new CreativeWorkRepo(mongoose.connection);
+//     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
+//         const filmsFromCOA = [
+//             {
+//                 titleCode: 'titleCode',
+//                 titleBranchNum: 'titleBranchNum'
+//             },
+//             {
+//                 titleCode: 'titleCode',
+//                 titleBranchNum: 'titleBranchNum'
+//             }
+//         ];
+//         // const movie = {};
+//         const creativeWorkRepo = new CreativeWorkRepo(mongoose.connection);
 
-        sandbox.mock(COA.services.master).expects('title').once().resolves(filmsFromCOA);
-        sandbox.mock(creativeWorkRepo).expects('saveMovie').exactly(filmsFromCOA.length).resolves();
+//         sandbox.mock(COA.services.master).expects('title').once().resolves(filmsFromCOA);
+//         sandbox.mock(creativeWorkRepo).expects('saveMovie').exactly(filmsFromCOA.length).resolves();
 
-        const result = await MasterSyncService.importMovies('123')({ creativeWork: creativeWorkRepo });
-        assert.equal(result, undefined);
-        sandbox.verify();
-    });
-});
+//         const result = await MasterSyncService.importMovies('123')({ creativeWork: creativeWorkRepo });
+//         assert.equal(result, undefined);
+//         sandbox.verify();
+//     });
+// });
 
 describe('matchWitchXML', () => {
     afterEach(() => {
@@ -198,9 +196,9 @@ describe('importScreeningEvents()', () => {
         const screeningEventsInMongo: any[] = [
             { identifier: 'cancelingId' }
         ];
-        const eventRepo = new EventRepo(mongoose.connection);
-        const placeRepo = new PlaceRepo(mongoose.connection);
-        const sellerRepo = new SellerRepo(mongoose.connection);
+        const eventRepo = new cinerino.repository.Event(mongoose.connection);
+        const placeRepo = new cinerino.repository.Place(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
 
         sandbox.mock(COA.services.master).expects('title').once().resolves(filmFromCOA);
         sandbox.mock(COA.services.master).expects('schedule').once().resolves(schedulesFromCOA);
@@ -281,9 +279,9 @@ describe('importScreeningEvents()', () => {
             }]
         }]];
 
-        const eventRepo = new EventRepo(mongoose.connection);
-        const placeRepo = new PlaceRepo(mongoose.connection);
-        const sellerRepo = new SellerRepo(mongoose.connection);
+        const eventRepo = new cinerino.repository.Event(mongoose.connection);
+        const placeRepo = new cinerino.repository.Place(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
 
         sandbox.mock(COA.services.master).expects('title').once().resolves(filmFromCOA);
         sandbox.mock(COA.services.master).expects('schedule').once().resolves(schedulesFromCOA);
@@ -338,9 +336,9 @@ describe('importScreeningEvents()', () => {
         // const screeningEvent = {
         //     identifier: 'identifier'
         // };
-        const eventRepo = new EventRepo(mongoose.connection);
-        const placeRepo = new PlaceRepo(mongoose.connection);
-        const sellerRepo = new SellerRepo(mongoose.connection);
+        const eventRepo = new cinerino.repository.Event(mongoose.connection);
+        const placeRepo = new cinerino.repository.Place(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
 
         sandbox.mock(COA.services.master).expects('title').once().resolves(filmFromCOA);
         sandbox.mock(COA.services.master).expects('schedule').once().resolves(schedulesFromCOA);
@@ -398,9 +396,9 @@ describe('importScreeningEvents()', () => {
         // const screeningEvent = {
         //     identifier: 'identifier'
         // };
-        const eventRepo = new EventRepo(mongoose.connection);
-        const placeRepo = new PlaceRepo(mongoose.connection);
-        const sellerRepo = new SellerRepo(mongoose.connection);
+        const eventRepo = new cinerino.repository.Event(mongoose.connection);
+        const placeRepo = new cinerino.repository.Place(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
 
         sandbox.mock(COA.services.master).expects('title').once().resolves(filmFromCOA);
         sandbox.mock(COA.services.master).expects('schedule').once().resolves(schedulesFromCOA);
@@ -458,9 +456,9 @@ describe('importScreeningEvents()', () => {
         // const screeningEvent = {
         //     identifier: 'identifier'
         // };
-        const eventRepo = new EventRepo(mongoose.connection);
-        const placeRepo = new PlaceRepo(mongoose.connection);
-        const sellerRepo = new SellerRepo(mongoose.connection);
+        const eventRepo = new cinerino.repository.Event(mongoose.connection);
+        const placeRepo = new cinerino.repository.Place(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
 
         sandbox.mock(COA.services.master).expects('title').once().resolves(filmFromCOA);
         sandbox.mock(COA.services.master).expects('schedule').once().resolves(schedulesFromCOA);
@@ -493,8 +491,8 @@ describe('importMovieTheater()', () => {
 
     it('repositoryの状態が正常であれば、エラーにならないはず', async () => {
         // const movieTheater = { branchCode: '', name: {} };
-        const sellerRepo = new SellerRepo(mongoose.connection);
-        const placeRepo = new PlaceRepo(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+        const placeRepo = new cinerino.repository.Place(mongoose.connection);
 
         sandbox.stub(COA.services.master, 'theater')
             .returns({ theaterTelNum: '0312345678' });

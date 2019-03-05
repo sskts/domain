@@ -6,17 +6,10 @@
  * ポイントインセンティブで言えば、口座に振り込まれること
  * などが配送処理として考えられます。
  */
-import { service } from '@cinerino/domain';
+import { repository, service } from '@cinerino/domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment-timezone';
 import * as util from 'util';
-
-import { MongoRepository as ActionRepo } from '../repo/action';
-import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../repo/action/registerProgramMembershipInProgress';
-import { MongoRepository as OrderRepo } from '../repo/order';
-import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
-import { MongoRepository as TaskRepo } from '../repo/task';
-import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 import * as factory from '../factory';
 
@@ -34,12 +27,12 @@ export type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.owners
 export function sendOrder(params: factory.action.transfer.send.order.IAttributes) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        action: ActionRepo;
-        order: OrderRepo;
-        ownershipInfo: OwnershipInfoRepo;
-        registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
-        transaction?: TransactionRepo;
-        task: TaskRepo;
+        action: repository.Action;
+        order: repository.Order;
+        ownershipInfo: repository.OwnershipInfo;
+        registerActionInProgressRepo: repository.action.RegisterProgramMembershipInProgress;
+        transaction?: repository.Transaction;
+        task: repository.Task;
     }) => {
         const order = params.object;
 
@@ -195,7 +188,7 @@ export function createOwnershipInfosFromOrder(params: {
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
 function onSend(sendOrderActionAttributes: factory.action.transfer.send.order.IAttributes) {
-    return async (repos: { task: TaskRepo }) => {
+    return async (repos: { task: repository.Task }) => {
         const potentialActions = sendOrderActionAttributes.potentialActions;
         const now = new Date();
         const taskAttributes: factory.task.IAttributes<factory.taskName>[] = [];

@@ -1,18 +1,17 @@
 /**
  * 販売情報サービス
  */
-import * as createDebug from 'debug';
+import { repository } from '@cinerino/domain';
 
-import { MongoRepository as EventRepository } from '../repo/event';
-import { MongoRepository as ScreeningEventItemAvailabilityRepo } from '../repo/itemAvailability/screeningEvent';
+import * as createDebug from 'debug';
 
 import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:service:offer');
 
 export type IEventOperation<T> = (repos: {
-    event: EventRepository;
-    itemAvailability?: ScreeningEventItemAvailabilityRepo;
+    event: repository.Event;
+    itemAvailability?: repository.itemAvailability.ScreeningEvent;
 }) => Promise<T>;
 
 /**
@@ -23,8 +22,8 @@ export function searchIndividualScreeningEvents(
     searchConditions: factory.event.screeningEvent.ISearchConditions
 ): IEventOperation<factory.event.screeningEvent.IEvent[]> {
     return async (repos: {
-        event: EventRepository;
-        itemAvailability?: ScreeningEventItemAvailabilityRepo;
+        event: repository.Event;
+        itemAvailability?: repository.itemAvailability.ScreeningEvent;
     }) => {
         debug('finding screeningEvents...', searchConditions);
         const events = await repos.event.searchIndividualScreeningEvents(searchConditions);
@@ -61,8 +60,8 @@ export function findIndividualScreeningEventByIdentifier(
     id: string
 ): IEventOperation<factory.event.screeningEvent.IEvent> {
     return async (repos: {
-        event: EventRepository;
-        itemAvailability?: ScreeningEventItemAvailabilityRepo;
+        event: repository.Event;
+        itemAvailability?: repository.itemAvailability.ScreeningEvent;
     }) => {
         const event = await repos.event.findById({
             typeOf: factory.chevre.eventType.ScreeningEvent,

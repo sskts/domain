@@ -9,11 +9,6 @@ import * as moment from 'moment-timezone';
 import * as pug from 'pug';
 import * as util from 'util';
 
-import { MongoRepository as ActionRepo } from '../../repo/action';
-import { RedisRepository as OrderNumberRepo } from '../../repo/orderNumber';
-import { MongoRepository as SellerRepo } from '../../repo/seller';
-import { MongoRepository as TransactionRepo } from '../../repo/transaction';
-
 import * as MvtkAuthorizeActionService from './placeOrderInProgress/action/authorize/discount/mvtk';
 import * as ProgramMembershipAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/programMembership';
 import * as SeatReservationAuthorizeActionService from './placeOrderInProgress/action/authorize/offer/seatReservation';
@@ -23,10 +18,10 @@ import * as factory from '../../factory';
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress');
 
 export type IConfirmOperation<T> = (repos: {
-    action: ActionRepo;
-    transaction: TransactionRepo;
-    orderNumber: OrderNumberRepo;
-    seller: SellerRepo;
+    action: cinerino.repository.Action;
+    transaction: cinerino.repository.Transaction;
+    orderNumber: cinerino.repository.OrderNumber;
+    seller: cinerino.repository.Seller;
 }) => Promise<T>;
 
 export type IAuthorizeAnyPaymentResult = factory.action.authorize.paymentMethod.any.IResult<factory.paymentMethodType>;
@@ -114,10 +109,10 @@ export interface IConfirmParams {
 // tslint:disable-next-line:max-func-body-length
 export function confirm(params: IConfirmParams): IConfirmOperation<factory.order.IOrder> {
     return async (repos: {
-        action: ActionRepo;
-        transaction: TransactionRepo;
-        orderNumber: OrderNumberRepo;
-        seller: SellerRepo;
+        action: cinerino.repository.Action;
+        transaction: cinerino.repository.Transaction;
+        orderNumber: cinerino.repository.OrderNumber;
+        seller: cinerino.repository.Seller;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,
@@ -168,9 +163,9 @@ export function confirm(params: IConfirmParams): IConfirmOperation<factory.order
         /* istanbul ignore if */
         if (typeof params.result.order.confirmationNumber === 'number') {
             order.confirmationNumber = params.result.order.confirmationNumber;
+        } else /* istanbul ignore next */ if (typeof params.result.order.confirmationNumber === 'function') {
             // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore if */
-        } else if (typeof params.result.order.confirmationNumber === 'function') {
+            /* istanbul ignore next */
             order.confirmationNumber = params.result.order.confirmationNumber(order);
         }
 
@@ -179,9 +174,9 @@ export function confirm(params: IConfirmParams): IConfirmOperation<factory.order
         /* istanbul ignore if */
         if (typeof params.result.order.url === 'string') {
             order.url = params.result.order.url;
+        } else /* istanbul ignore next */ if (typeof params.result.order.url === 'function') {
             // tslint:disable-next-line:no-single-line-block-comment
-            /* istanbul ignore if */
-        } else if (typeof params.result.order.url === 'function') {
+            /* istanbul ignore next */
             order.url = params.result.order.url(order);
         }
 
@@ -561,6 +556,8 @@ export async function createEmailMessageFromTransaction(params: {
                     sellerTelephone: params.seller.telephone
                 },
                 (renderMessageErr, message) => {
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore if */
                     if (renderMessageErr instanceof Error) {
                         reject(renderMessageErr);
 
@@ -783,6 +780,8 @@ export async function createPotentialActionsFromTransaction(params: {
     // TODO メール送信アクションをセットする
     // 現時点では、フロントエンドからメール送信タスクを作成しているので不要
     let sendEmailMessageActionAttributes: factory.action.transfer.send.message.email.IAttributes | null = null;
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore if */
     if (params.sendEmailMessage === true) {
         const emailMessage = await createEmailMessageFromTransaction({
             transaction: params.transaction,
@@ -805,6 +804,8 @@ export async function createPotentialActionsFromTransaction(params: {
         params.order.acceptedOffers.filter(
             (o) => o.itemOffered.typeOf === <factory.programMembership.ProgramMembershipType>'ProgramMembership'
         );
+    // tslint:disable-next-line:no-single-line-block-comment
+    /* istanbul ignore if */
     if (programMembershipOffers.length > 0) {
         registerProgramMembershipTaskAttributes.push(...programMembershipOffers.map((o) => {
             const actionAttributes: factory.action.interact.register.programMembership.IAttributes = {

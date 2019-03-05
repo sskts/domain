@@ -1,16 +1,11 @@
 /**
  * 注文サービス
  */
+import { repository } from '@cinerino/domain';
+
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import * as googleLibphonenumber from 'google-libphonenumber';
-
-import { MongoRepository as ActionRepo } from '../repo/action';
-import { MongoRepository as InvoiceRepo } from '../repo/invoice';
-import { MongoRepository as OrderRepo } from '../repo/order';
-import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
-import { MongoRepository as TaskRepo } from '../repo/task';
-import { MongoRepository as TransactionRepo } from '../repo/transaction';
 
 import * as factory from '../factory';
 
@@ -29,11 +24,11 @@ export type WebAPIIdentifier = factory.service.webAPI.Identifier;
 /* istanbul ignore next */
 export function placeOrder(params: factory.action.trade.order.IAttributes) {
     return async (repos: {
-        action: ActionRepo;
-        invoice: InvoiceRepo;
-        order: OrderRepo;
-        transaction: TransactionRepo;
-        task: TaskRepo;
+        action: repository.Action;
+        invoice: repository.Invoice;
+        order: repository.Order;
+        transaction: repository.Transaction;
+        task: repository.Task;
     }) => {
         const order = params.object;
         const placeOrderTransactions = await repos.transaction.search<factory.transactionType.PlaceOrder>({
@@ -127,7 +122,7 @@ export function placeOrder(params: factory.action.trade.order.IAttributes) {
 /* istanbul ignore next */
 function onPlaceOrder(orderActionAttributes: factory.action.trade.order.IAttributes) {
     // tslint:disable-next-line:max-func-body-length
-    return async (repos: { task: TaskRepo }) => {
+    return async (repos: { task: repository.Task }) => {
         // potentialActionsのためのタスクを生成
         const orderPotentialActions = orderActionAttributes.potentialActions;
         const now = new Date();
@@ -255,11 +250,11 @@ function onPlaceOrder(orderActionAttributes: factory.action.trade.order.IAttribu
 export function returnOrder(params: { orderNumber: string }) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        action: ActionRepo;
-        order: OrderRepo;
-        ownershipInfo: OwnershipInfoRepo;
-        transaction: TransactionRepo;
-        task: TaskRepo;
+        action: repository.Action;
+        order: repository.Order;
+        ownershipInfo: repository.OwnershipInfo;
+        transaction: repository.Transaction;
+        task: repository.Task;
     }) => {
         const returnOrderTransactions = await repos.transaction.search<factory.transactionType.ReturnOrder>({
             typeOf: factory.transactionType.ReturnOrder,
@@ -402,7 +397,7 @@ export function returnOrder(params: { orderNumber: string }) {
  */
 function onReturn(returnActionAttributes: factory.action.transfer.returnAction.order.IAttributes) {
     return async (repos: {
-        task: TaskRepo;
+        task: repository.Task;
     }) => {
         const now = new Date();
         const taskAttributes: factory.task.IAttributes<factory.taskName>[] = [];

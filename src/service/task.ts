@@ -1,13 +1,11 @@
 /**
  * タスクサービス
  */
-import { AWS, pecorinoapi, service } from '@cinerino/domain';
+import { AWS, pecorinoapi, repository, service } from '@cinerino/domain';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import * as redis from 'redis';
-
-import { MongoRepository as TaskRepo } from '../repo/task';
 
 import * as factory from '../factory';
 
@@ -41,9 +39,9 @@ export interface ISettings extends IConnectionSettings {
     /**
      * タスクリポジトリー
      */
-    taskRepo: TaskRepo;
+    taskRepo: repository.Task;
 }
-export type TaskOperation<T> = (repos: { task: TaskRepo }) => Promise<T>;
+export type TaskOperation<T> = (repos: { task: repository.Task }) => Promise<T>;
 export type IExecuteOperation<T> = (settings: ISettings) => Promise<T>;
 export type IOperation<T> = (settings: IConnectionSettings) => Promise<T>;
 
@@ -111,7 +109,7 @@ export function execute(task: factory.task.ITask<any>): IExecuteOperation<void> 
  * 実行中ステータスのままになっているタスクをリトライする
  */
 export function retry(intervalInMinutes: number): TaskOperation<void> {
-    return async (repos: { task: TaskRepo }) => {
+    return async (repos: { task: repository.Task }) => {
         await repos.task.retry(intervalInMinutes);
     };
 }
@@ -121,7 +119,7 @@ export function retry(intervalInMinutes: number): TaskOperation<void> {
  * トライ可能回数が0に達したタスクを実行中止する
  */
 export function abort(intervalInMinutes: number): TaskOperation<void> {
-    return async (repos: { task: TaskRepo }) => {
+    return async (repos: { task: repository.Task }) => {
         const abortedTask = await repos.task.abortOne(intervalInMinutes);
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore next */

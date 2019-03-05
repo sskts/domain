@@ -1,10 +1,9 @@
 /**
  * 在庫管理(在庫数調整)サービス
  */
+import { repository } from '@cinerino/domain';
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
-
-import { MongoRepository as ActionRepo } from '../repo/action';
 
 import * as factory from '../factory';
 
@@ -16,7 +15,7 @@ export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction
  * 資産承認解除(COA座席予約)
  */
 export function cancelSeatReservationAuth(transactionId: string) {
-    return async (repos: { action: ActionRepo }) => {
+    return async (repos: { action: repository.Action }) => {
         // 座席仮予約アクションを取得
         const authorizeActions = <factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>[]>
             await repos.action.searchByPurpose({

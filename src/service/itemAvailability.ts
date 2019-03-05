@@ -1,24 +1,24 @@
 /**
  * 注文アイテムの在庫状況を表現するサービス
  */
+import { repository } from '@cinerino/domain';
+
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import * as moment from 'moment-timezone';
-
-import { MongoRepository as ItemAvailabilityRepository } from '../repo/itemAvailability/screeningEvent';
 
 import * as MasterSyncService from './masterSync';
 
 const debug = createDebug('sskts-domain:service:itemAvailability');
 
-export type IItemAvailabilityOperation<T> = (repos: { itemAvailability: ItemAvailabilityRepository }) => Promise<T>;
+export type IItemAvailabilityOperation<T> = (repos: { itemAvailability: repository.itemAvailability.ScreeningEvent }) => Promise<T>;
 
 /**
  * 劇場IDと上映日範囲から上映イベント在庫状況を更新する
  */
 export function updateIndividualScreeningEvents(locationBranchCode: string, startFrom: Date, startThrough: Date):
     IItemAvailabilityOperation<void> {
-    return async (repos: { itemAvailability: ItemAvailabilityRepository }) => {
+    return async (repos: { itemAvailability: repository.itemAvailability.ScreeningEvent }) => {
         // COAから空席状況取得
         const countFreeSeatResult = await COA.services.reserve.countFreeSeat({
             theaterCode: locationBranchCode,

@@ -2,12 +2,12 @@
 /**
  * 販売情報サービステスト
  */
+import * as cinerino from '@cinerino/domain';
+
 import * as mongoose from 'mongoose';
 import * as assert from 'power-assert';
 import * as sinon from 'sinon';
 
-import { MongoRepository as EventRepo } from '../repo/event';
-import { MongoRepository as ScreeningEventItemAvailabilityRepo } from '../repo/itemAvailability/screeningEvent';
 import * as OfferService from './offer';
 
 let sandbox: sinon.SinonSandbox;
@@ -32,8 +32,8 @@ describe('searchIndividualScreeningEvents()', () => {
         const searchConditions = {
             superEventLocationIdentifiers: ['12345']
         };
-        const eventRepo = new EventRepo(mongoose.connection);
-        const itemAvailabilityRepo = new ScreeningEventItemAvailabilityRepo(<any>{});
+        const eventRepo = new cinerino.repository.Event(mongoose.connection);
+        const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(<any>{});
 
         sandbox.mock(eventRepo).expects('searchIndividualScreeningEvents').once().resolves(events);
         // tslint:disable-next-line:no-magic-numbers
@@ -61,8 +61,8 @@ describe('findIndividualScreeningEventByIdentifier()', () => {
             },
             identifier: 'identifier'
         };
-        const eventRepo = new EventRepo(mongoose.connection);
-        const itemAvailabilityRepo = new ScreeningEventItemAvailabilityRepo(<any>{});
+        const eventRepo = new cinerino.repository.Event(mongoose.connection);
+        const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(<any>{});
 
         sandbox.mock(eventRepo).expects('findById').once().resolves(event);
         // tslint:disable-next-line:no-magic-numbers

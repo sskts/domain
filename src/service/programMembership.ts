@@ -1,7 +1,7 @@
 /**
  * 会員プログラムサービス
  */
-import { pecorinoapi, service } from '@cinerino/domain';
+import { pecorinoapi, repository, service } from '@cinerino/domain';
 import * as GMO from '@motionpicture/gmo-service';
 import * as createDebug from 'debug';
 import * as moment from 'moment-timezone';
@@ -9,40 +9,30 @@ import * as util from 'util';
 
 import * as PlaceOrderService from './transaction/placeOrderInProgress';
 
-import { MongoRepository as ActionRepo } from '../repo/action';
-import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../repo/action/registerProgramMembershipInProgress';
-import { RedisRepository as OrderNumberRepo } from '../repo/orderNumber';
-import { MongoRepository as OwnershipInfoRepo } from '../repo/ownershipInfo';
-import { CognitoRepository as PersonRepo } from '../repo/person';
-import { MongoRepository as ProgramMembershipRepo } from '../repo/programMembership';
-import { MongoRepository as SellerRepo } from '../repo/seller';
-import { MongoRepository as TaskRepo } from '../repo/task';
-import { MongoRepository as TransactionRepo } from '../repo/transaction';
-
 import { handlePecorinoError } from '../errorHandler';
 import * as factory from '../factory';
 
 const debug = createDebug('sskts-domain:service:programMembership');
 
 export type ICreateRegisterTaskOperation<T> = (repos: {
-    programMembership: ProgramMembershipRepo;
-    seller: SellerRepo;
-    task: TaskRepo;
+    programMembership: repository.ProgramMembership;
+    seller: repository.Seller;
+    task: repository.Task;
 }) => Promise<T>;
 export type ICreateUnRegisterTaskOperation<T> = (repos: {
-    ownershipInfo: OwnershipInfoRepo;
-    task: TaskRepo;
+    ownershipInfo: repository.OwnershipInfo;
+    task: repository.Task;
 }) => Promise<T>;
 
 export type IRegisterOperation<T> = (repos: {
-    action: ActionRepo;
-    orderNumber: OrderNumberRepo;
-    ownershipInfo: OwnershipInfoRepo;
-    person: PersonRepo;
-    programMembership: ProgramMembershipRepo;
-    registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
-    seller: SellerRepo;
-    transaction: TransactionRepo;
+    action: repository.Action;
+    orderNumber: repository.OrderNumber;
+    ownershipInfo: repository.OwnershipInfo;
+    person: repository.Person;
+    programMembership: repository.ProgramMembership;
+    registerActionInProgressRepo: repository.action.RegisterProgramMembershipInProgress;
+    seller: repository.Seller;
+    transaction: repository.Transaction;
     depositService?: pecorinoapi.service.transaction.Deposit;
 }) => Promise<T>;
 
@@ -73,9 +63,9 @@ export function createRegisterTask(params: {
     offerIdentifier: string;
 }): ICreateRegisterTaskOperation<factory.task.ITask<factory.taskName.RegisterProgramMembership>> {
     return async (repos: {
-        programMembership: ProgramMembershipRepo;
-        seller: SellerRepo;
-        task: TaskRepo;
+        programMembership: repository.ProgramMembership;
+        seller: repository.Seller;
+        task: repository.Task;
     }) => {
         const now = new Date();
         const programMemberships = await repos.programMembership.search({ id: params.programMembershipId });
@@ -176,14 +166,14 @@ export function register(
     params: factory.action.interact.register.programMembership.IAttributes
 ): IRegisterOperation<void> {
     return async (repos: {
-        action: ActionRepo;
-        orderNumber: OrderNumberRepo;
-        ownershipInfo: OwnershipInfoRepo;
-        person: PersonRepo;
-        programMembership: ProgramMembershipRepo;
-        registerActionInProgressRepo: RegisterProgramMembershipActionInProgressRepo;
-        seller: SellerRepo;
-        transaction: TransactionRepo;
+        action: repository.Action;
+        orderNumber: repository.OrderNumber;
+        ownershipInfo: repository.OwnershipInfo;
+        person: repository.Person;
+        programMembership: repository.ProgramMembership;
+        registerActionInProgressRepo: repository.action.RegisterProgramMembershipInProgress;
+        seller: repository.Seller;
+        transaction: repository.Transaction;
         depositService: pecorinoapi.service.transaction.Deposit;
     }) => {
         const now = new Date();
@@ -290,8 +280,8 @@ export function createUnRegisterTask(params: {
     ownershipInfoIdentifier: string;
 }): ICreateUnRegisterTaskOperation<factory.task.ITask<factory.taskName.UnRegisterProgramMembership>> {
     return async (repos: {
-        ownershipInfo: OwnershipInfoRepo;
-        task: TaskRepo;
+        ownershipInfo: repository.OwnershipInfo;
+        task: repository.Task;
     }) => {
         // 所有している会員プログラムを検索
         // tslint:disable-next-line:no-single-line-block-comment
@@ -346,9 +336,9 @@ export function createUnRegisterTask(params: {
  */
 export function unRegister(params: factory.action.interact.unRegister.programMembership.IAttributes) {
     return async (repos: {
-        action: ActionRepo;
-        ownershipInfo: OwnershipInfoRepo;
-        task: TaskRepo;
+        action: repository.Action;
+        ownershipInfo: repository.OwnershipInfo;
+        task: repository.Task;
     }) => {
         // アクション開始
         const action = await repos.action.start(params);
@@ -425,14 +415,14 @@ function processPlaceOrder(params: {
 }) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        action: ActionRepo;
-        orderNumber: OrderNumberRepo;
-        person: PersonRepo;
-        programMembership: ProgramMembershipRepo;
-        seller: SellerRepo;
-        transaction: TransactionRepo;
+        action: repository.Action;
+        orderNumber: repository.OrderNumber;
+        person: repository.Person;
+        programMembership: repository.ProgramMembership;
+        seller: repository.Seller;
+        transaction: repository.Transaction;
         depositService: pecorinoapi.service.transaction.Deposit;
-        ownershipInfo: OwnershipInfoRepo;
+        ownershipInfo: repository.OwnershipInfo;
     }) => {
         const programMembership = params.registerActionAttributes.object.itemOffered;
         // tslint:disable-next-line:no-single-line-block-comment

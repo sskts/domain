@@ -1,20 +1,18 @@
 /**
  * 会員プログラムオファー承認アクションサービス
  */
-import * as createDebug from 'debug';
+import { repository } from '@cinerino/domain';
 
-import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
-import { MongoRepository as ProgramMembershipRepo } from '../../../../../../repo/programMembership';
-import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
+import * as createDebug from 'debug';
 
 import * as factory from '../../../../../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:offer:programMembership');
 
 export type ICreateOperation<T> = (repos: {
-    action: ActionRepo;
-    programMembership: ProgramMembershipRepo;
-    transaction: TransactionRepo;
+    action: repository.Action;
+    programMembership: repository.ProgramMembership;
+    transaction: repository.Transaction;
 }) => Promise<T>;
 
 export function create(params: {
@@ -26,9 +24,9 @@ export function create(params: {
     acceptedOffer: factory.order.IAcceptedOffer<factory.programMembership.IProgramMembership>;
 }): ICreateOperation<factory.action.authorize.offer.programMembership.IAction> {
     return async (repos: {
-        action: ActionRepo;
-        programMembership: ProgramMembershipRepo;
-        transaction: TransactionRepo;
+        action: repository.Action;
+        programMembership: repository.ProgramMembership;
+        transaction: repository.Transaction;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,
@@ -124,8 +122,8 @@ export function cancel(params: {
     actionId: string;
 }) {
     return async (repos: {
-        action: ActionRepo;
-        transaction: TransactionRepo;
+        action: repository.Action;
+        transaction: repository.Transaction;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,

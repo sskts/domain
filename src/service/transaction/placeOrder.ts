@@ -3,14 +3,11 @@
  */
 import * as cinerino from '@cinerino/domain';
 
-import { MongoRepository as TaskRepo } from '../../repo/task';
-import { MongoRepository as TransactionRepo } from '../../repo/transaction';
-
 import * as factory from '../../factory';
 
 export type ITaskAndTransactionOperation<T> = (repos: {
-    task: TaskRepo;
-    transaction: TransactionRepo;
+    task: cinerino.repository.Task;
+    transaction: cinerino.repository.Transaction;
 }) => Promise<T>;
 
 /**
@@ -27,8 +24,8 @@ export function sendEmail(
     emailMessageAttributes: factory.creativeWork.message.email.IAttributes
 ): ITaskAndTransactionOperation<factory.task.ITask<factory.taskName.SendEmailMessage>> {
     return async (repos: {
-        task: TaskRepo;
-        transaction: TransactionRepo;
+        task: cinerino.repository.Task;
+        transaction: cinerino.repository.Transaction;
     }) => {
         const transaction = await repos.transaction.findById({
             typeOf: factory.transactionType.PlaceOrder,

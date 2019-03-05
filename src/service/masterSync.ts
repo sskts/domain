@@ -1,17 +1,14 @@
 /**
  * マスターデータ同期サービス
  */
+import { repository } from '@cinerino/domain';
+
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 // @ts-ignore
 import * as difference from 'lodash.difference';
 import * as moment from 'moment-timezone';
-
-import { Repository as CreativeWorkRepo } from '../repo/creativeWork';
-import { MongoRepository as EventRepo } from '../repo/event';
-import { Repository as PlaceRepo } from '../repo/place';
-import { MongoRepository as SellerRepo } from '../repo/seller';
 
 import * as factory from '../factory';
 
@@ -20,32 +17,32 @@ const debug = createDebug('sskts-domain:service:masterSync');
 /**
  * 映画作品インポート
  */
-export function importMovies(theaterCode: string) {
-    return async (repos: { creativeWork: CreativeWorkRepo }) => {
-        // COAから作品取得
-        const filmsFromCOA = await COA.services.master.title({ theaterCode: theaterCode });
+// export function importMovies(theaterCode: string) {
+//     return async (repos: { creativeWork: CreativeWorkRepo }) => {
+//         // COAから作品取得
+//         const filmsFromCOA = await COA.services.master.title({ theaterCode: theaterCode });
 
-        // 永続化
-        await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
-            const movie = createMovieFromCOA(filmFromCOA);
-            debug('storing movie...', movie);
-            await repos.creativeWork.saveMovie(movie);
-            debug('movie stored.');
-        }));
-    };
-}
+//         // 永続化
+//         await Promise.all(filmsFromCOA.map(async (filmFromCOA) => {
+//             const movie = createMovieFromCOA(filmFromCOA);
+//             debug('storing movie...', movie);
+//             await repos.creativeWork.saveMovie(movie);
+//             debug('movie stored.');
+//         }));
+//     };
+// }
 
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
-function createMovieFromCOA(filmFromCOA: COA.services.master.ITitleResult): factory.chevre.creativeWork.movie.ICreativeWork {
-    return {
-        identifier: filmFromCOA.titleCode,
-        name: filmFromCOA.titleNameOrig,
-        duration: moment.duration(filmFromCOA.showTime, 'm').toISOString(),
-        contentRating: filmFromCOA.kbnEirin,
-        typeOf: factory.creativeWorkType.Movie
-    };
-}
+// function createMovieFromCOA(filmFromCOA: COA.services.master.ITitleResult): factory.chevre.creativeWork.movie.ICreativeWork {
+//     return {
+//         identifier: filmFromCOA.titleCode,
+//         name: filmFromCOA.titleNameOrig,
+//         duration: moment.duration(filmFromCOA.showTime, 'm').toISOString(),
+//         contentRating: filmFromCOA.kbnEirin,
+//         typeOf: factory.creativeWorkType.Movie
+//     };
+// }
 
 /**
  * XMLに存在するスケジュールかどうかを判定する
@@ -76,9 +73,9 @@ export function matchWithXML(
 export function importScreeningEvents(params: factory.task.IData<factory.taskName.ImportScreeningEvents>) {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        event: EventRepo;
-        place: PlaceRepo;
-        seller: SellerRepo;
+        event: repository.Event;
+        place: repository.Place;
+        seller: repository.Seller;
     }) => {
         // 劇場取得
         const movieTheater = await repos.place.findMovieTheaterByBranchCode(params.locationBranchCode);
@@ -271,8 +268,8 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
  */
 export function importMovieTheater(theaterCode: string) {
     return async (repos: {
-        place: PlaceRepo;
-        seller: SellerRepo;
+        place: repository.Place;
+        seller: repository.Seller;
     }): Promise<void> => {
         const movieTheater = createMovieTheaterFromCOA(
             await COA.services.master.theater({ theaterCode: theaterCode }),

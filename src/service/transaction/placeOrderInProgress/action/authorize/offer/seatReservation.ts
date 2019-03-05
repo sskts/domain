@@ -1,11 +1,8 @@
+import { repository } from '@cinerino/domain';
+
 import * as COA from '@motionpicture/coa-service';
 import * as createDebug from 'debug';
 import { INTERNAL_SERVER_ERROR } from 'http-status';
-
-import { MongoRepository as ActionRepo } from '../../../../../../repo/action';
-import { MongoRepository as EventRepo } from '../../../../../../repo/event';
-import { InMemoryRepository as OfferRepo } from '../../../../../../repo/offer';
-import { MongoRepository as TransactionRepo } from '../../../../../../repo/transaction';
 
 import * as factory from '../../../../../../factory';
 
@@ -14,14 +11,14 @@ const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress
 export import WebAPIIdentifier = factory.service.webAPI.Identifier;
 
 export type ICreateOperation<T> = (repos: {
-    event: EventRepo;
-    action: ActionRepo;
-    offer?: OfferRepo;
-    transaction: TransactionRepo;
+    event: repository.Event;
+    action: repository.Action;
+    offer?: repository.Offer;
+    transaction: repository.Transaction;
 }) => Promise<T>;
 export type IActionAndTransactionOperation<T> = (repos: {
-    action: ActionRepo;
-    transaction: TransactionRepo;
+    action: repository.Action;
+    transaction: repository.Transaction;
 }) => Promise<T>;
 
 /**
@@ -317,10 +314,10 @@ export function create(params: {
 }): ICreateOperation<factory.action.authorize.offer.seatReservation.IAction<WebAPIIdentifier.COA>> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        event: EventRepo;
-        action: ActionRepo;
-        offer?: OfferRepo;
-        transaction: TransactionRepo;
+        event: repository.Event;
+        action: repository.Action;
+        offer?: repository.Offer;
+        transaction: repository.Transaction;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,
@@ -451,8 +448,8 @@ export function cancel(params: {
     transaction: { id: string };
 }) {
     return async (repos: {
-        action: ActionRepo;
-        transaction: TransactionRepo;
+        action: repository.Action;
+        transaction: repository.Transaction;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,
@@ -496,10 +493,10 @@ export function changeOffers(params: {
     object: factory.action.authorize.offer.seatReservation.IObjectWithoutDetail<WebAPIIdentifier.COA>;
 }): ICreateOperation<factory.action.authorize.offer.seatReservation.IAction<WebAPIIdentifier.COA>> {
     return async (repos: {
-        event: EventRepo;
-        action: ActionRepo;
-        offer?: OfferRepo;
-        transaction: TransactionRepo;
+        event: repository.Event;
+        action: repository.Action;
+        offer?: repository.Offer;
+        transaction: repository.Transaction;
     }) => {
         const transaction = await repos.transaction.findInProgressById({
             typeOf: factory.transactionType.PlaceOrder,

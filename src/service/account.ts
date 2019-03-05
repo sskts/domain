@@ -2,12 +2,11 @@
  * ポイント口座サービス
  * 口座の保管先はPecorinoサービスです。
  */
-import { pecorinoapi } from '@cinerino/domain';
+import { pecorinoapi, repository } from '@cinerino/domain';
 // import * as createDebug from 'debug';
 import * as moment from 'moment';
 
 import { handlePecorinoError } from '../errorHandler';
-import { RedisRepository as AccountNumberRepo } from '../repo/accountNumber';
 
 import * as factory from '../factory';
 // const debug = createDebug('sskts-domain:service:account');
@@ -22,7 +21,7 @@ export function open(params: {
         /**
          * 口座番号リポジトリ
          */
-        accountNumber: AccountNumberRepo;
+        accountNumber: repository.AccountNumber;
         /**
          * Pecorino口座サービス
          */

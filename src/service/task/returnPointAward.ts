@@ -1,7 +1,8 @@
+import { repository } from '@cinerino/domain';
+
 import { IConnectionSettings, IOperation } from '../task';
 
 import * as factory from '../../factory';
-import { MongoRepository as ActionRepo } from '../../repo/action';
 
 import * as DeliveryService from '../delivery';
 
@@ -16,7 +17,7 @@ export function call(data: factory.task.IData<factory.taskName.ReturnPointAward>
             throw new Error('settings.pecorinoAuthClient undefined.');
         }
 
-        const actionRepo = new ActionRepo(settings.connection);
+        const actionRepo = new repository.Action(settings.connection);
         await DeliveryService.returnPointAward(data)({
             action: actionRepo,
             pecorinoAuthClient: settings.pecorinoAuthClient

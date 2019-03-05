@@ -1,15 +1,8 @@
+import { repository } from '@cinerino/domain';
+
 import { IConnectionSettings, IOperation } from '../task';
 
 import * as factory from '../../factory';
-
-import { MongoRepository as ActionRepo } from '../../repo/action';
-import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../../repo/action/registerProgramMembershipInProgress';
-import { RedisRepository as OrderNumberRepo } from '../../repo/orderNumber';
-import { MongoRepository as OwnershipInfoRepo } from '../../repo/ownershipInfo';
-import { CognitoRepository as PersonRepo } from '../../repo/person';
-import { MongoRepository as ProgramMembershipRepo } from '../../repo/programMembership';
-import { MongoRepository as SellerRepo } from '../../repo/seller';
-import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 import * as ProgramMembershipService from '../programMembership';
 
@@ -30,14 +23,14 @@ export function call(data: factory.task.IData<factory.taskName.RegisterProgramMe
         }
 
         await ProgramMembershipService.register(data)({
-            action: new ActionRepo(settings.connection),
-            orderNumber: new OrderNumberRepo(settings.redisClient),
-            seller: new SellerRepo(settings.connection),
-            ownershipInfo: new OwnershipInfoRepo(settings.connection),
-            person: new PersonRepo(settings.cognitoIdentityServiceProvider),
-            programMembership: new ProgramMembershipRepo(settings.connection),
-            registerActionInProgressRepo: new RegisterProgramMembershipActionInProgressRepo(settings.redisClient),
-            transaction: new TransactionRepo(settings.connection),
+            action: new repository.Action(settings.connection),
+            orderNumber: new repository.OrderNumber(settings.redisClient),
+            seller: new repository.Seller(settings.connection),
+            ownershipInfo: new repository.OwnershipInfo(settings.connection),
+            person: new repository.Person(settings.cognitoIdentityServiceProvider),
+            programMembership: new repository.ProgramMembership(settings.connection),
+            registerActionInProgressRepo: new repository.action.RegisterProgramMembershipInProgress(settings.redisClient),
+            transaction: new repository.Transaction(settings.connection),
             depositService: settings.depositService
         });
     };

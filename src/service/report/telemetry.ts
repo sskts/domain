@@ -2,43 +2,40 @@
  * データ測定サービス
  * 実験的実装中
  */
+import { repository } from '@cinerino/domain';
+
 import * as createDebug from 'debug';
 import * as moment from 'moment';
-
-import { MongoRepository as ActionRepo } from '../../repo/action';
-import { MongoRepository as TaskRepo } from '../../repo/task';
-import { MongoRepository as TelemetryRepo } from '../../repo/telemetry';
-import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 import * as factory from '../../factory';
 
 export type TelemetryOperation<T> =
-    (repos: { telemetry: TelemetryRepo }) => Promise<T>;
+    (repos: { telemetry: repository.Telemetry }) => Promise<T>;
 export type TaskOperation<T> =
-    (repos: { task: TaskRepo }) => Promise<T>;
+    (repos: { task: repository.Task }) => Promise<T>;
 export type TransactionOperation<T> =
-    (repos: { transaction: TransactionRepo }) => Promise<T>;
+    (repos: { transaction: repository.Transaction }) => Promise<T>;
 export type TaskAndTransactionOperation<T> =
     (repos: {
-        task: TaskRepo;
-        transaction: TransactionRepo;
+        task: repository.Task;
+        transaction: repository.Transaction;
     }) => Promise<T>;
 export type TaskAndTransactionAndActionOperation<T> =
     (repos: {
-        task: TaskRepo;
-        transaction: TransactionRepo;
-        action: ActionRepo;
+        task: repository.Task;
+        transaction: repository.Transaction;
+        action: repository.Action;
     }) => Promise<T>;
 export type TransactionAndActionOperation<T> =
     (repos: {
-        transaction: TransactionRepo;
-        action: ActionRepo;
+        transaction: repository.Transaction;
+        action: repository.Action;
     }) => Promise<T>;
 export type TaskAndTelemetryAndTransactionOperation<T> = (repos: {
-    task: TaskRepo;
-    telemetry: TelemetryRepo;
-    transaction: TransactionRepo;
-    action: ActionRepo;
+    task: repository.Task;
+    telemetry: repository.Telemetry;
+    transaction: repository.Transaction;
+    action: repository.Action;
 }) => Promise<T>;
 
 const debug = createDebug('sskts-domain:service:report:telemetry');
@@ -344,7 +341,7 @@ export function search(searchConditions: {
     scope: TelemetryScope;
     purpose: TelemetryPurposeType;
 }) {
-    return async (repos: { telemetry: TelemetryRepo }) => {
+    return async (repos: { telemetry: repository.Telemetry }) => {
         return <ITelemetry[]>await repos.telemetry.telemetryModel.find(
             {
                 'object.scope': {
@@ -378,10 +375,10 @@ export function createFlow(target: {
     sellerId?: string;
 }): TaskAndTelemetryAndTransactionOperation<void> {
     return async (repos: {
-        task: TaskRepo;
-        telemetry: TelemetryRepo;
-        transaction: TransactionRepo;
-        action: ActionRepo;
+        task: repository.Task;
+        telemetry: repository.Telemetry;
+        transaction: repository.Transaction;
+        action: repository.Action;
     }) => {
         const startDate = new Date();
         const measuredThrough = moment(target.measuredAt);
@@ -440,9 +437,9 @@ export function createStock(target: {
     sellerId?: string;
 }): TaskAndTelemetryAndTransactionOperation<void> {
     return async (repos: {
-        task: TaskRepo;
-        telemetry: TelemetryRepo;
-        transaction: TransactionRepo;
+        task: repository.Task;
+        telemetry: repository.Telemetry;
+        transaction: repository.Transaction;
     }) => {
         const startDate = new Date();
 
@@ -500,8 +497,8 @@ function createSellerFlow(
 ): TransactionAndActionOperation<ISellerFlowResult> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        transaction: TransactionRepo;
-        action: ActionRepo;
+        transaction: repository.Transaction;
+        action: repository.Action;
     }) => {
         // 計測期間内に開始された取引数を算出する
         const numberOfTransactionsStarted = await repos.transaction.transactionModel.count({
@@ -695,7 +692,7 @@ function createSellerFlow(
 function createSellerStock(measuredAt: Date, sellerId: string): TransactionOperation<ISellerStockResult> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        transaction: TransactionRepo;
+        transaction: repository.Transaction;
     }) => {
         const numberOfTransactionsUnderway = await repos.transaction.transactionModel.count({
             $or: [
@@ -753,7 +750,7 @@ function createGlobalFlow(
 ): TaskOperation<IGlobalFlowResult> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        task: TaskRepo;
+        task: repository.Task;
     }) => {
         // 全タスク名リスト
         const targetTaskNames: any[] = Object.keys(factory.taskName).map((k) => factory.taskName[<any>k]);
@@ -841,7 +838,7 @@ function createGlobalFlow(
 function createGlobalStock(measuredAt: Date): TaskOperation<IGlobalStockResult> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
-        task: TaskRepo;
+        task: repository.Task;
     }) => {
         // 待機状態のタスク数を算出
         debug('counting waiting tasks globally...');

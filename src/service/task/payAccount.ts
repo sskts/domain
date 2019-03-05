@@ -1,10 +1,8 @@
-import { pecorinoapi } from '@cinerino/domain';
+import { pecorinoapi, repository } from '@cinerino/domain';
 
 import { IConnectionSettings, IOperation } from '../task';
 
 import * as factory from '../../factory';
-import { MongoRepository as ActionRepo } from '../../repo/action';
-import { MongoRepository as InvoiceRepo } from '../../repo/invoice';
 
 import * as PaymentService from '../payment';
 
@@ -24,8 +22,8 @@ export function call(data: factory.task.IData<factory.taskName.PayAccount>): IOp
             throw new Error('settings.pecorinoAuthClient undefined.');
         }
 
-        const actionRepo = new ActionRepo(settings.connection);
-        const invoiceRepo = new InvoiceRepo(settings.connection);
+        const actionRepo = new repository.Action(settings.connection);
+        const invoiceRepo = new repository.Invoice(settings.connection);
         const withdrawService = new pecorinoapi.service.transaction.Withdraw({
             endpoint: settings.pecorinoEndpoint,
             auth: settings.pecorinoAuthClient

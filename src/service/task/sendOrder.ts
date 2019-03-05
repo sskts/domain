@@ -1,12 +1,9 @@
+
+import { repository } from '@cinerino/domain';
+
 import { IConnectionSettings, IOperation } from '../task';
 
 import * as factory from '../../factory';
-import { MongoRepository as ActionRepo } from '../../repo/action';
-import { RedisRepository as RegisterProgramMembershipActionInProgressRepo } from '../../repo/action/registerProgramMembershipInProgress';
-import { MongoRepository as OrderRepo } from '../../repo/order';
-import { MongoRepository as OwnershipInfoRepo } from '../../repo/ownershipInfo';
-import { MongoRepository as TaskRepo } from '../../repo/task';
-import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 import * as DeliveryService from '../delivery';
 
@@ -21,16 +18,16 @@ export function call(data: factory.task.IData<factory.taskName.SendOrder>): IOpe
             throw new Error('settings.redisClient undefined.');
         }
 
-        const actionRepo = new ActionRepo(settings.connection);
-        const orderRepo = new OrderRepo(settings.connection);
-        const ownershipInfoRepo = new OwnershipInfoRepo(settings.connection);
-        const transactionRepo = new TransactionRepo(settings.connection);
-        const taskRepo = new TaskRepo(settings.connection);
+        const actionRepo = new repository.Action(settings.connection);
+        const orderRepo = new repository.Order(settings.connection);
+        const ownershipInfoRepo = new repository.OwnershipInfo(settings.connection);
+        const transactionRepo = new repository.Transaction(settings.connection);
+        const taskRepo = new repository.Task(settings.connection);
         await DeliveryService.sendOrder(data)({
             action: actionRepo,
             order: orderRepo,
             ownershipInfo: ownershipInfoRepo,
-            registerActionInProgressRepo: new RegisterProgramMembershipActionInProgressRepo(settings.redisClient),
+            registerActionInProgressRepo: new repository.action.RegisterProgramMembershipInProgress(settings.redisClient),
             transaction: transactionRepo,
             task: taskRepo
         });

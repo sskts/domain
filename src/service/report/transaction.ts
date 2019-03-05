@@ -2,21 +2,20 @@
 /**
  * 取引レポートサービス
  */
+import { repository } from '@cinerino/domain';
+
 import * as createDebug from 'debug';
 import * as json2csv from 'json2csv';
 import * as moment from 'moment';
 import * as util from 'util';
-
-import { MongoRepository as TaskRepo } from '../../repo/task';
-import { MongoRepository as TransactionRepo } from '../../repo/transaction';
 
 import * as factory from '../../factory';
 
 const debug = createDebug('sskts-domain:service:report:transaction');
 
 export type ITaskAndTransactionOperation<T> = (repos: {
-    task: TaskRepo;
-    transaction: TransactionRepo;
+    task: repository.Task;
+    transaction: repository.Transaction;
 }) => Promise<T>;
 
 /**
@@ -38,7 +37,7 @@ export function download(
     },
     format: IDownloadFormat
 ) {
-    return async (repos: { transaction: TransactionRepo }): Promise<string> => {
+    return async (repos: { transaction: repository.Transaction }): Promise<string> => {
         // 取引検索
         const transactions = await repos.transaction.search<factory.transactionType.PlaceOrder>({
             ...conditions,

@@ -2,50 +2,23 @@
 /**
  * repository
  */
-import { RedisRepository as AccountNumberRepo } from './repo/accountNumber';
-import { MongoRepository as ActionRepo } from './repo/action';
-import { RedisRepository as RegisterProgramMembershipActionInProgress } from './repo/action/registerProgramMembershipInProgress';
-import { MongoRepository as CreativeWorkRepo } from './repo/creativeWork';
-import { MongoRepository as EventRepo } from './repo/event';
-import { MongoRepository as InvoiceRepo } from './repo/invoice';
-import { MongoRepository as ScreeningEventItemAvailabilityRepo } from './repo/itemAvailability/screeningEvent';
-import { InMemoryRepository as OfferRepo } from './repo/offer';
-import { MongoRepository as OrderRepo } from './repo/order';
-import { RedisRepository as OrderNumberRepo } from './repo/orderNumber';
-import { MongoRepository as OwnershipInfoRepo } from './repo/ownershipInfo';
-import { MongoRepository as PaymentMethodRepo } from './repo/paymentMethod';
-import { CognitoRepository as PersonRepo } from './repo/person';
-import { MongoRepository as PlaceRepo } from './repo/place';
-import { MongoRepository as ProgramMembershipRepo } from './repo/programMembership';
-import { MongoRepository as SellerRepo } from './repo/seller';
-import { MongoRepository as TaskRepo } from './repo/task';
-import { MongoRepository as TelemetryRepo } from './repo/telemetry';
-import { MongoRepository as TransactionRepo } from './repo/transaction';
+import { repository } from '@cinerino/domain';
 
-export class AccountNumber extends AccountNumberRepo { }
-export class Action extends ActionRepo { }
-export namespace action {
-    export class RegisterProgramMembershipInProgress extends RegisterProgramMembershipActionInProgress { }
-}
-export class CreativeWork extends CreativeWorkRepo { }
-export class Event extends EventRepo { }
-/**
- * 請求書リポジトリ
- */
-export class Invoice extends InvoiceRepo { }
-export class Offer extends OfferRepo { }
-export class Order extends OrderRepo { }
-export class OrderNumber extends OrderNumberRepo { }
-export class OwnershipInfo extends OwnershipInfoRepo { }
-export class PaymentMethod extends PaymentMethodRepo { }
-export class Person extends PersonRepo { }
-export class Place extends PlaceRepo { }
-export class ProgramMembership extends ProgramMembershipRepo { }
-export class Seller extends SellerRepo { }
-export class Task extends TaskRepo { }
-export class Telemetry extends TelemetryRepo { }
-export class Transaction extends TransactionRepo { }
-
-export namespace itemAvailability {
-    export class ScreeningEvent extends ScreeningEventItemAvailabilityRepo { }
-}
+export class AccountNumber extends repository.AccountNumber { }
+export class Action extends repository.Action { }
+export import action = repository.action;
+export class Event extends repository.Event { }
+export class Invoice extends repository.Invoice { }
+export import itemAvailability = repository.itemAvailability;
+export class Offer extends repository.Offer { }
+export class Order extends repository.Order { }
+export class OrderNumber extends repository.OrderNumber { }
+export class OwnershipInfo extends repository.OwnershipInfo { }
+export class PaymentMethod extends repository.PaymentMethod { }
+export class Person extends repository.Person { }
+export class Place extends repository.Place { }
+export class ProgramMembership extends repository.ProgramMembership { }
+export class Seller extends repository.Seller { }
+export class Task extends repository.Task { }
+export class Telemetry extends repository.Telemetry { }
+export class Transaction extends repository.Transaction { }
