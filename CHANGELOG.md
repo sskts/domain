@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- factoryを完全にCinerino化
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v30.1.1 - 2019-03-05
+
+### Changed
+
+- factoryを完全にCinerino化
 
 ## v30.1.0 - 2019-03-04
 
