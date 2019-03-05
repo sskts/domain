@@ -209,7 +209,7 @@ export function transaction2report(params: {
                 };
 
                 switch (offer.typeOf) {
-                    case factory.reservationType.EventReservation:
+                    case factory.chevre.reservationType.EventReservation:
                         event = offer.reservationFor;
                         const ticket = offer.reservedTicket;
                         const ticketedSeat = ticket.ticketedSeat;

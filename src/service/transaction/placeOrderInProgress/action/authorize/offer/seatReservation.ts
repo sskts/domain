@@ -11,6 +11,8 @@ import * as factory from '../../../../../../factory';
 
 const debug = createDebug('sskts-domain:service:transaction:placeOrderInProgress:action:authorize:seatReservation');
 
+export import WebAPIIdentifier = factory.service.webAPI.Identifier;
+
 export type ICreateOperation<T> = (repos: {
     event: EventRepo;
     action: ActionRepo;
@@ -41,12 +43,12 @@ export type ICOAMvtkTicket = COA.services.master.IMvtkTicketcodeResult & {
 async function validateOffers(
     isMember: boolean,
     screeningEvent: factory.event.screeningEvent.IEvent,
-    offers: factory.action.authorize.offer.seatReservation.IAcceptedOfferWithoutDetail[],
+    offers: factory.action.authorize.offer.seatReservation.IAcceptedOfferWithoutDetail<WebAPIIdentifier.COA>[],
     coaTickets?: COA.services.master.ITicketResult[]
-): Promise<factory.action.authorize.offer.seatReservation.IAcceptedOffer[]> {
+): Promise<factory.action.authorize.offer.seatReservation.IAcceptedOffer<WebAPIIdentifier.COA>[]> {
     // 詳細情報ありの供給情報リストを初期化
     // 要求された各供給情報について、バリデーションをかけながら、このリストに追加していく
-    const offersWithDetails: factory.action.authorize.offer.seatReservation.IAcceptedOffer[] = [];
+    const offersWithDetails: factory.action.authorize.offer.seatReservation.IAcceptedOffer<WebAPIIdentifier.COA>[] = [];
 
     // 供給情報が適切かどうか確認
     const availableSalesTickets: COA.services.reserve.ISalesTicketResult[] = [];
@@ -294,7 +296,9 @@ async function validateOffers(
 /**
  * 供給情報から承認アクションの価格を導き出す
  */
-function offers2resultPrice(offers: factory.action.authorize.offer.seatReservation.IAcceptedOffer[]) {
+function offers2resultPrice(
+    offers: factory.action.authorize.offer.seatReservation.IAcceptedOffer<WebAPIIdentifier.COA>[]
+) {
     const price = offers.reduce((a, b) => a + (<number>b.price), 0);
     const requiredPoint = offers.reduce((a, b) => a + b.ticketInfo.usePoint, 0);
 
@@ -307,10 +311,10 @@ function offers2resultPrice(offers: factory.action.authorize.offer.seatReservati
  */
 // tslint:disable-next-line:max-func-body-length
 export function create(params: {
-    object: factory.action.authorize.offer.seatReservation.IObjectWithoutDetail;
+    object: factory.action.authorize.offer.seatReservation.IObjectWithoutDetail<WebAPIIdentifier.COA>;
     agent: { id: string };
     transaction: { id: string };
-}): ICreateOperation<factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>> {
+}): ICreateOperation<factory.action.authorize.offer.seatReservation.IAction<WebAPIIdentifier.COA>> {
     // tslint:disable-next-line:max-func-body-length
     return async (repos: {
         event: EventRepo;
@@ -344,7 +348,7 @@ export function create(params: {
         );
 
         // 承認アクションを開始
-        const actionAttributes: factory.action.authorize.offer.seatReservation.IAttributes<factory.service.webAPI.Identifier.COA> = {
+        const actionAttributes: factory.action.authorize.offer.seatReservation.IAttributes<WebAPIIdentifier.COA> = {
             typeOf: factory.actionType.AuthorizeAction,
             object: {
                 typeOf: factory.action.authorize.offer.seatReservation.ObjectType.SeatReservation,
@@ -416,7 +420,7 @@ export function create(params: {
         // アクションを完了
         debug('ending authorize action...');
         const { price, requiredPoint } = offers2resultPrice(acceptedOffer);
-        const result: factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA> = {
+        const result: factory.action.authorize.offer.seatReservation.IResult<WebAPIIdentifier.COA> = {
             price: price,
             priceCurrency: factory.priceCurrency.JPY,
             point: requiredPoint,
@@ -462,7 +466,7 @@ export function cancel(params: {
         // MongoDBでcompleteステータスであるにも関わらず、COAでは削除されている、というのが最悪の状況
         // それだけは回避するためにMongoDBを先に変更
         const action = await repos.action.cancel({ typeOf: factory.actionType.AuthorizeAction, id: params.id });
-        const actionResult = <factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA>>action.result;
+        const actionResult = <factory.action.authorize.offer.seatReservation.IResult<WebAPIIdentifier.COA>>action.result;
 
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
@@ -489,8 +493,8 @@ export function changeOffers(params: {
     id: string;
     agent: { id: string };
     transaction: { id: string };
-    object: factory.action.authorize.offer.seatReservation.IObjectWithoutDetail;
-}): ICreateOperation<factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>> {
+    object: factory.action.authorize.offer.seatReservation.IObjectWithoutDetail<WebAPIIdentifier.COA>;
+}): ICreateOperation<factory.action.authorize.offer.seatReservation.IAction<WebAPIIdentifier.COA>> {
     return async (repos: {
         event: EventRepo;
         action: ActionRepo;
@@ -507,7 +511,7 @@ export function changeOffers(params: {
         }
 
         // アクション中のイベント識別子と座席リストが合っているかどうか確認
-        const authorizeAction = <factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>>
+        const authorizeAction = <factory.action.authorize.offer.seatReservation.IAction<WebAPIIdentifier.COA>>
             await repos.action.findById({ typeOf: factory.actionType.AuthorizeAction, id: params.id });
         // 完了ステータスのアクションのみ更新可能
         if (authorizeAction.actionStatus !== factory.actionStatusType.CompletedActionStatus) {
@@ -554,13 +558,13 @@ export function changeOffers(params: {
         (<any>authorizeAction.object).offers = acceptedOffer; // 互換性維持のため
 
         const { price, requiredPoint } = offers2resultPrice(acceptedOffer);
-        (<factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA>>authorizeAction.result).price
+        (<factory.action.authorize.offer.seatReservation.IResult<WebAPIIdentifier.COA>>authorizeAction.result).price
             = price;
-        (<factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA>>authorizeAction.result).point
+        (<factory.action.authorize.offer.seatReservation.IResult<WebAPIIdentifier.COA>>authorizeAction.result).point
             = requiredPoint;
 
         const actionResult =
-            (<factory.action.authorize.offer.seatReservation.IResult<factory.service.webAPI.Identifier.COA>>authorizeAction.result);
+            (<factory.action.authorize.offer.seatReservation.IResult<WebAPIIdentifier.COA>>authorizeAction.result);
 
         // 座席予約承認アクションの供給情報を変更する
         return repos.action.actionModel.findOneAndUpdate(
@@ -580,7 +584,7 @@ export function changeOffers(params: {
                     throw new factory.errors.NotFound('authorizeAction');
                 }
 
-                return <factory.action.authorize.offer.seatReservation.IAction<factory.service.webAPI.Identifier.COA>>doc.toObject();
+                return <factory.action.authorize.offer.seatReservation.IAction<WebAPIIdentifier.COA>>doc.toObject();
             });
     };
 }

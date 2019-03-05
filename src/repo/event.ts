@@ -26,7 +26,7 @@ export class MongoRepository extends repository.Event {
         const andConditions: any[] = [
             {
                 typeOf: {
-                    $in: [factory.eventType.IndividualScreeningEvent, factory.eventType.ScreeningEvent]
+                    $in: [factory.chevre.eventType.IndividualScreeningEvent, factory.chevre.eventType.ScreeningEvent]
                 }
             }
         ];
@@ -157,10 +157,10 @@ export class MongoRepository extends repository.Event {
             {
                 _id: id,
                 typeOf: {
-                    $in: [factory.eventType.IndividualScreeningEvent, factory.eventType.ScreeningEvent]
+                    $in: [factory.chevre.eventType.IndividualScreeningEvent, factory.chevre.eventType.ScreeningEvent]
                 }
             },
-            { eventStatus: factory.eventStatusType.EventCancelled },
+            { eventStatus: factory.chevre.eventStatusType.EventCancelled },
             { new: true }
         ).exec();
     }

@@ -330,8 +330,8 @@ export function createOrderFromTransaction(params: {
                 (`000${index + 1}`).slice(-3)
             ].join('');
 
-            const eventReservation: factory.reservation.event.IReservation<factory.event.screeningEvent.IEvent> = {
-                typeOf: factory.reservationType.EventReservation,
+            const eventReservation: factory.chevre.reservation.event.IReservation<factory.event.screeningEvent.IEvent> = {
+                typeOf: factory.chevre.reservationType.EventReservation,
                 id: `${reservationNumber}-${index.toString()}`,
                 checkedIn: false,
                 attended: false,
@@ -342,7 +342,7 @@ export function createOrderFromTransaction(params: {
                 priceCurrency: requestedOffer.priceCurrency,
                 reservationFor: screeningEvent,
                 reservationNumber: `${reservationNumber}`,
-                reservationStatus: factory.reservationStatusType.ReservationConfirmed,
+                reservationStatus: factory.chevre.reservationStatusType.ReservationConfirmed,
                 reservedTicket: {
                     typeOf: 'Ticket',
                     coaTicketInfo: requestedOffer.ticketInfo,
@@ -354,7 +354,7 @@ export function createOrderFromTransaction(params: {
                     totalPrice: <number>requestedOffer.price,
                     priceCurrency: requestedOffer.priceCurrency,
                     ticketedSeat: {
-                        typeOf: factory.placeType.Seat,
+                        typeOf: factory.chevre.placeType.Seat,
                         seatingType: {
                             typeOf: 'Default'
                         },
@@ -527,7 +527,7 @@ export async function createEmailMessageFromTransaction(params: {
         const seller = params.transaction.seller;
         // tslint:disable-next-line:no-single-line-block-comment
         /* istanbul ignore else */
-        if (params.order.acceptedOffers[0].itemOffered.typeOf === factory.reservationType.EventReservation) {
+        if (params.order.acceptedOffers[0].itemOffered.typeOf === factory.chevre.reservationType.EventReservation) {
             const event = params.order.acceptedOffers[0].itemOffered.reservationFor;
 
             pug.renderFile(
@@ -544,7 +544,7 @@ export async function createEmailMessageFromTransaction(params: {
                     workPerformedName: event.workPerformed.name,
                     screenName: event.location.name.ja,
                     reservedSeats: params.order.acceptedOffers.map((o) => {
-                        const reservation = (<factory.reservation.event.IReservation<any>>o.itemOffered);
+                        const reservation = (<factory.chevre.reservation.event.IReservation<any>>o.itemOffered);
                         const ticketedSeat = reservation.reservedTicket.ticketedSeat;
                         const coaTicketInfo = reservation.reservedTicket.coaTicketInfo;
 
@@ -671,9 +671,9 @@ export async function createPotentialActionsFromTransaction(params: {
                 mailAddr: params.order.customer.email,
                 reserveAmount: params.order.price, // デフォルトのpriceCurrencyがJPYなのでこれでよし
                 listTicket: params.order.acceptedOffers
-                    .filter((offer) => offer.itemOffered.typeOf === factory.reservationType.EventReservation)
+                    .filter((offer) => offer.itemOffered.typeOf === factory.chevre.reservationType.EventReservation)
                     .map((offer) => {
-                        const reservation = <factory.reservation.event.IReservation<any>>offer.itemOffered;
+                        const reservation = <factory.chevre.reservation.event.IReservation<any>>offer.itemOffered;
                         const coaTicketInfo = reservation.reservedTicket.coaTicketInfo;
                         if (coaTicketInfo === undefined) {
                             throw new factory.errors.Argument('Transaction', 'coaTicketInfo undefined in accepted offers');

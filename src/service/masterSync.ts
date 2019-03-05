@@ -37,7 +37,7 @@ export function importMovies(theaterCode: string) {
 
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
-function createMovieFromCOA(filmFromCOA: COA.services.master.ITitleResult): factory.creativeWork.movie.ICreativeWork {
+function createMovieFromCOA(filmFromCOA: COA.services.master.ITitleResult): factory.chevre.creativeWork.movie.ICreativeWork {
     return {
         identifier: filmFromCOA.titleCode,
         name: filmFromCOA.titleNameOrig,
@@ -195,7 +195,7 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
                     });
 
                     // スクリーン存在チェック
-                    const screenRoom = <factory.place.movieTheater.IScreeningRoom | undefined>movieTheater.containsPlace.find(
+                    const screenRoom = <factory.chevre.place.movieTheater.IScreeningRoom | undefined>movieTheater.containsPlace.find(
                         (place) => place.branchCode === scheduleFromCOA.screenCode
                     );
                     if (screenRoom === undefined) {
@@ -229,7 +229,7 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
             debug(`storing ${screeningEvents.length} screeningEvents...`);
             await Promise.all(screeningEvents.map(async (screeningEvent) => {
                 try {
-                    await repos.event.save<factory.eventType.ScreeningEvent>(screeningEvent);
+                    await repos.event.save<factory.chevre.eventType.ScreeningEvent>(screeningEvent);
                 } catch (error) {
                     // tslint:disable-next-line:no-single-line-block-comment
                     /* istanbul ignore next */
@@ -241,7 +241,7 @@ export function importScreeningEvents(params: factory.task.IData<factory.taskNam
 
             // COAから削除されたイベントをキャンセル済ステータスへ変更
             const ids = await repos.event.searchIndividualScreeningEvents({
-                typeOf: factory.eventType.ScreeningEvent,
+                typeOf: factory.chevre.eventType.ScreeningEvent,
                 superEvent: {
                     locationBranchCodes: [params.locationBranchCode]
                 },
@@ -326,7 +326,7 @@ export function importMovieTheater(theaterCode: string) {
 /* istanbul ignore next */
 export function createScreeningEventFromCOA(params: {
     performanceFromCOA: COA.services.master.IScheduleResult;
-    screenRoom: factory.place.movieTheater.IScreeningRoom;
+    screenRoom: factory.chevre.place.movieTheater.IScreeningRoom;
     superEvent: factory.event.screeningEventSeries.IEvent;
     serviceKubuns: COA.services.master.IKubunNameResult[];
     acousticKubuns: COA.services.master.IKubunNameResult[];
@@ -365,7 +365,7 @@ export function createScreeningEventFromCOA(params: {
             .toDate();
     }
 
-    const coaInfo: factory.event.screeningEvent.ICOAInfo = {
+    const coaInfo: factory.chevre.event.screeningEvent.ICOAInfo = {
         theaterCode: params.superEvent.location.branchCode,
         dateJouei: params.performanceFromCOA.dateJouei,
         titleCode: params.performanceFromCOA.titleCode,
@@ -384,14 +384,14 @@ export function createScreeningEventFromCOA(params: {
     };
 
     return {
-        typeOf: factory.eventType.ScreeningEvent,
+        typeOf: factory.chevre.eventType.ScreeningEvent,
         id: id,
         identifier: id,
         name: params.superEvent.name,
-        eventStatus: factory.eventStatusType.EventScheduled,
+        eventStatus: factory.chevre.eventStatusType.EventScheduled,
         workPerformed: params.superEvent.workPerformed,
         location: {
-            typeOf: <factory.placeType.ScreeningRoom>params.screenRoom.typeOf,
+            typeOf: <factory.chevre.placeType.ScreeningRoom>params.screenRoom.typeOf,
             branchCode: params.screenRoom.branchCode,
             name: params.screenRoom.name
         },
@@ -424,7 +424,7 @@ export function createScreeningEventFromCOA(params: {
 /* istanbul ignore next */
 export function createScreeningEventSeriesFromCOA(params: {
     filmFromCOA: COA.services.master.ITitleResult;
-    movieTheater: factory.place.movieTheater.IPlace;
+    movieTheater: factory.chevre.place.movieTheater.IPlace;
     eirinKubuns: COA.services.master.IKubunNameResult[];
     eizouKubuns: COA.services.master.IKubunNameResult[];
     joueihousikiKubuns: COA.services.master.IKubunNameResult[];
@@ -457,7 +457,7 @@ export function createScreeningEventSeriesFromCOA(params: {
             branchCode: params.movieTheater.branchCode,
             name: params.movieTheater.name,
             kanaName: params.movieTheater.kanaName,
-            typeOf: <factory.placeType.MovieTheater>params.movieTheater.typeOf
+            typeOf: <factory.chevre.placeType.MovieTheater>params.movieTheater.typeOf
         },
         organizer: {
             typeOf: factory.organizationType.MovieTheater,
@@ -483,8 +483,8 @@ export function createScreeningEventSeriesFromCOA(params: {
             flgMvtkUse: params.filmFromCOA.flgMvtkUse,
             dateMvtkBegin: params.filmFromCOA.dateMvtkBegin
         },
-        eventStatus: factory.eventStatusType.EventScheduled,
-        typeOf: factory.eventType.ScreeningEventSeries
+        eventStatus: factory.chevre.eventStatusType.EventScheduled,
+        typeOf: factory.chevre.eventType.ScreeningEventSeries
     };
 }
 
@@ -532,7 +532,7 @@ export function createScreeningEventSeriesId(params: {
 export function createMovieTheaterFromCOA(
     theaterFromCOA: COA.services.master.ITheaterResult,
     screensFromCOA: COA.services.master.IScreenResult[]
-): factory.place.movieTheater.IPlace {
+): factory.chevre.place.movieTheater.IPlace {
     const id = `MovieTheater-${theaterFromCOA.theaterCode}`;
 
     return {
@@ -547,7 +547,7 @@ export function createMovieTheaterFromCOA(
         containsPlace: screensFromCOA.map((screenFromCOA) => {
             return createScreeningRoomFromCOA(screenFromCOA);
         }),
-        typeOf: factory.placeType.MovieTheater,
+        typeOf: factory.chevre.placeType.MovieTheater,
         telephone: theaterFromCOA.theaterTelNum
     };
 }
@@ -559,8 +559,8 @@ export function createMovieTheaterFromCOA(
 /* istanbul ignore next */
 export function createScreeningRoomFromCOA(
     screenFromCOA: COA.services.master.IScreenResult
-): factory.place.movieTheater.IScreeningRoom {
-    const sections: factory.place.movieTheater.IScreeningRoomSection[] = [];
+): factory.chevre.place.movieTheater.IScreeningRoom {
+    const sections: factory.chevre.place.movieTheater.IScreeningRoomSection[] = [];
     const sectionCodes: string[] = [];
     screenFromCOA.listSeat.forEach((seat) => {
         if (sectionCodes.indexOf(seat.seatSection) < 0) {
@@ -572,13 +572,13 @@ export function createScreeningRoomFromCOA(
                     en: `section${seat.seatSection}`
                 },
                 containsPlace: [],
-                typeOf: factory.placeType.ScreeningRoomSection
+                typeOf: factory.chevre.placeType.ScreeningRoomSection
             });
         }
 
         sections[sectionCodes.indexOf(seat.seatSection)].containsPlace.push({
             branchCode: seat.seatNum,
-            typeOf: factory.placeType.Seat
+            typeOf: factory.chevre.placeType.Seat
         });
     });
 
@@ -589,7 +589,7 @@ export function createScreeningRoomFromCOA(
             ja: screenFromCOA.screenName,
             en: screenFromCOA.screenNameEng
         },
-        typeOf: factory.placeType.ScreeningRoom,
+        typeOf: factory.chevre.placeType.ScreeningRoom,
         maximumAttendeeCapacity: sections[0].containsPlace.length
     };
 }

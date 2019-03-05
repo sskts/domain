@@ -1,4 +1,4 @@
 /**
  * factory
  */
-export * from '@motionpicture/sskts-factory';
+export * from '@cinerino/factory';

@@ -168,7 +168,7 @@ export function create(params: {
                     accessCode: knyknrNoInfo.pinCd,
                     serviceType: (knyknrNoInfo.knshInfo[0] !== undefined) ? knyknrNoInfo.knshInfo[0].knshTyp : '',
                     serviceOutput: {
-                        reservationFor: { typeOf: factory.eventType.ScreeningEvent, id: '' },
+                        reservationFor: { typeOf: factory.chevre.eventType.ScreeningEvent, id: '' },
                         reservedTicket: {
                             ticketedSeat: {
                                 typeOf: factory.chevre.placeType.ScreeningRoom,
