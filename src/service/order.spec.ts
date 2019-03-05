@@ -26,7 +26,7 @@ describe('returnOrder()', () => {
             acceptedOffers: [
                 {
                     itemOffered: {
-                        typeOf: sskts.factory.reservationType.EventReservation,
+                        typeOf: sskts.factory.chevre.reservationType.EventReservation,
                         reservationNumber: '123',
                         reservationFor: { superEvent: { location: { branchCode: '123' } } }
                     }
@@ -35,7 +35,7 @@ describe('returnOrder()', () => {
             orderNumber: 'orderNumber'
         };
         const ownershipInfos = [
-            { identifier: 'identifier', typeOfGood: { typeOf: sskts.factory.reservationType.EventReservation } }
+            { identifier: 'identifier', typeOfGood: { typeOf: sskts.factory.chevre.reservationType.EventReservation } }
         ];
         const placeOrderTransaction = {
             result: { ownershipInfos }
@@ -122,7 +122,7 @@ describe('returnOrder()', () => {
             acceptedOffers: [
                 {
                     itemOffered: {
-                        typeOf: sskts.factory.reservationType.EventReservation,
+                        typeOf: sskts.factory.chevre.reservationType.EventReservation,
                         reservationNumber: '123',
                         reservationFor: { superEvent: { location: { branchCode: '123' } } }
                     }

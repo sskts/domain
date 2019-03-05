@@ -8,7 +8,7 @@ import * as factory from '../factory';
  * 作品抽象リポジトリ
  */
 export abstract class Repository {
-    public abstract async saveMovie(movie: factory.creativeWork.movie.ICreativeWork): Promise<void>;
+    public abstract async saveMovie(movie: factory.chevre.creativeWork.movie.ICreativeWork): Promise<void>;
 }
 
 /**
@@ -24,7 +24,7 @@ export class MongoRepository implements Repository {
     /**
      * 映画作品を保管する
      */
-    public async saveMovie(movie: factory.creativeWork.movie.ICreativeWork) {
+    public async saveMovie(movie: factory.chevre.creativeWork.movie.ICreativeWork) {
         await this.creativeWorkModel.findOneAndUpdate(
             {
                 typeOf: factory.creativeWorkType.Movie,

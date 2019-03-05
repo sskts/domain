@@ -11,9 +11,11 @@ const debug = createDebug('sskts-domain:repository:place');
  * 場所抽象リポジトリ
  */
 export abstract class Repository {
-    public abstract async saveMovieTheater(movieTheater: factory.place.movieTheater.IPlace): Promise<void>;
-    public abstract async searchMovieTheaters(searchConditions: {}): Promise<factory.place.movieTheater.IPlaceWithoutScreeningRoom[]>;
-    public abstract async findMovieTheaterByBranchCode(branchCode: string): Promise<factory.place.movieTheater.IPlace>;
+    public abstract async saveMovieTheater(movieTheater: factory.chevre.place.movieTheater.IPlace): Promise<void>;
+    public abstract async searchMovieTheaters(
+        searchConditions: {}
+    ): Promise<factory.chevre.place.movieTheater.IPlaceWithoutScreeningRoom[]>;
+    public abstract async findMovieTheaterByBranchCode(branchCode: string): Promise<factory.chevre.place.movieTheater.IPlace>;
 }
 
 /**
@@ -30,7 +32,7 @@ export class MongoRepository {
      * 劇場を保管する
      * @param movieTheater movieTheater object
      */
-    public async saveMovieTheater(movieTheater: factory.place.movieTheater.IPlace) {
+    public async saveMovieTheater(movieTheater: factory.chevre.place.movieTheater.IPlace) {
         await this.placeModel.findOneAndUpdate(
             {
                 branchCode: movieTheater.branchCode
@@ -46,10 +48,10 @@ export class MongoRepository {
      */
     public async searchMovieTheaters(
         searchConditions: {}
-    ): Promise<factory.place.movieTheater.IPlaceWithoutScreeningRoom[]> {
+    ): Promise<factory.chevre.place.movieTheater.IPlaceWithoutScreeningRoom[]> {
         // 検索条件を作成
         const conditions: any = {
-            typeOf: factory.placeType.MovieTheater
+            typeOf: factory.chevre.placeType.MovieTheater
         };
         debug('searchConditions:', searchConditions);
 
@@ -65,7 +67,7 @@ export class MongoRepository {
         )
             .setOptions({ maxTimeMS: 10000 })
             .exec()
-            .then((docs) => docs.map((doc) => <factory.place.movieTheater.IPlaceWithoutScreeningRoom>doc.toObject()));
+            .then((docs) => docs.map((doc) => <factory.chevre.place.movieTheater.IPlaceWithoutScreeningRoom>doc.toObject()));
     }
 
     /**
@@ -73,9 +75,9 @@ export class MongoRepository {
      */
     public async findMovieTheaterByBranchCode(
         branchCode: string
-    ): Promise<factory.place.movieTheater.IPlace> {
+    ): Promise<factory.chevre.place.movieTheater.IPlace> {
         const doc = await this.placeModel.findOne({
-            typeOf: factory.placeType.MovieTheater,
+            typeOf: factory.chevre.placeType.MovieTheater,
             branchCode: branchCode
         }).exec();
 
@@ -83,6 +85,6 @@ export class MongoRepository {
             throw new factory.errors.NotFound('movieTheater');
         }
 
-        return <factory.place.movieTheater.IPlace>doc.toObject();
+        return <factory.chevre.place.movieTheater.IPlace>doc.toObject();
     }
 }

@@ -662,12 +662,12 @@ describe('createEmailMessageFromTransaction()', () => {
             workPerformed: { name: 'workPerformedName' },
             location: { name: { ja: 'eventLocationName' } }
         };
-        const eventReservations: sskts.factory.reservation.event.IReservation<any>[] = [
+        const eventReservations: sskts.factory.chevre.reservation.event.IReservation<any>[] = [
             {
                 id: '',
                 checkedIn: false,
                 attended: false,
-                typeOf: sskts.factory.reservationType.EventReservation,
+                typeOf: sskts.factory.chevre.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
                     dateIssued: new Date(),
@@ -694,14 +694,14 @@ describe('createEmailMessageFromTransaction()', () => {
                 numSeats: 1,
                 priceCurrency: sskts.factory.priceCurrency.JPY,
                 reservationNumber: 'reservationNumber',
-                reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
+                reservationStatus: sskts.factory.chevre.reservationStatusType.ReservationConfirmed
 
             },
             {
                 id: '',
                 checkedIn: false,
                 attended: false,
-                typeOf: sskts.factory.reservationType.EventReservation,
+                typeOf: sskts.factory.chevre.reservationType.EventReservation,
                 reservationFor: event,
                 reservedTicket: {
                     dateIssued: new Date(),
@@ -728,7 +728,7 @@ describe('createEmailMessageFromTransaction()', () => {
                 numSeats: 1,
                 priceCurrency: sskts.factory.priceCurrency.JPY,
                 reservationNumber: 'reservationNumber',
-                reservationStatus: sskts.factory.reservationStatusType.ReservationConfirmed
+                reservationStatus: sskts.factory.chevre.reservationStatusType.ReservationConfirmed
             }
         ];
         // tslint:disable-next-line:no-magic-numbers

@@ -11,7 +11,7 @@ async function main() {
     await repo.programMembershipModel.create({
         typeOf: 'ProgramMembership',
         programName: '[development]会員ポイントプログラム',
-        award: [sskts.factory.programMembership.Award.PecorinoPayment],
+        award: ['PecorinoPayment'],
         offers: [],
     });
 

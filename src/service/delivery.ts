@@ -23,7 +23,7 @@ import * as factory from '../factory';
 const debug = createDebug('sskts-domain:service:delivery');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
-export type IEventReservation = factory.reservation.event.IReservation<any>;
+export type IEventReservation = factory.chevre.reservation.event.IReservation<any>;
 export type IOwnershipInfo = factory.ownershipInfo.IOwnershipInfo<factory.ownershipInfo.IGood<factory.ownershipInfo.IGoodType>>;
 
 /**
@@ -150,7 +150,7 @@ export function createOwnershipInfosFromOrder(params: {
 
                 break;
 
-            case factory.reservationType.EventReservation:
+            case factory.chevre.reservationType.EventReservation:
                 // ownershipInfoのidentifierはコレクション内でuniqueである必要があるので、この仕様には要注意
                 // saveする際に、identifierでfindOneAndUpdateしている
                 // const identifier = `${acceptedOffer.itemOffered.typeOf}-${acceptedOffer.itemOffered.reservedTicket.ticketToken}`;

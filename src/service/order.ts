@@ -19,7 +19,7 @@ import * as factory from '../factory';
 const debug = createDebug('sskts-domain:service:order');
 
 export type IPlaceOrderTransaction = factory.transaction.placeOrder.ITransaction;
-export type IReservation = factory.reservation.event.IReservation<factory.event.screeningEvent.IEvent>;
+export type IReservation = factory.chevre.reservation.event.IReservation<factory.event.screeningEvent.IEvent>;
 export type WebAPIIdentifier = factory.service.webAPI.Identifier;
 
 /**
@@ -310,7 +310,7 @@ export function returnOrder(params: { orderNumber: string }) {
             // 座席予約の場合キャンセル
             // tslint:disable-next-line:no-single-line-block-comment
             /* istanbul ignore else */
-            if (itemOffered.typeOf === factory.reservationType.EventReservation) {
+            if (itemOffered.typeOf === factory.chevre.reservationType.EventReservation) {
                 // 非同期でCOA本予約取消
                 // COAから内容抽出
                 // 電話番号のフォーマットを日本人にリーダブルに調整(COAではこのフォーマットで扱うので)

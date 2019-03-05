@@ -34,7 +34,7 @@ export function searchIndividualScreeningEvents(
             const coaInfo = <factory.event.screeningEvent.ICOAInfo>event.coaInfo;
 
             // 空席状況情報を追加
-            const offer: factory.event.screeningEvent.IOffer4cinemasunshine = {
+            const offer: factory.chevre.event.screeningEvent.IOffer4cinemasunshine = {
                 typeOf: 'Offer',
                 availability: null,
                 url: ''
@@ -73,7 +73,7 @@ export function findIndividualScreeningEventByIdentifier(
         const coaInfo = <factory.event.screeningEvent.ICOAInfo>event.coaInfo;
 
         // add item availability info
-        const offer: factory.event.screeningEvent.IOffer4cinemasunshine = {
+        const offer: factory.chevre.event.screeningEvent.IOffer4cinemasunshine = {
             typeOf: 'Offer',
             availability: null,
             url: ''
