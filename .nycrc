@@ -11,10 +11,7 @@
         "src/**/*.ts"
     ],
     "exclude": [
-        "**/*.spec.ts",
-        "**/service/task/*.ts",
-        "src/service/report/telemetry.ts",
-        "src/service/report/transaction.ts"
+        "**/*.spec.ts"
     ],
     "reporter": [
         "lcov",
