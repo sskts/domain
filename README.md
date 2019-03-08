@@ -39,35 +39,7 @@ npm install @motionpicture/sskts-domain
 | `WAITER_SECRET`                      | true     |                | WAITER許可証トークン秘密鍵   |
 | `WAITER_PASSPORT_ISSUER`             | true     |                | WAITER許可証発行者           |
 | `ORDER_INQUIRY_ENDPOINT`             | true     |                | 注文照会エンドポイント       |
-
-### Search individual screening events sample
-
-```js
-const sskts = require('@motionpicture/sskts-domain');
-
-sskts.mongoose.connect('MONGOLAB_URI');
-const redisClient = sskts.redis.createClient({
-    host: '*****',
-    port: 6380,
-    password: '*****',
-    tls: { servername: 6380 }
-});
-
-const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
-const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(redisClient);
-
-sskts.service.offer.searchIndividualScreeningEvents({
-    superEventLocationIdentifiers:['MovieTheater-118'],
-    startFrom: new Date(),
-    startThrough: new Date(),
-})({
-    event: eventRepo,
-    itemAvailability: itemAvailabilityRepo
-})
-    .then((events) => {
-        console.log('events:', events);
-    });
-```
+| `OWNERSHIP_INFO_UUID_DISABLED`       | false    |                | 所有権UUID使用無効化フラグ   |
 
 ## Code Samples
 
