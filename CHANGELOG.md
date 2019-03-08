@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- repositoryを完全にCinerino化
-- serviceを完全にCinerino化
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v31.0.0 - 2019-03-08
+
+### Changed
+
+- repositoryを完全にCinerino化
+- serviceを完全にCinerino化
 
 ## v30.1.1 - 2019-03-05
 
